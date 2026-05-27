@@ -116,11 +116,12 @@ test("question bank applies filters, calendar review context, and gated correcti
 
   await page.goto("/banco-de-questoes?review_task_id=rt_e2e&date=2026-05-27&area=GO&theme=Obstetricia&expected_questions=12");
 
+  await expect(page.getByRole("link", { name: "Banco de Questoes" })).toBeVisible();
   await expect(page.getByText("12 disponiveis")).toBeVisible();
   await expect(page.getByText("Obstetricia").first()).toBeVisible();
 
   await page.getByLabel("Modo").selectOption("training");
-  await page.getByRole("button", { name: "Iniciar simulado" }).click();
+  await page.getByRole("button", { name: "Iniciar treino" }).click();
 
   const payload = createPayloads[0];
   expect(payload).toBeTruthy();

@@ -90,6 +90,7 @@ type IconComponent = (props: { className?: string }) => React.JSX.Element;
 const ICON_MAP: Record<string, IconComponent> = {
   "/agenda-operacional": IconCalendar,
   "/cards-adaptativos": IconCards,
+  "/banco-de-questoes": IconNotebook,
   "/dados-e-relatorios": IconChart,
   "/rotina-e-metas": IconSliders,
 };
@@ -285,6 +286,7 @@ export default function Nav() {
     || pathname === "/rotina-e-metas"
     || pathname === "/revisao-turbo"
     || pathname === "/cards-adaptativos"
+    || pathname === "/banco-de-questoes"
     || pathname === "/caderno"
     || pathname === "/estatisticas"
     || pathname === "/dados-e-relatorios"

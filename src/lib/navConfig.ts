@@ -43,6 +43,12 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         shortLabel: "Cards Adaptativos",
         groupPaths: ["/cards-adaptativos", "/revisao-turbo", "/caderno"],
       },
+      {
+        href: "/banco-de-questoes",
+        label: "BANCO DE QUESTOES",
+        shortLabel: "Banco de Questoes",
+        groupPaths: ["/banco-de-questoes"],
+      },
     ],
   },
   {
