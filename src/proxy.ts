@@ -14,7 +14,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const sessionToken = request.cookies.get("agendar_session")?.value?.trim() || "";
+  const sessionToken = request.cookies.get("krosmed_session")?.value?.trim() || "";
   if (!sessionToken) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";

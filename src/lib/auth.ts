@@ -1,5 +1,5 @@
-const TOKEN_KEY = "agendar_token";
-const SESSION_KEY = "agendar_session";
+const TOKEN_KEY = "krosmed_token";
+const SESSION_KEY = "krosmed_session";
 const INTERNAL_CSRF_HEADER = "X-KrosMed-CSRF";
 const INTERNAL_CSRF_VALUE = "1";
 

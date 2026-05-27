@@ -1,0 +1,173 @@
+import { api, authHeader } from "../shared/http";
+import type { FinalizationResult, ReviewTask } from "./study-import";
+
+export type QuestionBankOption = "A" | "B" | "C" | "D" | "E";
+export type QuestionBankMode = "adaptive" | "by_topic" | "by_exam";
+export type QuestionBankResolutionMode = "training" | "simulation";
+export type QuestionBankSessionStatus = "active" | "finalized" | "invalidated";
+export type QuestionBankNode = {
+  knowledge_node_id: string;
+  node_code: string | null;
+  node_name: string | null;
+  node_type: string | null;
+  role: string | null;
+  weight: number | null;
+  confidence: number | null;
+  is_primary: boolean;
+  source: string | null;
+};
+export type QuestionBankTopic = {
+  knowledge_node_id: string;
+  node_code: string | null;
+  node_name: string;
+  node_type: string | null;
+  description: string | null;
+  question_count: number;
+  primary_question_count: number;
+  board_count: number;
+  difficulty_mean: number | null;
+  recurrence_score: number;
+  bank_demand_score: number;
+  board_frequency: Record<string, number>;
+  charge_patterns: Record<string, number>;
+  answer_types: Record<string, number>;
+  adaptive_weight: number;
+  adaptive_weight_score: number;
+  adaptive_weight_factors: Record<string, number>;
+};
+export type QuestionBankQuestion = {
+  id: string;
+  stem: string;
+  alternatives: Record<string, string>;
+  charge_profile: unknown;
+  difficulty_estimate: number | null;
+  content_grade: string | null;
+  image_refs: string[];
+  table_refs: unknown[];
+  metadata: Record<string, unknown>;
+  source: Record<string, unknown>;
+  knowledge_nodes: QuestionBankNode[];
+};
+export type QuestionBankSessionItem = {
+  question_id: string;
+  position: number;
+  stem: string;
+  alternatives: Record<string, string>;
+  image_refs: string[];
+  table_refs: unknown[];
+  knowledge_nodes: QuestionBankNode[];
+  selection_reason: Record<string, unknown>;
+  source: Record<string, unknown>;
+  selected_option: QuestionBankOption | null;
+  doubtful: boolean;
+  answered: boolean;
+  needs_correction: boolean;
+  correct_answer: QuestionBankOption | null;
+  is_correct: boolean | null;
+};
+export type QuestionBankSession = {
+  session_id: string;
+  status: QuestionBankSessionStatus;
+  mode: QuestionBankMode;
+  resolution_mode: QuestionBankResolutionMode;
+  primary_knowledge_node_id: string | null;
+  area: string | null;
+  theme: string | null;
+  subtheme: string | null;
+  adaptive_weight: number;
+  adaptive_weight_score: number;
+  adaptive_weight_factors: Record<string, number>;
+  performed_at: string;
+  filters: Record<string, unknown>;
+  total_questions: number;
+  answered_count: number;
+  unanswered_count: number;
+  unanswered_question_numbers: number[];
+  doubtful_count: number;
+  items: QuestionBankSessionItem[];
+  created_at: string;
+  updated_at: string;
+  finalized_at: string | null;
+  directed_study_id: string | null;
+  review_task_id: string | null;
+};
+export type QuestionBankFinalizeResult = FinalizationResult & {
+  created_tasks: ReviewTask[];
+  session: QuestionBankSession;
+};
+export type QuestionBankSessionCreatePayload = {
+  mode?: QuestionBankMode;
+  resolution_mode?: QuestionBankResolutionMode;
+  question_ids?: string[];
+  knowledge_node_ids?: string[];
+  board_codes?: string[];
+  year_from?: number;
+  year_to?: number;
+  limit?: number;
+  only_unanswered?: boolean;
+  performed_at?: string;
+  review_task_id?: string;
+};
+
+function appendArrayParams(q: URLSearchParams, key: string, values?: string[]) {
+  for (const value of values ?? []) {
+    if (value.trim()) q.append(key, value.trim());
+  }
+}
+
+export async function browseQuestionBankTopics(
+  token: string,
+  params: { search?: string; node_type?: string; board_codes?: string[]; limit?: number } = {},
+): Promise<QuestionBankTopic[]> {
+  const q = new URLSearchParams();
+  if (params.search?.trim()) q.set("search", params.search.trim());
+  if (params.node_type?.trim()) q.set("node_type", params.node_type.trim());
+  if (params.limit) q.set("limit", String(params.limit));
+  appendArrayParams(q, "board_codes", params.board_codes);
+  return api<QuestionBankTopic[]>(`/api/question-bank/topics${q.toString() ? `?${q.toString()}` : ""}`, { headers: authHeader(token) });
+}
+
+export async function browseQuestionBankQuestions(
+  token: string,
+  params: { knowledge_node_ids?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; limit?: number; only_unanswered?: boolean } = {},
+): Promise<QuestionBankQuestion[]> {
+  const q = new URLSearchParams();
+  appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
+  appendArrayParams(q, "board_codes", params.board_codes);
+  if (params.year_from) q.set("year_from", String(params.year_from));
+  if (params.year_to) q.set("year_to", String(params.year_to));
+  if (params.limit) q.set("limit", String(params.limit));
+  if (params.only_unanswered !== undefined) q.set("only_unanswered", params.only_unanswered ? "true" : "false");
+  return api<QuestionBankQuestion[]>(`/api/question-bank/questions${q.toString() ? `?${q.toString()}` : ""}`, { headers: authHeader(token) });
+}
+
+export async function createQuestionBankSession(token: string, payload: QuestionBankSessionCreatePayload): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>("/api/question-bank/sessions", { method: "POST", headers: authHeader(token), body: JSON.stringify(payload) });
+}
+
+export async function getQuestionBankSession(token: string, sessionId: string): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}`, { headers: authHeader(token) });
+}
+
+export async function recordQuestionBankAttempt(
+  token: string,
+  sessionId: string,
+  position: number,
+  payload: { selected_option: QuestionBankOption; time_ms?: number | null; doubtful?: boolean; confidence_self_rating?: number | null },
+): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/attempt`, { method: "PUT", headers: authHeader(token), body: JSON.stringify(payload) });
+}
+
+export async function recordQuestionBankCorrection(
+  token: string,
+  sessionId: string,
+  position: number,
+  payload: { prompt?: string | null; response_value: string; confidence_delta?: number; metadata?: Record<string, unknown> },
+): Promise<{ response_id: string; session: QuestionBankSession }> {
+  return api<{ response_id: string; session: QuestionBankSession }>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/correction`, { method: "POST", headers: authHeader(token), body: JSON.stringify(payload) });
+}
+
+export async function finalizeQuestionBankSession(token: string, sessionId: string, options?: { confirm_unanswered?: boolean }): Promise<QuestionBankFinalizeResult> {
+  const q = new URLSearchParams({ confirm_unanswered: options?.confirm_unanswered ? "true" : "false" });
+  return api<QuestionBankFinalizeResult>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/finalize?${q.toString()}`, { method: "POST", headers: authHeader(token) });
+}

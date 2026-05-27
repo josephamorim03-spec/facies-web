@@ -1,4 +1,4 @@
-// ── Re-exports from domain modules ───────────────────────────────
+﻿// Re-exports from domain modules
 // This barrel file ensures zero breaking changes for existing imports.
 // New code should import directly from "./api/domains/<domain>".
 
@@ -15,7 +15,7 @@ export type { APIError } from "./api/shared/http";
 // Shared types
 export type { FsrsReviewRating, StudyKind, FullExamType } from "./api/types";
 
-// ── Auth domain ──────────────────────────────────────────────────
+// Auth domain
 export {
   signupLocalAccount,
   loginLocalAccount,
@@ -33,7 +33,7 @@ export type {
   AuthResetPasswordResponse,
 } from "./api/domains/auth";
 
-// ── Operational domain ───────────────────────────────────────────
+// Operational domain
 export {
   createOperationalNote,
   listOperationalNotes,
@@ -84,7 +84,7 @@ export type {
   OperationalNoteUpdatePayload,
 } from "./api/domains/operational";
 
-// ── Misc domain ──────────────────────────────────────────────────
+// Misc domain
 export {
   resetUserData,
   getFsrsConfig,
@@ -98,7 +98,7 @@ export type {
   WeeklyTimeline,
 } from "./api/domains/misc";
 
-// ── Notifications domain ─────────────────────────────────────────
+// Notifications domain
 export {
   getVapidPublicKey,
   saveNotificationSubscription,
@@ -108,7 +108,7 @@ export {
 } from "./api/domains/notifications";
 export type { NotificationSettings } from "./api/domains/notifications";
 
-// ── Starter domain ───────────────────────────────────────────────
+// Starter domain
 export {
   me,
   listItems,
@@ -127,7 +127,7 @@ export type {
   Rating,
 } from "./api/domains/starter";
 
-// ── Study Import domain ──────────────────────────────────────────
+// Study Import domain
 export {
   getProfile,
   updateProfile,
@@ -175,7 +175,31 @@ export type {
   StudyTopicConsistency,
 } from "./api/domains/study-import";
 
-// ── Performance domain ───────────────────────────────────────────
+// Question Bank domain
+export {
+  browseQuestionBankTopics,
+  browseQuestionBankQuestions,
+  createQuestionBankSession,
+  getQuestionBankSession,
+  recordQuestionBankAttempt,
+  recordQuestionBankCorrection,
+  finalizeQuestionBankSession,
+} from "./api/domains/question-bank";
+export type {
+  QuestionBankOption,
+  QuestionBankMode,
+  QuestionBankResolutionMode,
+  QuestionBankSessionStatus,
+  QuestionBankNode,
+  QuestionBankTopic,
+  QuestionBankQuestion,
+  QuestionBankSessionItem,
+  QuestionBankSession,
+  QuestionBankFinalizeResult,
+  QuestionBankSessionCreatePayload,
+} from "./api/domains/question-bank";
+
+// Performance domain
 export {
   getStudyPerformanceSummary,
 } from "./api/domains/performance";
@@ -187,7 +211,7 @@ export type {
   StudyPerformanceSummary,
 } from "./api/domains/performance";
 
-// ── Calendar domain ──────────────────────────────────────────────
+// Calendar domain
 export {
   listEvents,
   createEvent,
@@ -218,7 +242,7 @@ export type {
   AdaptiveRebalanceOut,
 } from "./api/domains/calendar";
 
-// ── Question Analysis domain ─────────────────────────────────────
+// Question Analysis domain
 export {
   analyzeSimulationErrors,
   startProgressiveSimulationErrors,
@@ -246,3 +270,4 @@ export type {
   AnalyzeSimulationErrorsResponse,
   AnalyzeSimulationErrorsProgressiveStatusItem,
 } from "./api/domains/question-analysis";
+

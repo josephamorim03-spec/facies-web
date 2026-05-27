@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const SESSION_COOKIE_NAME = "agendar_session";
-const TOKEN_COOKIE_NAME = "agendar_token";
+const SESSION_COOKIE_NAME = "krosmed_session";
+const TOKEN_COOKIE_NAME = "krosmed_token";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
 
