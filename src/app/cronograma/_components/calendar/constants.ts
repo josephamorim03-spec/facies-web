@@ -1,0 +1,13 @@
+export const TOUCH_DRAG_START_PX = 2;
+export const TOUCH_EDGE_HOLD_MS = 2000;
+export const TOUCH_EDGE_ZONE_PX = 32;
+export const TOUCH_GRID_TOLERANCE_PX = 10;
+export const TOUCH_NEAREST_CELL_TOLERANCE_PX = 16;
+export const EVENT_DELETE_ZONE_DELAY_MS = 250;
+export const MONTH_SWIPE_TRIGGER_PX = 56;
+export const MONTH_SWIPE_AXIS_LOCK_PX = 10;
+export const MONTH_SWIPE_SUPPRESS_TAP_MS = 320;
+export const MONTH_SWIPE_COMMIT_RATIO = 0.18;
+export const MONTH_SWIPE_COMMIT_MIN_PX = 56;
+export const MONTH_SWIPE_ANIMATION_MS = 320;
+export const MONTH_SWIPE_CANCEL_MS = 220;

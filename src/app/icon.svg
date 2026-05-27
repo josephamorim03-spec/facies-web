@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="upperShade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#50545b" stop-opacity="0.72" />
+      <stop offset="100%" stop-color="#0f1114" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="lowerShade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4f535b" stop-opacity="0.68" />
+      <stop offset="100%" stop-color="#0f1114" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="#ffffff" />
+
+  <!-- Left stem -->
+  <path d="M168 152H336V372C260 426 206 492 168 562V152Z" fill="#000000" />
+  <rect x="168" y="562" width="168" height="328" fill="#000000" />
+
+  <!-- Upper ribbon -->
+  <path
+    d="M170 814C170 618 252 502 408 395C548 299 690 206 816 152H948C902 302 796 403 662 496C548 576 448 648 384 736C346 787 336 840 336 890H170V814Z"
+    fill="#000000"
+  />
+
+  <!-- Lower ribbon -->
+  <path
+    d="M456 600C604 671 731 779 814 932L948 960C884 770 777 651 630 548L456 600Z"
+    fill="#000000"
+  />
+
+  <!-- White cuts -->
+  <path
+    d="M170 760C208 640 282 546 402 462C538 364 664 272 750 152H838C772 270 668 374 542 468C428 552 342 625 284 720C246 781 224 836 220 890H170V760Z"
+    fill="#ffffff"
+  />
+  <path
+    d="M456 650C578 688 681 759 765 871C804 921 854 943 920 956H820C748 948 697 922 656 871C574 769 500 700 394 674C411 664 432 656 456 650Z"
+    fill="#ffffff"
+  />
+
+  <!-- Subtle gradient overlays, closer to the provided logo style -->
+  <path
+    d="M238 740C292 616 378 520 488 438C610 346 722 254 812 152H948C892 283 790 389 676 470C572 543 485 605 414 671C350 732 292 781 238 834Z"
+    fill="url(#upperShade)"
+  />
+  <path
+    d="M500 548C622 618 732 725 814 932L948 960C896 824 823 705 730 609C658 533 585 488 500 548Z"
+    fill="url(#lowerShade)"
+  />
+</svg>

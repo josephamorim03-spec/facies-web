@@ -1,0 +1,172 @@
+"use client";
+
+import React from "react";
+import { Button } from "@/components/ui/Button";
+import RecaptchaCheckbox from "@/components/RecaptchaCheckbox";
+import { GoogleSection } from "./GoogleSection";
+
+export type SignupFormProps = {
+  signupFirstName: string;
+  setSignupFirstName: (v: string) => void;
+  signupLastName: string;
+  setSignupLastName: (v: string) => void;
+  signupEmail: string;
+  setSignupEmail: (v: string) => void;
+  signupPassword: string;
+  setSignupPassword: (v: string) => void;
+  signupConfirmPassword: string;
+  setSignupConfirmPassword: (v: string) => void;
+  signupPasswordsMismatch: boolean;
+  signupTermsAccepted: boolean;
+  setSignupTermsAccepted: (v: boolean) => void;
+  signupCaptchaToken: string;
+  setSignupCaptchaToken: (v: string) => void;
+  signupCaptchaResetCounter: number;
+  signupBusy: boolean;
+  signupError: string;
+  signupCanSubmit: boolean;
+  recaptchaSiteKey: string;
+  googleClientId: string;
+  googleButtonRef: React.RefObject<HTMLDivElement | null>;
+  googleError: string;
+  installState: string;
+  onSignup: () => void;
+  onShowTerms: () => void;
+  onSwitchView: (view: "login" | "signup" | "forgot" | "verify") => void;
+};
+
+export function SignupForm({
+  signupFirstName,
+  setSignupFirstName,
+  signupLastName,
+  setSignupLastName,
+  signupEmail,
+  setSignupEmail,
+  signupPassword,
+  setSignupPassword,
+  signupConfirmPassword,
+  setSignupConfirmPassword,
+  signupPasswordsMismatch,
+  signupTermsAccepted,
+  setSignupTermsAccepted,
+  signupCaptchaToken,
+  setSignupCaptchaToken,
+  signupCaptchaResetCounter,
+  signupBusy,
+  signupError,
+  signupCanSubmit,
+  recaptchaSiteKey,
+  googleClientId,
+  googleButtonRef,
+  googleError,
+  installState,
+  onSignup,
+  onShowTerms,
+  onSwitchView,
+}: SignupFormProps) {
+  const inputCls =
+    "w-full border border-edge px-3 py-2 text-sm bg-paper focus:outline-none focus:border-ink transition-colors";
+  const btnLink = "text-sm text-muted hover:text-ink transition-colors";
+  const formSpacingCls = `space-y-3${installState !== "hidden" ? " pb-20" : ""}`;
+
+  return (
+    <div className={formSpacingCls}>
+      <input
+        type="text"
+        className={inputCls}
+        placeholder="Nome"
+        autoComplete="given-name"
+        value={signupFirstName}
+        onChange={(event) => setSignupFirstName(event.target.value)}
+      />
+      <input
+        type="text"
+        className={inputCls}
+        placeholder="Sobrenome"
+        autoComplete="family-name"
+        value={signupLastName}
+        onChange={(event) => setSignupLastName(event.target.value)}
+      />
+      <input
+        type="email"
+        className={inputCls}
+        placeholder="seu@email.com"
+        autoComplete="email"
+        value={signupEmail}
+        onChange={(event) => setSignupEmail(event.target.value)}
+      />
+      <input
+        type="password"
+        className={inputCls}
+        placeholder="Senha (mínimo 8 caracteres)"
+        autoComplete="new-password"
+        value={signupPassword}
+        onChange={(event) => setSignupPassword(event.target.value)}
+      />
+      <input
+        type="password"
+        className={inputCls}
+        placeholder="Digite novamente a senha"
+        autoComplete="new-password"
+        value={signupConfirmPassword}
+        onChange={(event) => setSignupConfirmPassword(event.target.value)}
+        onKeyDown={(event) => event.key === "Enter" && onSignup()}
+      />
+
+      {signupPasswordsMismatch && (
+        <p className="text-sm text-red-600">Senhas incompatíveis, digite novamente</p>
+      )}
+
+      <div className="flex items-center justify-center gap-2 text-sm text-ink">
+        <input
+          type="checkbox"
+          className="h-4 w-4 border border-edge"
+          checked={signupTermsAccepted}
+          onChange={(event) => setSignupTermsAccepted(event.target.checked)}
+        />
+        <span className="text-center">
+          Li e concordo com os{" "}
+          <button
+            type="button"
+            className="text-ink underline underline-offset-2 hover:text-muted transition-colors"
+            onClick={onShowTerms}
+          >
+            Termos de uso
+          </button>
+        </span>
+      </div>
+
+      {recaptchaSiteKey ? (
+        <div className="space-y-2">
+          <RecaptchaCheckbox
+            siteKey={recaptchaSiteKey}
+            onTokenChange={setSignupCaptchaToken}
+            resetCounter={signupCaptchaResetCounter}
+          />
+          <p className="text-xs text-muted text-center">
+            Em alguns casos, o Google pode pedir verificação adicional.
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-red-600">Cadastro indisponível no momento.</p>
+      )}
+
+      {signupError && <p className="text-sm text-red-600">{signupError}</p>}
+      <Button variant="primary" size="md" loading={signupBusy} disabled={!signupCanSubmit} onClick={onSignup} className="w-full">
+        Criar conta
+      </Button>
+
+      <GoogleSection
+        googleClientId={googleClientId}
+        googleButtonRef={googleButtonRef}
+        googleError={googleError}
+      />
+
+      <div className="text-center pt-1">
+        <button className={btnLink} onClick={() => onSwitchView("login")}>
+          Já tenho conta
+        </button>
+      </div>
+    </div>
+  );
+}

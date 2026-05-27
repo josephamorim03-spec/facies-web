@@ -1,0 +1,44 @@
+{
+  "name": "agendar-web",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0 --port 3000",
+    "dev:e2e": "next dev --webpack --hostname 0.0.0.0 --port 3000",
+    "dev:web": "next dev --hostname 0.0.0.0 --port 3000",
+    "dev:api": "npm --prefix .. run dev:api",
+    "dev:all": "npm --prefix .. run dev:all",
+    "build": "next build",
+    "start": "next start",
+    "start:e2e": "next start --hostname 0.0.0.0 --port 3000",
+    "typecheck": "next typegen && tsc --noEmit -p tsconfig.json",
+    "lint": "node scripts/check-mojibake.mjs && eslint .",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "node scripts/run-smoke-e2e.mjs",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "dependencies": {
+    "next": "16.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "recharts": "^3.8.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "22.13.5",
+    "@types/react": "19.0.10",
+    "@types/react-dom": "19.0.4",
+    "autoprefixer": "10.4.20",
+    "eslint": "9.21.0",
+    "eslint-config-next": "16.1.6",
+    "postcss": "8.5.3",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.7.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}

@@ -1,0 +1,339 @@
+import { clearAuthToken } from "../../auth";
+import { repairMojibake, repairMojibakeDeep } from "../../textEncoding";
+
+export type APIError = { message: string; status?: number; details?: unknown };
+export type APIRetryPolicy = {
+  maxAttempts?: number;
+  baseDelayMs?: number;
+  maxDelayMs?: number;
+  jitterRatio?: number;
+  retryOnStatuses?: number[];
+  allowRetryOnNonIdempotent?: boolean;
+};
+export type APIRequestInit = RequestInit & {
+  timeoutMs?: number;
+  retry?: APIRetryPolicy | false;
+  requestId?: string;
+  idempotencyKey?: string | null;
+};
+
+const DEFAULT_API_TIMEOUT_MS = 15000;
+export const STUDY_IMPORT_SESSION_CREATE_TIMEOUT_MS = 180000;
+const DEFAULT_MAX_ATTEMPTS = 2;
+const DEFAULT_RETRY_BASE_DELAY_MS = 220;
+const DEFAULT_RETRY_MAX_DELAY_MS = 1800;
+const DEFAULT_RETRY_JITTER_RATIO = 0.25;
+export const INTERNAL_CSRF_HEADER = "X-KrosMed-CSRF";
+export const INTERNAL_CSRF_VALUE = "1";
+const RETRYABLE_STATUS_CODES = new Set<number>([408, 425, 429, 500, 502, 503, 504]);
+
+function createTimeoutSignal(
+  timeoutMs: number,
+): { signal: AbortSignal; cleanup: () => void; timedOut: () => boolean } {
+  const controller = new AbortController();
+  let didTimeout = false;
+  const timeoutId = setTimeout(() => {
+    didTimeout = true;
+    controller.abort();
+  }, timeoutMs);
+  return {
+    signal: controller.signal,
+    cleanup: () => clearTimeout(timeoutId),
+    timedOut: () => didTimeout,
+  };
+}
+
+export function getAPIErrorCode(err: unknown): string | null {
+  const details = (err as APIError | undefined)?.details as Record<string, unknown> | undefined;
+  const detail = details?.detail;
+  if (detail && typeof detail === "object") {
+    const code = (detail as Record<string, unknown>).code;
+    if (typeof code === "string") return code;
+  }
+  if (typeof details?.code === "string") return details.code;
+  return null;
+}
+
+export function getAPIErrorDetail(err: unknown): Record<string, unknown> | null {
+  const details = (err as APIError | undefined)?.details as Record<string, unknown> | undefined;
+  if (details?.detail && typeof details.detail === "object") return details.detail as Record<string, unknown>;
+  if (details && typeof details === "object") return details;
+  return null;
+}
+
+export async function parseJsonSafe(res: Response): Promise<any> {
+  const txt = await res.text();
+  try {
+    const parsed = txt ? JSON.parse(txt) : null;
+    return repairMojibakeDeep(parsed);
+  } catch {
+    return repairMojibake(txt);
+  }
+}
+
+function resolveRequestId(explicitRequestId?: string): string {
+  if (explicitRequestId?.trim()) return explicitRequestId.trim();
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `req_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
+}
+
+function normalizeHeaders(initHeaders?: HeadersInit): Headers {
+  return new Headers(initHeaders ?? {});
+}
+
+function methodFromInit(init?: RequestInit): string {
+  const method = String(init?.method ?? "GET").trim().toUpperCase();
+  return method || "GET";
+}
+
+function methodIsIdempotent(method: string): boolean {
+  return (
+    method === "GET" ||
+    method === "HEAD" ||
+    method === "OPTIONS" ||
+    method === "PUT" ||
+    method === "DELETE"
+  );
+}
+
+function parseRetryAfterMs(raw: string | null): number | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const seconds = Number.parseInt(trimmed, 10);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.min(30000, seconds * 1000);
+  const dateMs = Date.parse(trimmed);
+  if (Number.isNaN(dateMs)) return null;
+  return Math.max(0, Math.min(30000, dateMs - Date.now()));
+}
+
+function computeBackoffMs(
+  attempt: number,
+  policy: Required<Omit<APIRetryPolicy, "retryOnStatuses">>,
+): number {
+  const unclamped = policy.baseDelayMs * (2 ** Math.max(0, attempt - 1));
+  const capped = Math.min(policy.maxDelayMs, unclamped);
+  const jitterRange = Math.max(0, capped * policy.jitterRatio);
+  if (jitterRange <= 0) return Math.round(capped);
+  const delta = (Math.random() * jitterRange * 2) - jitterRange;
+  return Math.max(0, Math.round(capped + delta));
+}
+
+function defaultRetryPolicy(initRetry: APIRetryPolicy | false | undefined): Required<APIRetryPolicy> {
+  if (initRetry === false) {
+    return {
+      maxAttempts: 1,
+      baseDelayMs: DEFAULT_RETRY_BASE_DELAY_MS,
+      maxDelayMs: DEFAULT_RETRY_MAX_DELAY_MS,
+      jitterRatio: DEFAULT_RETRY_JITTER_RATIO,
+      retryOnStatuses: [...RETRYABLE_STATUS_CODES],
+      allowRetryOnNonIdempotent: false,
+    };
+  }
+  return {
+    maxAttempts: Math.max(1, Number(initRetry?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS)),
+    baseDelayMs: Math.max(0, Number(initRetry?.baseDelayMs ?? DEFAULT_RETRY_BASE_DELAY_MS)),
+    maxDelayMs: Math.max(1, Number(initRetry?.maxDelayMs ?? DEFAULT_RETRY_MAX_DELAY_MS)),
+    jitterRatio: Math.max(0, Math.min(1, Number(initRetry?.jitterRatio ?? DEFAULT_RETRY_JITTER_RATIO))),
+    retryOnStatuses:
+      Array.isArray(initRetry?.retryOnStatuses) && initRetry.retryOnStatuses.length > 0
+        ? initRetry.retryOnStatuses.filter(
+            (status) => Number.isInteger(status) && status >= 400 && status <= 599,
+          )
+        : [...RETRYABLE_STATUS_CODES],
+    allowRetryOnNonIdempotent: Boolean(initRetry?.allowRetryOnNonIdempotent),
+  };
+}
+
+function buildTimeoutError(): APIError {
+  return {
+    message: "Tempo de resposta excedido. Tente novamente em instantes.",
+    status: 504,
+    details: { code: "upstream_timeout" },
+  };
+}
+
+async function waitMs(durationMs: number, signal?: AbortSignal): Promise<void> {
+  if (durationMs <= 0) return;
+  await new Promise<void>((resolve, reject) => {
+    const timeoutId = setTimeout(resolve, durationMs);
+    if (!signal) return;
+    const onAbort = () => {
+      clearTimeout(timeoutId);
+      reject(new DOMException("Aborted", "AbortError"));
+    };
+    if (signal.aborted) {
+      onAbort();
+      return;
+    }
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+function mergeSignals(primary: AbortSignal, secondary?: AbortSignal): AbortSignal {
+  if (!secondary) return primary;
+  if (typeof AbortSignal !== "undefined" && typeof AbortSignal.any === "function") {
+    return AbortSignal.any([primary, secondary]);
+  }
+  const controller = new AbortController();
+  const abortFrom = () => controller.abort();
+  if (primary.aborted || secondary.aborted) {
+    controller.abort();
+  } else {
+    primary.addEventListener("abort", abortFrom, { once: true });
+    secondary.addEventListener("abort", abortFrom, { once: true });
+  }
+  return controller.signal;
+}
+
+function shouldRetryMethod(
+  method: string,
+  headers: Headers,
+  retryPolicy: Required<APIRetryPolicy>,
+): boolean {
+  if (retryPolicy.maxAttempts <= 1) return false;
+  if (methodIsIdempotent(method)) return true;
+  const hasIdempotencyKey = Boolean(headers.get("X-Idempotency-Key")?.trim());
+  return hasIdempotencyKey || retryPolicy.allowRetryOnNonIdempotent;
+}
+
+export async function toAPIError(res: Response): Promise<APIError> {
+  const body = await parseJsonSafe(res);
+  const rawDetail = body?.detail;
+  const requestId = res.headers.get("x-request-id");
+  const details =
+    requestId && body && typeof body === "object"
+      ? { ...(body as Record<string, unknown>), request_id: requestId }
+      : body;
+  return {
+    message:
+      typeof rawDetail === "string"
+        ? rawDetail
+        : typeof rawDetail?.message === "string"
+          ? rawDetail.message
+          : body?.message ?? `Request failed: ${res.status}`,
+    status: res.status,
+    details,
+  };
+}
+
+export async function fetchRaw(path: string, init?: APIRequestInit): Promise<Response> {
+  const requestId = resolveRequestId(init?.requestId);
+  const method = methodFromInit(init);
+  const isFormDataBody = typeof FormData !== "undefined" && init?.body instanceof FormData;
+  const headers = normalizeHeaders(init?.headers);
+  if (!isFormDataBody && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (init?.idempotencyKey?.trim() && !headers.has("X-Idempotency-Key")) {
+    headers.set("X-Idempotency-Key", init.idempotencyKey.trim());
+  }
+  if (!headers.has("X-Request-Id")) {
+    headers.set("X-Request-Id", requestId);
+  }
+  if (
+    method !== "GET" &&
+    method !== "HEAD" &&
+    method !== "OPTIONS" &&
+    !headers.has(INTERNAL_CSRF_HEADER)
+  ) {
+    headers.set(INTERNAL_CSRF_HEADER, INTERNAL_CSRF_VALUE);
+  }
+
+  const retryPolicy = defaultRetryPolicy(init?.retry);
+  const canRetry = shouldRetryMethod(method, headers, retryPolicy);
+  const retryStatuses = new Set<number>(retryPolicy.retryOnStatuses);
+  const maxAttempts = canRetry ? retryPolicy.maxAttempts : 1;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const timeout = createTimeoutSignal(init?.timeoutMs ?? DEFAULT_API_TIMEOUT_MS);
+    const signal = mergeSignals(timeout.signal, init?.signal ?? undefined);
+    try {
+      const response = await fetch(path, {
+        ...init,
+        method,
+        signal,
+        headers,
+      });
+      if (!canRetry || !retryStatuses.has(response.status) || attempt >= maxAttempts) {
+        return response;
+      }
+      const retryAfterMs = parseRetryAfterMs(response.headers.get("Retry-After"));
+      const fallbackDelay = computeBackoffMs(attempt, retryPolicy);
+      await waitMs(retryAfterMs ?? fallbackDelay, init?.signal ?? undefined);
+      continue;
+    } catch (err: unknown) {
+      const isAbort = (err as { name?: string })?.name === "AbortError";
+      const timedOut = timeout.timedOut();
+      if (isAbort && !timedOut) {
+        throw err;
+      }
+      if (attempt >= maxAttempts) {
+        if (timedOut || isAbort) {
+          throw buildTimeoutError();
+        }
+        throw err;
+      }
+      const fallbackDelay = computeBackoffMs(attempt, retryPolicy);
+      await waitMs(fallbackDelay, init?.signal ?? undefined);
+    } finally {
+      timeout.cleanup();
+    }
+  }
+
+  throw buildTimeoutError();
+}
+
+export async function api<T>(path: string, init?: APIRequestInit): Promise<T> {
+  try {
+    const res = await fetchRaw(path, init);
+
+    if (!res.ok) {
+      const err = await toAPIError(res);
+      if (res.status === 401) {
+        const details = err.details as Record<string, unknown> | undefined;
+        const detailValue = details?.detail;
+        const detailCode =
+          detailValue && typeof detailValue === "object"
+            ? String((detailValue as Record<string, unknown>).code ?? "").toLowerCase()
+            : typeof details?.code === "string"
+              ? details.code.toLowerCase()
+              : "";
+        const detailText = typeof detailValue === "string" ? detailValue.toLowerCase() : "";
+        const isUnknownLocalAccount =
+          detailCode === "unknown_local_account" || detailText.includes("unknown local account");
+
+        if (isUnknownLocalAccount && typeof window !== "undefined") {
+          clearAuthToken();
+          if (!window.location.pathname.startsWith("/login")) {
+            window.location.assign("/login");
+          }
+        }
+      }
+      throw err;
+    }
+    return (await parseJsonSafe(res)) as T;
+  } catch (err: unknown) {
+    const e = err as { name?: string; status?: number };
+    if (e?.name === "AbortError" || e?.status === 504) {
+      throw e?.status === 504 ? err : buildTimeoutError();
+    }
+    throw err;
+  }
+}
+
+export function authHeader(token: string): Record<string, string> {
+  const normalized = token.trim();
+  if (!normalized) return {};
+  return { Authorization: `Bearer ${normalized}` };
+}
+
+export async function fetchBlob(path: string, init?: APIRequestInit): Promise<Blob> {
+  const res = await fetchRaw(path, init);
+  if (!res.ok) {
+    throw await toAPIError(res);
+  }
+  return res.blob();
+}

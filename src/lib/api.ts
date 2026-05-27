@@ -1,0 +1,248 @@
+// ── Re-exports from domain modules ───────────────────────────────
+// This barrel file ensures zero breaking changes for existing imports.
+// New code should import directly from "./api/domains/<domain>".
+
+export {
+  api,
+  authHeader,
+  getAPIErrorCode,
+  getAPIErrorDetail,
+  toAPIError,
+  fetchRaw,
+} from "./api/shared/http";
+export type { APIError } from "./api/shared/http";
+
+// Shared types
+export type { FsrsReviewRating, StudyKind, FullExamType } from "./api/types";
+
+// ── Auth domain ──────────────────────────────────────────────────
+export {
+  signupLocalAccount,
+  loginLocalAccount,
+  verifyLocalEmail,
+  forgotLocalPassword,
+  resendLocalVerification,
+  resetLocalPassword,
+} from "./api/domains/auth";
+export type {
+  AuthSignupResponse,
+  AuthLoginResponse,
+  AuthVerifyEmailResponse,
+  AuthForgotPasswordResponse,
+  AuthResendVerificationResponse,
+  AuthResetPasswordResponse,
+} from "./api/domains/auth";
+
+// ── Operational domain ───────────────────────────────────────────
+export {
+  createOperationalNote,
+  listOperationalNotes,
+  getTurboAreaStats,
+  getOperationalTurboOverview,
+  getOperationalStreak,
+  getOperationalTurboNext,
+  submitOperationalTurboReview,
+  fetchTurboIntervalPreview,
+  startOperationalTurboSession,
+  submitOperationalTurboSessionAction,
+  navigateOperationalTurboSession,
+  repeatOperationalTurboSession,
+  getOperationalTurboSessionDailyCompletedCards,
+  presignOperationalAttachment,
+  putOperationalAttachmentBinary,
+  getOperationalAttachmentDownloadUrl,
+  isProtectedOperationalAttachmentUrl,
+  fetchProtectedOperationalAttachmentBlob,
+  resolveOperationalAttachmentDisplayUrl,
+  deleteOperationalNote,
+  updateOperationalNote,
+  inferOperationalAttachmentContentType,
+} from "./api/domains/operational";
+export type {
+  OperationalSourceType,
+  OperationalQuestionOutcome,
+  OperationalSort,
+  OperationalAreaCode,
+  OperationalTurboResult,
+  OperationalNoteItem,
+  OperationalStreak,
+  OperationalTurboAreaStatsItem,
+  OperationalTurboAreaStats,
+  OperationalTurboReasonCode,
+  OperationalTurboReasonCount,
+  OperationalTurboAreaSummaryItem,
+  OperationalTurboCardContext,
+  OperationalTurboPriorityPreviewItem,
+  OperationalTurboOverview,
+  OperationalTurboReviewOut,
+  OperationalTurboReviewChange,
+  OperationalTurboSessionSnapshot,
+  OperationalTurboSessionDailyCardsItem,
+  OperationalTurboSessionDailyCards,
+  OperationalAttachmentPresignOut,
+  TurboIntervalPreview,
+  OperationalNoteUpdatePayload,
+} from "./api/domains/operational";
+
+// ── Misc domain ──────────────────────────────────────────────────
+export {
+  resetUserData,
+  getFsrsConfig,
+  putFsrsConfig,
+  getWeeklyTimeline,
+} from "./api/domains/misc";
+export type {
+  FsrsConfig,
+  WeeklyTimelineArea,
+  WeeklyTimelineWeek,
+  WeeklyTimeline,
+} from "./api/domains/misc";
+
+// ── Notifications domain ─────────────────────────────────────────
+export {
+  getVapidPublicKey,
+  saveNotificationSubscription,
+  deleteNotificationSubscription,
+  getNotificationSettings,
+  updateNotificationSettings,
+} from "./api/domains/notifications";
+export type { NotificationSettings } from "./api/domains/notifications";
+
+// ── Starter domain ───────────────────────────────────────────────
+export {
+  me,
+  listItems,
+  createItem,
+  submitReview,
+  planDaily,
+  getChangeSet,
+  acceptAll,
+  seedDemo,
+} from "./api/domains/starter";
+export type {
+  PlanDraft,
+  ChangeSet,
+  ItemKind,
+  StudyItem,
+  Rating,
+} from "./api/domains/starter";
+
+// ── Study Import domain ──────────────────────────────────────────
+export {
+  getProfile,
+  updateProfile,
+  createDirectedStudy,
+  listDirectedStudies,
+  updateDirectedStudy,
+  deleteDirectedStudy,
+  createStudyImportSession,
+  getBackgroundJob,
+  getStudyImportSession,
+  isBackgroundJobAccepted,
+  listStudyImportSessionQuestions,
+  updateStudyImportQuestionState,
+  waitForStudyImportSessionJob,
+  finalizeStudyImportSession,
+  getSessionOverrides,
+  setQuestionOverride,
+  deleteQuestionOverride,
+  listReviewTasks,
+  updateReviewTask,
+  autoRescheduleReviewTask,
+  previewAutoRescheduleReviewTask,
+  listStudyTopicConsistency,
+} from "./api/domains/study-import";
+export type {
+  UserProfile,
+  ImportSessionStatus,
+  ImportQuestionOption,
+  StudyImportQuestionState,
+  StudyImportQuestion,
+  StudyImportQuestionPage,
+  StudyImportSession,
+  BackgroundJob,
+  BackgroundJobAccepted,
+  BackgroundJobStatus,
+  StudyImportSessionCreateResult,
+  WrongQuestionSummary,
+  ReviewTask,
+  FinalizationResult,
+  DirectedStudyOut,
+  QuestionOverrideResult,
+  SessionOverridesResult,
+  DirectedStudyListItem,
+  DirectedStudyEditImpactPreview,
+  StudyTopicConsistency,
+} from "./api/domains/study-import";
+
+// ── Performance domain ───────────────────────────────────────────
+export {
+  getStudyPerformanceSummary,
+} from "./api/domains/performance";
+export type {
+  PerformanceTheme,
+  PerformanceAreaSummary,
+  PerformanceDiagnosisTheme,
+  PerformanceDiagnosis,
+  StudyPerformanceSummary,
+} from "./api/domains/performance";
+
+// ── Calendar domain ──────────────────────────────────────────────
+export {
+  listEvents,
+  createEvent,
+  deleteEvent,
+  getWorkload,
+  listScheduleSuggestions,
+  triggerScheduleSuggestion,
+  acceptScheduleSuggestionItem,
+  acceptScheduleSuggestionAll,
+  rejectScheduleSuggestion,
+  getUserState,
+  setUserState,
+  getSubjectsRank,
+  getAdaptiveSchedule,
+  rebalanceSchedule,
+} from "./api/domains/calendar";
+export type {
+  CalendarEventOut,
+  WorkloadDay,
+  ScheduleSuggestionItem,
+  ScheduleSuggestion,
+  AdaptiveUserState,
+  AdaptiveUserStateIn,
+  AdaptiveSubjectRank,
+  AdaptiveScheduleBlock,
+  AdaptiveScheduleGenerate,
+  AdaptiveRebalanceItem,
+  AdaptiveRebalanceOut,
+} from "./api/domains/calendar";
+
+// ── Question Analysis domain ─────────────────────────────────────
+export {
+  analyzeSimulationErrors,
+  startProgressiveSimulationErrors,
+  getProgressiveSimulationErrorsStatus,
+  streamProgressiveSimulationErrorsStatus,
+  analyzeQuestion,
+  getSimulationAnalysisResults,
+} from "./api/domains/question-analysis";
+export type {
+  AnalysisDifficultyLevel,
+  QuestionAnalysisDifferentialItem,
+  QuestionAnalysisHierarchy,
+  QuestionAnalysisConceptGraphNode,
+  QuestionAnalysisConceptGraphEdge,
+  QuestionAnalysisConceptGraph,
+  QuestionAnalysisLearningTarget,
+  QuestionAnalysisCognitiveProcess,
+  QuestionAnalysisDifficulty,
+  QuestionAnalysisErrorsByLevel,
+  QuestionCognitiveAnalysis,
+  CadernoDraftNotePayload,
+  CadernoDraft,
+  ExistingCadernoDraft,
+  QuestionAnalysisResult,
+  AnalyzeSimulationErrorsResponse,
+  AnalyzeSimulationErrorsProgressiveStatusItem,
+} from "./api/domains/question-analysis";

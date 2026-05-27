@@ -1,0 +1,122 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/lib/useToast";
+import { getProfile } from "@/lib/api";
+import { redeemKey } from "@/lib/api/domains/access-keys";
+import { getAPIErrorCode } from "@/lib/api/shared/http";
+import { resolveAuthenticatedLandingRoute } from "@/lib/initialGoalSetup";
+
+export default function AtivarAcessoPage() {
+  const router = useRouter();
+  const { showToast } = useToast();
+
+  const [keyCode, setKeyCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    getProfile("")
+      .then((profile) => {
+        if (profile.access_status === "active") {
+          resolveAuthenticatedLandingRoute("")
+            .then((route) => router.replace(route))
+            .catch(() => router.replace("/"));
+        } else {
+          setChecking(false);
+        }
+      })
+      .catch(() => router.replace("/login"));
+  }, [router]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const code = keyCode.trim().toUpperCase();
+    if (!code) return;
+    setError("");
+    setBusy(true);
+    try {
+      await redeemKey("", code);
+      showToast("Acesso ativado com sucesso!", "success");
+      const route = await resolveAuthenticatedLandingRoute("");
+      router.replace(route);
+    } catch (err: unknown) {
+      const errCode = getAPIErrorCode(err);
+      if (errCode === "already_active") {
+        router.replace("/");
+      } else if (errCode === "invalid_key") {
+        setError("Chave inválida ou já utilizada. Verifique e tente novamente.");
+      } else if (errCode === "access_key_rate_limited") {
+        setError("Muitas tentativas. Aguarde um pouco e tente novamente.");
+      } else {
+        setError("Erro ao ativar. Tente novamente em instantes.");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (checking) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-paper">
+        <div className="w-5 h-5 rounded-full border-2 border-muted border-t-ink animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-paper px-4">
+      <div className="w-full max-w-sm">
+        <div className="flex justify-center mb-6">
+          <div className="w-14 h-14 rounded-full bg-edge flex items-center justify-center">
+            <svg
+              className="w-7 h-7 text-ink"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <h1 className="text-xl font-semibold text-ink text-center mb-1">Ativar Acesso</h1>
+        <p className="text-sm text-muted text-center mb-6">
+          Digite a chave de acesso que recebeu do seu mentor
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            value={keyCode}
+            onChange={(e) => setKeyCode(e.target.value.toUpperCase())}
+            placeholder="KROS-XXXX-XXXX-XXXX-XXXX"
+            maxLength={24}
+            spellCheck={false}
+            autoComplete="off"
+            className="w-full px-3 py-2.5 rounded-md border border-edge bg-paper text-ink text-center text-base font-mono tracking-widest placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-ink/20"
+          />
+
+          {error && (
+            <p className="text-xs text-red-600 text-center">{error}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={busy || !keyCode.trim()}
+            className="w-full py-2.5 rounded-md bg-ink text-paper text-sm font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
+          >
+            {busy ? "Ativando..." : "Ativar"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}

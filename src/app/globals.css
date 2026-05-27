@@ -1,0 +1,235 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-paper: #FAFAF7;
+  --color-edge:  #E2E2DC;
+  --color-ink:   #1A1A1A;
+  --color-muted: #6B6B65;
+  --amber-tint:  #fdf6e3;
+  --range-fill:  #1A1A1A;
+  --range-rest:  #E2E2DC;
+  --range-thumb: #1A1A1A;
+
+  /* Area palette — matches tailwind.config.js area.* tokens */
+  --area-go:  #f472b6;
+  --area-ped: #2293cf;
+  --area-mp:  #f59e0b;
+  --area-cg:  #ef4444;
+  --area-cm:  #2fc767;
+  --area-ou:  #AEAEA8;
+  --area-full-exam: #0F4C5C;
+}
+
+.dark {
+  --color-paper: #141412;
+  --color-edge:  #2A2A26;
+  --color-ink:   #F0F0EC;
+  --color-muted: #8A8A84;
+  --amber-tint:  #2a2210;
+  --range-fill:  #F0F0EC;
+  --range-rest:  #D6D3C8;
+  --range-thumb: #F0F0EC;
+}
+
+@layer base {
+  html,
+  body {
+    overscroll-behavior-x: none;
+  }
+
+  body {
+    @apply bg-paper text-ink font-serif leading-relaxed;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "clig" 0;
+  }
+
+  hr {
+    @apply border-edge;
+  }
+
+  input,
+  select,
+  textarea {
+    @apply border border-edge bg-paper rounded-none outline-none px-2 py-1;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    @apply border-ink;
+  }
+}
+
+/* ── Range slider — cross-browser consistent ─────────────────────────────── */
+/* Reset the base input rule that incorrectly adds border/bg/padding */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  border: none !important;
+  background: transparent; /* fill gradient applied via inline style in JS */
+  padding: 0 !important;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 3px;
+  background: var(--track-bg, var(--range-rest, var(--color-edge)));
+}
+input[type="range"]::-moz-range-track {
+  height: 3px;
+  background: var(--track-bg, var(--range-rest, var(--color-edge)));
+}
+/* Thumb — same size in all browsers so the ball never goes past the fill */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--range-thumb, var(--color-ink));
+  border: none;
+  margin-top: -5px; /* center thumb on the 3 px track */
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--range-thumb, var(--color-ink));
+  border: none;
+  cursor: pointer;
+}
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Prevent mobile browser focus-zoom on text/number fields.
+   Excludes date/time inputs — they open a native picker (no keyboard), no zoom risk. */
+@media (max-width: 768px) {
+  input:not([type="date"]):not([type="time"]):not([type="month"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Disable long-press text selection/callout on touch surfaces like calendar cells */
+.touch-no-select,
+.touch-no-select *:not(input):not(textarea):not(select):not([contenteditable="true"]) {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Temporary lock while dragging on touch to avoid accidental scroll/selection */
+.touch-drag-lock,
+.touch-drag-lock * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+.touch-drag-lock {
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+.modal-backdrop {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem) !important;
+}
+
+.drawer-enter {
+  animation: drawer-slide-in 0.2s ease-out;
+}
+@keyframes drawer-slide-in {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes toast-enter {
+  from { transform: translateY(10px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.toast-enter { animation: toast-enter 150ms ease-out; }
+
+/* Tela: charts fora do viewport mas montados com largura real (não usar display:none) */
+@media screen {
+  [data-print-charts] {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    width: 700px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+/* Print: posicionamento normal no fluxo */
+@media print {
+  [data-print-charts] {
+    position: static;
+    width: auto;
+    overflow: visible;
+    pointer-events: auto;
+    z-index: auto;
+  }
+
+  /* Forçar modo claro — evita fundo preto no dark mode */
+  :root {
+    --color-paper: #FAFAF7;
+    --color-edge:  #E2E2DC;
+    --color-ink:   #1A1A1A;
+    --color-muted: #6B6B65;
+  }
+
+  body {
+    background: #FAFAF7 !important;
+    color: #1A1A1A !important;
+  }
+
+  /* Esconder elementos de navegação e interação */
+  nav,
+  aside,
+  [data-nav],
+  [aria-label="Menu"],
+  [aria-label="Voltar"] {
+    display: none !important;
+  }
+
+  /* Remove margem lateral da sidebar no desktop */
+  .ml-52 { margin-left: 0 !important; }
+
+  /* Conteúdo ocupa a largura total da página (remove max-w-lg e px do main) */
+  main {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Evitar quebra de página apenas em seções pequenas marcadas */
+  [data-no-break] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Margens A4 */
+  @page {
+    margin: 1.5cm 1.5cm;
+  }
+}
+
+@keyframes pulse-penumbra {
+  0%   { box-shadow: 0 0 0 0    color-mix(in srgb, var(--color-ink) 50%, transparent); transform: scale(1);    }
+  12%  { box-shadow: 0 0 0 14px color-mix(in srgb, var(--color-ink) 20%, transparent); transform: scale(1.1);  }
+  24%  { box-shadow: 0 0 0 0    transparent;                                            transform: scale(1);    }
+  36%  { box-shadow: 0 0 0 8px  color-mix(in srgb, var(--color-ink) 15%, transparent); transform: scale(1.05); }
+  62%  { box-shadow: 0 0 0 0    transparent;                                            transform: scale(1);    }
+  100% { box-shadow: 0 0 0 0    transparent;                                            transform: scale(1);    }
+}

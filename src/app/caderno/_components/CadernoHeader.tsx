@@ -1,0 +1,61 @@
+"use client";
+
+import Link from "next/link";
+import { NAV_OPEN_EVENT } from "@/components/Nav";
+import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
+import { IconChevron } from "./CadernoSkeletons";
+import { IconMenu } from "../../cronograma/_components/CronogramaIcons";
+
+interface CadernoHeaderProps {
+  tab: "registro" | "pesquisar";
+  onToggleTab: () => void;
+}
+
+export function CadernoHeader({ tab, onToggleTab }: CadernoHeaderProps) {
+  const isDesktopNavigation = useDesktopNavigationMode();
+
+  return (
+    <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
+      <div className="flex justify-start">
+        {!isDesktopNavigation ? (
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
+            className="p-1 -ml-1 text-ink shrink-0"
+            aria-label="Menu"
+          >
+            <IconMenu className="w-5 h-5" />
+          </button>
+        ) : (
+          <span className="block h-7 w-7" aria-hidden="true" />
+        )}
+      </div>
+      <div data-caderno-tab-center="true" className="relative flex justify-center">
+        <button
+          type="button"
+          data-caderno-tab-toggle="true"
+          onClick={onToggleTab}
+          className="inline-flex max-w-[min(78vw,22rem)] items-center justify-center gap-1.5 bg-transparent px-1 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.08em] text-ink"
+          aria-label="Alternar modo do caderno"
+        >
+          <span data-caderno-tab-label="true" className="truncate">
+            {tab === "registro" ? "REGISTRAR" : "PESQUISAR"}
+          </span>
+          <IconChevron
+            data-caderno-tab-chevron="true"
+            className={`h-3.5 w-3.5 shrink-0 transition-transform ${tab === "pesquisar" ? "rotate-180" : ""}`}
+          />
+        </button>
+      </div>
+      <Link
+        href="/cards-adaptativos"
+        className="p-1 -mr-1 flex items-center justify-end text-muted hover:text-ink shrink-0"
+        aria-label="Voltar"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </Link>
+    </div>
+  );
+}
