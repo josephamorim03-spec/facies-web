@@ -12,8 +12,8 @@ function normalizeSessionId(raw: string | null | undefined): string | null {
   return value;
 }
 
-export function buildStudyImportRuntimePath(sessionId: string): string {
-  return `/agenda-operacional/importar/${encodeURIComponent(sessionId)}`;
+export function buildStudyImportRuntimePath(_sessionId: string): string {
+  return "/banco-de-questoes";
 }
 
 export function isStudyImportRuntimePath(pathname: string | null | undefined): boolean {

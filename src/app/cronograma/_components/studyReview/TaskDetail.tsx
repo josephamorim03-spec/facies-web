@@ -327,7 +327,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
         </p>
         {editableStudy?.import_session_id && (
           <a
-            href={`/agenda-operacional/importar/${editableStudy.import_session_id}/resultados`}
+            href="/banco-de-questoes"
             className="absolute bottom-1.5 right-1.5 inline-flex items-center justify-center text-muted hover:text-ink"
             title="Ver correção do simulado"
           >

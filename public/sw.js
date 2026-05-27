@@ -6,9 +6,6 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-// Keep a fetch handler so the app remains installable as a PWA.
-self.addEventListener("fetch", () => {});
-
 self.addEventListener("push", (event) => {
   const data = event.data?.json() ?? {};
   event.waitUntil(

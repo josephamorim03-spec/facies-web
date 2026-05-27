@@ -200,7 +200,7 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
       </p>
       {study.import_session_id && (
         <a
-          href={`/agenda-operacional/importar/${study.import_session_id}/resultados`}
+          href="/banco-de-questoes"
           className="absolute bottom-1.5 right-1.5 inline-flex items-center justify-center text-muted hover:text-ink"
           title="Ver correção"
         >
