@@ -107,6 +107,7 @@ export type ReviewTask = {
   status: string;
   expected_questions: number;
   priority_score: number;
+  knowledge_node_id: string | null;
 };
 
 export type FinalizationResult = {
@@ -218,7 +219,7 @@ export async function updateProfile(
 export async function createDirectedStudy(
   token: string,
   payload: {
-    topic?: { area: string; theme: string; subtheme?: string | null };
+    topic?: { area: string; theme: string; subtheme?: string | null; knowledge_node_id?: string | null };
     total_questions: number;
     correct_questions: number;
     user_weight?: number;

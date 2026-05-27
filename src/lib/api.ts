@@ -179,6 +179,7 @@ export type {
 export {
   browseQuestionBankTopics,
   browseQuestionBankQuestions,
+  previewQuestionBankAvailability,
   createQuestionBankSession,
   getQuestionBankSession,
   recordQuestionBankAttempt,
@@ -190,8 +191,10 @@ export type {
   QuestionBankMode,
   QuestionBankResolutionMode,
   QuestionBankSessionStatus,
+  QuestionBankAnswerStatus,
   QuestionBankNode,
   QuestionBankTopic,
+  QuestionBankAvailability,
   QuestionBankQuestion,
   QuestionBankSessionItem,
   QuestionBankSession,
@@ -270,4 +273,3 @@ export type {
   AnalyzeSimulationErrorsResponse,
   AnalyzeSimulationErrorsProgressiveStatusItem,
 } from "./api/domains/question-analysis";
-

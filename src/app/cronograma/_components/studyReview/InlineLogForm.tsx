@@ -23,6 +23,17 @@ export function InlineLogForm({ task, token, onDone, onCancel, logDateISO }: {
   const [nextDate, setNextDate] = useState<string | null>(null);
   const submittingDots = useAnimatedDots(submitting, 400);
 
+  function openQuestionBankReview() {
+    const params = new URLSearchParams({
+      review_task_id: task.task_id,
+      date: logDateISO || task.due_date,
+      area: task.area,
+      theme: task.theme,
+      expected_questions: String(Math.max(1, Number(task.expected_questions) || 1)),
+    });
+    router.push(`/banco-de-questoes?${params.toString()}`);
+  }
+
   async function submit() {
     setErr("");
     const performedAt = resolvePerformedAtISO(logDateISO);
@@ -77,7 +88,7 @@ export function InlineLogForm({ task, token, onDone, onCancel, logDateISO }: {
       <div className="flex justify-center">
         <button
           type="button"
-          onClick={() => router.push("/banco-de-questoes")}
+          onClick={openQuestionBankReview}
           className="text-xs border border-edge text-muted hover:border-ink px-2 py-0.5"
         >
           Resolver questoes do banco

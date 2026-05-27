@@ -5,6 +5,7 @@ export type QuestionBankOption = "A" | "B" | "C" | "D" | "E";
 export type QuestionBankMode = "adaptive" | "by_topic" | "by_exam";
 export type QuestionBankResolutionMode = "training" | "simulation";
 export type QuestionBankSessionStatus = "active" | "finalized" | "invalidated";
+export type QuestionBankAnswerStatus = "unanswered" | "answered" | "all";
 export type QuestionBankNode = {
   knowledge_node_id: string;
   node_code: string | null;
@@ -34,6 +35,14 @@ export type QuestionBankTopic = {
   adaptive_weight: number;
   adaptive_weight_score: number;
   adaptive_weight_factors: Record<string, number>;
+};
+export type QuestionBankAvailability = {
+  total_count: number;
+  answered_count: number;
+  unanswered_count: number;
+  available_count: number;
+  max_selectable: number;
+  answer_status: QuestionBankAnswerStatus;
 };
 export type QuestionBankQuestion = {
   id: string;
@@ -100,11 +109,15 @@ export type QuestionBankSessionCreatePayload = {
   resolution_mode?: QuestionBankResolutionMode;
   question_ids?: string[];
   knowledge_node_ids?: string[];
+  area?: string;
+  search?: string;
+  institution?: string;
   board_codes?: string[];
   year_from?: number;
   year_to?: number;
   limit?: number;
   only_unanswered?: boolean;
+  answer_status?: QuestionBankAnswerStatus;
   performed_at?: string;
   review_task_id?: string;
 };
@@ -117,26 +130,51 @@ function appendArrayParams(q: URLSearchParams, key: string, values?: string[]) {
 
 export async function browseQuestionBankTopics(
   token: string,
-  params: { search?: string; node_type?: string; board_codes?: string[]; limit?: number } = {},
+  params: { area?: string; search?: string; institution?: string; node_type?: string; board_codes?: string[]; year_from?: number; year_to?: number; limit?: number } = {},
 ): Promise<QuestionBankTopic[]> {
   const q = new URLSearchParams();
+  if (params.area?.trim()) q.set("area", params.area.trim());
   if (params.search?.trim()) q.set("search", params.search.trim());
+  if (params.institution?.trim()) q.set("institution", params.institution.trim());
   if (params.node_type?.trim()) q.set("node_type", params.node_type.trim());
+  if (params.year_from) q.set("year_from", String(params.year_from));
+  if (params.year_to) q.set("year_to", String(params.year_to));
   if (params.limit) q.set("limit", String(params.limit));
   appendArrayParams(q, "board_codes", params.board_codes);
   return api<QuestionBankTopic[]>(`/api/question-bank/topics${q.toString() ? `?${q.toString()}` : ""}`, { headers: authHeader(token) });
 }
 
+export async function previewQuestionBankAvailability(
+  token: string,
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean } = {},
+): Promise<QuestionBankAvailability> {
+  const q = new URLSearchParams();
+  appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
+  appendArrayParams(q, "board_codes", params.board_codes);
+  if (params.area?.trim()) q.set("area", params.area.trim());
+  if (params.search?.trim()) q.set("search", params.search.trim());
+  if (params.institution?.trim()) q.set("institution", params.institution.trim());
+  if (params.year_from) q.set("year_from", String(params.year_from));
+  if (params.year_to) q.set("year_to", String(params.year_to));
+  if (params.answer_status) q.set("answer_status", params.answer_status);
+  if (params.only_unanswered !== undefined) q.set("only_unanswered", params.only_unanswered ? "true" : "false");
+  return api<QuestionBankAvailability>(`/api/question-bank/availability${q.toString() ? `?${q.toString()}` : ""}`, { headers: authHeader(token) });
+}
+
 export async function browseQuestionBankQuestions(
   token: string,
-  params: { knowledge_node_ids?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; limit?: number; only_unanswered?: boolean } = {},
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; limit?: number; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean } = {},
 ): Promise<QuestionBankQuestion[]> {
   const q = new URLSearchParams();
   appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
   appendArrayParams(q, "board_codes", params.board_codes);
+  if (params.area?.trim()) q.set("area", params.area.trim());
+  if (params.search?.trim()) q.set("search", params.search.trim());
+  if (params.institution?.trim()) q.set("institution", params.institution.trim());
   if (params.year_from) q.set("year_from", String(params.year_from));
   if (params.year_to) q.set("year_to", String(params.year_to));
   if (params.limit) q.set("limit", String(params.limit));
+  if (params.answer_status) q.set("answer_status", params.answer_status);
   if (params.only_unanswered !== undefined) q.set("only_unanswered", params.only_unanswered ? "true" : "false");
   return api<QuestionBankQuestion[]>(`/api/question-bank/questions${q.toString() ? `?${q.toString()}` : ""}`, { headers: authHeader(token) });
 }
