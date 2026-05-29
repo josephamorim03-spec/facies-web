@@ -12,10 +12,12 @@ import {
   previewQuestionBankAvailability,
   recordQuestionBankAttempt,
   recordQuestionBankCorrection,
+  reportQuestionProblem,
   type QuestionBankAnswerStatus,
   type QuestionBankAvailability,
   type QuestionBankOption,
   type QuestionBankQuestion,
+  type QuestionBankReportType,
   type QuestionBankResolutionMode,
   type QuestionBankSession,
   type QuestionBankTopic,
@@ -133,6 +135,11 @@ function BancoDeQuestoesContent() {
   const [result, setResult] = useState<string | null>(null);
   const [revealedPositions, setRevealedPositions] = useState<Record<number, boolean>>({});
   const [correctionDrafts, setCorrectionDrafts] = useState<Record<number, string>>({});
+  const [reportingQuestionId, setReportingQuestionId] = useState<string | null>(null);
+  const [reportType, setReportType] = useState<QuestionBankReportType>("error");
+  const [reportReason, setReportReason] = useState("");
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportDone, setReportDone] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const context = parseEntryContext(new URLSearchParams(routeSearchKey));
@@ -334,6 +341,21 @@ function BancoDeQuestoesContent() {
       setError(err instanceof Error ? err.message : "Nao foi possivel finalizar.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function submitReport(questionId: string) {
+    if (!token) return;
+    setReportBusy(true);
+    try {
+      await reportQuestionProblem(token, questionId, { report_type: reportType, report_reason: reportReason.trim() || undefined });
+      setReportDone(prev => ({ ...prev, [questionId]: true }));
+      setReportingQuestionId(null);
+      setReportReason("");
+    } catch {
+      // silently ignore — user can try again
+    } finally {
+      setReportBusy(false);
     }
   }
 
@@ -839,6 +861,63 @@ function BancoDeQuestoesContent() {
                           >
                             Salvar correcao
                           </button>
+                        </div>
+                      )}
+                      <div className="mt-4 flex justify-end">
+                        {reportDone[item.question_id] ? (
+                          <span className="text-xs text-muted">Problema reportado</span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setReportingQuestionId(reportingQuestionId === item.question_id ? null : item.question_id)}
+                            className="text-xs text-muted/60 transition hover:text-muted"
+                            title="Informar problema nesta questao"
+                          >
+                            ⚑ Informar problema
+                          </button>
+                        )}
+                      </div>
+                      {reportingQuestionId === item.question_id && !reportDone[item.question_id] && (
+                        <div className="mt-2 border border-edge p-3">
+                          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Qual o problema?</p>
+                          <div className="mb-2 flex flex-wrap gap-1.5">
+                            {(["error", "unclear", "outdated", "other"] as QuestionBankReportType[]).map(type => {
+                              const labels: Record<QuestionBankReportType, string> = { error: "Erro no gabarito", unclear: "Enunciado confuso", outdated: "Desatualizada", other: "Outro" };
+                              return (
+                                <button
+                                  key={type}
+                                  type="button"
+                                  onClick={() => setReportType(type)}
+                                  className={`border px-2 py-1 text-xs transition ${reportType === type ? "border-ink bg-[var(--amber-tint)]" : "border-edge hover:border-ink"}`}
+                                >
+                                  {labels[type]}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <textarea
+                            value={reportReason}
+                            onChange={event => setReportReason(event.target.value)}
+                            placeholder="Descreva o problema (opcional)"
+                            className="min-h-14 w-full resize-none border border-edge p-2 text-xs outline-none focus:border-ink"
+                          />
+                          <div className="mt-2 flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => submitReport(item.question_id)}
+                              disabled={reportBusy}
+                              className="bg-ink px-3 py-1.5 text-xs font-semibold text-paper disabled:opacity-50"
+                            >
+                              Enviar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setReportingQuestionId(null)}
+                              className="border border-edge px-3 py-1.5 text-xs hover:border-ink"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
                         </div>
                       )}
                     </article>

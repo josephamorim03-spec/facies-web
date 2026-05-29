@@ -209,3 +209,16 @@ export async function finalizeQuestionBankSession(token: string, sessionId: stri
   const q = new URLSearchParams({ confirm_unanswered: options?.confirm_unanswered ? "true" : "false" });
   return api<QuestionBankFinalizeResult>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/finalize?${q.toString()}`, { method: "POST", headers: authHeader(token) });
 }
+
+export type QuestionBankReportType = "error" | "unclear" | "outdated" | "other";
+
+export async function reportQuestionProblem(
+  token: string,
+  questionId: string,
+  payload: { report_type?: QuestionBankReportType; report_reason?: string },
+): Promise<{ reported: boolean; report_id: string }> {
+  return api<{ reported: boolean; report_id: string }>(
+    `/api/question-bank/questions/${encodeURIComponent(questionId)}/report`,
+    { method: "POST", headers: authHeader(token), body: JSON.stringify(payload) },
+  );
+}

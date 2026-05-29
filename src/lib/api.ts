@@ -185,6 +185,7 @@ export {
   recordQuestionBankAttempt,
   recordQuestionBankCorrection,
   finalizeQuestionBankSession,
+  reportQuestionProblem,
 } from "./api/domains/question-bank";
 export type {
   QuestionBankOption,
@@ -200,6 +201,7 @@ export type {
   QuestionBankSession,
   QuestionBankFinalizeResult,
   QuestionBankSessionCreatePayload,
+  QuestionBankReportType,
 } from "./api/domains/question-bank";
 
 // Performance domain
