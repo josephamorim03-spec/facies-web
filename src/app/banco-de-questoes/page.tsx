@@ -343,7 +343,7 @@ function BancoDeQuestoesContent() {
         <section className="border border-edge bg-paper" aria-label="Filtros do banco de questoes">
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-12">
             <label className="block border-b border-r border-edge p-3 text-xs font-medium text-muted xl:col-span-1">
-              Grande Área
+              Grande Árdea
               <select
                 value={area}
                 onChange={(event) => { setArea(event.target.value); clearTopicForFilterChange(); }}
