@@ -340,126 +340,135 @@ function BancoDeQuestoesContent() {
           </div>
         </header>
 
-        <section className="border border-edge bg-paper" aria-label="Filtros do banco de questoes">
-          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-12">
-            <label className="block border-b border-r border-edge p-3 text-xs font-medium text-muted xl:col-span-1">
-              Grande Árdea
+        <section className="border border-edge bg-paper p-5" aria-label="Filtros do banco de questoes">
+          <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted">Grande Área</span>
               <select
                 value={area}
                 onChange={(event) => { setArea(event.target.value); clearTopicForFilterChange(); }}
-                className="mt-1 w-full bg-paper py-1.5 text-sm text-ink outline-none focus:text-ink"
+                className="border-b border-edge bg-paper py-1.5 pr-6 text-sm text-ink outline-none focus:border-ink"
               >
                 {AREAS.map((item) => (
                   <option key={item || "all"} value={item}>{item || "Todas"}</option>
                 ))}
               </select>
-            </label>
-            <label className="block border-b border-r border-edge p-3 text-xs font-medium text-muted md:col-span-2 xl:col-span-3">
-              Assunto
+            </div>
+            <div className="flex min-w-[16rem] flex-1 flex-col gap-1">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted">Assunto</span>
               <input
                 value={search}
                 onChange={(event) => { setSearch(event.target.value); clearTopicForFilterChange(); }}
-                placeholder="Tema ou microcompetencia"
-                className="mt-1 w-full bg-paper py-1.5 text-sm text-ink outline-none placeholder:text-muted/70 focus:text-ink"
+                placeholder="Tema ou microcompetência"
+                className="border-b border-edge bg-paper py-1.5 text-sm text-ink outline-none placeholder:text-muted/60 focus:border-ink"
               />
-            </label>
-            <label className="block border-b border-r border-edge p-3 text-xs font-medium text-muted md:col-span-2 xl:col-span-2">
-              Instituição
-              <input
-                value={institution}
-                onChange={(event) => { setInstitution(event.target.value); clearTopicForFilterChange(); }}
-                placeholder="USP, UNIFESP..."
-                className="mt-1 w-full bg-paper py-1.5 text-sm text-ink outline-none placeholder:text-muted/70 focus:text-ink"
-              />
-            </label>
-            <label className="block border-b border-r border-edge p-3 text-xs font-medium text-muted xl:col-span-1">
-              Banca
-              <input
-                value={boardCode}
-                onChange={(event) => { setBoardCode(event.target.value.toUpperCase()); clearTopicForFilterChange(); }}
-                placeholder="SMK"
-                className="mt-1 w-full bg-paper py-1.5 text-sm text-ink outline-none placeholder:text-muted/70 focus:text-ink"
-              />
-            </label>
-            <label className="block border-b border-r border-edge p-3 text-xs font-medium text-muted xl:col-span-1">
-              Ano inicial
-              <input
-                type="number"
-                min={1900}
-                max={2026}
-                value={yearFrom}
-                onChange={(event) => { setYearFrom(event.target.value); clearTopicForFilterChange(); }}
-                className="mt-1 w-full bg-paper py-1.5 text-sm text-ink outline-none focus:text-ink"
-              />
-            </label>
-            <label className="block border-b border-r border-edge p-3 text-xs font-medium text-muted xl:col-span-1">
-              Ano final
-              <input
-                type="number"
-                min={1900}
-                max={2026}
-                value={yearTo}
-                onChange={(event) => { setYearTo(event.target.value); clearTopicForFilterChange(); }}
-                className="mt-1 w-full bg-paper py-1.5 text-sm text-ink outline-none focus:text-ink"
-              />
-            </label>
-            <label className="block border-b border-r border-edge p-3 text-xs font-medium text-muted xl:col-span-1">
-              Realização
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted">Realização</span>
               <select
                 value={answerStatus}
                 onChange={(event) => { setAnswerStatus(event.target.value as QuestionBankAnswerStatus); setQuestions([]); }}
-                className="mt-1 w-full bg-paper py-1.5 text-sm text-ink outline-none focus:text-ink"
+                className="border-b border-edge bg-paper py-1.5 pr-6 text-sm text-ink outline-none focus:border-ink"
               >
                 <option value="unanswered">Não realizadas</option>
                 <option value="answered">Já realizadas</option>
                 <option value="all">Todas</option>
               </select>
-            </label>
-            <label className="block border-b border-r border-edge p-3 text-xs font-medium text-muted xl:col-span-1">
-              Modo
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted">Modo</span>
               <select
                 value={resolutionMode}
                 onChange={(event) => setResolutionMode(event.target.value as QuestionBankResolutionMode)}
-                className="mt-1 w-full bg-paper py-1.5 text-sm text-ink outline-none focus:text-ink"
+                className="border-b border-edge bg-paper py-1.5 pr-6 text-sm text-ink outline-none focus:border-ink"
               >
                 <option value="simulation">Simulado</option>
                 <option value="training">Treino</option>
               </select>
-            </label>
-            <label className="block border-b border-r border-edge p-3 text-xs font-medium text-muted xl:col-span-1">
-              Quantidade
+            </div>
+            <div className="flex w-20 flex-col gap-1">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted">Quantidade</span>
               <input
                 type="number"
                 min={1}
                 max={maxSelectable}
                 value={limit}
                 onChange={(event) => setLimit(Math.max(1, Math.min(maxSelectable, Number(event.target.value) || 1)))}
-                className="mt-1 w-full bg-paper py-1.5 text-sm text-ink outline-none focus:text-ink"
+                className="border-b border-edge bg-paper py-1.5 text-sm text-ink outline-none focus:border-ink"
               />
-            </label>
-            <div className="border-b border-r border-edge p-3 md:col-span-2 xl:col-span-2">
-              <p className="text-xs text-muted">Preview</p>
-              <p className="mt-1 text-lg font-semibold">{loadingPreview ? "Calculando..." : availabilityText(availability)}</p>
+            </div>
+          </div>
+
+          <div className="my-4 border-b border-edge" />
+
+          <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
+            <div className="flex min-w-[12rem] flex-col gap-1">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted">Instituição</span>
+              <input
+                value={institution}
+                onChange={(event) => { setInstitution(event.target.value); clearTopicForFilterChange(); }}
+                placeholder="USP, UNIFESP..."
+                className="border-b border-edge bg-paper py-1.5 text-sm text-ink outline-none placeholder:text-muted/60 focus:border-ink"
+              />
+            </div>
+            <div className="flex w-24 flex-col gap-1">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted">Banca</span>
+              <input
+                value={boardCode}
+                onChange={(event) => { setBoardCode(event.target.value.toUpperCase()); clearTopicForFilterChange(); }}
+                placeholder="SMK"
+                className="border-b border-edge bg-paper py-1.5 text-sm text-ink outline-none placeholder:text-muted/60 focus:border-ink"
+              />
+            </div>
+            <div className="flex w-24 flex-col gap-1">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted">Ano inicial</span>
+              <input
+                type="number"
+                min={1900}
+                max={2026}
+                value={yearFrom}
+                onChange={(event) => { setYearFrom(event.target.value); clearTopicForFilterChange(); }}
+                className="border-b border-edge bg-paper py-1.5 text-sm text-ink outline-none focus:border-ink"
+              />
+            </div>
+            <div className="flex w-24 flex-col gap-1">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted">Ano final</span>
+              <input
+                type="number"
+                min={1900}
+                max={2026}
+                value={yearTo}
+                onChange={(event) => { setYearTo(event.target.value); clearTopicForFilterChange(); }}
+                className="border-b border-edge bg-paper py-1.5 text-sm text-ink outline-none focus:border-ink"
+              />
+            </div>
+          </div>
+
+          <div className="my-4 border-b border-edge" />
+
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold">{loadingPreview ? "Calculando..." : availabilityText(availability)}</p>
               {availability && (
-                <p className="mt-1 text-xs text-muted">
-                  {availability.unanswered_count} não realizadas - {availability.answered_count} já realizadas
+                <p className="mt-0.5 text-xs text-muted">
+                  {availability.unanswered_count} não realizadas · {availability.answered_count} já realizadas
                 </p>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2 border-b border-edge p-3 md:col-span-2 xl:col-span-2">
+            <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => void previewQuestions()}
                 disabled={busy || !availability || availability.available_count <= 0}
-                className="border border-ink px-3 py-2 text-sm font-semibold disabled:opacity-50"
+                className="border border-ink px-4 py-2 text-sm font-semibold disabled:opacity-50"
               >
-                Ver previa
+                Ver prévia
               </button>
               <button
                 type="button"
                 onClick={startSession}
                 disabled={busy || !availability || availability.available_count <= 0}
-                className="bg-ink px-3 py-2 text-sm font-semibold text-paper disabled:opacity-50"
+                className="bg-ink px-4 py-2 text-sm font-semibold text-paper disabled:opacity-50"
               >
                 {startLabel}
               </button>
