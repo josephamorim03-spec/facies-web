@@ -8,9 +8,13 @@ export type QuestionBankSessionStatus = "active" | "finalized" | "invalidated";
 export type QuestionBankAnswerStatus = "unanswered" | "answered" | "all";
 export type QuestionBankNode = {
   knowledge_node_id: string;
+  parent_knowledge_node_id: string | null;
   node_code: string | null;
   node_name: string | null;
   node_type: string | null;
+  node_path: string[];
+  path_label: string | null;
+  depth: number | null;
   role: string | null;
   weight: number | null;
   confidence: number | null;
@@ -19,9 +23,13 @@ export type QuestionBankNode = {
 };
 export type QuestionBankTopic = {
   knowledge_node_id: string;
+  parent_knowledge_node_id: string | null;
   node_code: string | null;
   node_name: string;
   node_type: string | null;
+  node_path: string[];
+  path_label: string | null;
+  depth: number | null;
   description: string | null;
   question_count: number;
   primary_question_count: number;

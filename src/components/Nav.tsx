@@ -315,7 +315,7 @@ export default function Nav() {
         <div className="fixed inset-0 z-50" onClick={() => setDrawerOpen(false)}>
           <div className="absolute inset-0 bg-black/30" />
           <nav
-            className="absolute top-0 left-0 h-full w-64 bg-paper border-r border-edge shadow-sm p-6 drawer-enter flex flex-col"
+            className="drawer-enter absolute left-0 top-0 flex h-full w-64 flex-col border-r border-edge bg-paper p-6 shadow-[var(--soft-shadow)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-6 flex items-center">
@@ -340,8 +340,10 @@ export default function Nav() {
                         data-nav-surface="drawer"
                         data-nav-item-href={href}
                         data-nav-active={active ? "true" : "false"}
-                        className={`flex items-center gap-3 py-2.5 px-2 rounded-sm text-sm font-serif whitespace-nowrap leading-tight transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 ${
-                          active ? "text-ink font-semibold" : "text-muted hover:text-ink"
+                        className={`flex items-center gap-3 whitespace-nowrap rounded-xl border px-3 py-2.5 text-sm font-medium leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                          active
+                            ? "border-primary bg-surface text-ink shadow-sm"
+                            : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink"
                         }`}
                       >
                         <Icon className="w-5 h-5 shrink-0" />
@@ -357,7 +359,7 @@ export default function Nav() {
                 <button
                   type="button"
                   onClick={requestLogout}
-                  className="py-2.5 text-xs sm:text-sm font-serif text-muted hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 rounded-sm"
+                  className="rounded-xl px-2 py-2.5 text-xs text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:text-sm"
                 >
                   Sair da conta
                 </button>
@@ -411,9 +413,9 @@ export function SidebarNav({ isDesktopNavigation }: { isDesktopNavigation: boole
 
   return (
     <>
-      <aside className="flex flex-col fixed inset-y-0 left-0 w-52 border-r border-edge bg-paper z-30">
+      <aside className="fixed inset-y-0 left-0 z-30 flex w-52 flex-col border-r border-edge bg-paper">
         {/* Wordmark */}
-        <div className="px-6 py-6 border-b border-edge">
+        <div className="border-b border-edge px-6 py-6">
           <div className="flex items-center gap-2">
             <KrosmedIcon className="w-6 h-6 shrink-0" />
             <span className="font-serif text-base text-ink tracking-wide">KrosMed</span>
@@ -421,7 +423,7 @@ export function SidebarNav({ isDesktopNavigation }: { isDesktopNavigation: boole
         </div>
 
         {/* Nav items */}
-        <nav className="flex-1 px-2 py-4 space-y-1" aria-label="Navegação principal">
+        <nav className="flex-1 space-y-1 px-2 py-4" aria-label="Navegação principal">
           {NAV_GROUPS.map((group, gi) => (
             <div key={gi}>
               {gi > 0 && <hr className="border-edge my-3 mx-1" />}
@@ -437,10 +439,10 @@ export function SidebarNav({ isDesktopNavigation }: { isDesktopNavigation: boole
                     data-nav-surface="sidebar"
                     data-nav-item-href={href}
                     data-nav-active={active ? "true" : "false"}
-                    className={`w-full min-w-0 flex items-center gap-3 rounded-sm border px-3 py-2.5 text-xs font-serif leading-tight transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink/40
+                    className={`flex w-full min-w-0 items-center gap-3 rounded-xl border px-3 py-2.5 text-xs font-medium leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
                       ${active
-                        ? "border-ink/20 bg-ink text-paper"
-                        : "border-transparent text-muted hover:text-ink hover:bg-edge/40"
+                        ? "border-primary bg-surface text-ink shadow-sm"
+                        : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink"
                       }`}
                     aria-current={active ? "page" : undefined}
                   >
@@ -454,12 +456,12 @@ export function SidebarNav({ isDesktopNavigation }: { isDesktopNavigation: boole
         </nav>
 
         {/* Logout + Theme toggle */}
-        <div className="px-3 py-4 border-t border-edge">
+        <div className="border-t border-edge px-3 py-4">
           <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={requestLogout}
-              className="px-3 py-2.5 text-xs font-serif text-muted hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 rounded-sm"
+              className="rounded-xl px-3 py-2.5 text-xs text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Sair da conta
             </button>

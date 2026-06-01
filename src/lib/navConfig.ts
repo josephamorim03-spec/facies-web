@@ -32,22 +32,34 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
   {
     items: [
       {
-        href: "/agenda-operacional",
-        label: "AGENDA OPERACIONAL",
-        shortLabel: "Agenda Operacional",
-        groupPaths: ["/agenda-operacional", "/cronograma", "/semana", "/today"],
-      },
-      {
-        href: "/cards-adaptativos",
-        label: "CARDS ADAPTATIVOS",
-        shortLabel: "Cards Adaptativos",
-        groupPaths: ["/cards-adaptativos", "/revisao-turbo", "/caderno"],
+        href: "/today",
+        label: "HOJE",
+        shortLabel: "Hoje",
+        groupPaths: ["/today", "/agenda-operacional", "/cronograma", "/semana"],
       },
       {
         href: "/banco-de-questoes",
-        label: "BANCO DE QUESTOES",
-        shortLabel: "Banco de Questoes",
+        label: "BANCO DE QUESTÕES",
+        shortLabel: "Banco de Questões",
         groupPaths: ["/banco-de-questoes"],
+      },
+      {
+        href: "/provas",
+        label: "PROVAS",
+        shortLabel: "Provas",
+        groupPaths: ["/provas"],
+      },
+      {
+        href: "/cards-adaptativos",
+        label: "FLASHCARDS",
+        shortLabel: "Flashcards",
+        groupPaths: ["/cards-adaptativos", "/revisao-turbo", "/caderno"],
+      },
+      {
+        href: "/revisoes",
+        label: "REVISÕES",
+        shortLabel: "Revisões",
+        groupPaths: ["/revisoes"],
       },
     ],
   },
@@ -55,8 +67,8 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
     items: [
       {
         href: "/dados-e-relatorios",
-        label: "DADOS E RELATÓRIOS",
-        shortLabel: "Dados e Relatórios",
+        label: "DESEMPENHO",
+        shortLabel: "Desempenho",
         groupPaths: [
           "/dados-e-relatorios",
           "/dados-e-relatorios/graficos",
@@ -64,12 +76,13 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
           "/estatisticas",
           "/estatisticas/graficos",
           "/estatisticas/relatorio",
+          "/desempenho",
         ],
       },
       {
         href: "/rotina-e-metas",
-        label: "ROTINA E METAS",
-        shortLabel: "Rotina e Metas",
+        label: "METAS",
+        shortLabel: "Metas",
         groupPaths: ["/rotina-e-metas", "/rotina"],
       },
     ],

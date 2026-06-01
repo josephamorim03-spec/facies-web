@@ -4,11 +4,11 @@ export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "dan
 export type ButtonSize = "xs" | "sm" | "md";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary:   "bg-ink text-paper border border-ink hover:opacity-90",
-  secondary: "border border-edge text-muted hover:text-ink hover:border-ink",
-  outline:   "border border-ink text-ink hover:bg-ink hover:text-paper",
-  ghost:     "text-muted hover:text-ink",
-  danger:    "border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950",
+  primary: "border border-primary bg-primary text-primaryInk shadow-sm hover:brightness-105",
+  secondary: "border border-edge bg-surface text-muted hover:border-primary hover:text-ink hover:bg-surfaceMuted",
+  outline: "border border-primary text-primary hover:bg-primary hover:text-primaryInk",
+  ghost: "text-muted hover:bg-surfaceMuted hover:text-ink",
+  danger: "border border-danger text-danger hover:bg-surfaceMuted",
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
@@ -18,9 +18,9 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
 };
 
 const BASE =
-  "inline-flex items-center justify-center gap-1.5 rounded-sm font-serif leading-none " +
-  "transition-colors disabled:opacity-50 disabled:cursor-not-allowed " +
-  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink/40";
+  "inline-flex items-center justify-center gap-1.5 rounded-xl font-sans font-medium leading-none " +
+  "transition-colors disabled:cursor-not-allowed disabled:opacity-50 " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -46,7 +46,7 @@ export function Button({
       className={`${BASE} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
     >
       {loading ? (
-        <span className="opacity-60">…</span>
+        <span className="opacity-60">...</span>
       ) : (
         <>
           {leftIcon && <span className="shrink-0">{leftIcon}</span>}

@@ -13,7 +13,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     <button
       type="button"
       onClick={toggle}
-      className={`text-muted hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 rounded-sm ${className}`}
+      className={`rounded-xl text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${className}`}
       aria-label="Alternar tema claro/escuro"
       title="Alternar tema"
     >

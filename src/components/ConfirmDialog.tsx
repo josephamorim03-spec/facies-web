@@ -53,11 +53,11 @@ export function ConfirmDialog({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={title ?? "Confirmacao"}
-        className="bg-paper border border-edge w-full max-w-md p-5 space-y-4 rounded-md shadow-xl"
+        aria-label={title ?? "Confirmação"}
+        className="km-card w-full max-w-md space-y-4 p-5"
         onClick={(e) => e.stopPropagation()}
       >
-        {title && <h2 className="font-serif text-base">{title}</h2>}
+        {title && <h2 className="font-serif text-lg leading-tight">{title}</h2>}
         <div className="text-sm text-ink">{message}</div>
         <div className="flex gap-2 justify-end">
           <Button variant="secondary" size="sm" onClick={onCancel} autoFocus>

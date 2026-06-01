@@ -3,9 +3,13 @@ import { expect, test } from "@playwright/test";
 const E2E_BASE_URL = "http://127.0.0.1:3000";
 const topic = {
   knowledge_node_id: "go-node",
+  parent_knowledge_node_id: null,
   node_code: "GO",
   node_name: "Obstetricia",
   node_type: "theme",
+  node_path: ["GO", "Obstetricia"],
+  path_label: "GO / Obstetricia",
+  depth: 1,
   description: null,
   question_count: 12,
   primary_question_count: 12,
@@ -19,6 +23,18 @@ const topic = {
   adaptive_weight: 2,
   adaptive_weight_score: 0.7,
   adaptive_weight_factors: {},
+};
+
+const childTopic = {
+  ...topic,
+  knowledge_node_id: "placenta-node",
+  parent_knowledge_node_id: "go-node",
+  node_name: "Placenta previa",
+  node_type: "microcompetency",
+  node_path: ["GO", "Obstetricia", "Placenta previa"],
+  path_label: "GO / Obstetricia / Placenta previa",
+  depth: 2,
+  question_count: 6,
 };
 
 const item = {
@@ -98,7 +114,7 @@ test("question bank applies filters, calendar review context, and gated correcti
     });
   });
   await page.route("**/api/question-bank/topics**", async (route) => {
-    await route.fulfill({ contentType: "application/json", body: JSON.stringify([topic]) });
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify([topic, childTopic]) });
   });
   await page.route("**/api/question-bank/questions**", async (route) => {
     await route.fulfill({
@@ -110,17 +126,32 @@ test("question bank applies filters, calendar review context, and gated correcti
     createPayloads.push(await route.request().postDataJSON());
     await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(sessionPayload(false)) });
   });
+  // Session GET (loaded by the session route after navigation)
+  await page.route("**/api/question-bank/sessions/session_qb_e2e", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({ contentType: "application/json", body: JSON.stringify(sessionPayload(false)) });
+    }
+  });
   await page.route("**/api/question-bank/sessions/session_qb_e2e/items/1/attempt", async (route) => {
     await route.fulfill({ contentType: "application/json", body: JSON.stringify(sessionPayload(true)) });
   });
 
   await page.goto("/banco-de-questoes?review_task_id=rt_e2e&date=2026-05-27&area=GO&theme=Obstetricia&expected_questions=12");
 
-  await expect(page.getByRole("link", { name: "Banco de Questoes" })).toBeVisible();
-  await expect(page.getByText("12 disponiveis")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Banco de Quest/ })).toBeVisible();
+  await expect(page.getByTestId("question-bank-top-filters")).toBeVisible();
+  await expect(page.locator("main aside")).toHaveCount(0);
+  await expect(page.getByText(/12 .*dispon/i)).toBeVisible();
   await expect(page.getByText("Obstetricia").first()).toBeVisible();
+  await expect(page.getByText("Placenta previa", { exact: true })).toBeVisible();
 
-  await page.getByLabel("Modo").selectOption("training");
+  await page.getByRole("button", { name: /Quantidade/ }).click();
+  const quantityInput = page.getByRole("spinbutton", { name: /Questões/i });
+  await quantityInput.fill("99");
+  await expect(quantityInput).toHaveValue("12");
+
+  await page.getByRole("button", { name: /Modo/ }).click();
+  await page.getByRole("button", { name: "Treino" }).click();
   await page.getByRole("button", { name: "Iniciar treino" }).click();
 
   const payload = createPayloads[0];
@@ -136,8 +167,11 @@ test("question bank applies filters, calendar review context, and gated correcti
   });
   expect(String(payload.performed_at)).toContain("2026-05-27");
 
-  await page.getByRole("button", { name: /^A\./ }).click();
+  // Session opens in new route; wait for navigation
+  await page.waitForURL("**/banco-de-questoes/sessao/session_qb_e2e**");
+
+  await page.getByRole("button", { name: /^A\s+Placenta/ }).click();
   await expect(page.getByText("Gabarito A")).toHaveCount(0);
-  await page.getByRole("button", { name: "Corrigir" }).click();
+  await page.getByRole("button", { name: "Ver gabarito" }).click();
   await expect(page.getByText("Gabarito A")).toBeVisible();
 });
