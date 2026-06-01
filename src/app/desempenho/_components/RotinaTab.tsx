@@ -324,21 +324,25 @@ export function RotinaTab({
 
   return (
     <div className="space-y-8 max-w-md mx-auto md:max-w-none md:mx-0">
-      <section className="space-y-3">
-        <div className="relative flex items-center justify-center">
-          {!isDesktopNavigation && (
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-              className="absolute left-0 p-1 -ml-1 text-ink"
-              aria-label="Menu"
-            >
-              <IconMenu className="w-5 h-5" />
-            </button>
+      <header className="flex items-start justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">KrosMed</p>
+          <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight md:text-4xl">Metas</h1>
+          {displayName && (
+            <p className="mt-2 text-sm text-muted">{displayName}</p>
           )}
-          <p className="text-center text-lg font-semibold text-ink">{displayName || "Não informado"}</p>
         </div>
-      </section>
+        {!isDesktopNavigation && (
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
+            className="mt-2 p-1 text-muted hover:text-ink shrink-0"
+            aria-label="Menu"
+          >
+            <IconMenu className="w-5 h-5" />
+          </button>
+        )}
+      </header>
 
       <hr className="border-edge" />
 

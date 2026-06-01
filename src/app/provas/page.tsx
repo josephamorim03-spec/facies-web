@@ -26,24 +26,55 @@ function cx(...classes: Array<string | false | null | undefined>) {
 
 type Mode = "simulation" | "training" | "weakness";
 
-const MODES: { id: Mode; label: string; description: string; icon: string }[] = [
+function IconTimer({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <circle cx="12" cy="13" r="8" />
+      <polyline points="12 9 12 13 14 15" />
+      <line x1="9" y1="2" x2="15" y2="2" />
+    </svg>
+  );
+}
+
+function IconBook({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+    </svg>
+  );
+}
+
+function IconTarget({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  );
+}
+
+type ModeIcon = (props: { className?: string }) => React.JSX.Element;
+
+const MODES: { id: Mode; label: string; description: string; Icon: ModeIcon }[] = [
   {
     id: "simulation",
     label: "Simular prova",
     description: "Faça um simulado no padrão da prova real, sem feedback durante.",
-    icon: "⏱",
+    Icon: IconTimer,
   },
   {
     id: "training",
     label: "Aprender um tema",
     description: "Estude um assunto do início ao fim com questões e feedback imediato.",
-    icon: "📖",
+    Icon: IconBook,
   },
   {
     id: "weakness",
     label: "Corrigir fraquezas",
     description: "Treine seus pontos fracos com base no seu desempenho.",
-    icon: "🎯",
+    Icon: IconTarget,
   },
 ];
 
@@ -139,7 +170,7 @@ export default function ProvasPage() {
                   : "border-edge bg-surface hover:border-primary",
               )}
             >
-              <span className="text-3xl">{mode.icon}</span>
+              <mode.Icon className="w-6 h-6 text-muted" />
               <p className="mt-3 text-base font-semibold text-ink">{mode.label}</p>
               <p className="mt-1 text-xs text-muted leading-relaxed">{mode.description}</p>
             </button>
@@ -244,14 +275,23 @@ export default function ProvasPage() {
 
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">📋</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-muted shrink-0" aria-hidden="true">
+                  <path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2h-4" />
+                  <rect x="9" y="2" width="6" height="4" rx="1" />
+                  <line x1="9" y1="12" x2="15" y2="12" />
+                  <line x1="9" y1="16" x2="13" y2="16" />
+                </svg>
                 <div>
                   <p className="text-xs text-muted">Número de questões</p>
                   <p className="text-2xl font-bold text-ink">{clampedLimit}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-2xl">⏱</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-muted shrink-0" aria-hidden="true">
+                  <circle cx="12" cy="13" r="8" />
+                  <polyline points="12 9 12 13 14 15" />
+                  <line x1="9" y1="2" x2="15" y2="2" />
+                </svg>
                 <div>
                   <p className="text-xs text-muted">Tempo estimado</p>
                   <p className="text-xl font-bold text-ink">

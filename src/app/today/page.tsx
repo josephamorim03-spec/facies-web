@@ -436,23 +436,22 @@ export default function TodayPage() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
-        <div className="flex justify-start">
-          {!isDesktopNavigation ? (
+      <header className="flex items-start justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">KrosMed</p>
+          <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight md:text-4xl">Hoje</h1>
+        </div>
+        <div className="flex items-center gap-1 mt-2">
+          {!isDesktopNavigation && (
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-              className="p-1 -ml-1 text-ink shrink-0"
+              className="p-1 text-muted hover:text-ink shrink-0"
               aria-label="Menu"
             >
               <IconMenu className="w-5 h-5" />
             </button>
-          ) : (
-            <span className="block h-7 w-7" aria-hidden="true" />
           )}
-        </div>
-        <h1 className="text-center text-[10px] font-semibold uppercase leading-none tracking-[0.08em] text-ink">SEMANA</h1>
-        <div className="flex justify-end">
           <Link
             href="/agenda-operacional"
             className="p-1 text-muted hover:text-ink shrink-0"
@@ -471,7 +470,7 @@ export default function TodayPage() {
             </svg>
           </Link>
         </div>
-      </div>
+      </header>
 
       <div className="grid grid-cols-7 gap-1 text-center">
         {weekDays.map(({ iso, label, dayNum }) => {
