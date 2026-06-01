@@ -316,7 +316,7 @@ export function DesempenhoTab({
                       </div>
                     )}
                     {period === "geral" && isClicked && (
-                      <div className="border border-edge rounded-sm p-2 space-y-2">
+                      <div className="border border-edge rounded-xl p-2 space-y-2">
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-xs text-muted">Temas em {AREA_LABELS[a]}</p>
                           <div className="flex items-center gap-2">

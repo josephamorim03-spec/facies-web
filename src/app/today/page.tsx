@@ -170,6 +170,29 @@ function TodaySkeleton() {
   );
 }
 
+const MOTIVATIONAL_QUOTES = [
+  { quote: "Disciplina é o que transforma objetivos em realidade.", author: "Aristóteles" },
+  { quote: "Sucesso é a soma de pequenos esforços, repetidos dia após dia.", author: "Robert Collier" },
+  { quote: "A preparação é a chave para todas as vitórias.", author: "Alexander Graham Bell" },
+  { quote: "O conhecimento é o único bem que cresce quando compartilhado.", author: "Sócrates" },
+  { quote: "Confie no processo. O resultado virá.", author: "Anônimo" },
+  { quote: "Cada questão resolvida é um passo mais perto da aprovação.", author: "Anônimo" },
+  { quote: "Não há atalho para qualquer lugar que vale a pena ir.", author: "Beverly Sills" },
+];
+
+const AREA_FULL: Record<string, string> = {
+  GO: "Ginecologia e Obstetrícia", PD: "Pediatria", CM: "Clínica Médica",
+  CG: "Cirurgia Geral", MP: "Medicina Preventiva", OU: "Outras",
+};
+
+function getGreeting(firstName: string | null): string {
+  const hour = new Date().getHours();
+  const name = firstName ? `, ${firstName}` : "";
+  if (hour < 12) return `Bom dia${name}!`;
+  if (hour < 18) return `Boa tarde${name}!`;
+  return `Boa noite${name}!`;
+}
+
 type TodayPageData = {
   pendingData: ReviewTask[];
   doneData: ReviewTask[];
@@ -177,6 +200,7 @@ type TodayPageData = {
   cardsOverview: OperationalTurboOverview | null;
   performanceSummary: StudyPerformanceSummary | null;
   weeklyGoal: number;
+  displayName: string | null;
 };
 
 async function loadTodayPageData(token: string): Promise<TodayPageData> {

@@ -84,6 +84,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const blockedNavigationPathRef = useRef<string | null>(null);
   const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
+  const [pinnedSidebar, setPinnedSidebar] = useState(false);
   const mainClassName = hideNavigationChrome
     ? "min-h-screen"
     : "max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8";
@@ -141,8 +142,8 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   return (
     <>
       <PwaRegister />
-      <SidebarNav isDesktopNavigation={isDesktopNavigation} displayName={userDisplayName} photoUrl={userPhotoUrl} />
-      <div className={hideNavigationChrome || !isDesktopNavigation ? "" : "ml-52"}>
+      <SidebarNav isDesktopNavigation={isDesktopNavigation} displayName={userDisplayName} photoUrl={userPhotoUrl} pinned={pinnedSidebar} onPinChange={setPinnedSidebar} />
+      <div className={hideNavigationChrome || !isDesktopNavigation ? "" : (pinnedSidebar ? "ml-52" : "ml-14")}>
         <main className={mainClassName}>
           <Nav displayName={userDisplayName} photoUrl={userPhotoUrl} />
           {children}

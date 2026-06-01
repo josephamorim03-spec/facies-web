@@ -1,8 +1,9 @@
 ﻿import React from "react";
+import Link from "next/link";
 import { CalendarEventOut, DirectedStudyListItem, ReviewTask } from "@/lib/api";
-import { IconEye, IconPlus } from "../CronogramaIcons";
+import { IconPlus } from "../CronogramaIcons";
 import { NewStudyForm, StudyDotCard, TaskDetail } from "../CronogramaStudyReviewComponents";
-import { displayDate, SHORT_MONTH_LABELS } from "../../_lib/cronogramaShared";
+import { displayDate, getAccuracy, getRevisionNumber, SHORT_MONTH_LABELS } from "../../_lib/cronogramaShared";
 
 export function CalendarMonthNavigation({
   month,
@@ -67,99 +68,104 @@ export function CalendarEventMoveErrorToast({
 
 export function CalendarActionButtons({
   selectedDay,
-  showDayDetail,
   modal,
   viewSwitchSlot,
-  onToggleDayDetail,
   onOpenCreateModal,
 }: {
   selectedDay: string | null;
-  showDayDetail: boolean;
   modal: "create" | null;
   viewSwitchSlot?: React.ReactNode;
-  onToggleDayDetail: () => void;
   onOpenCreateModal: () => void;
 }) {
   if (!selectedDay) return null;
 
-  const actionMode: "idle" | "detail" | "create" = modal === "create"
-    ? "create"
-    : showDayDetail
-      ? "detail"
-      : "idle";
-
-  const eyeBtn = (
-    <button
-      onClick={onToggleDayDetail}
-      className={`w-12 h-12 rounded-full border shadow-sm flex items-center justify-center transition-colors ${
-        actionMode === "detail" ? "border-ink bg-ink text-paper" : "border-edge bg-paper text-muted hover:text-ink hover:border-ink"
-      }`}
-      title="Ver atividades"
-      aria-label="Ver atividades do dia"
-      data-testid="calendar-action-eye"
-    >
-      <IconEye className="w-5 h-5" />
-    </button>
-  );
-
-  const plusBtn = (
-    <button
-      onClick={onOpenCreateModal}
-      className={`w-12 h-12 rounded-full border shadow-sm flex items-center justify-center transition-colors ${
-        actionMode === "create" ? "border-ink bg-ink text-paper" : "border-edge bg-paper text-muted hover:text-ink hover:border-ink"
-      }`}
-      title="Registrar estudo"
-      aria-label="Registrar estudo inicial"
-      data-testid="calendar-action-plus"
-    >
-      <IconPlus className="w-5 h-5" />
-    </button>
-  );
-
-  if (actionMode !== "idle") {
-    const detailAction = (
-      <div
-        className="mt-3 flex justify-end pr-4"
-        data-testid="calendar-action-mode"
-        data-calendar-action-mode="detail"
-      >
-        {eyeBtn}
-      </div>
-    );
-
-    const createAction = (
+  return (
+    <>
+      <div className="mt-3 md:hidden">{viewSwitchSlot ?? null}</div>
       <div
         className="fixed right-4 z-40"
         style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
         data-testid="calendar-action-mode"
-        data-calendar-action-mode="create"
       >
-        {plusBtn}
+        <button
+          onClick={onOpenCreateModal}
+          className={`flex items-center gap-1.5 rounded-xl border shadow-sm px-4 py-2.5 text-sm font-semibold transition-colors ${
+            modal === "create"
+              ? "border-ink bg-ink text-paper"
+              : "border-edge bg-paper text-ink hover:border-primary hover:text-primary"
+          }`}
+          title="Adicionar estudo ou compromisso"
+          aria-label="Adicionar"
+          data-testid="calendar-action-plus"
+        >
+          <IconPlus className="w-4 h-4" />
+          Adicionar
+        </button>
       </div>
-    );
+    </>
+  );
+}
 
-    return (
-      <>
-        {actionMode === "detail" && (
-          <div className="mt-3 md:hidden">
-            {viewSwitchSlot ?? null}
-          </div>
-        )}
-        {actionMode === "detail" ? detailAction : createAction}
-      </>
-    );
-  }
+export function TaskBarPopup({
+  task,
+  anchorRect,
+  studies,
+  studyMap,
+  onClose,
+}: {
+  task: ReviewTask;
+  anchorRect: DOMRect;
+  studies: DirectedStudyListItem[];
+  studyMap: Map<string, DirectedStudyListItem>;
+  onClose: () => void;
+}) {
+  const accuracy = getAccuracy(task, studies);
+  const revision = getRevisionNumber(task, studies, studyMap);
+  const bancoUrl = `/banco-de-questoes?area=${encodeURIComponent(task.area)}&search=${encodeURIComponent(task.theme)}&limit=${task.expected_questions}`;
+  const sessionTitle = `Revisão #${revision} — ${task.theme}`;
+
+  const popupTop = Math.min(anchorRect.bottom + 8, window.innerHeight - 240);
+  const popupLeft = Math.min(Math.max(8, anchorRect.left), window.innerWidth - 264);
 
   return (
-    <div
-      className="fixed right-4 z-40 flex flex-col gap-3"
-      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
-      data-testid="calendar-action-mode"
-      data-calendar-action-mode="idle"
-    >
-      {eyeBtn}
-      {plusBtn}
-    </div>
+    <>
+      <div className="fixed inset-0 z-[60]" onClick={onClose} />
+      <div
+        className="fixed z-[61] w-64 rounded-2xl border border-edge bg-surface shadow-[var(--soft-shadow)] p-4 space-y-3"
+        style={{ top: popupTop, left: popupLeft }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">{task.area}</p>
+          <p className="mt-0.5 text-sm font-semibold text-ink leading-snug">{task.theme}</p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="rounded-xl border border-edge bg-paper px-2 py-2">
+            <p className="text-[10px] text-muted leading-none">Revisão</p>
+            <p className="mt-1 text-base font-bold text-ink">#{revision}</p>
+          </div>
+          <div className="rounded-xl border border-edge bg-paper px-2 py-2">
+            <p className="text-[10px] text-muted leading-none">Acerto</p>
+            <p className="mt-1 text-base font-bold text-ink">
+              {accuracy !== null ? `${accuracy}%` : "—"}
+            </p>
+          </div>
+          <div className="rounded-xl border border-edge bg-paper px-2 py-2">
+            <p className="text-[10px] text-muted leading-none">Mín. q</p>
+            <p className="mt-1 text-base font-bold text-ink">{task.expected_questions}</p>
+          </div>
+        </div>
+
+        <Link
+          href={bancoUrl}
+          onClick={onClose}
+          className="flex items-center justify-center w-full rounded-xl border border-primary bg-primary py-2.5 text-xs font-semibold text-primaryInk hover:brightness-105 transition-all"
+        >
+          {sessionTitle}
+        </Link>
+      </div>
+    </>
   );
 }
 

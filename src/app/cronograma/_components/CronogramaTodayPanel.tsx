@@ -22,7 +22,7 @@ export function CronogramaTodayPanel({ todayTasks, todayStudies }: Props) {
   const overflow = items.length - MAX_VISIBLE;
 
   return (
-    <div className="border border-edge px-3 py-2.5">
+    <div className="rounded-xl border border-edge px-3 py-2.5">
       <div className="min-w-0 space-y-1">
         {!hasContent ? (
           <p className="text-xs text-muted">Nenhuma revisão para hoje</p>

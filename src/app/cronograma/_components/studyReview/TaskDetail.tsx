@@ -237,7 +237,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
               </label>
             </div>
             {editImpactPreview && (
-              <div className="border border-edge p-2 space-y-1 bg-amber-50">
+              <div className="rounded-xl border border-edge p-2 space-y-1 bg-amber-50">
                 <p className="text-xs font-medium">Confirmar edição</p>
                 <p className="text-xs text-muted">
                   Acuracia: {editImpactPreview.accuracy_before_pct.toFixed(1)}% -&gt; {editImpactPreview.accuracy_after_pct.toFixed(1)}%
@@ -303,7 +303,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
       ? editableStudy.accuracy.toFixed(0)
       : accuracy !== null ? accuracy.toFixed(0) : null;
     return (
-      <div className="relative opacity-75 border border-edge p-2 space-y-1">
+      <div className="relative opacity-75 rounded-xl border border-edge p-2 space-y-1">
         <button onClick={() => setEditMode(true)} className="absolute top-1.5 right-1.5 text-muted hover:text-ink" title="Alterar">
           <IconPencil className="w-3 h-3" />
         </button>
@@ -383,7 +383,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
             </button>
           </div>
           {showReschedule && (
-            <div className="space-y-2 border border-edge p-2">
+            <div className="space-y-2 rounded-xl border border-edge p-2">
               {rescheduleControls === "auto_manual" && (
                 <div className="flex justify-center gap-1">
                   <button type="button" onClick={() => setRescheduleMode("auto")}

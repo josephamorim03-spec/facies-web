@@ -63,7 +63,7 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
 
   if (createdEvent) {
     return (
-      <div className="text-sm border border-edge p-2">
+      <div className="text-sm rounded-xl border border-edge p-2">
         Compromisso criado em <strong>{displayDate(dateISO)}</strong>.
       </div>
     );

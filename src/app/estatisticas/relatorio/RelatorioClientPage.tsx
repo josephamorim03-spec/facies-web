@@ -119,7 +119,7 @@ function SectionCard({
     <section
       data-testid={testId}
       data-no-break={noBreak || undefined}
-      className={`space-y-3 rounded-sm border border-edge px-4 py-4${emphasized ? " shadow-sm" : ""}`}
+      className={`space-y-3 rounded-2xl border border-edge px-4 py-4${emphasized ? " shadow-sm" : ""}`}
     >
       <h2 className="text-center text-xs font-bold uppercase tracking-[0.14em] text-ink">
         {title}
@@ -138,7 +138,7 @@ function RelatorioSkeleton() {
         <div className="ml-auto h-5 w-5 rounded-sm bg-edge" />
       </div>
       {Array.from({ length: 5 }).map((_, idx) => (
-        <div key={`relatorio-skeleton-${idx}`} className="space-y-2 rounded-sm border border-edge p-4">
+        <div key={`relatorio-skeleton-${idx}`} className="space-y-2 rounded-2xl border border-edge p-4">
           <div className="h-3 w-28 rounded-sm bg-edge" />
           <div className="h-2.5 w-full rounded-sm bg-edge" />
           <div className="h-2.5 w-5/6 rounded-sm bg-edge" />
@@ -369,7 +369,7 @@ export function RelatorioBody({
       >
         {!diagnosis.ready && (
           <div className="space-y-3">
-            <div className="rounded-sm border border-edge bg-paper/70 p-3">
+            <div className="rounded-xl border border-edge bg-paper/70 p-3">
               <RelatorioParagraph>
                 {diagnosis.reason === "insufficient_total"
                   ? `Diagnóstico disponível a partir de ${DIAG_MIN_TOTAL_QUESTIONS} questões no total. Você tem ${diagnosis.total_questions} registradas.`
@@ -385,7 +385,7 @@ export function RelatorioBody({
                     : `Diagnóstico por área — maiores e menores médias por grande área. Ao concentrar questões nos temas principais, o diagnóstico por tema ativa automaticamente.`}
                 </RelatorioParagraph>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="space-y-2 rounded-sm border border-edge border-l-2 border-l-emerald-600/40 bg-paper/70 p-3">
+                  <div className="space-y-2 rounded-xl border border-edge border-l-2 border-l-emerald-600/40 bg-paper/70 p-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">Pontos fortes</p>
                     <ul className="space-y-1.5">
                       {preliminaryStrengths.map((item) => (
@@ -398,7 +398,7 @@ export function RelatorioBody({
                       ))}
                     </ul>
                   </div>
-                  <div className="space-y-2 rounded-sm border border-edge border-l-2 border-l-red-600/40 bg-paper/70 p-3">
+                  <div className="space-y-2 rounded-xl border border-edge border-l-2 border-l-red-600/40 bg-paper/70 p-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">Pontos fracos</p>
                     <ul className="space-y-1.5">
                       {preliminaryWeaknesses.map((item) => (
@@ -637,7 +637,7 @@ export function RelatorioBody({
         <RelatorioParagraph>{healthText}</RelatorioParagraph>
 
         {staleThemesCount > 0 && (
-          <div className="space-y-2 rounded-sm border border-edge bg-paper/70 p-3">
+          <div className="space-y-2 rounded-xl border border-edge bg-paper/70 p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Temas sem contato

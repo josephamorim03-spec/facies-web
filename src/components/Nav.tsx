@@ -456,9 +456,23 @@ export default function Nav({ displayName, photoUrl }: { displayName?: string | 
 
 // --- Sidebar Nav (desktop >= md) -------------------------------------------
 
-export function SidebarNav({ isDesktopNavigation, displayName, photoUrl }: { isDesktopNavigation: boolean; displayName?: string | null; photoUrl?: string | null }) {
+export function SidebarNav({
+  isDesktopNavigation,
+  displayName,
+  photoUrl,
+  pinned,
+  onPinChange,
+}: {
+  isDesktopNavigation: boolean;
+  displayName?: string | null;
+  photoUrl?: string | null;
+  pinned?: boolean;
+  onPinChange?: (v: boolean) => void;
+}) {
   const pathname = usePathname();
   const hideCompletely = useNavHideCompletely(pathname);
+  const [hovered, setHovered] = useState(false);
+  const visible = pinned || hovered;
 
   const {
     exitConfirmOpen,
@@ -475,17 +489,30 @@ export function SidebarNav({ isDesktopNavigation, displayName, photoUrl }: { isD
 
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-30 flex w-52 flex-col border-r border-edge bg-paper">
-        {/* Wordmark */}
-        <div className="border-b border-edge px-6 py-6">
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 flex flex-col border-r border-edge bg-paper overflow-hidden transition-[width] duration-200 ease-out ${visible ? "w-52" : "w-14"}`}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* Wordmark — clique fixa/desfixa */}
+        <div
+          className="border-b border-edge cursor-pointer hover:bg-surfaceMuted transition-colors shrink-0"
+          style={{ padding: visible ? "1.5rem" : "1rem 0.625rem" }}
+          onClick={() => onPinChange?.(!pinned)}
+          title={pinned ? "Desafixar menu" : "Fixar menu"}
+        >
           <div className="flex items-center gap-2">
             <KrosmedIcon className="w-6 h-6 shrink-0" />
-            <span className="font-serif text-base text-ink tracking-wide">KrosMed</span>
+            {visible && (
+              <span className="font-serif text-base font-semibold text-ink tracking-[0.06em] uppercase whitespace-nowrap">
+                KROSMED
+              </span>
+            )}
           </div>
         </div>
 
         {/* Nav items */}
-        <nav className="flex-1 space-y-1 px-2 py-4" aria-label="Navegação principal">
+        <nav className="flex-1 space-y-1 px-1.5 py-4 overflow-y-auto" aria-label="Navegação principal">
           {NAV_GROUPS.map((group, gi) => (
             <div key={gi}>
               {gi > 0 && <hr className="border-edge my-3 mx-1" />}
@@ -501,15 +528,15 @@ export function SidebarNav({ isDesktopNavigation, displayName, photoUrl }: { isD
                     data-nav-surface="sidebar"
                     data-nav-item-href={href}
                     data-nav-active={active ? "true" : "false"}
-                    className={`flex w-full min-w-0 items-center gap-3 rounded-xl border px-3 py-2.5 text-xs font-medium leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
-                      ${active
+                    className={`flex w-full min-w-0 items-center gap-3 rounded-xl border px-2.5 py-2.5 text-xs font-medium leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      active
                         ? "border-primary bg-surface text-ink shadow-sm"
                         : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink"
-                      }`}
+                    }`}
                     aria-current={active ? "page" : undefined}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
-                    <span className="min-w-0 flex-1 truncate" title={shortLabel}>{shortLabel}</span>
+                    {visible && <span className="min-w-0 flex-1 truncate whitespace-nowrap" title={shortLabel}>{shortLabel}</span>}
                   </Link>
                 );
               })}
@@ -517,32 +544,33 @@ export function SidebarNav({ isDesktopNavigation, displayName, photoUrl }: { isD
           ))}
         </nav>
 
-        {/* User info + Logout + Theme toggle */}
-        <div className="border-t border-edge">
+        {/* User info + Logout + Theme */}
+        <div className="border-t border-edge shrink-0">
           {(displayName || photoUrl) && (
-            <div className="flex items-center gap-2.5 px-4 py-3 border-b border-edge">
-              <UserAvatar photoUrl={photoUrl} displayName={displayName} size="md" />
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-ink truncate">
-                  {displayName?.split(" ")[0] ?? ""}
-                </p>
-                {displayName && displayName.includes(" ") && (
-                  <p className="text-[10px] text-muted truncate leading-tight">
-                    {displayName.split(" ").slice(1).join(" ")}
-                  </p>
-                )}
-              </div>
+            <div className={`flex items-center border-b border-edge ${visible ? "gap-2.5 px-4 py-3" : "justify-center py-3"}`}>
+              <UserAvatar photoUrl={photoUrl} displayName={displayName} size={visible ? "md" : "sm"} />
+              {visible && (
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-ink truncate">{displayName?.split(" ")[0] ?? ""}</p>
+                  {displayName?.includes(" ") && (
+                    <p className="text-[10px] text-muted truncate leading-tight">{displayName.split(" ").slice(1).join(" ")}</p>
+                  )}
+                </div>
+              )}
             </div>
           )}
-          <div className="flex items-center justify-between px-3 py-3">
-            <button
-              type="button"
-              onClick={requestLogout}
-              className="rounded-xl px-3 py-2 text-xs text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              Sair da conta
-            </button>
-            <ThemeToggle className="px-3 py-2" />
+          <div className={`flex items-center ${visible ? "justify-between px-3" : "justify-center"} py-2.5`}>
+            {visible ? (
+              <>
+                <button type="button" onClick={requestLogout}
+                  className="rounded-xl px-3 py-2 text-xs text-muted transition-colors hover:bg-surfaceMuted hover:text-ink">
+                  Sair da conta
+                </button>
+                <ThemeToggle className="px-2 py-2" />
+              </>
+            ) : (
+              <ThemeToggle className="p-1.5" />
+            )}
           </div>
         </div>
       </aside>

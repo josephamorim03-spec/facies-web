@@ -125,7 +125,7 @@ function NotificationSettingsPanel({ token }: { token: string }) {
   ];
 
   return (
-    <div className="border border-edge p-3 space-y-3 mb-4 text-center md:text-left">
+    <div className="rounded-xl border border-edge p-3 space-y-3 mb-4 text-center md:text-left">
       <p className="text-xs text-muted uppercase tracking-wide">Notificações</p>
 
       {permission === "unsupported" && (
@@ -327,9 +327,6 @@ export function RotinaTab({
       <header className="flex items-start justify-between">
         <div>
           <h1 className="font-serif text-3xl font-semibold leading-tight md:text-4xl">Metas</h1>
-          {displayName && (
-            <p className="mt-2 text-sm text-muted">{displayName}</p>
-          )}
         </div>
         {!isDesktopNavigation && (
           <button
@@ -402,7 +399,7 @@ export function RotinaTab({
         </div>
 
         {showSettings && (
-          <div className="border border-edge p-3 space-y-3 mb-4 text-center md:text-left">
+          <div className="rounded-xl border border-edge p-3 space-y-3 mb-4 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2">
               <p className="text-xs text-muted uppercase tracking-wide">Capacidade por turno</p>
               <div className="relative">

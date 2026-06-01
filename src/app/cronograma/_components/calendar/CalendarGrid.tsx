@@ -51,6 +51,9 @@ export function CalendarGrid({
   beginTaskDrag,
   clearDragState,
   interactive = true,
+  onBarClick,
+  onDoubleClickEmpty,
+  taskRevisionMap,
 }: {
   gridRef?: Ref<HTMLDivElement>;
   cells: Array<number | null>;
@@ -116,6 +119,9 @@ export function CalendarGrid({
   ) => void;
   clearDragState: () => void;
   interactive?: boolean;
+  onBarClick?: (task: ReviewTask, rect: DOMRect) => void;
+  onDoubleClickEmpty?: () => void;
+  taskRevisionMap?: Map<string, number>;
 }) {
   const [activeFlashcardsTooltipIso, setActiveFlashcardsTooltipIso] = useState<string | null>(null);
   const flashcardsTooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -301,6 +307,11 @@ export function CalendarGrid({
               onDaySelect(isSelected ? null : iso);
               if (isSelected) onCloseDayDetailForSameDay();
             }}
+            onDoubleClick={() => {
+              if (!interactive) return;
+              if (!isSelected) onDaySelect(iso);
+              onDoubleClickEmpty?.();
+            }}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => {
               if (!interactive) return;
@@ -449,9 +460,10 @@ export function CalendarGrid({
                     );
                   }
                   const isDone = dot.kind === "done";
-                  const barH = showDayDetail ? "h-[9px]" : "h-[11px]";
-                  const fontSize = showDayDetail ? "5px" : "6px";
-                  const notchW = showDayDetail ? "9px" : "11px";
+                  const barH = showDayDetail ? "h-[11px]" : "h-[14px]";
+                  const fontSize = showDayDetail ? "6px" : "7px";
+                  const notchW = showDayDetail ? "12px" : "15px";
+                  const revNum = dot.task ? (taskRevisionMap?.get(dot.task.task_id) ?? 1) : 1;
                   return (
                     <div
                       key={dot.key}
@@ -459,7 +471,10 @@ export function CalendarGrid({
                       data-dot-kind={dot.kind}
                       draggable={interactive && !showDayDetail && dot.kind === "pending" && !!dot.task && !isTouchDevice}
                       title={dot.tooltip}
-                      onClick={interactive && dot.task ? (e) => e.stopPropagation() : undefined}
+                      onClick={interactive && dot.task ? (e) => {
+                        e.stopPropagation();
+                        onBarClick?.(dot.task!, (e.currentTarget as HTMLElement).getBoundingClientRect());
+                      } : undefined}
                       onContextMenu={dot.task ? (e) => e.preventDefault() : undefined}
                       onTouchStart={interactive && !showDayDetail && dot.task ? (e) => {
                         startTouchDrag(e, dot.task!, iso, dot.color);
@@ -501,7 +516,7 @@ export function CalendarGrid({
                           filter: "brightness(0.62)",
                         }}
                       >
-                        {dot.task?.expected_questions ?? ""}
+                        {`#${revNum}`}
                       </span>
                       {/* Theme name strip */}
                       <span

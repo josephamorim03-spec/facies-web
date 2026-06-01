@@ -7,6 +7,7 @@ import {
 import { IconStethoscope } from "../CronogramaIcons";
 import { IconTrash } from "@/app/desempenho/_components/PerfilIcons";
 import {
+  getRevisionNumber,
   todayISO,
 } from "../../_lib/cronogramaShared";
 import {
@@ -17,6 +18,7 @@ import {
   CalendarInlineDayDetailSection,
   CalendarNoDisturbNotice,
   CalendarRescheduleWarningModal,
+  TaskBarPopup,
 } from "./CalendarSections";
 import {
   buildCalendarCells,
@@ -141,13 +143,28 @@ export function CronogramaCalendarView({
 }) {
   const today = todayISO();
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const [showDayDetail, setShowDayDetail] = useState(false);
+  const showDayDetail = selectedDay !== null;
 
-  function toggleDayDetail(v: boolean) {
-    setShowDayDetail(v);
-    onDayDetailChange?.(v);
-  }
   const [modal, setModal] = useState<"create" | null>(null);
+  const [barPopup, setBarPopup] = useState<{ task: ReviewTask; rect: DOMRect } | null>(null);
+
+  function handleDaySelect(iso: string | null) {
+    setSelectedDay(iso);
+    setBarPopup(null);
+    onDayDetailChange?.(iso !== null);
+  }
+
+  function handleBarClick(task: ReviewTask, rect: DOMRect) {
+    setBarPopup((prev) => prev?.task.task_id === task.task_id ? null : { task, rect });
+  }
+
+  const taskRevisionMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const task of [...tasks, ...doneTasks]) {
+      map.set(task.task_id, getRevisionNumber(task, studies, studyMap));
+    }
+    return map;
+  }, [tasks, doneTasks, studies, studyMap]);
   const [expandedCell, setExpandedCell] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<{ row: number; slots: number } | null>(null);
   const expandTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -523,8 +540,11 @@ export function CronogramaCalendarView({
                 onMonthGridTouchStart={handleMonthGridTouchStart}
                 onMonthGridTouchMove={handleMonthGridTouchMove}
                 onMonthGridTouchEnd={handleMonthGridTouchEnd}
-                onDaySelect={setSelectedDay}
-                onCloseDayDetailForSameDay={() => toggleDayDetail(false)}
+                onDaySelect={handleDaySelect}
+                onCloseDayDetailForSameDay={() => handleDaySelect(null)}
+                onBarClick={handleBarClick}
+                onDoubleClickEmpty={() => setModal("create")}
+                taskRevisionMap={taskRevisionMap}
                 handleEventDrop={handleEventDrop}
                 handleDrop={handleDrop}
                 startTouchEventDrag={startTouchEventDrag}
@@ -628,12 +648,20 @@ export function CronogramaCalendarView({
 
       <CalendarActionButtons
         selectedDay={selectedDay}
-        showDayDetail={showDayDetail}
         modal={modal}
         viewSwitchSlot={viewSwitchSlot}
-        onToggleDayDetail={() => toggleDayDetail(!showDayDetail)}
         onOpenCreateModal={() => setModal("create")}
       />
+
+      {barPopup && (
+        <TaskBarPopup
+          task={barPopup.task}
+          anchorRect={barPopup.rect}
+          studies={studies}
+          studyMap={studyMap}
+          onClose={() => setBarPopup(null)}
+        />
+      )}
 
       <CalendarInlineDayDetailSection
         showDayDetail={showDayDetail}
@@ -647,7 +675,7 @@ export function CronogramaCalendarView({
         studies={studies}
         studyMap={studyMap}
         onRefresh={onRefresh}
-        onCloseDayDetail={() => toggleDayDetail(false)}
+        onCloseDayDetail={() => handleDaySelect(null)}
       />
 
       <CalendarNoDisturbNotice
