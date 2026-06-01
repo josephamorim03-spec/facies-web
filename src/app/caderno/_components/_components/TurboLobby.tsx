@@ -151,7 +151,7 @@ export function TurboLobby({
 
       {/* Slider — pinned to bottom */}
       {effectiveAvailableCount > 1 && sliderMax > sliderMin && (
-        <div className="pb-2 space-y-2">
+        <div className="pb-6 space-y-2">
           <p className="text-center text-xs text-muted tabular-nums">
             <span className="text-ink font-semibold">{questionCount}</span> cards
             {isTurboMode && (

@@ -26,6 +26,7 @@ import {
   ReviewTask,
   type StudyPerformanceSummary,
 } from "@/lib/api";
+import { AreaIcon } from "@/components/AreaIcon";
 import { InlineLogForm } from "@/app/cronograma/_components/studyReview/InlineLogForm";
 import { IconMenu, IconPlus, IconRefresh } from "@/app/cronograma/_components/CronogramaIcons";
 import { displayDate } from "@/app/cronograma/_lib/cronogramaShared";
@@ -213,17 +214,6 @@ function reviewTaskHref(task: ReviewTask): string {
   return `/banco-de-questoes?${params.toString()}`;
 }
 
-function IconStethoscope({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M6 3v5a4 4 0 0 0 8 0V3" />
-      <path d="M4 3h4" />
-      <path d="M12 3h4" />
-      <path d="M10 14v2a4 4 0 0 0 8 0v-1" />
-      <circle cx="18" cy="12" r="2" />
-    </svg>
-  );
-}
 
 function IconShield({ className }: { className?: string }) {
   return (
@@ -693,8 +683,8 @@ export default function TodayPage() {
                     return (
                       <article key={task.task_id} className="overflow-hidden rounded-lg border border-edge bg-surface shadow-sm">
                         <div className="grid gap-4 p-4 sm:grid-cols-[5.5rem_minmax(0,1fr)_8rem] sm:items-center">
-                          <div className="flex h-20 w-full items-center justify-center rounded-lg border border-edge bg-paper" style={{ color: accentColor }}>
-                            <IconStethoscope className="h-10 w-10" />
+                          <div className="flex h-20 w-full items-center justify-center rounded-lg border border-edge bg-paper">
+                            <AreaIcon area={task.area} size={40} colored />
                           </div>
                           <div className="min-w-0">
                             <h3 className="font-serif text-xl font-semibold leading-tight text-ink">{task.theme}</h3>
@@ -759,8 +749,8 @@ export default function TodayPage() {
               <div className="mt-4 rounded-lg border border-edge bg-paper p-4">
                 {nextWeakness ? (
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#EEF8F1] text-success">
-                      <IconStethoscope className="h-8 w-8" />
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-paper">
+                      <AreaIcon area={nextWeakness.area} size={32} colored />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-primary">Revisar {nextWeakness.theme}</p>

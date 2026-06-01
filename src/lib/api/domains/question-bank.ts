@@ -149,6 +149,7 @@ export type QuestionBankSessionCreatePayload = {
   board_codes?: string[];
   year_from?: number;
   year_to?: number;
+  years?: number[];
   limit?: number;
   only_unanswered?: boolean;
   answer_status?: QuestionBankAnswerStatus;
@@ -164,7 +165,7 @@ function appendArrayParams(q: URLSearchParams, key: string, values?: string[]) {
 
 export async function browseQuestionBankTopics(
   token: string,
-  params: { area?: string; search?: string; institution?: string; node_type?: string; board_codes?: string[]; year_from?: number; year_to?: number; limit?: number } = {},
+  params: { area?: string; search?: string; institution?: string; node_type?: string; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; limit?: number } = {},
 ): Promise<QuestionBankTopic[]> {
   const q = new URLSearchParams();
   if (params.area?.trim()) q.set("area", params.area.trim());
@@ -175,16 +176,18 @@ export async function browseQuestionBankTopics(
   if (params.year_to) q.set("year_to", String(params.year_to));
   if (params.limit) q.set("limit", String(params.limit));
   appendArrayParams(q, "board_codes", params.board_codes);
+  appendArrayParams(q, "years", params.years?.map(String));
   return api<QuestionBankTopic[]>(`/api/question-bank/topics${q.toString() ? `?${q.toString()}` : ""}`, { headers: authHeader(token) });
 }
 
 export async function previewQuestionBankAvailability(
   token: string,
-  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean } = {},
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean } = {},
 ): Promise<QuestionBankAvailability> {
   const q = new URLSearchParams();
   appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
   appendArrayParams(q, "board_codes", params.board_codes);
+  appendArrayParams(q, "years", params.years?.map(String));
   if (params.area?.trim()) q.set("area", params.area.trim());
   if (params.search?.trim()) q.set("search", params.search.trim());
   if (params.institution?.trim()) q.set("institution", params.institution.trim());
@@ -197,11 +200,12 @@ export async function previewQuestionBankAvailability(
 
 export async function browseQuestionBankQuestions(
   token: string,
-  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; limit?: number; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean } = {},
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; limit?: number; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean } = {},
 ): Promise<QuestionBankQuestion[]> {
   const q = new URLSearchParams();
   appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
   appendArrayParams(q, "board_codes", params.board_codes);
+  appendArrayParams(q, "years", params.years?.map(String));
   if (params.area?.trim()) q.set("area", params.area.trim());
   if (params.search?.trim()) q.set("search", params.search.trim());
   if (params.institution?.trim()) q.set("institution", params.institution.trim());

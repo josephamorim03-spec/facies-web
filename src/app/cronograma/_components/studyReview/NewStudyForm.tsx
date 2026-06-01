@@ -144,7 +144,7 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
             type="button"
             onClick={submitEvent}
             disabled={submitting}
-            className="text-xs rounded-xl border border-ink px-3 py-1 disabled:opacity-50"
+            className="text-xs rounded-xl border border-primary bg-primary px-3 py-1.5 font-semibold text-primaryInk hover:opacity-90 disabled:opacity-50"
           >
             Adicionar{submitting ? submittingDots : ""}
           </button>

@@ -142,7 +142,7 @@ function NotificationSettingsPanel({ token }: { token: string }) {
         <button
           onClick={handleEnable}
           disabled={loading}
-          className="text-xs border border-ink px-3 py-1 disabled:opacity-50"
+          className="rounded-xl border border-edge px-3 py-1.5 text-xs text-muted hover:border-primary hover:text-ink disabled:opacity-50"
         >
           {loading ? "Aguarde…" : "Ativar notificações"}
         </button>
@@ -185,7 +185,7 @@ function NotificationSettingsPanel({ token }: { token: string }) {
         <button
           onClick={handleEnable}
           disabled={loading || settingsLoading}
-          className="text-xs border border-ink px-3 py-1 disabled:opacity-50"
+          className="rounded-xl border border-edge px-3 py-1.5 text-xs text-muted hover:border-primary hover:text-ink disabled:opacity-50"
         >
           {loading ? "Aguarde…" : "Reativar notificações"}
         </button>
@@ -195,7 +195,7 @@ function NotificationSettingsPanel({ token }: { token: string }) {
         <button
           onClick={handleEnable}
           disabled={loading}
-          className="text-xs border border-ink px-3 py-1 disabled:opacity-50"
+          className="rounded-xl border border-edge px-3 py-1.5 text-xs text-muted hover:border-primary hover:text-ink disabled:opacity-50"
         >
           Ativar notificações
         </button>
@@ -382,9 +382,9 @@ export function RotinaTab({
           </div>
         )}
         <div className="flex items-center justify-center md:justify-start gap-3">
-          <button onClick={saveProfile} className="text-sm border border-ink px-4 py-1">Salvar meta</button>
+          <button onClick={saveProfile} className="rounded-xl border border-primary bg-primary px-4 py-1.5 text-sm font-semibold text-primaryInk hover:opacity-90 transition-opacity">Salvar meta</button>
           {savedMsg && <span className="text-sm text-muted">{savedMsg}</span>}
-          {profileError && <span className="text-sm text-red-600">{profileError}</span>}
+          {profileError && <span className="text-sm text-danger">{profileError}</span>}
         </div>
       </section>
 
@@ -508,12 +508,12 @@ export function RotinaTab({
               )}
             </div>
             <div className="flex justify-center md:justify-start gap-2">
-              <button onClick={saveTolerance} className="text-xs border border-ink px-3 py-1">Salvar</button>
-              <button onClick={() => setShowSettings(false)} className="text-xs text-muted px-3 py-1">Cancelar</button>
+              <button onClick={saveTolerance} className="rounded-xl border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primaryInk hover:opacity-90">Salvar</button>
+              <button onClick={() => setShowSettings(false)} className="rounded-xl border border-edge px-3 py-1.5 text-xs text-muted hover:border-primary hover:text-ink">Cancelar</button>
             </div>
           </div>
         )}
-        {evError && <p className="text-sm text-red-600 mb-3 text-center md:text-left">{evError}</p>}
+        {evError && <p className="text-sm text-danger mb-3 text-center md:text-left">{evError}</p>}
 
         <section className="space-y-4">
           <h3 className="text-base font-serif text-muted text-center md:text-left">Adicionar compromisso</h3>
@@ -526,7 +526,7 @@ export function RotinaTab({
                 <button
                   key={item.value}
                   onClick={() => setEventCadence(item.value)}
-                  className={`text-xs px-2 py-1 border ${eventCadence === item.value ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+                  className={`text-xs px-2 py-1 rounded-lg border transition-colors ${eventCadence === item.value ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
                 >
                   {item.label}
                 </button>
@@ -539,7 +539,7 @@ export function RotinaTab({
                   <button
                     key={d}
                     onClick={() => setEventWeekday(i)}
-                    className={`text-xs px-2 py-1 border ${eventWeekday === i ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+                    className={`text-xs px-2 py-1 rounded-lg border transition-colors ${eventWeekday === i ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
                   >
                     {d}
                   </button>
@@ -565,7 +565,7 @@ export function RotinaTab({
                 <button
                   key={item.value}
                   onClick={() => setEventCategory(item.value)}
-                  className={`text-xs px-2 py-1 border ${eventCategory === item.value ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+                  className={`text-xs px-2 py-1 rounded-lg border transition-colors ${eventCategory === item.value ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
                 >
                   {item.label}
                 </button>
@@ -587,7 +587,7 @@ export function RotinaTab({
               >
                 {DURATIONS.map((d) => <option key={d} value={d}>{d}h</option>)}
               </select>
-              <button onClick={addEvent} className="text-sm border border-ink px-3 py-1 w-full sm:w-auto">+ Adicionar</button>
+              <button onClick={addEvent} className="rounded-xl border border-primary bg-primary px-3 py-1.5 text-sm font-semibold text-primaryInk hover:opacity-90 w-full sm:w-auto">+ Adicionar</button>
             </div>
           </div>
         </section>
@@ -622,14 +622,14 @@ export function RotinaTab({
             <button
               type="button"
               onClick={() => setPunctualTab("upcoming")}
-              className={`text-xs px-2 py-1 border ${punctualTab === "upcoming" ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+              className={`text-xs px-2 py-1 rounded-lg border transition-colors ${punctualTab === "upcoming" ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
             >
               Próximos
             </button>
             <button
               type="button"
               onClick={() => setPunctualTab("history")}
-              className={`text-xs px-2 py-1 border ${punctualTab === "history" ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+              className={`text-xs px-2 py-1 rounded-lg border transition-colors ${punctualTab === "history" ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
             >
               Histórico
             </button>
@@ -664,7 +664,7 @@ export function RotinaTab({
         <div className="flex gap-2 justify-center md:justify-start">
           {RESCHEDULE_MODES.map(({ value, label }) => (
             <button key={value} onClick={() => setRescheduleMode(value)}
-              className={`text-xs px-3 py-1 border ${rescheduleMode === value ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}>
+              className={`text-xs px-3 py-1 rounded-lg border transition-colors ${rescheduleMode === value ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}>
               {label}
             </button>
           ))}
@@ -675,9 +675,9 @@ export function RotinaTab({
           {rescheduleMode === "never" && "Sem sugestões de reagendamento."}
         </p>
         <div className="flex items-center justify-center md:justify-start gap-3">
-          <button onClick={saveProfile} className="text-sm border border-ink px-4 py-1">Salvar</button>
+          <button onClick={saveProfile} className="rounded-xl border border-primary bg-primary px-4 py-1.5 text-sm font-semibold text-primaryInk hover:opacity-90">Salvar</button>
           {savedMsg && <span className="text-sm text-muted">{savedMsg}</span>}
-          {profileError && <span className="text-sm text-red-600">{profileError}</span>}
+          {profileError && <span className="text-sm text-danger">{profileError}</span>}
         </div>
       </section>
     </div>

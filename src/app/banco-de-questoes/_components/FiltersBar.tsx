@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { QuestionBankAnswerStatus, QuestionBankResolutionMode, QuestionBankTopic } from "@/lib/api";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const AREAS = ["", "GO", "CM", "CG", "MP", "PD", "OU"] as const;
-const QUICK_YEARS = [2019, 2020, 2021, 2022, 2023, 2024, 2025] as const;
 
 const AREA_FULL_LABELS: Record<string, string> = {
   "": "Todas",
@@ -31,14 +30,48 @@ function AreaLabel({ area }: { area: string }) {
   );
 }
 
-const REALIZACAO_OPTIONS: { value: QuestionBankAnswerStatus; label: string; help: string; group: "main" | "feitas" }[] = [
-  { value: "all",               label: "Todas",               help: "Todas as questões do filtro atual.",                          group: "main" },
-  { value: "unanswered",        label: "Não feitas",           help: "Questões que você ainda não respondeu.",                     group: "main" },
-  { value: "unanswered_or_wrong", label: "Não feitas + Erradas", help: "Não respondidas ou erradas na última tentativa — ideal para reforço.", group: "main" },
-  { value: "answered",          label: "Já feitas (todas)",   help: "Questões que você já respondeu pelo menos uma vez.",          group: "feitas" },
-  { value: "correct",           label: "Só acertos",           help: "Questões que você acertou na última tentativa.",             group: "feitas" },
-  { value: "wrong",             label: "Só erros",             help: "Questões que você errou na última tentativa.",               group: "feitas" },
-];
+const YEAR_OPTIONS = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026] as const;
+
+type RealizacaoState = {
+  unanswered: boolean;
+  answeredExpanded: boolean;
+  answeredSubset: "all" | "correct" | "wrong";
+};
+
+function deriveAnswerStatus(s: RealizacaoState): QuestionBankAnswerStatus {
+  if (!s.unanswered && !s.answeredExpanded) return "all";
+  if (s.unanswered && !s.answeredExpanded) return "unanswered";
+  if (!s.unanswered && s.answeredExpanded) {
+    if (s.answeredSubset === "correct") return "correct";
+    if (s.answeredSubset === "wrong") return "wrong";
+    return "answered";
+  }
+  if (s.answeredSubset === "wrong") return "unanswered_or_wrong";
+  return "all";
+}
+
+function initRealizacaoState(v: QuestionBankAnswerStatus): RealizacaoState {
+  switch (v) {
+    case "unanswered": return { unanswered: true, answeredExpanded: false, answeredSubset: "all" };
+    case "answered": return { unanswered: false, answeredExpanded: true, answeredSubset: "all" };
+    case "correct": return { unanswered: false, answeredExpanded: true, answeredSubset: "correct" };
+    case "wrong": return { unanswered: false, answeredExpanded: true, answeredSubset: "wrong" };
+    case "unanswered_or_wrong": return { unanswered: true, answeredExpanded: true, answeredSubset: "wrong" };
+    default: return { unanswered: false, answeredExpanded: false, answeredSubset: "all" };
+  }
+}
+
+function deriveRealizacaoLabel(s: RealizacaoState): string {
+  if (!s.unanswered && !s.answeredExpanded) return "Todas";
+  const parts: string[] = [];
+  if (s.unanswered) parts.push("Não feitas");
+  if (s.answeredExpanded) {
+    if (s.answeredSubset === "correct") parts.push("Acertos");
+    else if (s.answeredSubset === "wrong") parts.push("Erros");
+    else parts.push("Feitas");
+  }
+  return parts.join(" + ");
+}
 
 const MODO_OPTIONS: { value: QuestionBankResolutionMode; label: string; help: string }[] = [
   { value: "simulation", label: "Simulado", help: "Correção só no final." },
@@ -66,10 +99,8 @@ export type FiltersBarProps = {
   onRemoveBoardCode: (code: string) => void;
   institution: string;
   onInstitutionChange: (v: string) => void;
-  yearFrom: string;
-  onYearFromChange: (v: string) => void;
-  yearTo: string;
-  onYearToChange: (v: string) => void;
+  selectedYears: number[];
+  onSelectedYearsChange: (years: number[]) => void;
   answerStatus: QuestionBankAnswerStatus;
   onAnswerStatusChange: (v: QuestionBankAnswerStatus) => void;
   resolutionMode: QuestionBankResolutionMode;
@@ -224,12 +255,15 @@ export default function FiltersBar(props: FiltersBarProps) {
     area, onAreaChange, search, onSearchChange, topics, selectedTopics, onToggleTopic,
     boardCodes, boardInput, onBoardInputChange,
     onAddBoardCode, onRemoveBoardCode, institution, onInstitutionChange,
-    yearFrom, onYearFromChange, yearTo, onYearToChange, answerStatus, onAnswerStatusChange,
+    selectedYears, onSelectedYearsChange, answerStatus, onAnswerStatusChange,
     resolutionMode, onResolutionModeChange, limit, clampedLimit, maxSelectable, onLimitChange,
   } = props;
 
   const [activeTab, setActiveTab] = useState<FilterTab | null>("assunto");
   const [suggestionsFocused, setSuggestionsFocused] = useState(false);
+  const [realizacaoState, setRealizacaoState] = useState<RealizacaoState>(() => initRealizacaoState(answerStatus));
+  // Sync local UI state when parent resets answerStatus (e.g. clicking an intent card)
+  useEffect(() => { setRealizacaoState(initRealizacaoState(answerStatus)); }, [answerStatus]);
   // Tracks IDs the user has manually collapsed
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => new Set());
 
@@ -258,7 +292,7 @@ export default function FiltersBar(props: FiltersBarProps) {
   const TABS: { id: FilterTab; label: string; value: string; indicator: boolean }[] = [
     {
       id: "assunto",
-      label: "Área / Assunto",
+      label: "Assunto",
       value: selectedTopics.length > 0
         ? `${selectedTopics.length} tema${selectedTopics.length > 1 ? "s" : ""}`
         : (search.trim() || AREA_SHORT_LABELS[area] || "Todas"),
@@ -266,20 +300,20 @@ export default function FiltersBar(props: FiltersBarProps) {
     },
     {
       id: "banca",
-      label: "Banca / Instituição",
+      label: "Banca",
       value: boardCodes.length > 0 ? boardCodes.join(", ") : (institution.trim() || "Todas"),
       indicator: boardCodes.length > 0 || !!institution.trim(),
     },
     {
       id: "ano",
       label: "Ano",
-      value: yearFrom || yearTo ? `${yearFrom || "1990"} - ${yearTo || "2026"}` : "Todos",
-      indicator: !!yearFrom || !!yearTo,
+      value: selectedYears.length > 0 ? [...selectedYears].sort((a, b) => a - b).join(", ") : "Todos",
+      indicator: selectedYears.length > 0,
     },
     {
       id: "realizacao",
-      label: "Realização",
-      value: REALIZACAO_OPTIONS.find((opt) => opt.value === answerStatus)?.label ?? "Todas",
+      label: "Status",
+      value: deriveRealizacaoLabel(realizacaoState),
       indicator: answerStatus !== "all",
     },
     {
@@ -290,7 +324,7 @@ export default function FiltersBar(props: FiltersBarProps) {
     },
     {
       id: "quantidade",
-      label: "Quantidade",
+      label: "Qtd",
       value: `${clampedLimit}`,
       indicator: false,
     },
@@ -310,7 +344,7 @@ export default function FiltersBar(props: FiltersBarProps) {
               type="button"
               onClick={() => setActiveTab(active ? null : tab.id)}
               className={cx(
-                "relative flex min-w-[9.5rem] shrink-0 flex-col rounded-xl border px-3 py-2 text-left transition-colors",
+                "relative flex min-w-[5.5rem] shrink-0 flex-col rounded-xl border px-3 py-2 text-left transition-colors",
                 active
                   ? "border-primary bg-surfaceMuted text-ink"
                   : "border-edge bg-surface text-muted hover:border-primary hover:text-ink",
@@ -468,87 +502,87 @@ export default function FiltersBar(props: FiltersBarProps) {
           )}
 
           {activeTab === "ano" && (
-            <div className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-[8rem_8rem_auto] sm:items-end">
-                <label className="space-y-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">De</span>
-                  <input
-                    type="number" min={1990} max={2026} value={yearFrom}
-                    onChange={(e) => onYearFromChange(e.target.value)}
-                  />
-                </label>
-                <label className="space-y-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Até</span>
-                  <input
-                    type="number" min={1990} max={2026} value={yearTo}
-                    onChange={(e) => onYearToChange(e.target.value)}
-                  />
-                </label>
-                {(yearFrom || yearTo) && (
-                  <button
-                    type="button"
-                    onClick={() => { onYearFromChange(""); onYearToChange(""); }}
-                    className="rounded-xl border border-edge px-4 py-2 text-sm text-muted hover:border-primary hover:text-ink"
-                  >
-                    Limpar anos
-                  </button>
-                )}
-              </div>
+            <div className="space-y-3">
+              <p className="text-xs text-muted">Selecione um ou mais anos. Sem seleção = todos.</p>
               <div className="flex flex-wrap gap-2">
-                {QUICK_YEARS.map((year) => {
-                  const ys = String(year);
+                {YEAR_OPTIONS.map((year) => {
+                  const selected = selectedYears.includes(year);
                   return (
                     <button
                       key={year}
                       type="button"
-                      onClick={() => { onYearFromChange(ys); onYearToChange(ys); }}
-                      className={cx("km-chip", yearFrom === ys && yearTo === ys && "km-chip-active")}
+                      onClick={() =>
+                        onSelectedYearsChange(
+                          selected ? selectedYears.filter((y) => y !== year) : [...selectedYears, year],
+                        )
+                      }
+                      className={cx("km-chip", selected && "km-chip-active")}
                     >
                       {year}
                     </button>
                   );
                 })}
               </div>
+              {selectedYears.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => onSelectedYearsChange([])}
+                  className="text-xs text-muted hover:text-ink"
+                >
+                  Limpar seleção
+                </button>
+              )}
             </div>
           )}
 
           {activeTab === "realizacao" && (
             <div className="space-y-4">
-              <div className="grid gap-3 md:grid-cols-3">
-                {REALIZACAO_OPTIONS.filter((o) => o.group === "main").map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => onAnswerStatusChange(option.value)}
-                    className={cx(
-                      "rounded-2xl border p-4 text-left transition-colors",
-                      answerStatus === option.value ? "border-primary bg-surfaceMuted" : "border-edge bg-surface hover:border-primary",
-                    )}
-                  >
-                    <span className="block text-sm font-semibold text-ink">{option.label}</span>
-                    <span className="mt-1 block text-xs text-muted">{option.help}</span>
-                  </button>
-                ))}
+              <p className="text-xs text-muted">Combine os estados que deseja incluir. Sem seleção = todas.</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = { ...realizacaoState, unanswered: !realizacaoState.unanswered };
+                    setRealizacaoState(next);
+                    onAnswerStatusChange(deriveAnswerStatus(next));
+                  }}
+                  className={cx("km-chip", realizacaoState.unanswered && "km-chip-active")}
+                >
+                  Não realizadas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = { ...realizacaoState, answeredExpanded: !realizacaoState.answeredExpanded };
+                    setRealizacaoState(next);
+                    onAnswerStatusChange(deriveAnswerStatus(next));
+                  }}
+                  className={cx("km-chip", realizacaoState.answeredExpanded && "km-chip-active")}
+                >
+                  Realizadas {realizacaoState.answeredExpanded ? "▲" : "▼"}
+                </button>
               </div>
-              <div className="space-y-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Já feitas — filtros avançados</p>
-                <div className="grid gap-3 md:grid-cols-3">
-                  {REALIZACAO_OPTIONS.filter((o) => o.group === "feitas").map((option) => (
+              {realizacaoState.answeredExpanded && (
+                <div className="flex flex-wrap gap-2 border-l-2 border-primary/30 pl-4">
+                  {(["all", "correct", "wrong"] as const).map((subset) => (
                     <button
-                      key={option.value}
+                      key={subset}
                       type="button"
-                      onClick={() => onAnswerStatusChange(option.value)}
-                      className={cx(
-                        "rounded-2xl border p-4 text-left transition-colors",
-                        answerStatus === option.value ? "border-primary bg-surfaceMuted" : "border-edge bg-surface hover:border-primary",
-                      )}
+                      onClick={() => {
+                        const next = { ...realizacaoState, answeredSubset: subset };
+                        setRealizacaoState(next);
+                        onAnswerStatusChange(deriveAnswerStatus(next));
+                      }}
+                      className={cx("km-chip", realizacaoState.answeredSubset === subset && "km-chip-active")}
                     >
-                      <span className="block text-sm font-semibold text-ink">{option.label}</span>
-                      <span className="mt-1 block text-xs text-muted">{option.help}</span>
+                      {subset === "all" ? "Todas" : subset === "correct" ? "Acertadas" : "Erradas"}
                     </button>
                   ))}
                 </div>
-              </div>
+              )}
+              {!realizacaoState.unanswered && !realizacaoState.answeredExpanded && (
+                <p className="text-xs text-muted">Sem filtro — todas as questões incluídas.</p>
+              )}
             </div>
           )}
 

@@ -177,8 +177,7 @@ function BancoDeQuestoesContent() {
   const [institution, setInstitution] = useState("");
   const [boardCodes, setBoardCodes] = useState<string[]>([]);
   const [boardInput, setBoardInput] = useState("");
-  const [yearFrom, setYearFrom] = useState("");
-  const [yearTo, setYearTo] = useState("");
+  const [selectedYears, setSelectedYears] = useState<number[]>([]);
   const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("all");
   const [limit, setLimit] = useState(() => Math.max(1, Math.min(50, initialContext.expectedQuestions ?? 10)));
   const [resolutionMode, setResolutionMode] = useState<QuestionBankResolutionMode>("simulation");
@@ -195,16 +194,6 @@ function BancoDeQuestoesContent() {
   const [error, setError] = useState<string | null>(null);
 
   // Derived
-  const parsedYearFrom = useMemo(() => {
-    const n = Number(yearFrom);
-    return Number.isInteger(n) && n > 0 ? n : undefined;
-  }, [yearFrom]);
-
-  const parsedYearTo = useMemo(() => {
-    const n = Number(yearTo);
-    return Number.isInteger(n) && n > 0 ? n : undefined;
-  }, [yearTo]);
-
   const maxSelectable = Math.max(1, Math.min(50, availability?.max_selectable ?? 50));
   const clampedLimit = Math.max(1, Math.min(limit, maxSelectable));
 
@@ -217,8 +206,7 @@ function BancoDeQuestoesContent() {
     search.trim(),
     institution.trim(),
     boardCodes.length > 0 ? "boards" : "",
-    yearFrom,
-    yearTo,
+    selectedYears.length > 0 ? "years" : "",
     answerStatus !== "all" ? answerStatus : "",
     selectedTopics.length > 0 ? "topics" : "",
   ].filter(Boolean).length;
@@ -249,12 +237,11 @@ function BancoDeQuestoesContent() {
     search: search.trim() || undefined,
     institution: institution.trim() || undefined,
     board_codes: boardCodes.length > 0 ? boardCodes : undefined,
-    year_from: parsedYearFrom,
-    year_to: parsedYearTo,
+    years: selectedYears.length > 0 ? selectedYears : undefined,
     answer_status: answerStatus,
     only_unanswered: false,
     limit: overrides?.limit,
-  }), [answerStatus, area, boardCodes, institution, parsedYearFrom, parsedYearTo, search, selectedTopics]);
+  }), [answerStatus, area, boardCodes, institution, search, selectedTopics, selectedYears]);
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -280,15 +267,14 @@ function BancoDeQuestoesContent() {
         search: search.trim() || undefined,
         institution: institution.trim() || undefined,
         board_codes: boardCodes.length > 0 ? boardCodes : undefined,
-        year_from: parsedYearFrom,
-        year_to: parsedYearTo,
+        years: selectedYears.length > 0 ? selectedYears : undefined,
         limit: 200,
       });
       setTopics(found);
     } catch {
       setTopics([]);
     }
-  }, [area, boardCodes, institution, parsedYearFrom, parsedYearTo, search, token]);
+  }, [area, boardCodes, institution, search, selectedYears, token]);
 
   useEffect(() => {
     if (!tokenResolved) return;
@@ -321,13 +307,8 @@ function BancoDeQuestoesContent() {
     clearSelection();
   }
 
-  function handleYearFromChange(next: string) {
-    setYearFrom(next);
-    clearSelection();
-  }
-
-  function handleYearToChange(next: string) {
-    setYearTo(next);
+  function handleSelectedYearsChange(next: number[]) {
+    setSelectedYears(next);
     clearSelection();
   }
 
@@ -390,6 +371,15 @@ function BancoDeQuestoesContent() {
       <div className="mx-auto max-w-7xl space-y-6">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="mb-3 flex items-center gap-1.5 text-sm text-muted hover:text-ink md:hidden"
+              aria-label="Voltar"
+            >
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="m12 4-6 6 6 6" /></svg>
+              Voltar
+            </button>
             <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">Monte sua sessão</h1>
             <p className="mt-3 max-w-2xl text-base text-muted">
               Escolha como deseja estudar e personalize o bloco com filtros do banco.
@@ -404,7 +394,7 @@ function BancoDeQuestoesContent() {
           )}
         </header>
 
-        <section className="grid gap-4 md:grid-cols-3" aria-label="Tipos de sessão">
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-3" aria-label="Tipos de sessão">
           <SessionIntentCard
             title="Aprender um tema"
             description="Resolva com feedback mais próximo e acompanhe o raciocínio item a item."
@@ -470,10 +460,8 @@ function BancoDeQuestoesContent() {
               onRemoveBoardCode={(code) => setBoardCodes((prev) => prev.filter((c) => c !== code))}
               institution={institution}
               onInstitutionChange={handleInstitutionChange}
-              yearFrom={yearFrom}
-              onYearFromChange={handleYearFromChange}
-              yearTo={yearTo}
-              onYearToChange={handleYearToChange}
+              selectedYears={selectedYears}
+              onSelectedYearsChange={handleSelectedYearsChange}
               answerStatus={answerStatus}
               onAnswerStatusChange={handleAnswerStatusChange}
               resolutionMode={resolutionMode}
