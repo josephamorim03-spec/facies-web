@@ -5,6 +5,8 @@
  * Each icon uses `currentColor` so the caller controls color via className/style.
  */
 
+import React from "react";
+
 const VIEWBOX = "0 0 24 24";
 const STROKE_PROPS = {
   fill: "none",
@@ -13,6 +15,8 @@ const STROKE_PROPS = {
   strokeLinejoin: "round" as const,
   strokeWidth: "1.8",
 };
+
+type IconProps = { className?: string; style?: React.CSSProperties };
 
 export const AREA_COLORS: Record<string, string> = {
   GO: "#B65AA0",
@@ -38,9 +42,9 @@ export const AREA_SHORT_LABELS: Record<string, string> = {
 
 // ── Individual area icons ──────────────────────────────────────────────────
 
-function IconGO({ className }: { className?: string }) {
+function IconGO({ className, style }: IconProps) {
   return (
-    <svg viewBox={VIEWBOX} className={className} aria-hidden="true" {...STROKE_PROPS}>
+    <svg viewBox={VIEWBOX} className={className} style={style} aria-hidden="true" {...STROKE_PROPS}>
       {/* Uterus body */}
       <path d="M12 21 L12 17" />
       <path d="M9.5 17 C9.5 14 8 11 9 8.5 C10 6 11 5 12 5 C13 5 14 6 15 8.5 C16 11 14.5 14 14.5 17 Z" />
@@ -54,9 +58,9 @@ function IconGO({ className }: { className?: string }) {
   );
 }
 
-function IconCG({ className }: { className?: string }) {
+function IconCG({ className, style }: IconProps) {
   return (
-    <svg viewBox={VIEWBOX} className={className} aria-hidden="true" {...STROKE_PROPS}>
+    <svg viewBox={VIEWBOX} className={className} style={style} aria-hidden="true" {...STROKE_PROPS}>
       {/* Handle */}
       <path d="M5 19 L9 15" strokeWidth="2.5" />
       {/* Blade body */}
@@ -72,9 +76,9 @@ function IconCG({ className }: { className?: string }) {
   );
 }
 
-function IconPD({ className }: { className?: string }) {
+function IconPD({ className, style }: IconProps) {
   return (
-    <svg viewBox={VIEWBOX} className={className} aria-hidden="true" {...STROKE_PROPS}>
+    <svg viewBox={VIEWBOX} className={className} style={style} aria-hidden="true" {...STROKE_PROPS}>
       {/* Baby head */}
       <circle cx="12" cy="8" r="4" />
       {/* Body */}
@@ -91,9 +95,9 @@ function IconPD({ className }: { className?: string }) {
   );
 }
 
-function IconCM({ className }: { className?: string }) {
+function IconCM({ className, style }: IconProps) {
   return (
-    <svg viewBox={VIEWBOX} className={className} aria-hidden="true" {...STROKE_PROPS}>
+    <svg viewBox={VIEWBOX} className={className} style={style} aria-hidden="true" {...STROKE_PROPS}>
       {/* Left ear piece */}
       <path d="M6 3.5 L6 7" />
       {/* Right ear piece */}
@@ -114,9 +118,9 @@ function IconCM({ className }: { className?: string }) {
   );
 }
 
-function IconMP({ className }: { className?: string }) {
+function IconMP({ className, style }: IconProps) {
   return (
-    <svg viewBox={VIEWBOX} className={className} aria-hidden="true" {...STROKE_PROPS}>
+    <svg viewBox={VIEWBOX} className={className} style={style} aria-hidden="true" {...STROKE_PROPS}>
       {/* Shield outline */}
       <path d="M12 3 L4 7 L4 13 C4 17.5 7.5 21 12 22.5 C16.5 21 20 17.5 20 13 L20 7 Z" />
       {/* Medical cross inside */}
@@ -126,9 +130,9 @@ function IconMP({ className }: { className?: string }) {
   );
 }
 
-function IconOU({ className }: { className?: string }) {
+function IconOU({ className, style }: IconProps) {
   return (
-    <svg viewBox={VIEWBOX} className={className} aria-hidden="true" {...STROKE_PROPS}>
+    <svg viewBox={VIEWBOX} className={className} style={style} aria-hidden="true" {...STROKE_PROPS}>
       {/* Erlenmeyer flask */}
       <path d="M9.5 3.5 L9.5 11 L4.5 18.5 C4 19.5 4.5 21 6 21 L18 21 C19.5 21 20 19.5 19.5 18.5 L14.5 11 L14.5 3.5" />
       {/* Neck top */}
@@ -143,7 +147,7 @@ function IconOU({ className }: { className?: string }) {
 
 // ── Public component ───────────────────────────────────────────────────────
 
-const ICON_MAP: Record<string, (p: { className?: string }) => React.JSX.Element> = {
+const ICON_MAP: Record<string, (p: IconProps) => React.JSX.Element> = {
   GO: IconGO,
   CG: IconCG,
   PD: IconPD,
@@ -151,8 +155,6 @@ const ICON_MAP: Record<string, (p: { className?: string }) => React.JSX.Element>
   MP: IconMP,
   OU: IconOU,
 };
-
-import React from "react";
 
 export function AreaIcon({
   area,
@@ -169,7 +171,7 @@ export function AreaIcon({
   const color = colored ? (AREA_COLORS[area] ?? AREA_COLORS.OU) : "currentColor";
   return (
     <Icon
-      className={className || `shrink-0`}
+      className={className || "shrink-0"}
       style={{ width: size, height: size, color }}
     />
   );
