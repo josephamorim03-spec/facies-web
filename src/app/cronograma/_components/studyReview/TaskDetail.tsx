@@ -1,5 +1,6 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import AreaDot from "@/components/AreaDot";
+import { Button } from "@/components/ui/Button";
 import {
   autoRescheduleReviewTask,
   deleteDirectedStudy,
@@ -201,15 +202,14 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
         <p className="text-xs text-muted italic">Revisão #{revision} · {task.area} / {task.theme}</p>
         <p className="text-xs text-muted">Cancelar esta revisão irá devolvê-la para a fila de pendentes.</p>
         {editableStudy?.import_session_id && (
-          <p className="text-xs text-amber-700">Atenção: esta revisão possui uma correção salva que será perdida ao cancelar.</p>
+          <p className="text-xs text-warning">Atenção: esta revisão possui uma correção salva que será perdida ao cancelar.</p>
         )}
         {cancelErr && <p className="text-xs text-red-600">{cancelErr}</p>}
         <div className="flex gap-2">
-          <button onClick={cancelRevision} disabled={cancelingRevision}
-            className="text-xs border border-red-600 text-red-600 px-3 py-1 hover:bg-red-50 disabled:opacity-50">
+          <Button type="button" variant="danger" size="sm" onClick={cancelRevision} loading={cancelingRevision}>
             {cancelingRevision ? "..." : "Confirmar"}
-          </button>
-          <button onClick={() => setCancelConfirm(false)} className="text-xs text-muted px-3 py-1">Voltar</button>
+          </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setCancelConfirm(false)}>Voltar</Button>
         </div>
       </div>
     );
@@ -222,22 +222,22 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
         {editableStudy ? (
           <>
             {editableStudy.import_session_id && (
-              <p className="text-xs text-amber-700">Atenção: alterar os dados irá apagar a correção salva.</p>
+              <p className="text-xs text-warning">Atenção: alterar os dados irá apagar a correção salva.</p>
             )}
             <div className="flex gap-2 justify-center">
               <label className="text-xs text-muted flex flex-col gap-1">
                 Total
                 <input type="number" min={1} value={editTotal} onChange={(e) => { setEditTotal(e.target.value); setEditImpactPreview(null); }}
-                  className="border border-edge w-20 px-2 py-1 text-sm bg-paper" />
+                  className="w-20 rounded-xl border border-edge bg-paper px-2 py-1 text-sm" />
               </label>
               <label className="text-xs text-muted flex flex-col gap-1">
                 Acertos
                 <input type="number" min={0} max={Number(editTotal)} value={editCorrect} onChange={(e) => { setEditCorrect(e.target.value); setEditImpactPreview(null); }}
-                  className="border border-edge w-20 px-2 py-1 text-sm bg-paper" />
+                  className="w-20 rounded-xl border border-edge bg-paper px-2 py-1 text-sm" />
               </label>
             </div>
             {editImpactPreview && (
-              <div className="rounded-xl border border-edge p-2 space-y-1 bg-amber-50">
+              <div className="rounded-xl border border-edge bg-[var(--amber-tint)] p-2 space-y-1">
                 <p className="text-xs font-medium">Confirmar edição</p>
                 <p className="text-xs text-muted">
                   Acuracia: {editImpactPreview.accuracy_before_pct.toFixed(1)}% -&gt; {editImpactPreview.accuracy_after_pct.toFixed(1)}%
@@ -251,44 +251,45 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
                   Revisões futuras afetadas: {editImpactPreview.affected_future_studies}
                 </p>
                 <div className="flex gap-2">
-                  <button
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
                     onClick={confirmEditImpact}
-                    disabled={editConfirmingImpact || editSaving}
-                    className="text-xs border border-ink px-3 py-1 disabled:opacity-50"
+                    loading={editConfirmingImpact || editSaving}
                   >
                     {editConfirmingImpact || editSaving ? "..." : "Confirmar alteracao"}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
                     onClick={() => setEditImpactPreview(null)}
-                    className="text-xs text-muted border border-edge px-3 py-1"
                   >
                     Revisar dados
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
             {editErr && <p className="text-xs text-red-600">{editErr}</p>}
-            <div className="flex gap-2 flex-wrap">
-              <button onClick={() => saveEdit()} disabled={editSaving}
-                className="text-xs border border-ink px-3 py-1 disabled:opacity-50">
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="primary" size="sm" onClick={() => saveEdit()} loading={editSaving}>
                 {editSaving ? "..." : "Salvar"}
-              </button>
-              <button onClick={() => setCancelConfirm(true)}
-                className="text-xs text-red-600 border border-red-300 px-3 py-1 hover:border-red-500 hover:text-red-700">
+              </Button>
+              <Button type="button" variant="danger" size="sm" onClick={() => setCancelConfirm(true)}>
                 Apagar revisão
-              </button>
-              <button onClick={() => setEditMode(false)} className="text-xs text-muted px-2 py-1">Cancelar</button>
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setEditMode(false)}>Cancelar</Button>
             </div>
           </>
         ) : (
           <>
             <p className="text-xs text-muted">Não foi possível localizar os dados desta revisão para editar.</p>
             <div className="flex gap-2">
-              <button onClick={() => setCancelConfirm(true)}
-                className="text-xs border border-red-600 text-red-600 px-3 py-1 hover:bg-red-50">
+              <Button type="button" variant="danger" size="sm" onClick={() => setCancelConfirm(true)}>
                 Apagar revisão
-              </button>
-              <button onClick={() => setEditMode(false)} className="text-xs text-muted px-3 py-1">Cancelar</button>
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setEditMode(false)}>Cancelar</Button>
             </div>
           </>
         )}
@@ -303,8 +304,8 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
       ? editableStudy.accuracy.toFixed(0)
       : accuracy !== null ? accuracy.toFixed(0) : null;
     return (
-      <div className="relative opacity-75 rounded-xl border border-edge p-2 space-y-1">
-        <button onClick={() => setEditMode(true)} className="absolute top-1.5 right-1.5 text-muted hover:text-ink" title="Alterar">
+      <div className="relative space-y-1 rounded-xl border border-edge bg-surface p-3 opacity-80">
+        <button type="button" onClick={() => setEditMode(true)} className="absolute right-1.5 top-1.5 rounded-lg p-1 text-muted hover:bg-surfaceMuted hover:text-ink" title="Alterar">
           <IconPencil className="w-3 h-3" />
         </button>
         <div className="flex items-center gap-2 pr-6">
@@ -354,46 +355,50 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
       ) : (
         <>
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="border border-edge py-2">
-              <p className="text-xs text-muted">Acertos</p>
-              <p className="text-sm font-medium">{accuracy !== null ? `${accuracy.toFixed(0)}%` : "-"}</p>
+            <div className="rounded-xl border border-edge bg-paper/70 px-2 py-2.5">
+              <p className="text-[11px] leading-none text-muted">Acertos</p>
+              <p className="mt-1 text-base font-semibold text-ink">{accuracy !== null ? `${accuracy.toFixed(0)}%` : "-"}</p>
             </div>
-            <div className="border border-edge py-2">
-              <p className="text-xs text-muted">Revisão</p>
-              <p className="text-sm font-medium">#{revision}</p>
+            <div className="rounded-xl border border-edge bg-paper/70 px-2 py-2.5">
+              <p className="text-[11px] leading-none text-muted">Revisão</p>
+              <p className="mt-1 text-base font-semibold text-ink">#{revision}</p>
             </div>
-            <div className="border border-edge py-2">
-              <p className="text-xs text-muted">Min. q.</p>
-              <p className="text-sm font-medium">{task.expected_questions}</p>
+            <div className="rounded-xl border border-edge bg-paper/70 px-2 py-2.5">
+              <p className="text-[11px] leading-none text-muted">Min. q.</p>
+              <p className="mt-1 text-base font-semibold text-ink">{task.expected_questions}</p>
             </div>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setShowLog(true)}
-              className="flex items-center gap-1 text-xs border border-ink px-3 py-1.5 flex-1 justify-center">
-              <IconPlus className="w-3.5 h-3.5" />
-              Registrar
-            </button>
-            <button
+            <Button
               type="button"
-              onClick={() => setShowReschedule((v) => !v)}
-              className={`flex items-center gap-1 text-xs border px-2 py-1.5 ${showReschedule ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-ink"}`}
+              variant="primary"
+              size="sm"
+              className="flex-1"
+              leftIcon={<IconPlus className="w-3.5 h-3.5" />}
+              onClick={() => setShowLog(true)}
             >
-              <IconRefresh className="w-3.5 h-3.5" />
+              Registrar
+            </Button>
+            <Button
+              type="button"
+              variant={showReschedule ? "primary" : "secondary"}
+              size="sm"
+              leftIcon={<IconRefresh className="w-3.5 h-3.5" />}
+              onClick={() => setShowReschedule((v) => !v)}
+            >
               Reagendar
-            </button>
+            </Button>
           </div>
           {showReschedule && (
-            <div className="space-y-2 rounded-xl border border-edge p-2">
+            <div className="space-y-2 rounded-xl border border-edge bg-surface p-3">
               {rescheduleControls === "auto_manual" && (
                 <div className="flex justify-center gap-1">
-                  <button type="button" onClick={() => setRescheduleMode("auto")}
-                    className={`text-xs px-2 py-1 border ${rescheduleMode === "auto" ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}>
+                  <Button type="button" variant={rescheduleMode === "auto" ? "primary" : "secondary"} size="xs" onClick={() => setRescheduleMode("auto")}>
                     Auto
-                  </button>
-                  <button type="button" onClick={() => setRescheduleMode("manual")}
-                    className={`text-xs px-2 py-1 border ${rescheduleMode === "manual" ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}>
+                  </Button>
+                  <Button type="button" variant={rescheduleMode === "manual" ? "primary" : "secondary"} size="xs" onClick={() => setRescheduleMode("manual")}>
                     Manual
-                  </button>
+                  </Button>
                 </div>
               )}
               {(rescheduleControls === "auto_only" || rescheduleMode === "auto") && (
@@ -404,44 +409,49 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
                         Sugestão de reagendamento: <strong>{displayDate(autoSuggestedDueDate)}</strong>. Confirmar?
                       </p>
                       <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={runAutoReschedule}
-                          disabled={rescheduling}
-                          className="flex items-center justify-center gap-1 text-xs border border-ink px-3 py-1.5 disabled:opacity-50"
-                        >
-                          <IconRefresh className="w-3.5 h-3.5" />
-                          {rescheduling ? "..." : "Confirmar"}
-                        </button>
-                        <button
+                        <Button
                           type="button"
+                          variant="primary"
+                          size="sm"
+                          onClick={runAutoReschedule}
+                          loading={rescheduling}
+                          leftIcon={<IconRefresh className="w-3.5 h-3.5" />}
+                        >
+                          {rescheduling ? "..." : "Confirmar"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
                           onClick={() => setAutoSuggestedDueDate(null)}
                           disabled={rescheduling}
-                          className="text-xs border border-edge px-3 py-1.5 text-muted disabled:opacity-50"
                         >
                           Cancelar
-                        </button>
+                        </Button>
                       </div>
                     </>
                   ) : (
-                    <button
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
                       onClick={prepareAutoReschedule}
-                      disabled={preparingAutoReschedule || rescheduling}
-                      className="w-full flex items-center justify-center gap-1 text-xs border border-edge px-3 py-1.5 disabled:opacity-50"
+                      loading={preparingAutoReschedule || rescheduling}
+                      className="w-full"
+                      leftIcon={<IconRefresh className="w-3.5 h-3.5" />}
                     >
-                      <IconRefresh className="w-3.5 h-3.5" />
                       {(preparingAutoReschedule || rescheduling) ? "..." : "Reagendar auto"}
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
               {(rescheduleControls === "auto_manual" && rescheduleMode === "manual") && (
                 <div className="flex gap-2 items-center">
                   <input type="date" value={manualDueDate} onChange={(e) => setManualDueDate(e.target.value)}
-                    className="flex-1 border border-edge px-2 py-1 text-xs bg-paper" />
-                  <button onClick={runManualReschedule} disabled={manualSaving}
-                    className="text-xs border border-edge px-3 py-1.5 disabled:opacity-50">
+                    className="flex-1 rounded-xl border border-edge bg-paper px-2 py-1.5 text-xs" />
+                  <Button type="button" variant="secondary" size="sm" onClick={runManualReschedule} loading={manualSaving}>
                     {manualSaving ? "..." : "Confirmar"}
-                  </button>
+                  </Button>
                 </div>
               )}
               {manualErr && <p className="text-xs text-red-600">{manualErr}</p>}

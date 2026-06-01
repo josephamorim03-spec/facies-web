@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AreaDot from "@/components/AreaDot";
+import { Button } from "@/components/ui/Button";
 import {
   createDirectedStudy,
   getAPIErrorCode,
@@ -76,7 +77,7 @@ export function InlineLogForm({ task, token, onDone, onCancel, logDateISO }: {
 
   if (nextDate) {
     return (
-      <div className="flex items-center gap-2 text-sm border border-edge p-2">
+      <div className="flex items-center gap-2 rounded-xl border border-edge bg-surface p-3 text-sm">
         <AreaDot area={task.area as Area} size="md" />
         <span>Proxima revisao: <strong>{nextDate}</strong></span>
       </div>
@@ -86,13 +87,14 @@ export function InlineLogForm({ task, token, onDone, onCancel, logDateISO }: {
   return (
     <div className="mx-auto w-full max-w-xs space-y-2">
       <div className="flex justify-center">
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="xs"
           onClick={openQuestionBankReview}
-          className="text-xs border border-edge text-muted hover:border-ink px-2 py-0.5"
         >
           Resolver questoes do banco
-        </button>
+        </Button>
       </div>
 
       <div className="flex gap-2 justify-center">
@@ -103,7 +105,7 @@ export function InlineLogForm({ task, token, onDone, onCancel, logDateISO }: {
             min={1}
             value={total}
             onChange={(e) => setTotal(e.target.value)}
-            className="border border-edge w-20 px-2 py-1 text-sm bg-paper"
+            className="w-20 rounded-xl border border-edge bg-paper px-2 py-1.5 text-sm"
           />
         </label>
         <label className="text-xs text-muted flex flex-col gap-1">
@@ -114,17 +116,17 @@ export function InlineLogForm({ task, token, onDone, onCancel, logDateISO }: {
             max={Number(total)}
             value={correct}
             onChange={(e) => setCorrect(e.target.value)}
-            className="border border-edge w-20 px-2 py-1 text-sm bg-paper"
+            className="w-20 rounded-xl border border-edge bg-paper px-2 py-1.5 text-sm"
           />
         </label>
       </div>
 
       {err && <p className="text-xs text-red-600">{err}</p>}
       <div className="flex gap-2 justify-center">
-        <button onClick={submit} disabled={submitting} className="text-xs border border-ink px-3 py-1 disabled:opacity-50 whitespace-nowrap">
+        <Button type="button" variant="primary" size="sm" onClick={submit} loading={submitting} className="whitespace-nowrap">
           Salvar{submitting ? submittingDots : ""}
-        </button>
-        <button onClick={onCancel} className="text-xs text-muted px-3 py-1">Cancelar</button>
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={onCancel}>Cancelar</Button>
       </div>
     </div>
   );

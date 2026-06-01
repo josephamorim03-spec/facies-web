@@ -106,7 +106,6 @@ export default function CronogramaPage() {
   });
 
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [isDayDetailOpen, setIsDayDetailOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [isMobilePortrait, setIsMobilePortrait] = useState(false);
   const nowRef = new Date();
@@ -351,7 +350,6 @@ export default function CronogramaPage() {
           onRefresh={fetchAll}
           onEventMutated={handleEventMutationRefresh}
           searchQuery={searchQuery}
-          onDayDetailChange={setIsDayDetailOpen}
           isMobilePortrait={isMobilePortrait}
           onMonthYearChange={(m, y, rowCount, gtt, prev, next) => {
             setCalendarMonth(m);
@@ -361,17 +359,10 @@ export default function CronogramaPage() {
             prevMonthRef.current = prev;
             nextMonthRef.current = next;
           }}
-          summarySlot={
-            isDayDetailOpen && !error
-              ? loading
-                ? <WeeklyOpsCompactSummarySkeleton />
-                : <WeeklyOpsCompactSummary metrics={weeklyOpsMetrics} compact={true} />
-              : null
-          }
         />
       </div>
 
-      {!isDayDetailOpen && !error && (
+      {!error && (
         <div className={summaryPositionClass}>
           {loading
             ? <WeeklyOpsCompactSummarySkeleton />

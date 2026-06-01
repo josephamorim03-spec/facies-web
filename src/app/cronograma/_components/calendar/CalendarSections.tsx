@@ -1,9 +1,10 @@
 ﻿import React from "react";
 import Link from "next/link";
 import { CalendarEventOut, DirectedStudyListItem, ReviewTask } from "@/lib/api";
+import { Button } from "@/components/ui/Button";
 import { IconPlus } from "../CronogramaIcons";
-import { NewStudyForm, StudyDotCard, TaskDetail } from "../CronogramaStudyReviewComponents";
-import { displayDate, getAccuracy, getRevisionNumber, SHORT_MONTH_LABELS } from "../../_lib/cronogramaShared";
+import { NewStudyForm } from "../CronogramaStudyReviewComponents";
+import { getAccuracy, getRevisionNumber, SHORT_MONTH_LABELS } from "../../_lib/cronogramaShared";
 
 export function CalendarMonthNavigation({
   month,
@@ -21,7 +22,7 @@ export function CalendarMonthNavigation({
   return (
     <div data-month-nav="true" className="mb-2 grid grid-cols-[6rem_1fr_6rem] items-center">
       <div data-month-nav-left="true" className="flex items-center justify-start">
-        <button onClick={onPrevMonth} className="p-2 text-muted hover:text-ink" aria-label="Mês anterior">
+        <button type="button" onClick={onPrevMonth} className="p-2 text-muted hover:text-ink" aria-label="Mês anterior">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M9 2L4 7l5 5" />
           </svg>
@@ -31,7 +32,7 @@ export function CalendarMonthNavigation({
         {SHORT_MONTH_LABELS[month]}{year !== currentYear ? ` ${year}` : ""}
       </span>
       <div data-month-nav-right="true" className="flex items-center justify-end gap-1">
-        <button onClick={onNextMonth} className="p-2 text-muted hover:text-ink" aria-label="Próximo mês">
+        <button type="button" onClick={onNextMonth} className="p-2 text-muted hover:text-ink" aria-label="Próximo mês">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M5 2l5 5-5 5" />
           </svg>
@@ -88,6 +89,7 @@ export function CalendarActionButtons({
         data-testid="calendar-action-mode"
       >
         <button
+          type="button"
           onClick={onOpenCreateModal}
           className={`flex items-center gap-1.5 rounded-xl border shadow-sm px-4 py-2.5 text-sm font-semibold transition-colors ${
             modal === "create"
@@ -125,13 +127,13 @@ export function TaskBarPopup({
   const sessionTitle = `Revisão #${revision} — ${task.theme}`;
 
   const popupTop = Math.min(anchorRect.bottom + 8, window.innerHeight - 240);
-  const popupLeft = Math.min(Math.max(8, anchorRect.left), window.innerWidth - 264);
+  const popupLeft = Math.min(Math.max(8, anchorRect.left), window.innerWidth - 296);
 
   return (
     <>
       <div className="fixed inset-0 z-[60]" onClick={onClose} />
       <div
-        className="fixed z-[61] w-64 rounded-2xl border border-edge bg-surface shadow-[var(--soft-shadow)] p-4 space-y-3"
+        className="fixed z-[61] w-72 max-w-[calc(100vw-1rem)] space-y-3 rounded-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)]"
         style={{ top: popupTop, left: popupLeft }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -141,121 +143,32 @@ export function TaskBarPopup({
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl border border-edge bg-paper px-2 py-2">
-            <p className="text-[10px] text-muted leading-none">Revisão</p>
-            <p className="mt-1 text-base font-bold text-ink">#{revision}</p>
+          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+            <p className="text-[11px] text-muted leading-none">Revisão</p>
+            <p className="mt-1 text-lg font-bold text-ink">#{revision}</p>
           </div>
-          <div className="rounded-xl border border-edge bg-paper px-2 py-2">
-            <p className="text-[10px] text-muted leading-none">Acerto</p>
-            <p className="mt-1 text-base font-bold text-ink">
+          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+            <p className="text-[11px] text-muted leading-none">Acerto</p>
+            <p className="mt-1 text-lg font-bold text-ink">
               {accuracy !== null ? `${accuracy}%` : "—"}
             </p>
           </div>
-          <div className="rounded-xl border border-edge bg-paper px-2 py-2">
-            <p className="text-[10px] text-muted leading-none">Mín. q</p>
-            <p className="mt-1 text-base font-bold text-ink">{task.expected_questions}</p>
+          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+            <p className="text-[11px] text-muted leading-none">Mín. q</p>
+            <p className="mt-1 text-lg font-bold text-ink">{task.expected_questions}</p>
           </div>
         </div>
 
         <Link
           href={bancoUrl}
           onClick={onClose}
-          className="flex items-center justify-center w-full rounded-xl border border-primary bg-primary py-2.5 text-xs font-semibold text-primaryInk hover:brightness-105 transition-all"
+          aria-label={sessionTitle}
+          className="flex w-full items-center justify-center rounded-xl border border-primary bg-primary py-2.5 text-xs font-semibold text-primaryInk transition-all hover:brightness-105"
         >
-          {sessionTitle}
+          Abrir revisão no banco
         </Link>
       </div>
     </>
-  );
-}
-
-export function CalendarInlineDayDetailSection({
-  showDayDetail,
-  isMobilePortrait,
-  selectedDay,
-  modalDayTasks,
-  modalDayStudies,
-  modalDayPendingTasks,
-  modalDayDoneTasks,
-  token,
-  studies,
-  studyMap,
-  onRefresh,
-  onCloseDayDetail,
-}: {
-  showDayDetail: boolean;
-  isMobilePortrait: boolean;
-  selectedDay: string | null;
-  modalDayTasks: ReviewTask[];
-  modalDayStudies: DirectedStudyListItem[];
-  modalDayPendingTasks: ReviewTask[];
-  modalDayDoneTasks: ReviewTask[];
-  token: string;
-  studies: DirectedStudyListItem[];
-  studyMap: Map<string, DirectedStudyListItem>;
-  onRefresh: () => void;
-  onCloseDayDetail: () => void;
-}) {
-  if (!showDayDetail || !selectedDay) return null;
-
-  return (
-    <section
-      data-testid="calendar-inline-day-detail"
-      className={`mt-4 border-t border-edge pt-3 space-y-3 max-w-full overflow-x-hidden ${isMobilePortrait ? "px-4" : ""}`}
-    >
-      <div className="flex items-center justify-between">
-        <h3 className="font-serif text-base">{displayDate(selectedDay)}</h3>
-      </div>
-      {modalDayTasks.length === 0 && modalDayStudies.length === 0 && (
-        <p className="text-xs text-muted">Nenhuma atividade.</p>
-      )}
-      <div className="space-y-4 min-w-0 overflow-x-hidden" data-testid="calendar-inline-day-detail-content">
-        {modalDayStudies.map((study) => (
-          <div key={study.study_id} className="min-w-0 overflow-x-hidden">
-            <StudyDotCard
-              study={study}
-              token={token}
-              onRefresh={onRefresh}
-              onClose={onCloseDayDetail}
-            />
-          </div>
-        ))}
-        {modalDayPendingTasks.map((task, i) => (
-          <div key={task.task_id} className="min-w-0 overflow-x-hidden">
-            {(i > 0 || modalDayStudies.length > 0) && <hr className="border-edge" />}
-            <div className="pt-3 min-w-0 overflow-x-hidden">
-              <TaskDetail
-                task={task}
-                token={token}
-                studies={studies}
-                studyMap={studyMap}
-                onRefresh={onRefresh}
-                onClose={onCloseDayDetail}
-                rescheduleControls="auto_manual"
-                logDateISO={selectedDay}
-              />
-            </div>
-          </div>
-        ))}
-        {modalDayDoneTasks.map((task, i) => (
-          <div key={`done_${task.task_id}`} className="min-w-0 overflow-x-hidden">
-            {(i > 0 || modalDayStudies.length > 0 || modalDayPendingTasks.length > 0) && <hr className="border-edge" />}
-            <div className="pt-3 min-w-0 overflow-x-hidden">
-              <TaskDetail
-                task={task}
-                token={token}
-                studies={studies}
-                studyMap={studyMap}
-                onRefresh={onRefresh}
-                onClose={onCloseDayDetail}
-                rescheduleControls="auto_manual"
-                logDateISO={selectedDay}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
   );
 }
 
@@ -270,7 +183,7 @@ export function CalendarNoDisturbNotice({
   return (
     <p className="text-xs text-muted flex items-center gap-1 mt-2">
       Avisos de reagendamento desativados.
-      <button className="underline hover:text-ink" onClick={onReactivate}>Reativar</button>
+      <button type="button" className="underline hover:text-ink" onClick={onReactivate}>Reativar</button>
     </p>
   );
 }
@@ -333,16 +246,16 @@ export function CalendarEventDeleteConfirmModal({
   if (!eventDeleteConfirm) return null;
   return (
     <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4 modal-backdrop">
-      <div className="bg-paper border border-edge w-full max-w-sm p-4 space-y-3">
+      <div className="w-full max-w-sm space-y-3 rounded-2xl border border-edge bg-paper p-4">
         <h3 className="font-serif text-base">Apagar compromisso</h3>
         <p className="text-sm text-muted">Você tem certeza que deseja apagar esse compromisso?</p>
-        <div className="flex gap-2 flex-col">
-          <button onClick={onConfirmDelete} className="text-sm border border-red-600 text-red-600 px-3 py-2 hover:bg-red-50">
+        <div className="flex flex-col gap-2">
+          <Button type="button" variant="danger" size="md" onClick={onConfirmDelete}>
             Apagar
-          </button>
-          <button onClick={onCancel} className="text-sm text-muted px-3 py-2">
+          </Button>
+          <Button type="button" variant="ghost" size="md" onClick={onCancel}>
             Cancelar
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -367,16 +280,16 @@ export function CalendarRescheduleWarningModal({
   if (!warnTask) return null;
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4 modal-backdrop">
-      <div className="bg-paper border border-edge w-full max-w-sm p-4 space-y-3">
+      <div className="w-full max-w-sm space-y-3 rounded-2xl border border-edge bg-paper p-4">
         <h3 className="font-serif text-base">Reagendamento longo</h3>
         <p className="text-sm text-muted">
           Esta revisão está <strong>{warnTask.days} dias</strong> fora do agendamento ideal. Deseja continuar?
         </p>
-        <div className="flex gap-2 flex-col">
-          <button onClick={onAccept} className="text-sm border border-ink px-3 py-2">Sim, reagendar</button>
-          <button onClick={onCancel} className="text-sm text-muted px-3 py-2">Cancelar</button>
+        <div className="flex flex-col gap-2">
+          <Button type="button" variant="primary" size="md" onClick={onAccept}>Sim, reagendar</Button>
+          <Button type="button" variant="ghost" size="md" onClick={onCancel}>Cancelar</Button>
           {warnCount >= 1 && (
-            <button onClick={onNoDisturb} className="text-xs text-muted underline text-center">Não me perturbe novamente</button>
+            <Button type="button" variant="ghost" size="xs" onClick={onNoDisturb} className="text-center underline">Não me perturbe novamente</Button>
           )}
         </div>
       </div>

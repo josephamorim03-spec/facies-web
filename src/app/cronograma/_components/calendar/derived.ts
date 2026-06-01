@@ -37,42 +37,6 @@ export function buildCalendarCells(startOffset: number, daysInMonth: number): Ar
   );
 }
 
-export function sortTasksByPriority(tasks: ReviewTask[]): ReviewTask[] {
-  return [...tasks].sort((a, b) => {
-    if (a.is_critical !== b.is_critical) return a.is_critical ? -1 : 1;
-    return b.priority_score - a.priority_score;
-  });
-}
-
-export function buildModalDayCollections(
-  selectedDay: string | null,
-  byDate: Record<string, ReviewTask[]>,
-  studiesByDate: Record<string, DirectedStudyListItem[]>,
-) {
-  const modalDayTasks = selectedDay ? byDate[selectedDay] ?? [] : [];
-  const modalDayPendingTasks = sortTasksByPriority(
-    modalDayTasks.filter((task) => task.status === "pending"),
-  );
-  const modalDayDoneTasks = sortTasksByPriority(
-    modalDayTasks.filter((task) => task.status === "done"),
-  );
-  const modalDayDoneStudyIds = new Set(
-    modalDayDoneTasks.map((task) => task.source_study_id),
-  );
-  const modalDayStudies = selectedDay
-    ? (studiesByDate[selectedDay] ?? []).filter(
-        (study) => !study.is_review && !modalDayDoneStudyIds.has(study.study_id),
-      )
-    : [];
-
-  return {
-    modalDayTasks,
-    modalDayPendingTasks,
-    modalDayDoneTasks,
-    modalDayStudies,
-  };
-}
-
 export function buildSearchMatchDays(params: {
   searchQuery?: string;
   studiesByDate: Record<string, DirectedStudyListItem[]>;

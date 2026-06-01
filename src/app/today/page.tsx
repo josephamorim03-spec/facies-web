@@ -7,6 +7,7 @@ import { NAV_OPEN_EVENT } from "@/components/Nav";
 import AreaDot from "@/components/AreaDot";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Skeleton } from "@/components/Skeleton";
+import { Button } from "@/components/ui/Button";
 import { getAuthToken } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/error-utils";
 import { useAuthToken } from "@/lib/useAuthToken";
@@ -26,7 +27,7 @@ import {
   type StudyPerformanceSummary,
 } from "@/lib/api";
 import { InlineLogForm } from "@/app/cronograma/_components/studyReview/InlineLogForm";
-import { IconMenu } from "@/app/cronograma/_components/CronogramaIcons";
+import { IconMenu, IconPlus, IconRefresh } from "@/app/cronograma/_components/CronogramaIcons";
 import { displayDate } from "@/app/cronograma/_lib/cronogramaShared";
 import { buildWeeklyOpsMetrics } from "@/app/cronograma/_lib/weeklyOpsMetrics";
 import { WeeklyOpsFullCardsSkeleton } from "@/app/cronograma/_components/WeeklyOpsCards";
@@ -539,44 +540,51 @@ export default function TodayPage() {
 
     return (
       <li
-        className="py-3 pl-3 border-b border-edge last:border-b-0 border-l-2"
-        style={{ borderLeftColor: accentColor }}
+        className="rounded-xl border border-edge bg-paper p-3 shadow-sm"
+        style={{ boxShadow: `inset 3px 0 0 ${accentColor}` }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <AreaDot area={area} size="md" />
-          <div className="flex-1 min-w-0">
-            <span className={`text-sm ${overdue ? "italic" : ""} ${urgent ? "text-amber-700" : overdue ? "text-muted" : ""}`}>
+          <div className="min-w-0 flex-1">
+            <span className={`text-sm font-semibold leading-snug ${overdue ? "italic" : ""} ${urgent ? "text-danger" : "text-ink"}`}>
               {task.theme}
             </span>
-            <span className="text-xs text-muted ml-2">{task.expected_questions}q</span>
+            <span className="ml-2 text-xs text-muted">{task.expected_questions}q</span>
             {task.is_critical && <span className="text-xs text-muted ml-1">*</span>}
             {overdue && days > 0 && (
-              <span className={`text-xs ml-2 ${urgent ? "text-amber-700" : "text-muted"}`}>
+              <span className={`ml-2 text-xs font-medium ${urgent ? "text-danger" : "text-muted"}`}>
                 {days}d atrás
               </span>
             )}
           </div>
-          <div className="flex gap-1 shrink-0">
+          <div className="flex w-full shrink-0 gap-2 sm:w-auto">
             {overdue && (
-              <button
+              <Button
                 type="button"
-                className="text-xs border border-edge px-2 py-1 hover:border-ink text-muted"
+                variant="secondary"
+                size="sm"
+                className="flex-1 sm:flex-none"
+                leftIcon={<IconRefresh className="h-3.5 w-3.5" />}
                 onClick={() => void handlePrepareReschedule(task)}
                 disabled={isPreviewing || pendingReschedule !== null}
               >
                 {isPreviewing ? "..." : "Reagendar"}
-              </button>
+              </Button>
             )}
-            <button
-              className={`text-xs border px-2 py-1 transition-colors ${isExpanded ? "border-ink bg-ink text-paper" : "border-edge hover:border-ink"}`}
+            <Button
+              type="button"
+              variant={isExpanded ? "primary" : "secondary"}
+              size="sm"
+              className="flex-1 sm:flex-none"
+              leftIcon={<IconPlus className="h-3.5 w-3.5" />}
               onClick={() => setExpandedTaskId(isExpanded ? null : task.task_id)}
             >
               Registrar
-            </button>
+            </Button>
           </div>
         </div>
         {isExpanded && (
-          <div className="mt-3 ml-7">
+          <div className="mt-3 rounded-xl border border-edge bg-surface p-3 sm:ml-8">
             <InlineLogForm
               task={task}
               token={token}
@@ -704,16 +712,18 @@ export default function TodayPage() {
                             </div>
                             <ScoreBar pct={0} color={accentColor} />
                             <div className="flex gap-2">
-                              <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center rounded-lg border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk">
+                              <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center rounded-xl border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk">
                                 Estudar
                               </Link>
-                              <button
+                              <Button
                                 type="button"
+                                variant="secondary"
+                                size="sm"
+                                className="flex-1"
                                 onClick={() => setExpandedTaskId(isExpanded ? null : task.task_id)}
-                                className="rounded-lg border border-edge px-3 py-2 text-xs font-semibold text-muted hover:border-primary hover:text-ink"
                               >
                                 Registrar
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -800,9 +810,10 @@ export default function TodayPage() {
             </section>
 
             {overdueTasks.length > 0 && (
-              <section className="rounded-lg border border-amber-200 bg-[var(--amber-tint)] p-4">
-                <h2 className="font-serif text-lg font-semibold text-amber-800">Atrasadas - {overdueTasks.length}</h2>
-                <ul className="mt-2 rounded-lg bg-surface">
+              <section className="rounded-2xl border border-edge bg-surface p-4 shadow-sm">
+                <h2 className="font-serif text-lg font-semibold text-ink">Atrasadas - {overdueTasks.length}</h2>
+                <p className="mt-1 text-sm text-muted">Priorize ou reagende para recuperar o ritmo sem perder clareza.</p>
+                <ul className="mt-3 space-y-2">
                   {overdueTasks.map((task) => (
                     <TaskRow key={task.task_id} task={task} overdue />
                   ))}

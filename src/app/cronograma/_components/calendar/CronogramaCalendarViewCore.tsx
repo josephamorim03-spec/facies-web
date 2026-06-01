@@ -15,14 +15,12 @@ import {
   CalendarCreateStudyModal,
   CalendarEventDeleteConfirmModal,
   CalendarEventMoveErrorToast,
-  CalendarInlineDayDetailSection,
   CalendarNoDisturbNotice,
   CalendarRescheduleWarningModal,
   TaskBarPopup,
 } from "./CalendarSections";
 import {
   buildCalendarCells,
-  buildModalDayCollections,
   buildSearchMatchDays,
   buildTasksByDate,
 } from "./derived";
@@ -111,10 +109,8 @@ export function CronogramaCalendarView({
   onRefresh,
   onEventMutated,
   searchQuery,
-  onDayDetailChange,
   onMonthYearChange,
   viewSwitchSlot,
-  summarySlot,
   isMobilePortrait = false,
 }: {
   tasks: ReviewTask[];
@@ -128,7 +124,6 @@ export function CronogramaCalendarView({
   onRefresh: () => void;
   onEventMutated?: () => Promise<void> | void;
   searchQuery?: string;
-  onDayDetailChange?: (open: boolean) => void;
   onMonthYearChange?: (
     month: number,
     year: number,
@@ -138,12 +133,11 @@ export function CronogramaCalendarView({
     nextMonth: () => void,
   ) => void;
   viewSwitchSlot?: React.ReactNode;
-  summarySlot?: React.ReactNode;
   isMobilePortrait?: boolean;
 }) {
   const today = todayISO();
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const showDayDetail = selectedDay !== null;
+  const showDayDetail = false;
 
   const [modal, setModal] = useState<"create" | null>(null);
   const [barPopup, setBarPopup] = useState<{ task: ReviewTask; rect: DOMRect } | null>(null);
@@ -151,7 +145,6 @@ export function CronogramaCalendarView({
   function handleDaySelect(iso: string | null) {
     setSelectedDay(iso);
     setBarPopup(null);
-    onDayDetailChange?.(iso !== null);
   }
 
   function handleBarClick(task: ReviewTask, rect: DOMRect) {
@@ -343,16 +336,6 @@ export function CronogramaCalendarView({
   }, [transition.previewYear, transition.previewMonth]);
 
   const byDate = useMemo(() => buildTasksByDate(tasks, doneTasks), [tasks, doneTasks]);
-
-  const {
-    modalDayTasks,
-    modalDayPendingTasks,
-    modalDayDoneTasks,
-    modalDayStudies,
-  } = useMemo(
-    () => buildModalDayCollections(selectedDay, byDate, studiesByDate),
-    [selectedDay, byDate, studiesByDate],
-  );
 
   const searchMatchDays = useMemo(
     () => buildSearchMatchDays({
@@ -640,12 +623,6 @@ export function CronogramaCalendarView({
         </div>
       )}
 
-      {summarySlot ? (
-        <div data-calendar-summary-inline="true" className={isMobilePortrait ? "mt-4" : "mt-8"}>
-          {summarySlot}
-        </div>
-      ) : null}
-
       <CalendarActionButtons
         selectedDay={selectedDay}
         modal={modal}
@@ -662,21 +639,6 @@ export function CronogramaCalendarView({
           onClose={() => setBarPopup(null)}
         />
       )}
-
-      <CalendarInlineDayDetailSection
-        showDayDetail={showDayDetail}
-        isMobilePortrait={isMobilePortrait}
-        selectedDay={selectedDay}
-        modalDayTasks={modalDayTasks}
-        modalDayStudies={modalDayStudies}
-        modalDayPendingTasks={modalDayPendingTasks}
-        modalDayDoneTasks={modalDayDoneTasks}
-        token={token}
-        studies={studies}
-        studyMap={studyMap}
-        onRefresh={onRefresh}
-        onCloseDayDetail={() => handleDaySelect(null)}
-      />
 
       <CalendarNoDisturbNotice
         noDisturb={noDisturb}

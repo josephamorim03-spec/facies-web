@@ -8,7 +8,7 @@ import { buildDayDotEntries } from "./derived";
 import { CalendarDragEventMeta, isPastCalendarCell } from "./eventRules";
 
 type ExpandedRowState = { row: number; slots: number } | null;
-const MONTHLY_DOT_LIMIT = 6;
+const MONTHLY_DOT_LIMIT = 4;
 
 export function CalendarGrid({
   gridRef,
@@ -271,7 +271,7 @@ export function CalendarGrid({
         const hasOverflow = allDots.length > visibleDotLimit;
         const dayCellMinHeight = showDayDetail
           ? (isMobilePortrait ? "min-h-[3.2rem]" : "min-h-[3rem]")
-          : (isMobilePortrait ? "min-h-[6.1rem]" : "min-h-[5.5rem]");
+          : (isMobilePortrait ? "min-h-[6.35rem]" : "min-h-[6rem]");
 
         return (
           <div
@@ -460,9 +460,9 @@ export function CalendarGrid({
                     );
                   }
                   const isDone = dot.kind === "done";
-                  const barH = showDayDetail ? "h-[11px]" : "h-[14px]";
-                  const fontSize = showDayDetail ? "6px" : "7px";
-                  const notchW = showDayDetail ? "12px" : "15px";
+                  const barH = showDayDetail ? "min-h-[16px]" : "min-h-[18px]";
+                  const fontSize = showDayDetail ? "9px" : "10px";
+                  const chipFontSize = showDayDetail ? "8px" : "9px";
                   const revNum = dot.task ? (taskRevisionMap?.get(dot.task.task_id) ?? 1) : 1;
                   return (
                     <div
@@ -494,11 +494,13 @@ export function CalendarGrid({
                         if (taskDragOrigin.current === "touch" || touchDragTouchId.current !== null) return;
                         clearDragState();
                       } : undefined}
-                      className={`flex items-stretch w-full rounded-sm overflow-hidden ${barH} ${dot.task ? "select-none touch-none" : ""} ${
+                      className={`flex w-full items-center gap-1 rounded-md px-1 py-0.5 ${barH} overflow-hidden shadow-sm ${dot.task ? "select-none touch-none" : ""} ${
                         dot.task && touchDraggingTaskId === dot.task.task_id ? "ring-1 ring-white/60 scale-[1.02]" : ""
                       } ${dot.task && dragTaskId === dot.task.task_id ? "ring-1 ring-white/60" : ""}`}
                       style={{
+                        backgroundColor: dot.color,
                         opacity: isDone ? 0.45 : 1,
+                        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.14)",
                         WebkitUserSelect: dot.task ? "none" : undefined,
                         userSelect: dot.task ? "none" : undefined,
                         WebkitTouchCallout: dot.task ? "none" : undefined,
@@ -506,22 +508,18 @@ export function CalendarGrid({
                         WebkitTapHighlightColor: dot.task ? "transparent" : undefined,
                       }}
                     >
-                      {/* Notch: darker shade with expected_questions */}
                       <span
-                        className="shrink-0 flex items-center justify-center font-bold leading-none text-white"
+                        className="shrink-0 rounded-[4px] bg-white/95 px-1 py-[2px] font-bold leading-none shadow-sm"
                         style={{
-                          width: notchW,
-                          fontSize,
-                          backgroundColor: dot.color,
-                          filter: "brightness(0.62)",
+                          color: dot.color,
+                          fontSize: chipFontSize,
                         }}
                       >
                         {`#${revNum}`}
                       </span>
-                      {/* Theme name strip */}
                       <span
-                        className="flex-1 flex items-center px-[2px] truncate font-medium leading-none text-white"
-                        style={{ backgroundColor: dot.color, fontSize }}
+                        className="min-w-0 flex-1 truncate font-semibold leading-none text-white"
+                        style={{ fontSize }}
                       >
                         {dot.task?.theme ?? dot.tooltip?.split(": ")[1] ?? ""}
                       </span>
@@ -559,5 +557,3 @@ export function CalendarGrid({
     </div>
   );
 }
-
-
