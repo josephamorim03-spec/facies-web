@@ -5,7 +5,7 @@ export type QuestionBankOption = "A" | "B" | "C" | "D" | "E";
 export type QuestionBankMode = "adaptive" | "by_topic" | "by_exam";
 export type QuestionBankResolutionMode = "training" | "simulation";
 export type QuestionBankSessionStatus = "active" | "finalized" | "invalidated";
-export type QuestionBankAnswerStatus = "unanswered" | "answered" | "all";
+export type QuestionBankAnswerStatus = "unanswered" | "answered" | "correct" | "wrong" | "all";
 export type QuestionBankNode = {
   knowledge_node_id: string;
   parent_knowledge_node_id: string | null;

@@ -163,7 +163,7 @@ test("question bank applies filters, calendar review context, and gated correcti
     search: "Obstetricia",
     limit: 12,
     resolution_mode: "training",
-    answer_status: "unanswered",
+    answer_status: "all",
   });
   expect(String(payload.performed_at)).toContain("2026-05-27");
 

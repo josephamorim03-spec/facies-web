@@ -14,9 +14,9 @@ const AREA_LABELS: Record<string, string> = {
 };
 
 const REALIZACAO_OPTIONS: { value: QuestionBankAnswerStatus; label: string; help: string }[] = [
-  { value: "unanswered", label: "Não realizadas", help: "Questões ainda não respondidas." },
-  { value: "answered", label: "Já realizadas", help: "Tudo que já recebeu tentativa." },
-  { value: "all", label: "Todas", help: "Mistura disponíveis e já feitas." },
+  { value: "all",     label: "Todas",          help: "Todas as questões do filtro atual." },
+  { value: "correct", label: "Só acertos",      help: "Questões que você acertou na última tentativa." },
+  { value: "wrong",   label: "Só erros",        help: "Questões que você errou na última tentativa." },
 ];
 
 const MODO_OPTIONS: { value: QuestionBankResolutionMode; label: string; help: string }[] = [

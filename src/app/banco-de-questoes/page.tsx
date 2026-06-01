@@ -92,7 +92,7 @@ function BancoDeQuestoesContent() {
   const [boardInput, setBoardInput] = useState("");
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
-  const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("unanswered");
+  const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("all");
   const [limit, setLimit] = useState(() => Math.max(1, Math.min(50, initialContext.expectedQuestions ?? 10)));
   const [resolutionMode, setResolutionMode] = useState<QuestionBankResolutionMode>("simulation");
 
@@ -147,7 +147,7 @@ function BancoDeQuestoesContent() {
     year_from: parsedYearFrom,
     year_to: parsedYearTo,
     answer_status: answerStatus,
-    only_unanswered: answerStatus === "unanswered",
+    only_unanswered: false,
     limit: overrides?.limit,
   }), [answerStatus, area, boardCodes, institution, parsedYearFrom, parsedYearTo, search, selectedTopics]);
 
