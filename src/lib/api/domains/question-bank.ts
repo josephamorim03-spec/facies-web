@@ -73,6 +73,7 @@ export type QuestionBankSessionItem = {
   needs_correction: boolean;
   correct_answer: QuestionBankOption | null;
   is_correct: boolean | null;
+  difficulty_estimate?: number | null;
 };
 export type QuestionBankSession = {
   session_id: string;
