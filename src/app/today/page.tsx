@@ -29,7 +29,7 @@ import { InlineLogForm } from "@/app/cronograma/_components/studyReview/InlineLo
 import { IconMenu } from "@/app/cronograma/_components/CronogramaIcons";
 import { displayDate } from "@/app/cronograma/_lib/cronogramaShared";
 import { buildWeeklyOpsMetrics } from "@/app/cronograma/_lib/weeklyOpsMetrics";
-import { WeeklyOpsFullCards, WeeklyOpsFullCardsSkeleton } from "@/app/cronograma/_components/WeeklyOpsCards";
+import { WeeklyOpsFullCardsSkeleton } from "@/app/cronograma/_components/WeeklyOpsCards";
 import { writeCronogramaViewModeSession } from "@/app/cronograma/_lib/viewModeSession";
 
 type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
@@ -185,6 +185,120 @@ const AREA_FULL: Record<string, string> = {
   CG: "Cirurgia Geral", MP: "Medicina Preventiva", OU: "Outras",
 };
 
+function firstName(displayName: string | null): string | null {
+  const normalized = (displayName ?? "").trim();
+  return normalized ? normalized.split(/\s+/)[0] : null;
+}
+
+function formatRatioPercent(correct: number, total: number): number {
+  if (total <= 0) return 0;
+  return Math.round((correct / total) * 100);
+}
+
+function formatStudyDate(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value.slice(0, 10);
+  return parsed.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+
+function reviewTaskHref(task: ReviewTask): string {
+  const params = new URLSearchParams({
+    review_task_id: task.task_id,
+    date: task.due_date,
+    area: task.area,
+    theme: task.theme,
+    expected_questions: String(Math.max(1, Number(task.expected_questions ?? 10))),
+  });
+  return `/banco-de-questoes?${params.toString()}`;
+}
+
+function IconStethoscope({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M6 3v5a4 4 0 0 0 8 0V3" />
+      <path d="M4 3h4" />
+      <path d="M12 3h4" />
+      <path d="M10 14v2a4 4 0 0 0 8 0v-1" />
+      <circle cx="18" cy="12" r="2" />
+    </svg>
+  );
+}
+
+function IconShield({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M12 3 5 6v5c0 4.5 2.8 8.2 7 10 4.2-1.8 7-5.5 7-10V6l-7-3Z" />
+      <path d="m9 12 2 2 4-5" />
+    </svg>
+  );
+}
+
+function IconNotebook({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <rect x="5" y="3" width="14" height="18" rx="2" />
+      <path d="M9 7h6" />
+      <path d="M9 11h6" />
+      <path d="M9 15h4" />
+    </svg>
+  );
+}
+
+function IconArrowRight({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M4 10h12" />
+      <path d="m11 5 5 5-5 5" />
+    </svg>
+  );
+}
+
+function ProgressRing({
+  pct,
+  label,
+  size = 128,
+}: {
+  pct: number;
+  label?: string;
+  size?: number;
+}) {
+  const radius = (size - 16) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const safePct = Math.max(0, Math.min(100, pct));
+  const offset = circumference * (1 - safePct / 100);
+
+  return (
+    <div className="relative inline-flex shrink-0 items-center justify-center" style={{ width: size, height: size }}>
+      <svg viewBox={`0 0 ${size} ${size}`} className="-rotate-90" aria-hidden="true">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--color-surface-muted)" strokeWidth="8" />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="var(--color-success)"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+        <span className="font-serif text-3xl leading-none text-ink">{safePct}%</span>
+        {label && <span className="mt-1 text-[11px] leading-tight text-muted">{label}</span>}
+      </div>
+    </div>
+  );
+}
+
+function ScoreBar({ pct, color }: { pct: number; color: string }) {
+  return (
+    <div className="h-2 w-full overflow-hidden rounded-full bg-surfaceMuted">
+      <div className="h-full rounded-full" style={{ width: `${Math.max(0, Math.min(100, pct))}%`, backgroundColor: color }} />
+    </div>
+  );
+}
+
 function getGreeting(firstName: string | null): string {
   const hour = new Date().getHours();
   const name = firstName ? `, ${firstName}` : "";
@@ -221,6 +335,7 @@ async function loadTodayPageData(token: string): Promise<TodayPageData> {
     cardsOverview,
     performanceSummary,
     weeklyGoal: Math.max(0, Number(profile.weekly_goal_questions ?? 0)),
+    displayName: profile.display_name,
   };
 }
 
@@ -249,6 +364,7 @@ export default function TodayPage() {
   const [turboOverview, setTurboOverview] = useState<OperationalTurboOverview | null>(null);
   const [performanceSummary, setPerformanceSummary] = useState<StudyPerformanceSummary | null>(null);
   const [weeklyGoal, setWeeklyGoal] = useState(200);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
@@ -280,6 +396,7 @@ export default function TodayPage() {
       setTurboOverview(data.cardsOverview);
       setPerformanceSummary(data.performanceSummary);
       setWeeklyGoal(data.weeklyGoal);
+      setDisplayName(data.displayName);
     } catch (e: unknown) {
       setError(getErrorMessage(e, "Erro ao carregar revisões."));
     } finally {
@@ -372,10 +489,6 @@ export default function TodayPage() {
     [tasks, today],
   );
   const selectedDayLabel = weekDays.find((day) => day.iso === selectedDayIso)?.label ?? "";
-  const selectedDayHeading = selectedDayIso === today
-    ? "Hoje"
-    : `${selectedDayLabel} ${formatDayMonth(selectedDayIso)}`;
-
   const tasksByDate = useMemo(() => groupTasksByDate(tasks), [tasks]);
 
   const weeklyOpsMetrics = useMemo(
@@ -394,6 +507,26 @@ export default function TodayPage() {
     () => buildDailyWeaknessItems(performanceSummary),
     [performanceSummary],
   );
+
+  const studentFirstName = firstName(displayName) ?? "Joseph";
+  const greeting = getGreeting(studentFirstName);
+  const quote = MOTIVATIONAL_QUOTES[new Date().getDate() % MOTIVATIONAL_QUOTES.length];
+  const totalDoneQuestions = studies.reduce((sum, study) => sum + Math.max(0, Number(study.total_questions ?? 0)), 0);
+  const totalCorrectQuestions = studies.reduce((sum, study) => sum + Math.max(0, Number(study.correct_questions ?? 0)), 0);
+  const globalAccuracy = formatRatioPercent(totalCorrectQuestions, totalDoneQuestions);
+  const totalWrongQuestions = Math.max(0, totalDoneQuestions - totalCorrectQuestions);
+  const weeklyGoalPct = weeklyGoal > 0 ? Math.min(100, Math.round((weeklyOpsMetrics.doneQuestionsWeek / weeklyGoal) * 100)) : 0;
+  const topAreaSummaries = (performanceSummary?.area_summaries ?? [])
+    .filter((item) => item.total_questions > 0)
+    .sort((a, b) => b.total_questions - a.total_questions)
+    .slice(0, 5);
+  const recentReviewStudies = studies
+    .filter((study) => study.is_review)
+    .slice()
+    .sort((a, b) => new Date(b.performed_at).getTime() - new Date(a.performed_at).getTime())
+    .slice(0, 3);
+  const nextWeakness = dailyWeaknesses[0] ?? null;
+  const nextActionTask = overdueTasks[0] ?? selectedDayTasks[0] ?? null;
 
   function TaskRow({ task, overdue }: { task: ReviewTask; overdue?: boolean }) {
     const area = task.area as Area;
@@ -459,252 +592,333 @@ export default function TodayPage() {
   if (loading) return <TodaySkeleton />;
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <header className="flex items-start justify-between">
-        <div>
-          <h1 className="font-serif text-3xl font-semibold leading-tight md:text-4xl">Hoje</h1>
+    <div className="space-y-8">
+      <header className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0">
+          <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">{greeting}</h1>
+          <p className="mt-2 text-base text-muted">Foco hoje, especialista amanhã.</p>
         </div>
-        <div className="flex items-center gap-1 mt-2">
-          {!isDesktopNavigation && (
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-              className="p-1 text-muted hover:text-ink shrink-0"
-              aria-label="Menu"
+        <div className="flex items-start justify-between gap-3 md:min-w-[20rem] md:justify-end">
+          <div className="hidden max-w-xs text-sm text-muted md:block">
+            <p className="font-serif text-4xl leading-none text-edge">“</p>
+            <p>{quote.quote}</p>
+            <p className="mt-2 text-xs">- {quote.author}</p>
+          </div>
+          <div className="flex items-center gap-1">
+            {!isDesktopNavigation && (
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
+                className="rounded-lg p-2 text-muted hover:bg-surfaceMuted hover:text-ink"
+                aria-label="Menu"
+              >
+                <IconMenu className="w-5 h-5" />
+              </button>
+            )}
+            <Link
+              href="/agenda-operacional"
+              className="rounded-lg p-2 text-muted hover:bg-surfaceMuted hover:text-ink"
+              aria-label="Visão mensal"
             >
-              <IconMenu className="w-5 h-5" />
-            </button>
-          )}
-          <Link
-            href="/agenda-operacional"
-            className="p-1 text-muted hover:text-ink shrink-0"
-            aria-label="Visão mensal"
-          >
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5" aria-hidden="true">
-              <rect x="1"    y="1"    width="4.5" height="4.5" rx="0.5"/>
-              <rect x="7.75" y="1"    width="4.5" height="4.5" rx="0.5"/>
-              <rect x="14.5" y="1"    width="4.5" height="4.5" rx="0.5"/>
-              <rect x="1"    y="7.75" width="4.5" height="4.5" rx="0.5"/>
-              <rect x="7.75" y="7.75" width="4.5" height="4.5" rx="0.5"/>
-              <rect x="14.5" y="7.75" width="4.5" height="4.5" rx="0.5"/>
-              <rect x="1"    y="14.5" width="4.5" height="4.5" rx="0.5"/>
-              <rect x="7.75" y="14.5" width="4.5" height="4.5" rx="0.5"/>
-              <rect x="14.5" y="14.5" width="4.5" height="4.5" rx="0.5"/>
-            </svg>
-          </Link>
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5" aria-hidden="true">
+                <rect x="1" y="1" width="4.5" height="4.5" rx="0.5" />
+                <rect x="7.75" y="1" width="4.5" height="4.5" rx="0.5" />
+                <rect x="14.5" y="1" width="4.5" height="4.5" rx="0.5" />
+                <rect x="1" y="7.75" width="4.5" height="4.5" rx="0.5" />
+                <rect x="7.75" y="7.75" width="4.5" height="4.5" rx="0.5" />
+                <rect x="14.5" y="7.75" width="4.5" height="4.5" rx="0.5" />
+                <rect x="1" y="14.5" width="4.5" height="4.5" rx="0.5" />
+                <rect x="7.75" y="14.5" width="4.5" height="4.5" rx="0.5" />
+                <rect x="14.5" y="14.5" width="4.5" height="4.5" rx="0.5" />
+              </svg>
+            </Link>
+          </div>
         </div>
       </header>
 
-      <div className="grid grid-cols-7 gap-1 text-center">
-        {weekDays.map(({ iso, label, dayNum }) => {
-          const isToday = iso === today;
-          const isSelected = iso === selectedDayIso;
-          const dayTasks = tasksByDate[iso] ?? [];
-          return (
-            <button
-              key={iso}
-              type="button"
-              onClick={() => setSelectedDayIso(iso)}
-              aria-pressed={isSelected}
-              className="flex flex-col items-center gap-1 rounded-sm py-1"
-            >
-              <span className={`text-xs uppercase tracking-wide ${isSelected ? "text-ink" : "text-muted"}`}>{label}</span>
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-serif ${
-                  isSelected
-                    ? "bg-ink text-paper font-medium"
-                    : isToday
-                      ? "border border-ink text-ink font-medium"
-                      : "text-ink"
-                }`}
-              >
-                {dayNum}
+      {error && <div className="rounded-lg border border-danger bg-surface p-4 text-sm text-danger">{error}</div>}
+
+      {!error && (
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
+          <div className="space-y-6">
+            <section className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-serif text-2xl font-semibold">Plano de estudos de hoje</h2>
+                <Link href="/agenda-operacional" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                  Ver plano completo
+                  <IconArrowRight className="h-4 w-4" />
+                </Link>
               </div>
-              <div className="flex flex-wrap justify-center gap-0.5 min-h-[6px]">
-                {dayTasks.slice(0, 3).map((task) => (
-                  <AreaDot key={task.task_id} area={task.area as Area} />
-                ))}
-                {dayTasks.length > 3 && <span className="text-[9px] text-muted">+{dayTasks.length - 3}</span>}
-              </div>
-            </button>
-          );
-        })}
-      </div>
 
-      {!error && <WeeklyOpsFullCards metrics={weeklyOpsMetrics} />}
-
-      {!error && dailyWeaknesses.length > 0 && (
-        <section className="border border-edge p-3 space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-widest text-muted">Radar de fraquezas</p>
-              <h2 className="text-sm font-serif text-ink">Prioridades para orientar o estudo</h2>
-            </div>
-            <Link href="/dados-e-relatorios/relatorio" className="text-xs underline text-muted hover:text-ink shrink-0">
-              Ver relatório
-            </Link>
-          </div>
-          <ul className="space-y-2">
-            {dailyWeaknesses.map((item) => (
-              <li
-                key={item.key}
-                className="border-l-2 pl-3 py-1.5"
-                style={{ borderLeftColor: getAreaColor(item.area) }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {item.area} - {item.theme}
-                    </p>
-                    <p className="text-xs text-muted break-words [overflow-wrap:anywhere]">
-                      {item.signal}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-sm font-semibold tabular-nums" style={{ color: getAreaColor(item.area) }}>
-                      {formatPercent(item.accuracyPct)}
-                    </p>
-                    <p className="text-[10px] text-muted">{item.totalQuestions}q</p>
-                  </div>
-                </div>
-                <p className="mt-1 text-xs text-muted break-words [overflow-wrap:anywhere]">
-                  Ação: {item.action}
-                </p>
-                {(item.confidencePct !== null || item.impactPct !== null || item.source === "preliminary") && (
-                  <p className="mt-1 text-[10px] text-muted">
-                    {item.source === "preliminary"
-                      ? "Leitura preliminar até o diagnóstico completo ativar."
-                      : `Confiança ${formatPercent(item.confidencePct)} · impacto ${formatPercent(item.impactPct)}`}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {!error && turboOverview && turboOverview.due_count > 0 && (
-        <section className="border border-edge overflow-hidden">
-          <div className="p-3 space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="flex-1 min-w-0 space-y-1">
-                <p className="text-[10px] uppercase tracking-widest text-muted">Cards adaptativos</p>
-                <div className="flex items-baseline gap-2">
-                  <p className="font-serif text-3xl leading-none text-ink tabular-nums">{turboOverview.due_count}</p>
-                  <p className="text-xs text-muted">
-                    {turboOverview.estimated_minutes ? `~${turboOverview.estimated_minutes} min` : "para revisar"}
-                  </p>
-                </div>
-                {turboOverview.reason_counts.slice(0, 2).length > 0 && (
-                  <div className="flex flex-wrap gap-1 pt-0.5">
-                    {turboOverview.reason_counts.slice(0, 2).map((item) => (
-                      <span key={item.reason} className="text-[10px] border border-edge px-1.5 py-0.5 text-muted leading-none">
-                        {item.label}
+              <div className="grid grid-cols-7 gap-1 rounded-lg border border-edge bg-surface p-2">
+                {weekDays.map(({ iso, label, dayNum }) => {
+                  const isToday = iso === today;
+                  const isSelected = iso === selectedDayIso;
+                  const dayTasks = tasksByDate[iso] ?? [];
+                  return (
+                    <button
+                      key={iso}
+                      type="button"
+                      onClick={() => setSelectedDayIso(iso)}
+                      aria-pressed={isSelected}
+                      className={`flex min-h-[4.25rem] flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 transition-colors ${
+                        isSelected ? "bg-primary text-primaryInk" : "hover:bg-surfaceMuted"
+                      }`}
+                    >
+                      <span className={`text-[10px] font-semibold uppercase ${isSelected ? "text-primaryInk" : "text-muted"}`}>{label}</span>
+                      <span className={`font-serif text-lg leading-none ${isToday && !isSelected ? "text-primary" : ""}`}>{dayNum}</span>
+                      <span className="flex min-h-[8px] items-center justify-center gap-0.5">
+                        {dayTasks.slice(0, 3).map((task) => (
+                          <AreaDot key={task.task_id} area={task.area as Area} />
+                        ))}
                       </span>
-                    ))}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="space-y-3">
+                {selectedDayTasks.length > 0 ? (
+                  selectedDayTasks.map((task) => {
+                    const isExpanded = expandedTaskId === task.task_id;
+                    const accentColor = getAreaColor(task.area);
+                    return (
+                      <article key={task.task_id} className="overflow-hidden rounded-lg border border-edge bg-surface shadow-sm">
+                        <div className="grid gap-4 p-4 sm:grid-cols-[5.5rem_minmax(0,1fr)_8rem] sm:items-center">
+                          <div className="flex h-20 w-full items-center justify-center rounded-lg border border-edge bg-paper" style={{ color: accentColor }}>
+                            <IconStethoscope className="h-10 w-10" />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="font-serif text-xl font-semibold leading-tight text-ink">{task.theme}</h3>
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                              <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ color: accentColor, backgroundColor: `${accentColor}18` }}>
+                                {AREA_FULL[task.area] ?? task.area}
+                              </span>
+                              <span className="text-xs text-muted">{task.expected_questions} questões</span>
+                              {task.is_critical && <span className="text-xs font-semibold text-warning">prioritária</span>}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted">0/{task.expected_questions}</span>
+                            </div>
+                            <ScoreBar pct={0} color={accentColor} />
+                            <div className="flex gap-2">
+                              <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center rounded-lg border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk">
+                                Estudar
+                              </Link>
+                              <button
+                                type="button"
+                                onClick={() => setExpandedTaskId(isExpanded ? null : task.task_id)}
+                                className="rounded-lg border border-edge px-3 py-2 text-xs font-semibold text-muted hover:border-primary hover:text-ink"
+                              >
+                                Registrar
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        {isExpanded && (
+                          <div className="border-t border-edge bg-paper p-4">
+                            <InlineLogForm
+                              task={task}
+                              token={getAuthToken() ?? ""}
+                              onDone={() => handleLogDone(task.task_id)}
+                              onCancel={() => setExpandedTaskId(null)}
+                            />
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })
+                ) : (
+                  <div className="rounded-lg border border-dashed border-edge bg-surface p-8 text-center">
+                    <IconShield className="mx-auto h-10 w-10 text-success" />
+                    <p className="mt-3 text-sm text-muted">
+                      {selectedDayIso === today
+                        ? "Nenhuma revisão pendente para hoje."
+                        : `Nenhuma revisão pendente para ${selectedDayLabel.toLowerCase()} ${formatDayMonth(selectedDayIso)}.`}
+                    </p>
                   </div>
                 )}
               </div>
-              <Link
-                href="/cards-adaptativos"
-                className="shrink-0 border border-ink px-3 py-2 text-xs hover:bg-ink hover:text-paper"
-              >
-                Revisar
-              </Link>
-            </div>
-            {turboOverview.priority_preview.length > 0 && (
-              <ul className="space-y-1.5 border-t border-edge pt-3">
-                {turboOverview.priority_preview.map((item) => (
-                  <li key={item.note_id} className="flex items-start gap-2 text-xs">
-                    <span
-                      className="mt-1 h-2 w-2 shrink-0 rounded-full"
-                      style={{ backgroundColor: getAreaColor(item.area) }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">
-                        {item.area} - {item.theme}
-                      </p>
-                      <p className="text-muted break-words [overflow-wrap:anywhere]">
-                        {item.insight_question}
-                      </p>
-                      <p className="text-[10px] text-muted">
-                        {item.context.label}
-                      </p>
+            </section>
+
+            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+              <h2 className="font-serif text-2xl font-semibold">Próxima melhor ação</h2>
+              <p className="mt-1 text-sm text-muted">Com base no seu desempenho recente, sugerimos:</p>
+              <div className="mt-4 rounded-lg border border-edge bg-paper p-4">
+                {nextWeakness ? (
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#EEF8F1] text-success">
+                      <IconStethoscope className="h-8 w-8" />
                     </div>
-                  </li>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-primary">Revisar {nextWeakness.theme}</p>
+                      <p className="mt-1 text-xs text-muted">{nextWeakness.signal}</p>
+                    </div>
+                    <Link
+                      href={`/banco-de-questoes?area=${encodeURIComponent(nextWeakness.area)}&theme=${encodeURIComponent(nextWeakness.theme)}&answer_status=unanswered_or_wrong`}
+                      className="inline-flex items-center justify-center rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk"
+                    >
+                      Começar revisão
+                    </Link>
+                  </div>
+                ) : nextActionTask ? (
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[var(--amber-tint)] text-warning">
+                      <IconNotebook className="h-8 w-8" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-primary">Resolver {nextActionTask.theme}</p>
+                      <p className="mt-1 text-xs text-muted">{nextActionTask.expected_questions} questões programadas.</p>
+                    </div>
+                    <Link href={reviewTaskHref(nextActionTask)} className="inline-flex items-center justify-center rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk">
+                      Começar
+                    </Link>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted">Você está sem pendências imediatas. Um bloco leve de manutenção no banco de questões mantém o ritmo.</p>
+                )}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="font-serif text-lg font-semibold">Acesso rápido</h2>
+              <div className="mt-3 grid gap-2 sm:grid-cols-5">
+                {[
+                  { href: "/banco-de-questoes", label: "Banco de questões" },
+                  { href: "/provas", label: "Simulados" },
+                  { href: "/revisoes", label: "Revisões" },
+                  { href: "/cards-adaptativos", label: "Flashcards" },
+                  { href: "/dados-e-relatorios", label: "Desempenho" },
+                ].map((item) => (
+                  <Link key={item.href} href={item.href} className="rounded-lg border border-edge bg-surface px-3 py-3 text-center text-xs font-semibold text-ink hover:border-primary">
+                    {item.label}
+                  </Link>
                 ))}
-              </ul>
+              </div>
+            </section>
+
+            {overdueTasks.length > 0 && (
+              <section className="rounded-lg border border-amber-200 bg-[var(--amber-tint)] p-4">
+                <h2 className="font-serif text-lg font-semibold text-amber-800">Atrasadas - {overdueTasks.length}</h2>
+                <ul className="mt-2 rounded-lg bg-surface">
+                  {overdueTasks.map((task) => (
+                    <TaskRow key={task.task_id} task={task} overdue />
+                  ))}
+                </ul>
+              </section>
             )}
           </div>
-        </section>
-      )}
 
-      <hr />
+          <aside className="space-y-5">
+            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="font-serif text-2xl font-semibold">Progresso geral</h2>
+                <Link href="/dados-e-relatorios" className="text-xs font-semibold text-primary hover:underline">Ver detalhes</Link>
+              </div>
+              <div className="mt-5 flex items-center gap-5">
+                <ProgressRing pct={globalAccuracy} label={`de ${totalDoneQuestions} questões`} />
+                <div className="min-w-0 flex-1 space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-ink">Acertos</span>
+                    <span className="text-2xl font-semibold tabular-nums text-success">{totalCorrectQuestions}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-ink">Erros</span>
+                    <span className="text-2xl font-semibold tabular-nums text-danger">{totalWrongQuestions}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-ink">Pendentes</span>
+                    <span className="text-2xl font-semibold tabular-nums text-muted">{tasks.length}</span>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="font-serif text-2xl font-semibold">Meta semanal</h2>
+                <Link href="/rotina-e-metas" className="text-xs font-semibold text-primary hover:underline">Editar meta</Link>
+              </div>
+              <p className="mt-4 text-sm text-ink">Responder {weeklyGoal} questões</p>
+              <div className="mt-3 flex items-center gap-4">
+                <ScoreBar pct={weeklyGoalPct} color="var(--color-success)" />
+                <span className="w-20 shrink-0 text-right text-sm tabular-nums text-ink">{weeklyOpsMetrics.doneQuestionsWeek}/{weeklyGoal}</span>
+              </div>
+              <p className="mt-3 text-sm text-muted">
+                {weeklyOpsMetrics.daysRemainingInWeek} dia{weeklyOpsMetrics.daysRemainingInWeek === 1 ? "" : "s"} restante{weeklyOpsMetrics.daysRemainingInWeek === 1 ? "" : "s"}
+              </p>
+            </section>
 
-      {!error && selectedDayTasks.length === 0 && overdueTasks.length === 0 && (
-        <div className="text-center py-8 md:py-12 space-y-3">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            className="w-10 h-10 mx-auto text-edge"
-            aria-hidden="true"
-          >
-            <circle cx="12" cy="12" r="9" />
-            <path d="M8 12.5l2.5 2.5L16 9.5" />
-          </svg>
-          <p className="text-sm text-muted">
-            {selectedDayIso === today
-              ? "Nenhuma revisão pendente para hoje."
-              : `Nenhuma revisão pendente para ${selectedDayLabel.toLowerCase()} ${formatDayMonth(selectedDayIso)}.`}
-          </p>
-          <p className="text-xs text-muted">Bom trabalho.</p>
-          <div className="flex items-center justify-center gap-2 mt-2">
-            <Link
-              href="/agenda-operacional"
-              className="text-xs border border-edge px-3 py-1.5 hover:border-ink transition-colors"
-            >
-              Ver agenda completa
-            </Link>
-          </div>
+            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="font-serif text-2xl font-semibold">Resumo de desempenho</h2>
+                <Link href="/dados-e-relatorios/relatorio" className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+                  Ver detalhes
+                  <IconArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+              <div className="mt-5 space-y-3">
+                {topAreaSummaries.length > 0 ? topAreaSummaries.map((areaSummary) => {
+                  const pct = Math.round(areaSummary.area_accuracy_pct ?? 0);
+                  const color = getAreaColor(areaSummary.area);
+                  return (
+                    <div key={areaSummary.area} className="space-y-1">
+                      <div className="flex items-center justify-between gap-3 text-sm">
+                        <span className="min-w-0 truncate text-ink">{AREA_FULL[areaSummary.area] ?? areaSummary.area}</span>
+                        <span className="font-semibold tabular-nums" style={{ color }}>{pct}%</span>
+                      </div>
+                      <ScoreBar pct={pct} color={color} />
+                    </div>
+                  );
+                }) : (
+                  <p className="text-sm text-muted">O resumo aparece depois dos primeiros registros.</p>
+                )}
+              </div>
+            </section>
+
+            {turboOverview && turboOverview.due_count > 0 && (
+              <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#F3F8FE] text-primary">
+                    <IconNotebook className="h-8 w-8" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="font-serif text-xl font-semibold">Flashcards vencidos</h2>
+                    <p className="text-sm text-muted">
+                      {turboOverview.due_count} cards{turboOverview.estimated_minutes ? ` · ~${turboOverview.estimated_minutes} min` : ""}
+                    </p>
+                  </div>
+                  <Link href="/cards-adaptativos" className="rounded-lg border border-primary px-3 py-2 text-xs font-semibold text-primary hover:bg-surfaceMuted">
+                    Revisar
+                  </Link>
+                </div>
+              </section>
+            )}
+
+            {recentReviewStudies.length > 0 && (
+              <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+                <h2 className="font-serif text-xl font-semibold">Últimas revisões</h2>
+                <div className="mt-3 space-y-3">
+                  {recentReviewStudies.map((study) => (
+                    <Link
+                      key={study.study_id}
+                      href={study.import_session_id ? `/cronograma/importar/${study.import_session_id}/resultados` : `/banco-de-questoes?area=${encodeURIComponent(study.area)}&theme=${encodeURIComponent(study.theme)}`}
+                      className="block rounded-lg border border-edge bg-paper px-3 py-3 hover:border-primary"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="min-w-0 truncate text-sm font-semibold text-ink">{study.theme}</p>
+                        <span className="text-xs text-muted">{formatStudyDate(study.performed_at)}</span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted">{study.correct_questions}/{study.total_questions} questões · {formatPercent(study.accuracy)}</p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+          </aside>
         </div>
-      )}
-
-      {!error && selectedDayTasks.length === 0 && overdueTasks.length > 0 && (
-        <section className="space-y-2">
-          <h2 className="text-base font-serif">
-            {selectedDayHeading} <span className="text-sm font-sans text-muted font-normal">- 0 revisões</span>
-          </h2>
-          <p className="text-sm text-muted">Nenhuma revisão pendente para este dia.</p>
-        </section>
-      )}
-
-      {!error && selectedDayTasks.length > 0 && (
-        <section className="space-y-2">
-          <h2 className="text-base font-serif">
-            {selectedDayHeading} <span className="text-sm font-sans text-muted font-normal">- {selectedDayTasks.length} {selectedDayTasks.length === 1 ? "revisão" : "revisões"}</span>
-          </h2>
-          <ul>
-            {selectedDayTasks.map((task) => (
-              <TaskRow key={task.task_id} task={task} />
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {!error && overdueTasks.length > 0 && (
-        <section className="rounded-sm border border-amber-200 bg-[var(--amber-tint)] p-3 space-y-2">
-          <h2 className="text-sm font-serif text-amber-800">Atrasadas - {overdueTasks.length}</h2>
-          <ul>
-            {overdueTasks.map((task) => (
-              <TaskRow key={task.task_id} task={task} overdue />
-            ))}
-          </ul>
-        </section>
       )}
 
       <ConfirmDialog

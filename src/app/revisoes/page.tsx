@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   createQuestionBankSession,
+  getQuestionBankLongitudinalDiagnosis,
   getStudyPerformanceSummary,
+  listDirectedStudies,
+  listQuestionBankSessions,
   listReviewTasks,
+  type DirectedStudyListItem,
+  type QuestionBankLongitudinalDiagnosis,
+  type QuestionBankSession,
   type ReviewTask,
   type StudyPerformanceSummary,
 } from "@/lib/api";
@@ -18,68 +24,127 @@ function todayISO(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-type RevisaoCategory = {
-  id: string;
-  label: string;
-  sublabel: string;
-  count: number;
-  href?: string;
-  onAction?: () => void;
-  actionLabel: string;
-  color: "danger" | "warning" | "primary" | "success" | "muted";
-  icon: string;
-};
+function formatDate(value: string | null | undefined): string {
+  if (!value) return "-";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value.slice(0, 10);
+  return parsed.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
 
-function CategoryCard({
-  category,
-  loading,
+function formatPct(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
+  const normalized = Math.abs(Number(value)) <= 1 ? Number(value) * 100 : Number(value);
+  return `${Math.round(normalized)}%`;
+}
+
+function taskHref(task: ReviewTask): string {
+  const params = new URLSearchParams({
+    review_task_id: task.task_id,
+    date: task.due_date,
+    area: task.area,
+    theme: task.theme,
+    expected_questions: String(Math.max(1, Number(task.expected_questions ?? 10))),
+  });
+  return `/banco-de-questoes?${params.toString()}`;
+}
+
+function sessionAccuracy(session: QuestionBankSession): number {
+  if (session.total_questions <= 0) return 0;
+  const correct = session.items.filter((item) => item.is_correct === true).length;
+  if (session.status === "finalized") return Math.round((correct / session.total_questions) * 100);
+  return Math.round((session.answered_count / session.total_questions) * 100);
+}
+
+function IconTarget({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v3" />
+      <path d="M22 12h-3" />
+      <path d="M12 22v-3" />
+      <path d="M2 12h3" />
+    </svg>
+  );
+}
+
+function IconClock({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+
+function IconBrain({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M8.5 4.5A3.5 3.5 0 0 0 5 8v8a3 3 0 0 0 3 3h1" />
+      <path d="M15.5 4.5A3.5 3.5 0 0 1 19 8v8a3 3 0 0 1-3 3h-1" />
+      <path d="M9 4.5V20" />
+      <path d="M15 4.5V20" />
+      <path d="M9 9H6" />
+      <path d="M18 11h-3" />
+      <path d="M9 15H6" />
+      <path d="M18 16h-3" />
+    </svg>
+  );
+}
+
+function IconArrowRight({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M4 10h12" />
+      <path d="m11 5 5 5-5 5" />
+    </svg>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  detail,
+  tone,
+  icon,
 }: {
-  category: RevisaoCategory;
-  loading: boolean;
+  label: string;
+  value: string;
+  detail: string;
+  tone: "primary" | "success" | "warning" | "danger";
+  icon: ReactNode;
 }) {
-  const colorClasses = {
-    danger: "text-danger",
-    warning: "text-warning",
-    primary: "text-primary",
-    success: "text-success",
-    muted: "text-muted",
-  };
+  const toneClass = {
+    primary: "text-primary bg-[#F3F8FE]",
+    success: "text-success bg-[#EEF8F1]",
+    warning: "text-warning bg-[var(--amber-tint)]",
+    danger: "text-danger bg-[#FFF0F1]",
+  }[tone];
 
   return (
-    <div className="km-card flex items-center gap-4 p-4">
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-surfaceMuted text-2xl">
-        {category.icon}
+    <div className="rounded-lg border border-edge bg-surface p-4 shadow-sm">
+      <div className="flex items-center gap-3">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${toneClass}`}>{icon}</div>
+        <div className="min-w-0">
+          <p className="text-xs text-muted">{label}</p>
+          <p className="mt-0.5 text-2xl font-semibold leading-tight text-ink">{value}</p>
+        </div>
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-ink">{category.label}</p>
-        <p className="text-xs text-muted">{category.sublabel}</p>
+      <p className="mt-3 text-xs text-muted">{detail}</p>
+    </div>
+  );
+}
+
+function LoadingBlock() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-10 w-56 rounded" />
+      <div className="grid gap-3 md:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={index} className="h-28 rounded-lg" />
+        ))}
       </div>
-      <div className="flex shrink-0 items-center gap-3">
-        {loading ? (
-          <Skeleton className="h-5 w-8 rounded" />
-        ) : (
-          <span className={`text-xl font-bold tabular-nums ${colorClasses[category.color]}`}>
-            {category.count}
-          </span>
-        )}
-        {category.href ? (
-          <Link
-            href={category.href}
-            className="rounded-xl border border-primary px-3 py-1.5 text-xs font-semibold text-primary hover:bg-surfaceMuted"
-          >
-            {category.actionLabel}
-          </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={category.onAction}
-            disabled={category.count === 0}
-            className="rounded-xl border border-primary px-3 py-1.5 text-xs font-semibold text-primary hover:bg-surfaceMuted disabled:opacity-40"
-          >
-            {category.actionLabel}
-          </button>
-        )}
-      </div>
+      <Skeleton className="h-72 rounded-lg" />
     </div>
   );
 }
@@ -87,9 +152,11 @@ function CategoryCard({
 export default function RevisoesPage() {
   const { token, tokenResolved } = useAuthToken();
   const router = useRouter();
-
   const [tasks, setTasks] = useState<ReviewTask[]>([]);
+  const [studies, setStudies] = useState<DirectedStudyListItem[]>([]);
+  const [sessions, setSessions] = useState<QuestionBankSession[]>([]);
   const [performanceSummary, setPerformanceSummary] = useState<StudyPerformanceSummary | null>(null);
+  const [longitudinal, setLongitudinal] = useState<QuestionBankLongitudinalDiagnosis | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,38 +167,40 @@ export default function RevisoesPage() {
     if (!tokenResolved) return;
     Promise.all([
       listReviewTasks(token, { status: "pending" }),
+      listDirectedStudies(token),
+      listQuestionBankSessions(token, { limit: 30 }).catch(() => []),
       getStudyPerformanceSummary(token).catch(() => null),
+      getQuestionBankLongitudinalDiagnosis(token).catch(() => null),
     ])
-      .then(([taskData, perf]) => {
+      .then(([taskData, studyData, sessionData, perf, meta]) => {
         setTasks(taskData);
+        setStudies(studyData);
+        setSessions(sessionData);
         setPerformanceSummary(perf);
+        setLongitudinal(meta);
+        setError(null);
       })
-      .catch(() => setError("Não foi possível carregar as revisões."))
+      .catch(() => setError("Não foi possível carregar suas revisões."))
       .finally(() => setLoading(false));
   }, [token, tokenResolved]);
 
-  // Count of recent errors: tasks that are overdue (proxy for "erros recentes")
-  const overdueTasks = tasks.filter((t) => t.is_overdue);
-
-  // Marked questions: tasks categorized as "questões marcadas" could use "doubtful" from sessions
-  // For now we show the total pending task count as "questões agendadas"
-  const pendingToday = tasks.filter((t) => t.due_date === today);
-  const markedCount = tasks.filter((t) => t.is_critical).length;
-
-  // Weak themes from performance summary
-  const weakThemes = performanceSummary?.diagnosis?.weaknesses?.length ?? 0;
-
-  // Spaced review count: all pending tasks
-  const spacedCount = tasks.length;
+  const pendingToday = tasks.filter((task) => task.due_date === today);
+  const overdueTasks = tasks.filter((task) => task.is_overdue);
+  const criticalTasks = tasks.filter((task) => task.is_critical);
+  const reviewStudies = studies.filter((study) => study.is_review);
+  const finalizedSessions = sessions.filter((session) => session.status === "finalized");
+  const activeSessions = sessions.filter((session) => session.status === "active");
+  const weakThemes = performanceSummary?.diagnosis?.weaknesses ?? [];
+  const weakNodeCount = longitudinal?.weak_node_ids.length ?? 0;
+  const atRiskNodeCount = longitudinal?.at_risk_node_ids.length ?? 0;
 
   async function startWeaknessSession() {
-    if (!token || !performanceSummary) return;
     setBusy(true);
     try {
       const created = await createQuestionBankSession(token, {
         mode: "adaptive",
         resolution_mode: "training",
-        answer_status: "answered",
+        answer_status: "unanswered_or_wrong",
         limit: 20,
       });
       router.push(`/banco-de-questoes/sessao/${created.session_id}`);
@@ -140,88 +209,234 @@ export default function RevisoesPage() {
     }
   }
 
-  const categories: RevisaoCategory[] = [
-    {
-      id: "erros",
-      label: "Erros recentes",
-      sublabel: "Questões que você errou nas últimas sessões",
-      count: overdueTasks.length,
-      href: "/banco-de-questoes?answer_status=wrong",
-      actionLabel: "Revisar",
-      color: "danger",
-      icon: "✗",
-    },
-    {
-      id: "marcadas",
-      label: "Questões marcadas",
-      sublabel: "Questões que você marcou para revisar",
-      count: markedCount,
-      href: "/banco-de-questoes?answer_status=answered",
-      actionLabel: "Revisar",
-      color: "primary",
-      icon: "⚑",
-    },
-    {
-      id: "temas",
-      label: "Temas em queda",
-      sublabel: "Áreas com baixo desempenho recente",
-      count: weakThemes,
-      onAction: () => void startWeaknessSession(),
-      actionLabel: busy ? "…" : "Treinar",
-      color: "muted",
-      icon: "↓",
-    },
-    {
-      id: "espacada",
-      label: "Revisão espaçada",
-      sublabel: "Tarefas agendadas pelo algoritmo",
-      count: spacedCount,
-      href: "/today",
-      actionLabel: "Ver agenda",
-      color: "success",
-      icon: "⟳",
-    },
-  ];
+  if (!tokenResolved || loading) {
+    return (
+      <main className="min-h-screen bg-paper text-ink">
+        <LoadingBlock />
+      </main>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-paper px-4 py-6 text-ink md:px-6 md:py-8">
-      <div className="mx-auto max-w-3xl space-y-6">
-        <header>
-          <h1 className="font-serif text-3xl font-semibold leading-tight md:text-4xl">Revisões</h1>
-          <p className="mt-2 text-sm text-muted">
-            {pendingToday.length > 0
-              ? `${pendingToday.length} revisão${pendingToday.length > 1 ? "ões" : ""} agendada${pendingToday.length > 1 ? "s" : ""} para hoje.`
-              : "Todas as suas revisões organizadas em um lugar."}
-          </p>
+    <main className="min-h-screen bg-paper text-ink">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-muted">Revisões</p>
+            <h1 className="mt-1 font-serif text-4xl font-semibold leading-tight md:text-5xl">Histórico e metacognição</h1>
+            <p className="mt-3 max-w-2xl text-sm text-muted">
+              Acompanhe o que está pendente, reabra sessões anteriores e veja os sinais por trás das suas revisões.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => void startWeaknessSession()}
+            disabled={busy}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-3 text-sm font-semibold text-primaryInk disabled:opacity-50"
+          >
+            {busy ? "Criando..." : "Criar revisão inteligente"}
+            <IconArrowRight className="h-4 w-4" />
+          </button>
         </header>
 
-        {error && (
-          <div className="rounded-xl border border-danger bg-surface p-4 text-sm text-danger">{error}</div>
-        )}
+        {error && <div className="rounded-lg border border-danger bg-surface p-4 text-sm text-danger">{error}</div>}
 
-        <section className="space-y-3">
-          {categories.map((cat) => (
-            <CategoryCard key={cat.id} category={cat} loading={loading} />
-          ))}
+        <section className="grid gap-3 md:grid-cols-4">
+          <MetricCard
+            label="Para hoje"
+            value={String(pendingToday.length)}
+            detail={`${overdueTasks.length} atrasada${overdueTasks.length === 1 ? "" : "s"} · ${criticalTasks.length} prioritária${criticalTasks.length === 1 ? "" : "s"}`}
+            tone="primary"
+            icon={<IconClock className="h-5 w-5" />}
+          />
+          <MetricCard
+            label="Histórico"
+            value={String(reviewStudies.length + finalizedSessions.length)}
+            detail="Revisões e sessões finalizadas acessíveis"
+            tone="success"
+            icon={<IconTarget className="h-5 w-5" />}
+          />
+          <MetricCard
+            label="Temas frágeis"
+            value={String(weakThemes.length || weakNodeCount)}
+            detail={`${atRiskNodeCount} tema${atRiskNodeCount === 1 ? "" : "s"} com retenção em risco`}
+            tone="warning"
+            icon={<IconBrain className="h-5 w-5" />}
+          />
+          <MetricCard
+            label="Sessões abertas"
+            value={String(activeSessions.length)}
+            detail="Continue de onde parou no banco"
+            tone="danger"
+            icon={<IconArrowRight className="h-5 w-5" />}
+          />
         </section>
 
-        <div className="rounded-2xl border border-edge bg-surfaceMuted p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Acesso rápido</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Link
-              href="/banco-de-questoes"
-              className="rounded-xl border border-edge bg-surface px-3 py-2 text-xs font-semibold text-ink hover:border-primary"
-            >
-              Banco de questões
-            </Link>
-            <Link
-              href="/dados-e-relatorios"
-              className="rounded-xl border border-edge bg-surface px-3 py-2 text-xs font-semibold text-ink hover:border-primary"
-            >
-              Desempenho
-            </Link>
+        <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_23rem]">
+          <div className="space-y-5">
+            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="font-serif text-2xl font-semibold">Revisões pendentes</h2>
+                  <p className="mt-1 text-sm text-muted">Acesse pelo banco de questões ou veja a agenda completa.</p>
+                </div>
+                <Link href="/today" className="text-sm font-semibold text-primary hover:underline">Ver hoje</Link>
+              </div>
+              <div className="mt-4 space-y-3">
+                {tasks.slice(0, 6).length > 0 ? tasks.slice(0, 6).map((task) => (
+                  <div key={task.task_id} className="flex flex-col gap-3 rounded-lg border border-edge bg-paper p-4 sm:flex-row sm:items-center">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-ink">{task.theme}</p>
+                        {task.is_critical && <span className="rounded-full bg-[var(--amber-tint)] px-2 py-0.5 text-xs font-semibold text-warning">prioritária</span>}
+                      </div>
+                      <p className="mt-1 text-xs text-muted">
+                        {task.area} · {task.expected_questions} questões · vence em {formatDate(task.due_at || task.due_date)}
+                      </p>
+                    </div>
+                    <Link href={taskHref(task)} className="inline-flex items-center justify-center rounded-lg border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted">
+                      Acessar revisão
+                    </Link>
+                  </div>
+                )) : (
+                  <div className="rounded-lg border border-dashed border-edge bg-paper p-8 text-center text-sm text-muted">
+                    Nenhuma revisão pendente agora.
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="font-serif text-2xl font-semibold">Histórico de sessões</h2>
+                  <p className="mt-1 text-sm text-muted">Abra resultados, sessões em andamento e revisões importadas.</p>
+                </div>
+                <Link href="/banco-de-questoes" className="text-sm font-semibold text-primary hover:underline">Nova sessão</Link>
+              </div>
+
+              <div className="mt-4 overflow-hidden rounded-lg border border-edge">
+                {sessions.length > 0 ? sessions.slice(0, 8).map((session) => {
+                  const pct = sessionAccuracy(session);
+                  return (
+                    <Link
+                      key={session.session_id}
+                      href={`/banco-de-questoes/sessao/${session.session_id}`}
+                      className="grid gap-3 border-b border-edge bg-paper p-4 last:border-b-0 hover:bg-surfaceMuted md:grid-cols-[minmax(0,1fr)_7rem_7rem]"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-ink">{session.theme ?? "Sessão do banco"}</p>
+                        <p className="mt-1 text-xs text-muted">
+                          {session.area ?? "Área"} · {session.resolution_mode === "simulation" ? "Simulado" : "Treino"} · {formatDate(session.finalized_at ?? session.updated_at)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted">{session.status === "finalized" ? "Desempenho" : "Progresso"}</p>
+                        <p className="text-lg font-semibold tabular-nums text-ink">{pct}%</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted">Questões</p>
+                        <p className="text-lg font-semibold tabular-nums text-ink">{session.answered_count}/{session.total_questions}</p>
+                      </div>
+                    </Link>
+                  );
+                }) : (
+                  <div className="bg-paper p-8 text-center text-sm text-muted">Nenhuma sessão do banco registrada ainda.</div>
+                )}
+              </div>
+
+              {reviewStudies.length > 0 && (
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  {reviewStudies.slice(0, 4).map((study) => (
+                    <Link
+                      key={study.study_id}
+                      href={study.import_session_id ? `/cronograma/importar/${study.import_session_id}/resultados` : `/banco-de-questoes?area=${encodeURIComponent(study.area)}&theme=${encodeURIComponent(study.theme)}`}
+                      className="rounded-lg border border-edge bg-paper p-4 hover:border-primary"
+                    >
+                      <p className="truncate font-semibold text-ink">{study.theme}</p>
+                      <p className="mt-1 text-xs text-muted">{formatDate(study.performed_at)} · {study.correct_questions}/{study.total_questions} questões · {formatPct(study.accuracy)}</p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
-        </div>
+
+          <aside className="space-y-5">
+            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+              <h2 className="font-serif text-2xl font-semibold">Metacognição geral</h2>
+              <p className="mt-1 text-sm text-muted">Sinais agregados das respostas no banco.</p>
+              <div className="mt-4 space-y-4">
+                {[
+                  { label: "Sensibilidade a pegadinhas", value: longitudinal?.trap_sensitivity, tone: "text-warning" },
+                  { label: "Excesso de confiança", value: longitudinal?.overconfidence_score, tone: "text-danger" },
+                  { label: "Impulsividade", value: longitudinal?.impulsive_rate, tone: "text-primary" },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="text-ink">{item.label}</span>
+                      <span className={`font-semibold tabular-nums ${item.tone}`}>{formatPct(item.value ?? 0)}</span>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-surfaceMuted">
+                      <div className="h-full rounded-full bg-primary" style={{ width: formatPct(item.value ?? 0) }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="font-serif text-2xl font-semibold">Temas para revisar</h2>
+                <Link href="/dados-e-relatorios/relatorio" className="text-xs font-semibold text-primary hover:underline">Ver todos</Link>
+              </div>
+              <div className="mt-4 space-y-3">
+                {weakThemes.slice(0, 5).length > 0 ? weakThemes.slice(0, 5).map((theme) => (
+                  <Link
+                    key={theme.key}
+                    href={`/banco-de-questoes?area=${encodeURIComponent(theme.area)}&theme=${encodeURIComponent(theme.theme)}&answer_status=unanswered_or_wrong`}
+                    className="block rounded-lg border border-edge bg-paper p-3 hover:border-primary"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="min-w-0 truncate text-sm font-semibold text-ink">{theme.theme}</p>
+                      <span className="text-sm font-semibold text-danger">{formatPct(theme.accuracy_pct)}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-muted">{theme.total_questions} questões · {theme.action_hint ?? "Revisar erros e refazer questões."}</p>
+                  </Link>
+                )) : (
+                  <p className="text-sm text-muted">O diagnóstico aparece quando houver amostra suficiente.</p>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+              <h2 className="font-serif text-2xl font-semibold">Ações recomendadas</h2>
+              <div className="mt-4 space-y-3">
+                <Link href="/banco-de-questoes?answer_status=wrong" className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-paper p-4 hover:border-primary">
+                  <div>
+                    <p className="text-sm font-semibold text-primary">Revisar só erros</p>
+                    <p className="mt-1 text-xs text-muted">Foque nas questões erradas no banco.</p>
+                  </div>
+                  <IconArrowRight className="h-4 w-4 text-muted" />
+                </Link>
+                <Link href="/today" className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-paper p-4 hover:border-primary">
+                  <div>
+                    <p className="text-sm font-semibold text-primary">Executar pendências</p>
+                    <p className="mt-1 text-xs text-muted">Voltar ao plano do dia.</p>
+                  </div>
+                  <IconArrowRight className="h-4 w-4 text-muted" />
+                </Link>
+                <Link href="/cards-adaptativos" className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-paper p-4 hover:border-primary">
+                  <div>
+                    <p className="text-sm font-semibold text-primary">Reforçar flashcards</p>
+                    <p className="mt-1 text-xs text-muted">Feche lacunas com repetição espaçada.</p>
+                  </div>
+                  <IconArrowRight className="h-4 w-4 text-muted" />
+                </Link>
+              </div>
+            </section>
+          </aside>
+        </section>
       </div>
     </main>
   );

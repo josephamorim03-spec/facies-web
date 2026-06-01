@@ -109,6 +109,31 @@ export type QuestionBankSession = {
   directed_study_id: string | null;
   review_task_id: string | null;
 };
+export type QuestionBankLongitudinalNode = {
+  knowledge_node_id: string;
+  node_name: string | null;
+  exposure_count: number;
+  correct_count: number;
+  error_count: number;
+  performance_score: number;
+  mastery_score: number;
+  retention_score: number;
+  days_since_last_seen: number | null;
+  last_error_at: string | null;
+};
+export type QuestionBankLongitudinalDiagnosis = {
+  user_id: string;
+  total_nodes_studied: number;
+  nodes: QuestionBankLongitudinalNode[];
+  weak_node_ids: string[];
+  at_risk_node_ids: string[];
+  charge_pattern_errors: Record<string, number>;
+  answer_type_errors: Record<string, number>;
+  reasoning_type_errors: Record<string, number>;
+  trap_sensitivity: number;
+  overconfidence_score: number;
+  impulsive_rate: number;
+};
 export type QuestionBankFinalizeResult = FinalizationResult & {
   created_tasks: ReviewTask[];
   session: QuestionBankSession;
@@ -192,8 +217,25 @@ export async function createQuestionBankSession(token: string, payload: Question
   return api<QuestionBankSession>("/api/question-bank/sessions", { method: "POST", headers: authHeader(token), body: JSON.stringify(payload) });
 }
 
+export async function listQuestionBankSessions(
+  token: string,
+  params: { status?: QuestionBankSessionStatus; limit?: number } = {},
+): Promise<QuestionBankSession[]> {
+  const q = new URLSearchParams();
+  if (params.status) q.set("status", params.status);
+  if (params.limit) q.set("limit", String(params.limit));
+  return api<QuestionBankSession[]>(
+    `/api/question-bank/sessions${q.toString() ? `?${q.toString()}` : ""}`,
+    { headers: authHeader(token) },
+  );
+}
+
 export async function getQuestionBankSession(token: string, sessionId: string): Promise<QuestionBankSession> {
   return api<QuestionBankSession>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}`, { headers: authHeader(token) });
+}
+
+export async function getQuestionBankLongitudinalDiagnosis(token: string): Promise<QuestionBankLongitudinalDiagnosis> {
+  return api<QuestionBankLongitudinalDiagnosis>("/api/question-bank/diagnosis/longitudinal", { headers: authHeader(token) });
 }
 
 export async function recordQuestionBankAttempt(
