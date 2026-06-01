@@ -188,6 +188,7 @@ export type UserProfile = {
   shift_12h_capacity: number | null;
   shift_24h_capacity: number | null;
   display_name: string | null;
+  photo_url: string | null;
   has_completed_initial_goal_setup: boolean;
   access_status: "active" | "expired" | "pending_key";
 };

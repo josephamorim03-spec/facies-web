@@ -285,8 +285,7 @@ function BancoDeQuestoesContent() {
       <div className="mx-auto max-w-7xl space-y-6">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">KrosBank</p>
-            <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight md:text-4xl">Banco de questões</h1>
+            <h1 className="font-serif text-3xl font-semibold leading-tight md:text-4xl">Banco de questões</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">
               Monte blocos por área, instituição, ano, realização e assunto real do banco.
             </p>

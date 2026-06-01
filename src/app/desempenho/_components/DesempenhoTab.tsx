@@ -100,7 +100,7 @@ function PeriodHeader({
           <IconChevron className={`h-3.5 w-3.5 shrink-0 transition-transform ${periodMenuOpen ? "rotate-180" : ""}`} />
         </button>
         {periodMenuOpen && (
-          <div className="absolute z-20 top-6 min-w-32 border border-edge bg-paper shadow-sm">
+          <div className="absolute z-20 top-6 min-w-32 border border-edge rounded-xl bg-paper shadow-sm overflow-hidden">
             {(["geral", "semanal", "mensal"] as Period[])
               .filter((p) => p !== period)
               .map((p) => (

@@ -326,7 +326,7 @@ export default function CronogramaPage() {
 
       {/* Banner: revisões atrasadas */}
       {new Date().getHours() >= 20 && tasks.filter((t) => t.is_overdue).length > 0 && (
-        <div className="border border-edge px-3 py-2 flex items-center justify-between gap-2">
+        <div className="rounded-xl border border-edge px-3 py-2 flex items-center justify-between gap-2">
           <span className="text-xs text-muted">
             {tasks.filter((t) => t.is_overdue).length} tarefa{tasks.filter((t) => t.is_overdue).length > 1 ? "s" : ""} atrasada{tasks.filter((t) => t.is_overdue).length > 1 ? "s" : ""}
           </span>
@@ -382,7 +382,7 @@ export default function CronogramaPage() {
 
       {showEventSuggestionModal && (
         <div className="fixed inset-0 bg-black/40 z-50 overflow-y-auto flex p-4 modal-backdrop" onClick={closeEventSuggestionModal}>
-          <div className="bg-paper border border-edge w-full max-w-xl m-auto p-4 space-y-3 rounded-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-paper border border-edge rounded-2xl w-full max-w-xl m-auto p-4 space-y-3 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-serif text-base">Reagendamento sugerido</h3>
             </div>
@@ -414,7 +414,7 @@ export default function CronogramaPage() {
                     </div>
                     <ul className="space-y-1">
                       {sg.items.map((item) => (
-                        <li key={`modal:${sg.suggestion_id}:${item.task_id}`} className="border border-edge px-3 py-2">
+                        <li key={`modal:${sg.suggestion_id}:${item.task_id}`} className="rounded-xl border border-edge px-3 py-2">
                           <div className="flex items-center gap-2">
                             <AreaDot area={item.area as Area} size="sm" />
                             <div className="flex-1 min-w-0">

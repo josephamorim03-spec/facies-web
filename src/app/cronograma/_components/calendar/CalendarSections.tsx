@@ -49,7 +49,7 @@ export function CalendarEventMoveErrorToast({
 }) {
   if (!message) return null;
   return (
-    <div className="fixed left-1/2 top-3 -translate-x-1/2 z-[85] w-[min(92vw,30rem)] border border-edge bg-paper shadow-sm px-3 py-2">
+    <div className="fixed left-1/2 top-3 -translate-x-1/2 z-[85] w-[min(92vw,30rem)] border border-edge rounded-xl bg-paper shadow-sm px-3 py-2">
       <div className="flex items-start gap-2">
         <p className="text-xs text-ink flex-1 leading-snug">{message}</p>
         <button
@@ -291,7 +291,7 @@ export function CalendarCreateStudyModal({
   if (!(modal === "create" && selectedDay)) return null;
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 modal-backdrop" onClick={onClose}>
-      <div className="bg-paper border border-edge w-full max-w-sm p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-paper border border-edge rounded-2xl w-full max-w-sm p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
         <NewStudyForm
           token={token}
           dateISO={selectedDay}

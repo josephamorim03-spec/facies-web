@@ -69,7 +69,7 @@ export function CadernoNoteList({
           {notes.map((note) => (
             <li
               key={note.note_id}
-              className="border border-edge p-3 space-y-1"
+              className="rounded-xl border border-edge p-3 space-y-1"
               style={{ borderLeftWidth: "3px", borderLeftColor: AREA_COLORS[note.area as Area] ?? "#ccc" }}
             >
               {editingNote?.note_id === note.note_id ? (

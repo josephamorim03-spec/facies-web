@@ -38,7 +38,7 @@ export function SettingsPanel({
   if (!showSettings) return null;
 
   return (
-    <div className="border border-edge p-3 space-y-3 mb-4">
+    <div className="rounded-xl border border-edge p-3 space-y-3 mb-4">
       <div className="flex items-center gap-2">
         <p className="text-xs text-muted uppercase tracking-wide">Capacidade por turno</p>
         <div className="relative">
@@ -50,7 +50,7 @@ export function SettingsPanel({
             onClick={() => onShowHelpChange(!showHelp)}
           >?</button>
           {showHelp && (
-            <div className="absolute left-5 top-0 z-30 w-64 bg-paper border border-edge p-2 text-xs text-muted shadow-sm">
+            <div className="absolute left-5 top-0 z-30 w-64 rounded-xl bg-paper border border-edge p-2 text-xs text-muted shadow-sm">
               Informe quantas questões em média você estima fazer durante trabalho/plantão de 12h. O sistema vai usar isso como base para calcular quanto você tolera fazer de questões nos demais compromissos
             </div>
           )}
@@ -61,7 +61,7 @@ export function SettingsPanel({
         <input type="text" inputMode="numeric" value={avg12h}
           onChange={(e) => onAvg12hChange(e.target.value.replace(/[^0-9]/g, ""))}
           placeholder="—"
-          className="border border-edge w-14 px-1 py-0.5 text-sm bg-paper text-center" />
+          className="rounded-xl border border-edge w-14 px-1 py-0.5 text-sm bg-paper text-center" />
         <span className="text-muted">q</span>
       </label>
       <label className="text-xs text-muted flex items-center gap-2">
@@ -69,7 +69,7 @@ export function SettingsPanel({
         <input type="text" inputMode="numeric" value={avg24h}
           onChange={(e) => onAvg24hChange(e.target.value.replace(/[^0-9]/g, ""))}
           placeholder="—"
-          className="border border-edge w-14 px-1 py-0.5 text-sm bg-paper text-center" />
+          className="rounded-xl border border-edge w-14 px-1 py-0.5 text-sm bg-paper text-center" />
         <span className="text-muted">q</span>
       </label>
       <hr className="border-edge" />
@@ -85,7 +85,7 @@ export function SettingsPanel({
               onClick={() => onShowRetentionHelpChange(!showRetentionHelp)}
             >?</button>
             {showRetentionHelp && (
-              <div className="absolute left-5 top-0 z-30 w-64 bg-paper border border-edge p-2 text-xs text-muted shadow-sm">
+              <div className="absolute left-5 top-0 z-30 w-64 rounded-xl bg-paper border border-edge p-2 text-xs text-muted shadow-sm">
                 Define o quanto você quer lembrar do que estudou. 90% significa que o sistema vai espaçar as revisões para você manter 9 de cada 10 tópicos frescos na memória. Quanto menor, mais espaçadas as revisões.
               </div>
             )}
@@ -98,7 +98,7 @@ export function SettingsPanel({
             inputMode="numeric"
             value={retention}
             onChange={(e) => onRetentionChange(e.target.value.replace(/[^0-9]/g, ""))}
-            className="border border-edge w-14 px-1 py-0.5 text-sm bg-paper text-center"
+            className="rounded-xl border border-edge w-14 px-1 py-0.5 text-sm bg-paper text-center"
           />
           <span className="text-muted">%</span>
         </label>
@@ -106,14 +106,14 @@ export function SettingsPanel({
           <button
             type="button"
             onClick={onResetFsrsParams}
-            className="text-xs text-muted border border-edge px-2 py-0.5"
+            className="text-xs rounded-xl text-muted border border-edge px-2 py-0.5 hover:border-primary"
           >
             Redefinir calibração personalizada
           </button>
         )}
       </div>
       <div className="flex gap-2">
-        <button onClick={onSaveTolerance} className="text-xs border border-ink px-3 py-1">Salvar</button>
+        <button onClick={onSaveTolerance} className="text-xs rounded-xl border border-ink px-3 py-1 hover:bg-ink hover:text-paper transition-colors">Salvar</button>
         <button onClick={onClose} className="text-xs text-muted px-3 py-1">Cancelar</button>
       </div>
     </div>

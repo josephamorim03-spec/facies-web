@@ -7,7 +7,7 @@ import {
 export type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
 
 export const AREA_COLORS: Record<string, string> = {
-  GO: "#f472b6", PD: "#2293cf", CG: "#ef4444", CM: "#2fc767", MP: "#f59e0b", OU: "#AEAEA8",
+  GO: "#B65AA0", PD: "#2E79A8", CG: "#B44A4F", CM: "#2D8B62", MP: "#A97816", OU: "#8C928E",
 };
 export const FULL_EXAM_COLOR = "#0F4C5C";
 export const STUDY_KIND_TOPIC = "topic";

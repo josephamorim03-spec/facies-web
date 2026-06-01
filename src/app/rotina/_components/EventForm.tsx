@@ -47,7 +47,7 @@ export function EventForm({
             <button
               key={item.value}
               onClick={() => onEventCadenceChange(item.value)}
-              className={`text-xs px-2 py-1 border ${eventCadence === item.value ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+              className={`text-xs rounded-xl px-2 py-1 border ${eventCadence === item.value ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
             >
               {item.label}
             </button>
@@ -60,7 +60,7 @@ export function EventForm({
               <button
                 key={d}
                 onClick={() => onEventWeekdayChange(i)}
-                className={`text-xs px-2 py-1 border ${eventWeekday === i ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+                className={`text-xs rounded-xl px-2 py-1 border ${eventWeekday === i ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
               >
                 {d}
               </button>
@@ -72,7 +72,7 @@ export function EventForm({
               type="date"
               value={eventDate}
               onChange={(e) => onEventDateChange(e.target.value)}
-              className="border border-edge bg-paper px-2 py-1 text-sm w-full min-w-0"
+              className="rounded-xl border border-edge bg-paper px-2 py-1 text-sm w-full min-w-0"
               title={eventDate ? toDisplayDate(eventDate) : undefined}
             />
             <div aria-hidden="true" />
@@ -88,7 +88,7 @@ export function EventForm({
             <button
               key={item.value}
               onClick={() => onEventCategoryChange(item.value)}
-              className={`text-xs px-2 py-1 border ${eventCategory === item.value ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+              className={`text-xs rounded-xl px-2 py-1 border ${eventCategory === item.value ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
             >
               {item.label}
             </button>
@@ -101,17 +101,19 @@ export function EventForm({
             placeholder={eventCategory === "work" ? "Ex. Plantão/UBS" : "Ex. Imprevisto/Viagem"}
             value={eventLabel}
             onChange={(e) => onEventLabelChange(e.target.value)}
-            className="border border-edge bg-paper px-2 py-1 text-sm w-full min-w-0"
+            className="rounded-xl border border-edge bg-paper px-2 py-1 text-sm w-full min-w-0"
           />
           <select
             value={eventDuration}
             onChange={(e) => onEventDurationChange(Number(e.target.value))}
-            className="border border-edge bg-paper px-2 py-1 text-sm w-full sm:w-auto"
+            className="rounded-xl border border-edge bg-paper px-2 py-1 text-sm w-full sm:w-auto"
           >
             {DURATIONS.map((d) => <option key={d} value={d}>{d}h</option>)}
           </select>
-          <button onClick={onAddEvent} className="text-sm border border-ink px-3 py-1 w-full sm:w-auto">+ Adicionar</button>
+          <button onClick={onAddEvent} className="text-sm rounded-xl border border-ink px-3 py-1 w-full sm:w-auto hover:bg-ink hover:text-paper transition-colors">+ Adicionar</button>
         </div>
+
+        {evError && <p className="text-xs text-danger">{evError}</p>}
       </div>
     </section>
   );

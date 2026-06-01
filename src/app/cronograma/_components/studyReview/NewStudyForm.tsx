@@ -75,14 +75,14 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
         <button
           type="button"
           onClick={() => setMode("question_bank")}
-          className={`text-xs border px-3 py-1 ${mode === "question_bank" ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+          className={`text-xs rounded-xl border px-3 py-1 ${mode === "question_bank" ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
         >
-          Banco de questoes
+          Banco de questões
         </button>
         <button
           type="button"
           onClick={() => setMode("event")}
-          className={`text-xs border px-3 py-1 ${mode === "event" ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+          className={`text-xs rounded-xl border px-3 py-1 ${mode === "event" ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
         >
           Compromisso
         </button>
@@ -112,7 +112,7 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
                 key={item.value}
                 type="button"
                 onClick={() => setEventCategory(item.value)}
-                className={`text-xs px-2 py-1 border ${eventCategory === item.value ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+                className={`text-xs rounded-xl px-2 py-1 border ${eventCategory === item.value ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
               >
                 {item.label}
               </button>
@@ -121,15 +121,15 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
             <input
               type="text"
-              placeholder={eventCategory === "work" ? "Ex. Plantao/UBS" : "Ex. Imprevisto/Viagem"}
+              placeholder={eventCategory === "work" ? "Ex. Plantão/UBS" : "Ex. Imprevisto/Viagem"}
               value={eventLabel}
               onChange={(e) => setEventLabel(e.target.value)}
-              className="border border-edge bg-paper px-2 py-1 text-sm"
+              className="rounded-xl border border-edge bg-paper px-2 py-1 text-sm"
             />
             <select
               value={eventDuration}
               onChange={(e) => setEventDuration(Number(e.target.value))}
-              className="border border-edge bg-paper px-2 py-1 text-sm"
+              className="rounded-xl border border-edge bg-paper px-2 py-1 text-sm"
             >
               {EVENT_DURATIONS.map((duration) => <option key={duration} value={duration}>{duration}h</option>)}
             </select>
@@ -144,7 +144,7 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
             type="button"
             onClick={submitEvent}
             disabled={submitting}
-            className="text-xs border border-ink px-3 py-1 disabled:opacity-50"
+            className="text-xs rounded-xl border border-ink px-3 py-1 disabled:opacity-50"
           >
             Adicionar{submitting ? submittingDots : ""}
           </button>

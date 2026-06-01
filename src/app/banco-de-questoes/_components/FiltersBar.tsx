@@ -8,15 +8,36 @@ import type { QuestionBankAnswerStatus, QuestionBankResolutionMode, QuestionBank
 const AREAS = ["", "GO", "CM", "CG", "MP", "PD", "OU"] as const;
 const QUICK_YEARS = [2019, 2020, 2021, 2022, 2023, 2024, 2025] as const;
 
-const AREA_LABELS: Record<string, string> = {
-  "": "Todas", GO: "GO", CM: "Clínica Médica", CG: "Cirurgia Geral",
-  MP: "Preventiva", PD: "Pediatria", OU: "Outras",
+const AREA_FULL_LABELS: Record<string, string> = {
+  "": "Todas",
+  GO: "Ginecologia e Obstetrícia",
+  CM: "Clínica Médica",
+  CG: "Cirurgia Geral",
+  MP: "Medicina Preventiva",
+  PD: "Pediatria",
+  OU: "Outras",
 };
 
-const REALIZACAO_OPTIONS: { value: QuestionBankAnswerStatus; label: string; help: string }[] = [
-  { value: "all",     label: "Todas",          help: "Todas as questões do filtro atual." },
-  { value: "correct", label: "Só acertos",      help: "Questões que você acertou na última tentativa." },
-  { value: "wrong",   label: "Só erros",        help: "Questões que você errou na última tentativa." },
+const AREA_SHORT_LABELS: Record<string, string> = {
+  "": "Todas", GO: "GO", CM: "CM", CG: "CG", MP: "MP", PD: "PD", OU: "OU",
+};
+
+function AreaLabel({ area }: { area: string }) {
+  return (
+    <>
+      <span className="hidden md:inline">{AREA_FULL_LABELS[area] ?? area}</span>
+      <span className="md:hidden">{AREA_SHORT_LABELS[area] ?? area}</span>
+    </>
+  );
+}
+
+const REALIZACAO_OPTIONS: { value: QuestionBankAnswerStatus; label: string; help: string; group: "main" | "feitas" }[] = [
+  { value: "all",               label: "Todas",               help: "Todas as questões do filtro atual.",                          group: "main" },
+  { value: "unanswered",        label: "Não feitas",           help: "Questões que você ainda não respondeu.",                     group: "main" },
+  { value: "unanswered_or_wrong", label: "Não feitas + Erradas", help: "Não respondidas ou erradas na última tentativa — ideal para reforço.", group: "main" },
+  { value: "answered",          label: "Já feitas (todas)",   help: "Questões que você já respondeu pelo menos uma vez.",          group: "feitas" },
+  { value: "correct",           label: "Só acertos",           help: "Questões que você acertou na última tentativa.",             group: "feitas" },
+  { value: "wrong",             label: "Só erros",             help: "Questões que você errou na última tentativa.",               group: "feitas" },
 ];
 
 const MODO_OPTIONS: { value: QuestionBankResolutionMode; label: string; help: string }[] = [
@@ -240,7 +261,7 @@ export default function FiltersBar(props: FiltersBarProps) {
       label: "Área / Assunto",
       value: selectedTopics.length > 0
         ? `${selectedTopics.length} tema${selectedTopics.length > 1 ? "s" : ""}`
-        : (search.trim() || AREA_LABELS[area] || "Todas"),
+        : (search.trim() || AREA_SHORT_LABELS[area] || "Todas"),
       indicator: selectedTopics.length > 0 || !!area || !!search.trim(),
     },
     {
@@ -258,8 +279,8 @@ export default function FiltersBar(props: FiltersBarProps) {
     {
       id: "realizacao",
       label: "Realização",
-      value: REALIZACAO_OPTIONS.find((opt) => opt.value === answerStatus)?.label ?? "Não realizadas",
-      indicator: answerStatus !== "unanswered",
+      value: REALIZACAO_OPTIONS.find((opt) => opt.value === answerStatus)?.label ?? "Todas",
+      indicator: answerStatus !== "all",
     },
     {
       id: "modo",
@@ -316,7 +337,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                     onClick={() => onAreaChange(areaOption)}
                     className={cx("km-chip", area === areaOption && "km-chip-active")}
                   >
-                    {AREA_LABELS[areaOption]}
+                    <AreaLabel area={areaOption} />
                   </button>
                 ))}
               </div>
@@ -492,21 +513,42 @@ export default function FiltersBar(props: FiltersBarProps) {
           )}
 
           {activeTab === "realizacao" && (
-            <div className="grid gap-3 md:grid-cols-3">
-              {REALIZACAO_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => onAnswerStatusChange(option.value)}
-                  className={cx(
-                    "rounded-2xl border p-4 text-left transition-colors",
-                    answerStatus === option.value ? "border-primary bg-surfaceMuted" : "border-edge bg-surface hover:border-primary",
-                  )}
-                >
-                  <span className="block text-sm font-semibold text-ink">{option.label}</span>
-                  <span className="mt-1 block text-xs text-muted">{option.help}</span>
-                </button>
-              ))}
+            <div className="space-y-4">
+              <div className="grid gap-3 md:grid-cols-3">
+                {REALIZACAO_OPTIONS.filter((o) => o.group === "main").map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => onAnswerStatusChange(option.value)}
+                    className={cx(
+                      "rounded-2xl border p-4 text-left transition-colors",
+                      answerStatus === option.value ? "border-primary bg-surfaceMuted" : "border-edge bg-surface hover:border-primary",
+                    )}
+                  >
+                    <span className="block text-sm font-semibold text-ink">{option.label}</span>
+                    <span className="mt-1 block text-xs text-muted">{option.help}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Já feitas — filtros avançados</p>
+                <div className="grid gap-3 md:grid-cols-3">
+                  {REALIZACAO_OPTIONS.filter((o) => o.group === "feitas").map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => onAnswerStatusChange(option.value)}
+                      className={cx(
+                        "rounded-2xl border p-4 text-left transition-colors",
+                        answerStatus === option.value ? "border-primary bg-surfaceMuted" : "border-edge bg-surface hover:border-primary",
+                      )}
+                    >
+                      <span className="block text-sm font-semibold text-ink">{option.label}</span>
+                      <span className="mt-1 block text-xs text-muted">{option.help}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

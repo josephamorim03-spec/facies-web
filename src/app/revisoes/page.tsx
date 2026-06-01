@@ -5,10 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createQuestionBankSession,
-  getOperationalTurboOverview,
   getStudyPerformanceSummary,
   listReviewTasks,
-  type OperationalTurboOverview,
   type ReviewTask,
   type StudyPerformanceSummary,
 } from "@/lib/api";
@@ -91,7 +89,6 @@ export default function RevisoesPage() {
   const router = useRouter();
 
   const [tasks, setTasks] = useState<ReviewTask[]>([]);
-  const [turboOverview, setTurboOverview] = useState<OperationalTurboOverview | null>(null);
   const [performanceSummary, setPerformanceSummary] = useState<StudyPerformanceSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -103,12 +100,10 @@ export default function RevisoesPage() {
     if (!tokenResolved) return;
     Promise.all([
       listReviewTasks(token, { status: "pending" }),
-      getOperationalTurboOverview(token, { previewLimit: 3 }).catch(() => null),
       getStudyPerformanceSummary(token).catch(() => null),
     ])
-      .then(([taskData, cards, perf]) => {
+      .then(([taskData, perf]) => {
         setTasks(taskData);
-        setTurboOverview(cards);
         setPerformanceSummary(perf);
       })
       .catch(() => setError("Não foi possível carregar as revisões."))
@@ -151,20 +146,10 @@ export default function RevisoesPage() {
       label: "Erros recentes",
       sublabel: "Questões que você errou nas últimas sessões",
       count: overdueTasks.length,
-      href: "/banco-de-questoes?answer_status=answered",
+      href: "/banco-de-questoes?answer_status=wrong",
       actionLabel: "Revisar",
       color: "danger",
       icon: "✗",
-    },
-    {
-      id: "cards",
-      label: "Flashcards vencidos",
-      sublabel: "Cards que precisam ser revisados hoje",
-      count: turboOverview?.due_count ?? 0,
-      href: "/cards-adaptativos",
-      actionLabel: "Revisar",
-      color: "warning",
-      icon: "◈",
     },
     {
       id: "marcadas",
@@ -202,8 +187,7 @@ export default function RevisoesPage() {
     <main className="min-h-screen bg-paper px-4 py-6 text-ink md:px-6 md:py-8">
       <div className="mx-auto max-w-3xl space-y-6">
         <header>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">KrosMed</p>
-          <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight md:text-4xl">Revisões</h1>
+          <h1 className="font-serif text-3xl font-semibold leading-tight md:text-4xl">Revisões</h1>
           <p className="mt-2 text-sm text-muted">
             {pendingToday.length > 0
               ? `${pendingToday.length} revisão${pendingToday.length > 1 ? "ões" : ""} agendada${pendingToday.length > 1 ? "s" : ""} para hoje.`
@@ -229,12 +213,6 @@ export default function RevisoesPage() {
               className="rounded-xl border border-edge bg-surface px-3 py-2 text-xs font-semibold text-ink hover:border-primary"
             >
               Banco de questões
-            </Link>
-            <Link
-              href="/cards-adaptativos"
-              className="rounded-xl border border-edge bg-surface px-3 py-2 text-xs font-semibold text-ink hover:border-primary"
-            >
-              Flashcards
             </Link>
             <Link
               href="/dados-e-relatorios"

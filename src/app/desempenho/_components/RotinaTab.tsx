@@ -326,8 +326,7 @@ export function RotinaTab({
     <div className="space-y-8 max-w-md mx-auto md:max-w-none md:mx-0">
       <header className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">KrosMed</p>
-          <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight md:text-4xl">Metas</h1>
+          <h1 className="font-serif text-3xl font-semibold leading-tight md:text-4xl">Metas</h1>
           {displayName && (
             <p className="mt-2 text-sm text-muted">{displayName}</p>
           )}

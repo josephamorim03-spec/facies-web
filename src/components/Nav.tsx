@@ -154,9 +154,28 @@ function resolveNavHref(href: string): string {
   return href;
 }
 
+// --- User Avatar ---------------------------------------------------------------
+
+function UserAvatar({ photoUrl, displayName, size = "sm" }: { photoUrl?: string | null; displayName?: string | null; size?: "sm" | "md" }) {
+  const dim = size === "md" ? "w-9 h-9 text-sm" : "w-7 h-7 text-xs";
+  const initial = (displayName ?? "?").trim()[0]?.toUpperCase() ?? "?";
+  if (photoUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={photoUrl} alt={displayName ?? "Usuário"} referrerPolicy="no-referrer"
+        className={`${dim} rounded-full object-cover shrink-0 border border-edge`} />
+    );
+  }
+  return (
+    <span className={`${dim} rounded-full bg-primary flex items-center justify-center font-semibold text-primaryInk shrink-0`}>
+      {initial}
+    </span>
+  );
+}
+
 // --- Main Nav (drawer + hamburger) -------------------------------------------
 
-export default function Nav() {
+export default function Nav({ displayName, photoUrl }: { displayName?: string | null; photoUrl?: string | null } = {}) {
   const pathname = usePathname();
   const isDesktopNavigation = useDesktopNavigationMode();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -356,7 +375,7 @@ export default function Nav() {
             <div className="mb-6 flex items-center">
               <div className="flex items-center gap-2">
                 <KrosmedIcon className="w-6 h-6 shrink-0" />
-                <span className="font-serif text-base text-ink tracking-wide">KrosMed</span>
+                <span className="font-serif text-base font-semibold text-ink tracking-[0.06em] uppercase">KROSMED</span>
               </div>
             </div>
             <div className="flex-1 space-y-1">
@@ -389,8 +408,16 @@ export default function Nav() {
                 </div>
               ))}
             </div>
-            <div className="mt-auto pt-4 border-t border-edge">
-              <div className="flex items-center justify-between px-2">
+            <div className="mt-auto border-t border-edge">
+              {(displayName || photoUrl) && (
+                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-edge">
+                  <UserAvatar photoUrl={photoUrl} displayName={displayName} />
+                  <p className="text-sm font-medium text-ink truncate min-w-0">
+                    {displayName?.split(" ")[0] ?? ""}
+                  </p>
+                </div>
+              )}
+              <div className="flex items-center justify-between px-2 py-2">
                 <button
                   type="button"
                   onClick={requestLogout}
@@ -429,7 +456,7 @@ export default function Nav() {
 
 // --- Sidebar Nav (desktop >= md) -------------------------------------------
 
-export function SidebarNav({ isDesktopNavigation }: { isDesktopNavigation: boolean }) {
+export function SidebarNav({ isDesktopNavigation, displayName, photoUrl }: { isDesktopNavigation: boolean; displayName?: string | null; photoUrl?: string | null }) {
   const pathname = usePathname();
   const hideCompletely = useNavHideCompletely(pathname);
 
@@ -490,17 +517,32 @@ export function SidebarNav({ isDesktopNavigation }: { isDesktopNavigation: boole
           ))}
         </nav>
 
-        {/* Logout + Theme toggle */}
-        <div className="border-t border-edge px-3 py-4">
-          <div className="flex items-center justify-between">
+        {/* User info + Logout + Theme toggle */}
+        <div className="border-t border-edge">
+          {(displayName || photoUrl) && (
+            <div className="flex items-center gap-2.5 px-4 py-3 border-b border-edge">
+              <UserAvatar photoUrl={photoUrl} displayName={displayName} size="md" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-ink truncate">
+                  {displayName?.split(" ")[0] ?? ""}
+                </p>
+                {displayName && displayName.includes(" ") && (
+                  <p className="text-[10px] text-muted truncate leading-tight">
+                    {displayName.split(" ").slice(1).join(" ")}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+          <div className="flex items-center justify-between px-3 py-3">
             <button
               type="button"
               onClick={requestLogout}
-              className="rounded-xl px-3 py-2.5 text-xs text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="rounded-xl px-3 py-2 text-xs text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Sair da conta
             </button>
-            <ThemeToggle className="px-3 py-2.5" />
+            <ThemeToggle className="px-3 py-2" />
           </div>
         </div>
       </aside>

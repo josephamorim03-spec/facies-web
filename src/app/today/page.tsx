@@ -35,12 +35,12 @@ import { writeCronogramaViewModeSession } from "@/app/cronograma/_lib/viewModeSe
 type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
 
 const AREA_HEX: Record<Area, string> = {
-  GO: "#f472b6",
-  PD: "#2293cf",
-  CG: "#ef4444",
-  CM: "#2fc767",
-  MP: "#f59e0b",
-  OU: "#AEAEA8",
+  GO: "#B65AA0",
+  PD: "#2E79A8",
+  CG: "#B44A4F",
+  CM: "#2D8B62",
+  MP: "#A97816",
+  OU: "#8C928E",
 };
 
 type DailyWeaknessItem = {
@@ -438,8 +438,7 @@ export default function TodayPage() {
     <div className="space-y-4 md:space-y-6">
       <header className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">KrosMed</p>
-          <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight md:text-4xl">Hoje</h1>
+          <h1 className="font-serif text-3xl font-semibold leading-tight md:text-4xl">Hoje</h1>
         </div>
         <div className="flex items-center gap-1 mt-2">
           {!isDesktopNavigation && (

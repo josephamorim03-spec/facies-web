@@ -44,12 +44,6 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         groupPaths: ["/banco-de-questoes"],
       },
       {
-        href: "/provas",
-        label: "PROVAS",
-        shortLabel: "Provas",
-        groupPaths: ["/provas"],
-      },
-      {
         href: "/cards-adaptativos",
         label: "FLASHCARDS",
         shortLabel: "Flashcards",

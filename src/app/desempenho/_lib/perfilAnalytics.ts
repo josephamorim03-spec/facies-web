@@ -3,7 +3,7 @@ import { Area, Period, ThemeListSort } from "./perfilShared";
 
 export const AREAS: Area[] = ["GO", "PD", "MP", "CG", "CM", "OU"];
 export const AREA_LABELS: Record<Area, string> = {
-  GO: "Ginecologia & Obstetrícia",
+  GO: "Ginecologia e Obstetrícia",
   PD: "Pediatria",
   MP: "Medicina Preventiva",
   CG: "Cirurgia Geral",
@@ -11,7 +11,7 @@ export const AREA_LABELS: Record<Area, string> = {
   OU: "Outras",
 };
 export const AREA_COLORS: Record<Area, string> = {
-  GO: "#f472b6", PD: "#2293cf", CG: "#ef4444", CM: "#2fc767", MP: "#f59e0b", OU: "#AEAEA8",
+  GO: "#B65AA0", PD: "#2E79A8", CG: "#B44A4F", CM: "#2D8B62", MP: "#A97816", OU: "#8C928E",
 };
 export const FULL_EXAM_COLOR = "#0F4C5C";
 

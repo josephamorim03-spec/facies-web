@@ -7,12 +7,12 @@ export type SortWeight = "desc" | "asc" | "";
 
 export const AREAS: Area[] = ["GO", "PD", "MP", "CG", "CM", "OU"];
 export const AREA_COLORS: Record<Area, string> = {
-  GO: "#f472b6",
-  PD: "#2293cf",
-  MP: "#f59e0b",
-  CG: "#ef4444",
-  CM: "#2fc767",
-  OU: "#AEAEA8",
+  GO: "#B65AA0",
+  PD: "#2E79A8",
+  MP: "#A97816",
+  CG: "#B44A4F",
+  CM: "#2D8B62",
+  OU: "#8C928E",
 };
 
 export const MAX_FILE_MB = 10;

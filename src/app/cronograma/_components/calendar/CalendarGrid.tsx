@@ -422,7 +422,7 @@ export function CalendarGrid({
             )}
 
             {shouldRenderDotGrid && (
-              <div className={`grid grid-cols-2 ${showDayDetail ? "gap-0.5 mt-[6px]" : "gap-1 mt-[14px]"} px-0.5`}>
+              <div className={`flex flex-col gap-[2px] ${showDayDetail ? "mt-[7px]" : "mt-[15px]"} px-0.5`}>
                 {visibleDots.map((dot) => {
                   if (dot.kind === "initial") {
                     return (
@@ -431,22 +431,8 @@ export function CalendarGrid({
                         data-testid="calendar-day-dot"
                         data-dot-kind="initial"
                         title={dot.tooltip}
-                        className="mx-auto"
-                        style={showDayDetail
-                          ? {
-                            width: 0,
-                            height: 0,
-                            borderLeft: "3px solid transparent",
-                            borderRight: "3px solid transparent",
-                            borderBottom: `6px solid ${dot.color}`,
-                          }
-                          : {
-                            width: 0,
-                            height: 0,
-                            borderLeft: "5px solid transparent",
-                            borderRight: "5px solid transparent",
-                            borderBottom: `9px solid ${dot.color}`,
-                          }}
+                        className={`w-full rounded-sm overflow-hidden ${showDayDetail ? "h-1.5" : "h-2"}`}
+                        style={{ backgroundColor: dot.color, opacity: 0.7 }}
                       />
                     );
                   }
@@ -457,14 +443,15 @@ export function CalendarGrid({
                         data-testid="calendar-day-dot"
                         data-dot-kind="full_exam"
                         title={dot.tooltip}
-                        className="mx-auto rounded-[2px]"
-                        style={showDayDetail
-                          ? { width: 6, height: 6, backgroundColor: dot.color }
-                          : { width: 9, height: 9, backgroundColor: dot.color }}
+                        className={`w-full rounded-sm overflow-hidden ${showDayDetail ? "h-1.5" : "h-2"}`}
+                        style={{ backgroundColor: dot.color }}
                       />
                     );
                   }
-                  const opacity = dot.kind === "done" ? 0.4 : 1;
+                  const isDone = dot.kind === "done";
+                  const barH = showDayDetail ? "h-[9px]" : "h-[11px]";
+                  const fontSize = showDayDetail ? "5px" : "6px";
+                  const notchW = showDayDetail ? "9px" : "11px";
                   return (
                     <div
                       key={dot.key}
@@ -492,21 +479,38 @@ export function CalendarGrid({
                         if (taskDragOrigin.current === "touch" || touchDragTouchId.current !== null) return;
                         clearDragState();
                       } : undefined}
-                      style={dot.task
-                        ? {
+                      className={`flex items-stretch w-full rounded-sm overflow-hidden ${barH} ${dot.task ? "select-none touch-none" : ""} ${
+                        dot.task && touchDraggingTaskId === dot.task.task_id ? "ring-1 ring-white/60 scale-[1.02]" : ""
+                      } ${dot.task && dragTaskId === dot.task.task_id ? "ring-1 ring-white/60" : ""}`}
+                      style={{
+                        opacity: isDone ? 0.45 : 1,
+                        WebkitUserSelect: dot.task ? "none" : undefined,
+                        userSelect: dot.task ? "none" : undefined,
+                        WebkitTouchCallout: dot.task ? "none" : undefined,
+                        touchAction: dot.task ? "none" : undefined,
+                        WebkitTapHighlightColor: dot.task ? "transparent" : undefined,
+                      }}
+                    >
+                      {/* Notch: darker shade with expected_questions */}
+                      <span
+                        className="shrink-0 flex items-center justify-center font-bold leading-none text-white"
+                        style={{
+                          width: notchW,
+                          fontSize,
                           backgroundColor: dot.color,
-                          opacity,
-                          WebkitUserSelect: "none",
-                          userSelect: "none",
-                          WebkitTouchCallout: "none",
-                          touchAction: "none",
-                          WebkitTapHighlightColor: "transparent",
-                        }
-                        : { backgroundColor: dot.color, opacity }}
-                      className={`${showDayDetail ? "w-2.5 h-2.5" : "w-3.5 h-3.5"} rounded-full mx-auto ${dot.task ? "select-none touch-none" : ""} ${
-                        dot.task && touchDraggingTaskId === dot.task.task_id ? "ring-1 ring-ink/45 scale-110" : ""
-                      } ${dot.task && dragTaskId === dot.task.task_id ? "ring-1 ring-ink/45" : ""}`}
-                    />
+                          filter: "brightness(0.62)",
+                        }}
+                      >
+                        {dot.task?.expected_questions ?? ""}
+                      </span>
+                      {/* Theme name strip */}
+                      <span
+                        className="flex-1 flex items-center px-[2px] truncate font-medium leading-none text-white"
+                        style={{ backgroundColor: dot.color, fontSize }}
+                      >
+                        {dot.task?.theme ?? dot.tooltip?.split(": ")[1] ?? ""}
+                      </span>
+                    </div>
                   );
                 })}
               </div>

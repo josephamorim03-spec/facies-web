@@ -17,7 +17,7 @@ type CardsAreaFilter = typeof ALL_AREAS | Area;
 
 const AREA_FILTER_LABELS: Record<CardsAreaFilter, string> = {
   ALL: "TODOS",
-  GO: "GINECOLOGIA & OBSTETRÍCIA",
+  GO: "GINECOLOGIA E OBSTETRÍCIA",
   PD: "PEDIATRIA",
   MP: "MEDICINA PREVENTIVA",
   CG: "CIRURGIA GERAL",

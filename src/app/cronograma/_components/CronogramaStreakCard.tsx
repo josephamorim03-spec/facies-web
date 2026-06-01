@@ -253,7 +253,7 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
           <>
             <div className="fixed inset-0 z-40" onClick={() => setPopupOpen(false)} />
             <div
-              className="fixed z-50 space-y-1 border border-red-300 bg-paper p-3 shadow-sm whitespace-normal"
+              className="fixed z-50 space-y-1 border border-red-300 rounded-xl bg-paper p-3 shadow-sm whitespace-normal"
               style={{
                 left: `${popupPosition.left}px`,
                 top: `${popupPosition.top}px`,
@@ -316,7 +316,7 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setPopupOpen(false)} />
                 <div
-                  className="fixed z-50 space-y-1 border border-red-300 bg-paper p-3 shadow-sm whitespace-normal"
+                  className="fixed z-50 space-y-1 border border-red-300 rounded-xl bg-paper p-3 shadow-sm whitespace-normal"
                   style={{
                     left: `${popupPosition.left}px`,
                     top: `${popupPosition.top}px`,

@@ -281,8 +281,7 @@ export default function EstatisticasClientPage() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">KrosMed</p>
-        <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight md:text-4xl">Desempenho</h1>
+        <h1 className="font-serif text-3xl font-semibold leading-tight md:text-4xl">Desempenho</h1>
         <p className="mt-2 text-sm text-muted">Acompanhe sua evolução por área e período.</p>
       </header>
       <DesempenhoTab

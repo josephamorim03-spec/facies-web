@@ -59,7 +59,7 @@ export function EventList({
           <button
             type="button"
             onClick={() => onPunctualTabChange("upcoming")}
-            className={`text-xs px-2 py-1 border ${punctualTab === "upcoming" ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+            className={`text-xs rounded-xl px-2 py-1 border ${punctualTab === "upcoming" ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
           >
             Próximos
           </button>
