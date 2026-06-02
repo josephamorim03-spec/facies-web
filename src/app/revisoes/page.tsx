@@ -74,17 +74,16 @@ function IconClock({ className }: { className?: string }) {
   );
 }
 
-function IconBrain({ className }: { className?: string }) {
+function IconFragileThemes({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M8.5 4.5A3.5 3.5 0 0 0 5 8v8a3 3 0 0 0 3 3h1" />
-      <path d="M15.5 4.5A3.5 3.5 0 0 1 19 8v8a3 3 0 0 1-3 3h-1" />
-      <path d="M9 4.5V20" />
-      <path d="M15 4.5V20" />
-      <path d="M9 9H6" />
-      <path d="M18 11h-3" />
-      <path d="M9 15H6" />
-      <path d="M18 16h-3" />
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 2v3" />
+      <path d="M12 19v3" />
+      <path d="M2 12h3" />
+      <path d="M19 12h3" />
+      <path d="m16.5 7.5 2-2" />
     </svg>
   );
 }
@@ -258,7 +257,7 @@ export default function RevisoesPage() {
             label="Temas frágeis"
             value={String(weakThemes.length || weakNodeCount)}
             detail={`${atRiskNodeCount} tema${atRiskNodeCount === 1 ? "" : "s"} com retenção em risco`}
-            icon={<IconBrain className="h-6 w-6" />}
+            icon={<IconFragileThemes className="h-6 w-6" />}
           />
           <MetricCard
             label="Sessões abertas"

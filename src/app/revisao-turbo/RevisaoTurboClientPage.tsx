@@ -9,7 +9,59 @@ import { useNavbar } from "@/lib/NavbarContext";
 import { TurboReviewPanel } from "../caderno/_components/TurboReviewPanel";
 import { useTurboSession } from "../caderno/_hooks/useTurboSession";
 import { AREA_COLORS, Area } from "../caderno/_lib/cadernoShared";
+import { Skeleton } from "@/components/Skeleton";
 import Link from "next/link";
+
+function TurboLobbySkeleton() {
+  return (
+    <div className="animate-pulse space-y-4">
+      {/* area filter row */}
+      <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
+        <span className="block h-7 w-7" />
+        <Skeleton className="mx-auto h-4 w-20 rounded-sm" />
+        <span className="block h-7 w-7" />
+      </div>
+      {/* hero card */}
+      <div className="rounded-xl border border-edge bg-surface p-6 text-center space-y-3">
+        <Skeleton className="mx-auto h-3 w-44 rounded-sm" />
+        <Skeleton className="mx-auto h-14 w-20 rounded-sm" />
+        <Skeleton className="mx-auto h-3 w-32 rounded-sm" />
+      </div>
+      {/* 2-col info cards */}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div className="rounded-lg border border-edge bg-surface p-3 space-y-2">
+          <Skeleton className="h-2.5 w-28 rounded-sm" />
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={`r-sk-${i}`} className="flex items-center justify-between gap-3">
+              <Skeleton className="h-3 flex-1 rounded-sm" />
+              <Skeleton className="h-3 w-8 shrink-0 rounded-sm" />
+            </div>
+          ))}
+        </div>
+        <div className="rounded-lg border border-edge bg-surface p-3 space-y-2">
+          <Skeleton className="h-2.5 w-32 rounded-sm" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={`a-sk-${i}`} className="flex items-center justify-between gap-3">
+              <Skeleton className="h-3 w-10 rounded-sm" />
+              <Skeleton className="h-3 w-24 shrink-0 rounded-sm" />
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* preview cards */}
+      <div className="space-y-1.5">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={`prev-sk-${i}`} className="rounded-lg border border-edge bg-surface px-3 py-2 space-y-1.5">
+            <Skeleton className="h-2.5 w-20 rounded-sm" />
+            <Skeleton className="h-3 w-4/5 rounded-sm" />
+          </div>
+        ))}
+      </div>
+      {/* iniciar button */}
+      <Skeleton className="h-11 w-full rounded-lg" />
+    </div>
+  );
+}
 
 const ALL_AREAS = "ALL" as const;
 type CardsAreaFilter = typeof ALL_AREAS | Area;
@@ -49,6 +101,7 @@ type CardsAreaHeaderProps = {
   selectedArea: CardsAreaFilter;
   onSelect?: (area: CardsAreaFilter) => void;
   interactive?: boolean;
+  showLink?: boolean;
 };
 
 type CardsAreaFilterControlProps = {
@@ -131,7 +184,7 @@ function CardsAreaFilterControl({
   );
 }
 
-function CardsAreaHeader({ selectedArea, onSelect, interactive = true }: CardsAreaHeaderProps) {
+function CardsAreaHeader({ selectedArea, onSelect, interactive = true, showLink = true }: CardsAreaHeaderProps) {
   return (
     <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
       <div className="flex justify-start">
@@ -144,7 +197,7 @@ function CardsAreaHeader({ selectedArea, onSelect, interactive = true }: CardsAr
         interactive={interactive}
       />
 
-      {interactive ? (
+      {showLink && interactive ? (
         <Link
           href="/caderno"
           className="p-1 flex items-center justify-end text-muted hover:text-ink shrink-0"
@@ -189,25 +242,23 @@ export default function RevisaoTurboClientPage() {
     if (isDesktopNavigation) return;
     setTitle("Cards");
     setActions(
-      sessionStarted ? (
-        <Link
-          href="/caderno"
-          className="p-1.5 text-muted hover:text-ink"
-          aria-label="Caderno"
-          title="Caderno"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-            <rect x="4" y="2" width="16" height="20" rx="1" />
-            <line x1="8" y1="2" x2="8" y2="22" />
-            <line x1="11" y1="7" x2="18" y2="7" />
-            <line x1="11" y1="11" x2="18" y2="11" />
-            <line x1="11" y1="15" x2="18" y2="15" />
-          </svg>
-        </Link>
-      ) : null,
+      <Link
+        href="/caderno"
+        className="p-1.5 text-muted hover:text-ink"
+        aria-label="Caderno"
+        title="Caderno"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+          <rect x="4" y="2" width="16" height="20" rx="1" />
+          <line x1="8" y1="2" x2="8" y2="22" />
+          <line x1="11" y1="7" x2="18" y2="7" />
+          <line x1="11" y1="11" x2="18" y2="11" />
+          <line x1="11" y1="15" x2="18" y2="15" />
+        </svg>
+      </Link>,
     );
     return () => { setTitle(null); setActions(null); };
-  }, [isDesktopNavigation, sessionStarted, setTitle, setActions]);
+  }, [isDesktopNavigation, setTitle, setActions]);
 
   useEffect(() => {
     setReviewSessionActive(sessionStarted);
@@ -301,10 +352,11 @@ export default function RevisaoTurboClientPage() {
           selectedArea={selectedArea}
           onSelect={setSelectedArea}
           interactive={!sessionStarted}
+          showLink={isDesktopNavigation}
         />
       )}
       {fetchLoading && availableCount === 0 && !sessionStarted ? (
-        <p className="py-8 text-center text-sm text-muted">Carregando cards...</p>
+        <TurboLobbySkeleton />
       ) : error && !sessionStarted ? (
         <p className="py-8 text-center text-sm text-ink">{error}</p>
       ) : error ? (

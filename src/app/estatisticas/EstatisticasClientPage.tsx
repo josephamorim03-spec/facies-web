@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import Link from "next/link";
 import type { StudyPerformanceSummary } from "@/lib/api";
 import { DesempenhoTab } from "../desempenho/_components/DesempenhoTab";
 import {
@@ -12,6 +13,8 @@ import {
 import { Area, Period } from "../desempenho/_lib/perfilShared";
 import { useEstatisticasPageState } from "./_hooks/useEstatisticasPageState";
 import { GraficosSection } from "./graficos/GraficosSection";
+import { useNavbar } from "@/lib/NavbarContext";
+import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 
 type FullExamType = "acesso_direto" | "r_plus";
 
@@ -71,6 +74,8 @@ function EstatisticasPageSkeleton() {
 }
 
 export default function EstatisticasClientPage() {
+  const isDesktopNavigation = useDesktopNavigationMode();
+  const { setActions } = useNavbar();
   const {
     pending,
     done,
@@ -88,6 +93,26 @@ export default function EstatisticasClientPage() {
     changePeriod,
     handleBarClick,
   } = useEstatisticasPageState();
+
+  useEffect(() => {
+    if (isDesktopNavigation) return;
+    setActions(
+      <Link
+        href="/dados-e-relatorios/relatorio"
+        className="p-1.5 text-muted hover:text-ink"
+        aria-label="Relatórios"
+        title="Relatórios"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+          <rect x="5" y="2" width="14" height="20" rx="1" />
+          <line x1="8" y1="7" x2="16" y2="7" />
+          <line x1="8" y1="11" x2="16" y2="11" />
+          <line x1="8" y1="15" x2="13" y2="15" />
+        </svg>
+      </Link>,
+    );
+    return () => { setActions(null); };
+  }, [isDesktopNavigation, setActions]);
 
   function buildSnapshot(targetPeriod: Period) {
     const doneTasks = filterTasks(done, targetPeriod);

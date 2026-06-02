@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   type OperationalTurboOverview,
 } from "@/lib/api";
@@ -45,7 +45,7 @@ export function TurboLobby({
   const topReasons = turboOverview?.reason_counts.slice(0, 2) ?? [];
   const topAreas = turboOverview?.by_area.filter((item) => item.due_count > 0).slice(0, 3) ?? [];
   const previewCards = turboOverview?.priority_preview.slice(0, 3) ?? [];
-  const accentColor = lobbyAccentColor ?? "var(--color-accent)";
+  const accentColor = lobbyAccentColor ?? "var(--color-primary)";
 
   return (
     <div className="flex flex-col font-sans" style={{ minHeight: TURBO_VIEWPORT_MIN_HEIGHT }}>

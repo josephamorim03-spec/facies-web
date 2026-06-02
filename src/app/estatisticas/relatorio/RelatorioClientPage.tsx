@@ -742,23 +742,6 @@ export default function RelatorioClientPage() {
         </div>
       </div>
 
-      <div className="flex justify-end pt-2 print:hidden">
-        <button
-          type="button"
-          onClick={() => {
-              const prev = document.title;
-              document.title = displayName ? ` ${displayName}` : "Relatório de Progresso";
-              requestAnimationFrame(() => {
-                window.print();
-                document.title = prev;
-              });
-            }}
-          className="text-xs text-muted underline underline-offset-2 hover:text-ink"
-        >
-          Exportar PDF para mentor
-        </button>
-      </div>
-
       <RelatorioBody
         pending={pending}
         done={done}
@@ -773,6 +756,23 @@ export default function RelatorioClientPage() {
           Gráficos
         </h2>
         <GraficosSection />
+      </div>
+
+      <div className="mt-6 flex justify-end print:hidden">
+        <button
+          type="button"
+          onClick={() => {
+              const prev = document.title;
+              document.title = displayName ? ` ${displayName}` : "Relatório de Progresso";
+              requestAnimationFrame(() => {
+                window.print();
+                document.title = prev;
+              });
+            }}
+          className="text-xs text-muted underline underline-offset-2 hover:text-ink"
+        >
+          Exportar PDF
+        </button>
       </div>
     </div>
   );

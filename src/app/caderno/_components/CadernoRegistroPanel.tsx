@@ -91,22 +91,32 @@ export function CadernoRegistroPanel({
       >
         {/* Area */}
         <div data-caderno-registro-area-picker="true" className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:justify-center">
-          {AREAS.map((a) => (
-            <button
-              key={a}
-              onClick={() => onAreaChange(a)}
-              style={{
-                backgroundColor: AREA_COLORS[a],
-                borderColor: "transparent",
-                borderWidth: 1,
-                filter: area === a ? "saturate(1.4)" : (area ? "brightness(0.55)" : undefined),
-                opacity: (area && area !== a) ? 0.7 : 1,
-              }}
-              className="w-full sm:w-auto text-center text-xs rounded-xl px-2 py-1.5 border font-semibold text-white transition-[filter,opacity] duration-150"
-            >
-              {a}
-            </button>
-          ))}
+          {AREAS.map((a) => {
+            const selected = area === a;
+            const hasSelection = !!area;
+            const areaColor = AREA_COLORS[a];
+            return (
+              <button
+                key={a}
+                onClick={() => onAreaChange(a)}
+                style={{
+                  backgroundColor: selected
+                    ? areaColor
+                    : hasSelection
+                      ? "var(--color-surface)"
+                      : `color-mix(in srgb, ${areaColor} 14%, var(--color-surface))`,
+                  borderColor: selected
+                    ? areaColor
+                    : `color-mix(in srgb, ${areaColor} 38%, var(--color-edge))`,
+                  color: selected ? "white" : (hasSelection ? "var(--color-muted)" : areaColor),
+                  opacity: hasSelection && !selected ? 0.66 : 1,
+                }}
+                className="min-h-[2.25rem] w-full rounded-xl border px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[background-color,border-color,color,opacity] duration-150 hover:opacity-100 sm:w-auto sm:min-w-14"
+              >
+                {a}
+              </button>
+            );
+          })}
         </div>
 
         {/* Theme */}

@@ -13,6 +13,7 @@ import {
   type QuestionBankResolutionMode,
   type QuestionBankTopic,
 } from "@/lib/api";
+import { useNavbar } from "@/lib/NavbarContext";
 import { useAuthToken } from "@/lib/useAuthToken";
 import FiltersBar from "./_components/FiltersBar";
 import QuestionList from "./_components/QuestionList";
@@ -154,6 +155,7 @@ export default function BancoDeQuestoesPage() {
 
 function BancoDeQuestoesContent() {
   const router = useRouter();
+  const { setActions } = useNavbar();
   const { token, tokenResolved } = useAuthToken();
   const routeSearchParams = useSearchParams();
   const routeSearchKey = routeSearchParams.toString();
@@ -219,6 +221,35 @@ function BancoDeQuestoesContent() {
     setSelectedTopics([]);
     setQuestions([]);
   }, [routeSearchKey]);
+
+  useEffect(() => {
+    setActions(
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="p-1.5 text-muted hover:text-ink"
+        aria-label="Voltar"
+        title="Voltar"
+      >
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-5 w-5"
+          aria-hidden="true"
+        >
+          <path d="m12 4-6 6 6 6" />
+        </svg>
+      </button>,
+    );
+
+    return () => {
+      setActions(null);
+    };
+  }, [router, setActions]);
 
   // ─── Filter params factory ───────────────────────────────────────────────
 
@@ -362,15 +393,6 @@ function BancoDeQuestoesContent() {
       <div className="mx-auto max-w-7xl space-y-6">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="mb-3 flex items-center gap-1.5 text-sm text-muted hover:text-ink md:hidden"
-              aria-label="Voltar"
-            >
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="m12 4-6 6 6 6" /></svg>
-              Voltar
-            </button>
             <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">Monte sua sessão</h1>
             <p className="mt-3 max-w-2xl text-base text-muted">
               Escolha como deseja estudar e personalize o bloco com filtros do banco.

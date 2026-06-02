@@ -98,21 +98,21 @@ function MobileTopBar({ pathname }: { pathname: string }) {
       <button
         type="button"
         onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-        className="-ml-0.5 shrink-0 p-1.5 text-ink"
+        className="relative z-10 -ml-0.5 shrink-0 p-1.5 text-ink"
         aria-label="Menu"
       >
         <IconMenu className="h-5 w-5" />
       </button>
-      <div className="flex min-w-0 flex-1 items-center justify-center px-2">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-14">
         {typeof displayTitle === "string" ? (
           <span className="truncate font-serif text-sm font-semibold uppercase tracking-[0.1em] text-ink">
             {displayTitle}
           </span>
         ) : (
-          displayTitle
+          <div className="pointer-events-auto">{displayTitle}</div>
         )}
       </div>
-      <div className="flex shrink-0 items-center gap-0.5">
+      <div className="relative z-10 ml-auto flex shrink-0 items-center gap-0.5">
         {actions ?? <span className="w-8" aria-hidden="true" />}
       </div>
     </header>

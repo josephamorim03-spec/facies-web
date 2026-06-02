@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import Link from "next/link";
 import type { StudyPerformanceSummary } from "@/lib/api";
+import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import AreaDot from "@/components/AreaDot";
 import { AREA_BG_CLASS, AREA_TEXT_CLASS } from "@/lib/areaColors";
 import {
@@ -69,6 +70,7 @@ function PeriodHeader({
   setPeriodMenuOpen,
   changePeriod,
 }: PeriodHeaderProps) {
+  const isDesktopNavigation = useDesktopNavigationMode();
   return (
     <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
       <div className="flex justify-start">
@@ -103,19 +105,23 @@ function PeriodHeader({
           </div>
         )}
       </div>
-      <Link
-        href="/dados-e-relatorios/relatorio"
-        className="p-1 flex items-center justify-end text-muted hover:text-ink shrink-0"
-        aria-label="Relatórios"
-        title="Relatórios"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
-          <rect x="5" y="2" width="14" height="20" rx="1" />
-          <line x1="8" y1="7" x2="16" y2="7" />
-          <line x1="8" y1="11" x2="16" y2="11" />
-          <line x1="8" y1="15" x2="13" y2="15" />
-        </svg>
-      </Link>
+      {isDesktopNavigation ? (
+        <Link
+          href="/dados-e-relatorios/relatorio"
+          className="p-1 flex items-center justify-end text-muted hover:text-ink shrink-0"
+          aria-label="Relatórios"
+          title="Relatórios"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
+            <rect x="5" y="2" width="14" height="20" rx="1" />
+            <line x1="8" y1="7" x2="16" y2="7" />
+            <line x1="8" y1="11" x2="16" y2="11" />
+            <line x1="8" y1="15" x2="13" y2="15" />
+          </svg>
+        </Link>
+      ) : (
+        <span className="block h-7 w-7" aria-hidden="true" />
+      )}
     </div>
   );
 }

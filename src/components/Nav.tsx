@@ -341,7 +341,7 @@ export default function Nav({ displayName, photoUrl }: { displayName?: string | 
             <div className="mb-6 flex items-center">
               <div className="flex items-center gap-2">
                 <KrosmedIcon className="w-6 h-6 shrink-0" />
-                <span className="font-serif text-base font-semibold text-ink tracking-[0.06em] uppercase">KROSMED</span>
+                <span className="font-serif text-base font-semibold tracking-[0.06em] uppercase"><span className="text-ink">KROS</span><span className="text-primary">MED</span></span>
               </div>
             </div>
             <div className="flex-1 space-y-1">
@@ -470,9 +470,7 @@ export function SidebarNav({
           <div className={`flex items-center gap-2 ${!visible ? "justify-center" : ""}`}>
             <KrosmedIcon className="w-6 h-6 shrink-0" />
             {visible && (
-              <span className="font-serif text-base font-semibold text-ink tracking-[0.06em] uppercase whitespace-nowrap">
-                KROSMED
-              </span>
+              <span className="font-serif text-base font-semibold tracking-[0.06em] uppercase whitespace-nowrap"><span className="text-ink">KROS</span><span className="text-primary">MED</span></span>
             )}
             {visible && pinned && (
               <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-primary">fixado</span>

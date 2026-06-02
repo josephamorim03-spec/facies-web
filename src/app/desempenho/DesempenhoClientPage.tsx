@@ -4,35 +4,69 @@ import { RotinaTab } from "./_components/RotinaTab";
 import { usePerfilPageState } from "./_hooks/usePerfilPageState";
 import { isInternalSkipRoutineEvent } from "./_lib/perfilShared";
 
+function SkRow({ w }: { w: string }) {
+  return <div className={`h-3 ${w} bg-edge rounded-sm`} />;
+}
+
 function PerfilPageSkeleton() {
   return (
-    <div className="space-y-8 max-w-md mx-auto md:max-w-none md:mx-0 animate-pulse">
+    <div className="animate-pulse space-y-6">
+      {/* heading "Metas" */}
+      <div className="h-9 w-24 bg-edge rounded-sm" />
+
+      <hr className="border-edge" />
+
+      {/* Meta semanal section */}
       <section className="space-y-3">
-        <div className="h-6 w-40 bg-edge rounded-sm mx-auto" />
+        <SkRow w="w-28" />
+        <div className="flex items-center gap-4">
+          <div className="h-3 flex-1 rounded-full bg-edge" />
+          <div className="h-3 w-12 shrink-0 rounded-sm bg-edge" />
+        </div>
+        <div className="h-10 w-full rounded-xl bg-edge" />
+        <SkRow w="w-36" />
       </section>
 
       <hr className="border-edge" />
 
-      <section className="space-y-4">
-        <div className="h-3 w-24 bg-edge rounded-sm mx-auto md:mx-0" />
-        <div className="h-9 w-64 bg-edge rounded-sm mx-auto md:mx-0" />
-        <div className="h-28 w-full bg-edge rounded-sm" />
-        <div className="h-8 w-32 bg-edge rounded-sm mx-auto md:mx-0" />
-      </section>
-
-      <hr className="border-edge" />
-
-      <section className="space-y-4">
-        <div className="h-3 w-20 bg-edge rounded-sm mx-auto md:mx-0" />
-        <div className="h-28 w-full bg-edge rounded-sm" />
-        <div className="h-20 w-full bg-edge rounded-sm" />
-      </section>
-
-      <hr className="border-edge" />
-
+      {/* Capacidade / Intensidade */}
       <section className="space-y-3">
-        <div className="h-3 w-36 bg-edge rounded-sm mx-auto md:mx-0" />
-        <div className="h-8 w-56 bg-edge rounded-sm mx-auto md:mx-0" />
+        <SkRow w="w-40" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="h-12 rounded-xl bg-edge" />
+          <div className="h-12 rounded-xl bg-edge" />
+        </div>
+        <div className="h-10 w-full rounded-xl bg-edge" />
+      </section>
+
+      <hr className="border-edge" />
+
+      {/* Eventos */}
+      <section className="space-y-3">
+        <SkRow w="w-20" />
+        <div className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={`ev-sk-${i}`} className="flex items-center gap-3 border-b border-edge py-2">
+              <div className="h-3 w-3 shrink-0 rounded-full bg-edge" />
+              <div className="h-3 flex-1 rounded-sm bg-edge" />
+              <div className="h-3 w-16 shrink-0 rounded-sm bg-edge" />
+            </div>
+          ))}
+        </div>
+        <div className="h-9 w-full rounded-xl bg-edge" />
+      </section>
+
+      <hr className="border-edge" />
+
+      {/* Notificações */}
+      <section className="space-y-3">
+        <SkRow w="w-32" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={`notif-sk-${i}`} className="flex items-center gap-2">
+            <div className="h-4 w-4 shrink-0 rounded-sm bg-edge" />
+            <div className="h-3 w-48 rounded-sm bg-edge" />
+          </div>
+        ))}
       </section>
     </div>
   );
