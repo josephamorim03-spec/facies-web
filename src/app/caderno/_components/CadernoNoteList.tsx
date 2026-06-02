@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { NoteEditForm } from "./NoteEditForm";
 import { AttachmentLinks } from "./AttachmentLinks";
@@ -116,6 +117,14 @@ export function CadernoNoteList({
                     {note.question_id ? ` · ID: ${note.question_id}` : ""}
                     {" · "}{displayDateTime(note.created_at)}
                   </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-3">
+                    <Link
+                      href={`/banco-de-questoes?area=${encodeURIComponent(note.area)}&theme=${encodeURIComponent(note.theme)}&answer_status=unanswered_or_wrong`}
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      Estudar no banco →
+                    </Link>
+                  </div>
                   <p className="text-sm whitespace-pre-wrap text-muted">{note.body}</p>
                   {(note.external_links.length > 0 || note.attachment_refs.length > 0) && (
                     <div className="text-xs text-muted space-y-0.5 pt-1 border-t border-edge">

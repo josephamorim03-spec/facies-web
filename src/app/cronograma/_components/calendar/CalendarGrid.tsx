@@ -436,15 +436,31 @@ export function CalendarGrid({
               <div className={`flex flex-col gap-[2px] ${showDayDetail ? "mt-[7px]" : "mt-[15px]"} px-0.5`}>
                 {visibleDots.map((dot) => {
                   if (dot.kind === "initial") {
+                    const barH = showDayDetail ? "min-h-[16px]" : "min-h-[18px]";
+                    const fontSize = showDayDetail ? "9px" : "10px";
+                    const chipFontSize = showDayDetail ? "8px" : "9px";
                     return (
                       <div
                         key={dot.key}
                         data-testid="calendar-day-dot"
                         data-dot-kind="initial"
                         title={dot.tooltip}
-                        className={`w-full rounded-sm overflow-hidden ${showDayDetail ? "h-1.5" : "h-2"}`}
-                        style={{ backgroundColor: dot.color, opacity: 0.7 }}
-                      />
+                        className={`flex w-full items-center gap-1 rounded-md px-1 py-0.5 ${barH} overflow-hidden shadow-sm`}
+                        style={{ backgroundColor: dot.color, opacity: 0.7, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.14)" }}
+                      >
+                        <span
+                          className="shrink-0 rounded-[4px] bg-white/95 px-1 py-[2px] font-bold leading-none shadow-sm"
+                          style={{ color: dot.color, fontSize: chipFontSize }}
+                        >
+                          #EI
+                        </span>
+                        <span
+                          className="min-w-0 flex-1 truncate font-semibold leading-none text-white"
+                          style={{ fontSize }}
+                        >
+                          {dot.theme ?? ""}
+                        </span>
+                      </div>
                     );
                   }
                   if (dot.kind === "full_exam") {

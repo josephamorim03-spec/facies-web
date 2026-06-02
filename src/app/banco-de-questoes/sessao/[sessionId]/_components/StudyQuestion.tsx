@@ -16,6 +16,23 @@ function sourceLabel(source: Record<string, unknown>): string {
   return [institution || "Instituição", board, year].filter(Boolean).join(" · ");
 }
 
+function difficultyChip(d: number | null | undefined): { label: string; className: string } | null {
+  if (d == null) return null;
+  if (d < 0.35) return { label: "Fácil", className: "text-success border-success/40" };
+  if (d < 0.55) return { label: "Médio", className: "text-amber-600 border-amber-300" };
+  if (d < 0.75) return { label: "Difícil", className: "text-warning border-warning/40" };
+  return { label: "Muito difícil", className: "text-danger border-danger/40" };
+}
+
+function selectionReasons(reason: Record<string, unknown>): string[] {
+  const raw = reason?.selected_because;
+  if (!Array.isArray(raw)) return [];
+  return (raw as string[])
+    .filter((r) => r !== "melhor equilibrio adaptativo")
+    .slice(0, 3)
+    .map((r) => r.charAt(0).toUpperCase() + r.slice(1));
+}
+
 type StudyQuestionProps = {
   item: QuestionBankSessionItem;
   position: number;
@@ -113,8 +130,29 @@ export default function StudyQuestion({
 
           {/* Left: question */}
           <div className="space-y-6">
-            {/* Source */}
-            <p className="text-xs text-muted">{sourceLabel(item.source)}</p>
+            {/* Source + adaptive meta */}
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted">{sourceLabel(item.source)}</p>
+              {(() => {
+                const diff = difficultyChip(item.difficulty_estimate);
+                const reasons = selectionReasons(item.selection_reason);
+                if (!diff && reasons.length === 0) return null;
+                return (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {diff && (
+                      <span className={cx("rounded border px-1.5 py-0.5 text-[10px] font-semibold", diff.className)}>
+                        {diff.label}
+                      </span>
+                    )}
+                    {reasons.map((r) => (
+                      <span key={r} className="rounded border border-edge px-1.5 py-0.5 text-[10px] text-muted">
+                        {r}
+                      </span>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
 
             {/* Stem */}
             <p className="max-w-[65ch] whitespace-pre-wrap text-base leading-8 text-ink">

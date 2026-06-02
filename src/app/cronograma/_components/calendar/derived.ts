@@ -14,6 +14,7 @@ export type CalendarDotEntry = {
   kind: CalendarVisibleCategory;
   task?: ReviewTask;
   tooltip?: string;
+  theme?: string;
 };
 
 export function buildTasksByDate(
@@ -83,6 +84,7 @@ export function buildDayDotEntries(params: {
         color: AREA_COLORS[study.area] ?? "#ccc",
         kind: "initial" as const,
         tooltip: `${study.area}: ${study.theme}`,
+        theme: study.theme,
       })),
     ...dayStudies
       .filter((study) => isFullExamStudy(study) && !study.is_review)
