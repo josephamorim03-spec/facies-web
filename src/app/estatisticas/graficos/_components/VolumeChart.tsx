@@ -17,10 +17,7 @@ import {
   WEEKLY_CHART_MARGIN,
   CHART_X_AXIS_PADDING,
   CHART_Y_AXIS_WIDTH,
-  VOLUME_SEGMENT_GUTTER_PX,
   VOLUME_SEGMENT_LABEL_LEFT_PX,
-  VOLUME_SEGMENT_PIN_LENGTH_PX,
-  VOLUME_SEGMENT_GAP_FROM_PLOT_PX,
   clamp,
   renderWeekTickLabel,
   type WeekTickProps,
@@ -43,6 +40,8 @@ export function VolumeChart({ state, refs, actions }: Props) {
     activeVolumeSegments,
     volumeSegmentLabelPositions,
   } = state;
+
+  const hasActiveSegments = volumeSegmentLabelPositions.length > 0;
 
   return (
     <section
@@ -78,7 +77,11 @@ export function VolumeChart({ state, refs, actions }: Props) {
                 })
               }
             />
-            <YAxis tick={{ fontSize: 10, fill: CHART_MUTED }} allowDecimals={false} width={CHART_Y_AXIS_WIDTH} />
+            <YAxis
+              tick={hasActiveSegments ? false : { fontSize: 10, fill: CHART_MUTED }}
+              allowDecimals={false}
+              width={CHART_Y_AXIS_WIDTH}
+            />
             <Bar dataKey="total" shape={actions.renderVolumeBar as any} isAnimationActive={false}>
               <LabelList
                 dataKey="total"
@@ -116,14 +119,11 @@ export function VolumeChart({ state, refs, actions }: Props) {
           onPointerCancel={actions.handleVolumePointerUp}
           onPointerLeave={actions.handleVolumePointerLeave}
         />
-        {volumeSegmentLabelPositions.length > 0 && (
+        {hasActiveSegments && (
           <div
             aria-hidden="true"
-            className="absolute top-0 right-0 h-full pointer-events-none z-20"
-            style={{
-              width: VOLUME_SEGMENT_GUTTER_PX,
-              left: `calc(100% - ${WEEKLY_CHART_MARGIN.right}px + ${VOLUME_SEGMENT_GAP_FROM_PLOT_PX}px)`,
-            }}
+            className="absolute top-0 left-0 h-full pointer-events-none z-20"
+            style={{ width: CHART_Y_AXIS_WIDTH }}
           >
             {volumeSegmentLabelPositions.map(({ area, midY, count }) => (
               <div
@@ -135,12 +135,8 @@ export function VolumeChart({ state, refs, actions }: Props) {
                   color: AREA_COLORS[area],
                 }}
               >
-                <span
-                  className="block h-px shrink-0"
-                  style={{ width: VOLUME_SEGMENT_PIN_LENGTH_PX, backgroundColor: AREA_COLORS[area], opacity: 0.65 }}
-                />
-                <span className="opacity-70">{area}</span>
-                <span className="tabular-nums">{count}</span>
+                <span className="opacity-80">{area}</span>
+                <span className="tabular-nums font-semibold">{count}</span>
               </div>
             ))}
           </div>
