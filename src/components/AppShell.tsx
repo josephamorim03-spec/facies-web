@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Nav, { BottomTabBar, SidebarNav, NAV_OPEN_EVENT } from "@/components/Nav";
 import PwaRegister from "@/components/PwaRegister";
@@ -13,6 +13,7 @@ import { getProfile } from "@/lib/api";
 import { getBlockedRedirectSessionKey } from "@/lib/storage-keys";
 import { ACTIVATE_ROUTE, INITIAL_GOAL_SETUP_ROUTE } from "@/lib/initialGoalSetup";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
+import { NavbarProvider, NavbarContext } from "@/lib/NavbarContext";
 
 type BuildVersionPayload = {
   commit_sha: string;
@@ -32,6 +33,50 @@ function shouldHideNavigationChrome(pathname: string): boolean {
   );
 }
 
+const PAGE_TITLES: Record<string, string> = {
+  "/banco-de-questoes": "Banco de Questões",
+  "/cards-adaptativos": "Flashcards",
+  "/revisao-turbo": "Revisão Turbo",
+  "/revisoes": "Revisões",
+  "/cronograma": "Cronograma",
+  "/dados-e-relatorios": "Desempenho",
+  "/dados-e-relatorios/graficos": "Gráficos",
+  "/dados-e-relatorios/relatorio": "Relatórios",
+  "/estatisticas": "Desempenho",
+  "/estatisticas/graficos": "Gráficos",
+  "/estatisticas/relatorio": "Relatórios",
+  "/desempenho": "Metas",
+  "/rotina-e-metas": "Metas",
+  "/rotina": "Metas",
+  "/perfil": "Perfil",
+  "/caderno": "Caderno",
+  "/semana": "Semana",
+  "/agenda-operacional": "Agenda",
+  "/calendario": "Agenda",
+  "/provas": "Simulados",
+  "/dashboard": "Dashboard",
+  "/history": "Histórico",
+  "/log": "Log",
+  "/stats": "Estatísticas",
+  "/admin": "Admin",
+  "/hoje": "Hoje",
+  "/today": "Hoje",
+};
+
+function fallbackTitle(pathname: string): string {
+  const titleEntries = Object.entries(PAGE_TITLES).sort(([a], [b]) => b.length - a.length);
+  for (const [prefix, label] of titleEntries) {
+    if (pathname === prefix || pathname.startsWith(prefix + "/")) return label;
+  }
+  return "";
+}
+
+function shouldShowMobileTopBar(pathname: string, hideChrome: boolean): boolean {
+  if (hideChrome) return false;
+  if (pathname.startsWith("/banco-de-questoes/sessao")) return false;
+  return true;
+}
+
 function IconMenu({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
@@ -42,22 +87,34 @@ function IconMenu({ className }: { className?: string }) {
   );
 }
 
-function MobileTopBar() {
+function MobileTopBar({ pathname }: { pathname: string }) {
+  const { title, actions } = useContext(NavbarContext);
+  const displayTitle = title ?? fallbackTitle(pathname);
   return (
     <header
-      className="fixed inset-x-0 top-0 z-30 flex h-12 items-center justify-between border-b border-edge/50 bg-paper/80 px-4 backdrop-blur-md md:hidden"
+      className="fixed inset-x-0 top-0 z-30 flex h-12 items-center border-b border-edge/50 bg-paper/80 px-3 backdrop-blur-md md:hidden"
       style={{ paddingTop: "env(safe-area-inset-top, 0px)", height: "calc(3rem + env(safe-area-inset-top, 0px))" }}
     >
       <button
         type="button"
         onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-        className="-ml-1 p-1.5 text-ink"
+        className="-ml-0.5 shrink-0 p-1.5 text-ink"
         aria-label="Menu"
       >
         <IconMenu className="h-5 w-5" />
       </button>
-      <span className="font-serif text-sm font-semibold uppercase tracking-[0.1em] text-ink">KrosMed</span>
-      <span className="w-8" aria-hidden="true" />
+      <div className="flex min-w-0 flex-1 items-center justify-center px-2">
+        {typeof displayTitle === "string" ? (
+          <span className="truncate font-serif text-sm font-semibold uppercase tracking-[0.1em] text-ink">
+            {displayTitle}
+          </span>
+        ) : (
+          displayTitle
+        )}
+      </div>
+      <div className="flex shrink-0 items-center gap-0.5">
+        {actions ?? <span className="w-8" aria-hidden="true" />}
+      </div>
     </header>
   );
 }
@@ -115,11 +172,14 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
   const [pinnedSidebar, setPinnedSidebar] = useState(false);
+  const showMobileTopBar = !isDesktopNavigation && shouldShowMobileTopBar(pathname, hideNavigationChrome);
   const mainClassName = hideNavigationChrome
     ? "min-h-screen"
     : isDesktopNavigation
       ? "max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8"
-      : "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]";
+      : showMobileTopBar
+        ? "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]"
+        : "max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]";
 
   useEffect(() => {
     if (pathname === INITIAL_GOAL_SETUP_ROUTE) {
@@ -175,7 +235,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     <>
       <PwaRegister />
       <SidebarNav isDesktopNavigation={isDesktopNavigation} displayName={userDisplayName} photoUrl={userPhotoUrl} pinned={pinnedSidebar} onPinChange={setPinnedSidebar} />
-      {!hideNavigationChrome && !isDesktopNavigation && <MobileTopBar />}
+      {showMobileTopBar && <MobileTopBar pathname={pathname} />}
       <div className={hideNavigationChrome || !isDesktopNavigation ? "" : (pinnedSidebar ? "ml-52" : "ml-14")}>
         <main className={mainClassName}>
           <Nav displayName={userDisplayName} photoUrl={userPhotoUrl} />
@@ -192,7 +252,9 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <ToastProvider>
-      <AppShellInner>{children}</AppShellInner>
+      <NavbarProvider>
+        <AppShellInner>{children}</AppShellInner>
+      </NavbarProvider>
     </ToastProvider>
   );
 }

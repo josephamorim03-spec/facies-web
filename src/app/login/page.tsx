@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { clearAuthToken } from "@/lib/auth";
 import { resolveAuthenticatedLandingRoute } from "@/lib/initialGoalSetup";
@@ -12,6 +12,8 @@ import { InstallBanner } from "./_components/InstallBanner";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sessionExpired = searchParams.get("reason") === "expired";
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
 
   const { googleButtonRef, googleError, setGoogleError } = useGoogleSignIn({
@@ -62,6 +64,12 @@ export default function LoginPage() {
           <h1 className="text-2xl font-serif text-ink">KrosMed</h1>
           <p className="text-sm text-muted">Entre com sua conta Google</p>
         </div>
+
+        {sessionExpired && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Sua sessão expirou. Entre novamente para continuar.
+          </div>
+        )}
 
         <GoogleSection
           googleClientId={googleClientId}

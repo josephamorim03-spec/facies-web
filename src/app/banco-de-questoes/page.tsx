@@ -423,7 +423,7 @@ function BancoDeQuestoesContent() {
           className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]"
           data-testid="question-bank-top-filters"
         >
-          <div className="km-card overflow-visible rounded-lg">
+          <div className="km-card min-w-0 overflow-visible rounded-lg">
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-edge px-5 py-4">
               <div>
                 <h2 className="font-serif text-2xl font-semibold leading-tight">Filtros da sessão</h2>

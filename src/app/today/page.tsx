@@ -3,33 +3,34 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { NAV_OPEN_EVENT } from "@/components/Nav";
+import { useNavbar } from "@/lib/NavbarContext";
 import AreaDot from "@/components/AreaDot";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Skeleton } from "@/components/Skeleton";
 import { Button } from "@/components/ui/Button";
 import { getAuthToken } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/error-utils";
 import { useAuthToken } from "@/lib/useAuthToken";
-import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { useToast } from "@/lib/useToast";
 import {
-  autoRescheduleReviewTask,
+  acceptScheduleSuggestionAll,
   DirectedStudyListItem,
   getOperationalTurboOverview,
   getProfile,
+  listScheduleSuggestions,
   getStudyPerformanceSummary,
   listDirectedStudies,
   listReviewTasks,
+  rejectScheduleSuggestion,
+  type ScheduleSuggestion,
   type OperationalTurboOverview,
-  previewAutoRescheduleReviewTask,
   ReviewTask,
   type StudyPerformanceSummary,
+  triggerScheduleSuggestion,
 } from "@/lib/api";
 import { AreaIcon } from "@/components/AreaIcon";
+import { RescheduleSuggestionDialog } from "@/app/cronograma/_components/RescheduleSuggestionDialog";
 import { InlineLogForm } from "@/app/cronograma/_components/studyReview/InlineLogForm";
-import { IconMenu, IconPlus, IconRefresh } from "@/app/cronograma/_components/CronogramaIcons";
-import { displayDate } from "@/app/cronograma/_lib/cronogramaShared";
+import { IconPlus, IconRefresh } from "@/app/cronograma/_components/CronogramaIcons";
 import { buildWeeklyOpsMetrics } from "@/app/cronograma/_lib/weeklyOpsMetrics";
 import { WeeklyOpsFullCardsSkeleton } from "@/app/cronograma/_components/WeeklyOpsCards";
 import { writeCronogramaViewModeSession } from "@/app/cronograma/_lib/viewModeSession";
@@ -235,6 +236,15 @@ function IconNotebook({ className }: { className?: string }) {
   );
 }
 
+function IconCards({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <rect x="4" y="7" width="12" height="12" rx="1.5" />
+      <rect x="8" y="5" width="12" height="12" rx="1.5" />
+    </svg>
+  );
+}
+
 function IconArrowRight({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
@@ -347,7 +357,7 @@ function getOverdueDays(dueDate: string, today: string): number {
 
 export default function TodayPage() {
   const { tokenResolved } = useAuthToken();
-  const isDesktopNavigation = useDesktopNavigationMode();
+  const { setTitle, setActions } = useNavbar();
   const { showToast } = useToast();
   const [tasks, setTasks] = useState<ReviewTask[]>([]);
   const [doneTasks, setDoneTasks] = useState<ReviewTask[]>([]);
@@ -359,16 +369,11 @@ export default function TodayPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
-  const [previewingRescheduleTaskId, setPreviewingRescheduleTaskId] = useState<string | null>(null);
-  const [pendingReschedule, setPendingReschedule] = useState<{
-    taskId: string;
-    theme: string;
-    fromDate: string;
-    toDate: string | null;
-    loading: boolean;
-    hasBetterDate: boolean | null;
-    error: string | null;
-  } | null>(null);
+  const [bulkSuggestionDialogOpen, setBulkSuggestionDialogOpen] = useState(false);
+  const [bulkSuggestionLoading, setBulkSuggestionLoading] = useState(false);
+  const [bulkSuggestionError, setBulkSuggestionError] = useState<string | null>(null);
+  const [bulkSuggestionActionKey, setBulkSuggestionActionKey] = useState<string | null>(null);
+  const [bulkSuggestions, setBulkSuggestions] = useState<ScheduleSuggestion[]>([]);
 
   const today = useMemo(() => todayISO(), []);
   const weekDays = useMemo(() => getWeekDays(), []);
@@ -404,59 +409,62 @@ export default function TodayPage() {
     void fetchTasks(true);
   }, [tokenResolved]);
 
-  async function handleReschedule(taskId: string, previousDueDate: string) {
+  async function handlePrepareBulkReschedule() {
     const token = getAuthToken();
 
+    setBulkSuggestionDialogOpen(true);
+    setBulkSuggestionLoading(true);
+    setBulkSuggestionError(null);
+    setBulkSuggestions([]);
     try {
-      const updatedTask = await autoRescheduleReviewTask(token, taskId);
-      await fetchTasks();
-      if (updatedTask.due_date !== previousDueDate) {
-        showToast(`Reagendado para ${displayDate(updatedTask.due_date)}.`, "info");
+      const existingSuggestions = await listScheduleSuggestions(token);
+      const knownSuggestionIds = new Set(existingSuggestions.map((suggestion) => suggestion.suggestion_id));
+      await triggerScheduleSuggestion(token);
+      const refreshedSuggestions = await listScheduleSuggestions(token);
+      const newSuggestions = refreshedSuggestions.filter(
+        (suggestion) => suggestion.status === "pending" && !knownSuggestionIds.has(suggestion.suggestion_id),
+      );
+      if (newSuggestions.length === 0) {
+        setBulkSuggestionError("Nenhuma sugestao nova de reagendamento foi gerada.");
       } else {
-        showToast(`Sistema não encontrou data melhor. Mantido em ${displayDate(updatedTask.due_date)}.`, "info");
+        setBulkSuggestions(newSuggestions);
       }
     } catch (e: unknown) {
-      showToast(getErrorMessage(e, "Erro ao reagendar."), "error");
+      setBulkSuggestionError(getErrorMessage(e, "Erro ao preparar reagendamento em massa."));
+    } finally {
+      setBulkSuggestionLoading(false);
     }
   }
 
-  async function handlePrepareReschedule(task: ReviewTask) {
+  async function handleAcceptAllSuggestions(suggestionId: string) {
     const token = getAuthToken();
 
-    setPreviewingRescheduleTaskId(task.task_id);
-    setPendingReschedule({
-      taskId: task.task_id,
-      theme: task.theme,
-      fromDate: task.due_date,
-      toDate: null,
-      loading: true,
-      hasBetterDate: null,
-      error: null,
-    });
+    setBulkSuggestionActionKey(`all:${suggestionId}`);
     try {
-      const preview = await previewAutoRescheduleReviewTask(token, task.task_id);
-      setPendingReschedule((current) => {
-        if (!current || current.taskId !== task.task_id) return current;
-        return {
-          ...current,
-          toDate: preview.due_date,
-          loading: false,
-          hasBetterDate: preview.due_date !== task.due_date,
-          error: null,
-        };
-      });
+      await acceptScheduleSuggestionAll(token, suggestionId);
+      await fetchTasks();
+      setBulkSuggestionDialogOpen(false);
+      setBulkSuggestions([]);
+      showToast("Atrasadas reagendadas.", "info");
     } catch (e: unknown) {
-      setPendingReschedule((current) => {
-        if (!current || current.taskId !== task.task_id) return current;
-        return {
-          ...current,
-          loading: false,
-          hasBetterDate: null,
-          error: getErrorMessage(e, "Erro ao preparar reagendamento."),
-        };
-      });
+      setBulkSuggestionError(getErrorMessage(e, "Erro ao aceitar reagendamento."));
     } finally {
-      setPreviewingRescheduleTaskId(null);
+      setBulkSuggestionActionKey(null);
+    }
+  }
+
+  async function handleRejectSuggestions(suggestionId: string) {
+    const token = getAuthToken();
+
+    setBulkSuggestionActionKey(`reject:${suggestionId}`);
+    try {
+      await rejectScheduleSuggestion(token, suggestionId);
+      setBulkSuggestionDialogOpen(false);
+      setBulkSuggestions([]);
+    } catch (e: unknown) {
+      setBulkSuggestionError(getErrorMessage(e, "Erro ao ignorar sugestao."));
+    } finally {
+      setBulkSuggestionActionKey(null);
     }
   }
 
@@ -526,7 +534,6 @@ export default function TodayPage() {
     const accentColor = AREA_HEX[area] ?? AREA_HEX.OU;
     const token = getAuthToken() ?? "";
     const isExpanded = expandedTaskId === task.task_id;
-    const isPreviewing = previewingRescheduleTaskId === task.task_id;
 
     return (
       <li
@@ -548,19 +555,6 @@ export default function TodayPage() {
             )}
           </div>
           <div className="flex w-full shrink-0 gap-2 sm:w-auto">
-            {overdue && (
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="flex-1 sm:flex-none"
-                leftIcon={<IconRefresh className="h-3.5 w-3.5" />}
-                onClick={() => void handlePrepareReschedule(task)}
-                disabled={isPreviewing || pendingReschedule !== null}
-              >
-                {isPreviewing ? "..." : "Reagendar"}
-              </Button>
-            )}
             <Button
               type="button"
               variant={isExpanded ? "primary" : "secondary"}
@@ -587,6 +581,26 @@ export default function TodayPage() {
     );
   }
 
+  useEffect(() => {
+    setTitle("Hoje");
+    setActions(
+      <Link
+        href="/agenda-operacional"
+        className="p-1.5 text-muted hover:text-ink"
+        aria-label="Visão mensal"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+          <circle cx="12" cy="16" r="3" fill="currentColor" stroke="none" />
+        </svg>
+      </Link>,
+    );
+    return () => { setTitle(null); setActions(null); };
+  }, [setTitle, setActions]);
+
   if (loading) return <TodaySkeleton />;
 
   return (
@@ -596,40 +610,11 @@ export default function TodayPage() {
           <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">{greeting}</h1>
           <p className="mt-2 text-base text-muted">Foco hoje, especialista amanhã.</p>
         </div>
-        <div className="flex items-start justify-between gap-3 md:min-w-[20rem] md:justify-end">
-          <div className="hidden max-w-xs text-sm text-muted md:block">
-            <p className="font-serif text-4xl leading-none text-edge">“</p>
+        <div className="hidden md:flex md:min-w-[20rem] md:justify-end">
+          <div className="max-w-xs text-sm text-muted">
+            <p className="font-serif text-4xl leading-none text-edge">&ldquo;</p>
             <p>{quote.quote}</p>
             <p className="mt-2 text-xs">- {quote.author}</p>
-          </div>
-          <div className="flex items-center gap-1">
-            {!isDesktopNavigation && (
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-                className="rounded-lg p-2 text-muted hover:bg-surfaceMuted hover:text-ink"
-                aria-label="Menu"
-              >
-                <IconMenu className="w-5 h-5" />
-              </button>
-            )}
-            <Link
-              href="/agenda-operacional"
-              className="rounded-lg p-2 text-muted hover:bg-surfaceMuted hover:text-ink"
-              aria-label="Visão mensal"
-            >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5" aria-hidden="true">
-                <rect x="1" y="1" width="4.5" height="4.5" rx="0.5" />
-                <rect x="7.75" y="1" width="4.5" height="4.5" rx="0.5" />
-                <rect x="14.5" y="1" width="4.5" height="4.5" rx="0.5" />
-                <rect x="1" y="7.75" width="4.5" height="4.5" rx="0.5" />
-                <rect x="7.75" y="7.75" width="4.5" height="4.5" rx="0.5" />
-                <rect x="14.5" y="7.75" width="4.5" height="4.5" rx="0.5" />
-                <rect x="1" y="14.5" width="4.5" height="4.5" rx="0.5" />
-                <rect x="7.75" y="14.5" width="4.5" height="4.5" rx="0.5" />
-                <rect x="14.5" y="14.5" width="4.5" height="4.5" rx="0.5" />
-              </svg>
-            </Link>
           </div>
         </div>
       </header>
@@ -731,9 +716,9 @@ export default function TodayPage() {
                     );
                   })
                 ) : (
-                  <div className="rounded-lg border border-dashed border-edge bg-surface p-8 text-center">
-                    <IconShield className="mx-auto h-10 w-10 text-success" />
-                    <p className="mt-3 text-sm text-muted">
+                  <div className="flex items-center gap-3 rounded-lg border border-dashed border-edge bg-surface px-3 py-3 sm:justify-center sm:px-4">
+                    <IconShield className="h-5 w-5 shrink-0 text-muted sm:h-6 sm:w-6" />
+                    <p className="text-sm leading-snug text-muted">
                       {selectedDayIso === today
                         ? "Nenhuma revisão pendente para hoje."
                         : `Nenhuma revisão pendente para ${selectedDayLabel.toLowerCase()} ${formatDayMonth(selectedDayIso)}.`}
@@ -782,27 +767,26 @@ export default function TodayPage() {
               </div>
             </section>
 
-            <section>
-              <h2 className="font-serif text-lg font-semibold">Acesso rápido</h2>
-              <div className="mt-3 grid gap-2 sm:grid-cols-5">
-                {[
-                  { href: "/banco-de-questoes", label: "Banco de questões" },
-                  { href: "/provas", label: "Simulados" },
-                  { href: "/revisoes", label: "Revisões" },
-                  { href: "/cards-adaptativos", label: "Flashcards" },
-                  { href: "/dados-e-relatorios", label: "Desempenho" },
-                ].map((item) => (
-                  <Link key={item.href} href={item.href} className="rounded-lg border border-edge bg-surface px-3 py-3 text-center text-xs font-semibold text-ink hover:border-primary">
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </section>
-
             {overdueTasks.length > 0 && (
               <section className="rounded-2xl border border-edge bg-surface p-4 shadow-sm">
-                <h2 className="font-serif text-lg font-semibold text-ink">Atrasadas - {overdueTasks.length}</h2>
-                <p className="mt-1 text-sm text-muted">Priorize ou reagende para recuperar o ritmo sem perder clareza.</p>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h2 className="font-serif text-lg font-semibold text-ink">Atrasadas - {overdueTasks.length}</h2>
+                    <p className="mt-1 text-sm text-muted">Reagende o bloco inteiro para reorganizar a fila sem aprovar uma por uma.</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    className="shrink-0"
+                    leftIcon={<IconRefresh className="h-3.5 w-3.5" />}
+                    loading={bulkSuggestionLoading}
+                    disabled={bulkSuggestionActionKey !== null}
+                    onClick={() => void handlePrepareBulkReschedule()}
+                  >
+                    {overdueTasks.length > 1 ? "Reagendar todas" : "Reagendar atrasada"}
+                  </Button>
+                </div>
                 <ul className="mt-3 space-y-2">
                   {overdueTasks.map((task) => (
                     <TaskRow key={task.task_id} task={task} overdue />
@@ -882,8 +866,8 @@ export default function TodayPage() {
             {turboOverview && turboOverview.due_count > 0 && (
               <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#F3F8FE] text-primary">
-                    <IconNotebook className="h-8 w-8" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center text-muted">
+                    <IconCards className="h-8 w-8" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <h2 className="font-serif text-xl font-semibold">Flashcards vencidos</h2>
@@ -922,53 +906,17 @@ export default function TodayPage() {
         </div>
       )}
 
-      <ConfirmDialog
-        open={pendingReschedule !== null}
-        title="Reagendar tarefa"
-        message={pendingReschedule ? (
-          <div className="space-y-1">
-            <p className="text-sm leading-snug">{pendingReschedule.theme}</p>
-            {pendingReschedule.loading ? (
-              <p className="text-sm text-muted">Buscando melhor data de reagendamento...</p>
-            ) : pendingReschedule.error ? (
-              <p className="text-sm text-red-600">{pendingReschedule.error}</p>
-            ) : pendingReschedule.hasBetterDate ? (
-              <>
-                <p className="text-sm text-muted">
-                  Vai de <strong>{displayDate(pendingReschedule.fromDate)}</strong> para{" "}
-                  <strong>{displayDate(pendingReschedule.toDate ?? pendingReschedule.fromDate)}</strong>.
-                </p>
-                <p className="text-sm text-muted">Deseja confirmar o reagendamento?</p>
-              </>
-            ) : (
-              <p className="text-sm text-muted">
-                Sistema não encontrou data melhor. A revisão permanece em{" "}
-                <strong>{displayDate(pendingReschedule.fromDate)}</strong>.
-              </p>
-            )}
-          </div>
-        ) : null}
-        cancelLabel="Cancelar"
-        confirmLabel={
-          pendingReschedule?.loading
-            ? "Aguarde"
-            : pendingReschedule?.hasBetterDate
-              ? "Reagendar"
-              : "OK"
-        }
-        onCancel={() => setPendingReschedule(null)}
-        onConfirm={() => {
-          if (!pendingReschedule) return;
-          if (pendingReschedule.loading) return;
-          if (!pendingReschedule.hasBetterDate || !pendingReschedule.toDate) {
-            setPendingReschedule(null);
-            return;
-          }
-          const taskId = pendingReschedule.taskId;
-          const previousDueDate = pendingReschedule.fromDate;
-          setPendingReschedule(null);
-          void handleReschedule(taskId, previousDueDate);
-        }}
+      <RescheduleSuggestionDialog
+        open={bulkSuggestionDialogOpen}
+        suggestions={bulkSuggestions}
+        actionKey={bulkSuggestionActionKey}
+        title="Reagendar atrasadas"
+        loading={bulkSuggestionLoading}
+        error={bulkSuggestionError}
+        emptyMessage="Nenhuma sugestao nova de reagendamento foi gerada."
+        onClose={() => setBulkSuggestionDialogOpen(false)}
+        onAcceptAll={handleAcceptAllSuggestions}
+        onReject={handleRejectSuggestions}
       />
     </div>
   );

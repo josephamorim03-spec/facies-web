@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { useRouter } from "next/navigation";
 import AreaDot from "@/components/AreaDot";
 import { Button } from "@/components/ui/Button";
-import { IconMenu, IconSearch, IconX } from "./_components/CronogramaIcons";
-import { NAV_OPEN_EVENT } from "@/components/Nav";
+import { IconSearch, IconX } from "./_components/CronogramaIcons";
+import { useNavbar } from "@/lib/NavbarContext";
 import { useCronogramaPageState } from "./_hooks/useCronogramaPageState";
 import { useCronogramaSearchFilters } from "./_hooks/useCronogramaSearchFilters";
 import {
@@ -48,6 +48,7 @@ const WEEK_BUTTON_STABLE_STYLE: CSSProperties = {
 export default function CronogramaPage() {
   const router = useRouter();
   const isDesktopNavigation = useDesktopNavigationMode();
+  const { setTitle, setActions } = useNavbar();
   const {
     tasks,
     doneTasks,
@@ -68,7 +69,6 @@ export default function CronogramaPage() {
     handleAutoReschedule,
     handleEventMutationRefresh,
     closeEventSuggestionModal,
-    handleAcceptSuggestionItem,
     handleAcceptSuggestionAll,
     handleRejectSuggestion,
   } = useCronogramaPageState();
@@ -145,6 +145,56 @@ export default function CronogramaPage() {
       window.removeEventListener("orientationchange", updateMobilePortraitMode);
     };
   }, [isDesktopNavigation]);
+
+  useEffect(() => {
+    if (isDesktopNavigation) return;
+    if (searchOpen) {
+      setTitle("");
+      setActions(null);
+      return () => { setTitle(null); setActions(null); };
+    }
+    setTitle(
+      <span className="font-serif text-sm font-semibold tracking-wide text-ink">
+        {SHORT_MONTH_LABELS[calendarMonth]}{calendarYear !== currentRealYear ? ` ${calendarYear}` : ""}
+      </span>,
+    );
+    setActions(
+      <>
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          className="p-1.5 text-muted hover:text-ink"
+          aria-label="Buscar tema"
+        >
+          <IconSearch className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => goToTodayRef.current?.()}
+          className="p-1.5 text-muted hover:text-ink"
+          aria-label="Ir para hoje"
+        >
+          <span className="flex h-5 w-5 items-center justify-center rounded-[3px] border border-current text-[10px] font-semibold leading-none" aria-hidden="true">
+            {todayDayNumber}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push("/semana")}
+          className="p-1.5 text-muted hover:text-ink"
+          aria-label="Visão semanal"
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5" aria-hidden="true">
+            <rect x="1.5" y="1" width="3.5" height="18" rx="0.5" />
+            <rect x="6" y="1" width="3.5" height="18" rx="0.5" />
+            <rect x="10.5" y="1" width="3.5" height="18" rx="0.5" />
+            <rect x="15" y="1" width="3.5" height="18" rx="0.5" />
+          </svg>
+        </button>
+      </>,
+    );
+    return () => { setTitle(null); setActions(null); };
+  }, [isDesktopNavigation, searchOpen, calendarMonth, calendarYear, currentRealYear, todayDayNumber, setTitle, setActions, router]);
 
   return (
     <div
@@ -247,21 +297,13 @@ export default function CronogramaPage() {
             )}
           </div>
         </div>
-      ) : (
+      ) : isDesktopNavigation ? (
         <div
           data-month-nav="true"
           data-crono-mobile-top-row={isMobilePortrait ? "true" : undefined}
           className={`flex items-center gap-1${!isDesktopNavigation ? " relative" : ""}`}
         >
-          {!isDesktopNavigation ? (
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-              className="p-1 -ml-1 text-ink shrink-0"
-              aria-label="Menu"
-            >
-              <IconMenu className="w-5 h-5" />
-            </button>
-          ) : (
+          {isDesktopNavigation ? (
             <button
               onClick={() => prevMonthRef.current?.()}
               className="p-1.5 -ml-1.5 text-muted hover:text-ink shrink-0"
@@ -271,55 +313,57 @@ export default function CronogramaPage() {
                 <path d="M13 4L7 10l6 6" />
               </svg>
             </button>
-          )}
+          ) : null}
           <span
             data-month-title="true"
-            className={`${!isDesktopNavigation ? "absolute inset-x-0 text-center pointer-events-none select-none" : "flex-1 text-center"} text-[17px] font-serif font-bold tracking-wide`}
+            className={`${!isDesktopNavigation ? "flex-1 text-center" : "flex-1 text-center"} text-[17px] font-serif font-bold tracking-wide`}
           >
             {SHORT_MONTH_LABELS[calendarMonth]}{calendarYear !== currentRealYear ? ` ${calendarYear}` : ""}
           </span>
           {isDesktopNavigation && (
-            <button
-              onClick={() => nextMonthRef.current?.()}
-              className="p-1.5 text-muted hover:text-ink shrink-0"
-              aria-label="Próximo mês"
-            >
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
-                <path d="M7 4l6 6-6 6" />
-              </svg>
-            </button>
+            <>
+              <button
+                onClick={() => nextMonthRef.current?.()}
+                className="p-1.5 text-muted hover:text-ink shrink-0"
+                aria-label="Próximo mês"
+              >
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
+                  <path d="M7 4l6 6-6 6" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="p-1.5 ml-auto text-muted hover:text-ink shrink-0"
+                aria-label="Buscar tema"
+              >
+                <IconSearch className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => goToTodayRef.current?.()}
+                className="p-1.5 text-muted hover:text-ink shrink-0 transition-colors"
+                aria-label="Ir para hoje"
+              >
+                <span className="flex items-center justify-center w-5 h-5 border border-current rounded-[3px] text-[10px] font-semibold leading-none" aria-hidden="true">
+                  {todayDayNumber}
+                </span>
+              </button>
+              <button
+                onClick={() => router.push("/semana")}
+                className="p-1.5 -mr-1 text-muted hover:text-ink shrink-0"
+                aria-label="Visão semanal"
+                style={WEEK_BUTTON_STABLE_STYLE}
+              >
+                <svg viewBox="0 0 20 20" fill="currentColor" className="block w-5 h-5" aria-hidden="true">
+                  <rect x="1.5" y="1" width="3.5" height="18" rx="0.5"/>
+                  <rect x="6" y="1" width="3.5" height="18" rx="0.5"/>
+                  <rect x="10.5" y="1" width="3.5" height="18" rx="0.5"/>
+                  <rect x="15" y="1" width="3.5" height="18" rx="0.5"/>
+                </svg>
+              </button>
+            </>
           )}
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="p-1.5 ml-auto text-muted hover:text-ink shrink-0"
-            aria-label="Buscar tema"
-          >
-            <IconSearch className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => goToTodayRef.current?.()}
-            className="p-1.5 text-muted hover:text-ink shrink-0 transition-colors"
-            aria-label="Ir para hoje"
-          >
-            <span className="flex items-center justify-center w-5 h-5 border border-current rounded-[3px] text-[10px] font-semibold leading-none" aria-hidden="true">
-              {todayDayNumber}
-            </span>
-          </button>
-          <button
-            onClick={() => router.push("/semana")}
-            className="p-1.5 -mr-1 text-muted hover:text-ink shrink-0"
-            aria-label="Visão semanal"
-            style={WEEK_BUTTON_STABLE_STYLE}
-          >
-            <svg viewBox="0 0 20 20" fill="currentColor" className="block w-5 h-5" aria-hidden="true">
-              <rect x="1.5" y="1" width="3.5" height="18" rx="0.5"/>
-              <rect x="6" y="1" width="3.5" height="18" rx="0.5"/>
-              <rect x="10.5" y="1" width="3.5" height="18" rx="0.5"/>
-              <rect x="15" y="1" width="3.5" height="18" rx="0.5"/>
-            </svg>
-          </button>
         </div>
-      )}
+      ) : null}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -414,16 +458,6 @@ export default function CronogramaPage() {
                                 {displayDate(item.current_due_date)} {"->"} {displayDate(item.suggested_due_date)}
                               </p>
                             </div>
-                            <Button
-                              variant="secondary"
-                              size="xs"
-                              loading={suggestionActionKey === `item:${sg.suggestion_id}:${item.task_id}`}
-                              disabled={suggestionActionKey !== null || item.applied}
-                              onClick={() => handleAcceptSuggestionItem(sg.suggestion_id, item.task_id)}
-                              className="shrink-0"
-                            >
-                              {item.applied ? "Aceito" : "Aceitar"}
-                            </Button>
                           </div>
                         </li>
                       ))}

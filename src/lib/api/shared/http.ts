@@ -304,11 +304,16 @@ export async function api<T>(path: string, init?: APIRequestInit): Promise<T> {
         const detailText = typeof detailValue === "string" ? detailValue.toLowerCase() : "";
         const isUnknownLocalAccount =
           detailCode === "unknown_local_account" || detailText.includes("unknown local account");
+        const isExpiredSession =
+          detailText.includes("invalid bearer token") || detailText.includes("expired");
 
-        if (isUnknownLocalAccount && typeof window !== "undefined") {
-          clearAuthToken();
-          if (!window.location.pathname.startsWith("/login")) {
+        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+          if (isUnknownLocalAccount) {
+            clearAuthToken();
             window.location.assign("/login");
+          } else if (isExpiredSession) {
+            clearAuthToken();
+            window.location.assign("/login?reason=expired");
           }
         }
       }
