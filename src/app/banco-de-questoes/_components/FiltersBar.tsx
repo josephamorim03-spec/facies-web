@@ -410,7 +410,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                 )}
               </div>
 
-              <div className="max-h-[28rem] overflow-y-auto rounded-2xl border border-edge bg-paper p-2">
+              <div className="max-h-48 overflow-y-auto rounded-2xl border border-edge bg-paper p-2 md:max-h-[28rem]">
                 <TopicTreeList
                   nodes={topicTree}
                   selectedIds={selectedTopicIds}

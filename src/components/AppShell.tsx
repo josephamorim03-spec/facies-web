@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Nav, { BottomTabBar, SidebarNav } from "@/components/Nav";
+import Nav, { BottomTabBar, SidebarNav, NAV_OPEN_EVENT } from "@/components/Nav";
 import PwaRegister from "@/components/PwaRegister";
 import { ToastProvider } from "@/lib/useToast";
 import { Toast } from "@/components/Toast";
@@ -29,6 +29,36 @@ function shouldHideNavigationChrome(pathname: string): boolean {
     pathname.startsWith("/auth") ||
     pathname === ACTIVATE_ROUTE ||
     isStudyImportImmersivePath(pathname)
+  );
+}
+
+function IconMenu({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  );
+}
+
+function MobileTopBar() {
+  return (
+    <header
+      className="fixed inset-x-0 top-0 z-30 flex h-12 items-center justify-between border-b border-edge/50 bg-paper/80 px-4 backdrop-blur-md md:hidden"
+      style={{ paddingTop: "env(safe-area-inset-top, 0px)", height: "calc(3rem + env(safe-area-inset-top, 0px))" }}
+    >
+      <button
+        type="button"
+        onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
+        className="-ml-1 p-1.5 text-ink"
+        aria-label="Menu"
+      >
+        <IconMenu className="h-5 w-5" />
+      </button>
+      <span className="font-serif text-sm font-semibold uppercase tracking-[0.1em] text-ink">KrosMed</span>
+      <span className="w-8" aria-hidden="true" />
+    </header>
   );
 }
 
@@ -87,7 +117,9 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const [pinnedSidebar, setPinnedSidebar] = useState(false);
   const mainClassName = hideNavigationChrome
     ? "min-h-screen"
-    : "max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8";
+    : isDesktopNavigation
+      ? "max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8"
+      : "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]";
 
   useEffect(() => {
     if (pathname === INITIAL_GOAL_SETUP_ROUTE) {
@@ -143,6 +175,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     <>
       <PwaRegister />
       <SidebarNav isDesktopNavigation={isDesktopNavigation} displayName={userDisplayName} photoUrl={userPhotoUrl} pinned={pinnedSidebar} onPinChange={setPinnedSidebar} />
+      {!hideNavigationChrome && !isDesktopNavigation && <MobileTopBar />}
       <div className={hideNavigationChrome || !isDesktopNavigation ? "" : (pinnedSidebar ? "ml-52" : "ml-14")}>
         <main className={mainClassName}>
           <Nav displayName={userDisplayName} photoUrl={userPhotoUrl} />

@@ -150,7 +150,8 @@ function useNavHideCompletely(pathname: string) {
 }
 
 function resolveNavHref(href: string): string {
-  if (href === "/agenda-operacional") return getCronogramaAgendaHref();
+  if (href === "/agenda-operacional" || href === "/calendario") return getCronogramaAgendaHref();
+  if (href === "/today" || href === "/hoje") return "/hoje";
   return href;
 }
 
@@ -496,17 +497,20 @@ export function SidebarNav({
       >
         {/* Wordmark — clique fixa/desfixa */}
         <div
-          className="border-b border-edge cursor-pointer hover:bg-surfaceMuted transition-colors shrink-0"
-          style={{ padding: visible ? "1.5rem" : "1rem 0.625rem" }}
+          className={`border-b cursor-pointer transition-colors shrink-0 ${pinned ? "border-primary bg-surfaceMuted" : "border-edge hover:bg-surfaceMuted"}`}
+          style={{ padding: visible ? "1.25rem 1rem" : "0.875rem 0.625rem" }}
           onClick={() => onPinChange?.(!pinned)}
           title={pinned ? "Desafixar menu" : "Fixar menu"}
         >
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${!visible ? "justify-center" : ""}`}>
             <KrosmedIcon className="w-6 h-6 shrink-0" />
             {visible && (
               <span className="font-serif text-base font-semibold text-ink tracking-[0.06em] uppercase whitespace-nowrap">
                 KROSMED
               </span>
+            )}
+            {visible && pinned && (
+              <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-primary">fixado</span>
             )}
           </div>
         </div>
@@ -528,14 +532,14 @@ export function SidebarNav({
                     data-nav-surface="sidebar"
                     data-nav-item-href={href}
                     data-nav-active={active ? "true" : "false"}
-                    className={`flex w-full min-w-0 items-center gap-3 rounded-xl border px-2.5 py-2.5 text-xs font-medium leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    className={`flex w-full min-w-0 items-center rounded-xl border py-2.5 text-xs font-medium leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${visible ? "gap-3 px-2.5" : "justify-center px-0"} ${
                       active
                         ? "border-primary bg-surface text-ink shadow-sm"
                         : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink"
                     }`}
                     aria-current={active ? "page" : undefined}
                   >
-                    <Icon className="w-4 h-4 shrink-0" />
+                    <Icon className="w-5 h-5 shrink-0" />
                     {visible && <span className="min-w-0 flex-1 truncate whitespace-nowrap" title={shortLabel}>{shortLabel}</span>}
                   </Link>
                 );

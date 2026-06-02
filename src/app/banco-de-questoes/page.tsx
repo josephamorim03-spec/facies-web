@@ -71,36 +71,27 @@ type SessionIntentCardProps = {
   title: string;
   description: string;
   active: boolean;
-  tone: "violet" | "blue" | "green";
   Icon: (props: { className?: string }) => JSX.Element;
   onClick: () => void;
 };
 
-function SessionIntentCard({ title, description, active, tone, Icon, onClick }: SessionIntentCardProps) {
-  const toneClass = {
-    violet: "text-[#7B4B9B] bg-[#F8F3FB] border-[#DCCBE8]",
-    blue: "text-[#0F4C9A] bg-[#F3F8FE] border-[#C9DFF5]",
-    green: "text-[#21834A] bg-[#F3FAF5] border-[#CDE8D3]",
-  }[tone];
-
+function SessionIntentCard({ title, description, active, Icon, onClick }: SessionIntentCardProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
       className={cx(
-        "group flex min-h-[9rem] flex-col justify-between rounded-lg border bg-surface p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-[var(--soft-shadow)]",
-        active ? toneClass : "border-edge hover:border-primary",
+        "group flex items-center gap-4 rounded-xl border bg-surface p-4 text-left transition-all hover:shadow-[var(--soft-shadow)] md:flex-col md:items-start md:justify-between md:min-h-[8rem] md:p-5",
+        active ? "border-primary bg-surfaceMuted shadow-sm" : "border-edge hover:border-primary",
       )}
     >
-      <div className="flex items-start justify-between gap-3">
-        <Icon className="h-9 w-9 shrink-0" />
-        <IconChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5" />
+      <Icon className={cx("h-7 w-7 shrink-0 md:h-8 md:w-8", active ? "text-primary" : "text-muted")} />
+      <div className="min-w-0 flex-1 md:flex-none">
+        <h2 className={cx("font-serif text-base font-semibold leading-tight md:text-lg", active ? "text-ink" : "text-muted group-hover:text-ink")}>{title}</h2>
+        <p className="mt-0.5 text-xs leading-relaxed text-muted md:mt-1 md:text-sm">{description}</p>
       </div>
-      <div>
-        <h2 className="font-serif text-xl font-semibold leading-tight text-ink">{title}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted">{description}</p>
-      </div>
+      <IconChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 md:hidden" />
     </button>
   );
 }
@@ -399,7 +390,6 @@ function BancoDeQuestoesContent() {
             title="Aprender um tema"
             description="Resolva com feedback mais próximo e acompanhe o raciocínio item a item."
             active={activeIntent === "learning"}
-            tone="violet"
             Icon={IconBookOpen}
             onClick={() => {
               setResolutionMode("training");
@@ -410,7 +400,6 @@ function BancoDeQuestoesContent() {
             title="Simular prova"
             description="Faça um bloco cronometrado e deixe a correção para o final."
             active={activeIntent === "simulation"}
-            tone="blue"
             Icon={IconTrophy}
             onClick={() => {
               setResolutionMode("simulation");
@@ -421,7 +410,6 @@ function BancoDeQuestoesContent() {
             title="Corrigir fraquezas"
             description="Puxe questões erradas ou já vistas para fechar lacunas recentes."
             active={activeIntent === "weakness"}
-            tone="green"
             Icon={IconTarget}
             onClick={() => {
               setResolutionMode("training");
@@ -508,6 +496,24 @@ function BancoDeQuestoesContent() {
           availability={availability}
           onStartSession={() => void startSession()}
         />
+
+        {/* Mobile sticky start bar */}
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-edge bg-paper/90 px-4 py-3 backdrop-blur-md md:hidden"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}>
+          <button
+            type="button"
+            onClick={() => void startSession()}
+            disabled={busy || !availability || availability.available_count <= 0}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary py-3 text-sm font-semibold text-primaryInk shadow-sm transition disabled:opacity-40"
+          >
+            {busy ? "Preparando..." : resolutionMode === "simulation" ? "Iniciar simulado" : "Iniciar treino"}
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+              <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
+            </svg>
+          </button>
+        </div>
+        {/* Spacer so the sticky bar doesn't cover content */}
+        <div className="h-20 md:hidden" aria-hidden="true" />
       </div>
     </main>
   );
