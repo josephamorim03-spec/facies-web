@@ -1,6 +1,10 @@
 "use client";
 
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import {
+  filterEffectivePunctualEvents,
+  filterEffectiveRoutineEvents,
+} from "@/lib/calendarEventVisibility";
 import { useRotinaData } from "./_hooks/useRotinaData";
 import { isoToday, isInternalSkipRoutineEvent } from "./lib/eventEncoding";
 import { DevTokenPanel } from "./_components/DevTokenPanel";
@@ -23,15 +27,13 @@ export default function RotinaPage() {
   const [state, actions] = useRotinaData();
 
   const todayISO = isoToday();
-  const routineEvents = state.events
-    .filter((e) => e.event_type === "routine" && !isInternalSkipRoutineEvent(e.label))
-    .filter((e) => !e.active_until || e.active_until >= todayISO)
-    .sort((a, b) => (a.weekday ?? 99) - (b.weekday ?? 99));
-  const punctualEvents = state.events
-    .filter((e) => e.event_type === "event" && !isInternalSkipRoutineEvent(e.label))
-    .filter((e) => !!e.event_date)
-    .filter((e) => !e.active_until || (e.event_date as string) <= e.active_until)
-    .sort((a, b) => (a.event_date ?? "").localeCompare(b.event_date ?? ""));
+  const routineEvents = filterEffectiveRoutineEvents(
+    state.events.filter((event) => event.event_type === "routine" && !isInternalSkipRoutineEvent(event.label)),
+    todayISO,
+  ).sort((a, b) => (a.weekday ?? 99) - (b.weekday ?? 99));
+  const punctualEvents = filterEffectivePunctualEvents(
+    state.events.filter((event) => event.event_type === "event" && !isInternalSkipRoutineEvent(event.label)),
+  ).sort((a, b) => (a.event_date ?? "").localeCompare(b.event_date ?? ""));
   const upcomingPunctualEvents = punctualEvents
     .filter((event) => !!event.event_date && event.event_date >= todayISO)
     .sort((a, b) => (a.event_date ?? "").localeCompare(b.event_date ?? ""));

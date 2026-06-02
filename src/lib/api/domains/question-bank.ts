@@ -134,6 +134,15 @@ export type QuestionBankLongitudinalDiagnosis = {
   overconfidence_score: number;
   impulsive_rate: number;
 };
+export type QuestionBankCorrectionItem = {
+  response_id: string;
+  question_id: string;
+  knowledge_node_id: string | null;
+  prompt: string | null;
+  response_value: string;
+  confidence_delta: number;
+  created_at: string;
+};
 export type QuestionBankFinalizeResult = FinalizationResult & {
   created_tasks: ReviewTask[];
   session: QuestionBankSession;
@@ -258,6 +267,16 @@ export async function recordQuestionBankCorrection(
   payload: { prompt?: string | null; response_value: string; confidence_delta?: number; metadata?: Record<string, unknown> },
 ): Promise<{ response_id: string; session: QuestionBankSession }> {
   return api<{ response_id: string; session: QuestionBankSession }>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/correction`, { method: "POST", headers: authHeader(token), body: JSON.stringify(payload) });
+}
+
+export async function getSessionCorrections(
+  token: string,
+  sessionId: string,
+): Promise<QuestionBankCorrectionItem[]> {
+  return api<QuestionBankCorrectionItem[]>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/corrections`,
+    { headers: authHeader(token) },
+  );
 }
 
 export async function finalizeQuestionBankSession(token: string, sessionId: string, options?: { confirm_unanswered?: boolean }): Promise<QuestionBankFinalizeResult> {

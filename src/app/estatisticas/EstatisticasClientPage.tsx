@@ -12,6 +12,7 @@ import {
 } from "../desempenho/_lib/perfilAnalytics";
 import { Area, Period } from "../desempenho/_lib/perfilShared";
 import { useEstatisticasPageState } from "./_hooks/useEstatisticasPageState";
+import { BancoDeQuestoesInsights } from "./_components/BancoDeQuestoesInsights";
 import { GraficosSection } from "./graficos/GraficosSection";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
@@ -81,6 +82,8 @@ export default function EstatisticasClientPage() {
     done,
     studies,
     performanceSummary,
+    longitudinal,
+    backgroundLoading,
     loading,
     error,
     period,
@@ -305,10 +308,6 @@ export default function EstatisticasClientPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="font-serif text-3xl font-semibold leading-tight md:text-4xl">Desempenho</h1>
-        <p className="mt-2 text-sm text-muted">Acompanhe sua evolução por área e período.</p>
-      </header>
       <DesempenhoTab
         loading={false}
         error=""
@@ -335,6 +334,10 @@ export default function EstatisticasClientPage() {
       />
 
       <hr className="border-edge" />
+      <BancoDeQuestoesInsights
+        longitudinal={longitudinal}
+        loading={backgroundLoading.longitudinal}
+      />
       <GraficosSection />
     </div>
   );

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { IconChevron } from "./CadernoSkeletons";
 
 interface CadernoHeaderProps {
@@ -31,15 +30,7 @@ export function CadernoHeader({ tab, onToggleTab }: CadernoHeaderProps) {
           />
         </button>
       </div>
-      <Link
-        href="/cards-adaptativos"
-        className="p-1 -mr-1 flex items-center justify-end text-muted hover:text-ink shrink-0"
-        aria-label="Voltar"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </Link>
+      <span className="block h-7 w-7" aria-hidden="true" />
     </div>
   );
 }

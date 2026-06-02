@@ -44,6 +44,7 @@ type CalendarEventOut = {
   event_type: "routine" | "event";
   weekday: number | null;
   event_date: string | null;
+  active_until: string | null;
   duration_hours: number;
   created_at: string;
 };
@@ -245,6 +246,7 @@ function createDb(): DbState {
         event_type: "event",
         weekday: null,
         event_date: today,
+        active_until: null,
         duration_hours: 8,
         created_at: now,
       },
@@ -255,6 +257,7 @@ function createDb(): DbState {
         event_type: "event",
         weekday: null,
         event_date: tomorrow,
+        active_until: null,
         duration_hours: 1,
         created_at: now,
       },
@@ -265,6 +268,7 @@ function createDb(): DbState {
         event_type: "event",
         weekday: null,
         event_date: yesterday,
+        active_until: null,
         duration_hours: 12,
         created_at: now,
       },
@@ -275,6 +279,7 @@ function createDb(): DbState {
         event_type: "routine",
         weekday: yesterdayWeekday,
         event_date: null,
+        active_until: null,
         duration_hours: 6,
         created_at: now,
       },
@@ -499,6 +504,7 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
         event_type: payload.event_type,
         weekday: payload.weekday ?? null,
         event_date: payload.event_date ?? null,
+        active_until: null,
         duration_hours: payload.duration_hours,
         created_at: new Date().toISOString(),
       };
@@ -507,7 +513,23 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
     }
     if (method === "DELETE" && /^\/api\/events\/[^/]+$/.test(path)) {
       const eventId = path.split("/").pop() as string;
-      db.events = db.events.filter((event) => event.event_id !== eventId);
+      const scope = url.searchParams.get("scope") ?? "future";
+      const effectiveFrom = url.searchParams.get("effective_from") ?? todayISO();
+      if (scope === "all") {
+        db.events = db.events.filter((event) => event.event_id !== eventId);
+        return json(route, {});
+      }
+
+      db.events = db.events.map((event) => {
+        if (event.event_id !== eventId) return event;
+        if (event.event_type === "event" && event.event_date && event.event_date < effectiveFrom) {
+          return event;
+        }
+        return {
+          ...event,
+          active_until: plusDays(effectiveFrom, -1),
+        };
+      });
       return json(route, {});
     }
 

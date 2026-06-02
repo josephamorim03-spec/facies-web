@@ -40,6 +40,7 @@ type StudyQuestionProps = {
   onPrev: () => void;
   onNext: () => void;
   onFinalize: () => void;
+  onQuickNote?: () => void;
 };
 
 const REPORT_LABELS: Record<QuestionBankReportType, string> = {
@@ -73,6 +74,7 @@ export default function StudyQuestion({
   onPrev,
   onNext,
   onFinalize,
+  onQuickNote,
 }: StudyQuestionProps) {
   const finalized = sessionStatus === "finalized";
   const canReveal = !finalized && item.answered && !revealed;
@@ -178,9 +180,20 @@ export default function StudyQuestion({
                 "rounded-xl border p-4",
                 item.is_correct ? "border-success bg-surface" : "border-danger bg-surface",
               )}>
-                <p className={cx("text-sm font-semibold", item.is_correct ? "text-success" : "text-danger")}>
-                  {item.is_correct ? "Correto" : "Incorreto"} · Gabarito {item.correct_answer}
-                </p>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className={cx("text-sm font-semibold", item.is_correct ? "text-success" : "text-danger")}>
+                    {item.is_correct ? "Correto" : "Incorreto"} · Gabarito {item.correct_answer}
+                  </p>
+                  {onQuickNote && (
+                    <button
+                      type="button"
+                      onClick={onQuickNote}
+                      className="rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:border-primary hover:text-ink"
+                    >
+                      Anotar
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 

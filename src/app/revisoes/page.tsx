@@ -37,6 +37,12 @@ function formatPct(value: number | null | undefined): string {
   return `${Math.round(normalized)}%`;
 }
 
+function pctNumber(value: number | null | undefined): number {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return 0;
+  const normalized = Math.abs(Number(value)) <= 1 ? Number(value) * 100 : Number(value);
+  return Math.max(0, Math.min(100, Math.round(normalized)));
+}
+
 function taskHref(task: ReviewTask): string {
   const params = new URLSearchParams({
     review_task_id: task.task_id,
@@ -192,6 +198,14 @@ export default function RevisoesPage() {
   const weakThemes = performanceSummary?.diagnosis?.weaknesses ?? [];
   const weakNodeCount = longitudinal?.weak_node_ids.length ?? 0;
   const atRiskNodeCount = longitudinal?.at_risk_node_ids.length ?? 0;
+  const masteryNodes = useMemo(
+    () =>
+      (longitudinal?.nodes ?? [])
+        .filter((node) => node.exposure_count >= 2)
+        .sort((a, b) => a.mastery_score - b.mastery_score)
+        .slice(0, 12),
+    [longitudinal],
+  );
 
   async function startWeaknessSession() {
     setBusy(true);
@@ -221,8 +235,7 @@ export default function RevisoesPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-semibold text-muted">Revisões</p>
-            <h1 className="mt-1 font-serif text-4xl font-semibold leading-tight md:text-5xl">Histórico e metacognição</h1>
+            <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">Histórico e metacognição</h1>
             <p className="mt-3 max-w-2xl text-sm text-muted">
               Acompanhe o que está pendente, reabra sessões anteriores e veja os sinais por trás das suas revisões.
             </p>
@@ -403,6 +416,55 @@ export default function RevisoesPage() {
                 )}
               </div>
             </section>
+
+            {masteryNodes.length > 0 && (
+              <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+                <div>
+                  <h2 className="font-serif text-2xl font-semibold">Domínio por tópico</h2>
+                  <p className="mt-1 text-sm text-muted">Banco de questões · ordenado por domínio</p>
+                </div>
+                <div className="mt-4 space-y-3">
+                  {masteryNodes.map((node) => {
+                    const mastery = pctNumber(node.mastery_score);
+                    const retention = pctNumber(node.retention_score);
+                    const isWeak = longitudinal?.weak_node_ids.includes(node.knowledge_node_id);
+                    const isAtRisk = longitudinal?.at_risk_node_ids.includes(node.knowledge_node_id);
+                    const total = node.correct_count + node.error_count;
+                    const theme = node.node_name ?? node.knowledge_node_id;
+                    const barClassName = mastery < 50 ? "bg-danger" : mastery < 75 ? "bg-warning" : "bg-success";
+                    const textClassName = mastery < 50 ? "font-semibold text-danger" : mastery < 75 ? "font-medium text-warning" : "text-success";
+
+                    return (
+                      <Link
+                        key={node.knowledge_node_id}
+                        href={`/banco-de-questoes?theme=${encodeURIComponent(theme)}`}
+                        className="block rounded-lg border border-edge bg-paper p-3 hover:border-primary"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="min-w-0 truncate text-sm font-semibold text-ink">{theme}</p>
+                          <div className="flex shrink-0 items-center gap-2 text-xs">
+                            {isAtRisk && <span className="font-semibold text-warning" title="Retenção em risco">!</span>}
+                            {isWeak && <span className="text-danger">frágil</span>}
+                            <span className={textClassName}>{mastery}% dom.</span>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex items-center gap-3">
+                          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surfaceMuted">
+                            <div
+                              className={`h-full rounded-full transition-all ${barClassName}`}
+                              style={{ width: `${mastery}%` }}
+                            />
+                          </div>
+                          <span className="w-28 shrink-0 text-right text-xs text-muted">
+                            {node.correct_count}/{total} · ret. {retention}%
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
 
             <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
               <h2 className="font-serif text-2xl font-semibold">Ações recomendadas</h2>

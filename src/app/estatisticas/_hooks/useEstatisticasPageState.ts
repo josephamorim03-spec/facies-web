@@ -7,11 +7,13 @@ import {
   DirectedStudyListItem,
   getAdaptiveSchedule,
   getProfile,
+  getQuestionBankLongitudinalDiagnosis,
   getStudyPerformanceSummary,
   getTurboAreaStats,
   listDirectedStudies,
   listReviewTasks,
   OperationalTurboAreaStats,
+  QuestionBankLongitudinalDiagnosis,
   ReviewTask,
   StudyPerformanceSummary,
 } from "@/lib/api";
@@ -21,6 +23,7 @@ import { Area, PERIOD_SESSION_KEY, Period, ThemeListSort } from "../../desempenh
 type BackgroundLoadingState = {
   turbo: boolean;
   adaptive: boolean;
+  longitudinal: boolean;
 };
 
 function todayLocalISO(): string {
@@ -38,6 +41,7 @@ export function useEstatisticasPageState() {
   const [performanceSummary, setPerformanceSummary] = useState<StudyPerformanceSummary | null>(null);
   const [turboAreaStats, setTurboAreaStats] = useState<OperationalTurboAreaStats | null>(null);
   const [adaptiveTodayPlan, setAdaptiveTodayPlan] = useState<AdaptiveScheduleGenerate | null>(null);
+  const [longitudinal, setLongitudinal] = useState<QuestionBankLongitudinalDiagnosis | null>(null);
   const [weeklyGoal, setWeeklyGoal] = useState(200);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,6 +53,7 @@ export function useEstatisticasPageState() {
   const [backgroundLoading, setBackgroundLoading] = useState<BackgroundLoadingState>({
     turbo: false,
     adaptive: false,
+    longitudinal: false,
   });
 
   function changePeriod(nextPeriod: Period) {
@@ -98,7 +103,7 @@ export function useEstatisticasPageState() {
     const authToken = authTokenRef.current;
     setLoading(true);
     setError("");
-    setBackgroundLoading({ turbo: true, adaptive: true });
+    setBackgroundLoading({ turbo: true, adaptive: true, longitudinal: true });
 
     Promise.all([
       getProfile(authToken),
@@ -152,6 +157,20 @@ export function useEstatisticasPageState() {
         setBackgroundLoading((prev) => ({ ...prev, adaptive: false }));
       });
 
+    getQuestionBankLongitudinalDiagnosis(authToken)
+      .then((diagnosis) => {
+        if (cancelled) return;
+        setLongitudinal(diagnosis);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLongitudinal(null);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setBackgroundLoading((prev) => ({ ...prev, longitudinal: false }));
+      });
+
     return () => {
       cancelled = true;
     };
@@ -168,6 +187,7 @@ export function useEstatisticasPageState() {
     studies,
     performanceSummary,
     turboAreaStats,
+    longitudinal,
     loading,
     error,
     period,
@@ -177,8 +197,10 @@ export function useEstatisticasPageState() {
     weeklyGoal,
     adaptiveWeek,
     displayName,
+    backgroundLoading,
     isTurboLoading: backgroundLoading.turbo,
     isAdaptiveLoading: backgroundLoading.adaptive,
+    isLongitudinalLoading: backgroundLoading.longitudinal,
     setThemeSort,
     setThemeHelpArea,
     changePeriod,

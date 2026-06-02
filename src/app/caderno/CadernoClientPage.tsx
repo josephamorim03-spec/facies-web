@@ -1,8 +1,11 @@
 ﻿"use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import Link from "next/link";
 import type { OperationalSourceType } from "@/lib/api";
 import type { Area } from "./_lib/cadernoShared";
+import { useNavbar } from "@/lib/NavbarContext";
+import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useCadernoPageState } from "./_hooks/useCadernoPageState";
 import { TurboReviewPanel } from "./_components/TurboReviewPanel";
@@ -12,6 +15,25 @@ import { CadernoPesquisarPanel, CadernoPesquisarSkeletonPanel } from "./_compone
 import { CadernoNoteList } from "./_components/CadernoNoteList";
 
 export default function CadernoClientPage() {
+  const isDesktopNavigation = useDesktopNavigationMode();
+  const { setActions } = useNavbar();
+
+  useEffect(() => {
+    if (isDesktopNavigation) return;
+    setActions(
+      <Link
+        href="/cards-adaptativos"
+        className="p-1.5 text-muted hover:text-ink"
+        aria-label="Voltar para Cards"
+      >
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+          <path d="m12 4-6 6 6 6" />
+        </svg>
+      </Link>,
+    );
+    return () => { setActions(null); };
+  }, [isDesktopNavigation, setActions]);
+
   const {
     tab,
     setTabWithSession,

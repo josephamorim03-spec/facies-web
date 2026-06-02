@@ -8,15 +8,24 @@ import {
   recordQuestionBankAttempt,
   recordQuestionBankCorrection,
   reportQuestionProblem,
+  type OperationalQuestionOutcome,
   type QuestionBankOption,
   type QuestionBankReportType,
   type QuestionBankSession,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
 import StudyQuestion from "./_components/StudyQuestion";
+import QuickNoteModal from "./_components/QuickNoteModal";
 import ExamQuestion from "./_components/ExamQuestion";
 import ExamMap from "./_components/ExamMap";
 import PostExamReview from "./_components/PostExamReview";
+
+type QuickNoteTarget = {
+  questionId: string;
+  area: string | null;
+  theme: string | null;
+  questionOutcome: OperationalQuestionOutcome | null;
+};
 
 export default function SessionPage() {
   const params = useParams<{ sessionId: string }>();
@@ -43,6 +52,7 @@ export default function SessionPage() {
   const [reportType, setReportType] = useState<QuestionBankReportType>("error");
   const [reportReason, setReportReason] = useState("");
   const [reportDone, setReportDone] = useState<Record<string, boolean>>({});
+  const [quickNoteTarget, setQuickNoteTarget] = useState<QuickNoteTarget | null>(null);
 
   // Load session on mount
   useEffect(() => {
@@ -185,6 +195,10 @@ export default function SessionPage() {
   if (!currentItem) return null;
 
   const total = session.total_questions;
+  const primaryNode = currentItem.knowledge_nodes.find((node) => node.is_primary) ?? currentItem.knowledge_nodes[0];
+  const quickNoteTheme = primaryNode?.node_name ?? session.theme ?? "Questão do banco";
+  const quickNoteOutcome: OperationalQuestionOutcome | null =
+    currentItem.is_correct === null ? null : currentItem.is_correct ? "correct" : "incorrect";
   const examLabel = [session.theme, session.area].filter(Boolean).join(" · ") || "Sessão";
 
   function navigateTo(pos: number) {
@@ -230,7 +244,28 @@ export default function SessionPage() {
           onPrev={() => navigateTo(currentPosition - 1)}
           onNext={() => navigateTo(currentPosition + 1)}
           onFinalize={() => void finalize()}
+          onQuickNote={
+            currentItem.question_id
+              ? () =>
+                  setQuickNoteTarget({
+                    questionId: currentItem.question_id,
+                    area: session.area,
+                    theme: quickNoteTheme,
+                    questionOutcome: quickNoteOutcome,
+                  })
+              : undefined
+          }
         />
+        {quickNoteTarget && (
+          <QuickNoteModal
+            key={quickNoteTarget.questionId}
+            questionId={quickNoteTarget.questionId}
+            defaultArea={quickNoteTarget.area}
+            defaultTheme={quickNoteTarget.theme}
+            questionOutcome={quickNoteTarget.questionOutcome}
+            onClose={() => setQuickNoteTarget(null)}
+          />
+        )}
       </>
     );
   }

@@ -1,5 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { getAuthToken } from "@/lib/auth";
+import {
+  getEffectivePunctualHoursForDate,
+  getEffectiveRoutineHoursForWeekday,
+} from "@/lib/calendarEventVisibility";
 import { getErrorMessage } from "@/lib/error-utils";
 import {
   AdaptiveRebalanceOut,
@@ -294,9 +298,7 @@ export function useRotinaData(): [RotinaState, RotinaActions] {
   }, [token, rebalanceDays, refreshAdaptive, refreshWorkload]);
 
   const checkRoutineOverflow = useCallback((weekday: number, duration: number): string | null => {
-    const used = events
-      .filter((e) => e.event_type === "routine" && e.weekday === weekday)
-      .reduce((s, e) => s + e.duration_hours, 0);
+    const used = getEffectiveRoutineHoursForWeekday(events, weekday, isoToday());
     if (used + duration > 24) {
       return `${WEEKDAYS[weekday]} já tem ${used}h de eventos. Adicionar ${duration}h ultrapassa 24h — ajuste os eventos existentes.`;
     }
@@ -304,9 +306,7 @@ export function useRotinaData(): [RotinaState, RotinaActions] {
   }, [events]);
 
   const checkPunctualOverflow = useCallback((date: string, duration: number): string | null => {
-    const used = events
-      .filter((e) => e.event_type === "event" && e.event_date === date)
-      .reduce((s, e) => s + e.duration_hours, 0);
+    const used = getEffectivePunctualHoursForDate(events, date);
     if (used + duration > 24) {
       return `${toDisplayDate(date)} já tem ${used}h de eventos. Adicionar ${duration}h ultrapassa 24h — ajuste os eventos existentes.`;
     }

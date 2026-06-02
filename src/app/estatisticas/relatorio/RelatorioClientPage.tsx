@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useNavbar } from "@/lib/NavbarContext";
+import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import type {
   DirectedStudyListItem,
   OperationalTurboAreaStats,
@@ -679,6 +681,8 @@ export function RelatorioBody({
 }
 
 export default function RelatorioClientPage() {
+  const isDesktopNavigation = useDesktopNavigationMode();
+  const { setActions } = useNavbar();
   const {
     pending,
     done,
@@ -691,42 +695,27 @@ export default function RelatorioClientPage() {
     weeklyGoal,
   } = useEstatisticasPageState();
 
+  useEffect(() => {
+    if (isDesktopNavigation) return;
+    setActions(
+      <Link
+        href="/dados-e-relatorios"
+        className="p-1.5 text-muted hover:text-ink"
+        aria-label="Voltar"
+      >
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+          <path d="m12 4-6 6 6 6" />
+        </svg>
+      </Link>,
+    );
+    return () => { setActions(null); };
+  }, [isDesktopNavigation, setActions]);
+
   if (loading) return <RelatorioSkeleton />;
   if (error) return <p className="text-sm text-red-600">{error}</p>;
 
   return (
     <div className="space-y-0">
-      <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2 print:hidden">
-        <div className="flex justify-start">
-          <span className="block h-7 w-7" aria-hidden="true" />
-        </div>
-        <div className="flex justify-center">
-          <h1 className="text-[10px] font-semibold uppercase leading-none tracking-[0.08em] text-ink">
-            RELATÓRIOS
-          </h1>
-        </div>
-        <div className="flex justify-end">
-          <Link
-            href="/dados-e-relatorios"
-            className="shrink-0 p-1 -mr-1 flex items-center justify-end text-muted hover:text-ink"
-            aria-label="Voltar"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-5 w-5"
-              aria-hidden="true"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </Link>
-        </div>
-      </div>
 
       <div className="hidden print:block mb-5 border-b border-edge pb-4">
         <div className="flex items-center gap-2">

@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { QuestionBankSession } from "@/lib/api";
+import {
+  api,
+  authHeader,
+  getSessionCorrections,
+  type QuestionBankCorrectionItem,
+  type QuestionBankSession,
+} from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
-import { api, authHeader } from "@/lib/api";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -73,6 +78,8 @@ export default function PostExamReview({ session }: PostExamReviewProps) {
   const { token } = useAuthToken();
   const [activeTab, setActiveTab] = useState<Tab>("resumo");
   const [diagnosis, setDiagnosis] = useState<SessionDiagnosis | null>(null);
+  const [corrections, setCorrections] = useState<QuestionBankCorrectionItem[]>([]);
+  const [expandedCorrections, setExpandedCorrections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!token || !session.session_id) return;
@@ -83,6 +90,18 @@ export default function PostExamReview({ session }: PostExamReviewProps) {
       .then(setDiagnosis)
       .catch(() => null);
   }, [token, session.session_id]);
+
+  useEffect(() => {
+    if (!token || !session.session_id) return;
+    getSessionCorrections(token, session.session_id)
+      .then(setCorrections)
+      .catch(() => {});
+  }, [token, session.session_id]);
+
+  const correctionByQuestionId = useMemo(
+    () => new Map(corrections.map((correction) => [correction.question_id, correction])),
+    [corrections],
+  );
 
   const items = session.items;
   const correctItems = items.filter((i) => i.is_correct === true);
@@ -260,6 +279,37 @@ export default function PostExamReview({ session }: PostExamReviewProps) {
                   {item.selected_option && !item.is_correct && (
                     <p className="mt-2 text-xs text-danger">Você respondeu: {item.selected_option}</p>
                   )}
+                  {activeTab === "erros" && correctionByQuestionId.has(item.question_id) && (() => {
+                    const correction = correctionByQuestionId.get(item.question_id)!;
+                    const isExpanded = expandedCorrections.has(item.question_id);
+                    return (
+                      <div className="mt-3 border-t border-edge pt-3">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpandedCorrections((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(item.question_id)) {
+                                next.delete(item.question_id);
+                              } else {
+                                next.add(item.question_id);
+                              }
+                              return next;
+                            })
+                          }
+                          className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 hover:text-amber-900"
+                        >
+                          <span>{isExpanded ? "▲" : "▼"}</span>
+                          Minha correção
+                        </button>
+                        {isExpanded && (
+                          <blockquote className="mt-2 whitespace-pre-wrap border-l-2 border-amber-300 pl-3 text-xs leading-relaxed text-ink/80">
+                            {correction.response_value}
+                          </blockquote>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </article>
               ))}
             </div>

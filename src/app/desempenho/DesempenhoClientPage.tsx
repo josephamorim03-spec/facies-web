@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  filterEffectivePunctualEvents,
+  filterEffectiveRoutineEvents,
+} from "@/lib/calendarEventVisibility";
 import { RotinaTab } from "./_components/RotinaTab";
 import { usePerfilPageState } from "./_hooks/usePerfilPageState";
 import { isInternalSkipRoutineEvent } from "./_lib/perfilShared";
@@ -136,16 +140,14 @@ export default function PerfilPage() {
   const now = new Date();
   const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
-  const routineEvents = events
-    .filter((e) => e.event_type === "routine" && !isInternalSkipRoutineEvent(e.label))
-    .filter((e) => !e.active_until || e.active_until >= todayISO)
-    .sort((a, b) => (a.weekday ?? 99) - (b.weekday ?? 99));
+  const routineEvents = filterEffectiveRoutineEvents(
+    events.filter((event) => event.event_type === "routine" && !isInternalSkipRoutineEvent(event.label)),
+    todayISO,
+  ).sort((a, b) => (a.weekday ?? 99) - (b.weekday ?? 99));
 
-  const punctualEvents = events
-    .filter((e) => e.event_type === "event" && !isInternalSkipRoutineEvent(e.label))
-    .filter((e) => !!e.event_date)
-    .filter((e) => !e.active_until || (e.event_date as string) <= e.active_until)
-    .sort((a, b) => (a.event_date ?? "").localeCompare(b.event_date ?? ""));
+  const punctualEvents = filterEffectivePunctualEvents(
+    events.filter((event) => event.event_type === "event" && !isInternalSkipRoutineEvent(event.label)),
+  ).sort((a, b) => (a.event_date ?? "").localeCompare(b.event_date ?? ""));
   const adaptiveQuestionsByDate = new Map(
     adaptiveWeek.map((plan) => [plan.date, Math.max(0, Math.round(plan.focus_minutes / 2))])
   );

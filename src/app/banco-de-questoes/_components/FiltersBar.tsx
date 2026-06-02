@@ -363,17 +363,28 @@ export default function FiltersBar(props: FiltersBarProps) {
 
           {activeTab === "assunto" && (
             <div className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {AREAS.map((areaOption) => (
+              <div className="space-y-2">
+                <div className="flex justify-center">
                   <button
-                    key={areaOption || "all"}
                     type="button"
-                    onClick={() => onAreaChange(areaOption)}
-                    className={cx("km-chip", area === areaOption && "km-chip-active")}
+                    onClick={() => onAreaChange("")}
+                    className={cx("km-chip", area === "" && "km-chip-active")}
                   >
-                    <AreaLabel area={areaOption} />
+                    <AreaLabel area="" />
                   </button>
-                ))}
+                </div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {AREAS.filter((a) => a !== "").map((areaOption) => (
+                    <button
+                      key={areaOption}
+                      type="button"
+                      onClick={() => onAreaChange(areaOption)}
+                      className={cx("km-chip", area === areaOption && "km-chip-active")}
+                    >
+                      <AreaLabel area={areaOption} />
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="relative">

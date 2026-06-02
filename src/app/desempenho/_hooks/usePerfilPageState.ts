@@ -3,6 +3,10 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useRef, useState } from "react";
 import { getAuthToken } from "@/lib/auth";
+import {
+  getEffectivePunctualHoursForDate,
+  getEffectiveRoutineHoursForWeekday,
+} from "@/lib/calendarEventVisibility";
 import { useToast } from "@/lib/useToast";
 import { getBlockedRedirectSessionKey, getWelcomeToastSessionKey } from "@/lib/storage-keys";
 import { getErrorMessage } from "@/lib/error-utils";
@@ -364,9 +368,9 @@ export function usePerfilPageState() {
   }
 
   function checkRoutineOverflow(weekday: number, duration: number): string | null {
-    const used = events
-      .filter((event) => event.event_type === "routine" && event.weekday === weekday)
-      .reduce((sum, event) => sum + event.duration_hours, 0);
+    const today = new Date();
+    const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const used = getEffectiveRoutineHoursForWeekday(events, weekday, todayISO);
     if (used + duration > 24) {
       return `${WEEKDAYS[weekday]} já tem ${used}h de eventos. Adicionar ${duration}h ultrapassa 24h — ajuste os eventos existentes.`;
     }
@@ -374,9 +378,7 @@ export function usePerfilPageState() {
   }
 
   function checkPunctualOverflow(date: string, duration: number): string | null {
-    const used = events
-      .filter((event) => event.event_type === "event" && event.event_date === date)
-      .reduce((sum, event) => sum + event.duration_hours, 0);
+    const used = getEffectivePunctualHoursForDate(events, date);
     if (used + duration > 24) {
       return `${toDisplayDate(date)} já tem ${used}h de eventos. Adicionar ${duration}h ultrapassa 24h — ajuste os eventos existentes.`;
     }

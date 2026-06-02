@@ -223,6 +223,10 @@ function BancoDeQuestoesContent() {
   }, [routeSearchKey]);
 
   useEffect(() => {
+    if (!routeSearchKey) {
+      setActions(null);
+      return () => { setActions(null); };
+    }
     setActions(
       <button
         type="button"

@@ -17,6 +17,7 @@ import {
   DirectedStudyListItem,
   getOperationalTurboOverview,
   getProfile,
+  getQuestionBankLongitudinalDiagnosis,
   listScheduleSuggestions,
   getStudyPerformanceSummary,
   listDirectedStudies,
@@ -24,6 +25,7 @@ import {
   rejectScheduleSuggestion,
   type ScheduleSuggestion,
   type OperationalTurboOverview,
+  type QuestionBankLongitudinalDiagnosis,
   ReviewTask,
   type StudyPerformanceSummary,
   triggerScheduleSuggestion,
@@ -35,6 +37,7 @@ import { IconPlus, IconRefresh } from "@/app/cronograma/_components/CronogramaIc
 import { buildWeeklyOpsMetrics } from "@/app/cronograma/_lib/weeklyOpsMetrics";
 import { WeeklyOpsFullCardsSkeleton } from "@/app/cronograma/_components/WeeklyOpsCards";
 import { writeCronogramaViewModeSession } from "@/app/cronograma/_lib/viewModeSession";
+import BancoSidebarCard from "./_components/BancoSidebarCard";
 
 type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
 
@@ -58,7 +61,7 @@ type DailyWeaknessItem = {
   action: string;
   confidencePct: number | null;
   impactPct: number | null;
-  source: "diagnosis" | "preliminary";
+  source: "diagnosis" | "preliminary" | "banco";
 };
 
 function todayISO(): string {
@@ -246,16 +249,6 @@ function TodaySkeleton() {
   );
 }
 
-const MOTIVATIONAL_QUOTES = [
-  "Cada questão a mais hoje é uma lacuna a menos na prova.",
-  "Consistência bate intensidade. Uma hora todo dia vence doze no final.",
-  "O erro corrigido agora não vai aparecer na prova.",
-  "Residência não é sorte. É a soma das revisões feitas quando ninguém via.",
-  "Não revise o que você já sabe. Revise o que você erra.",
-  "A banca repete temas. Você só precisa estar lá quando eles aparecerem.",
-  "Médico bom não nasce sabendo. Aprende errando em segurança, antes da prova.",
-];
-
 const AREA_FULL: Record<string, string> = {
   GO: "Ginecologia e Obstetrícia", PD: "Pediatria", CM: "Clínica Médica",
   CG: "Cirurgia Geral", MP: "Medicina Preventiva", OU: "Outras",
@@ -437,6 +430,7 @@ export default function TodayPage() {
   const [studies, setStudies] = useState<DirectedStudyListItem[]>([]);
   const [turboOverview, setTurboOverview] = useState<OperationalTurboOverview | null>(null);
   const [performanceSummary, setPerformanceSummary] = useState<StudyPerformanceSummary | null>(null);
+  const [longitudinal, setLongitudinal] = useState<QuestionBankLongitudinalDiagnosis | null>(null);
   const [weeklyGoal, setWeeklyGoal] = useState(200);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -454,6 +448,7 @@ export default function TodayPage() {
 
   async function fetchTasks(showLoadingState: boolean = false) {
     const token = getAuthToken();
+    const longitudinalRequest = getQuestionBankLongitudinalDiagnosis(token).catch(() => null);
 
     if (showLoadingState) setLoading(true);
     try {
@@ -471,6 +466,10 @@ export default function TodayPage() {
     } finally {
       if (showLoadingState) setLoading(false);
     }
+
+    void longitudinalRequest.then((diagnosis) => {
+      setLongitudinal(diagnosis);
+    });
   }
 
   useEffect(() => {
@@ -610,14 +609,37 @@ export default function TodayPage() {
     [doneTasks, studies, tasks, today, weeklyGoal],
   );
 
-  const dailyWeaknesses = useMemo(
-    () => buildDailyWeaknessItems(performanceSummary),
-    [performanceSummary],
-  );
+  const dailyWeaknesses = useMemo((): DailyWeaknessItem[] => {
+    const studyItems = buildDailyWeaknessItems(performanceSummary);
+    const bancoItems: DailyWeaknessItem[] = (longitudinal?.nodes ?? [])
+      .filter((node) => node.exposure_count >= 2 && node.mastery_score < 0.5)
+      .sort((a, b) => a.mastery_score - b.mastery_score)
+      .slice(0, 2)
+      .map((node) => ({
+        key: `banco_${node.knowledge_node_id}`,
+        area: "",
+        theme: node.node_name ?? "Tópico do banco",
+        accuracyPct: Math.round(node.mastery_score * 100),
+        daysSinceLastStudy: node.days_since_last_seen,
+        totalQuestions: node.correct_count + node.error_count,
+        signal: "Domínio baixo no banco adaptativo.",
+        action: "Inicie uma sessão focada no banco adaptativo.",
+        confidencePct: null,
+        impactPct: null,
+        source: "banco",
+      }));
+
+    if (bancoItems.length === 0) {
+      return studyItems;
+    }
+
+    return [...studyItems, ...bancoItems]
+      .sort((a, b) => (a.accuracyPct ?? 101) - (b.accuracyPct ?? 101))
+      .slice(0, 3);
+  }, [longitudinal, performanceSummary]);
 
   const studentFirstName = firstName(displayName) ?? "Joseph";
   const greeting = getGreeting(studentFirstName);
-  const quote = MOTIVATIONAL_QUOTES[new Date().getDate() % MOTIVATIONAL_QUOTES.length];
   const totalDoneQuestions = studies.reduce((sum, study) => sum + Math.max(0, Number(study.total_questions ?? 0)), 0);
   const totalCorrectQuestions = studies.reduce((sum, study) => sum + Math.max(0, Number(study.correct_questions ?? 0)), 0);
   const globalAccuracy = formatRatioPercent(totalCorrectQuestions, totalDoneQuestions);
@@ -728,16 +750,10 @@ export default function TodayPage() {
 
   return (
     <div className="space-y-5 md:space-y-8">
-      <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+      <header>
         <div className="min-w-0">
           <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">{greeting}</h1>
           <p className="mt-2 text-base text-muted">Preparação inteligente para a residência.</p>
-        </div>
-        <div className="hidden md:flex md:min-w-[20rem] md:justify-end">
-          <div className="max-w-xs text-sm text-muted">
-            <p className="font-serif text-4xl leading-none text-edge">&ldquo;</p>
-            <p>{quote}</p>
-          </div>
         </div>
       </header>
 
@@ -1076,6 +1092,8 @@ export default function TodayPage() {
                 )}
               </div>
             </section>
+
+            <BancoSidebarCard longitudinal={longitudinal} />
 
             {turboOverview && turboOverview.due_count > 0 && (
               <section
