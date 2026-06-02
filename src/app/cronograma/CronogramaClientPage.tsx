@@ -9,7 +9,7 @@ import { useNavbar } from "@/lib/NavbarContext";
 import { useCronogramaPageState } from "./_hooks/useCronogramaPageState";
 import { useCronogramaSearchFilters } from "./_hooks/useCronogramaSearchFilters";
 import {
-  Area,
+  type Area,
   buildStudiesByDate,
   buildStudyMap,
   displayDate,
@@ -69,6 +69,7 @@ export default function CronogramaPage() {
     handleAutoReschedule,
     handleEventMutationRefresh,
     closeEventSuggestionModal,
+    handleAcceptSuggestionItem,
     handleAcceptSuggestionAll,
     handleRejectSuggestion,
   } = useCronogramaPageState();
@@ -417,7 +418,13 @@ export default function CronogramaPage() {
 
       {showEventSuggestionModal && (
         <div className="fixed inset-0 bg-black/40 z-50 overflow-y-auto flex p-4 modal-backdrop" onClick={closeEventSuggestionModal}>
-          <div className="bg-paper border border-edge rounded-2xl w-full max-w-xl m-auto p-4 space-y-3 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Reagendamento sugerido"
+            className="bg-paper border border-edge rounded-2xl w-full max-w-xl m-auto p-4 space-y-3 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between">
               <h3 className="font-serif text-base">Reagendamento sugerido</h3>
             </div>
@@ -458,6 +465,16 @@ export default function CronogramaPage() {
                                 {displayDate(item.current_due_date)} {"->"} {displayDate(item.suggested_due_date)}
                               </p>
                             </div>
+                            <Button
+                              variant="secondary"
+                              size="xs"
+                              loading={suggestionActionKey === `item:${sg.suggestion_id}:${item.task_id}`}
+                              disabled={suggestionActionKey !== null || item.applied}
+                              onClick={() => handleAcceptSuggestionItem(sg.suggestion_id, item.task_id)}
+                              className="shrink-0"
+                            >
+                              {item.applied ? "Aceito" : "Aceitar"}
+                            </Button>
                           </div>
                         </li>
                       ))}

@@ -320,7 +320,7 @@ export function RotinaTab({
   const punctualTabEvents = punctualTab === "upcoming" ? upcomingPunctualEvents : historyPunctualEvents;
 
   return (
-    <div className="space-y-8 max-w-md mx-auto md:max-w-none md:mx-0">
+    <div className="space-y-5 md:space-y-8 max-w-md mx-auto md:max-w-none md:mx-0">
       <header className="flex items-start justify-between">
         <div>
           <h1 className="font-serif text-3xl font-semibold leading-tight md:text-4xl">Metas</h1>
@@ -351,7 +351,7 @@ export function RotinaTab({
         {workload.length === 7 && (
           <div className="space-y-2">
             <p className="text-xs text-muted text-center md:text-left">Carga diária estimada</p>
-            <div className="flex items-end gap-1 h-28">
+            <div className="flex items-end gap-1 h-36 sm:h-28">
               {workload.map((day) => {
                 const displayQ = adaptiveQuestionsByDate.get(day.date) ?? day.load;
                 const displayHeight = Math.round((displayQ / maxAdaptiveLoad) * 100);

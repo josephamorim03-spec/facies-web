@@ -12,6 +12,7 @@ import { getErrorMessage } from "@/lib/error-utils";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useToast } from "@/lib/useToast";
 import {
+  acceptScheduleSuggestionItem,
   acceptScheduleSuggestionAll,
   DirectedStudyListItem,
   getOperationalTurboOverview,
@@ -436,6 +437,33 @@ export default function TodayPage() {
     }
   }
 
+  async function handleAcceptSuggestionItem(suggestionId: string, taskId: string) {
+    const token = getAuthToken();
+
+    setBulkSuggestionActionKey(`item:${suggestionId}:${taskId}`);
+    try {
+      const updatedSuggestion = await acceptScheduleSuggestionItem(token, suggestionId, taskId);
+      await fetchTasks();
+      setBulkSuggestionError(null);
+      if (updatedSuggestion.status === "pending") {
+        const nextSuggestions = bulkSuggestions.map((suggestion) => (
+          suggestion.suggestion_id === suggestionId ? updatedSuggestion : suggestion
+        ));
+        setBulkSuggestions(nextSuggestions);
+      } else {
+        const nextSuggestions = bulkSuggestions.filter((suggestion) => suggestion.suggestion_id !== suggestionId);
+        setBulkSuggestions(nextSuggestions);
+        if (nextSuggestions.length === 0) {
+          setBulkSuggestionDialogOpen(false);
+        }
+      }
+    } catch (e: unknown) {
+      setBulkSuggestionError(getErrorMessage(e, "Erro ao aceitar item do reagendamento."));
+    } finally {
+      setBulkSuggestionActionKey(null);
+    }
+  }
+
   async function handleAcceptAllSuggestions(suggestionId: string) {
     const token = getAuthToken();
 
@@ -443,8 +471,12 @@ export default function TodayPage() {
     try {
       await acceptScheduleSuggestionAll(token, suggestionId);
       await fetchTasks();
-      setBulkSuggestionDialogOpen(false);
-      setBulkSuggestions([]);
+      setBulkSuggestionError(null);
+      const nextSuggestions = bulkSuggestions.filter((suggestion) => suggestion.suggestion_id !== suggestionId);
+      setBulkSuggestions(nextSuggestions);
+      if (nextSuggestions.length === 0) {
+        setBulkSuggestionDialogOpen(false);
+      }
       showToast("Atrasadas reagendadas.", "info");
     } catch (e: unknown) {
       setBulkSuggestionError(getErrorMessage(e, "Erro ao aceitar reagendamento."));
@@ -459,8 +491,12 @@ export default function TodayPage() {
     setBulkSuggestionActionKey(`reject:${suggestionId}`);
     try {
       await rejectScheduleSuggestion(token, suggestionId);
-      setBulkSuggestionDialogOpen(false);
-      setBulkSuggestions([]);
+      setBulkSuggestionError(null);
+      const nextSuggestions = bulkSuggestions.filter((suggestion) => suggestion.suggestion_id !== suggestionId);
+      setBulkSuggestions(nextSuggestions);
+      if (nextSuggestions.length === 0) {
+        setBulkSuggestionDialogOpen(false);
+      }
     } catch (e: unknown) {
       setBulkSuggestionError(getErrorMessage(e, "Erro ao ignorar sugestao."));
     } finally {
@@ -604,8 +640,8 @@ export default function TodayPage() {
   if (loading) return <TodaySkeleton />;
 
   return (
-    <div className="space-y-8">
-      <header className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+    <div className="space-y-5 md:space-y-8">
+      <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">{greeting}</h1>
           <p className="mt-2 text-base text-muted">Foco hoje, especialista amanhã.</p>
@@ -622,8 +658,8 @@ export default function TodayPage() {
       {error && <div className="rounded-lg border border-danger bg-surface p-4 text-sm text-danger">{error}</div>}
 
       {!error && (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
-          <div className="space-y-6">
+        <div className="grid gap-4 md:gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
+          <div className="space-y-4 md:space-y-6">
             <section className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="font-serif text-2xl font-semibold">Plano de estudos de hoje</h2>
@@ -644,7 +680,7 @@ export default function TodayPage() {
                       type="button"
                       onClick={() => setSelectedDayIso(iso)}
                       aria-pressed={isSelected}
-                      className={`flex min-h-[4.25rem] flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 transition-colors ${
+                      className={`flex min-h-[3.5rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 transition-colors sm:min-h-[4.25rem] sm:gap-1 sm:py-2 ${
                         isSelected ? "bg-primary text-primaryInk" : "hover:bg-surfaceMuted"
                       }`}
                     >
@@ -667,38 +703,62 @@ export default function TodayPage() {
                     const accentColor = getAreaColor(task.area);
                     return (
                       <article key={task.task_id} className="overflow-hidden rounded-lg border border-edge bg-surface shadow-sm">
-                        <div className="grid gap-4 p-4 sm:grid-cols-[5.5rem_minmax(0,1fr)_8rem] sm:items-center">
-                          <div className="flex h-20 w-full items-center justify-center rounded-lg border border-edge bg-paper">
-                            <AreaIcon area={task.area} size={40} colored />
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="font-serif text-xl font-semibold leading-tight text-ink">{task.theme}</h3>
-                            <div className="mt-2 flex flex-wrap items-center gap-2">
-                              <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ color: accentColor, backgroundColor: `${accentColor}18` }}>
-                                {AREA_FULL[task.area] ?? task.area}
-                              </span>
-                              <span className="text-xs text-muted">{task.expected_questions} questões</span>
-                              {task.is_critical && <span className="text-xs font-semibold text-warning">prioritária</span>}
+                        <div className="p-4">
+                          {/* Mobile layout: icon inline with text */}
+                          <div className="flex items-start gap-3 sm:hidden">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-edge bg-paper">
+                              <AreaIcon area={task.area} size={28} colored />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-serif text-base font-semibold leading-snug text-ink">{task.theme}</h3>
+                              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                <span className="rounded-full px-2 py-0.5 text-xs font-semibold" style={{ color: accentColor, backgroundColor: `${accentColor}18` }}>
+                                  {AREA_FULL[task.area] ?? task.area}
+                                </span>
+                                <span className="text-xs text-muted">{task.expected_questions} questões</span>
+                                {task.is_critical && <span className="text-xs font-semibold text-warning">prioritária</span>}
+                              </div>
                             </div>
                           </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted">0/{task.expected_questions}</span>
-                            </div>
+                          <div className="mt-3 space-y-2 sm:hidden">
                             <ScoreBar pct={0} color={accentColor} />
                             <div className="flex gap-2">
                               <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center rounded-xl border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk">
                                 Estudar
                               </Link>
-                              <Button
-                                type="button"
-                                variant="secondary"
-                                size="sm"
-                                className="flex-1"
-                                onClick={() => setExpandedTaskId(isExpanded ? null : task.task_id)}
-                              >
+                              <Button type="button" variant="secondary" size="sm" className="flex-1" onClick={() => setExpandedTaskId(isExpanded ? null : task.task_id)}>
                                 Registrar
                               </Button>
+                            </div>
+                          </div>
+                          {/* Desktop layout: 3-column grid */}
+                          <div className="hidden sm:grid sm:grid-cols-[5.5rem_minmax(0,1fr)_8rem] sm:items-center sm:gap-4">
+                            <div className="flex h-20 w-full items-center justify-center rounded-lg border border-edge bg-paper">
+                              <AreaIcon area={task.area} size={40} colored />
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-serif text-xl font-semibold leading-tight text-ink">{task.theme}</h3>
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ color: accentColor, backgroundColor: `${accentColor}18` }}>
+                                  {AREA_FULL[task.area] ?? task.area}
+                                </span>
+                                <span className="text-xs text-muted">{task.expected_questions} questões</span>
+                                {task.is_critical && <span className="text-xs font-semibold text-warning">prioritária</span>}
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted">0/{task.expected_questions}</span>
+                              </div>
+                              <ScoreBar pct={0} color={accentColor} />
+                              <div className="flex gap-2">
+                                <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center rounded-xl border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk">
+                                  Estudar
+                                </Link>
+                                <Button type="button" variant="secondary" size="sm" className="flex-1" onClick={() => setExpandedTaskId(isExpanded ? null : task.task_id)}>
+                                  Registrar
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -728,41 +788,97 @@ export default function TodayPage() {
               </div>
             </section>
 
-            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
-              <h2 className="font-serif text-2xl font-semibold">Próxima melhor ação</h2>
-              <p className="mt-1 text-sm text-muted">Com base no seu desempenho recente, sugerimos:</p>
-              <div className="mt-4 rounded-lg border border-edge bg-paper p-4">
-                {nextWeakness ? (
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-paper">
-                      <AreaIcon area={nextWeakness.area} size={32} colored />
+            <section className="overflow-hidden rounded-xl border border-edge bg-surface shadow-sm">
+              <div className="px-5 pb-3 pt-5">
+                <h2 className="font-serif text-2xl font-semibold">Próxima melhor ação</h2>
+                <p className="mt-1 text-sm text-muted">Com base no seu desempenho recente, sugerimos:</p>
+              </div>
+              <div className="mx-5 mb-5 overflow-hidden rounded-xl border border-edge/60">
+                {nextWeakness ? (() => {
+                  const areaColor = AREA_HEX[nextWeakness.area as Area] ?? AREA_HEX.OU;
+                  const weaknessHref = `/banco-de-questoes?area=${encodeURIComponent(nextWeakness.area)}&theme=${encodeURIComponent(nextWeakness.theme)}&answer_status=unanswered_or_wrong`;
+                  return (
+                    <div className="flex flex-col sm:flex-row">
+                      {/* Mobile: icon block centered at top */}
+                      <div
+                        className="flex items-center justify-center py-6 sm:hidden"
+                        style={{ backgroundColor: `${areaColor}18` }}
+                      >
+                        <AreaIcon area={nextWeakness.area} size={48} colored />
+                      </div>
+                      {/* Desktop: icon column on left */}
+                      <div
+                        className="hidden shrink-0 items-center justify-center sm:flex sm:w-20 sm:self-stretch"
+                        style={{ backgroundColor: `${areaColor}18` }}
+                      >
+                        <AreaIcon area={nextWeakness.area} size={38} colored />
+                      </div>
+                      {/* Text */}
+                      <div className="flex min-w-0 flex-1 flex-col gap-1 px-4 py-3">
+                        <p className="font-semibold text-ink">Revisar {nextWeakness.theme}</p>
+                        <p className="text-xs text-muted">{nextWeakness.signal}</p>
+                        {nextWeakness.accuracyPct !== null && (
+                          <p className="text-xs font-medium" style={{ color: areaColor }}>
+                            Acerto atual: {nextWeakness.accuracyPct}%
+                          </p>
+                        )}
+                      </div>
+                      {/* Button mobile */}
+                      <div className="px-4 pb-4 sm:hidden">
+                        <Link
+                          href={weaknessHref}
+                          className="block w-full rounded-lg border border-primary bg-primary py-2.5 text-center text-sm font-semibold text-primaryInk"
+                        >
+                          Começar revisão
+                        </Link>
+                      </div>
+                      {/* Button desktop */}
+                      <div className="hidden shrink-0 items-center pr-4 sm:flex">
+                        <Link
+                          href={weaknessHref}
+                          className="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk"
+                        >
+                          Começar revisão
+                        </Link>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-primary">Revisar {nextWeakness.theme}</p>
-                      <p className="mt-1 text-xs text-muted">{nextWeakness.signal}</p>
+                  );
+                })() : nextActionTask ? (
+                  <div className="flex flex-col sm:flex-row">
+                    {/* Mobile: icon block centered at top */}
+                    <div className="flex items-center justify-center bg-[var(--amber-tint)] py-6 text-warning sm:hidden">
+                      <IconNotebook className="h-12 w-12" />
                     </div>
-                    <Link
-                      href={`/banco-de-questoes?area=${encodeURIComponent(nextWeakness.area)}&theme=${encodeURIComponent(nextWeakness.theme)}&answer_status=unanswered_or_wrong`}
-                      className="inline-flex items-center justify-center rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk"
-                    >
-                      Começar revisão
-                    </Link>
-                  </div>
-                ) : nextActionTask ? (
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[var(--amber-tint)] text-warning">
-                      <IconNotebook className="h-8 w-8" />
+                    {/* Desktop: icon column on left */}
+                    <div className="hidden shrink-0 items-center justify-center bg-[var(--amber-tint)] text-warning sm:flex sm:w-20 sm:self-stretch">
+                      <IconNotebook className="h-9 w-9" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-primary">Resolver {nextActionTask.theme}</p>
-                      <p className="mt-1 text-xs text-muted">{nextActionTask.expected_questions} questões programadas.</p>
+                    {/* Text */}
+                    <div className="flex min-w-0 flex-1 flex-col gap-1 px-4 py-3">
+                      <p className="font-semibold text-ink">Resolver {nextActionTask.theme}</p>
+                      <p className="text-xs text-muted">{nextActionTask.expected_questions} questões programadas.</p>
                     </div>
-                    <Link href={reviewTaskHref(nextActionTask)} className="inline-flex items-center justify-center rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk">
-                      Começar
-                    </Link>
+                    {/* Button mobile */}
+                    <div className="px-4 pb-4 sm:hidden">
+                      <Link
+                        href={reviewTaskHref(nextActionTask)}
+                        className="block w-full rounded-lg border border-primary bg-primary py-2.5 text-center text-sm font-semibold text-primaryInk"
+                      >
+                        Começar
+                      </Link>
+                    </div>
+                    {/* Button desktop */}
+                    <div className="hidden shrink-0 items-center pr-4 sm:flex">
+                      <Link
+                        href={reviewTaskHref(nextActionTask)}
+                        className="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk"
+                      >
+                        Começar
+                      </Link>
+                    </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted">Você está sem pendências imediatas. Um bloco leve de manutenção no banco de questões mantém o ritmo.</p>
+                  <p className="px-4 py-4 text-sm text-muted">Você está sem pendências imediatas. Um bloco leve de manutenção no banco de questões mantém o ritmo.</p>
                 )}
               </div>
             </section>
@@ -771,7 +887,7 @@ export default function TodayPage() {
               <section className="rounded-2xl border border-edge bg-surface p-4 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h2 className="font-serif text-lg font-semibold text-ink">Atrasadas - {overdueTasks.length}</h2>
+                    <h2 className="font-serif text-2xl font-semibold">Atrasadas — {overdueTasks.length}</h2>
                     <p className="mt-1 text-sm text-muted">Reagende o bloco inteiro para reorganizar a fila sem aprovar uma por uma.</p>
                   </div>
                   <Button
@@ -870,7 +986,7 @@ export default function TodayPage() {
                     <IconCards className="h-8 w-8" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h2 className="font-serif text-xl font-semibold">Flashcards vencidos</h2>
+                    <h2 className="font-serif text-2xl font-semibold">Flashcards vencidos</h2>
                     <p className="text-sm text-muted">
                       {turboOverview.due_count} cards{turboOverview.estimated_minutes ? ` · ~${turboOverview.estimated_minutes} min` : ""}
                     </p>
@@ -884,7 +1000,7 @@ export default function TodayPage() {
 
             {recentReviewStudies.length > 0 && (
               <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
-                <h2 className="font-serif text-xl font-semibold">Últimas revisões</h2>
+                <h2 className="font-serif text-2xl font-semibold">Últimas revisões</h2>
                 <div className="mt-3 space-y-3">
                   {recentReviewStudies.map((study) => (
                     <Link
@@ -915,6 +1031,7 @@ export default function TodayPage() {
         error={bulkSuggestionError}
         emptyMessage="Nenhuma sugestao nova de reagendamento foi gerada."
         onClose={() => setBulkSuggestionDialogOpen(false)}
+        onAcceptItem={handleAcceptSuggestionItem}
         onAcceptAll={handleAcceptAllSuggestions}
         onReject={handleRejectSuggestions}
       />
