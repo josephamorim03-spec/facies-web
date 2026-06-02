@@ -58,7 +58,11 @@ export function LoginForm({
         onChange={(event) => setLoginPassword(event.target.value)}
         onKeyDown={(event) => event.key === "Enter" && onLogin()}
       />
-      {loginError && <p className="text-sm text-red-600">{loginError}</p>}
+      {loginError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+          {loginError}
+        </div>
+      )}
       <Button variant="primary" size="md" loading={loginBusy} onClick={onLogin} className="w-full">
         Entrar
       </Button>
