@@ -22,7 +22,7 @@ test.describe("Semana bulk reschedule flow", () => {
     await addHttpOnlySessionForPage(page);
   });
 
-  test("remove atalhos rapidos e abre sugestao em massa para atrasadas", async ({ page }) => {
+  test("remove atalhos rapidos e abre sugestao em massa com acoes por item e por lote", async ({ page }) => {
     const { db } = await mockCronogramaApi(page);
     const today = currentTodayISO();
     markTaskOverdue(db.pendingTasks[0], plusDays(today, -2));
@@ -40,6 +40,27 @@ test.describe("Semana bulk reschedule flow", () => {
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText(/Pneumonia/i);
     await expect(dialog.getByRole("button", { name: "Aceitar todas" })).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Aceitar", exact: true })).toBeVisible();
+  });
+
+  test("aceite item a item mantem o modal aberto enquanto ainda ha sugestoes pendentes", async ({ page }) => {
+    const { db } = await mockCronogramaApi(page);
+    const today = currentTodayISO();
+    markTaskOverdue(db.pendingTasks[0], plusDays(today, -2));
+    markTaskOverdue(db.pendingTasks[1], plusDays(today, -1));
+
+    await page.goto("/semana");
+    await page.getByRole("button", { name: "Reagendar todas" }).click();
+
+    const dialog = page.getByRole("dialog", { name: "Reagendar atrasadas" });
+    await expect(dialog).toBeVisible();
+
+    await dialog.getByRole("button", { name: "Aceitar", exact: true }).first().click();
+
+    await expect.poll(() => db.pendingTasks.filter((task) => task.is_overdue && task.due_date < currentTodayISO()).length).toBe(1);
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Aceitar", exact: true })).toHaveCount(1);
+    await expect(dialog).toContainText(/Asma/i);
   });
 
   test("aceitar todas faz refetch completo e limpa o bloco de atrasadas", async ({ page }) => {

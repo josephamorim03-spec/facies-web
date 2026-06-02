@@ -12,6 +12,7 @@ import {
   triggerScheduleSuggestion,
   getOperationalStreak,
   getOperationalTurboSessionDailyCompletedCards,
+  acceptScheduleSuggestionItem,
   acceptScheduleSuggestionAll,
   rejectScheduleSuggestion,
   ReviewTask,
@@ -231,6 +232,29 @@ export function useCronogramaPageState() {
     return parsed.toLocaleString("pt-BR", { hour12: false });
   }
 
+  async function handleAcceptSuggestionItem(suggestionId: string, taskId: string) {
+    const key = `item:${suggestionId}:${taskId}`;
+    setSuggestionActionKey(key);
+    try {
+      const updatedSuggestion = await acceptScheduleSuggestionItem(token, suggestionId, taskId);
+      setSuggestions((current) => (
+        updatedSuggestion.status === "pending"
+          ? current.map((suggestion) => (
+              suggestion.suggestion_id === suggestionId ? updatedSuggestion : suggestion
+            ))
+          : current.filter((suggestion) => suggestion.suggestion_id !== suggestionId)
+      ));
+      if (updatedSuggestion.status !== "pending") {
+        setEventSuggestionModalIds((current) => current.filter((id) => id !== suggestionId));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSuggestionActionKey(null);
+      fetchAll().catch(() => undefined);
+    }
+  }
+
   async function handleAcceptSuggestionAll(suggestionId: string) {
     // Dismiss from modal immediately.
     setEventSuggestionModalIds((prev) => prev.filter((id) => id !== suggestionId));
@@ -286,6 +310,7 @@ export function useCronogramaPageState() {
     handleEventMutationRefresh,
     closeEventSuggestionModal,
     suggestionCreatedAtLabel,
+    handleAcceptSuggestionItem,
     handleAcceptSuggestionAll,
     handleRejectSuggestion,
   };

@@ -45,7 +45,7 @@ export function TurboLobby({
   const topReasons = turboOverview?.reason_counts.slice(0, 2) ?? [];
   const topAreas = turboOverview?.by_area.filter((item) => item.due_count > 0).slice(0, 3) ?? [];
   const previewCards = turboOverview?.priority_preview.slice(0, 3) ?? [];
-  const accentColor = lobbyAccentColor ?? "var(--color-ink)";
+  const accentColor = lobbyAccentColor ?? "var(--color-accent)";
 
   return (
     <div className="flex flex-col font-sans" style={{ minHeight: TURBO_VIEWPORT_MIN_HEIGHT }}>
@@ -70,18 +70,20 @@ export function TurboLobby({
         ) : (
           <>
             <div className="space-y-2 text-center">
-              <p className="text-xs uppercase tracking-widest text-muted">Cards para revisar agora</p>
-              <p className="font-serif text-5xl leading-none text-ink">{effectiveAvailableCount}</p>
-              <p className="text-sm text-muted">
-                {turboOverview?.estimated_minutes
-                  ? `~${turboOverview.estimated_minutes} min de revisão`
-                  : `~${fmtTime(questionCount * ESTIMATED_MS_PER_CARD)}`}
-              </p>
+              <div className="surface-hero px-5 py-6">
+                <p className="text-xs uppercase tracking-widest text-muted">Cards para revisar agora</p>
+                <p className="mt-2 font-serif text-5xl leading-none text-ink">{effectiveAvailableCount}</p>
+                <p className="mt-2 text-sm text-muted">
+                  {turboOverview?.estimated_minutes
+                    ? `~${turboOverview.estimated_minutes} min de revisão`
+                    : `~${fmtTime(questionCount * ESTIMATED_MS_PER_CARD)}`}
+                </p>
+              </div>
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="rounded-lg border border-edge bg-surface p-3 shadow-sm">
-                <p className="text-[10px] uppercase tracking-widest text-muted">Por que entrou</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted">Por que estes cards</p>
                 <div className="mt-2 space-y-1.5">
                   {topReasons.length > 0 ? topReasons.map((reason) => (
                     <div key={reason.reason} className="flex items-start justify-between gap-3 text-sm">
@@ -94,7 +96,7 @@ export function TurboLobby({
                 </div>
               </div>
               <div className="rounded-lg border border-edge bg-surface p-3 shadow-sm">
-                <p className="text-[10px] uppercase tracking-widest text-muted">Áreas mais presentes</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted">Distribuição por área</p>
                 <div className="mt-2 space-y-1.5">
                   {topAreas.length > 0 ? topAreas.map((item) => {
                     const areaTone = AREA_COLORS[item.area as Area] ?? "#888";
@@ -119,7 +121,7 @@ export function TurboLobby({
 
             {previewCards.length > 0 && (
               <div className="space-y-2">
-                <p className="text-[10px] uppercase tracking-widest text-muted">Primeiros da fila</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted">Próximos cards</p>
                 <div className="space-y-1.5">
                   {previewCards.map((card) => {
                     const cardAreaColor = AREA_COLORS[card.area as Area] ?? "#888";

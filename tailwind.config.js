@@ -13,6 +13,8 @@ module.exports = {
         muted: "var(--color-muted)",
         primary: "var(--color-primary)",
         primaryInk: "var(--color-primary-ink)",
+        accent: "var(--color-accent)",
+        accentInk: "var(--color-accent-ink)",
         success: "var(--color-success)",
         danger: "var(--color-danger)",
         warning: "var(--color-warning)",
@@ -28,6 +30,7 @@ module.exports = {
       },
       fontFamily: {
         sans: [
+          "var(--font-sans)",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
@@ -35,7 +38,7 @@ module.exports = {
           "\"Segoe UI\"",
           "sans-serif",
         ],
-        serif: ["Georgia", "serif"],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
       },
     },
   },

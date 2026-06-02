@@ -14,9 +14,11 @@ type RescheduleSuggestionDialogProps = {
   loading?: boolean;
   error?: string | null;
   emptyMessage?: string;
+  acceptItemLabel?: string;
   acceptAllLabel?: string;
   rejectLabel?: string;
   onClose: () => void;
+  onAcceptItem?: (suggestionId: string, taskId: string) => void;
   onAcceptAll: (suggestionId: string) => void;
   onReject?: (suggestionId: string) => void;
 };
@@ -29,9 +31,11 @@ export function RescheduleSuggestionDialog({
   loading = false,
   error = null,
   emptyMessage = "Nenhuma sugestao pendente.",
+  acceptItemLabel = "Aceitar",
   acceptAllLabel = "Aceitar todas",
   rejectLabel = "Ignorar",
   onClose,
+  onAcceptItem,
   onAcceptAll,
   onReject,
 }: RescheduleSuggestionDialogProps) {
@@ -93,6 +97,18 @@ export function RescheduleSuggestionDialog({
                             {displayDate(item.current_due_date)} {"->"} {displayDate(item.suggested_due_date)}
                           </p>
                         </div>
+                        {onAcceptItem ? (
+                          <Button
+                            variant="secondary"
+                            size="xs"
+                            loading={actionKey === `item:${suggestion.suggestion_id}:${item.task_id}`}
+                            disabled={actionKey !== null || item.applied}
+                            onClick={() => onAcceptItem(suggestion.suggestion_id, item.task_id)}
+                            className="shrink-0"
+                          >
+                            {item.applied ? "Aceito" : acceptItemLabel}
+                          </Button>
+                        ) : null}
                       </div>
                     </li>
                   ))}

@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "KrosMed",
     short_name: "KrosMed",
-    description: "FSRS-6 + Planner",
+    description: "Banco adaptativo de questões e revisão inteligente para residência médica",
     start_url: "/",
     scope: "/",
     display: "standalone",

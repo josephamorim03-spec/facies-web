@@ -39,14 +39,14 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
       },
       {
         href: "/banco-de-questoes",
-        label: "BANCO DE QUESTÕES",
-        shortLabel: "Banco de Questões",
+        label: "QUESTÕES",
+        shortLabel: "Questões",
         groupPaths: ["/banco-de-questoes"],
       },
       {
         href: "/cards-adaptativos",
-        label: "FLASHCARDS",
-        shortLabel: "Flashcards",
+        label: "CARDS",
+        shortLabel: "Cards",
         groupPaths: ["/cards-adaptativos", "/revisao-turbo", "/caderno"],
       },
       {
@@ -75,8 +75,8 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
       },
       {
         href: "/rotina-e-metas",
-        label: "METAS",
-        shortLabel: "Metas",
+        label: "PLANO",
+        shortLabel: "Plano",
         groupPaths: ["/rotina-e-metas", "/rotina"],
       },
     ],

@@ -34,9 +34,9 @@ function shouldHideNavigationChrome(pathname: string): boolean {
 }
 
 const PAGE_TITLES: Record<string, string> = {
-  "/banco-de-questoes": "Banco de Questões",
-  "/cards-adaptativos": "Flashcards",
-  "/revisao-turbo": "Revisão Turbo",
+  "/banco-de-questoes": "Questões",
+  "/cards-adaptativos": "Cards",
+  "/revisao-turbo": "Cards",
   "/revisoes": "Revisões",
   "/cronograma": "Cronograma",
   "/dados-e-relatorios": "Desempenho",
@@ -45,9 +45,9 @@ const PAGE_TITLES: Record<string, string> = {
   "/estatisticas": "Desempenho",
   "/estatisticas/graficos": "Gráficos",
   "/estatisticas/relatorio": "Relatórios",
-  "/desempenho": "Metas",
-  "/rotina-e-metas": "Metas",
-  "/rotina": "Metas",
+  "/desempenho": "Plano",
+  "/rotina-e-metas": "Plano",
+  "/rotina": "Plano",
   "/perfil": "Perfil",
   "/caderno": "Caderno",
   "/semana": "Semana",

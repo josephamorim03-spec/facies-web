@@ -11,6 +11,8 @@
   --color-muted: #66707A;
   --color-primary: #123A64;
   --color-primary-ink: #FBFCF8;
+  --color-accent: #1A6B72;
+  --color-accent-ink: #FBFCF8;
   --color-success: #228453;
   --color-danger: #B4232D;
   --color-warning: #A66A00;
@@ -40,6 +42,8 @@
   --color-muted: #A4A096;
   --color-primary: #8BB7E4;
   --color-primary-ink: #07121F;
+  --color-accent: #4FBEC6;
+  --color-accent-ink: #071214;
   --color-success: #68C48F;
   --color-danger: #F07983;
   --color-warning: #E3B85B;
@@ -99,6 +103,19 @@
 
   .km-panel {
     @apply rounded-xl border border-edge bg-surface;
+  }
+
+  .surface-hero {
+    @apply rounded-xl border border-edge bg-surface;
+    box-shadow: var(--soft-shadow);
+  }
+
+  .surface-panel {
+    @apply rounded-xl border border-edge bg-surface;
+  }
+
+  .surface-quiet {
+    @apply rounded-lg bg-surfaceMuted;
   }
 
   .km-chip {

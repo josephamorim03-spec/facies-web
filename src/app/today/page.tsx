@@ -52,6 +52,7 @@ type DailyWeaknessItem = {
   area: string;
   theme: string;
   accuracyPct: number | null;
+  daysSinceLastStudy: number | null;
   totalQuestions: number;
   signal: string;
   action: string;
@@ -97,6 +98,13 @@ function getAreaColor(area: string): string {
 function buildDailyWeaknessItems(summary: StudyPerformanceSummary | null): DailyWeaknessItem[] {
   if (!summary) return [];
 
+  const areaSummaries = Array.isArray(summary.area_summaries) ? summary.area_summaries : [];
+  const studyGapByThemeKey = new Map(
+    areaSummaries.flatMap((areaSummary) =>
+      areaSummary.themes.map((theme) => [theme.key, theme.days_since_last_study ?? null] as const),
+    ),
+  );
+
   const diagnosis = summary.diagnosis;
   if (diagnosis?.ready && Array.isArray(diagnosis.weaknesses) && diagnosis.weaknesses.length > 0) {
     return diagnosis.weaknesses.slice(0, 3).map((item) => ({
@@ -104,6 +112,7 @@ function buildDailyWeaknessItems(summary: StudyPerformanceSummary | null): Daily
       area: item.area,
       theme: item.theme,
       accuracyPct: item.accuracy_pct,
+      daysSinceLastStudy: studyGapByThemeKey.get(item.key) ?? null,
       totalQuestions: item.total_questions,
       signal: item.dominant_signal || "Tema com perda relevante no histórico.",
       action: item.action_hint || "Faça um bloco curto e revise os erros no mesmo dia.",
@@ -113,7 +122,6 @@ function buildDailyWeaknessItems(summary: StudyPerformanceSummary | null): Daily
     }));
   }
 
-  const areaSummaries = Array.isArray(summary.area_summaries) ? summary.area_summaries : [];
   return areaSummaries
     .flatMap((areaSummary) =>
       areaSummary.themes
@@ -123,6 +131,7 @@ function buildDailyWeaknessItems(summary: StudyPerformanceSummary | null): Daily
           area: theme.area,
           theme: theme.theme,
           accuracyPct: theme.accuracy_pct,
+          daysSinceLastStudy: theme.days_since_last_study ?? null,
           totalQuestions: theme.total_questions,
           signal:
             theme.consistency_score !== null && theme.consistency_score < 65
@@ -175,13 +184,13 @@ function TodaySkeleton() {
 }
 
 const MOTIVATIONAL_QUOTES = [
-  { quote: "Disciplina é o que transforma objetivos em realidade.", author: "Aristóteles" },
-  { quote: "Sucesso é a soma de pequenos esforços, repetidos dia após dia.", author: "Robert Collier" },
-  { quote: "A preparação é a chave para todas as vitórias.", author: "Alexander Graham Bell" },
-  { quote: "O conhecimento é o único bem que cresce quando compartilhado.", author: "Sócrates" },
-  { quote: "Confie no processo. O resultado virá.", author: "Anônimo" },
-  { quote: "Cada questão resolvida é um passo mais perto da aprovação.", author: "Anônimo" },
-  { quote: "Não há atalho para qualquer lugar que vale a pena ir.", author: "Beverly Sills" },
+  "Cada questão a mais hoje é uma lacuna a menos na prova.",
+  "Consistência bate intensidade. Uma hora todo dia vence doze no final.",
+  "O erro corrigido agora não vai aparecer na prova.",
+  "Residência não é sorte. É a soma das revisões feitas quando ninguém via.",
+  "Não revise o que você já sabe. Revise o que você erra.",
+  "A banca repete temas. Você só precisa estar lá quando eles aparecerem.",
+  "Médico bom não nasce sabendo. Aprende errando em segurança, antes da prova.",
 ];
 
 const AREA_FULL: Record<string, string> = {
@@ -562,6 +571,17 @@ export default function TodayPage() {
     .slice(0, 3);
   const nextWeakness = dailyWeaknesses[0] ?? null;
   const nextActionTask = overdueTasks[0] ?? selectedDayTasks[0] ?? null;
+  const nextActionSignals = [
+    nextWeakness && nextWeakness.accuracyPct !== null && nextWeakness.accuracyPct < 60
+      ? { key: "recent-error", label: "erro recente", className: "border-red-200 bg-red-50 text-red-700" }
+      : null,
+    turboOverview && turboOverview.due_count > 10
+      ? { key: "urgent-review", label: "revisão urgente", className: "border-amber-200 bg-amber-50 text-amber-700" }
+      : null,
+    nextWeakness && nextWeakness.daysSinceLastStudy !== null && nextWeakness.daysSinceLastStudy > 7
+      ? { key: "stalled-theme", label: "tema parado", className: "border-edge bg-surfaceMuted text-muted" }
+      : null,
+  ].filter((item): item is { key: string; label: string; className: string } => item !== null);
 
   function TaskRow({ task, overdue }: { task: ReviewTask; overdue?: boolean }) {
     const area = task.area as Area;
@@ -644,13 +664,12 @@ export default function TodayPage() {
       <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">{greeting}</h1>
-          <p className="mt-2 text-base text-muted">Foco hoje, especialista amanhã.</p>
+          <p className="mt-2 text-base text-muted">Preparação inteligente para a residência.</p>
         </div>
         <div className="hidden md:flex md:min-w-[20rem] md:justify-end">
           <div className="max-w-xs text-sm text-muted">
             <p className="font-serif text-4xl leading-none text-edge">&ldquo;</p>
-            <p>{quote.quote}</p>
-            <p className="mt-2 text-xs">- {quote.author}</p>
+            <p>{quote}</p>
           </div>
         </div>
       </header>
@@ -788,10 +807,22 @@ export default function TodayPage() {
               </div>
             </section>
 
-            <section className="overflow-hidden rounded-xl border border-edge bg-surface shadow-sm">
+            <section className="surface-hero overflow-hidden">
               <div className="px-5 pb-3 pt-5">
                 <h2 className="font-serif text-2xl font-semibold">Próxima melhor ação</h2>
-                <p className="mt-1 text-sm text-muted">Com base no seu desempenho recente, sugerimos:</p>
+                <p className="mt-1 text-sm text-muted">Baseado nos seus erros e revisões pendentes:</p>
+                {nextActionSignals.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {nextActionSignals.map((signal) => (
+                      <span
+                        key={signal.key}
+                        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${signal.className}`}
+                      >
+                        {signal.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="mx-5 mb-5 overflow-hidden rounded-xl border border-edge/60">
                 {nextWeakness ? (() => {
@@ -980,9 +1011,15 @@ export default function TodayPage() {
             </section>
 
             {turboOverview && turboOverview.due_count > 0 && (
-              <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+              <section
+                className="rounded-lg border bg-surface p-5 shadow-sm"
+                style={{ borderColor: "color-mix(in srgb, var(--color-accent) 28%, var(--color-edge))" }}
+              >
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center text-muted">
+                  <div
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-accent"
+                    style={{ backgroundColor: "color-mix(in srgb, var(--color-accent) 12%, transparent)" }}
+                  >
                     <IconCards className="h-8 w-8" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -991,7 +1028,10 @@ export default function TodayPage() {
                       {turboOverview.due_count} cards{turboOverview.estimated_minutes ? ` · ~${turboOverview.estimated_minutes} min` : ""}
                     </p>
                   </div>
-                  <Link href="/cards-adaptativos" className="rounded-lg border border-primary px-3 py-2 text-xs font-semibold text-primary hover:bg-surfaceMuted">
+                  <Link
+                    href="/cards-adaptativos"
+                    className="rounded-lg border border-accent px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent hover:text-accentInk"
+                  >
                     Revisar
                   </Link>
                 </div>
