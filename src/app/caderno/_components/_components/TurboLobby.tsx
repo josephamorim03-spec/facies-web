@@ -142,13 +142,10 @@ export function TurboLobby({
               type="button"
               data-testid="turbo-start"
               onClick={() => void onStartAction(questionCount)}
-              className="inline-flex h-12 w-12 items-center justify-center self-center rounded-full border text-paper shadow-sm transition-opacity hover:opacity-90"
+              className="inline-flex h-11 w-full items-center justify-center rounded-lg border font-semibold text-sm tracking-wide text-paper shadow-sm transition-opacity hover:opacity-90"
               style={{ backgroundColor: accentColor, borderColor: accentColor }}
-              aria-label="Iniciar revisão"
             >
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5" aria-hidden="true">
-                <polygon points="6,4 20,12 6,20" />
-              </svg>
+              Iniciar
             </button>
           </>
         )}

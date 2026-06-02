@@ -187,17 +187,9 @@ export default function RevisaoTurboClientPage() {
 
   useEffect(() => {
     if (isDesktopNavigation) return;
-    setTitle(
-      <CardsAreaFilterControl
-        selectedArea={selectedArea}
-        onSelect={setSelectedArea}
-        interactive={!sessionStarted}
-        buttonClassName="inline-flex max-w-[min(52vw,16rem)] items-center justify-center gap-1.5 bg-transparent px-1 py-1.5 text-[10px] font-semibold uppercase leading-none tracking-[0.08em]"
-        menuClassName="fixed left-1/2 top-[calc(env(safe-area-inset-top,0px)+3rem)] z-50 mt-1 flex w-max min-w-[11rem] max-w-[min(92vw,24rem)] -translate-x-1/2 flex-col gap-1 rounded-lg border border-edge bg-paper p-2 shadow-sm"
-      />,
-    );
+    setTitle("Cards");
     setActions(
-      sessionStarted ? null : (
+      sessionStarted ? (
         <Link
           href="/caderno"
           className="p-1.5 text-muted hover:text-ink"
@@ -212,10 +204,10 @@ export default function RevisaoTurboClientPage() {
             <line x1="11" y1="15" x2="18" y2="15" />
           </svg>
         </Link>
-      ),
+      ) : null,
     );
     return () => { setTitle(null); setActions(null); };
-  }, [isDesktopNavigation, selectedArea, sessionStarted, setTitle, setActions]);
+  }, [isDesktopNavigation, sessionStarted, setTitle, setActions]);
 
   useEffect(() => {
     setReviewSessionActive(sessionStarted);
@@ -304,7 +296,7 @@ export default function RevisaoTurboClientPage() {
 
   return (
     <div className="space-y-4">
-      {isDesktopNavigation && (
+      {(isDesktopNavigation || !sessionStarted) && (
         <CardsAreaHeader
           selectedArea={selectedArea}
           onSelect={setSelectedArea}

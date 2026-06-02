@@ -641,16 +641,20 @@ export default function TodayPage() {
     setTitle("Hoje");
     setActions(
       <Link
-        href="/agenda-operacional"
+        href="/calendario"
         className="p-1.5 text-muted hover:text-ink"
         aria-label="Visão mensal"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <rect x="3" y="4" width="18" height="18" rx="2" />
-          <line x1="16" y1="2" x2="16" y2="6" />
-          <line x1="8" y1="2" x2="8" y2="6" />
-          <line x1="3" y1="10" x2="21" y2="10" />
-          <circle cx="12" cy="16" r="3" fill="currentColor" stroke="none" />
+          <circle cx="5" cy="5" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="19" cy="5" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none" />
+          <circle cx="19" cy="19" r="1.5" fill="currentColor" stroke="none" />
         </svg>
       </Link>,
     );
@@ -682,7 +686,7 @@ export default function TodayPage() {
             <section className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="font-serif text-2xl font-semibold">Plano de estudos de hoje</h2>
-                <Link href="/agenda-operacional" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                <Link href="/calendario" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
                   Ver plano completo
                   <IconArrowRight className="h-4 w-4" />
                 </Link>

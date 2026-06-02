@@ -112,6 +112,7 @@ function KrosmedIcon({ className }: { className?: string }) {
 type IconComponent = (props: { className?: string }) => React.JSX.Element;
 
 const ICON_MAP: Record<string, IconComponent> = {
+  "/hoje": IconToday,
   "/today": IconToday,
   "/agenda-operacional": IconCalendar,
   "/banco-de-questoes": IconNotebook,
