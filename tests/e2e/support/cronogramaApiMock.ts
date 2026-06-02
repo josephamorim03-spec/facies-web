@@ -321,6 +321,21 @@ function toDateTimeFromISO(dateISO: string): string {
   return `${dateISO}T12:00:00Z`;
 }
 
+function buildSuggestionItems(db: DbState) {
+  const today = todayISO();
+  return db.pendingTasks
+    .filter((task) => task.is_overdue && task.due_date < today)
+    .map((task, index) => ({
+      task_id: task.task_id,
+      area: task.area,
+      theme: task.theme,
+      current_due_date: task.due_date,
+      suggested_due_date: plusDays(today, index + 1),
+      reason: "Atrasada e redistribuida para equilibrar a carga.",
+      applied: false,
+    }));
+}
+
 export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
   const db = createDb();
 
@@ -394,7 +409,7 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
       return json(route, clone(db.events));
     }
     if (method === "GET" && path === "/api/schedule/suggestions") {
-      return json(route, clone(db.suggestions));
+      return json(route, clone(db.suggestions.filter((suggestion) => suggestion.status === "pending")));
     }
     if (method === "GET" && path === "/api/schedule/workload") {
       return json(route, []);
@@ -403,13 +418,22 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
       return json(route, { area_summaries: [], diagnosis: { ready: false, weaknesses: [] } });
     }
     if (method === "POST" && path === "/api/schedule/suggest") {
+      const items = buildSuggestionItems(db);
+      if (items.length === 0) {
+        return json(route, null);
+      }
+      for (const suggestion of db.suggestions) {
+        if (suggestion.status === "pending") suggestion.status = "superseded";
+      }
       db.counters.suggestion += 1;
-      return json(route, {
+      const suggestion = {
         suggestion_id: `suggestion_${db.counters.suggestion}`,
         status: "pending",
         created_at: new Date().toISOString(),
-        items: [],
-      });
+        items,
+      };
+      db.suggestions.push(suggestion);
+      return json(route, clone(suggestion));
     }
 
     // Review task mutation
@@ -571,13 +595,45 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
     }
 
     if (method === "POST" && /^\/api\/schedule\/suggestions\/[^/]+\/accept-item$/.test(path)) {
-      return json(route, { status: "accepted_item" });
+      const suggestionId = path.split("/")[4] as string;
+      const suggestion = db.suggestions.find((item) => item.suggestion_id === suggestionId);
+      if (!suggestion) return json(route, { detail: "Suggestion not found" }, 404);
+      const payload = request.postDataJSON() as { task_id?: string };
+      const targetItem = suggestion.items.find((item) => item.task_id === payload.task_id);
+      if (!targetItem) return json(route, { detail: "Suggestion item not found" }, 404);
+      const task = findTask(db, targetItem.task_id);
+      if (task) {
+        task.due_date = targetItem.suggested_due_date;
+        task.due_at = toDateTimeFromISO(targetItem.suggested_due_date);
+        task.is_overdue = task.due_date < todayISO();
+      }
+      targetItem.applied = true;
+      if (suggestion.items.every((item) => item.applied)) {
+        suggestion.status = "accepted";
+      }
+      return json(route, clone(suggestion));
     }
     if (method === "POST" && /^\/api\/schedule\/suggestions\/[^/]+\/accept-all$/.test(path)) {
-      return json(route, { status: "accepted_all" });
+      const suggestionId = path.split("/")[4] as string;
+      const suggestion = db.suggestions.find((item) => item.suggestion_id === suggestionId);
+      if (!suggestion) return json(route, { detail: "Suggestion not found" }, 404);
+      for (const item of suggestion.items) {
+        const task = findTask(db, item.task_id);
+        if (!task) continue;
+        task.due_date = item.suggested_due_date;
+        task.due_at = toDateTimeFromISO(item.suggested_due_date);
+        task.is_overdue = task.due_date < todayISO();
+        item.applied = true;
+      }
+      suggestion.status = "accepted";
+      return json(route, clone(suggestion));
     }
     if (method === "POST" && /^\/api\/schedule\/suggestions\/[^/]+\/reject$/.test(path)) {
-      return json(route, { status: "rejected" });
+      const suggestionId = path.split("/")[4] as string;
+      const suggestion = db.suggestions.find((item) => item.suggestion_id === suggestionId);
+      if (!suggestion) return json(route, { detail: "Suggestion not found" }, 404);
+      suggestion.status = "rejected";
+      return json(route, clone(suggestion));
     }
 
     // Safe fallback for unrelated API calls in this page

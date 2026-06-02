@@ -3,8 +3,6 @@ import type { Dispatch, SetStateAction } from "react";
 import Link from "next/link";
 import type { StudyPerformanceSummary } from "@/lib/api";
 import AreaDot from "@/components/AreaDot";
-import { NAV_OPEN_EVENT } from "@/components/Nav";
-import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { AREA_BG_CLASS, AREA_TEXT_CLASS } from "@/lib/areaColors";
 import {
   AREA_LABELS,
@@ -17,7 +15,6 @@ import {
   type ThemeAreaStat,
   THEME_LIST_LIMIT,
 } from "../_lib/perfilAnalytics";
-import { IconMenu } from "./PerfilIcons";
 import { Area, Period, ThemeListSort } from "../_lib/perfilShared";
 
 
@@ -60,7 +57,6 @@ function IconChevron({ className }: { className?: string }) {
 }
 
 type PeriodHeaderProps = {
-  isDesktopNavigation: boolean;
   period: Period;
   periodMenuOpen: boolean;
   setPeriodMenuOpen: Dispatch<SetStateAction<boolean>>;
@@ -68,7 +64,6 @@ type PeriodHeaderProps = {
 };
 
 function PeriodHeader({
-  isDesktopNavigation,
   period,
   periodMenuOpen,
   setPeriodMenuOpen,
@@ -77,18 +72,7 @@ function PeriodHeader({
   return (
     <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
       <div className="flex justify-start">
-        {!isDesktopNavigation ? (
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-            className="p-1 text-ink shrink-0"
-            aria-label="Menu"
-          >
-            <IconMenu className="w-5 h-5" />
-          </button>
-        ) : (
-          <span className="block h-7 w-7" aria-hidden="true" />
-        )}
+        <span className="block h-7 w-7" aria-hidden="true" />
       </div>
       <div className="relative flex justify-center">
         <button
@@ -186,7 +170,6 @@ export function DesempenhoTab({
   showDiagnosis = true,
   healthScore = null,
 }: Props) {
-  const isDesktopNavigation = useDesktopNavigationMode();
   const [performanceMode, setPerformanceMode] = useState<"area" | "full_exam">("area");
   const [expandedBanks, setExpandedBanks] = useState<Set<string>>(new Set());
   const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
@@ -205,7 +188,6 @@ export function DesempenhoTab({
       {(loading || Boolean(error)) && (
         <section className="space-y-2">
           <PeriodHeader
-            isDesktopNavigation={isDesktopNavigation}
             period={period}
             periodMenuOpen={periodMenuOpen}
             setPeriodMenuOpen={setPeriodMenuOpen}
@@ -219,7 +201,6 @@ export function DesempenhoTab({
         <>
           <section className="space-y-2">
             <PeriodHeader
-              isDesktopNavigation={isDesktopNavigation}
               period={period}
               periodMenuOpen={periodMenuOpen}
               setPeriodMenuOpen={setPeriodMenuOpen}

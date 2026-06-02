@@ -45,14 +45,15 @@ export function TurboLobby({
   const topReasons = turboOverview?.reason_counts.slice(0, 2) ?? [];
   const topAreas = turboOverview?.by_area.filter((item) => item.due_count > 0).slice(0, 3) ?? [];
   const previewCards = turboOverview?.priority_preview.slice(0, 3) ?? [];
+  const accentColor = lobbyAccentColor ?? "var(--color-ink)";
 
   return (
-    <div className="flex flex-col" style={{ minHeight: TURBO_VIEWPORT_MIN_HEIGHT }}>
+    <div className="flex flex-col font-sans" style={{ minHeight: TURBO_VIEWPORT_MIN_HEIGHT }}>
 
       {/* Button — absolutely centered in the full container */}
       <div className="flex flex-1 flex-col justify-center gap-5 py-6">
         {effectiveAvailableCount <= 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 text-center">
+          <div className="rounded-lg border border-edge bg-surface p-5 text-center shadow-sm">
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-widest text-muted">Tudo em dia</p>
               <p className="text-2xl font-serif text-ink">Nenhum card para revisar agora.</p>
@@ -61,7 +62,7 @@ export function TurboLobby({
               </p>
             </div>
             {turboOverview?.total_eligible ? (
-              <p className="text-xs text-muted">
+              <p className="mt-3 text-xs text-muted">
                 {turboOverview.total_eligible} cards elegíveis seguem guardados para a próxima janela.
               </p>
             ) : null}
@@ -79,7 +80,7 @@ export function TurboLobby({
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
-              <div className="border border-edge p-3" style={{ backgroundColor: "color-mix(in srgb, var(--color-edge) 40%, transparent)" }}>
+              <div className="rounded-lg border border-edge bg-surface p-3 shadow-sm">
                 <p className="text-[10px] uppercase tracking-widest text-muted">Por que entrou</p>
                 <div className="mt-2 space-y-1.5">
                   {topReasons.length > 0 ? topReasons.map((reason) => (
@@ -92,7 +93,7 @@ export function TurboLobby({
                   )}
                 </div>
               </div>
-              <div className="border border-edge p-3" style={{ backgroundColor: "color-mix(in srgb, var(--color-edge) 40%, transparent)" }}>
+              <div className="rounded-lg border border-edge bg-surface p-3 shadow-sm">
                 <p className="text-[10px] uppercase tracking-widest text-muted">Áreas mais presentes</p>
                 <div className="mt-2 space-y-1.5">
                   {topAreas.length > 0 ? topAreas.map((item) => {
@@ -123,10 +124,10 @@ export function TurboLobby({
                   {previewCards.map((card) => {
                     const cardAreaColor = AREA_COLORS[card.area as Area] ?? "#888";
                     return (
-                      <div key={card.note_id} className="border-l-2 py-1 pl-2 text-sm" style={{ borderLeftColor: cardAreaColor }}>
-                        <div className="flex items-center gap-1.5 mb-0.5">
+                      <div key={card.note_id} className="rounded-lg border border-edge border-l-4 bg-surface px-3 py-2 text-sm shadow-sm" style={{ borderLeftColor: cardAreaColor }}>
+                        <div className="mb-1 flex items-center gap-1.5">
                           <span className="text-[9px] font-semibold leading-none" style={{ color: cardAreaColor }}>{card.area}</span>
-                          <span className="text-[9px] border border-edge px-1 py-0.5 text-muted leading-none">{card.context.label}</span>
+                          <span className="rounded-full border border-edge px-1.5 py-0.5 text-[9px] leading-none text-muted">{card.context.label}</span>
                         </div>
                         <p className="line-clamp-1 text-ink">{card.insight_question}</p>
                       </div>
@@ -136,9 +137,11 @@ export function TurboLobby({
               </div>
             )}
             <button
+              type="button"
               data-testid="turbo-start"
               onClick={() => void onStartAction(questionCount)}
-              className="self-center rounded-lg border border-ink bg-ink text-paper px-5 py-2.5 text-sm hover:opacity-90 transition-opacity"
+              className="inline-flex h-12 w-12 items-center justify-center self-center rounded-full border text-paper shadow-sm transition-opacity hover:opacity-90"
+              style={{ backgroundColor: accentColor, borderColor: accentColor }}
               aria-label="Iniciar revisão"
             >
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5" aria-hidden="true">

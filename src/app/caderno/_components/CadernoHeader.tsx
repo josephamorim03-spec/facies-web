@@ -1,10 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { NAV_OPEN_EVENT } from "@/components/Nav";
-import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { IconChevron } from "./CadernoSkeletons";
-import { IconMenu } from "../../cronograma/_components/CronogramaIcons";
 
 interface CadernoHeaderProps {
   tab: "registro" | "pesquisar";
@@ -12,23 +9,10 @@ interface CadernoHeaderProps {
 }
 
 export function CadernoHeader({ tab, onToggleTab }: CadernoHeaderProps) {
-  const isDesktopNavigation = useDesktopNavigationMode();
-
   return (
     <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
       <div className="flex justify-start">
-        {!isDesktopNavigation ? (
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-            className="p-1 -ml-1 text-ink shrink-0"
-            aria-label="Menu"
-          >
-            <IconMenu className="w-5 h-5" />
-          </button>
-        ) : (
-          <span className="block h-7 w-7" aria-hidden="true" />
-        )}
+        <span className="block h-7 w-7" aria-hidden="true" />
       </div>
       <div data-caderno-tab-center="true" className="relative flex justify-center">
         <button

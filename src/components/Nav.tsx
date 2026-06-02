@@ -70,14 +70,6 @@ function IconChart({ className }: { className?: string }) {
   );
 }
 
-function IconMenu({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
-    </svg>
-  );
-}
-
 function IconToday({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
@@ -333,38 +325,10 @@ export default function Nav({ displayName, photoUrl }: { displayName?: string | 
 
   if (hideCompletely) return null;
 
-  const hideHamburger =
-    pathname === "/cronograma"
-    || pathname === "/agenda-operacional"
-    || pathname === "/desempenho"
-    || pathname === "/perfil"
-    || pathname === "/rotina-e-metas"
-    || pathname === "/revisao-turbo"
-    || pathname === "/cards-adaptativos"
-    || pathname === "/banco-de-questoes"
-    || pathname === "/caderno"
-    || pathname === "/estatisticas"
-    || pathname === "/dados-e-relatorios"
-    || pathname === "/today"
-    || pathname === "/semana"
-    || pathname === "/estatisticas/graficos"
-    || pathname === "/dados-e-relatorios/graficos"
-    || pathname.startsWith("/estatisticas/relatorio")
-    || pathname.startsWith("/dados-e-relatorios/relatorio");
   const drawerVisible = drawerOpen && !isDesktopNavigation;
 
   return (
     <>
-      {!hideHamburger && (
-        <button
-          onClick={() => setDrawerOpen(true)}
-          className={`p-2 -ml-2 text-ink ${isDesktopNavigation ? "hidden" : ""}`}
-          aria-label="Menu"
-        >
-          <IconMenu className="w-5 h-5" />
-        </button>
-      )}
-
       {/* Drawer overlay */}
       {drawerVisible && (
         <div className="fixed inset-0 z-50" onClick={() => setDrawerOpen(false)}>

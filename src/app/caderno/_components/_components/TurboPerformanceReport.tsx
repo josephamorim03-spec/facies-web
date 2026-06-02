@@ -74,14 +74,14 @@ export function TurboPerformanceReport({
   if (totalCards === 0) {
     return (
       <div className="flex items-center justify-center" style={{ minHeight: "calc(100svh - 3rem)" }}>
-        <p className="text-sm text-muted text-center">Nenhum card disponível para revisão turbo neste momento</p>
+        <p className="rounded-lg border border-edge bg-surface p-4 text-center text-sm text-muted shadow-sm">Nenhum card disponível para revisão turbo neste momento</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-4" data-testid="turbo-performance-report">
-      <div className="border border-edge p-4 space-y-3">
+      <div className="space-y-3 rounded-lg border border-edge bg-surface p-4 shadow-sm">
         <p className="text-xs text-muted uppercase tracking-widest">Desempenho</p>
         <div className="flex items-end gap-8">
           <div>
@@ -98,7 +98,7 @@ export function TurboPerformanceReport({
           )}
         </div>
         {cardTimings.length > 0 && (
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm pt-2 border-t border-edge">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 border-t border-edge pt-2 text-sm">
             <span className="text-muted">Tempo total</span>
             <span>{fmtTime(finalElapsed)}</span>
             <span className="text-muted">Tempo médio</span>
@@ -116,7 +116,7 @@ export function TurboPerformanceReport({
       </div>
 
       {reviewChanges.length > 0 && (
-        <div className="border border-edge p-4 space-y-3">
+        <div className="space-y-3 rounded-lg border border-edge bg-surface p-4 shadow-sm">
           <p className="text-xs text-muted uppercase tracking-widest">O que mudou</p>
           <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
             <span className="text-muted">Sairam da fila de agora</span>
@@ -148,14 +148,14 @@ export function TurboPerformanceReport({
       )}
 
       {Object.keys(areaStats).length > 0 && (
-        <div className="border border-edge p-4 space-y-2">
+        <div className="space-y-2 rounded-lg border border-edge bg-surface p-4 shadow-sm">
           <p className="text-xs text-muted uppercase tracking-widest">Por área</p>
           {Object.entries(areaStats).map(([area, stat]) => {
             const pct = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0;
             return (
               <div key={area} className="flex items-center gap-2">
                 <span className={`text-xs font-semibold w-6 shrink-0 ${AREA_TEXT_CLASS[area as Area] ?? "text-muted"}`}>{area}</span>
-                <div className="flex-1 h-1.5 bg-edge rounded-full overflow-hidden">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-edge">
                   <div className={`h-full rounded-full ${AREA_BG_CLASS[area as Area] ?? "bg-edge"}`} style={{ width: `${pct}%` }} />
                 </div>
                 <span className="text-xs text-muted tabular-nums w-16 text-right shrink-0">
@@ -167,19 +167,21 @@ export function TurboPerformanceReport({
         </div>
       )}
 
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex flex-wrap gap-2">
         {canRepeatSession && (
           <button
+            type="button"
             onClick={onStartRepeatAction}
             disabled={turboLoading || isActionLocked}
-            className="text-xs border border-edge px-3 py-2 hover:border-ink disabled:opacity-50"
+            className="rounded-xl border border-edge bg-surface px-3 py-2 text-xs hover:border-primary hover:text-ink disabled:opacity-50"
           >
             Repetir sessão
           </button>
         )}
         <button
+          type="button"
           onClick={handleCloseClick}
-          className="text-xs border border-ink px-3 py-2 hover:bg-ink hover:text-paper"
+          className="rounded-xl border border-ink bg-ink px-3 py-2 text-xs text-paper hover:opacity-90"
         >
           Voltar ao caderno
         </button>

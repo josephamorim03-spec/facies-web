@@ -12,7 +12,6 @@ import {
   triggerScheduleSuggestion,
   getOperationalStreak,
   getOperationalTurboSessionDailyCompletedCards,
-  acceptScheduleSuggestionItem,
   acceptScheduleSuggestionAll,
   rejectScheduleSuggestion,
   ReviewTask,
@@ -232,19 +231,6 @@ export function useCronogramaPageState() {
     return parsed.toLocaleString("pt-BR", { hour12: false });
   }
 
-  async function handleAcceptSuggestionItem(suggestionId: string, taskId: string) {
-    const key = `item:${suggestionId}:${taskId}`;
-    setSuggestionActionKey(key);
-    try {
-      await acceptScheduleSuggestionItem(token, suggestionId, taskId);
-      await fetchAll();
-    } catch {
-      // ignore
-    } finally {
-      setSuggestionActionKey(null);
-    }
-  }
-
   async function handleAcceptSuggestionAll(suggestionId: string) {
     // Dismiss from modal immediately.
     setEventSuggestionModalIds((prev) => prev.filter((id) => id !== suggestionId));
@@ -300,7 +286,6 @@ export function useCronogramaPageState() {
     handleEventMutationRefresh,
     closeEventSuggestionModal,
     suggestionCreatedAtLabel,
-    handleAcceptSuggestionItem,
     handleAcceptSuggestionAll,
     handleRejectSuggestion,
   };

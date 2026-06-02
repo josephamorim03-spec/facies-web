@@ -9,8 +9,6 @@ import {
   updateNotificationSettings,
 } from "@/lib/api";
 import { browserUnsubscribe, requestAndSubscribe } from "@/lib/notificationService";
-import { NAV_OPEN_EVENT } from "@/components/Nav";
-import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 
 function rangeStyle(value: number, min: number, max: number): CSSProperties {
   const pct = ((value - min) / (max - min)) * 100;
@@ -18,7 +16,7 @@ function rangeStyle(value: number, min: number, max: number): CSSProperties {
     "--track-bg": `linear-gradient(to right, var(--range-fill, #1A1A1A) 0%, var(--range-fill, #1A1A1A) ${pct}%, var(--range-rest, #E2E2DC) ${pct}%, var(--range-rest, #E2E2DC) 100%)`,
   } as CSSProperties;
 }
-import { IconGear, IconMenu, IconTrash } from "./PerfilIcons";
+import { IconGear, IconTrash } from "./PerfilIcons";
 import {
   clampRetentionPct,
   displayEventLabel,
@@ -309,7 +307,6 @@ export function RotinaTab({
   rescheduleMode,
   setRescheduleMode,
 }: Props) {
-  const isDesktopNavigation = useDesktopNavigationMode();
   const [showNotifSettings, setShowNotifSettings] = useState(false);
   const [punctualTab, setPunctualTab] = useState<"upcoming" | "history">("upcoming");
   const now = new Date();
@@ -328,16 +325,6 @@ export function RotinaTab({
         <div>
           <h1 className="font-serif text-3xl font-semibold leading-tight md:text-4xl">Metas</h1>
         </div>
-        {!isDesktopNavigation && (
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-            className="mt-2 p-1 text-muted hover:text-ink shrink-0"
-            aria-label="Menu"
-          >
-            <IconMenu className="w-5 h-5" />
-          </button>
-        )}
       </header>
 
       <hr className="border-edge" />

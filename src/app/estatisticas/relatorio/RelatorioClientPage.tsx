@@ -2,8 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { NAV_OPEN_EVENT } from "@/components/Nav";
-import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import type {
   DirectedStudyListItem,
   OperationalTurboAreaStats,
@@ -681,7 +679,6 @@ export function RelatorioBody({
 }
 
 export default function RelatorioClientPage() {
-  const isDesktopNavigation = useDesktopNavigationMode();
   const {
     pending,
     done,
@@ -701,32 +698,7 @@ export default function RelatorioClientPage() {
     <div className="space-y-0">
       <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2 print:hidden">
         <div className="flex justify-start">
-          {!isDesktopNavigation ? (
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-              className="shrink-0 p-1 -ml-1 text-ink"
-              aria-label="Menu"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-5 w-5"
-                aria-hidden="true"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </button>
-          ) : (
-            <span className="block h-7 w-7" aria-hidden="true" />
-          )}
+          <span className="block h-7 w-7" aria-hidden="true" />
         </div>
         <div className="flex justify-center">
           <h1 className="text-[10px] font-semibold uppercase leading-none tracking-[0.08em] text-ink">

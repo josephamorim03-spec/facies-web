@@ -11,6 +11,13 @@ export async function addHttpOnlySession(context: BrowserContext, value = "sessi
       httpOnly: true,
       sameSite: "Lax",
     },
+    {
+      name: "krosmed_session",
+      value,
+      url: E2E_BASE_URL,
+      httpOnly: true,
+      sameSite: "Lax",
+    },
   ]);
 }
 

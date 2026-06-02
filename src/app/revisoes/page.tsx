@@ -55,15 +55,12 @@ function sessionAccuracy(session: QuestionBankSession): number {
   return Math.round((session.answered_count / session.total_questions) * 100);
 }
 
-function IconTarget({ className }: { className?: string }) {
+function IconHistory({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v3" />
-      <path d="M22 12h-3" />
-      <path d="M12 22v-3" />
-      <path d="M2 12h3" />
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <path d="M3 4v5h5" />
+      <path d="M12 7v5l3 2" />
     </svg>
   );
 }
@@ -92,6 +89,18 @@ function IconBrain({ className }: { className?: string }) {
   );
 }
 
+function IconOpenSession({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M7 4h7a2 2 0 0 1 2 2v3" />
+      <path d="M7 20h7a2 2 0 0 0 2-2v-3" />
+      <path d="M7 4v16" />
+      <path d="M11 12h10" />
+      <path d="m17 8 4 4-4 4" />
+    </svg>
+  );
+}
+
 function IconArrowRight({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
@@ -105,26 +114,17 @@ function MetricCard({
   label,
   value,
   detail,
-  tone,
   icon,
 }: {
   label: string;
   value: string;
   detail: string;
-  tone: "primary" | "success" | "warning" | "danger";
   icon: ReactNode;
 }) {
-  const toneClass = {
-    primary: "text-primary bg-[#F3F8FE]",
-    success: "text-success bg-[#EEF8F1]",
-    warning: "text-warning bg-[var(--amber-tint)]",
-    danger: "text-danger bg-[#FFF0F1]",
-  }[tone];
-
   return (
     <div className="rounded-lg border border-edge bg-surface p-4 shadow-sm">
       <div className="flex items-center gap-3">
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${toneClass}`}>{icon}</div>
+        <div className="flex h-11 w-9 shrink-0 items-center justify-center text-muted">{icon}</div>
         <div className="min-w-0">
           <p className="text-xs text-muted">{label}</p>
           <p className="mt-0.5 text-2xl font-semibold leading-tight text-ink">{value}</p>
@@ -246,29 +246,25 @@ export default function RevisoesPage() {
             label="Para hoje"
             value={String(pendingToday.length)}
             detail={`${overdueTasks.length} atrasada${overdueTasks.length === 1 ? "" : "s"} · ${criticalTasks.length} prioritária${criticalTasks.length === 1 ? "" : "s"}`}
-            tone="primary"
-            icon={<IconClock className="h-5 w-5" />}
+            icon={<IconClock className="h-6 w-6" />}
           />
           <MetricCard
             label="Histórico"
             value={String(reviewStudies.length + finalizedSessions.length)}
             detail="Revisões e sessões finalizadas acessíveis"
-            tone="success"
-            icon={<IconTarget className="h-5 w-5" />}
+            icon={<IconHistory className="h-6 w-6" />}
           />
           <MetricCard
             label="Temas frágeis"
             value={String(weakThemes.length || weakNodeCount)}
             detail={`${atRiskNodeCount} tema${atRiskNodeCount === 1 ? "" : "s"} com retenção em risco`}
-            tone="warning"
-            icon={<IconBrain className="h-5 w-5" />}
+            icon={<IconBrain className="h-6 w-6" />}
           />
           <MetricCard
             label="Sessões abertas"
             value={String(activeSessions.length)}
             detail="Continue de onde parou no banco"
-            tone="danger"
-            icon={<IconArrowRight className="h-5 w-5" />}
+            icon={<IconOpenSession className="h-6 w-6" />}
           />
         </section>
 

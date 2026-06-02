@@ -11,7 +11,7 @@ import {
 import type { SortTime, SortWeight } from "../_lib/cadernoShared";
 
 const MOBILE_PRIMARY_CTA_CLASS =
-  "sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.45rem)] w-full z-40 block text-sm border border-ink py-2 bg-paper text-ink hover:bg-ink hover:text-paper transition-colors disabled:opacity-50 md:static md:w-full md:bg-transparent";
+  "sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.45rem)] z-40 block w-full rounded-xl border border-ink bg-paper py-2 text-sm font-semibold text-ink shadow-sm transition-colors hover:bg-ink hover:text-paper disabled:opacity-50 md:static md:w-full md:bg-transparent md:shadow-none";
 
 interface CadernoPesquisarPanelProps {
   filterAreas: Set<string>;
@@ -75,8 +75,10 @@ export function CadernoPesquisarPanel({
             {AREAS.map((a) => {
               const selected = filterAreas.has(a);
               const hasSelection = filterAreas.size > 0;
+              const areaColor = AREA_COLORS[a];
               return (
                 <button
+                  type="button"
                   key={a}
                   onClick={() => onFilterAreasChange((prev) => {
                     const next = new Set(prev);
@@ -84,13 +86,18 @@ export function CadernoPesquisarPanel({
                     return next;
                   })}
                   style={{
-                    backgroundColor: AREA_COLORS[a],
-                    borderColor: "transparent",
-                    borderWidth: 1,
-                    filter: selected ? "saturate(1.4)" : (hasSelection ? "brightness(0.55)" : undefined),
-                    opacity: (hasSelection && !selected) ? 0.7 : 1,
+                    backgroundColor: selected
+                      ? areaColor
+                      : hasSelection
+                        ? "var(--color-surface)"
+                        : `color-mix(in srgb, ${areaColor} 14%, var(--color-surface))`,
+                    borderColor: selected
+                      ? areaColor
+                      : `color-mix(in srgb, ${areaColor} 38%, var(--color-edge))`,
+                    color: selected ? "white" : (hasSelection ? "var(--color-muted)" : areaColor),
+                    opacity: hasSelection && !selected ? 0.66 : 1,
                   }}
-                  className="w-full sm:w-auto text-center text-xs px-2 py-1.5 border font-semibold text-white transition-[filter,opacity] duration-150"
+                  className="min-h-[2.25rem] w-full rounded-xl border px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[background-color,border-color,color,opacity] duration-150 hover:opacity-100 sm:w-auto sm:min-w-14"
                 >
                   {a}
                 </button>
@@ -101,7 +108,7 @@ export function CadernoPesquisarPanel({
           {/* Tema */}
           <input
             type="text"
-            className="w-full block border border-edge px-2 py-1 text-sm bg-paper"
+            className="w-full rounded-xl border border-edge bg-paper px-3 py-2 text-sm"
             placeholder="Tema"
             value={filterTheme}
             onChange={(e) => onFilterThemeChange(e.target.value)}
@@ -132,12 +139,13 @@ export function CadernoPesquisarPanel({
               <div className="flex gap-1 flex-wrap">
                 {([["", "Todas"], ["question", "Questão"], ["reading", "Leitura"]] as [string, string][]).map(([v, l]) => (
                   <button
+                    type="button"
                     key={v}
                     onClick={() => {
                       onFilterSourceTypeChange(v);
                       if (v !== "question") onFilterOutcomeChange("");
                     }}
-                    className={`text-xs px-2 py-1.5 border ${filterSourceType === v ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+                    className={`rounded-xl border px-3 py-1.5 text-xs transition-colors ${filterSourceType === v ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary hover:text-ink"}`}
                   >
                     {l}
                   </button>
@@ -152,9 +160,10 @@ export function CadernoPesquisarPanel({
                 <div className="flex gap-1 flex-wrap">
                   {([["", "Todos"], ["incorrect", "Erro"], ["correct", "Acerto"]] as [string, string][]).map(([v, l]) => (
                     <button
+                      type="button"
                       key={v}
                       onClick={() => onFilterOutcomeChange(v)}
-                      className={`text-xs px-2 py-1.5 border ${filterOutcome === v ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+                      className={`rounded-xl border px-3 py-1.5 text-xs transition-colors ${filterOutcome === v ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary hover:text-ink"}`}
                     >
                       {l}
                     </button>
@@ -191,10 +200,10 @@ export function CadernoPesquisarPanel({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 w-full max-w-full items-start">
                 <div className="space-y-1 w-full min-w-0">
                   <p className="text-xs text-muted">De</p>
-                  <div className="border border-edge bg-paper focus-within:border-ink overflow-hidden">
+                  <div className="overflow-hidden rounded-xl border border-edge bg-paper focus-within:border-primary">
                     <input
                       type="date"
-                      className="w-full border-0 bg-transparent outline-none px-2 py-1.5 text-sm block"
+                      className="block w-full border-0 bg-transparent px-3 py-2 text-sm outline-none"
                       value={filterFrom}
                       onChange={(e) => onFilterFromChange(e.target.value)}
                     />
@@ -202,10 +211,10 @@ export function CadernoPesquisarPanel({
                 </div>
                 <div className="space-y-1 w-full min-w-0">
                   <p className="text-xs text-muted">Até</p>
-                  <div className="border border-edge bg-paper focus-within:border-ink overflow-hidden">
+                  <div className="overflow-hidden rounded-xl border border-edge bg-paper focus-within:border-primary">
                     <input
                       type="date"
-                      className="w-full border-0 bg-transparent outline-none px-2 py-1.5 text-sm block"
+                      className="block w-full border-0 bg-transparent px-3 py-2 text-sm outline-none"
                       value={filterTo}
                       onChange={(e) => onFilterToChange(e.target.value)}
                     />
@@ -214,6 +223,7 @@ export function CadernoPesquisarPanel({
               </div>
               {(filterFrom || filterTo) && (
                 <button
+                  type="button"
                   onClick={onClearPeriod}
                   className="text-xs text-muted underline underline-offset-2 hover:text-ink"
                 >

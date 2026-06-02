@@ -179,18 +179,20 @@ export function TurboReviewPanel({
 
         {/* Confirm close */}
         {sessionGuard.confirmClose && (
-          <div className="border border-edge p-4 space-y-3">
+          <div className="space-y-3 rounded-lg border border-edge bg-surface p-4 shadow-sm">
             <p className="text-sm">Tem certeza que deseja sair? Os cards já avaliados foram salvos, mas os restantes serão descartados.</p>
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={() => sessionGuard.setConfirmClose(false)}
-                className="text-xs border border-edge px-3 py-1 text-muted hover:border-ink"
+                className="rounded-xl border border-edge bg-surface px-3 py-1.5 text-xs text-muted hover:border-primary hover:text-ink"
               >
                 Continuar
               </button>
               <button
+                type="button"
                 onClick={sessionGuard.confirmCloseSession}
-                className="text-xs border border-red-600 text-red-600 px-3 py-1 hover:bg-red-50"
+                className="rounded-xl border border-danger bg-surface px-3 py-1.5 text-xs text-danger hover:bg-surfaceMuted"
               >
                 Sair da sessão
               </button>

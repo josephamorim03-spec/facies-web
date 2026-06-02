@@ -66,24 +66,15 @@ function SummaryRow({
   label,
   value,
   detail,
-  tone = "muted",
 }: {
   icon: ReactNode;
   label: string;
   value: string;
   detail?: string;
-  tone?: "purple" | "green" | "amber" | "muted";
 }) {
-  const toneClass = {
-    purple: "bg-[#F4EEF9] text-[#7B4B9B]",
-    green: "bg-[#EEF8F1] text-[#21834A]",
-    amber: "bg-[var(--amber-tint)] text-warning",
-    muted: "bg-surfaceMuted text-muted",
-  }[tone];
-
   return (
     <div className="flex items-center gap-4 rounded-lg border border-edge bg-surface px-4 py-3">
-      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${toneClass}`}>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center text-muted">
         {icon}
       </div>
       <div className="min-w-0 flex-1">
@@ -147,21 +138,18 @@ export default function CreateSessionPanel({
           label="Número de questões"
           value={String(clampedLimit)}
           detail={availability ? `${availability.total_count} no filtro` : undefined}
-          tone="purple"
         />
         <SummaryRow
           icon={<IconClock className="h-5 w-5" />}
           label="Tempo estimado"
           value={`${estimatedMinutes} min`}
           detail={modeLabel}
-          tone="green"
         />
         <SummaryRow
           icon={<IconChart className="h-5 w-5" />}
           label="Distribuição"
           value={distribution}
           detail={availability?.answer_status === "wrong" ? "Foco em erros recentes" : "Atualiza conforme os filtros"}
-          tone="amber"
         />
       </div>
 
