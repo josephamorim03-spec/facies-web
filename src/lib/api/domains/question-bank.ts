@@ -146,6 +146,7 @@ export type QuestionBankCorrectionItem = {
 export type QuestionBankFinalizeResult = FinalizationResult & {
   created_tasks: ReviewTask[];
   session: QuestionBankSession;
+  recommended_topics?: string[];
 };
 export type QuestionBankSessionCreatePayload = {
   mode?: QuestionBankMode;

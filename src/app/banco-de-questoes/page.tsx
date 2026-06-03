@@ -365,6 +365,7 @@ function BancoDeQuestoesContent() {
     try {
       setQuestions(await browseQuestionBankQuestions(token, filterParams({ limit: clampedLimit })));
     } catch (err) {
+      setQuestions([]);
       setError(err instanceof Error ? err.message : "Não foi possível buscar questões.");
     } finally {
       setBusy(false);
@@ -386,6 +387,7 @@ function BancoDeQuestoesContent() {
       router.push(`/banco-de-questoes/sessao/${created.session_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível criar a sessão.");
+    } finally {
       setBusy(false);
     }
   }

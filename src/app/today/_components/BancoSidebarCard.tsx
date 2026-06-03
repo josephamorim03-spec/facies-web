@@ -87,10 +87,13 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
       )}
 
       <Link
-        href="/banco-de-questoes"
+        href={weakNodes.length > 0
+          ? `/banco-de-questoes?theme=${encodeURIComponent(weakNodes[0].node_name ?? weakNodes[0].knowledge_node_id)}`
+          : "/banco-de-questoes"
+        }
         className="block rounded-lg border border-edge px-3 py-2 text-center text-xs font-semibold transition-colors hover:border-primary hover:text-primary"
       >
-        Estudar agora
+        {weakNodes.length > 0 ? `Treinar ${weakNodes[0].node_name ?? "tema frágil"}` : "Estudar agora"}
       </Link>
     </section>
   );

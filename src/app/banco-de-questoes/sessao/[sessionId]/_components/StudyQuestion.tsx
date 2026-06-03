@@ -28,9 +28,12 @@ function selectionReasons(reason: Record<string, unknown>): string[] {
   const raw = reason?.selected_because;
   if (!Array.isArray(raw)) return [];
   return (raw as string[])
-    .filter((r) => r !== "melhor equilibrio adaptativo")
     .slice(0, 3)
-    .map((r) => r.charAt(0).toUpperCase() + r.slice(1));
+    .map((r) =>
+      r === "melhor equilibrio adaptativo"
+        ? "Selecionada pelo motor adaptativo"
+        : r.charAt(0).toUpperCase() + r.slice(1),
+    );
 }
 
 type StudyQuestionProps = {

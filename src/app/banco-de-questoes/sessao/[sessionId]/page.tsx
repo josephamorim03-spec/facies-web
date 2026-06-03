@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   finalizeQuestionBankSession,
@@ -9,6 +9,7 @@ import {
   recordQuestionBankCorrection,
   reportQuestionProblem,
   type OperationalQuestionOutcome,
+  type QuestionBankFinalizeResult,
   type QuestionBankOption,
   type QuestionBankReportType,
   type QuestionBankSession,
@@ -35,6 +36,7 @@ export default function SessionPage() {
 
   // Session state
   const [session, setSession] = useState<QuestionBankSession | null>(null);
+  const [finalizeOut, setFinalizeOut] = useState<QuestionBankFinalizeResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +56,9 @@ export default function SessionPage() {
   const [reportDone, setReportDone] = useState<Record<string, boolean>>({});
   const [quickNoteTarget, setQuickNoteTarget] = useState<QuickNoteTarget | null>(null);
 
+  // Track per-question start time so we can send time_ms to the backend
+  const questionStartTimeRef = useRef<number>(Date.now());
+
   // Load session on mount
   useEffect(() => {
     if (!tokenResolved || !sessionId) return;
@@ -65,6 +70,7 @@ export default function SessionPage() {
         if (s.unanswered_question_numbers.length > 0) {
           setCurrentPosition(s.unanswered_question_numbers[0]);
         }
+        questionStartTimeRef.current = Date.now();
       })
       .catch(() => setError("Não foi possível carregar a sessão."))
       .finally(() => setLoading(false));
@@ -79,7 +85,7 @@ export default function SessionPage() {
     try {
       const updated = await recordQuestionBankAttempt(token, session.session_id, position, {
         selected_option: selected,
-        confidence_self_rating: 3,
+        time_ms: Date.now() - questionStartTimeRef.current,
       });
       setSession(updated);
     } catch (err) {
@@ -134,6 +140,7 @@ export default function SessionPage() {
     setError(null);
     try {
       const out = await finalizeQuestionBankSession(token, session.session_id, { confirm_unanswered: true });
+      setFinalizeOut(out);
       setSession(out.session);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível finalizar a sessão.");
@@ -188,7 +195,7 @@ export default function SessionPage() {
 
   // Finalized: show post-exam review
   if (session.status === "finalized") {
-    return <PostExamReview session={session} />;
+    return <PostExamReview session={session} finalizeOut={finalizeOut} />;
   }
 
   const currentItem = session.items.find((i) => i.position === currentPosition) ?? session.items[0];
@@ -202,6 +209,7 @@ export default function SessionPage() {
   const examLabel = [session.theme, session.area].filter(Boolean).join(" · ") || "Sessão";
 
   function navigateTo(pos: number) {
+    questionStartTimeRef.current = Date.now();
     const clamped = Math.max(1, Math.min(total, pos));
     setCurrentPosition(clamped);
     setShowMap(false);

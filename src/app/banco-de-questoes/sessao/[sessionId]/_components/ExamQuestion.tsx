@@ -75,6 +75,11 @@ export default function ExamQuestion({
             <span className="hidden text-sm font-semibold text-ink sm:block truncate">{examLabel}</span>
             <span className="text-xs text-muted">·</span>
             <span className="text-sm text-muted whitespace-nowrap">Questão {position}/{total}</span>
+            {item.knowledge_nodes.find((n) => n.is_primary)?.node_name && (
+              <span className="hidden sm:block rounded-full border border-edge bg-surfaceMuted px-2 py-0.5 text-xs text-muted truncate max-w-[12rem]">
+                {item.knowledge_nodes.find((n) => n.is_primary)!.node_name}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <span

@@ -7,6 +7,7 @@ import {
   authHeader,
   getSessionCorrections,
   type QuestionBankCorrectionItem,
+  type QuestionBankFinalizeResult,
   type QuestionBankSession,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
@@ -31,6 +32,13 @@ type SessionDiagnosis = {
   weak_node_ids: string[];
   charge_pattern_breakdown: Record<string, number>;
   answer_type_breakdown: Record<string, number>;
+  reasoning_type_breakdown: Record<string, number>;
+  error_reasons: Record<string, number>;
+  confident_and_wrong: number;
+  doubtful_and_wrong: number;
+  metacognitive_accuracy: number | null;
+  impulsive_count: number;
+  overconfident_count: number;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -71,13 +79,15 @@ type Tab = "resumo" | "erros" | "acertos" | "marcadas";
 
 type PostExamReviewProps = {
   session: QuestionBankSession;
+  finalizeOut?: QuestionBankFinalizeResult | null;
 };
 
-export default function PostExamReview({ session }: PostExamReviewProps) {
+export default function PostExamReview({ session, finalizeOut }: PostExamReviewProps) {
   const router = useRouter();
   const { token } = useAuthToken();
   const [activeTab, setActiveTab] = useState<Tab>("resumo");
   const [diagnosis, setDiagnosis] = useState<SessionDiagnosis | null>(null);
+  const [diagnosisError, setDiagnosisError] = useState(false);
   const [corrections, setCorrections] = useState<QuestionBankCorrectionItem[]>([]);
   const [expandedCorrections, setExpandedCorrections] = useState<Set<string>>(new Set());
 
@@ -88,7 +98,7 @@ export default function PostExamReview({ session }: PostExamReviewProps) {
       { headers: authHeader(token) },
     )
       .then(setDiagnosis)
-      .catch(() => null);
+      .catch(() => setDiagnosisError(true));
   }, [token, session.session_id]);
 
   useEffect(() => {
@@ -182,7 +192,12 @@ export default function PostExamReview({ session }: PostExamReviewProps) {
         {/* Tab content */}
         {activeTab === "resumo" && (
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Performance by node */}
+            {/* Performance by node — or error fallback */}
+            {diagnosisError && !diagnosis && (
+              <div className="km-card p-4">
+                <p className="text-xs text-muted">Não foi possível carregar o diagnóstico.</p>
+              </div>
+            )}
             {diagnosis && diagnosis.nodes.length > 0 && (
               <div className="km-card p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Desempenho por tema</p>
@@ -220,12 +235,27 @@ export default function PostExamReview({ session }: PostExamReviewProps) {
                 {wrongItems.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => router.push(`/banco-de-questoes?answer_status=answered`)}
+                    onClick={() => router.push(`/banco-de-questoes?answer_status=wrong`)}
                     className="flex w-full items-center justify-between rounded-xl border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                   >
                     <div>
                       <p className="text-sm font-semibold text-ink">Revisar só erros</p>
                       <p className="text-xs text-muted">{wrongItems.length} questões para revisar</p>
+                    </div>
+                    <span className="text-muted">→</span>
+                  </button>
+                )}
+                {finalizeOut && finalizeOut.created_tasks.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => router.push("/cronograma")}
+                    className="flex w-full items-center justify-between rounded-xl border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-ink">
+                        {finalizeOut.created_tasks.length === 1 ? "1 tarefa agendada" : `${finalizeOut.created_tasks.length} tarefas agendadas`}
+                      </p>
+                      <p className="text-xs text-muted">Revisão programada no seu cronograma</p>
                     </div>
                     <span className="text-muted">→</span>
                   </button>
@@ -243,6 +273,48 @@ export default function PostExamReview({ session }: PostExamReviewProps) {
                 </button>
               </div>
             </div>
+
+            {/* Weak topics focus */}
+            {diagnosis && diagnosis.nodes.some((n) => n.accuracy < 0.5 && (n.correct + n.wrong) >= 2) && (
+              <div className="km-card p-4 md:col-span-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Focar nestes temas</p>
+                <p className="mt-1 text-xs text-muted">Abaixo de 50% de acerto nesta sessão</p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {diagnosis.nodes
+                    .filter((n) => n.accuracy < 0.5 && (n.correct + n.wrong) >= 2)
+                    .slice(0, 4)
+                    .map((n) => (
+                      <button
+                        key={n.knowledge_node_id}
+                        type="button"
+                        onClick={() => router.push(`/banco-de-questoes?theme=${encodeURIComponent(n.node_name ?? "")}&answer_status=unanswered_or_wrong`)}
+                        className="flex items-center justify-between rounded-xl border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-ink">{n.node_name ?? "—"}</p>
+                          <p className="text-xs text-danger">{Math.round(n.accuracy * 100)}% · {n.correct + n.wrong} questões</p>
+                        </div>
+                        <span className="ml-2 shrink-0 text-muted">→</span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Behavioral insights */}
+            {diagnosis && (diagnosis.impulsive_count >= 2 || diagnosis.overconfident_count >= 2) && (
+              <div className="km-card border-amber-200 bg-amber-50/40 p-4 md:col-span-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-amber-700">Padrão identificado</p>
+                <div className="mt-2 space-y-1 text-xs text-amber-800">
+                  {diagnosis.impulsive_count >= 2 && (
+                    <p>• {diagnosis.impulsive_count} questão(ões) respondida(s) muito rapidamente e errada(s) — releia o enunciado antes de marcar.</p>
+                  )}
+                  {diagnosis.overconfident_count >= 2 && (
+                    <p>• Em {diagnosis.overconfident_count} questão(ões) você estava confiante mas errou — desconfie das opções que parecem óbvias.</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

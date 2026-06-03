@@ -32,11 +32,7 @@ export default function ExamMap({ items, currentPosition, onNavigateTo, onClose 
         <div className="flex flex-wrap gap-3 text-xs text-muted">
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-3 w-3 rounded border border-edge bg-paper" />
-            Não vista
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3 w-3 rounded bg-surfaceMuted" />
-            Vista
+            Não respondida
           </span>
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-3 w-3 rounded bg-primary" />
