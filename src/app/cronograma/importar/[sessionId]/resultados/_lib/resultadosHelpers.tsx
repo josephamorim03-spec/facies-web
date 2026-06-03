@@ -18,11 +18,11 @@ import type {
 export const OPTION_ORDER: OptionLetter[] = ["A", "B", "C", "D", "E"];
 export const MAX_FLASHCARDS_PER_QUESTION = 3;
 export const ANALYSIS_BATCH_FALLBACK_POLL_ATTEMPTS = 5;
-export const ANALYSIS_BATCH_FALLBACK_POLL_INTERVAL_MS = 1500;
+export const ANALYSIS_BATCH_FALLBACK_POLL_INTERVAL_MS = 3000;
 export const ANALYSIS_SINGLE_FALLBACK_POLL_ATTEMPTS = 30;
 export const ANALYSIS_SINGLE_FALLBACK_POLL_INTERVAL_MS = 2000;
-export const ANALYSIS_PROGRESSIVE_BASE_POLL_INTERVAL_MS = 1500;
-export const ANALYSIS_PROGRESSIVE_MAX_POLL_INTERVAL_MS = 8000;
+export const ANALYSIS_PROGRESSIVE_BASE_POLL_INTERVAL_MS = 3000;
+export const ANALYSIS_PROGRESSIVE_MAX_POLL_INTERVAL_MS = 12000;
 export const ANALYSIS_IMAGE_MISSING_INSTRUCTION =
   "IMPORTANTE: Esta questão possuí imagem associada que não foi enviada no payload. Se a imagem for decisiva para concluir, declare incerteza explicitamente e limite a análise ao que está no texto.";
 

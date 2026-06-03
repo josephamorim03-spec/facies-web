@@ -61,6 +61,13 @@ export type StudyImportSession = {
   finalized_at: string | null;
   directed_study_id: string | null;
   review_task_id: string | null;
+  detected_metadata?: {
+    exam_name?: string | null;
+    year?: number | null;
+    institution?: string | null;
+    board_code?: string | null;
+    area?: string | null;
+  } | null;
 };
 
 export type BackgroundJobStatus = "queued" | "running" | "succeeded" | "failed";

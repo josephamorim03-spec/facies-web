@@ -7,17 +7,21 @@ import {
   getQuestionBankAdminImport,
   getQuestionBankAdminPipelineStatus,
   getQuestionBankAdminReadiness,
+  getQuestionBankReviewQueue,
   importQuestionBankAdminFile,
   listQuestionBankAdminImports,
   previewQuestionBankAdminImport,
   processQuestionBankAdminBatch,
+  resolveQuestionBankReviewCandidate,
   runQuestionBankAdminAll,
+  updateQuestionBankQuestionStatus,
   type QuestionBankAdminCandidate,
   type QuestionBankAdminImportItem,
   type QuestionBankAdminPipelineStatus,
   type QuestionBankAdminPreview,
   type QuestionBankAdminReadiness,
   type QuestionBankAdminWarning,
+  type QuestionBankReviewQueueItem,
 } from "@/lib/api/domains/question-bank-admin";
 
 const DEFAULT_METADATA = {
@@ -99,18 +103,35 @@ function WarningBox({ warning }: { warning: QuestionBankAdminWarning }) {
 }
 
 function CandidateRow({ item }: { item: QuestionBankAdminCandidate }) {
+  const gradeColor = item.content_grade === "usable" ? "text-green-600 dark:text-green-400"
+    : item.content_grade === "raw" ? "text-yellow-600 dark:text-yellow-400"
+    : "text-gray-400";
   return (
     <tr className="border-t border-gray-100 align-top text-sm dark:border-gray-800">
       <td className="px-3 py-3 font-medium text-gray-700 dark:text-gray-200">{item.question_number ?? "-"}</td>
+      <td className="px-3 py-3 text-gray-500 dark:text-gray-400">{item.original_page ?? "-"}</td>
       <td className="px-3 py-3">
         <div className="font-medium text-gray-900 dark:text-gray-100">{item.status || "-"}</div>
         <div className="text-xs text-gray-500 dark:text-gray-400">{item.question_status || "sem questao"}</div>
       </td>
       <td className="px-3 py-3 text-gray-600 dark:text-gray-300">{item.year ?? "-"}</td>
       <td className="px-3 py-3 text-gray-600 dark:text-gray-300">{item.institution || "-"}</td>
-      <td className="px-3 py-3 text-gray-700 dark:text-gray-200">{item.raw_stem || "-"}</td>
-      <td className="px-3 py-3 text-right text-gray-600 dark:text-gray-300">
-        {item.classification_confidence ?? item.extraction_confidence ?? "-"}
+      <td className="px-3 py-3 text-gray-700 dark:text-gray-200">
+        {item.raw_stem ? item.raw_stem.slice(0, 120) + (item.raw_stem.length > 120 ? "…" : "") : "-"}
+      </td>
+      <td className={`px-3 py-3 text-xs font-medium ${gradeColor}`}>
+        {item.content_grade || "—"}
+        {item.has_image && <span className="ml-1 text-blue-400" title="Tem imagem">🖼</span>}
+      </td>
+      <td className="px-3 py-3 text-right">
+        {(() => {
+          const conf = item.classification_confidence ?? item.extraction_confidence;
+          if (conf === null || conf === undefined) return <span className="text-gray-400">—</span>;
+          const cls = conf >= 0.85 ? "text-green-600 font-semibold dark:text-green-400"
+            : conf >= 0.60 ? "text-yellow-600 dark:text-yellow-400"
+            : "text-red-500 dark:text-red-400";
+          return <span className={cls}>{conf.toFixed(2)}</span>;
+        })()}
       </td>
     </tr>
   );
@@ -141,6 +162,22 @@ export default function QuestionBankAdminPage() {
   const [jobType, setJobType] = useState<string>(JOB_TYPES[0]!);
   const [batchSize, setBatchSize] = useState<number>(3);
   const [workers, setWorkers] = useState<number>(1);
+  const [autoPipeline, setAutoPipeline] = useState<boolean>(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [expandedError, setExpandedError] = useState<string | null>(null);
+  const [reviewItems, setReviewItems] = useState<QuestionBankReviewQueueItem[]>([]);
+  const [showReviewQueue, setShowReviewQueue] = useState<boolean>(false);
+  const [reviewTotal, setReviewTotal] = useState<number>(0);
+
+  function formatRelativeTime(date: Date | string): string {
+    const d = typeof date === "string" ? new Date(date) : date;
+    const diffMs = Date.now() - d.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return `há ${diffSec}s`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `há ${diffMin} min`;
+    return `às ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+  }
 
   function parseMetadata(): Record<string, unknown> {
     const parsed = JSON.parse(metadataText || "{}");
@@ -176,6 +213,7 @@ export default function QuestionBankAdminPage() {
     setPipelineStatus(status);
     setReadiness(readinessValue);
     await loadImports(nextSelectedImportId);
+    setLastRefreshed(new Date());
   }
 
   async function runSafely(label: string, action: () => Promise<void>) {
@@ -261,6 +299,47 @@ export default function QuestionBankAdminPage() {
     };
   }, [candidateStatus, selectedImportId]);
 
+  useEffect(() => {
+    const hasActiveJobs =
+      (pipelineStatus?.summary.pending_jobs ?? 0) > 0 ||
+      (pipelineStatus?.summary.processing_jobs ?? 0) > 0;
+    if (!hasActiveJobs) return;
+    const interval = setInterval(() => {
+      if (!busy) void loadDashboard(selectedImportId || undefined);
+    }, 10_000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pipelineStatus?.summary.pending_jobs, pipelineStatus?.summary.processing_jobs, busy, selectedImportId]);
+
+  function handleRetryStage(stageJobType: string) {
+    void runSafely(`Retry ${stageJobType}`, async () => {
+      await processQuestionBankAdminBatch(stageJobType, batchSize, workers, selectedImportId || undefined);
+      await loadDashboard(selectedImportId || undefined);
+    });
+  }
+
+  async function loadReviewQueue() {
+    void runSafely("Carregando fila de review", async () => {
+      const res = await getQuestionBankReviewQueue({ limit: 20, imported_file_id: selectedImportId || undefined });
+      setReviewItems(res.items);
+      setReviewTotal(res.total);
+      setShowReviewQueue(true);
+    });
+  }
+
+  function handleReviewResolve(
+    candidateId: string,
+    action: "accept_as_canonical" | "accept_as_duplicate" | "discard",
+    questionId?: string,
+  ) {
+    void runSafely(`Resolvendo candidate (${action})`, async () => {
+      await resolveQuestionBankReviewCandidate(candidateId, action, { question_id: questionId });
+      const res = await getQuestionBankReviewQueue({ limit: 20, imported_file_id: selectedImportId || undefined });
+      setReviewItems(res.items);
+      setReviewTotal(res.total);
+    });
+  }
+
   const previewSummary = preview?.preview_summary;
   const selectedPipeline = selectedImport?.pipeline;
 
@@ -280,7 +359,12 @@ export default function QuestionBankAdminPage() {
               observar o pipeline e validar o que realmente ficou pronto para publicar.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {lastRefreshed && (
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                {formatRelativeTime(lastRefreshed)}
+              </span>
+            )}
             <button
               onClick={() => void runSafely("Atualizando paineis", async () => loadDashboard())}
               className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
@@ -288,10 +372,13 @@ export default function QuestionBankAdminPage() {
               Atualizar tudo
             </button>
             <button
-              onClick={() => void runSafely("Rodando pipeline completo", async () => {
-                await runQuestionBankAdminAll(true);
-                await loadDashboard(selectedImportId);
-              })}
+              onClick={() => {
+                if (!window.confirm("Isso vai rodar o pipeline completo em background para todos os imports. Continuar?")) return;
+                void runSafely("Rodando pipeline completo", async () => {
+                  await runQuestionBankAdminAll(true);
+                  await loadDashboard(selectedImportId);
+                });
+              }}
               className="rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white"
             >
               Rodar loop completo
@@ -347,6 +434,15 @@ export default function QuestionBankAdminPage() {
                   className="min-h-[220px] rounded-3xl border border-gray-300 bg-gray-50 px-4 py-4 font-mono text-xs leading-6 text-gray-800 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
                 />
               </label>
+              <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                <input
+                  type="checkbox"
+                  checked={autoPipeline}
+                  onChange={(e) => setAutoPipeline(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                Processar pipeline automaticamente após importar
+              </label>
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => void runSafely("Gerando preview", async () => {
@@ -361,7 +457,7 @@ export default function QuestionBankAdminPage() {
                 <button
                   onClick={() => void runSafely("Importando PDF", async () => {
                     if (!file) throw new Error("Escolha um PDF antes de importar.");
-                    const result = await importQuestionBankAdminFile(file, parseMetadata());
+                    const result = await importQuestionBankAdminFile(file, parseMetadata(), { auto_pipeline: autoPipeline });
                     if (result.preview_summary && preview) {
                       setPreview({ ...preview, preview_summary: result.preview_summary });
                     }
@@ -425,6 +521,7 @@ export default function QuestionBankAdminPage() {
                     <th className="px-4 py-3 font-semibold">Anos</th>
                     <th className="px-4 py-3 font-semibold">Status</th>
                     <th className="px-4 py-3 font-semibold">Fila</th>
+                    <th className="px-4 py-3 font-semibold">Criado</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -445,7 +542,14 @@ export default function QuestionBankAdminPage() {
                         })}
                       >
                         <td className="px-4 py-3">
-                          <div className="font-medium text-gray-900 dark:text-gray-100">{item.file_name || item.id}</div>
+                          <div className="font-medium text-gray-900 dark:text-gray-100">
+                            {item.file_name || item.id}
+                            {item.is_mixed_source && (
+                              <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                                misto
+                              </span>
+                            )}
+                          </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">{item.source.exam_name || item.source.institution || "sem fonte resumida"}</div>
                         </td>
                         <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
@@ -454,6 +558,9 @@ export default function QuestionBankAdminPage() {
                         <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{item.status || "-"}</td>
                         <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
                           P {item.pipeline_counts?.pending ?? 0} / F {item.pipeline_counts?.failed ?? 0}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-400 dark:text-gray-500">
+                          {item.created_at ? formatRelativeTime(item.created_at) : "—"}
                         </td>
                       </tr>
                     );
@@ -510,16 +617,19 @@ export default function QuestionBankAdminPage() {
                 />
               </label>
             </div>
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-4 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => void runSafely(`Rodando ${jobType}`, async () => {
-                  await processQuestionBankAdminBatch(jobType, batchSize, workers);
-                  await loadDashboard(selectedImportId);
+                  await processQuestionBankAdminBatch(jobType, batchSize, workers, selectedImportId || undefined);
+                  await loadDashboard(selectedImportId || undefined);
                 })}
                 className="rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
               >
                 Rodar proximo lote
               </button>
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                {selectedImportId ? "Escopo: import selecionado" : "Escopo: global"}
+              </span>
               <button
                 onClick={() => void runSafely("Recarregando pipeline", async () => {
                   await loadDashboard(selectedImportId);
@@ -544,13 +654,41 @@ export default function QuestionBankAdminPage() {
                     <tr key={stage.job_type} className="border-t border-gray-100 dark:border-gray-800">
                       <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{stage.job_type}</td>
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                        {stage.pending} p / {stage.processing} proc / {stage.failed} falha / {stage.done} done
+                        <span>{stage.pending} p / {stage.processing} proc / {stage.done} done</span>
+                        {stage.failed > 0 && (
+                          <button
+                            onClick={() => handleRetryStage(stage.job_type)}
+                            title={`Retry ${stage.failed} jobs falhos nesta etapa`}
+                            className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600 hover:bg-red-200 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/60"
+                          >
+                            ↺ {stage.failed}
+                          </button>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
                         {stage.avg_duration_ms ? `${stage.avg_duration_ms} ms` : "-"}
                       </td>
                       <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
-                        {stage.last_error || "-"}
+                        {stage.last_error ? (
+                          <div>
+                            <button
+                              onClick={() => setExpandedError(expandedError === stage.job_type ? null : stage.job_type)}
+                              className="text-left text-red-500 underline decoration-dotted hover:text-red-700 dark:text-red-400"
+                            >
+                              {stage.last_error.length > 60 ? stage.last_error.slice(0, 60) + "…" : stage.last_error}
+                            </button>
+                            {expandedError === stage.job_type && (
+                              <pre className="mt-1 max-w-xs overflow-auto rounded-xl bg-red-50 p-2 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                                {stage.last_error}
+                              </pre>
+                            )}
+                            {stage.last_error_at && (
+                              <span className="mt-0.5 block text-gray-400 dark:text-gray-500">
+                                {formatRelativeTime(stage.last_error_at)}
+                              </span>
+                            )}
+                          </div>
+                        ) : "—"}
                       </td>
                     </tr>
                   ))}
@@ -602,6 +740,13 @@ export default function QuestionBankAdminPage() {
               Inspecione o que foi extraido antes de confiar na publicacao. O texto contaminado costuma aparecer aqui primeiro.
             </p>
           </div>
+          <div className="flex flex-wrap items-end gap-3">
+            <button
+              onClick={() => void loadReviewQueue()}
+              className="rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-300"
+            >
+              Fila de review {reviewTotal > 0 && <span className="ml-1 rounded-full bg-amber-200 px-1.5 py-0.5 text-xs dark:bg-amber-800">{reviewTotal}</span>}
+            </button>
           <label className="grid gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
             Filtrar status
             <select
@@ -612,21 +757,86 @@ export default function QuestionBankAdminPage() {
               <option value="">Todos</option>
               <option value="dedup_pending">dedup_pending</option>
               <option value="canonical_created">canonical_created</option>
+              <option value="linked">linked</option>
               <option value="duplicate_found">duplicate_found</option>
               <option value="needs_review">needs_review</option>
               <option value="discarded">discarded</option>
+              <option value="quarantine_technical">quarantine_technical</option>
             </select>
           </label>
+          </div>
         </div>
+
+        {showReviewQueue && reviewItems.length > 0 && (
+          <div className="mt-5 space-y-3 rounded-[24px] border border-amber-200 bg-amber-50/60 p-5 dark:border-amber-800/40 dark:bg-amber-950/20">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-amber-800 dark:text-amber-200">
+                Fila de review ({reviewTotal} total)
+              </h3>
+              <button onClick={() => setShowReviewQueue(false)} className="text-xs text-gray-400 hover:text-gray-600">✕ Fechar</button>
+            </div>
+            {reviewItems.map((item) => (
+              <div key={item.id} className="rounded-2xl border border-amber-200 bg-white p-4 dark:border-amber-800/30 dark:bg-gray-900">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      Q{item.question_number ?? "?"} • Dedup: <span className="font-bold">{item.dedup.decision ?? "—"}</span>
+                      {item.dedup.confidence != null && (
+                        <span className="ml-1 text-gray-400">({(item.dedup.confidence * 100).toFixed(0)}%)</span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-sm text-gray-700 dark:text-gray-200 line-clamp-3">
+                      {item.raw_stem ? item.raw_stem.slice(0, 200) + (item.raw_stem.length > 200 ? "…" : "") : "Sem enunciado"}
+                    </p>
+                    {item.dedup.matched_question_id && (
+                      <p className="mt-1 text-xs text-gray-400">
+                        Match: <code className="font-mono">{item.dedup.matched_question_id.slice(0, 12)}…</code>
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex shrink-0 flex-col gap-1.5">
+                    <button
+                      onClick={() => handleReviewResolve(item.id, "accept_as_canonical")}
+                      className="rounded-xl bg-green-100 px-3 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300"
+                    >
+                      ✓ Canônico
+                    </button>
+                    {item.dedup.matched_question_id && (
+                      <button
+                        onClick={() => handleReviewResolve(item.id, "accept_as_duplicate", item.dedup.matched_question_id ?? undefined)}
+                        className="rounded-xl bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300"
+                      >
+                        = Duplicata
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleReviewResolve(item.id, "discard")}
+                      className="rounded-xl bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300"
+                    >
+                      ✕ Descartar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {showReviewQueue && reviewItems.length === 0 && (
+          <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
+            Nenhum candidate aguardando review.
+          </div>
+        )}
         <div className="mt-5 overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-800">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 dark:bg-gray-950">
               <tr className="text-gray-500 dark:text-gray-400">
                 <th className="px-3 py-3 font-semibold">N</th>
+                <th className="px-3 py-3 font-semibold">Pág.</th>
                 <th className="px-3 py-3 font-semibold">Status</th>
                 <th className="px-3 py-3 font-semibold">Ano</th>
                 <th className="px-3 py-3 font-semibold">Instituicao</th>
                 <th className="px-3 py-3 font-semibold">Enunciado</th>
+                <th className="px-3 py-3 font-semibold">Grade</th>
                 <th className="px-3 py-3 text-right font-semibold">Conf.</th>
               </tr>
             </thead>

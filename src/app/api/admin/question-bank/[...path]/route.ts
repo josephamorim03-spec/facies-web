@@ -31,3 +31,17 @@ export async function POST(
     contentType,
   });
 }
+
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ path: string[] }> },
+) {
+  const { path } = await context.params;
+  const contentType = request.headers.get("content-type");
+  const bodyBuffer = Buffer.from(await request.arrayBuffer());
+  return proxyQuestionBankAdmin(request, buildUpstreamPath(request, path), {
+    method: "PATCH",
+    body: bodyBuffer.byteLength > 0 ? bodyBuffer : null,
+    contentType: contentType ?? "application/json",
+  });
+}

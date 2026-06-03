@@ -174,6 +174,20 @@ export default function ImportSessionPage() {
         </button>
       </div>
 
+      {/* Exam context banner — shows what was imported */}
+      {session?.status === "active" && (session?.full_exam_name ?? session?.area) && (
+        <p className="text-xs text-muted border border-edge px-3 py-1.5">
+          {[
+            session.full_exam_name,
+            session.full_exam_year,
+            session.area,
+            session.theme,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
+      )}
+
       {/* Toolbar */}
       <div className="sticky top-0 z-10 border-y border-edge bg-paper py-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
