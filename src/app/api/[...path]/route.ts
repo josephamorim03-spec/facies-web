@@ -8,6 +8,7 @@ const TOKEN_COOKIE_NAME = "krosmed_token";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const CLOCK_SKEW_SECONDS = 30;
 const HOP_BY_HOP_HEADERS = new Set([
   "connection",
   "keep-alive",
@@ -34,7 +35,7 @@ function parseEnvPositiveInt(name: string, fallback: number, minValue: number = 
 const DEFAULT_PROXY_TIMEOUT_MS = parseEnvPositiveInt("NEXT_API_PROXY_TIMEOUT_MS", 25000, 1000);
 const SESSION_MAX_AGE_SECONDS = parseEnvPositiveInt(
   "NEXT_SESSION_MAX_AGE_SECONDS",
-  24 * 60 * 60,
+  50 * 60,
   300,
 );
 const STREAM_PROXY_TIMEOUT_MS = parseEnvPositiveInt(
@@ -160,6 +161,20 @@ function responseWithRequestId(body: unknown, status: number, requestId: string)
   });
 }
 
+function isJwtExpired(token: string): boolean {
+  const parts = token.split(".");
+  if (parts.length !== 3) return false;
+  try {
+    const padding = "=".repeat((4 - (parts[1]!.length % 4)) % 4);
+    const payload = JSON.parse(Buffer.from(parts[1]! + padding, "base64").toString("utf8")) as Record<string, unknown>;
+    const exp = typeof payload.exp === "number" ? payload.exp : null;
+    if (exp === null) return false;
+    return Math.floor(Date.now() / 1000) - CLOCK_SKEW_SECONDS > exp;
+  } catch {
+    return false;
+  }
+}
+
 function expireLegacyTokenCookie(response: NextResponse, secure: boolean): void {
   response.cookies.set({
     name: TOKEN_COOKIE_NAME,
@@ -233,6 +248,25 @@ async function proxyHandler(
       requestId,
     );
   }
+  const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value?.trim() || "";
+  if (sessionToken && isJwtExpired(sessionToken)) {
+    const expiredResponse = responseWithRequestId(
+      { code: "oidc_token_invalid", message: "Token expired" },
+      401,
+      requestId,
+    );
+    expiredResponse.cookies.set({
+      name: SESSION_COOKIE_NAME,
+      value: "",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: isSecureRequest(request),
+      path: "/",
+      maxAge: 0,
+    });
+    return expiredResponse;
+  }
+
   const proxyPath = buildProxyPath(pathParts);
   const pathKey = pathParts.join("/");
   const upstreamUrl = `${proxyTarget()}/${proxyPath}${request.nextUrl.search}`;

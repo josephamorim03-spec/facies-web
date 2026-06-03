@@ -210,6 +210,31 @@ export type {
   QuestionBankReportType,
 } from "./api/domains/question-bank";
 
+// Question Bank Admin domain
+export {
+  previewQuestionBankAdminImport,
+  importQuestionBankAdminFile,
+  listQuestionBankAdminImports,
+  getQuestionBankAdminImport,
+  getQuestionBankAdminCandidates,
+  getQuestionBankAdminPipelineStatus,
+  getQuestionBankAdminReadiness,
+  processQuestionBankAdminBatch,
+  runQuestionBankAdminAll,
+} from "./api/domains/question-bank-admin";
+export type {
+  QuestionBankAdminWarning,
+  QuestionBankAdminPreviewSummary,
+  QuestionBankAdminPreview,
+  QuestionBankAdminImportItem,
+  QuestionBankAdminPipelineStage,
+  QuestionBankAdminPipelineSnapshot,
+  QuestionBankAdminPipelineStatus,
+  QuestionBankAdminReadiness,
+  QuestionBankAdminCandidate,
+  QuestionBankAdminCandidatesResponse,
+} from "./api/domains/question-bank-admin";
+
 // Performance domain
 export {
   getStudyPerformanceSummary,
