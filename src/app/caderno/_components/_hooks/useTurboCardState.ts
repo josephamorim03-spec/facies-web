@@ -31,9 +31,12 @@ export type UseTurboCardStateReturn = {
 
   // Swipe
   dragX: number;
-  flying: "left" | "right" | null;
+  dragY: number;
+  flying: "left" | "right" | "up" | null;
   isDragging: boolean;
   isCardExiting: boolean;
+  isTouchLayout: boolean;
+  mobileGestureHint: string | null;
   setIsCardExiting: (v: boolean) => void;
   handlePointerDown: (e: React.PointerEvent) => void;
   handlePointerMove: (e: React.PointerEvent) => void;
@@ -66,17 +69,24 @@ export function useTurboCardState(params: UseTurboCardStateParams): UseTurboCard
     onNavigateNextAction,
   } = params;
 
-  // ── Desktop hotkeys detection
   const [isDesktopHotkeys, setIsDesktopHotkeys] = useState(false);
+  const [isTouchLayout, setIsTouchLayout] = useState(false);
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 768px) and (pointer: fine)");
-    const update = () => setIsDesktopHotkeys(media.matches);
+    const desktopMedia = window.matchMedia("(min-width: 768px) and (pointer: fine)");
+    const touchMedia = window.matchMedia("(max-width: 767px), (pointer: coarse)");
+    const update = () => {
+      setIsDesktopHotkeys(desktopMedia.matches);
+      setIsTouchLayout(touchMedia.matches);
+    };
     update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+    desktopMedia.addEventListener("change", update);
+    touchMedia.addEventListener("change", update);
+    return () => {
+      desktopMedia.removeEventListener("change", update);
+      touchMedia.removeEventListener("change", update);
+    };
   }, []);
 
-  // ── Card image URLs
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const imageFetchInFlightRef = useRef<Set<string>>(new Set());
@@ -137,7 +147,6 @@ export function useTurboCardState(params: UseTurboCardStateParams): UseTurboCard
     };
   }, [imageErrors, imageUrls, token, turboNote]);
 
-  // Cleanup blob URLs on unmount
   useEffect(() => {
     const inFlight = imageFetchInFlightRef.current;
     return () => {
@@ -150,7 +159,6 @@ export function useTurboCardState(params: UseTurboCardStateParams): UseTurboCard
     };
   }, []);
 
-  // ── Interval preview
   const [intervalPreview, setIntervalPreview] = useState<TurboIntervalPreview | null>(null);
   useEffect(() => {
     setIntervalPreview(null);
@@ -168,15 +176,18 @@ export function useTurboCardState(params: UseTurboCardStateParams): UseTurboCard
     };
   }, [token, turboNote?.note_id]);
 
-  // ── Swipe state
   const [dragX, setDragX] = useState(0);
-  const [flying, setFlying] = useState<"left" | "right" | null>(null);
+  const [dragY, setDragY] = useState(0);
+  const [flying, setFlying] = useState<"left" | "right" | "up" | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [flipPhase, setFlipPhase] = useState<"idle" | "out" | "in">("idle");
   const [showAnswer, setShowAnswer] = useState(false);
   const [isCardExiting, setIsCardExiting] = useState(false);
   const pointerStartXRef = useRef(0);
+  const pointerStartYRef = useRef(0);
   const dragXRef = useRef(0);
+  const dragYRef = useRef(0);
+  const dragAxisRef = useRef<"x" | "y" | null>(null);
   const isDraggingRef = useRef(false);
   const flipTimersRef = useRef<number[]>([]);
 
@@ -214,7 +225,6 @@ export function useTurboCardState(params: UseTurboCardStateParams): UseTurboCard
     flipTimersRef.current.push(outId, inId);
   }, [turboNote, showAnswer, turboLoading, isActionLocked, flipPhase, onRevealAction, clearFlipTimers]);
 
-  // Reset flip state when card changes
   useEffect(() => {
     clearFlipTimers();
     setFlipPhase("idle");
@@ -222,19 +232,16 @@ export function useTurboCardState(params: UseTurboCardStateParams): UseTurboCard
     setIsCardExiting(false);
   }, [turboNote?.note_id, clearFlipTimers, turboRevealed]);
 
-  // Sync revealed state
   useEffect(() => {
     if (turboRevealed && showAnswer === false) {
       setShowAnswer(true);
     }
   }, [turboRevealed, showAnswer]);
 
-  // Cleanup flip timers on unmount
   useEffect(() => {
     return () => clearFlipTimers();
   }, [clearFlipTimers]);
 
-  // ── Keyboard shortcuts
   useEffect(() => {
     if (!isDesktopHotkeys) return;
     function onKey(e: KeyboardEvent) {
@@ -250,10 +257,12 @@ export function useTurboCardState(params: UseTurboCardStateParams): UseTurboCard
     return () => window.removeEventListener("keydown", onKey);
   }, [isDesktopHotkeys, showAnswer, turboLoading, isActionLocked, onRateAction]);
 
-  // ── Pointer handlers
   function resetSwipeVisualState() {
     dragXRef.current = 0;
+    dragYRef.current = 0;
+    dragAxisRef.current = null;
     setDragX(0);
+    setDragY(0);
     setFlying(null);
   }
 
@@ -276,22 +285,48 @@ export function useTurboCardState(params: UseTurboCardStateParams): UseTurboCard
   function handlePointerDown(e: React.PointerEvent) {
     if (turboLoading || isActionLocked) return;
     if (flipPhase !== "idle") return;
-    if (!canSwipePrev && !canSwipeNext) return;
     if (isInteractiveTarget(e.target)) return;
+    if (!canSwipePrev && !canSwipeNext && !(isTouchLayout && !showAnswer)) return;
     isDraggingRef.current = true;
     setIsDragging(true);
     pointerStartXRef.current = e.clientX;
+    pointerStartYRef.current = e.clientY;
     dragXRef.current = 0;
+    dragYRef.current = 0;
+    dragAxisRef.current = null;
     setDragX(0);
+    setDragY(0);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
 
   function handlePointerMove(e: React.PointerEvent) {
     if (!isDraggingRef.current) return;
-    let nextDragX = e.clientX - pointerStartXRef.current;
+    const deltaX = e.clientX - pointerStartXRef.current;
+    const deltaY = e.clientY - pointerStartYRef.current;
+    if (!dragAxisRef.current) {
+      if (Math.abs(deltaY) > 12 && Math.abs(deltaY) > Math.abs(deltaX) + 6 && isTouchLayout && !showAnswer) {
+        dragAxisRef.current = "y";
+      } else if (Math.abs(deltaX) > 12) {
+        dragAxisRef.current = "x";
+      }
+    }
+
+    if (dragAxisRef.current === "y") {
+      const nextDragY = Math.min(0, deltaY);
+      dragXRef.current = 0;
+      dragYRef.current = nextDragY;
+      setDragX(0);
+      setDragY(nextDragY);
+      if (e.cancelable) e.preventDefault();
+      return;
+    }
+
+    let nextDragX = deltaX;
     if (nextDragX > 0 && !canSwipePrev) nextDragX = Math.min(nextDragX, 24);
     if (nextDragX < 0 && !canSwipeNext) nextDragX = Math.max(nextDragX, -24);
     dragXRef.current = nextDragX;
+    dragYRef.current = 0;
+    setDragY(0);
     setDragX(nextDragX);
   }
 
@@ -300,6 +335,20 @@ export function useTurboCardState(params: UseTurboCardStateParams): UseTurboCard
     isDraggingRef.current = false;
     setIsDragging(false);
     releasePointerCaptureSafe(e);
+
+    if (dragAxisRef.current === "y") {
+      const finalDragY = dragYRef.current;
+      if (finalDragY <= -80 && isTouchLayout && !showAnswer) {
+        setFlying("up");
+        window.setTimeout(() => {
+          resetSwipeVisualState();
+          triggerRevealFlip();
+        }, 140);
+        return;
+      }
+      resetSwipeVisualState();
+      return;
+    }
 
     const finalDragX = dragXRef.current;
     const intendsNext = finalDragX <= -60 && canSwipeNext;
@@ -311,11 +360,11 @@ export function useTurboCardState(params: UseTurboCardStateParams): UseTurboCard
 
     const dir: "left" | "right" = intendsNext ? "left" : "right";
     setFlying(dir);
-    setTimeout(() => {
+    window.setTimeout(() => {
       setIsCardExiting(true);
       resetSwipeVisualState();
-      if (dir === "left") onNavigateNextAction();
-      else onNavigatePrevAction();
+      if (dir === "left") void onNavigateNextAction();
+      else void onNavigatePrevAction();
     }, 220);
   }
 
@@ -331,9 +380,12 @@ export function useTurboCardState(params: UseTurboCardStateParams): UseTurboCard
     showAnswer,
     triggerRevealFlip,
     dragX,
+    dragY,
     flying,
     isDragging,
     isCardExiting,
+    isTouchLayout,
+    mobileGestureHint: isTouchLayout && !showAnswer ? "Arraste para cima para revelar" : null,
     setIsCardExiting,
     handlePointerDown,
     handlePointerMove,

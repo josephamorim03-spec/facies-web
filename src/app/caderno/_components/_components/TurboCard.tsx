@@ -111,6 +111,15 @@ export function TurboCard({
   const progressRatio = totalCards > 0 ? Math.min(1, progressNumerator / totalCards) : 0;
   const progressPercent = Math.round(progressRatio * 100);
 
+  // Swipe transform: vertical gesture (reveal) takes precedence over horizontal (navigation)
+  const swipeTransform = cardState.flying === "up"
+    ? "translateY(-150%)"
+    : cardState.flying
+    ? `translateX(${cardState.flying === "left" ? "-150%" : "150%"})`
+    : `translate(${cardState.dragX}px, ${cardState.dragY}px)`;
+  const dragDistance = Math.abs(cardState.dragX) + Math.abs(cardState.dragY);
+  const canSwipeUpToReveal = cardState.isTouchLayout && !cardState.showAnswer;
+
   return (
     <div className="space-y-3 overflow-x-clip flex flex-col min-h-0" style={{ minHeight: TURBO_VIEWPORT_MIN_HEIGHT }}>
 
@@ -146,16 +155,16 @@ export function TurboCard({
         data-allow-horizontal-swipe="true"
         className="flex-1 min-h-0 select-none relative overflow-hidden flex items-center"
         style={{
-          transform: cardState.flying
-            ? `translateX(${cardState.flying === "left" ? "-150%" : "150%"})`
-            : `translateX(${cardState.dragX}px)`,
-          opacity: cardState.flying ? 0 : cardState.isCardExiting ? 0 : Math.max(0.35, 1 - Math.abs(cardState.dragX) / 280),
-          transition: cardState.flying
+          transform: swipeTransform,
+          opacity: cardState.flying ? 0 : cardState.isCardExiting ? 0 : Math.max(0.35, 1 - dragDistance / 280),
+          transition: cardState.flying === "up"
+            ? "transform 0.14s ease, opacity 0.12s ease"
+            : cardState.flying
             ? "transform 0.22s ease, opacity 0.18s ease"
             : cardState.isCardExiting
             ? "opacity 0.1s ease"
             : "none",
-          touchAction: "pan-y",
+          touchAction: canSwipeUpToReveal ? "none" : "pan-y",
           cursor: cardState.flipPhase !== "idle" ? "default" : (cardState.isDragging ? "grabbing" : "default"),
         }}
         onPointerDown={cardState.handlePointerDown}
@@ -241,6 +250,11 @@ export function TurboCard({
               >
                 Revelar
               </button>
+              {cardState.mobileGestureHint && (
+                <p className="mt-2 text-[10px] text-muted" aria-hidden="true">
+                  ↑ {cardState.mobileGestureHint}
+                </p>
+              )}
             </div>
           )}
         </div>
