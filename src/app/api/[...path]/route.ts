@@ -295,6 +295,12 @@ async function proxyHandler(
   for (const header of HOP_BY_HOP_HEADERS) {
     responseHeaders.delete(header);
   }
+  // undici (Node fetch) já descomprimiu upstreamResponse.body, mas mantém os
+  // headers Content-Encoding e Content-Length descrevendo o corpo comprimido
+  // original. Repassá-los faz o navegador tentar descomprimir bytes já planos
+  // (ERR_CONTENT_DECODING_FAILED). NextResponse reenquadra o corpo do stream.
+  responseHeaders.delete("content-encoding");
+  responseHeaders.delete("content-length");
   responseHeaders.set("X-Request-Id", responseHeaders.get("X-Request-Id") || requestId);
 
   const contentType = upstreamResponse.headers.get("content-type")?.toLowerCase() ?? "";

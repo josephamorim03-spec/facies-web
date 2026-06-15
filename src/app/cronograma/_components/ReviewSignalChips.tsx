@@ -6,8 +6,12 @@ function formatPercent(value: number | null | undefined): string | null {
   return `${Math.round(Math.max(0, Math.min(100, pct)))}%`;
 }
 
-function pluralizeQuestion(count: number): string {
+function pluralizeDueQuestion(count: number): string {
   return count === 1 ? "1 q vencida do tópico" : `${count} q vencidas do tópico`;
+}
+
+function pluralizeStrugglingQuestion(count: number): string {
+  return count === 1 ? "1 fraqueza no topico" : `${count} fraquezas no topico`;
 }
 
 export function hasReviewSignals(task: ReviewTask): boolean {
@@ -15,7 +19,8 @@ export function hasReviewSignals(task: ReviewTask): boolean {
     formatPercent(task.node_retention) ||
       formatPercent(task.node_mastery) ||
       task.at_risk ||
-      Number(task.due_question_count ?? 0) > 0,
+      Number(task.due_question_count ?? 0) > 0 ||
+      Number(task.struggling_question_count ?? 0) > 0,
   );
 }
 
@@ -31,8 +36,9 @@ export function ReviewSignalChips({
   const retention = formatPercent(task.node_retention);
   const mastery = formatPercent(task.node_mastery);
   const dueQuestionCount = Math.max(0, Number(task.due_question_count ?? 0));
+  const strugglingQuestionCount = Math.max(0, Number(task.struggling_question_count ?? 0));
 
-  if (!retention && !mastery && !task.at_risk && dueQuestionCount <= 0) return null;
+  if (!retention && !mastery && !task.at_risk && dueQuestionCount <= 0 && strugglingQuestionCount <= 0) return null;
 
   const baseClass = compact
     ? "rounded-full border px-1.5 py-0.5 text-[9px] font-medium leading-none"
@@ -59,8 +65,13 @@ export function ReviewSignalChips({
         </span>
       )}
       {dueQuestionCount > 0 && (
-        <span className={`${baseClass} border-primary/40 bg-primary/10 text-primary`} title={pluralizeQuestion(dueQuestionCount)}>
-          {pluralizeQuestion(dueQuestionCount)}
+        <span className={`${baseClass} border-primary/40 bg-primary/10 text-primary`} title={pluralizeDueQuestion(dueQuestionCount)}>
+          {pluralizeDueQuestion(dueQuestionCount)}
+        </span>
+      )}
+      {strugglingQuestionCount > 0 && (
+        <span className={`${baseClass} border-danger/40 bg-danger/10 text-danger`} title={pluralizeStrugglingQuestion(strugglingQuestionCount)}>
+          {pluralizeStrugglingQuestion(strugglingQuestionCount)}
         </span>
       )}
     </div>

@@ -107,6 +107,7 @@ export type QuestionBankSessionItem = {
   source: Record<string, unknown>;
   selected_option: QuestionBankOption | null;
   doubtful: boolean;
+  confidence_self_rating: number | null;
   answered: boolean;
   needs_correction: boolean;
   correct_answer: QuestionBankOption | null;

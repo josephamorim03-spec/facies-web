@@ -4,6 +4,14 @@
 import type { QuestionBankOption, QuestionBankReportType, QuestionBankSessionItem, QuestionBankSessionStatus } from "@/lib/api";
 
 const OPTIONS: QuestionBankOption[] = ["A", "B", "C", "D", "E"];
+const CONFIDENCE_OPTIONS = [1, 2, 3, 4, 5];
+const CORRECTION_CONFIDENCE_OPTIONS = [
+  ["low", "Entendi pouco"],
+  ["medium", "Entendi"],
+  ["high", "Entendi bem"],
+] as const;
+
+type CorrectionConfidenceLevel = (typeof CORRECTION_CONFIDENCE_OPTIONS)[number][0];
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -64,6 +72,9 @@ type StudyQuestionProps = {
   sessionStatus: QuestionBankSessionStatus;
   revealed: boolean;
   correctionDraft: string;
+  confidenceRating: number | null;
+  doubtfulDraft: boolean;
+  correctionConfidenceLevel: CorrectionConfidenceLevel;
   busy: boolean;
   reportOpen: boolean;
   reportType: QuestionBankReportType;
@@ -72,6 +83,9 @@ type StudyQuestionProps = {
   onAnswer: (option: QuestionBankOption) => void;
   onReveal: () => void;
   onCorrectionChange: (v: string) => void;
+  onConfidenceRatingChange: (v: number | null) => void;
+  onToggleDoubtful: () => void;
+  onCorrectionConfidenceChange: (v: CorrectionConfidenceLevel) => void;
   onSubmitCorrection: () => void;
   onToggleReport: () => void;
   onReportTypeChange: (v: QuestionBankReportType) => void;
@@ -99,6 +113,9 @@ export default function StudyQuestion({
   sessionStatus,
   revealed,
   correctionDraft,
+  confidenceRating,
+  doubtfulDraft,
+  correctionConfidenceLevel,
   busy,
   reportOpen,
   reportType,
@@ -107,6 +124,9 @@ export default function StudyQuestion({
   onAnswer,
   onReveal,
   onCorrectionChange,
+  onConfidenceRatingChange,
+  onToggleDoubtful,
+  onCorrectionConfidenceChange,
   onSubmitCorrection,
   onToggleReport,
   onReportTypeChange,
@@ -121,6 +141,7 @@ export default function StudyQuestion({
 }: StudyQuestionProps) {
   const finalized = sessionStatus === "finalized";
   const canReveal = !finalized && item.answered && !revealed;
+  const canCaptureAnswerSignals = !finalized && !item.answered;
   const progress = Math.round((position / total) * 100);
 
   return (
@@ -214,6 +235,43 @@ export default function StudyQuestion({
               </div>
             )}
 
+            {canCaptureAnswerSignals && (
+              <div className="rounded-xl border border-edge bg-surface p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Confianca</span>
+                  <div className="flex gap-1">
+                    {CONFIDENCE_OPTIONS.map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => onConfidenceRatingChange(confidenceRating === value ? null : value)}
+                        className={cx(
+                          "flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-semibold transition",
+                          confidenceRating === value
+                            ? "border-primary bg-primary text-primaryInk"
+                            : "border-edge bg-paper text-muted hover:border-primary hover:text-ink",
+                        )}
+                      >
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onToggleDoubtful}
+                    className={cx(
+                      "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
+                      doubtfulDraft
+                        ? "border-warning bg-[var(--amber-tint)] text-ink"
+                        : "border-edge bg-paper text-muted hover:border-warning hover:text-warning",
+                    )}
+                  >
+                    Em duvida
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Alternatives */}
             <div className="grid gap-2">
               {OPTIONS.map((option) => {
@@ -293,6 +351,23 @@ export default function StudyQuestion({
                   placeholder="Explique o raciocínio correto e o motivo do erro."
                   className="mt-2 min-h-24 w-full resize-y"
                 />
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {CORRECTION_CONFIDENCE_OPTIONS.map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => onCorrectionConfidenceChange(value)}
+                      className={cx(
+                        "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
+                        correctionConfidenceLevel === value
+                          ? "border-primary bg-primary text-primaryInk"
+                          : "border-edge bg-paper text-muted hover:border-primary hover:text-ink",
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
                 <button
                   type="button"
                   onClick={onSubmitCorrection}

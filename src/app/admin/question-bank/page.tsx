@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import QuestionsManager from "./_components/QuestionsManager";
 import {
   getQuestionBankAdminCandidates,
   getQuestionBankAdminImport,
@@ -114,6 +115,11 @@ function WarningBox({ warning }: { warning: QuestionBankAdminWarning }) {
     <div className={`rounded-2xl border p-4 ${toneClasses}`}>
       <div className="text-xs font-semibold uppercase tracking-[0.18em]">{warning.code}</div>
       <div className="mt-1 text-sm">{warning.message}</div>
+      {warning.reason || warning.provider ? (
+        <div className="mt-2 text-xs">
+          {[warning.provider ? `provider: ${warning.provider}` : "", warning.reason ? `motivo: ${warning.reason}` : ""].filter(Boolean).join(" · ")}
+        </div>
+      ) : null}
       {warning.years_detected?.length ? (
         <div className="mt-2 text-xs">Anos detectados: {warning.years_detected.join(", ")}</div>
       ) : null}
@@ -189,6 +195,11 @@ function fieldText(value: unknown): string {
   return String(value);
 }
 
+function compactCodes(value: unknown): string {
+  if (!Array.isArray(value)) return "";
+  return value.map((item) => String(item || "").trim()).filter(Boolean).join(", ");
+}
+
 function parseYearsText(value: string): number[] {
   return [...new Set(
     value
@@ -229,6 +240,7 @@ export default function QuestionBankAdminPage() {
   const [reviewItems, setReviewItems] = useState<QuestionBankReviewQueueItem[]>([]);
   const [showReviewQueue, setShowReviewQueue] = useState<boolean>(false);
   const [reviewTotal, setReviewTotal] = useState<number>(0);
+  const [view, setView] = useState<"ingestao" | "questoes">("ingestao");
 
   function formatRelativeTime(date: Date | string): string {
     const d = typeof date === "string" ? new Date(date) : date;
@@ -436,12 +448,46 @@ export default function QuestionBankAdminPage() {
   }
 
   const previewSummary = preview?.preview_summary;
+  const previewDiagnostics = previewSummary?.question_diagnostics
+    ?? previewSummary?.quality_summary?.question_diagnostics
+    ?? [];
+  const previewDiagnosticsByNumber = new Map(
+    previewDiagnostics.map((item) => [String(item.question_number ?? "").trim(), item]),
+  );
   const selectedPipeline = selectedImport?.pipeline;
   const metadataDraft = { ...DEFAULT_METADATA, ...safeMetadataObject(metadataText) };
   const activeQuestionOverrides = compactQuestionOverrides(questionOverrides);
 
+  const viewSwitcher = (
+    <div className="inline-flex rounded-full border border-gray-200 bg-gray-50 p-1 text-sm dark:border-gray-800 dark:bg-gray-950">
+      {([["ingestao", "Ingestão & Pipeline"], ["questoes", "Questões"]] as const).map(([value, label]) => (
+        <button
+          key={value}
+          onClick={() => setView(value)}
+          className={`rounded-full px-4 py-1.5 font-semibold transition ${
+            view === value
+              ? "bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-100"
+              : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+
+  if (view === "questoes") {
+    return (
+      <div className="space-y-8">
+        {viewSwitcher}
+        <QuestionsManager />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
+      {viewSwitcher}
       <section className="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -629,6 +675,8 @@ export default function QuestionBankAdminPage() {
                   <MetadataPill label="fonte mista" value={previewSummary.is_mixed_source ? "sim" : "nao"} />
                   <MetadataPill label="instituicao" value={previewSummary.detected_metadata.institution} />
                   <MetadataPill label="acesso" value={previewSummary.detected_metadata.access_type} />
+                  <MetadataPill label="OCR" value={previewSummary.quality_summary?.ocr_summary?.used ? "usado" : previewSummary.quality_summary?.ocr_summary?.attempted ? "tentado" : null} />
+                  <MetadataPill label="paginas OCR" value={previewSummary.quality_summary?.ocr_summary?.pages_used} />
                 </div>
                 {previewSummary.warnings.length ? (
                   <div className="grid gap-3">
@@ -647,11 +695,13 @@ export default function QuestionBankAdminPage() {
                       <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Excecoes por questao</h4>
                     </div>
                     <div className="overflow-auto">
-                      <table className="min-w-[980px] w-full text-left text-xs">
+                      <table className="min-w-[1180px] w-full text-left text-xs">
                         <thead className="bg-gray-50 text-gray-500 dark:bg-gray-950 dark:text-gray-400">
                           <tr>
                             <th className="px-3 py-2 font-semibold">Q</th>
                             <th className="px-3 py-2 font-semibold">Enunciado</th>
+                            <th className="px-3 py-2 font-semibold">Extracao</th>
+                            <th className="px-3 py-2 font-semibold">Diagnostico</th>
                             <th className="px-3 py-2 font-semibold">Resolvido</th>
                             {QUESTION_OVERRIDE_FIELDS.map(([, label]) => (
                               <th key={label} className="px-3 py-2 font-semibold">{label}</th>
@@ -663,6 +713,11 @@ export default function QuestionBankAdminPage() {
                             const number = String(question.number ?? "").trim();
                             const override = questionOverrides[number] || {};
                             const resolved = question.editorial_metadata?.resolved_metadata || {};
+                            const diagnostic = previewDiagnosticsByNumber.get(number);
+                            const extractionSource = fieldText(question.extraction_source || diagnostic?.extraction_source || "text");
+                            const ocrUsed = Boolean(question.ocr_used || diagnostic?.ocr_used);
+                            const blockers = compactCodes(diagnostic?.blockers);
+                            const warnings = compactCodes(diagnostic?.warnings);
                             return (
                               <tr key={number || question.stem} className="border-t border-gray-100 align-top dark:border-gray-800">
                                 <td className="px-3 py-3 font-semibold text-gray-700 dark:text-gray-200">
@@ -670,6 +725,16 @@ export default function QuestionBankAdminPage() {
                                 </td>
                                 <td className="max-w-[260px] px-3 py-3 text-gray-600 dark:text-gray-300">
                                   {question.stem ? question.stem.slice(0, 150) + (question.stem.length > 150 ? "..." : "") : "-"}
+                                </td>
+                                <td className="px-3 py-3 text-gray-500 dark:text-gray-400">
+                                  <div>{extractionSource}</div>
+                                  {ocrUsed ? <div className="mt-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">OCR</div> : null}
+                                  {diagnostic?.requires_image ? <div className="mt-1 text-[10px] text-amber-600 dark:text-amber-300">depende de imagem</div> : null}
+                                </td>
+                                <td className="max-w-[220px] px-3 py-3 text-gray-500 dark:text-gray-400">
+                                  {blockers ? <div className="font-semibold text-red-600 dark:text-red-300">{blockers}</div> : null}
+                                  {warnings ? <div className="mt-1 text-amber-600 dark:text-amber-300">{warnings}</div> : null}
+                                  {!blockers && !warnings ? "-" : null}
                                 </td>
                                 <td className="px-3 py-3 text-gray-500 dark:text-gray-400">
                                   <div>{fieldText(resolved.year) || "-"}</div>

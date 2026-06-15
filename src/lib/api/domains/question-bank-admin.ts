@@ -1,4 +1,4 @@
-import { api, STUDY_IMPORT_SESSION_CREATE_TIMEOUT_MS } from "../shared/http";
+import { api, fetchRaw, parseJsonSafe, STUDY_IMPORT_SESSION_CREATE_TIMEOUT_MS } from "../shared/http";
 
 export type QuestionBankAdminWarning = {
   code: string;
@@ -6,7 +6,34 @@ export type QuestionBankAdminWarning = {
   message: string;
   years_detected?: number[];
   quality_score?: number;
+  reason?: string;
+  provider?: string;
   samples?: { question_number: number | string | null; sample: string }[];
+};
+
+export type QuestionBankOcrSummary = {
+  enabled?: boolean;
+  provider?: string;
+  attempted?: boolean;
+  available?: boolean;
+  runtime_ready?: boolean;
+  used?: boolean;
+  pages_used?: number;
+  unavailable_reason?: string | null;
+};
+
+export type QuestionBankQuestionDiagnostic = {
+  question_number: number | string | null;
+  blockers: string[];
+  warnings: string[];
+  option_count: number;
+  answer: string;
+  confidence_score: number;
+  requires_image: boolean;
+  has_image: boolean;
+  extraction_source?: string;
+  ocr_used?: boolean;
+  stem_sample: string;
 };
 
 export type QuestionBankAdminPreviewSummary = {
@@ -26,6 +53,18 @@ export type QuestionBankAdminPreviewSummary = {
   years_applied: number[];
   is_mixed_source: boolean;
   warnings: QuestionBankAdminWarning[];
+  quality_summary?: {
+    total_questions?: number;
+    blocked_questions?: number;
+    warning_questions?: number;
+    publishable_questions?: number;
+    quality_score?: number;
+    suspicious?: boolean;
+    image_extraction_failed?: boolean;
+    ocr_summary?: QuestionBankOcrSummary;
+    question_diagnostics?: QuestionBankQuestionDiagnostic[];
+  };
+  question_diagnostics?: QuestionBankQuestionDiagnostic[];
 };
 
 export type QuestionBankEditorialMetadata = {
@@ -48,6 +87,9 @@ export type QuestionBankAdminPreview = {
     stem?: string;
     correct_answer?: string | null;
     confidence_score?: number;
+    extraction_source?: string;
+    ocr_used?: boolean;
+    has_image?: boolean;
     metadata?: Record<string, unknown>;
     editorial_metadata?: QuestionBankEditorialMetadata;
     primary_medical_area?: { code?: string; name?: string } | null;
@@ -383,6 +425,168 @@ export async function enqueueQuestionBankQuestionAnalysis(
   return api<{ question_id: string; candidate_id: string; job_id: string; status: string }>(
     `/api/admin/question-bank/questions/${encodeURIComponent(questionId)}/analyze`,
     { method: "POST", headers: { "x-krosmed-csrf": "1" } },
+  );
+}
+
+// ─── Question management (search / detail / edit / delete) ───────────────────
+
+export type QuestionBankAdminQuestionListItem = {
+  id: string;
+  stem: string;
+  answer: string | null;
+  status: string | null;
+  content_grade: string | null;
+  classification_confidence: number | null;
+  board_code: string | null;
+  year: number | null;
+  institution: string | null;
+  primary_node_name: string | null;
+  has_image: boolean;
+  updated_at: string | null;
+};
+
+export type QuestionBankAdminQuestionsResponse = {
+  items: QuestionBankAdminQuestionListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
+export type QuestionBankAdminQuestionNode = {
+  knowledge_node_id: string;
+  role: string | null;
+  is_primary: boolean;
+  node_name: string | null;
+  node_code: string | null;
+  node_type: string | null;
+};
+
+export type QuestionBankAdminQuestionDetail = {
+  id: string;
+  stem: string;
+  alternatives: Record<string, string>;
+  answer: string | null;
+  status: string | null;
+  content_grade: string | null;
+  difficulty_estimate: number | null;
+  classification_confidence: number | null;
+  is_annulled: boolean;
+  is_blocked: boolean;
+  version: number | null;
+  nodes: QuestionBankAdminQuestionNode[];
+  images: { idx: number; content_type: string }[];
+  image_refs: string[];
+  source: Record<string, unknown>;
+  publish_blockers: string[];
+  charge_profile: Record<string, unknown>;
+  edit_log: { by?: string; at?: string; fields?: string[] }[];
+};
+
+export type QuestionBankAdminKnowledgeNode = {
+  id: string;
+  code: string | null;
+  name: string;
+  type: string | null;
+};
+
+export type QuestionBankAdminQuestionPatch = {
+  canonical_stem_md?: string;
+  canonical_alternatives?: Record<string, string>;
+  canonical_answer?: string;
+  difficulty_estimate?: number;
+  primary_node_id?: string;
+};
+
+export type QuestionBankAdminEditResult = {
+  result: "updated" | "blocked" | "duplicate_of" | "not_found";
+  question_id: string;
+  blockers?: string[];
+  duplicate_of?: string;
+  changed_fields?: string[];
+};
+
+export async function searchQuestionBankAdminQuestions(params?: {
+  q?: string;
+  status?: string;
+  content_grade?: string;
+  board_code?: string;
+  year?: number;
+  knowledge_node_id?: string;
+  has_image?: boolean;
+  limit?: number;
+  offset?: number;
+}): Promise<QuestionBankAdminQuestionsResponse> {
+  const search = new URLSearchParams();
+  if (params?.q?.trim()) search.set("q", params.q.trim());
+  if (params?.status) search.set("status", params.status);
+  if (params?.content_grade) search.set("content_grade", params.content_grade);
+  if (params?.board_code?.trim()) search.set("board_code", params.board_code.trim());
+  if (params?.year) search.set("year", String(params.year));
+  if (params?.knowledge_node_id) search.set("knowledge_node_id", params.knowledge_node_id);
+  if (params?.has_image !== undefined) search.set("has_image", params.has_image ? "true" : "false");
+  if (params?.limit) search.set("limit", String(params.limit));
+  if (params?.offset) search.set("offset", String(params.offset));
+  const qs = search.toString();
+  return api<QuestionBankAdminQuestionsResponse>(
+    `/api/admin/question-bank/questions${qs ? `?${qs}` : ""}`,
+  );
+}
+
+export async function getQuestionBankAdminQuestion(
+  questionId: string,
+): Promise<QuestionBankAdminQuestionDetail> {
+  return api<QuestionBankAdminQuestionDetail>(
+    `/api/admin/question-bank/questions/${encodeURIComponent(questionId)}`,
+  );
+}
+
+export async function editQuestionBankAdminQuestion(
+  questionId: string,
+  patch: QuestionBankAdminQuestionPatch,
+): Promise<QuestionBankAdminEditResult> {
+  // 409 (blocked / duplicate_of) carries a discriminated body — read it directly
+  // instead of throwing, so the edit form can show blockers inline.
+  const res = await fetchRaw(
+    `/api/admin/question-bank/questions/${encodeURIComponent(questionId)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ patch }),
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+    },
+  );
+  const data = await parseJsonSafe(res);
+  if (data && typeof data === "object" && "result" in data) {
+    return data as QuestionBankAdminEditResult;
+  }
+  throw new Error(`Falha ao editar questão (HTTP ${res.status})`);
+}
+
+export async function deleteQuestionBankAdminQuestion(
+  questionId: string,
+  options?: { hard?: boolean; reason?: string },
+): Promise<{ result: string; question_id: string; status?: string }> {
+  const search = new URLSearchParams();
+  if (options?.hard) search.set("hard", "true");
+  if (options?.reason) search.set("reason", options.reason);
+  const qs = search.toString();
+  return api<{ result: string; question_id: string; status?: string }>(
+    `/api/admin/question-bank/questions/${encodeURIComponent(questionId)}${qs ? `?${qs}` : ""}`,
+    { method: "DELETE", headers: { "x-krosmed-csrf": "1" } },
+  );
+}
+
+export async function listQuestionBankAdminKnowledgeNodes(params?: {
+  q?: string;
+  type?: string;
+  limit?: number;
+}): Promise<{ items: QuestionBankAdminKnowledgeNode[] }> {
+  const search = new URLSearchParams();
+  if (params?.q?.trim()) search.set("q", params.q.trim());
+  if (params?.type) search.set("type", params.type);
+  if (params?.limit) search.set("limit", String(params.limit));
+  const qs = search.toString();
+  return api<{ items: QuestionBankAdminKnowledgeNode[] }>(
+    `/api/admin/question-bank/knowledge-nodes${qs ? `?${qs}` : ""}`,
   );
 }
 

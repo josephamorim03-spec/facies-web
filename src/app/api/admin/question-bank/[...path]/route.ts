@@ -45,3 +45,11 @@ export async function PATCH(
     contentType: contentType ?? "application/json",
   });
 }
+
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ path: string[] }> },
+) {
+  const { path } = await context.params;
+  return proxyQuestionBankAdmin(request, buildUpstreamPath(request, path), { method: "DELETE" });
+}

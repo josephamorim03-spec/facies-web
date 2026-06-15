@@ -225,6 +225,12 @@ export {
   getQuestionBankAdminReadiness,
   processQuestionBankAdminBatch,
   runQuestionBankAdminAll,
+  searchQuestionBankAdminQuestions,
+  getQuestionBankAdminQuestion,
+  editQuestionBankAdminQuestion,
+  deleteQuestionBankAdminQuestion,
+  listQuestionBankAdminKnowledgeNodes,
+  updateQuestionBankQuestionStatus,
 } from "./api/domains/question-bank-admin";
 export type {
   QuestionBankAdminWarning,
@@ -237,6 +243,13 @@ export type {
   QuestionBankAdminReadiness,
   QuestionBankAdminCandidate,
   QuestionBankAdminCandidatesResponse,
+  QuestionBankAdminQuestionListItem,
+  QuestionBankAdminQuestionsResponse,
+  QuestionBankAdminQuestionDetail,
+  QuestionBankAdminQuestionNode,
+  QuestionBankAdminKnowledgeNode,
+  QuestionBankAdminQuestionPatch,
+  QuestionBankAdminEditResult,
 } from "./api/domains/question-bank-admin";
 
 // Performance domain

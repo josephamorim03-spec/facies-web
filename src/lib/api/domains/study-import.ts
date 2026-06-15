@@ -120,6 +120,8 @@ export type ReviewTask = {
   node_volatility: number | null;
   at_risk: boolean;
   due_question_count: number;
+  struggling_question_count: number;
+  question_review_count: number;
 };
 
 export type ReviewAgenda = {

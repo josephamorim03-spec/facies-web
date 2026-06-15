@@ -1,0 +1,474 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import {
+  deleteQuestionBankAdminQuestion,
+  editQuestionBankAdminQuestion,
+  getQuestionBankAdminQuestion,
+  listQuestionBankAdminKnowledgeNodes,
+  searchQuestionBankAdminQuestions,
+  updateQuestionBankQuestionStatus,
+  type QuestionBankAdminKnowledgeNode,
+  type QuestionBankAdminQuestionDetail,
+  type QuestionBankAdminQuestionListItem,
+} from "@/lib/api/domains/question-bank-admin";
+
+const STATUS_OPTIONS = [
+  ["published", "Publicadas"],
+  ["human_review_pending", "Em revisão"],
+  ["blocked", "Bloqueadas"],
+  ["deprecated", "Depreciadas"],
+  ["all", "Todas"],
+] as const;
+
+const OPTION_LETTERS = ["A", "B", "C", "D", "E"] as const;
+
+function statusTone(status: string | null): string {
+  switch (status) {
+    case "published":
+      return "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300";
+    case "blocked":
+    case "deprecated":
+      return "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300";
+    case "human_review_pending":
+    case "human_reviewed":
+      return "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+    default:
+      return "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300";
+  }
+}
+
+type EditState = {
+  stem: string;
+  alternatives: Record<string, string>;
+  answer: string;
+  difficulty: string;
+  primaryNodeId: string;
+  primaryNodeLabel: string;
+};
+
+export default function QuestionsManager() {
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState<string>("published");
+  const [boardCode, setBoardCode] = useState("");
+  const [year, setYear] = useState("");
+  const [hasImage, setHasImage] = useState<"" | "true" | "false">("");
+  const [items, setItems] = useState<QuestionBankAdminQuestionListItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const LIMIT = 25;
+
+  const [detail, setDetail] = useState<QuestionBankAdminQuestionDetail | null>(null);
+  const [edit, setEdit] = useState<EditState | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [blockers, setBlockers] = useState<string[]>([]);
+  const [nodeQuery, setNodeQuery] = useState("");
+  const [nodeResults, setNodeResults] = useState<QuestionBankAdminKnowledgeNode[]>([]);
+
+  const search = useCallback(
+    async (nextOffset = 0) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await searchQuestionBankAdminQuestions({
+          q: q || undefined,
+          status,
+          board_code: boardCode || undefined,
+          year: year ? Number(year) : undefined,
+          has_image: hasImage === "" ? undefined : hasImage === "true",
+          limit: LIMIT,
+          offset: nextOffset,
+        });
+        setItems(res.items);
+        setTotal(res.total);
+        setOffset(nextOffset);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Falha ao buscar questões.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [q, status, boardCode, year, hasImage],
+  );
+
+  // Debounced auto-search on filter changes.
+  const firstRender = useRef(true);
+  useEffect(() => {
+    const handle = setTimeout(() => void search(0), firstRender.current ? 0 : 350);
+    firstRender.current = false;
+    return () => clearTimeout(handle);
+  }, [search]);
+
+  useEffect(() => {
+    if (!nodeQuery.trim()) {
+      setNodeResults([]);
+      return;
+    }
+    let active = true;
+    const handle = setTimeout(() => {
+      listQuestionBankAdminKnowledgeNodes({ q: nodeQuery, limit: 12 })
+        .then((res) => {
+          if (active) setNodeResults(res.items);
+        })
+        .catch(() => {
+          if (active) setNodeResults([]);
+        });
+    }, 300);
+    return () => {
+      active = false;
+      clearTimeout(handle);
+    };
+  }, [nodeQuery]);
+
+  async function openEditor(questionId: string) {
+    setError(null);
+    setBlockers([]);
+    try {
+      const d = await getQuestionBankAdminQuestion(questionId);
+      setDetail(d);
+      const primary = d.nodes.find((n) => n.is_primary);
+      setEdit({
+        stem: d.stem ?? "",
+        alternatives: { A: "", B: "", C: "", D: "", E: "", ...d.alternatives },
+        answer: d.answer ?? "",
+        difficulty: d.difficulty_estimate != null ? String(d.difficulty_estimate) : "",
+        primaryNodeId: primary?.knowledge_node_id ?? "",
+        primaryNodeLabel: primary?.node_name ?? "",
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao carregar a questão.");
+    }
+  }
+
+  function closeEditor() {
+    setDetail(null);
+    setEdit(null);
+    setBlockers([]);
+    setNodeQuery("");
+    setNodeResults([]);
+  }
+
+  async function saveEdit() {
+    if (!detail || !edit) return;
+    setSaving(true);
+    setBlockers([]);
+    setError(null);
+    try {
+      const alternatives = Object.fromEntries(
+        OPTION_LETTERS.map((l) => [l, edit.alternatives[l] ?? ""]).filter(([, v]) => String(v).trim()),
+      );
+      const result = await editQuestionBankAdminQuestion(detail.id, {
+        canonical_stem_md: edit.stem,
+        canonical_alternatives: alternatives,
+        canonical_answer: edit.answer,
+        difficulty_estimate: edit.difficulty ? Number(edit.difficulty) : undefined,
+        primary_node_id: edit.primaryNodeId || undefined,
+      });
+      if (result.result === "updated") {
+        setNotice("Questão atualizada.");
+        closeEditor();
+        void search(offset);
+      } else if (result.result === "blocked") {
+        setBlockers(result.blockers ?? []);
+      } else if (result.result === "duplicate_of") {
+        setBlockers([`duplicate_of:${result.duplicate_of}`]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao salvar.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function changeStatus(
+    item: QuestionBankAdminQuestionListItem,
+    action: "publish" | "unpublish" | "deprecate",
+  ) {
+    setError(null);
+    try {
+      const res = await updateQuestionBankQuestionStatus(item.id, action);
+      if ((res as { result?: string }).result === "blocked") {
+        setError("Não foi possível publicar: a questão falha no gate de qualidade.");
+        return;
+      }
+      setNotice(`Questão ${action === "publish" ? "publicada" : action === "unpublish" ? "despublicada" : "removida"}.`);
+      void search(offset);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao alterar status.");
+    }
+  }
+
+  async function softDelete(item: QuestionBankAdminQuestionListItem) {
+    if (!window.confirm("Apagar esta questão? Ela sai do banco do aluno (reversível, pode republicar).")) {
+      return;
+    }
+    setError(null);
+    try {
+      await deleteQuestionBankAdminQuestion(item.id);
+      setNotice("Questão removida do banco do aluno.");
+      void search(offset);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao apagar.");
+    }
+  }
+
+  const inputCls =
+    "rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100";
+
+  return (
+    <section className="space-y-5 rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+      <div>
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Questões</h2>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+          Busque, edite e remova questões. Editar revalida o gate de qualidade; apagar é soft-delete
+          (sai do banco do aluno, reversível).
+        </p>
+      </div>
+
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Buscar no enunciado…"
+          className={`${inputCls} min-w-[16rem] flex-1`}
+        />
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls}>
+          {STATUS_OPTIONS.map(([v, label]) => (
+            <option key={v} value={v}>{label}</option>
+          ))}
+        </select>
+        <input
+          value={boardCode}
+          onChange={(e) => setBoardCode(e.target.value)}
+          placeholder="Banca"
+          className={`${inputCls} w-28`}
+        />
+        <input
+          value={year}
+          onChange={(e) => setYear(e.target.value.replace(/\D/g, ""))}
+          placeholder="Ano"
+          className={`${inputCls} w-24`}
+        />
+        <select value={hasImage} onChange={(e) => setHasImage(e.target.value as "" | "true" | "false")} className={inputCls}>
+          <option value="">Imagem: todas</option>
+          <option value="true">Com imagem</option>
+          <option value="false">Sem imagem</option>
+        </select>
+      </div>
+
+      {error && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200">
+          {error}
+        </div>
+      )}
+      {notice && (
+        <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900/40 dark:bg-green-950/30 dark:text-green-200">
+          {notice}
+        </div>
+      )}
+
+      {/* Tabela */}
+      <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-950 dark:text-gray-400">
+            <tr>
+              <th className="px-4 py-3">Enunciado</th>
+              <th className="px-4 py-3">Tópico</th>
+              <th className="px-4 py-3">Banca · Ano</th>
+              <th className="px-4 py-3">Gab.</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            {items.map((item) => (
+              <tr key={item.id} className="align-top">
+                <td className="max-w-md px-4 py-3 text-gray-900 dark:text-gray-100">
+                  <p className="line-clamp-2">{item.stem}</p>
+                  {item.has_image && (
+                    <span className="mt-1 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                      imagem
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{item.primary_node_name ?? "—"}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                  {[item.board_code, item.year].filter(Boolean).join(" · ") || "—"}
+                </td>
+                <td className="px-4 py-3 font-semibold text-gray-900 dark:text-gray-100">{item.answer ?? "—"}</td>
+                <td className="px-4 py-3">
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusTone(item.status)}`}>
+                    {item.status ?? "—"}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex justify-end gap-2">
+                    <button onClick={() => void openEditor(item.id)} className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
+                      Editar
+                    </button>
+                    {item.status === "published" ? (
+                      <button onClick={() => void changeStatus(item, "unpublish")} className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
+                        Despublicar
+                      </button>
+                    ) : (
+                      <button onClick={() => void changeStatus(item, "publish")} className="rounded-lg border border-green-300 px-2.5 py-1 text-xs font-semibold text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-950/30">
+                        Publicar
+                      </button>
+                    )}
+                    <button onClick={() => void softDelete(item)} className="rounded-lg border border-red-300 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30">
+                      Apagar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {!loading && items.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                  Nenhuma questão encontrada.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Paginação */}
+      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
+        <span>{loading ? "Carregando…" : `${total} questão(ões)`}</span>
+        <div className="flex gap-2">
+          <button
+            disabled={offset === 0 || loading}
+            onClick={() => void search(Math.max(0, offset - LIMIT))}
+            className="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-40 dark:border-gray-700"
+          >
+            Anterior
+          </button>
+          <button
+            disabled={offset + LIMIT >= total || loading}
+            onClick={() => void search(offset + LIMIT)}
+            className="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-40 dark:border-gray-700"
+          >
+            Próxima
+          </button>
+        </div>
+      </div>
+
+      {/* Modal de edição */}
+      {detail && edit && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4" onClick={closeEditor}>
+          <div
+            className="my-8 w-full max-w-3xl rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Editar questão</h3>
+              <button onClick={closeEditor} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" aria-label="Fechar">×</button>
+            </div>
+
+            {blockers.length > 0 && (
+              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200">
+                <p className="font-semibold">Não salvo — a edição falha no gate:</p>
+                <ul className="mt-1 list-disc pl-5">
+                  {blockers.map((b) => <li key={b}>{b}</li>)}
+                </ul>
+              </div>
+            )}
+
+            <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Enunciado</label>
+            <textarea
+              value={edit.stem}
+              onChange={(e) => setEdit({ ...edit, stem: e.target.value })}
+              className={`${inputCls} mt-1 min-h-32 w-full resize-y`}
+            />
+
+            <div className="mt-4 grid gap-2">
+              {OPTION_LETTERS.map((letter) => (
+                <div key={letter} className="flex items-center gap-2">
+                  <span className="w-6 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">{letter}</span>
+                  <input
+                    value={edit.alternatives[letter] ?? ""}
+                    onChange={(e) => setEdit({ ...edit, alternatives: { ...edit.alternatives, [letter]: e.target.value } })}
+                    className={`${inputCls} flex-1`}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-end gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Gabarito</label>
+                <select value={edit.answer} onChange={(e) => setEdit({ ...edit, answer: e.target.value })} className={`${inputCls} mt-1`}>
+                  <option value="">—</option>
+                  {OPTION_LETTERS.map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Dificuldade (0–1)</label>
+                <input
+                  value={edit.difficulty}
+                  onChange={(e) => setEdit({ ...edit, difficulty: e.target.value })}
+                  placeholder="0.5"
+                  className={`${inputCls} mt-1 w-28`}
+                />
+              </div>
+              <div className="relative min-w-[14rem] flex-1">
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Tópico primário</label>
+                <input
+                  value={nodeQuery || edit.primaryNodeLabel}
+                  onChange={(e) => { setNodeQuery(e.target.value); }}
+                  placeholder="Buscar tópico…"
+                  className={`${inputCls} mt-1 w-full`}
+                />
+                {nodeResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                    {nodeResults.map((node) => (
+                      <button
+                        key={node.id}
+                        onClick={() => {
+                          setEdit({ ...edit, primaryNodeId: node.id, primaryNodeLabel: node.name });
+                          setNodeQuery("");
+                          setNodeResults([]);
+                        }}
+                        className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+                      >
+                        <span className="font-medium">{node.name}</span>
+                        <span className="ml-2 text-xs text-gray-400">{node.type}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {detail.image_refs.length > 0 && (
+              <div className="mt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Imagens</p>
+                <div className="mt-2 grid gap-2 md:grid-cols-3">
+                  {detail.image_refs.map((src) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={src} src={src} alt="Imagem da questão" className="rounded-lg border border-gray-200 dark:border-gray-700" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button onClick={closeEditor} className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
+                Cancelar
+              </button>
+              <button onClick={() => void saveEdit()} disabled={saving} className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700 disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white">
+                {saving ? "Salvando…" : "Salvar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}

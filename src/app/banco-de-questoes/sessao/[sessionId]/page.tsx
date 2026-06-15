@@ -29,6 +29,14 @@ type QuickNoteTarget = {
   questionOutcome: OperationalQuestionOutcome | null;
 };
 
+type CorrectionConfidenceLevel = "low" | "medium" | "high";
+
+const CORRECTION_CONFIDENCE_DELTA: Record<CorrectionConfidenceLevel, number> = {
+  low: 0.15,
+  medium: 0.35,
+  high: 0.6,
+};
+
 export default function SessionPage() {
   const params = useParams<{ sessionId: string }>();
   const sessionId = params.sessionId;
@@ -49,6 +57,9 @@ export default function SessionPage() {
   // Reveal state (training mode)
   const [revealedPositions, setRevealedPositions] = useState<Record<number, boolean>>({});
   const [correctionDrafts, setCorrectionDrafts] = useState<Record<number, string>>({});
+  const [confidenceRatings, setConfidenceRatings] = useState<Record<number, number | null>>({});
+  const [preAnswerDoubtful, setPreAnswerDoubtful] = useState<Record<number, boolean>>({});
+  const [correctionConfidence, setCorrectionConfidence] = useState<Record<number, CorrectionConfidenceLevel>>({});
 
   // Report state
   const [reportingQuestionId, setReportingQuestionId] = useState<string | null>(null);
@@ -88,6 +99,8 @@ export default function SessionPage() {
       const updated = await recordQuestionBankAttempt(token, session.session_id, position, {
         selected_option: selected,
         time_ms: Date.now() - questionStartTimeRef.current,
+        doubtful: Boolean(preAnswerDoubtful[position]),
+        confidence_self_rating: confidenceRatings[position] ?? null,
       });
       setSession(updated);
     } catch (err) {
@@ -100,12 +113,17 @@ export default function SessionPage() {
   async function toggleDoubtful(position: number) {
     if (!session) return;
     const item = session.items.find((i) => i.position === position);
-    if (!item || !item.selected_option) return;
+    if (!item) return;
+    if (!item.selected_option) {
+      setPreAnswerDoubtful((prev) => ({ ...prev, [position]: !Boolean(prev[position]) }));
+      return;
+    }
     setBusy(true);
     try {
       const updated = await recordQuestionBankAttempt(token, session.session_id, position, {
         selected_option: item.selected_option,
         doubtful: !item.doubtful,
+        confidence_self_rating: item.confidence_self_rating ?? confidenceRatings[position] ?? null,
       });
       setSession(updated);
     } catch {
@@ -125,7 +143,7 @@ export default function SessionPage() {
       const out = await recordQuestionBankCorrection(token, session.session_id, position, {
         prompt: "Qual foi o raciocínio correto e onde você errou?",
         response_value: response,
-        confidence_delta: 0.3,
+        confidence_delta: CORRECTION_CONFIDENCE_DELTA[correctionConfidence[position] ?? "medium"],
       });
       setSession(out.session);
       setCorrectionDrafts((prev) => ({ ...prev, [position]: "" }));
@@ -233,6 +251,9 @@ export default function SessionPage() {
           sessionStatus={session.status}
           revealed={Boolean(revealedPositions[currentPosition])}
           correctionDraft={correctionDrafts[currentPosition] ?? ""}
+          confidenceRating={confidenceRatings[currentPosition] ?? currentItem.confidence_self_rating ?? null}
+          doubtfulDraft={preAnswerDoubtful[currentPosition] ?? currentItem.doubtful}
+          correctionConfidenceLevel={correctionConfidence[currentPosition] ?? "medium"}
           busy={busy}
           reportOpen={reportingQuestionId === currentItem.question_id}
           reportType={reportType}
@@ -241,6 +262,9 @@ export default function SessionPage() {
           onAnswer={(opt) => void answer(currentPosition, opt)}
           onReveal={() => setRevealedPositions((prev) => ({ ...prev, [currentPosition]: true }))}
           onCorrectionChange={(v) => setCorrectionDrafts((prev) => ({ ...prev, [currentPosition]: v }))}
+          onConfidenceRatingChange={(v) => setConfidenceRatings((prev) => ({ ...prev, [currentPosition]: v }))}
+          onToggleDoubtful={() => void toggleDoubtful(currentPosition)}
+          onCorrectionConfidenceChange={(v) => setCorrectionConfidence((prev) => ({ ...prev, [currentPosition]: v }))}
           onSubmitCorrection={() => void submitCorrection(currentPosition)}
           onToggleReport={() =>
             setReportingQuestionId((prev) =>
