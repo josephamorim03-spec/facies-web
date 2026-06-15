@@ -69,6 +69,16 @@ async function mockShellApi(page: Page) {
       return json({ area_summaries: [], diagnosis: { ready: false, weaknesses: [] } });
     }
 
+    if (method === "GET" && path === "/api/reviews/agenda") {
+      return json({
+        tasks: [],
+        due_question_total: 0,
+        struggling_question_total: 0,
+        question_review_total: 0,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
     if (
       method === "GET" &&
       [

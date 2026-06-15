@@ -123,7 +123,16 @@ export default function ExamQuestion({
         {item.image_refs.length > 0 && (
           <div className="mt-6 grid gap-3 md:grid-cols-2">
             {item.image_refs.map((src) => (
-              <img key={src} src={src} alt="Imagem da questão" className="rounded-xl border border-edge bg-surface" />
+              <img
+                key={src}
+                src={src}
+                alt="Imagem da questão"
+                className="rounded-xl border border-edge bg-surface"
+                onError={(event) => {
+                  // Sessões antigas podem ter URLs assinadas já expiradas.
+                  event.currentTarget.style.display = "none";
+                }}
+              />
             ))}
           </div>
         )}

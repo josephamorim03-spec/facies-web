@@ -26,11 +26,39 @@ import {
 
 const DEFAULT_METADATA = {
   years: [],
+  board_code: "",
   grande_area: "",
   tema: "",
   subtema: "",
   microcompetencia: "",
+  institution: "",
+  exam_name: "",
+  access_type: "",
+  classification_preset_policy: "lock_filled_fields",
 };
+
+const SOURCE_METADATA_FIELDS = [
+  ["years", "Anos"],
+  ["board_code", "Banca"],
+  ["institution", "Instituicao"],
+  ["exam_name", "Nome da prova"],
+  ["access_type", "Acesso"],
+] as const;
+
+const CONTENT_METADATA_FIELDS = [
+  ["grande_area", "Grande area"],
+  ["tema", "Tema"],
+  ["subtema", "Subtema"],
+  ["microcompetencia", "Microcompetencia"],
+] as const;
+
+const QUESTION_OVERRIDE_FIELDS = [
+  ["year", "Ano"],
+  ["grande_area", "Grande area"],
+  ["tema", "Tema"],
+  ["subtema", "Subtema"],
+  ["microcompetencia", "Microcompetencia"],
+] as const;
 
 const JOB_TYPES = [
   "dedup_question",
@@ -146,6 +174,38 @@ function JsonPanel({ title, value }: { title: string; value: unknown }) {
   );
 }
 
+function safeMetadataObject(text: string): Record<string, unknown> {
+  try {
+    const parsed = JSON.parse(text || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
+  } catch {
+    return {};
+  }
+}
+
+function fieldText(value: unknown): string {
+  if (Array.isArray(value)) return value.join(", ");
+  if (value === null || value === undefined) return "";
+  return String(value);
+}
+
+function parseYearsText(value: string): number[] {
+  return [...new Set(
+    value
+      .split(/[,\s]+/)
+      .map((part) => Number.parseInt(part.trim(), 10))
+      .filter((year) => Number.isFinite(year)),
+  )].sort((a, b) => a - b);
+}
+
+function compactQuestionOverrides(
+  overrides: Record<string, Record<string, unknown>>,
+): Record<string, Record<string, unknown>> {
+  return Object.fromEntries(
+    Object.entries(overrides).filter(([, value]) => Object.keys(value).length > 0),
+  );
+}
+
 export default function QuestionBankAdminPage() {
   const [imports, setImports] = useState<QuestionBankAdminImportItem[]>([]);
   const [selectedImportId, setSelectedImportId] = useState<string>("");
@@ -155,6 +215,7 @@ export default function QuestionBankAdminPage() {
   const [readiness, setReadiness] = useState<QuestionBankAdminReadiness | null>(null);
   const [preview, setPreview] = useState<QuestionBankAdminPreview | null>(null);
   const [metadataText, setMetadataText] = useState(JSON.stringify(DEFAULT_METADATA, null, 2));
+  const [questionOverrides, setQuestionOverrides] = useState<Record<string, Record<string, unknown>>>({});
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string>("");
   const [busy, setBusy] = useState<string>("");
@@ -185,6 +246,40 @@ export default function QuestionBankAdminPage() {
       throw new Error("O override precisa ser um JSON objeto.");
     }
     return parsed as Record<string, unknown>;
+  }
+
+  function updateMetadataField(key: string, rawValue: string) {
+    const current = { ...DEFAULT_METADATA, ...safeMetadataObject(metadataText) };
+    const value = key === "years" ? parseYearsText(rawValue) : rawValue;
+    const next = {
+      ...current,
+      [key]: value,
+      classification_preset_policy: "lock_filled_fields",
+    };
+    setMetadataText(JSON.stringify(next, null, 2));
+  }
+
+  function updateQuestionOverride(questionNumber: unknown, key: string, rawValue: string) {
+    const number = String(questionNumber ?? "").trim();
+    if (!number) return;
+    setQuestionOverrides((prev) => {
+      const current = { ...(prev[number] || {}) };
+      current[key] = key === "year" && rawValue.trim() ? Number.parseInt(rawValue.trim(), 10) : rawValue;
+      return { ...prev, [number]: current };
+    });
+  }
+
+  function removeQuestionOverrideField(questionNumber: unknown, key: string) {
+    const number = String(questionNumber ?? "").trim();
+    if (!number) return;
+    setQuestionOverrides((prev) => {
+      const current = { ...(prev[number] || {}) };
+      delete current[key];
+      const next = { ...prev };
+      if (Object.keys(current).length > 0) next[number] = current;
+      else delete next[number];
+      return next;
+    });
   }
 
   async function loadImports(nextSelectedImportId?: string) {
@@ -342,6 +437,8 @@ export default function QuestionBankAdminPage() {
 
   const previewSummary = preview?.preview_summary;
   const selectedPipeline = selectedImport?.pipeline;
+  const metadataDraft = { ...DEFAULT_METADATA, ...safeMetadataObject(metadataText) };
+  const activeQuestionOverrides = compactQuestionOverrides(questionOverrides);
 
   return (
     <div className="space-y-8">
@@ -426,14 +523,55 @@ export default function QuestionBankAdminPage() {
                   className="rounded-2xl border border-gray-300 bg-white px-4 py-3 text-sm dark:border-gray-700 dark:bg-gray-950"
                 />
               </label>
-              <label className="grid gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                Override editorial JSON
-                <textarea
-                  value={metadataText}
-                  onChange={(event) => setMetadataText(event.target.value)}
-                  className="min-h-[220px] rounded-3xl border border-gray-300 bg-gray-50 px-4 py-4 font-mono text-xs leading-6 text-gray-800 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
-                />
-              </label>
+              <div className="grid gap-4 rounded-3xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/60">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">
+                    Dados da prova
+                  </p>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                    {SOURCE_METADATA_FIELDS.map(([key, label]) => (
+                      <label key={key} className="grid gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
+                        {label}
+                        <input
+                          value={fieldText(metadataDraft[key])}
+                          onChange={(event) => updateMetadataField(key, event.target.value)}
+                          className="rounded-2xl border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-950"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">
+                    Classificacao do conteudo
+                  </p>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                    {CONTENT_METADATA_FIELDS.map(([key, label]) => (
+                      <label key={key} className="grid gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
+                        {label}
+                        <input
+                          value={fieldText(metadataDraft[key])}
+                          onChange={(event) => updateMetadataField(key, event.target.value)}
+                          className="rounded-2xl border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-950"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-3 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">
+                    Campos preenchidos ficam travados para o lote; campos vazios ficam para a IA.
+                  </div>
+                </div>
+                <details className="rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
+                  <summary className="cursor-pointer text-sm font-semibold text-gray-700 dark:text-gray-200">
+                    JSON avancado
+                  </summary>
+                  <textarea
+                    value={metadataText}
+                    onChange={(event) => setMetadataText(event.target.value)}
+                    className="mt-3 min-h-[180px] w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-4 font-mono text-xs leading-6 text-gray-800 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
+                  />
+                </details>
+              </div>
               <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                 <input
                   type="checkbox"
@@ -447,7 +585,11 @@ export default function QuestionBankAdminPage() {
                 <button
                   onClick={() => void runSafely("Gerando preview", async () => {
                     if (!file) throw new Error("Escolha um PDF antes de pedir preview.");
-                    const previewResponse = await previewQuestionBankAdminImport(file, parseMetadata());
+                    const previewResponse = await previewQuestionBankAdminImport(
+                      file,
+                      parseMetadata(),
+                      activeQuestionOverrides,
+                    );
                     setPreview(previewResponse);
                   })}
                   className="rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
@@ -457,7 +599,10 @@ export default function QuestionBankAdminPage() {
                 <button
                   onClick={() => void runSafely("Importando PDF", async () => {
                     if (!file) throw new Error("Escolha um PDF antes de importar.");
-                    const result = await importQuestionBankAdminFile(file, parseMetadata(), { auto_pipeline: autoPipeline });
+                    const result = await importQuestionBankAdminFile(file, parseMetadata(), {
+                      auto_pipeline: autoPipeline,
+                      question_overrides: activeQuestionOverrides,
+                    });
                     if (result.preview_summary && preview) {
                       setPreview({ ...preview, preview_summary: result.preview_summary });
                     }
@@ -496,9 +641,81 @@ export default function QuestionBankAdminPage() {
                     Nenhum alerta estrutural critico apareceu nesse preview.
                   </div>
                 )}
+                {preview.questions.length ? (
+                  <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                    <div className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Excecoes por questao</h4>
+                    </div>
+                    <div className="overflow-auto">
+                      <table className="min-w-[980px] w-full text-left text-xs">
+                        <thead className="bg-gray-50 text-gray-500 dark:bg-gray-950 dark:text-gray-400">
+                          <tr>
+                            <th className="px-3 py-2 font-semibold">Q</th>
+                            <th className="px-3 py-2 font-semibold">Enunciado</th>
+                            <th className="px-3 py-2 font-semibold">Resolvido</th>
+                            {QUESTION_OVERRIDE_FIELDS.map(([, label]) => (
+                              <th key={label} className="px-3 py-2 font-semibold">{label}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preview.questions.map((question) => {
+                            const number = String(question.number ?? "").trim();
+                            const override = questionOverrides[number] || {};
+                            const resolved = question.editorial_metadata?.resolved_metadata || {};
+                            return (
+                              <tr key={number || question.stem} className="border-t border-gray-100 align-top dark:border-gray-800">
+                                <td className="px-3 py-3 font-semibold text-gray-700 dark:text-gray-200">
+                                  {number || "-"}
+                                </td>
+                                <td className="max-w-[260px] px-3 py-3 text-gray-600 dark:text-gray-300">
+                                  {question.stem ? question.stem.slice(0, 150) + (question.stem.length > 150 ? "..." : "") : "-"}
+                                </td>
+                                <td className="px-3 py-3 text-gray-500 dark:text-gray-400">
+                                  <div>{fieldText(resolved.year) || "-"}</div>
+                                  <div>{fieldText(resolved.grande_area) || "-"}</div>
+                                  <div>{fieldText(resolved.tema) || "-"}</div>
+                                  <div>{fieldText(resolved.microcompetencia) || "-"}</div>
+                                </td>
+                                {QUESTION_OVERRIDE_FIELDS.map(([key]) => {
+                                  const hasOverride = Object.prototype.hasOwnProperty.call(override, key);
+                                  return (
+                                    <td key={key} className="px-2 py-3">
+                                      <div className="flex min-w-[130px] items-center gap-1.5">
+                                        <input
+                                          value={hasOverride ? fieldText(override[key]) : ""}
+                                          placeholder={fieldText(resolved[key]) || "herda"}
+                                          onChange={(event) => updateQuestionOverride(number, key, event.target.value)}
+                                          className="w-full rounded-xl border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-700 dark:bg-gray-950"
+                                        />
+                                        {hasOverride ? (
+                                          <button
+                                            type="button"
+                                            onClick={() => removeQuestionOverrideField(number, key)}
+                                            className="rounded-lg border border-gray-200 px-1.5 py-1 text-[10px] font-semibold text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                                          >
+                                            herdar
+                                          </button>
+                                        ) : null}
+                                      </div>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : null}
                 <div className="grid gap-4 xl:grid-cols-2">
                   <JsonPanel title="Detectado" value={previewSummary.detected_metadata} />
-                  <JsonPanel title="Import usado" value={previewSummary.import_metadata_used} />
+                  <JsonPanel title="Import usado" value={{
+                    metadata: previewSummary.import_metadata_used,
+                    question_overrides: activeQuestionOverrides,
+                    editorial_controls: previewSummary.editorial_controls,
+                  }} />
                 </div>
               </div>
             ) : null}

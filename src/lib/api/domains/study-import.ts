@@ -115,6 +115,19 @@ export type ReviewTask = {
   expected_questions: number;
   priority_score: number;
   knowledge_node_id: string | null;
+  node_mastery: number | null;
+  node_retention: number | null;
+  node_volatility: number | null;
+  at_risk: boolean;
+  due_question_count: number;
+};
+
+export type ReviewAgenda = {
+  tasks: ReviewTask[];
+  due_question_total: number;
+  struggling_question_total: number;
+  question_review_total: number;
+  generated_at: string;
 };
 
 export type FinalizationResult = {
@@ -471,6 +484,10 @@ export async function listReviewTasks(
   if (params?.revision_filter && params.revision_filter !== "all") q.set("revision_filter", params.revision_filter);
   const qs = q.toString() ? `?${q.toString()}` : "";
   return api<ReviewTask[]>(`/api/reviews/tasks${qs}`, { headers: authHeader(token) });
+}
+
+export async function getReviewAgenda(token: string): Promise<ReviewAgenda> {
+  return api<ReviewAgenda>("/api/reviews/agenda", { headers: authHeader(token) });
 }
 
 export async function updateReviewTask(

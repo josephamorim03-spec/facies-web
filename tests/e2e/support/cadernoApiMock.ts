@@ -103,6 +103,16 @@ export async function mockCadernoApi(page: Page): Promise<{ db: DbState }> {
       return json(route, []);
     }
 
+    if (method === "GET" && path === "/api/reviews/agenda") {
+      return json(route, {
+        tasks: [],
+        due_question_total: 0,
+        struggling_question_total: 0,
+        question_review_total: 0,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
     if (method === "GET" && path === "/api/profile") {
       return json(route, {
         user_id: "user_e2e",

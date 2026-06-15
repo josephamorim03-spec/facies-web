@@ -5,6 +5,7 @@ import { getAuthToken } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/error-utils";
 import {
   getProfile,
+  getReviewAgenda,
   listReviewTasks,
   listDirectedStudies,
   listEvents,
@@ -23,6 +24,20 @@ import {
 } from "@/lib/api";
 
 const STREAK_STALE_MS = 5 * 60 * 1000;
+
+export type QuestionReviewQueueSummary = {
+  due_count: number;
+  struggling_count: number;
+  total: number;
+  generated_at: string | null;
+};
+
+const EMPTY_QUESTION_REVIEW_QUEUE: QuestionReviewQueueSummary = {
+  due_count: 0,
+  struggling_count: 0,
+  total: 0,
+  generated_at: null,
+};
 
 function todayISO(): string {
   const d = new Date();
@@ -47,6 +62,9 @@ export function useCronogramaPageState() {
   const [studies, setStudies] = useState<DirectedStudyListItem[]>([]);
   const [events, setEvents] = useState<CalendarEventOut[]>([]);
   const [turboCardsByDate, setTurboCardsByDate] = useState<Record<string, number>>({});
+  const [questionReviewQueue, setQuestionReviewQueue] = useState<QuestionReviewQueueSummary>(
+    EMPTY_QUESTION_REVIEW_QUEUE,
+  );
   const [suggestions, setSuggestions] = useState<ScheduleSuggestion[]>([]);
   const [streak, setStreak] = useState<OperationalStreak | null>(null);
   const [streakLoading, setStreakLoading] = useState(true);
@@ -100,8 +118,8 @@ export function useCronogramaPageState() {
       setStreakLoading(true);
     }
     try {
-      const [taskData, doneData, studyData, eventData, suggestionData, profile] = await Promise.all([
-        listReviewTasks(token, { status: "pending" }),
+      const [agendaData, doneData, studyData, eventData, suggestionData, profile] = await Promise.all([
+        getReviewAgenda(token),
         listReviewTasks(token, { status: "done" }),
         listDirectedStudies(token),
         listEvents(token),
@@ -118,11 +136,17 @@ export function useCronogramaPageState() {
         if (!day || cardsCompleted <= 0) continue;
         nextTurboCardsByDate[day] = cardsCompleted;
       }
-      setTasks(taskData);
+      setTasks(agendaData.tasks);
       setDoneTasks(doneData);
       setStudies(studyData);
       setEvents(eventData);
       setTurboCardsByDate(nextTurboCardsByDate);
+      setQuestionReviewQueue({
+        due_count: Math.max(0, Number(agendaData.due_question_total ?? 0)),
+        struggling_count: Math.max(0, Number(agendaData.struggling_question_total ?? 0)),
+        total: Math.max(0, Number(agendaData.question_review_total ?? 0)),
+        generated_at: agendaData.generated_at ?? null,
+      });
       setWeeklyGoal(Math.max(0, Number(profile.weekly_goal_questions ?? 0)));
       const incomingSuggestionIds = new Set(suggestionData.map((sg) => sg.suggestion_id));
       if (awaitingEventSuggestionReviewRef.current) {
@@ -289,6 +313,8 @@ export function useCronogramaPageState() {
     doneTasks,
     studies,
     turboCardsByDate,
+    questionReviewQueue,
+    question_review_queue: questionReviewQueue,
     events,
     suggestions,
     streak,

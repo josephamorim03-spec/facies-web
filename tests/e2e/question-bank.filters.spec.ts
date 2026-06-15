@@ -135,6 +135,24 @@ test("question bank applies filters, calendar review context, and gated correcti
   await page.route("**/api/question-bank/sessions/session_qb_e2e/items/1/attempt", async (route) => {
     await route.fulfill({ contentType: "application/json", body: JSON.stringify(sessionPayload(true)) });
   });
+  await page.route("**/api/question-bank/review-queue", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ due_count: 0, struggling_count: 0, total: 0 }),
+    });
+  });
+  await page.route("**/api/reviews/agenda", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        tasks: [],
+        due_question_total: 0,
+        struggling_question_total: 0,
+        question_review_total: 0,
+        generated_at: new Date().toISOString(),
+      }),
+    });
+  });
 
   await page.goto("/banco-de-questoes?review_task_id=rt_e2e&date=2026-05-27&area=GO&theme=Obstetricia&expected_questions=12");
 

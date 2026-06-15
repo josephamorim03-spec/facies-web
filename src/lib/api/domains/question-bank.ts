@@ -5,7 +5,7 @@ export type QuestionBankOption = "A" | "B" | "C" | "D" | "E";
 export type QuestionBankMode = "adaptive" | "by_topic" | "by_exam";
 export type QuestionBankResolutionMode = "training" | "simulation";
 export type QuestionBankSessionStatus = "active" | "finalized" | "invalidated";
-export type QuestionBankAnswerStatus = "unanswered" | "answered" | "correct" | "wrong" | "all" | "unanswered_or_wrong";
+export type QuestionBankAnswerStatus = "unanswered" | "answered" | "correct" | "wrong" | "all" | "unanswered_or_wrong" | "needs_review";
 export type QuestionBankNode = {
   knowledge_node_id: string;
   parent_knowledge_node_id: string | null;
@@ -52,6 +52,35 @@ export type QuestionBankAvailability = {
   max_selectable: number;
   answer_status: QuestionBankAnswerStatus;
 };
+export type QuestionBankAttemptStats = {
+  attempt_count: number;
+  correct_count: number;
+  error_count: number;
+  doubtful_count: number;
+  rolling_accuracy: number | null;
+  last_is_correct: boolean | null;
+  last_answered_at: string | null;
+};
+export type QuestionBankQuestionAttempt = {
+  attempt_id: string;
+  session_id: string;
+  selected_option: QuestionBankOption | null;
+  is_correct: boolean;
+  time_ms: number | null;
+  doubtful: boolean;
+  confidence_self_rating: number | null;
+  answered_at: string;
+};
+export type QuestionBankQuestionHistory = {
+  question_id: string;
+  stats: QuestionBankAttemptStats;
+  attempts: QuestionBankQuestionAttempt[];
+};
+export type QuestionBankReviewQueue = {
+  due_count: number;
+  struggling_count: number;
+  total: number;
+};
 export type QuestionBankQuestion = {
   id: string;
   stem: string;
@@ -64,6 +93,7 @@ export type QuestionBankQuestion = {
   metadata: Record<string, unknown>;
   source: Record<string, unknown>;
   knowledge_nodes: QuestionBankNode[];
+  attempt_stats?: QuestionBankAttemptStats | null;
 };
 export type QuestionBankSessionItem = {
   question_id: string;
@@ -82,6 +112,7 @@ export type QuestionBankSessionItem = {
   correct_answer: QuestionBankOption | null;
   is_correct: boolean | null;
   difficulty_estimate?: number | null;
+  attempt_stats?: QuestionBankAttemptStats | null;
 };
 export type QuestionBankSession = {
   session_id: string;
@@ -192,7 +223,7 @@ export async function browseQuestionBankTopics(
 
 export async function previewQuestionBankAvailability(
   token: string,
-  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean } = {},
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; mode?: QuestionBankMode } = {},
 ): Promise<QuestionBankAvailability> {
   const q = new URLSearchParams();
   appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
@@ -205,6 +236,7 @@ export async function previewQuestionBankAvailability(
   if (params.year_to) q.set("year_to", String(params.year_to));
   if (params.answer_status) q.set("answer_status", params.answer_status);
   if (params.only_unanswered !== undefined) q.set("only_unanswered", params.only_unanswered ? "true" : "false");
+  if (params.mode) q.set("mode", params.mode);
   return api<QuestionBankAvailability>(`/api/question-bank/availability${q.toString() ? `?${q.toString()}` : ""}`, { headers: authHeader(token) });
 }
 
@@ -283,6 +315,24 @@ export async function getSessionCorrections(
 export async function finalizeQuestionBankSession(token: string, sessionId: string, options?: { confirm_unanswered?: boolean }): Promise<QuestionBankFinalizeResult> {
   const q = new URLSearchParams({ confirm_unanswered: options?.confirm_unanswered ? "true" : "false" });
   return api<QuestionBankFinalizeResult>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/finalize?${q.toString()}`, { method: "POST", headers: authHeader(token) });
+}
+
+export async function getQuestionAttemptHistory(
+  token: string,
+  questionId: string,
+): Promise<QuestionBankQuestionHistory> {
+  return api<QuestionBankQuestionHistory>(
+    `/api/question-bank/questions/${encodeURIComponent(questionId)}/attempts`,
+    { headers: authHeader(token) },
+  );
+}
+
+export async function getQuestionBankReviewQueue(
+  token: string,
+): Promise<QuestionBankReviewQueue> {
+  return api<QuestionBankReviewQueue>("/api/question-bank/review-queue", {
+    headers: authHeader(token),
+  });
 }
 
 export type QuestionBankReportType = "error" | "unclear" | "outdated" | "other";

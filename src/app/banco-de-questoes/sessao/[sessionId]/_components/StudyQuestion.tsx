@@ -24,16 +24,37 @@ function difficultyChip(d: number | null | undefined): { label: string; classNam
   return { label: "Muito difícil", className: "text-danger border-danger/40" };
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  revisao_vencida: "Revisão vencida",
+  fraqueza: "Fraqueza recorrente",
+  nova: "Questão nova",
+  reforco: "Reforço",
+};
+// Raw labels the backend prepends to selected_because for the same categories.
+const CATEGORY_RAW_LABELS = new Set(Object.values({
+  revisao_vencida: "revisao vencida",
+  fraqueza: "fraqueza recorrente",
+  nova: "questao nova",
+  reforco: "reforco",
+}));
+
 function selectionReasons(reason: Record<string, unknown>): string[] {
+  const chips: string[] = [];
+  const category = CATEGORY_LABELS[String(reason?.selection_category ?? "")];
+  if (category) chips.push(category);
   const raw = reason?.selected_because;
-  if (!Array.isArray(raw)) return [];
-  return (raw as string[])
-    .slice(0, 3)
-    .map((r) =>
-      r === "melhor equilibrio adaptativo"
-        ? "Selecionada pelo motor adaptativo"
-        : r.charAt(0).toUpperCase() + r.slice(1),
-    );
+  if (Array.isArray(raw)) {
+    for (const r of raw as string[]) {
+      if (chips.length >= 3) break;
+      if (CATEGORY_RAW_LABELS.has(r)) continue;
+      chips.push(
+        r === "melhor equilibrio adaptativo"
+          ? "Selecionada pelo motor adaptativo"
+          : r.charAt(0).toUpperCase() + r.slice(1),
+      );
+    }
+  }
+  return chips.slice(0, 3);
 }
 
 type StudyQuestionProps = {
@@ -61,6 +82,7 @@ type StudyQuestionProps = {
   onNext: () => void;
   onFinalize: () => void;
   onQuickNote?: () => void;
+  onShowHistory?: () => void;
 };
 
 const REPORT_LABELS: Record<QuestionBankReportType, string> = {
@@ -95,6 +117,7 @@ export default function StudyQuestion({
   onNext,
   onFinalize,
   onQuickNote,
+  onShowHistory,
 }: StudyQuestionProps) {
   const finalized = sessionStatus === "finalized";
   const canReveal = !finalized && item.answered && !revealed;
@@ -139,13 +162,24 @@ export default function StudyQuestion({
               {(() => {
                 const diff = difficultyChip(item.difficulty_estimate);
                 const reasons = selectionReasons(item.selection_reason);
-                if (!diff && reasons.length === 0) return null;
+                const stats = item.attempt_stats;
+                const hasHistory = Boolean(onShowHistory && stats && stats.attempt_count > 0);
+                if (!diff && reasons.length === 0 && !hasHistory) return null;
                 return (
                   <div className="flex flex-wrap items-center gap-1.5">
                     {diff && (
                       <span className={cx("rounded border px-1.5 py-0.5 text-[10px] font-semibold", diff.className)}>
                         {diff.label}
                       </span>
+                    )}
+                    {hasHistory && stats && (
+                      <button
+                        type="button"
+                        onClick={onShowHistory}
+                        className="rounded border border-edge px-1.5 py-0.5 text-[10px] font-semibold text-muted transition hover:border-primary hover:text-ink"
+                      >
+                        Histórico · {stats.correct_count}/{stats.attempt_count} acertos
+                      </button>
                     )}
                     {reasons.map((r) => (
                       <span key={r} className="rounded border border-edge px-1.5 py-0.5 text-[10px] text-muted">
@@ -166,7 +200,16 @@ export default function StudyQuestion({
             {item.image_refs.length > 0 && (
               <div className="grid gap-3 md:grid-cols-2">
                 {item.image_refs.map((src) => (
-                  <img key={src} src={src} alt="Imagem da questão" className="rounded-xl border border-edge bg-surface" />
+                  <img
+                    key={src}
+                    src={src}
+                    alt="Imagem da questão"
+                    className="rounded-xl border border-edge bg-surface"
+                    onError={(event) => {
+                      // Sessões antigas podem ter URLs assinadas já expiradas.
+                      event.currentTarget.style.display = "none";
+                    }}
+                  />
                 ))}
               </div>
             )}

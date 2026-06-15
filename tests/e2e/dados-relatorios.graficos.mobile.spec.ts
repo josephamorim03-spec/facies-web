@@ -299,6 +299,21 @@ async function mockDadosRelatoriosApi(
       return;
     }
 
+    if (request.method() === "GET" && url.pathname === "/api/reviews/agenda") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          tasks: REVIEW_TASKS_RESPONSE.pending,
+          due_question_total: 0,
+          struggling_question_total: 0,
+          question_review_total: 0,
+          generated_at: new Date().toISOString(),
+        }),
+      });
+      return;
+    }
+
     if (request.method() === "GET" && url.pathname === "/api/reviews/tasks") {
       const status = url.searchParams.get("status");
       await route.fulfill({

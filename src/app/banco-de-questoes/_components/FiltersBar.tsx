@@ -57,6 +57,9 @@ function initRealizacaoState(v: QuestionBankAnswerStatus): RealizacaoState {
     case "correct": return { unanswered: false, answeredExpanded: true, answeredSubset: "correct" };
     case "wrong": return { unanswered: false, answeredExpanded: true, answeredSubset: "wrong" };
     case "unanswered_or_wrong": return { unanswered: true, answeredExpanded: true, answeredSubset: "wrong" };
+    // "Corrigir fraquezas": degrades to the wrong-subset view if the user
+    // opens the Status tab (the broader union only exists server-side).
+    case "needs_review": return { unanswered: false, answeredExpanded: true, answeredSubset: "wrong" };
     default: return { unanswered: false, answeredExpanded: false, answeredSubset: "all" };
   }
 }

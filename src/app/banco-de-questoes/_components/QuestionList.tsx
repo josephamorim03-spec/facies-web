@@ -9,6 +9,12 @@ function sourceLabel(source: Record<string, unknown>): string {
   return [institution || "Instituição não informada", board || "Banca não informada", year].filter(Boolean).join(" · ");
 }
 
+function accuracyChipClass(ratio: number): string {
+  if (ratio >= 0.7) return "border-success/40 text-success";
+  if (ratio >= 0.5) return "border-warning/40 text-warning";
+  return "border-danger/40 text-danger";
+}
+
 type QuestionListProps = {
   questions: QuestionBankQuestion[];
   selectedTopicSummary: string;
@@ -49,12 +55,25 @@ export default function QuestionList({
         </button>
       </div>
       <div className="mt-4 grid gap-3">
-        {questions.map((question) => (
-          <article key={question.id} className="rounded-xl border border-edge bg-paper p-4">
-            <p className="line-clamp-4 text-sm leading-relaxed">{question.stem}</p>
-            <p className="mt-2 text-xs text-muted">{sourceLabel(question.source)}</p>
-          </article>
-        ))}
+        {questions.map((question) => {
+          const stats = question.attempt_stats;
+          const ratio = stats && stats.attempt_count > 0 ? stats.correct_count / stats.attempt_count : null;
+          return (
+            <article key={question.id} className="rounded-xl border border-edge bg-paper p-4">
+              <p className="line-clamp-4 text-sm leading-relaxed">{question.stem}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <p className="text-xs text-muted">{sourceLabel(question.source)}</p>
+                {stats && ratio !== null && (
+                  <span
+                    className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${accuracyChipClass(ratio)}`}
+                  >
+                    Você: {stats.correct_count}/{stats.attempt_count} · {Math.round(ratio * 100)}%
+                  </span>
+                )}
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );

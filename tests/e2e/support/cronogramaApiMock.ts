@@ -401,6 +401,24 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
     }
 
     // Cronograma initial loads
+    if (method === "GET" && path === "/api/reviews/agenda") {
+      const today = todayISO();
+      return json(route, {
+        tasks: db.pendingTasks.map((task, index) => ({
+          ...task,
+          knowledge_node_id: null,
+          node_mastery: index === 0 ? 0.62 : 0.48,
+          node_retention: index === 0 ? 0.58 : 0.34,
+          node_volatility: index === 0 ? 0.18 : 0.42,
+          at_risk: index !== 0,
+          due_question_count: task.due_date <= today ? 2 : 0,
+        })),
+        due_question_total: 2,
+        struggling_question_total: 1,
+        question_review_total: 3,
+        generated_at: new Date().toISOString(),
+      });
+    }
     if (method === "GET" && path === "/api/reviews/tasks") {
       db.apiHits.listReviewTasks += 1;
       const status = url.searchParams.get("status");

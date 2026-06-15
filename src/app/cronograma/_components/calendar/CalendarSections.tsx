@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { IconPlus } from "../CronogramaIcons";
 import { NewStudyForm } from "../CronogramaStudyReviewComponents";
 import { getAccuracy, getRevisionNumber, SHORT_MONTH_LABELS } from "../../_lib/cronogramaShared";
+import { ReviewSignalChips } from "../ReviewSignalChips";
 
 export function CalendarMonthNavigation({
   month,
@@ -123,7 +124,14 @@ export function TaskBarPopup({
 }) {
   const accuracy = getAccuracy(task, studies);
   const revision = getRevisionNumber(task, studies, studyMap);
-  const bancoUrl = `/banco-de-questoes?area=${encodeURIComponent(task.area)}&search=${encodeURIComponent(task.theme)}&limit=${task.expected_questions}`;
+  const bancoParams = new URLSearchParams({
+    review_task_id: task.task_id,
+    date: task.due_date,
+    area: task.area,
+    search: task.theme,
+    expected_questions: String(task.expected_questions),
+  });
+  const bancoUrl = `/banco-de-questoes?${bancoParams.toString()}`;
   const sessionTitle = `Revisão #${revision} — ${task.theme}`;
 
   const popupTop = Math.min(anchorRect.bottom + 8, window.innerHeight - 240);
@@ -140,6 +148,7 @@ export function TaskBarPopup({
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">{task.area}</p>
           <p className="mt-0.5 text-sm font-semibold text-ink leading-snug">{task.theme}</p>
+          <ReviewSignalChips task={task} compact className="mt-2" />
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">

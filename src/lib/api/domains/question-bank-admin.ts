@@ -12,11 +12,33 @@ export type QuestionBankAdminWarning = {
 export type QuestionBankAdminPreviewSummary = {
   detected_metadata: Record<string, unknown>;
   override_metadata: Record<string, unknown>;
+  question_overrides?: Record<string, Record<string, unknown>>;
   import_metadata_used: Record<string, unknown>;
+  editorial_controls?: {
+    classification_preset_policy?: string | null;
+    batch_classification_preset?: Record<string, string>;
+    batch_source_profile?: Record<string, unknown>;
+    question_override_count?: number;
+    question_override_numbers?: string[];
+  };
+  question_editorial_metadata?: QuestionBankEditorialMetadata[];
   years_detected: number[];
   years_applied: number[];
   is_mixed_source: boolean;
   warnings: QuestionBankAdminWarning[];
+};
+
+export type QuestionBankEditorialMetadata = {
+  question_number: string | null;
+  detected_metadata: Record<string, unknown>;
+  batch_metadata: Record<string, unknown>;
+  override_metadata: Record<string, unknown>;
+  resolved_metadata: Record<string, unknown>;
+  source_profile: Record<string, unknown>;
+  classification_preset: Record<string, unknown>;
+  classification_preset_policy: string | null;
+  classification_locked_fields: string[];
+  classification_ai_fill_fields: string[];
 };
 
 export type QuestionBankAdminPreview = {
@@ -27,6 +49,7 @@ export type QuestionBankAdminPreview = {
     correct_answer?: string | null;
     confidence_score?: number;
     metadata?: Record<string, unknown>;
+    editorial_metadata?: QuestionBankEditorialMetadata;
     primary_medical_area?: { code?: string; name?: string } | null;
   }>;
   request_id?: string;
@@ -167,10 +190,14 @@ export type QuestionBankReviewQueueItem = {
 export async function previewQuestionBankAdminImport(
   file: File,
   metadata: Record<string, unknown>,
+  questionOverrides?: Record<string, Record<string, unknown>>,
 ): Promise<QuestionBankAdminPreview> {
   const form = new FormData();
   form.set("file", file);
   form.set("metadata", JSON.stringify(metadata));
+  if (questionOverrides && Object.keys(questionOverrides).length > 0) {
+    form.set("question_overrides", JSON.stringify(questionOverrides));
+  }
   return api<QuestionBankAdminPreview>("/api/admin/question-bank/imports/preview", {
     method: "POST",
     body: form,
@@ -182,7 +209,7 @@ export async function previewQuestionBankAdminImport(
 export async function importQuestionBankAdminFile(
   file: File,
   metadata: Record<string, unknown>,
-  options?: { auto_pipeline?: boolean },
+  options?: { auto_pipeline?: boolean; question_overrides?: Record<string, Record<string, unknown>> },
 ): Promise<{
   imported_file_id: string;
   source_id: string | null;
@@ -195,12 +222,16 @@ export async function importQuestionBankAdminFile(
   years_detected: number[];
   years_applied: number[];
   is_mixed_source: boolean;
+  auto_pipeline_launched?: boolean;
   auto_pipeline_triggered?: boolean;
   preview_summary?: QuestionBankAdminPreviewSummary;
 }> {
   const form = new FormData();
   form.set("file", file);
   form.set("metadata", JSON.stringify(metadata));
+  if (options?.question_overrides && Object.keys(options.question_overrides).length > 0) {
+    form.set("question_overrides", JSON.stringify(options.question_overrides));
+  }
   if (options?.auto_pipeline) form.set("auto_pipeline", "true");
   return api<{
     imported_file_id: string;
@@ -214,6 +245,7 @@ export async function importQuestionBankAdminFile(
     years_detected: number[];
     years_applied: number[];
     is_mixed_source: boolean;
+    auto_pipeline_launched?: boolean;
     auto_pipeline_triggered?: boolean;
     preview_summary?: QuestionBankAdminPreviewSummary;
   }>("/api/admin/question-bank/imports/files", {
@@ -282,18 +314,22 @@ export async function processQuestionBankAdminBatch(
   );
 }
 
-export async function runQuestionBankAdminAll(background: boolean): Promise<{
+export async function runQuestionBankAdminAll(background: boolean, importedFileId?: string): Promise<{
   launched: boolean;
   background: boolean;
   workers?: number;
+  imported_file_id?: string | null;
   totals?: Record<string, number>;
 }> {
+  const params = new URLSearchParams({ background: background ? "true" : "false" });
+  if (importedFileId) params.set("imported_file_id", importedFileId);
   return api<{
     launched: boolean;
     background: boolean;
     workers?: number;
+    imported_file_id?: string | null;
     totals?: Record<string, number>;
-  }>(`/api/admin/question-bank/pipeline/run-all?background=${background ? "true" : "false"}`, {
+  }>(`/api/admin/question-bank/pipeline/run-all?${params.toString()}`, {
     method: "POST",
   });
 }

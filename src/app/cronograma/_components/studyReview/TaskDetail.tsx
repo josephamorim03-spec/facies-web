@@ -23,6 +23,7 @@ import {
 import { InlineLogForm } from "./InlineLogForm";
 import { parseStudyEditImpactPreview } from "./shared";
 import { getErrorMessage } from "@/lib/error-utils";
+import { ReviewSignalChips } from "../ReviewSignalChips";
 export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose, rescheduleControls = "auto_only", logDateISO }: {
   task: ReviewTask; token: string; studies: DirectedStudyListItem[];
   studyMap: Map<string, DirectedStudyListItem>;
@@ -319,6 +320,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
               <IconCheck className="w-3.5 h-3.5 text-ink shrink-0" />
             </div>
             <p className="text-xs text-muted">{task.area} · Revisão realizada</p>
+            <ReviewSignalChips task={task} compact className="mt-1" />
           </div>
         </div>
         <p className="text-xs text-muted pl-5">
@@ -349,6 +351,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
         </div>
         {task.is_critical && <IconCritical className="w-3 h-3 inline ml-1 align-middle" />}
       </div>
+      <ReviewSignalChips task={task} className="pl-7" />
       {showLog ? (
         <InlineLogForm task={task} token={token}
           onDone={() => { onRefresh(); closeDetail(); }} onCancel={() => setShowLog(false)} logDateISO={logDateISO} />

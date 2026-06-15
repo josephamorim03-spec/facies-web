@@ -198,6 +198,16 @@ export async function mockTurboApi(page: Page): Promise<TurboSessionState> {
       return json(route, { area_summaries: [], diagnosis: { ready: false, weaknesses: [] } });
     }
 
+    if (method === "GET" && path === "/api/reviews/agenda") {
+      return json(route, {
+        tasks: [],
+        due_question_total: 0,
+        struggling_question_total: 0,
+        question_review_total: 0,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
     if (
       method === "GET" &&
       [

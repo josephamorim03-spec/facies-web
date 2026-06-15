@@ -147,6 +147,7 @@ export {
   setQuestionOverride,
   deleteQuestionOverride,
   listReviewTasks,
+  getReviewAgenda,
   updateReviewTask,
   autoRescheduleReviewTask,
   previewAutoRescheduleReviewTask,
@@ -166,6 +167,7 @@ export type {
   StudyImportSessionCreateResult,
   WrongQuestionSummary,
   ReviewTask,
+  ReviewAgenda,
   FinalizationResult,
   DirectedStudyOut,
   QuestionOverrideResult,
@@ -189,6 +191,7 @@ export {
   recordQuestionBankCorrection,
   finalizeQuestionBankSession,
   reportQuestionProblem,
+  getQuestionBankReviewQueue,
 } from "./api/domains/question-bank";
 export type {
   QuestionBankOption,
@@ -208,6 +211,7 @@ export type {
   QuestionBankFinalizeResult,
   QuestionBankSessionCreatePayload,
   QuestionBankReportType,
+  QuestionBankReviewQueue,
 } from "./api/domains/question-bank";
 
 // Question Bank Admin domain

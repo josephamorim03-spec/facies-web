@@ -22,6 +22,7 @@ import {
 import { writeCronogramaViewModeSession } from "./_lib/viewModeSession";
 import { CronogramaCalendarView } from "./_components/CronogramaCalendarView";
 import { CronogramaStreakCard } from "@/app/cronograma/_components/CronogramaStreakCard";
+import { CronogramaTodayPanel } from "./_components/CronogramaTodayPanel";
 import { WeeklyOpsCompactSummary, WeeklyOpsCompactSummarySkeleton } from "./_components/WeeklyOpsCards";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { buildWeeklyOpsMetrics } from "./_lib/weeklyOpsMetrics";
@@ -54,6 +55,7 @@ export default function CronogramaPage() {
     doneTasks,
     studies,
     turboCardsByDate,
+    questionReviewQueue,
     events,
     loading,
     streakLoading,
@@ -133,6 +135,11 @@ export default function CronogramaPage() {
       }),
     [doneTasks, studies, tasks, todayISO, weeklyGoal],
   );
+  const todayReviewTasks = useMemo(
+    () => tasks.filter((task) => task.status !== "done" && (task.is_overdue || task.due_date <= todayISO)),
+    [tasks, todayISO],
+  );
+  const todayStudies = studiesByDate[todayISO] ?? [];
 
   useEffect(() => {
     function updateMobilePortraitMode() {
@@ -381,6 +388,14 @@ export default function CronogramaPage() {
       )}
 
       <CronogramaStreakCard streak={streak} loading={streakLoading} />
+
+      {!loading && (
+        <CronogramaTodayPanel
+          todayTasks={todayReviewTasks}
+          todayStudies={todayStudies}
+          questionReviewQueue={questionReviewQueue}
+        />
+      )}
 
       <div data-calendar-summary-stack="true" className="-mx-4 md:-mx-6">
         <CronogramaCalendarView

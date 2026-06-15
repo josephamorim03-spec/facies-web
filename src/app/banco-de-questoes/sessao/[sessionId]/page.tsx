@@ -20,6 +20,7 @@ import QuickNoteModal from "./_components/QuickNoteModal";
 import ExamQuestion from "./_components/ExamQuestion";
 import ExamMap from "./_components/ExamMap";
 import PostExamReview from "./_components/PostExamReview";
+import AttemptHistoryModal from "../../_components/AttemptHistoryModal";
 
 type QuickNoteTarget = {
   questionId: string;
@@ -55,6 +56,7 @@ export default function SessionPage() {
   const [reportReason, setReportReason] = useState("");
   const [reportDone, setReportDone] = useState<Record<string, boolean>>({});
   const [quickNoteTarget, setQuickNoteTarget] = useState<QuickNoteTarget | null>(null);
+  const [historyQuestionId, setHistoryQuestionId] = useState<string | null>(null);
 
   // Track per-question start time so we can send time_ms to the backend
   const questionStartTimeRef = useRef<number>(Date.now());
@@ -263,6 +265,11 @@ export default function SessionPage() {
                   })
               : undefined
           }
+          onShowHistory={
+            currentItem.question_id
+              ? () => setHistoryQuestionId(currentItem.question_id)
+              : undefined
+          }
         />
         {quickNoteTarget && (
           <QuickNoteModal
@@ -272,6 +279,13 @@ export default function SessionPage() {
             defaultTheme={quickNoteTarget.theme}
             questionOutcome={quickNoteTarget.questionOutcome}
             onClose={() => setQuickNoteTarget(null)}
+          />
+        )}
+        {historyQuestionId && (
+          <AttemptHistoryModal
+            key={historyQuestionId}
+            questionId={historyQuestionId}
+            onClose={() => setHistoryQuestionId(null)}
           />
         )}
       </>

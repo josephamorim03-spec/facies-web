@@ -6,11 +6,14 @@ import {
   browseQuestionBankQuestions,
   browseQuestionBankTopics,
   createQuestionBankSession,
+  getReviewAgenda,
+  getQuestionBankReviewQueue,
   previewQuestionBankAvailability,
   type QuestionBankAnswerStatus,
   type QuestionBankAvailability,
   type QuestionBankQuestion,
   type QuestionBankResolutionMode,
+  type QuestionBankReviewQueue,
   type QuestionBankTopic,
 } from "@/lib/api";
 import { useNavbar } from "@/lib/NavbarContext";
@@ -120,6 +123,11 @@ function todayAtLocalNoonISO(): string {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0).toISOString();
 }
 
+function todayLocalDateISO(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
 function localNoonISO(dateISO: string | null): string {
   const trimmed = (dateISO ?? "").trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return todayAtLocalNoonISO();
@@ -185,6 +193,12 @@ function BancoDeQuestoesContent() {
   const [busy, setBusy] = useState(false);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reviewQueue, setReviewQueue] = useState<QuestionBankReviewQueue>({
+    due_count: 0,
+    struggling_count: 0,
+    total: 0,
+  });
+  const [dueTopicTaskCount, setDueTopicTaskCount] = useState(0);
 
   // Derived
   const maxSelectable = Math.max(1, Math.min(50, availability?.max_selectable ?? 50));
@@ -205,7 +219,7 @@ function BancoDeQuestoesContent() {
   ].filter(Boolean).length;
 
   const activeIntent =
-    answerStatus === "wrong"
+    answerStatus === "wrong" || answerStatus === "needs_review"
       ? "weakness"
       : resolutionMode === "simulation"
         ? "simulation"
@@ -253,7 +267,7 @@ function BancoDeQuestoesContent() {
     return () => {
       setActions(null);
     };
-  }, [router, setActions]);
+  }, [routeSearchKey, router, setActions]);
 
   // ─── Filter params factory ───────────────────────────────────────────────
 
@@ -275,7 +289,7 @@ function BancoDeQuestoesContent() {
     setLoadingPreview(true);
     setError(null);
     try {
-      const next = await previewQuestionBankAvailability(token, filterParams());
+      const next = await previewQuestionBankAvailability(token, { ...filterParams(), mode: "adaptive" });
       setAvailability(next);
       if (next.max_selectable > 0 && limit > next.max_selectable) setLimit(next.max_selectable);
     } catch (err) {
@@ -392,7 +406,59 @@ function BancoDeQuestoesContent() {
     }
   }
 
+  // Review queue: FSRS-due + struggling questions, surfaced as an actionable card.
+  useEffect(() => {
+    if (!tokenResolved) return;
+    let active = true;
+    getQuestionBankReviewQueue(token)
+      .then((q) => {
+        if (active) setReviewQueue(q);
+      })
+      .catch(() => {
+        if (active) setReviewQueue({ due_count: 0, struggling_count: 0, total: 0 });
+      });
+    getReviewAgenda(token)
+      .then((agenda) => {
+        if (!active) return;
+        const today = todayLocalDateISO();
+        const dueTasks = agenda.tasks.filter(
+          (task) => task.status !== "done" && (task.is_overdue || task.due_date <= today),
+        );
+        setDueTopicTaskCount(dueTasks.length);
+      })
+      .catch(() => {
+        if (active) setDueTopicTaskCount(0);
+      });
+    return () => {
+      active = false;
+    };
+  }, [tokenResolved, token]);
+
+  async function startReviewSession() {
+    if (!tokenResolved || !reviewQueue || reviewQueue.total <= 0) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const created = await createQuestionBankSession(token, {
+        mode: "adaptive",
+        resolution_mode: "training",
+        answer_status: "needs_review",
+        only_unanswered: false,
+        limit: Math.max(1, Math.min(20, reviewQueue.total)),
+        performed_at: localNoonISO(entryContext.dateISO),
+      });
+      router.push(`/banco-de-questoes/sessao/${created.session_id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível iniciar a revisão.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (!tokenResolved) return <main className="p-6 text-sm text-muted">Carregando...</main>;
+
+  const hasDueTopicTasks = dueTopicTaskCount > 0;
+  const hasQuestionReviewQueue = Boolean(reviewQueue && reviewQueue.total > 0);
 
   return (
     <main className="min-h-screen bg-paper text-ink">
@@ -412,6 +478,52 @@ function BancoDeQuestoesContent() {
             </span>
           )}
         </header>
+
+        {(hasDueTopicTasks || hasQuestionReviewQueue) && (
+          <section
+            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary bg-[var(--amber-tint)] px-4 py-3"
+            aria-label="Revisão pendente"
+          >
+            <p className="text-sm text-ink">
+              {hasDueTopicTasks ? (
+                <>
+                  <strong className="font-semibold">
+                    {dueTopicTaskCount === 1
+                      ? "1 tarefa de tópico para revisar hoje"
+                      : `${dueTopicTaskCount} tarefas de tópico para revisar hoje`}
+                  </strong>
+                  {reviewQueue && reviewQueue.total > 0
+                    ? ` · ${reviewQueue.total} questões pendentes no banco`
+                    : ""}
+                </>
+              ) : (
+                <>
+                  <strong className="font-semibold">
+                    {reviewQueue.total === 1
+                      ? "1 questão para revisar hoje"
+                      : `${reviewQueue.total} questões para revisar hoje`}
+                  </strong>
+                  {reviewQueue.due_count > 0 ? ` · ${reviewQueue.due_count} com revisão vencida` : ""}
+                  {reviewQueue.struggling_count > 0 ? ` · ${reviewQueue.struggling_count} com baixo desempenho` : ""}
+                </>
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                if (hasDueTopicTasks) {
+                  router.push("/cronograma");
+                  return;
+                }
+                void startReviewSession();
+              }}
+              disabled={!hasDueTopicTasks && busy}
+              className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm disabled:opacity-50"
+            >
+              {hasDueTopicTasks ? "Abrir cronograma" : "Revisar agora"}
+            </button>
+          </section>
+        )}
 
         <section className="grid grid-cols-1 gap-4 md:grid-cols-3" aria-label="Tipos de sessão">
           <SessionIntentCard
@@ -436,12 +548,12 @@ function BancoDeQuestoesContent() {
           />
           <SessionIntentCard
             title="Corrigir fraquezas"
-            description="Puxe questões erradas ou já vistas para fechar lacunas recentes."
+            description="Puxe questões erradas, com baixo desempenho ou revisão vencida para fechar lacunas."
             active={activeIntent === "weakness"}
             Icon={IconTarget}
             onClick={() => {
               setResolutionMode("training");
-              handleAnswerStatusChange("wrong");
+              handleAnswerStatusChange("needs_review");
             }}
           />
         </section>

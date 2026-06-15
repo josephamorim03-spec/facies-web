@@ -11,6 +11,7 @@ import {
   type QuestionBankSession,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
+import AttemptHistoryModal from "../../../_components/AttemptHistoryModal";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -90,6 +91,7 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
   const [diagnosisError, setDiagnosisError] = useState(false);
   const [corrections, setCorrections] = useState<QuestionBankCorrectionItem[]>([]);
   const [expandedCorrections, setExpandedCorrections] = useState<Set<string>>(new Set());
+  const [historyQuestionId, setHistoryQuestionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token || !session.session_id) return;
@@ -351,6 +353,15 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
                   {item.selected_option && !item.is_correct && (
                     <p className="mt-2 text-xs text-danger">Você respondeu: {item.selected_option}</p>
                   )}
+                  {item.attempt_stats && item.attempt_stats.attempt_count > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setHistoryQuestionId(item.question_id)}
+                      className="mt-2 text-xs font-semibold text-muted transition hover:text-ink"
+                    >
+                      Histórico · {item.attempt_stats.correct_count}/{item.attempt_stats.attempt_count} acertos
+                    </button>
+                  )}
                   {activeTab === "erros" && correctionByQuestionId.has(item.question_id) && (() => {
                     const correction = correctionByQuestionId.get(item.question_id)!;
                     const isExpanded = expandedCorrections.has(item.question_id);
@@ -388,6 +399,13 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
           );
         })()}
       </div>
+      {historyQuestionId && (
+        <AttemptHistoryModal
+          key={historyQuestionId}
+          questionId={historyQuestionId}
+          onClose={() => setHistoryQuestionId(null)}
+        />
+      )}
     </main>
   );
 }

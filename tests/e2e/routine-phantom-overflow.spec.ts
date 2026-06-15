@@ -164,6 +164,16 @@ async function mockRoutinePlanApi(page: Page) {
       return json([]);
     }
 
+    if (method === "GET" && path === "/api/reviews/agenda") {
+      return json({
+        tasks: [],
+        due_question_total: 0,
+        struggling_question_total: 0,
+        question_review_total: 0,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
     if (method === "GET" && path === "/api/studies/directed") {
       return json([]);
     }
