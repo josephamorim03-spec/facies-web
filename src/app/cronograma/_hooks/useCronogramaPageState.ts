@@ -118,17 +118,18 @@ export function useCronogramaPageState() {
       setStreakLoading(true);
     }
     try {
-      const [agendaData, doneData, studyData, eventData, suggestionData, profile] = await Promise.all([
-        getReviewAgenda(token),
-        listReviewTasks(token, { status: "done" }),
-        listDirectedStudies(token),
-        listEvents(token),
-        listScheduleSuggestions(token),
-        getProfile(token),
-      ]);
-      const turboDaily = await getOperationalTurboSessionDailyCompletedCards(token, 365).catch(
-        () => ({ timezone: "UTC", by_day: [] as Array<{ day: string; cards_completed: number }> }),
-      );
+      const [agendaData, doneData, studyData, eventData, suggestionData, profile, turboDaily] =
+        await Promise.all([
+          getReviewAgenda(token),
+          listReviewTasks(token, { status: "done" }),
+          listDirectedStudies(token),
+          listEvents(token),
+          listScheduleSuggestions(token),
+          getProfile(token),
+          getOperationalTurboSessionDailyCompletedCards(token, 365).catch(
+            () => ({ timezone: "UTC", by_day: [] as Array<{ day: string; cards_completed: number }> }),
+          ),
+        ]);
       const nextTurboCardsByDate: Record<string, number> = {};
       for (const row of turboDaily.by_day) {
         const day = String(row.day ?? "").trim();

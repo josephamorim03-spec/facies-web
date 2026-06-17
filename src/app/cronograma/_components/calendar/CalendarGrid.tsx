@@ -295,6 +295,21 @@ export function CalendarGrid({
                         ? { boxShadow: "inset 0 0 0 2px var(--color-ink)" }
                         : {}
             }
+            role="button"
+            tabIndex={interactive ? 0 : -1}
+            aria-label={iso}
+            onKeyDown={(e) => {
+              if (!interactive) return;
+              if (e.key !== "Enter" && e.key !== " ") return;
+              e.preventDefault();
+              if (expandedRow && expandedRow.row !== rowIndex) {
+                setExpandedCell(null);
+                setExpandedRow(null);
+                if (expandTimer.current) clearTimeout(expandTimer.current);
+              }
+              onDaySelect(isSelected ? null : iso);
+              if (isSelected) onCloseDayDetailForSameDay();
+            }}
             onClick={() => {
               if (!interactive) return;
               if (dragEventMeta) { handleEventDrop(iso); return; }

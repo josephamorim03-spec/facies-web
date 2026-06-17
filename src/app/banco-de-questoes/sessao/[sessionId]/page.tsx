@@ -211,7 +211,20 @@ export default function SessionPage() {
     );
   }
 
-  if (!session) return null;
+  if (!session) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-paper">
+        <p className="text-sm text-muted">Sessão indisponível ou expirada.</p>
+        <button
+          type="button"
+          onClick={() => router.push("/banco-de-questoes")}
+          className="rounded-xl border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
+        >
+          Voltar ao banco
+        </button>
+      </main>
+    );
+  }
 
   // Finalized: show post-exam review
   if (session.status === "finalized") {
