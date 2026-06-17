@@ -192,6 +192,7 @@ export {
   finalizeQuestionBankSession,
   reportQuestionProblem,
   getQuestionBankReviewQueue,
+  getQuestionBankPerformance,
 } from "./api/domains/question-bank";
 export type {
   QuestionBankOption,
@@ -212,6 +213,9 @@ export type {
   QuestionBankSessionCreatePayload,
   QuestionBankReportType,
   QuestionBankReviewQueue,
+  QuestionBankPerformance,
+  QuestionBankAreaReadiness,
+  QuestionBankExamState,
 } from "./api/domains/question-bank";
 
 // Question Bank Admin domain

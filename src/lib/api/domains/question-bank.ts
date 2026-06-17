@@ -5,7 +5,7 @@ export type QuestionBankOption = "A" | "B" | "C" | "D" | "E";
 export type QuestionBankMode = "adaptive" | "by_topic" | "by_exam";
 export type QuestionBankResolutionMode = "training" | "simulation";
 export type QuestionBankSessionStatus = "active" | "finalized" | "invalidated";
-export type QuestionBankAnswerStatus = "unanswered" | "answered" | "correct" | "wrong" | "all" | "unanswered_or_wrong" | "needs_review";
+export type QuestionBankAnswerStatus = "unanswered" | "answered" | "correct" | "wrong" | "all" | "unanswered_or_wrong" | "needs_review" | "near_miss";
 export type QuestionBankNode = {
   knowledge_node_id: string;
   parent_knowledge_node_id: string | null;
@@ -81,6 +81,29 @@ export type QuestionBankReviewQueue = {
   struggling_count: number;
   total: number;
 };
+
+export type QuestionBankAreaReadiness = {
+  area: string;
+  label: string;
+  questions_seen: number;
+  accuracy: number | null;
+  wrong_count: number;
+  due_count: number;
+  readiness: number;
+  level: "consolidando" | "atencao" | "critico";
+  next_action: string;
+};
+export type QuestionBankExamState = {
+  simulation_count: number;
+  accuracy: number | null;
+  avg_time_ms: number | null;
+  slow_rate: number | null;
+};
+export type QuestionBankPerformance = {
+  areas: QuestionBankAreaReadiness[];
+  exam: QuestionBankExamState;
+  generated_at: string;
+};
 export type QuestionBankQuestion = {
   id: string;
   stem: string;
@@ -112,6 +135,9 @@ export type QuestionBankSessionItem = {
   needs_correction: boolean;
   correct_answer: QuestionBankOption | null;
   is_correct: boolean | null;
+  // Hipótese de erro por distrator (letra→texto). Só vem preenchido quando o gabarito
+  // também aparece (pós-resposta no treino / pós-finalização).
+  distractor_diagnosis?: Record<string, string>;
   difficulty_estimate?: number | null;
   attempt_stats?: QuestionBankAttemptStats | null;
 };
@@ -332,6 +358,14 @@ export async function getQuestionBankReviewQueue(
   token: string,
 ): Promise<QuestionBankReviewQueue> {
   return api<QuestionBankReviewQueue>("/api/question-bank/review-queue", {
+    headers: authHeader(token),
+  });
+}
+
+export async function getQuestionBankPerformance(
+  token: string,
+): Promise<QuestionBankPerformance> {
+  return api<QuestionBankPerformance>("/api/question-bank/performance", {
     headers: authHeader(token),
   });
 }

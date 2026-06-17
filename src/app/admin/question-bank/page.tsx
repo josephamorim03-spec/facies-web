@@ -53,6 +53,9 @@ const CONTENT_METADATA_FIELDS = [
   ["microcompetencia", "Microcompetencia"],
 ] as const;
 
+const GRANDE_AREA_OPTIONS = ["CG", "CM", "PD", "MP", "GO", "OU"] as const;
+const GRANDE_AREA_SET = new Set<string>(GRANDE_AREA_OPTIONS);
+
 const QUESTION_OVERRIDE_FIELDS = [
   ["year", "Ano"],
   ["grande_area", "Grande area"],
@@ -209,6 +212,16 @@ function parseYearsText(value: string): number[] {
   )].sort((a, b) => a - b);
 }
 
+function normalizeGrandeArea(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  const code = String(value).trim().toUpperCase();
+  if (!code) return "";
+  if (!GRANDE_AREA_SET.has(code)) {
+    throw new Error(`Grande area deve ser uma destas opcoes: ${GRANDE_AREA_OPTIONS.join(", ")}.`);
+  }
+  return code;
+}
+
 function compactQuestionOverrides(
   overrides: Record<string, Record<string, unknown>>,
 ): Record<string, Record<string, unknown>> {
@@ -257,12 +270,20 @@ export default function QuestionBankAdminPage() {
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
       throw new Error("O override precisa ser um JSON objeto.");
     }
-    return parsed as Record<string, unknown>;
+    const metadata = parsed as Record<string, unknown>;
+    return {
+      ...metadata,
+      grande_area: normalizeGrandeArea(metadata.grande_area),
+    };
   }
 
   function updateMetadataField(key: string, rawValue: string) {
     const current = { ...DEFAULT_METADATA, ...safeMetadataObject(metadataText) };
-    const value = key === "years" ? parseYearsText(rawValue) : rawValue;
+    const value = key === "years"
+      ? parseYearsText(rawValue)
+      : key === "grande_area"
+        ? normalizeGrandeArea(rawValue)
+        : rawValue;
     const next = {
       ...current,
       [key]: value,
@@ -276,7 +297,11 @@ export default function QuestionBankAdminPage() {
     if (!number) return;
     setQuestionOverrides((prev) => {
       const current = { ...(prev[number] || {}) };
-      current[key] = key === "year" && rawValue.trim() ? Number.parseInt(rawValue.trim(), 10) : rawValue;
+      current[key] = key === "year" && rawValue.trim()
+        ? Number.parseInt(rawValue.trim(), 10)
+        : key === "grande_area"
+          ? normalizeGrandeArea(rawValue)
+          : rawValue;
       return { ...prev, [number]: current };
     });
   }
@@ -595,11 +620,24 @@ export default function QuestionBankAdminPage() {
                     {CONTENT_METADATA_FIELDS.map(([key, label]) => (
                       <label key={key} className="grid gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200">
                         {label}
-                        <input
-                          value={fieldText(metadataDraft[key])}
-                          onChange={(event) => updateMetadataField(key, event.target.value)}
-                          className="rounded-2xl border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-950"
-                        />
+                        {key === "grande_area" ? (
+                          <select
+                            value={fieldText(metadataDraft[key])}
+                            onChange={(event) => updateMetadataField(key, event.target.value)}
+                            className="rounded-2xl border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-950"
+                          >
+                            <option value="">IA/detectado</option>
+                            {GRANDE_AREA_OPTIONS.map((area) => (
+                              <option key={area} value={area}>{area}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            value={fieldText(metadataDraft[key])}
+                            onChange={(event) => updateMetadataField(key, event.target.value)}
+                            className="rounded-2xl border border-gray-300 bg-white px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-950"
+                          />
+                        )}
                       </label>
                     ))}
                   </div>
@@ -747,12 +785,28 @@ export default function QuestionBankAdminPage() {
                                   return (
                                     <td key={key} className="px-2 py-3">
                                       <div className="flex min-w-[130px] items-center gap-1.5">
-                                        <input
-                                          value={hasOverride ? fieldText(override[key]) : ""}
-                                          placeholder={fieldText(resolved[key]) || "herda"}
-                                          onChange={(event) => updateQuestionOverride(number, key, event.target.value)}
-                                          className="w-full rounded-xl border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-700 dark:bg-gray-950"
-                                        />
+                                        {key === "grande_area" ? (
+                                          <select
+                                            value={hasOverride ? fieldText(override[key]) : ""}
+                                            onChange={(event) => {
+                                              if (event.target.value) updateQuestionOverride(number, key, event.target.value);
+                                              else removeQuestionOverrideField(number, key);
+                                            }}
+                                            className="w-full rounded-xl border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-700 dark:bg-gray-950"
+                                          >
+                                            <option value="">{fieldText(resolved[key]) || "herda"}</option>
+                                            {GRANDE_AREA_OPTIONS.map((area) => (
+                                              <option key={area} value={area}>{area}</option>
+                                            ))}
+                                          </select>
+                                        ) : (
+                                          <input
+                                            value={hasOverride ? fieldText(override[key]) : ""}
+                                            placeholder={fieldText(resolved[key]) || "herda"}
+                                            onChange={(event) => updateQuestionOverride(number, key, event.target.value)}
+                                            className="w-full rounded-xl border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-700 dark:bg-gray-950"
+                                          />
+                                        )}
                                         {hasOverride ? (
                                           <button
                                             type="button"

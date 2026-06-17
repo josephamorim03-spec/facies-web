@@ -430,6 +430,19 @@ export async function enqueueQuestionBankQuestionAnalysis(
 
 // ─── Question management (search / detail / edit / delete) ───────────────────
 
+// Question DNA (question_fingerprint) — estrutural, sem gabarito. Ver kbank/question_bank/fingerprint.py.
+export type QuestionDna = {
+  schema_version: string;
+  hash: string;
+  source: string;
+  confidence: number;
+  dimensions: Record<string, unknown>;
+  tags: string[];
+  quality_flags?: string[];
+  vector_keys?: Record<string, number>;
+  vector?: number[];
+};
+
 export type QuestionBankAdminQuestionListItem = {
   id: string;
   stem: string;
@@ -441,8 +454,28 @@ export type QuestionBankAdminQuestionListItem = {
   year: number | null;
   institution: string | null;
   primary_node_name: string | null;
+  primary_node_code: string | null;
+  has_primary_node: boolean;
   has_image: boolean;
+  question_fingerprint: QuestionDna | null;
+  has_fingerprint: boolean;
+  fingerprint_confidence: number | null;
+  fingerprint_tags: string[];
+  fingerprint_quality_flags: string[];
+  fingerprint_schema_version: string | null;
+  similar_fingerprint_count: number;
   updated_at: string | null;
+};
+
+export type QuestionBankAdminSimilarQuestion = {
+  id: string;
+  stem: string;
+  confidence: number | null;
+  match_scope: string | null;
+  structure: number | null;
+  charge: number | null;
+  primary_node_code: string | null;
+  primary_node_name: string | null;
 };
 
 export type QuestionBankAdminQuestionsResponse = {
@@ -479,6 +512,9 @@ export type QuestionBankAdminQuestionDetail = {
   source: Record<string, unknown>;
   publish_blockers: string[];
   charge_profile: Record<string, unknown>;
+  question_fingerprint: QuestionDna | null;
+  distractor_diagnosis: Record<string, string>;
+  similar_questions: QuestionBankAdminSimilarQuestion[];
   edit_log: { by?: string; at?: string; fields?: string[] }[];
 };
 
@@ -495,6 +531,7 @@ export type QuestionBankAdminQuestionPatch = {
   canonical_answer?: string;
   difficulty_estimate?: number;
   primary_node_id?: string;
+  distractor_diagnosis?: Record<string, string>;
 };
 
 export type QuestionBankAdminEditResult = {
@@ -512,7 +549,13 @@ export async function searchQuestionBankAdminQuestions(params?: {
   board_code?: string;
   year?: number;
   knowledge_node_id?: string;
+  missing_topic?: boolean;
   has_image?: boolean;
+  missing_fingerprint?: boolean;
+  fingerprint_tag?: string;
+  fingerprint_low_confidence?: boolean;
+  missing_similar?: boolean;
+  fingerprint_schema_version?: string;
   limit?: number;
   offset?: number;
 }): Promise<QuestionBankAdminQuestionsResponse> {
@@ -523,7 +566,15 @@ export async function searchQuestionBankAdminQuestions(params?: {
   if (params?.board_code?.trim()) search.set("board_code", params.board_code.trim());
   if (params?.year) search.set("year", String(params.year));
   if (params?.knowledge_node_id) search.set("knowledge_node_id", params.knowledge_node_id);
+  if (params?.missing_topic !== undefined) search.set("missing_topic", params.missing_topic ? "true" : "false");
   if (params?.has_image !== undefined) search.set("has_image", params.has_image ? "true" : "false");
+  if (params?.missing_fingerprint !== undefined)
+    search.set("missing_fingerprint", params.missing_fingerprint ? "true" : "false");
+  if (params?.fingerprint_tag?.trim()) search.set("fingerprint_tag", params.fingerprint_tag.trim());
+  if (params?.fingerprint_low_confidence) search.set("fingerprint_low_confidence", "true");
+  if (params?.missing_similar) search.set("missing_similar", "true");
+  if (params?.fingerprint_schema_version?.trim())
+    search.set("fingerprint_schema_version", params.fingerprint_schema_version.trim());
   if (params?.limit) search.set("limit", String(params.limit));
   if (params?.offset) search.set("offset", String(params.offset));
   const qs = search.toString();

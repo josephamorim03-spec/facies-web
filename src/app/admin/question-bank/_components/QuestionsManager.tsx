@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   deleteQuestionBankAdminQuestion,
   editQuestionBankAdminQuestion,
+  enqueueQuestionBankQuestionAnalysis,
   getQuestionBankAdminQuestion,
   listQuestionBankAdminKnowledgeNodes,
   searchQuestionBankAdminQuestions,
@@ -23,6 +24,24 @@ const STATUS_OPTIONS = [
 ] as const;
 
 const OPTION_LETTERS = ["A", "B", "C", "D", "E"] as const;
+
+// Rótulos PT-BR das tags do Question DNA (kbank/question_bank/fingerprint.py).
+// `requires_image` é omitido — já há o selo "imagem".
+const DNA_CHIP_LABELS: Record<string, string> = {
+  incorreta: "negativa",
+  exceto: "exceto",
+  vf: "V/F",
+  direta: "direta",
+  long_vignette: "contextualizada",
+  clinical_reasoning: "raciocínio clínico",
+  diagnostic_differentials: "diferenciais",
+  atomic_fact: "atômica",
+  distractor_similar: "distratores similares",
+};
+
+function dnaChips(tags: string[] | undefined): string[] {
+  return (tags ?? []).map((tag) => DNA_CHIP_LABELS[tag]).filter((label): label is string => Boolean(label));
+}
 
 function statusTone(status: string | null): string {
   switch (status) {
@@ -46,6 +65,7 @@ type EditState = {
   difficulty: string;
   primaryNodeId: string;
   primaryNodeLabel: string;
+  distractorDiagnosis: Record<string, string>;
 };
 
 export default function QuestionsManager() {
@@ -53,11 +73,16 @@ export default function QuestionsManager() {
   const [status, setStatus] = useState<string>("published");
   const [boardCode, setBoardCode] = useState("");
   const [year, setYear] = useState("");
+  const [topicFilter, setTopicFilter] = useState<"" | "with" | "missing">("");
   const [hasImage, setHasImage] = useState<"" | "true" | "false">("");
+  const [dnaFilter, setDnaFilter] = useState<"" | "with" | "missing">("");
+  const [lowConfidence, setLowConfidence] = useState(false);
+  const [missingSimilar, setMissingSimilar] = useState(false);
   const [items, setItems] = useState<QuestionBankAdminQuestionListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [bulkAnalyzing, setBulkAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const LIMIT = 25;
@@ -79,7 +104,11 @@ export default function QuestionsManager() {
           status,
           board_code: boardCode || undefined,
           year: year ? Number(year) : undefined,
+          missing_topic: topicFilter === "missing" ? true : topicFilter === "with" ? false : undefined,
           has_image: hasImage === "" ? undefined : hasImage === "true",
+          missing_fingerprint: dnaFilter === "missing" ? true : dnaFilter === "with" ? false : undefined,
+          fingerprint_low_confidence: lowConfidence || undefined,
+          missing_similar: missingSimilar || undefined,
           limit: LIMIT,
           offset: nextOffset,
         });
@@ -92,7 +121,7 @@ export default function QuestionsManager() {
         setLoading(false);
       }
     },
-    [q, status, boardCode, year, hasImage],
+    [q, status, boardCode, year, topicFilter, hasImage, dnaFilter, lowConfidence, missingSimilar],
   );
 
   // Debounced auto-search on filter changes.
@@ -138,6 +167,7 @@ export default function QuestionsManager() {
         difficulty: d.difficulty_estimate != null ? String(d.difficulty_estimate) : "",
         primaryNodeId: primary?.knowledge_node_id ?? "",
         primaryNodeLabel: primary?.node_name ?? "",
+        distractorDiagnosis: { ...(d.distractor_diagnosis ?? {}) },
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao carregar a questão.");
@@ -161,12 +191,18 @@ export default function QuestionsManager() {
       const alternatives = Object.fromEntries(
         OPTION_LETTERS.map((l) => [l, edit.alternatives[l] ?? ""]).filter(([, v]) => String(v).trim()),
       );
+      const distractorDiagnosis = Object.fromEntries(
+        OPTION_LETTERS.filter((l) => l !== edit.answer)
+          .map((l) => [l, (edit.distractorDiagnosis[l] ?? "").trim()])
+          .filter(([, v]) => v),
+      );
       const result = await editQuestionBankAdminQuestion(detail.id, {
         canonical_stem_md: edit.stem,
         canonical_alternatives: alternatives,
         canonical_answer: edit.answer,
         difficulty_estimate: edit.difficulty ? Number(edit.difficulty) : undefined,
         primary_node_id: edit.primaryNodeId || undefined,
+        distractor_diagnosis: distractorDiagnosis,
       });
       if (result.result === "updated") {
         setNotice("Questão atualizada.");
@@ -199,6 +235,65 @@ export default function QuestionsManager() {
       void search(offset);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao alterar status.");
+    }
+  }
+
+  async function enqueueAnalysis(item: QuestionBankAdminQuestionListItem) {
+    setError(null);
+    try {
+      await enqueueQuestionBankQuestionAnalysis(item.id);
+      setNotice("Reanálise por IA enfileirada.");
+      void search(offset);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao enfileirar análise.");
+    }
+  }
+
+  const missingTopicPageItems = items.filter((item) => !item.has_primary_node);
+  const missingDnaPageItems = items.filter((item) => !item.has_fingerprint);
+
+  async function enqueueMissingDnaPageAnalysis() {
+    setError(null);
+    if (missingDnaPageItems.length === 0) {
+      setNotice("Nenhuma questao sem DNA nesta pagina.");
+      return;
+    }
+    setBulkAnalyzing(true);
+    let queued = 0;
+    try {
+      // Reanálise recomputa o charge_profile e, por consequência, o Question DNA.
+      for (const item of missingDnaPageItems) {
+        await enqueueQuestionBankQuestionAnalysis(item.id);
+        queued += 1;
+      }
+      setNotice(`${queued} analise(s) de DNA enfileirada(s) nesta pagina.`);
+      void search(offset);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao enfileirar analises de DNA.");
+    } finally {
+      setBulkAnalyzing(false);
+    }
+  }
+
+  async function enqueueMissingTopicPageAnalysis() {
+    setError(null);
+    if (missingTopicPageItems.length === 0) {
+      setNotice("Nenhuma questao sem topico nesta pagina.");
+      return;
+    }
+    setBulkAnalyzing(true);
+    let queued = 0;
+    try {
+      for (const item of missingTopicPageItems) {
+        await enqueueQuestionBankQuestionAnalysis(item.id);
+        queued += 1;
+      }
+      setNotice(`${queued} reanalise(s) por IA enfileirada(s) nesta pagina.`);
+      void search(offset);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao enfileirar analises.");
+    } finally {
+      setBulkAnalyzing(false);
     }
   }
 
@@ -254,11 +349,48 @@ export default function QuestionsManager() {
           placeholder="Ano"
           className={`${inputCls} w-24`}
         />
+        <select value={topicFilter} onChange={(e) => setTopicFilter(e.target.value as "" | "with" | "missing")} className={inputCls}>
+          <option value="">Tópico: todos</option>
+          <option value="with">Com tópico</option>
+          <option value="missing">Sem tópico</option>
+        </select>
         <select value={hasImage} onChange={(e) => setHasImage(e.target.value as "" | "true" | "false")} className={inputCls}>
           <option value="">Imagem: todas</option>
           <option value="true">Com imagem</option>
           <option value="false">Sem imagem</option>
         </select>
+        <select value={dnaFilter} onChange={(e) => setDnaFilter(e.target.value as "" | "with" | "missing")} className={inputCls}>
+          <option value="">DNA: todos</option>
+          <option value="with">Com DNA</option>
+          <option value="missing">Sem DNA</option>
+        </select>
+      </div>
+
+      {/* Filas pré-definidas (atalhos de filtro) */}
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <span className="text-gray-500 dark:text-gray-400">Filas:</span>
+        {([
+          ["Sem tópico", () => { setTopicFilter("missing"); setDnaFilter(""); setLowConfidence(false); setMissingSimilar(false); }],
+          ["Sem DNA", () => { setDnaFilter("missing"); setTopicFilter(""); setLowConfidence(false); setMissingSimilar(false); }],
+          ["DNA baixa confiança", () => { setLowConfidence(true); setDnaFilter("with"); setTopicFilter(""); setMissingSimilar(false); }],
+          ["Sem similares", () => { setMissingSimilar(true); setDnaFilter("with"); setTopicFilter(""); setLowConfidence(false); }],
+        ] as const).map(([label, apply]) => (
+          <button
+            key={label}
+            onClick={apply}
+            className="rounded-full border border-gray-300 px-3 py-1 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
+            {label}
+          </button>
+        ))}
+        {(topicFilter || dnaFilter || lowConfidence || missingSimilar) && (
+          <button
+            onClick={() => { setTopicFilter(""); setDnaFilter(""); setLowConfidence(false); setMissingSimilar(false); }}
+            className="rounded-full border border-gray-200 px-3 py-1 text-gray-400 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800"
+          >
+            limpar
+          </button>
+        )}
       </div>
 
       {error && (
@@ -271,6 +403,28 @@ export default function QuestionsManager() {
           {notice}
         </div>
       )}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300">
+        <span>
+          {missingTopicPageItems.length} sem topico · {missingDnaPageItems.length} sem DNA nesta pagina
+        </span>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => void enqueueMissingDnaPageAnalysis()}
+            disabled={loading || bulkAnalyzing || missingDnaPageItems.length === 0}
+            className="rounded-lg border border-violet-300 px-3 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-violet-800 dark:text-violet-300 dark:hover:bg-violet-950/30"
+          >
+            {bulkAnalyzing ? "Enfileirando..." : "Analisar DNA desta pagina"}
+          </button>
+          <button
+            onClick={() => void enqueueMissingTopicPageAnalysis()}
+            disabled={loading || bulkAnalyzing || missingTopicPageItems.length === 0}
+            className="rounded-lg border border-blue-300 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/30"
+          >
+            {bulkAnalyzing ? "Enfileirando..." : "Analisar IA das sem topico desta pagina"}
+          </button>
+        </div>
+      </div>
 
       {/* Tabela */}
       <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800">
@@ -290,13 +444,34 @@ export default function QuestionsManager() {
               <tr key={item.id} className="align-top">
                 <td className="max-w-md px-4 py-3 text-gray-900 dark:text-gray-100">
                   <p className="line-clamp-2">{item.stem}</p>
-                  {item.has_image && (
-                    <span className="mt-1 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                      imagem
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {item.has_image && (
+                      <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                        imagem
+                      </span>
+                    )}
+                    {dnaChips(item.question_fingerprint?.tags).map((label) => (
+                      <span
+                        key={label}
+                        className="inline-block rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700 dark:bg-violet-950/40 dark:text-violet-300"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                  {item.has_primary_node ? (
+                    <div>
+                      <span className="font-semibold text-gray-800 dark:text-gray-100">{item.primary_node_code ?? ""}</span>
+                      {item.primary_node_name ? <span className="ml-1">{item.primary_node_name}</span> : null}
+                    </div>
+                  ) : (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                      Sem tópico
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{item.primary_node_name ?? "—"}</td>
                 <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
                   {[item.board_code, item.year].filter(Boolean).join(" · ") || "—"}
                 </td>
@@ -311,6 +486,11 @@ export default function QuestionsManager() {
                     <button onClick={() => void openEditor(item.id)} className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
                       Editar
                     </button>
+                    {!item.has_primary_node ? (
+                      <button onClick={() => void enqueueAnalysis(item)} className="rounded-lg border border-blue-300 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/30">
+                        Analisar IA
+                      </button>
+                    ) : null}
                     {item.status === "published" ? (
                       <button onClick={() => void changeStatus(item, "unpublish")} className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
                         Despublicar
@@ -371,6 +551,41 @@ export default function QuestionsManager() {
               <button onClick={closeEditor} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" aria-label="Fechar">×</button>
             </div>
 
+            {detail.question_fingerprint && (
+              <div className="mt-4 flex flex-wrap items-center gap-1.5 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
+                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">DNA</span>
+                {dnaChips(detail.question_fingerprint.tags).map((label) => (
+                  <span key={label} className="rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700 dark:bg-violet-950/40 dark:text-violet-300">{label}</span>
+                ))}
+                {(detail.question_fingerprint.quality_flags ?? []).map((flag) => (
+                  <span key={flag} className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">{flag}</span>
+                ))}
+              </div>
+            )}
+
+            {detail.similar_questions.length > 0 && (
+              <div className="mt-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Questões similares (DNA)</p>
+                <ul className="mt-1 space-y-1">
+                  {detail.similar_questions.map((s) => (
+                    <li key={s.id} className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 dark:border-gray-800 dark:text-gray-300">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="line-clamp-1 flex-1">{s.stem || s.id}</span>
+                        <span className="shrink-0 text-[11px] text-gray-500 dark:text-gray-400">
+                          {s.match_scope ?? "—"} · {s.confidence != null ? `${Math.round(s.confidence * 100)}%` : "—"}
+                        </span>
+                      </div>
+                      {(s.primary_node_code || s.primary_node_name) && (
+                        <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                          {[s.primary_node_code, s.primary_node_name].filter(Boolean).join(" · ")}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {blockers.length > 0 && (
               <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200">
                 <p className="font-semibold">Não salvo — a edição falha no gate:</p>
@@ -398,6 +613,33 @@ export default function QuestionsManager() {
                   />
                 </div>
               ))}
+            </div>
+
+            {/* Diagnóstico de erro por distrator — só para alternativas erradas (≠ gabarito). */}
+            <div className="mt-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Diagnóstico de erro por alternativa
+              </p>
+              <div className="mt-1 grid gap-2">
+                {OPTION_LETTERS.filter((letter) => letter !== edit.answer && (edit.alternatives[letter] ?? "").trim()).map(
+                  (letter) => (
+                    <div key={letter} className="flex items-start gap-2">
+                      <span className="mt-2 w-6 text-center text-sm font-semibold text-violet-600 dark:text-violet-300">{letter}</span>
+                      <input
+                        value={edit.distractorDiagnosis[letter] ?? ""}
+                        onChange={(e) =>
+                          setEdit({
+                            ...edit,
+                            distractorDiagnosis: { ...edit.distractorDiagnosis, [letter]: e.target.value },
+                          })
+                        }
+                        placeholder="hipótese do erro de quem marca esta alternativa…"
+                        className={`${inputCls} flex-1`}
+                      />
+                    </div>
+                  ),
+                )}
+              </div>
             </div>
 
             <div className="mt-4 flex flex-wrap items-end gap-4">

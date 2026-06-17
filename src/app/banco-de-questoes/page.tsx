@@ -7,10 +7,12 @@ import {
   browseQuestionBankTopics,
   createQuestionBankSession,
   getReviewAgenda,
+  getQuestionBankPerformance,
   getQuestionBankReviewQueue,
   previewQuestionBankAvailability,
   type QuestionBankAnswerStatus,
   type QuestionBankAvailability,
+  type QuestionBankPerformance,
   type QuestionBankQuestion,
   type QuestionBankResolutionMode,
   type QuestionBankReviewQueue,
@@ -193,6 +195,7 @@ function BancoDeQuestoesContent() {
   const [busy, setBusy] = useState(false);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [performance, setPerformance] = useState<QuestionBankPerformance | null>(null);
   const [reviewQueue, setReviewQueue] = useState<QuestionBankReviewQueue>({
     due_count: 0,
     struggling_count: 0,
@@ -219,11 +222,13 @@ function BancoDeQuestoesContent() {
   ].filter(Boolean).length;
 
   const activeIntent =
-    answerStatus === "wrong" || answerStatus === "needs_review"
-      ? "weakness"
-      : resolutionMode === "simulation"
-        ? "simulation"
-        : "learning";
+    answerStatus === "near_miss"
+      ? "near_miss"
+      : answerStatus === "wrong" || answerStatus === "needs_review"
+        ? "weakness"
+        : resolutionMode === "simulation"
+          ? "simulation"
+          : "learning";
 
   // Reset on URL change
   useEffect(() => {
@@ -417,6 +422,13 @@ function BancoDeQuestoesContent() {
       .catch(() => {
         if (active) setReviewQueue({ due_count: 0, struggling_count: 0, total: 0 });
       });
+    getQuestionBankPerformance(token)
+      .then((p) => {
+        if (active) setPerformance(p);
+      })
+      .catch(() => {
+        if (active) setPerformance(null);
+      });
     getReviewAgenda(token)
       .then((agenda) => {
         if (!active) return;
@@ -525,7 +537,7 @@ function BancoDeQuestoesContent() {
           </section>
         )}
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-3" aria-label="Tipos de sessão">
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Tipos de sessão">
           <SessionIntentCard
             title="Aprender um tema"
             description="Resolva com feedback mais próximo e acompanhe o raciocínio item a item."
@@ -556,7 +568,82 @@ function BancoDeQuestoesContent() {
               handleAnswerStatusChange("needs_review");
             }}
           />
+          <SessionIntentCard
+            title="Quase acertei"
+            description="Questões no limiar: você já oscila entre acerto e erro. As de maior retorno para revisar."
+            active={activeIntent === "near_miss"}
+            Icon={IconTarget}
+            onClick={() => {
+              setResolutionMode("training");
+              handleAnswerStatusChange("near_miss");
+            }}
+          />
         </section>
+
+        {performance && performance.areas.length > 0 && (
+          <section aria-label="Sua prontidão por área" className="km-card rounded-lg p-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-serif text-2xl font-semibold leading-tight">Sua prontidão</h2>
+              {performance.exam.simulation_count > 0 && (
+                <p className="text-sm text-muted">
+                  Simulado: {Math.round((performance.exam.accuracy ?? 0) * 100)}% de acerto
+                  {performance.exam.avg_time_ms
+                    ? ` · ${Math.round(performance.exam.avg_time_ms / 1000)}s/questão`
+                    : ""}
+                  {` · ${performance.exam.simulation_count} questões`}
+                </p>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-muted">
+              Conhecimento e revisões por grande área — toque para focar nas lacunas.
+            </p>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {performance.areas.map((a) => {
+                const pct = Math.round(a.readiness * 100);
+                const levelLabel =
+                  a.level === "consolidando"
+                    ? "Consolidando"
+                    : a.level === "atencao"
+                      ? "Atenção"
+                      : "Crítico";
+                const levelTone =
+                  a.level === "consolidando"
+                    ? "text-success"
+                    : a.level === "atencao"
+                      ? "text-warning"
+                      : "text-danger";
+                return (
+                  <li key={a.area}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleAreaChange(a.area);
+                        setResolutionMode("training");
+                        handleAnswerStatusChange("needs_review");
+                      }}
+                      className="w-full rounded-xl border border-edge bg-surface p-4 text-left transition hover:border-primary"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-ink">{a.label}</span>
+                        <span className={`text-xs font-semibold ${levelTone}`}>
+                          {levelLabel} · {pct}%
+                        </span>
+                      </div>
+                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surfaceMuted">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                      </div>
+                      <p className="mt-2 text-xs text-muted">
+                        {a.questions_seen} feitas · {Math.round((a.accuracy ?? 0) * 100)}% acerto
+                        {a.due_count > 0 ? ` · ${a.due_count} vencidas` : ""}
+                      </p>
+                      <p className="mt-1 text-xs font-medium text-ink">{a.next_action}</p>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
 
         <section
           aria-label="Filtros e resumo do banco de questões"

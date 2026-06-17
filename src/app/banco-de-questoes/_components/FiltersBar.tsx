@@ -57,9 +57,11 @@ function initRealizacaoState(v: QuestionBankAnswerStatus): RealizacaoState {
     case "correct": return { unanswered: false, answeredExpanded: true, answeredSubset: "correct" };
     case "wrong": return { unanswered: false, answeredExpanded: true, answeredSubset: "wrong" };
     case "unanswered_or_wrong": return { unanswered: true, answeredExpanded: true, answeredSubset: "wrong" };
-    // "Corrigir fraquezas": degrades to the wrong-subset view if the user
-    // opens the Status tab (the broader union only exists server-side).
-    case "needs_review": return { unanswered: false, answeredExpanded: true, answeredSubset: "wrong" };
+    // "Corrigir fraquezas"/"Quase acertei": degradam para a subvisão de erros se o
+    // usuário abrir a aba Status (o subconjunto refinado só existe no servidor).
+    case "needs_review":
+    case "near_miss":
+      return { unanswered: false, answeredExpanded: true, answeredSubset: "wrong" };
     default: return { unanswered: false, answeredExpanded: false, answeredSubset: "all" };
   }
 }
@@ -200,7 +202,7 @@ function TopicTreeItem({
           />
           <span className="min-w-0 flex-1">
             <span className="block text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-              {node.node_code ?? "OU"} · {node.question_count} questões
+              {node.node_code ?? "Sem código"} · {node.question_count} questões
               {childCount > 0 ? ` · ${childCount} subassunto${childCount > 1 ? "s" : ""}` : ""}
             </span>
             <span className="mt-0.5 block text-sm font-semibold leading-snug text-ink">{node.node_name}</span>

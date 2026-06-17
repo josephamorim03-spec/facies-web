@@ -339,6 +339,30 @@ export default function StudyQuestion({
               </div>
             )}
 
+            {/* Diagnóstico de erro por distrator (só após revelar o gabarito) */}
+            {revealed && item.distractor_diagnosis && Object.keys(item.distractor_diagnosis).length > 0 && (
+              <div className="rounded-xl border border-edge bg-surface p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                  Diagnóstico de erro
+                </p>
+                {item.selected_option && item.distractor_diagnosis[item.selected_option] && (
+                  <p className="mt-2 text-sm text-ink">
+                    <span className="font-semibold">Sua escolha ({item.selected_option}):</span>{" "}
+                    {item.distractor_diagnosis[item.selected_option]}
+                  </p>
+                )}
+                <ul className="mt-2 space-y-1">
+                  {Object.entries(item.distractor_diagnosis)
+                    .filter(([letter]) => letter !== item.selected_option)
+                    .map(([letter, text]) => (
+                      <li key={letter} className="text-sm text-muted">
+                        <span className="font-semibold text-ink">{letter}:</span> {text}
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
+
             {/* Guided correction */}
             {revealed && item.needs_correction && (
               <div className="rounded-2xl border border-warning bg-[var(--amber-tint)] p-4">

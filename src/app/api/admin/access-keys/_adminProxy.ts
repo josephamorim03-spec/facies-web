@@ -149,7 +149,10 @@ export async function proxyAdminAccessKeys(
   const text = await upstream.text();
   const headers = new Headers(upstream.headers);
   headers.set("X-Request-Id", headers.get("X-Request-Id") || requestId);
+  // upstream.text() já entrega o corpo descomprimido; content-length/encoding do
+  // upstream descrevem o corpo comprimido e quebram o navegador (ERR_CONTENT_DECODING_FAILED).
   headers.delete("content-length");
+  headers.delete("content-encoding");
 
   return new NextResponse(text, {
     status: upstream.status,

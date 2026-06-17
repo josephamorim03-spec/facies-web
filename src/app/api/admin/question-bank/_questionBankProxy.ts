@@ -78,19 +78,59 @@ function jsonError(code: string, status: number, requestId: string, message?: st
   );
 }
 
+function logAdminProxyEvent(
+  level: "info" | "warn" | "error",
+  event: string,
+  fields: Record<string, unknown>,
+): void {
+  const payload = {
+    event,
+    area: "question_bank_admin_proxy",
+    ...fields,
+  };
+  const message = JSON.stringify(payload);
+  if (level === "error") console.error(message);
+  else if (level === "warn") console.warn(message);
+  else console.info(message);
+}
+
+function safeOrigin(value: string): string {
+  try {
+    return new URL(value).origin;
+  } catch {
+    return "invalid";
+  }
+}
+
 async function authorizeAdmin(request: NextRequest, requestId: string): Promise<NextResponse | null> {
   if (request.method !== "GET" && !isTrustedMutation(request)) {
+    logAdminProxyEvent("warn", "csrf_rejected", {
+      request_id: requestId,
+      method: request.method,
+      path: request.nextUrl.pathname,
+      has_origin: Boolean(requestOrigin(request)),
+    });
     return jsonError("csrf_rejected", 403, requestId);
   }
 
   const allowedEmails = adminEmails();
   if (allowedEmails.size === 0) {
+    logAdminProxyEvent("error", "admin_not_configured", {
+      request_id: requestId,
+      method: request.method,
+      path: request.nextUrl.pathname,
+    });
     return jsonError("admin_not_configured", 403, requestId);
   }
 
   const proxyTarget = String(process.env.NEXT_API_PROXY_TARGET || "http://127.0.0.1:8000").replace(/\/+$/, "");
   const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value?.trim() || "";
   if (!sessionToken) {
+    logAdminProxyEvent("warn", "not_authenticated_missing_session", {
+      request_id: requestId,
+      method: request.method,
+      path: request.nextUrl.pathname,
+    });
     return jsonError("not_authenticated", 401, requestId);
   }
 
@@ -104,6 +144,12 @@ async function authorizeAdmin(request: NextRequest, requestId: string): Promise<
   }).catch(() => null);
 
   if (!meResponse?.ok) {
+    logAdminProxyEvent("warn", "not_authenticated_me_failed", {
+      request_id: requestId,
+      method: request.method,
+      path: request.nextUrl.pathname,
+      upstream_status: meResponse?.status ?? null,
+    });
     return jsonError("not_authenticated", 401, requestId);
   }
 
@@ -118,6 +164,13 @@ async function authorizeAdmin(request: NextRequest, requestId: string): Promise<
       : false;
 
   if (!email || !verified || !allowedEmails.has(email)) {
+    logAdminProxyEvent("warn", "admin_forbidden", {
+      request_id: requestId,
+      method: request.method,
+      path: request.nextUrl.pathname,
+      has_email: Boolean(email),
+      email_verified: verified,
+    });
     return jsonError("admin_forbidden", 403, requestId);
   }
 
@@ -139,6 +192,11 @@ export async function proxyQuestionBankAdmin(
 
   const target = questionBankTarget();
   if (!target) {
+    logAdminProxyEvent("error", "question_bank_admin_not_configured", {
+      request_id: requestId,
+      method: init?.method ?? request.method,
+      path: questionBankPath,
+    });
     return jsonError(
       "question_bank_admin_not_configured",
       500,
@@ -149,6 +207,12 @@ export async function proxyQuestionBankAdmin(
 
   const adminKey = String(process.env.QUESTION_BANK_ADMIN_API_KEY ?? "").trim();
   if (!adminKey) {
+    logAdminProxyEvent("error", "question_bank_admin_key_missing", {
+      request_id: requestId,
+      method: init?.method ?? request.method,
+      path: questionBankPath,
+      target_configured: Boolean(target),
+    });
     return jsonError("question_bank_admin_key_missing", 500, requestId);
   }
 
@@ -168,13 +232,31 @@ export async function proxyQuestionBankAdmin(
   }).catch(() => null);
 
   if (!upstream) {
+    logAdminProxyEvent("error", "question_bank_upstream_unavailable", {
+      request_id: requestId,
+      method: init?.method ?? request.method,
+      path: questionBankPath,
+      target_origin: safeOrigin(target),
+    });
     return jsonError("question_bank_upstream_unavailable", 502, requestId);
   }
 
   const text = await upstream.text();
+  if (!upstream.ok) {
+    logAdminProxyEvent(upstream.status >= 500 ? "error" : "warn", "question_bank_upstream_error", {
+      request_id: requestId,
+      method: init?.method ?? request.method,
+      path: questionBankPath,
+      upstream_status: upstream.status,
+      target_origin: safeOrigin(target),
+    });
+  }
   const responseHeaders = new Headers(upstream.headers);
   responseHeaders.set("X-Request-Id", responseHeaders.get("X-Request-Id") || requestId);
+  // upstream.text() já entrega o corpo descomprimido; content-length/encoding do
+  // upstream descrevem o corpo comprimido e quebram o navegador (ERR_CONTENT_DECODING_FAILED).
   responseHeaders.delete("content-length");
+  responseHeaders.delete("content-encoding");
 
   return new NextResponse(text, {
     status: upstream.status,
