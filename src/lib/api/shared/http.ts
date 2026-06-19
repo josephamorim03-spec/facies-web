@@ -10,11 +10,18 @@ export type APIRetryPolicy = {
   retryOnStatuses?: number[];
   allowRetryOnNonIdempotent?: boolean;
 };
+export type ClientCachePolicy = {
+  ttlMs?: number;
+  swrMs?: number;
+  tags?: string[];
+  key?: string;
+};
 export type APIRequestInit = RequestInit & {
   timeoutMs?: number;
   retry?: APIRetryPolicy | false;
   requestId?: string;
   idempotencyKey?: string | null;
+  clientCache?: ClientCachePolicy | false;
 };
 
 const DEFAULT_API_TIMEOUT_MS = 15000;
@@ -26,6 +33,24 @@ const DEFAULT_RETRY_JITTER_RATIO = 0.25;
 export const INTERNAL_CSRF_HEADER = "X-KrosMed-CSRF";
 export const INTERNAL_CSRF_VALUE = "1";
 const RETRYABLE_STATUS_CODES = new Set<number>([408, 425, 429, 500, 502, 503, 504]);
+
+type ResolvedClientCachePolicy = Required<Pick<ClientCachePolicy, "ttlMs" | "swrMs">> & {
+  tags: string[];
+  key?: string;
+};
+
+type ClientCacheEntry = {
+  path: string;
+  tags: Set<string>;
+  value: unknown;
+  expiresAt: number;
+  swrExpiresAt: number;
+};
+
+const clientCacheStore = new Map<string, ClientCacheEntry>();
+const clientCacheInflight = new Map<string, Promise<unknown>>();
+const clientCacheRefreshing = new Set<string>();
+let clientCacheGeneration = 0;
 
 function createTimeoutSignal(
   timeoutMs: number,
@@ -96,6 +121,299 @@ function methodIsIdempotent(method: string): boolean {
     method === "PUT" ||
     method === "DELETE"
   );
+}
+
+function methodCanUseClientCache(method: string): boolean {
+  return method === "GET" || method === "HEAD";
+}
+
+function isMutatingMethod(method: string): boolean {
+  return method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
+}
+
+function normalizeApiPath(path: string): { pathname: string; pathWithSearch: string; sameOrigin: boolean } | null {
+  try {
+    const base =
+      typeof window !== "undefined" && window.location?.origin
+        ? window.location.origin
+        : "http://krosmed.local";
+    const parsed = new URL(path, base);
+    const sameOrigin = parsed.origin === base;
+    return {
+      pathname: parsed.pathname,
+      pathWithSearch: `${parsed.pathname}${parsed.search}`,
+      sameOrigin,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function isClientCacheRuntime(): boolean {
+  return typeof window !== "undefined";
+}
+
+function isSensitiveApiPath(pathname: string): boolean {
+  if (!pathname.startsWith("/api/")) return true;
+  if (
+    pathname.startsWith("/api/admin") ||
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/jobs") ||
+    pathname.startsWith("/api/version")
+  ) {
+    return true;
+  }
+  if (pathname.startsWith("/api/question-bank/sessions")) return true;
+  if (pathname.startsWith("/api/studies/import/sessions")) return true;
+  if (pathname.startsWith("/api/import/sessions")) return true;
+  if (pathname.startsWith("/api/notes/operational/attachments")) return true;
+  if (pathname === "/api/notes/operational/turbo") return true;
+  if (
+    pathname.startsWith("/api/notes/operational/turbo/session/") &&
+    !pathname.startsWith("/api/notes/operational/turbo/session/daily-completed-cards")
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function defaultClientCachePolicy(pathname: string): ResolvedClientCachePolicy | null {
+  if (isSensitiveApiPath(pathname)) return null;
+  if (pathname === "/api/profile") {
+    return { ttlMs: 5 * 60_000, swrMs: 30 * 60_000, tags: ["profile"] };
+  }
+  if (pathname === "/api/reviews/agenda") {
+    return { ttlMs: 60_000, swrMs: 5 * 60_000, tags: ["reviews", "agenda"] };
+  }
+  if (pathname === "/api/reviews/tasks") {
+    return { ttlMs: 45_000, swrMs: 5 * 60_000, tags: ["reviews", "studies"] };
+  }
+  if (pathname === "/api/studies/directed") {
+    return { ttlMs: 60_000, swrMs: 5 * 60_000, tags: ["studies", "reviews"] };
+  }
+  if (pathname === "/api/studies/performance-summary") {
+    return { ttlMs: 90_000, swrMs: 5 * 60_000, tags: ["performance", "studies"] };
+  }
+  if (pathname === "/api/events") {
+    return { ttlMs: 45_000, swrMs: 5 * 60_000, tags: ["calendar", "schedule"] };
+  }
+  if (pathname === "/api/schedule/workload" || pathname === "/api/schedule/suggestions") {
+    return { ttlMs: 45_000, swrMs: 2 * 60_000, tags: ["schedule", "calendar"] };
+  }
+  if (pathname === "/api/schedule/generate" || pathname === "/api/subjects/rank" || pathname === "/api/user/state") {
+    return { ttlMs: 45_000, swrMs: 2 * 60_000, tags: ["schedule", "performance"] };
+  }
+  if (pathname === "/api/question-bank/topics") {
+    return { ttlMs: 5 * 60_000, swrMs: 30 * 60_000, tags: ["question-bank", "question-bank-topics"] };
+  }
+  if (pathname === "/api/question-bank/availability") {
+    return { ttlMs: 30_000, swrMs: 2 * 60_000, tags: ["question-bank", "question-bank-availability"] };
+  }
+  if (pathname === "/api/question-bank/questions") {
+    return { ttlMs: 60_000, swrMs: 5 * 60_000, tags: ["question-bank", "question-bank-questions"] };
+  }
+  if (pathname === "/api/question-bank/diagnosis/longitudinal") {
+    return { ttlMs: 60_000, swrMs: 5 * 60_000, tags: ["question-bank", "performance"] };
+  }
+  if (pathname === "/api/question-bank/review-queue") {
+    return { ttlMs: 30_000, swrMs: 2 * 60_000, tags: ["question-bank", "reviews"] };
+  }
+  if (pathname === "/api/question-bank/next-action") {
+    return { ttlMs: 30_000, swrMs: 2 * 60_000, tags: ["question-bank", "reviews", "performance"] };
+  }
+  if (pathname === "/api/question-bank/performance") {
+    return { ttlMs: 60_000, swrMs: 5 * 60_000, tags: ["question-bank", "performance"] };
+  }
+  if (pathname === "/api/notes/operational/turbo/area-stats") {
+    return { ttlMs: 60_000, swrMs: 5 * 60_000, tags: ["notes", "turbo", "performance"] };
+  }
+  if (pathname === "/api/notes/operational/turbo/overview") {
+    return { ttlMs: 30_000, swrMs: 2 * 60_000, tags: ["notes", "turbo"] };
+  }
+  if (pathname === "/api/notes/operational/streak") {
+    return { ttlMs: 60_000, swrMs: 5 * 60_000, tags: ["notes", "streak"] };
+  }
+  if (pathname === "/api/notes/operational/turbo/session/daily-completed-cards") {
+    return { ttlMs: 90_000, swrMs: 5 * 60_000, tags: ["notes", "turbo", "performance"] };
+  }
+  if (pathname === "/api/notes/operational") {
+    return { ttlMs: 30_000, swrMs: 2 * 60_000, tags: ["notes", "turbo"] };
+  }
+  return null;
+}
+
+function resolveClientCachePolicy(path: string, init: APIRequestInit | undefined, method: string): {
+  key: string;
+  path: string;
+  policy: ResolvedClientCachePolicy;
+} | null {
+  if (!isClientCacheRuntime() || !methodCanUseClientCache(method)) return null;
+  if (init?.clientCache === false || init?.cache === "no-store" || init?.signal) return null;
+  const normalized = normalizeApiPath(path);
+  if (!normalized?.sameOrigin) return null;
+  const defaults = defaultClientCachePolicy(normalized.pathname);
+  const explicit = init?.clientCache && typeof init.clientCache === "object" ? init.clientCache : null;
+  if (!defaults && !explicit) return null;
+  const ttlMs = Math.max(0, explicit?.ttlMs ?? defaults?.ttlMs ?? 60_000);
+  if (ttlMs <= 0) return null;
+  const swrMs = Math.max(0, explicit?.swrMs ?? defaults?.swrMs ?? 0);
+  const headers = normalizeHeaders(init?.headers);
+  const authKey = headers.get("Authorization") ?? "";
+  const key = explicit?.key ?? `${method} ${normalized.pathWithSearch} ${authKey}`;
+  const tags = Array.from(new Set([...(defaults?.tags ?? []), ...(explicit?.tags ?? [])].filter(Boolean)));
+  return {
+    key,
+    path: normalized.pathWithSearch,
+    policy: { ttlMs, swrMs, tags },
+  };
+}
+
+function mutationInvalidationTags(path: string): string[] {
+  const normalized = normalizeApiPath(path);
+  const pathname = normalized?.pathname ?? path;
+  const tags = new Set<string>();
+  if (pathname.startsWith("/api/profile")) tags.add("profile");
+  if (pathname.startsWith("/api/question-bank")) {
+    tags.add("question-bank");
+    tags.add("reviews");
+    tags.add("studies");
+    tags.add("performance");
+  }
+  if (pathname.startsWith("/api/notes/operational")) {
+    tags.add("notes");
+    tags.add("turbo");
+    tags.add("performance");
+    tags.add("reviews");
+  }
+  if (pathname.startsWith("/api/reviews")) {
+    tags.add("reviews");
+    tags.add("studies");
+    tags.add("performance");
+    tags.add("question-bank");
+  }
+  if (pathname.startsWith("/api/studies")) {
+    tags.add("studies");
+    tags.add("reviews");
+    tags.add("performance");
+    tags.add("question-bank");
+  }
+  if (pathname.startsWith("/api/events")) {
+    tags.add("calendar");
+    tags.add("schedule");
+    tags.add("reviews");
+  }
+  if (pathname.startsWith("/api/schedule") || pathname.startsWith("/api/user/state")) {
+    tags.add("schedule");
+    tags.add("calendar");
+    tags.add("reviews");
+    tags.add("performance");
+  }
+  return Array.from(tags);
+}
+
+export function invalidateClientCache(tagsOrPrefixes?: string | string[]): void {
+  if (!isClientCacheRuntime()) return;
+  clientCacheGeneration += 1;
+  if (!tagsOrPrefixes) {
+    clientCacheStore.clear();
+    clientCacheInflight.clear();
+    clientCacheRefreshing.clear();
+    return;
+  }
+  const tokens = Array.isArray(tagsOrPrefixes) ? tagsOrPrefixes : [tagsOrPrefixes];
+  const normalizedTokens = tokens.map((token) => token.trim()).filter(Boolean);
+  if (normalizedTokens.length === 0) return;
+  for (const [key, entry] of clientCacheStore.entries()) {
+    const shouldDelete = normalizedTokens.some((token) => {
+      if (token.startsWith("/")) return entry.path.startsWith(token) || key.includes(token);
+      return entry.tags.has(token);
+    });
+    if (shouldDelete) {
+      clientCacheStore.delete(key);
+      clientCacheInflight.delete(key);
+      clientCacheRefreshing.delete(key);
+    }
+  }
+}
+
+async function refreshClientCache<T>(
+  key: string,
+  path: string,
+  init: APIRequestInit | undefined,
+  cachePath: string,
+  policy: ResolvedClientCachePolicy,
+): Promise<T> {
+  const pending = clientCacheInflight.get(key);
+  if (pending) return pending as Promise<T>;
+  const generation = clientCacheGeneration;
+  const request = requestApi<T>(path, { ...init, clientCache: false })
+    .then((value) => {
+      const now = Date.now();
+      if (generation === clientCacheGeneration) {
+        clientCacheStore.set(key, {
+          path: cachePath,
+          tags: new Set(policy.tags),
+          value,
+          expiresAt: now + policy.ttlMs,
+          swrExpiresAt: now + policy.ttlMs + policy.swrMs,
+        });
+      }
+      return value;
+    })
+    .finally(() => {
+      clientCacheInflight.delete(key);
+      clientCacheRefreshing.delete(key);
+    });
+  clientCacheInflight.set(key, request);
+  return request;
+}
+
+function revalidateClientCacheInBackground<T>(
+  key: string,
+  path: string,
+  init: APIRequestInit | undefined,
+  cachePath: string,
+  policy: ResolvedClientCachePolicy,
+): void {
+  if (clientCacheRefreshing.has(key)) return;
+  clientCacheRefreshing.add(key);
+  void refreshClientCache<T>(key, path, init, cachePath, policy).catch(() => {
+    clientCacheRefreshing.delete(key);
+  });
+}
+
+async function apiWithClientCache<T>(
+  path: string,
+  init: APIRequestInit | undefined,
+  cacheConfig: { key: string; path: string; policy: ResolvedClientCachePolicy },
+): Promise<T> {
+  const now = Date.now();
+  const cached = clientCacheStore.get(cacheConfig.key);
+  if (cached && cached.expiresAt > now) {
+    return cached.value as T;
+  }
+  if (cached && cached.swrExpiresAt > now) {
+    revalidateClientCacheInBackground<T>(
+      cacheConfig.key,
+      path,
+      init,
+      cacheConfig.path,
+      cacheConfig.policy,
+    );
+    return cached.value as T;
+  }
+  try {
+    return await refreshClientCache<T>(
+      cacheConfig.key,
+      path,
+      init,
+      cacheConfig.path,
+      cacheConfig.policy,
+    );
+  } catch (err) {
+    if (cached) return cached.value as T;
+    throw err;
+  }
 }
 
 function parseRetryAfterMs(raw: string | null): number | null {
@@ -286,7 +604,7 @@ export async function fetchRaw(path: string, init?: APIRequestInit): Promise<Res
   throw buildTimeoutError();
 }
 
-export async function api<T>(path: string, init?: APIRequestInit): Promise<T> {
+async function requestApi<T>(path: string, init?: APIRequestInit): Promise<T> {
   try {
     const res = await fetchRaw(path, init);
 
@@ -308,6 +626,7 @@ export async function api<T>(path: string, init?: APIRequestInit): Promise<T> {
           detailText.includes("invalid bearer token") || detailText.includes("expired");
 
         if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+          invalidateClientCache();
           if (isUnknownLocalAccount) {
             clearAuthToken();
             window.location.assign("/login");
@@ -327,6 +646,21 @@ export async function api<T>(path: string, init?: APIRequestInit): Promise<T> {
     }
     throw err;
   }
+}
+
+export async function api<T>(path: string, init?: APIRequestInit): Promise<T> {
+  const method = methodFromInit(init);
+  const cacheConfig = resolveClientCachePolicy(path, init, method);
+  if (cacheConfig) {
+    return apiWithClientCache<T>(path, init, cacheConfig);
+  }
+
+  const result = await requestApi<T>(path, init);
+  if (isClientCacheRuntime() && isMutatingMethod(method)) {
+    const tags = mutationInvalidationTags(path);
+    if (tags.length > 0) invalidateClientCache(tags);
+  }
+  return result;
 }
 
 export function authHeader(token: string): Record<string, string> {

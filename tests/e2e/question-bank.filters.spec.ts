@@ -122,6 +122,40 @@ test("question bank applies filters, calendar review context, and gated correcti
       body: JSON.stringify([{ id: "q1", stem: item.stem, alternatives: item.alternatives, charge_profile: null, difficulty_estimate: 0.42, content_grade: "usable", image_refs: [], table_refs: [], metadata: {}, source: item.source, knowledge_nodes: [] }]),
     });
   });
+  await page.route("**/api/question-bank/next-action", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        kind: "weak_area",
+        title: "Fortalecer GO",
+        subtitle: "Foco nas lacunas desta area",
+        meta: "~20 min - treino com correcao item a item",
+        cta_label: "Revisar agora",
+        area: "GO",
+        area_label: "Ginecologia e Obstetricia",
+        signals: [{ key: "area_critico", label: "area critica", severity: "critical" }],
+        start_payload: {
+          mode: "adaptive",
+          resolution_mode: "training",
+          area: "GO",
+          answer_status: "needs_review",
+          only_unanswered: false,
+          limit: 7,
+        },
+        generated_at: "2026-05-27T15:00:00Z",
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/performance", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        areas: [],
+        exam: { simulation_count: 0, accuracy: null, avg_time_ms: null, slow_rate: null },
+        generated_at: "2026-05-27T15:00:00Z",
+      }),
+    });
+  });
   await page.route("**/api/question-bank/sessions", async (route) => {
     createPayloads.push(await route.request().postDataJSON());
     await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(sessionPayload(false)) });
@@ -157,6 +191,11 @@ test("question bank applies filters, calendar review context, and gated correcti
   await page.goto("/banco-de-questoes?review_task_id=rt_e2e&date=2026-05-27&area=GO&theme=Obstetricia&expected_questions=12");
 
   await expect(page.getByRole("link", { name: /Banco de Quest/ })).toBeVisible();
+  const recommendedSection = page.getByRole("region", { name: "SessÃ£o recomendada" });
+  await expect(recommendedSection.getByText("Fortalecer GO")).toBeVisible();
+  await expect(recommendedSection.getByText("area critica")).toBeVisible();
+
+  await page.getByRole("button", { name: /Montar sess/i }).click();
   await expect(page.getByTestId("question-bank-top-filters")).toBeVisible();
   await expect(page.locator("main aside")).toHaveCount(0);
   await expect(page.getByText(/12 .*dispon/i)).toBeVisible();
@@ -168,20 +207,17 @@ test("question bank applies filters, calendar review context, and gated correcti
   await quantityInput.fill("99");
   await expect(quantityInput).toHaveValue("12");
 
-  await page.getByRole("button", { name: /Modo/ }).click();
-  await page.getByRole("button", { name: "Treino" }).click();
-  await page.getByRole("button", { name: "Iniciar treino" }).click();
+  await recommendedSection.getByRole("button", { name: /Revisar agora/ }).click();
 
   const payload = createPayloads[0];
   expect(payload).toBeTruthy();
   if (!payload) throw new Error("Missing session creation payload.");
   expect(payload).toMatchObject({
-    review_task_id: "rt_e2e",
     area: "GO",
-    search: "Obstetricia",
-    limit: 12,
+    limit: 7,
     resolution_mode: "training",
-    answer_status: "all",
+    answer_status: "needs_review",
+    only_unanswered: false,
   });
   expect(String(payload.performed_at)).toContain("2026-05-27");
 

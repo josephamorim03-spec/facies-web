@@ -7,6 +7,9 @@ import { useNavbar } from "@/lib/NavbarContext";
 import AreaDot from "@/components/AreaDot";
 import { Skeleton } from "@/components/Skeleton";
 import { Button } from "@/components/ui/Button";
+import { ProgressRing } from "@/components/ui/ProgressRing";
+import { Alert } from "@/components/ui/Alert";
+import { areaHex } from "@/lib/areaColors";
 import { getAuthToken } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/error-utils";
 import { useAuthToken } from "@/lib/useAuthToken";
@@ -40,15 +43,6 @@ import { writeCronogramaViewModeSession } from "@/app/cronograma/_lib/viewModeSe
 import BancoSidebarCard from "./_components/BancoSidebarCard";
 
 type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
-
-const AREA_HEX: Record<Area, string> = {
-  GO: "#B65AA0",
-  PD: "#2E79A8",
-  CG: "#B44A4F",
-  CM: "#2D8B62",
-  MP: "#A97816",
-  OU: "#8C928E",
-};
 
 type DailyWeaknessItem = {
   key: string;
@@ -92,10 +86,6 @@ function formatDayMonth(isoDate: string): string {
 function formatPercent(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
   return `${Math.round(Number(value))}%`;
-}
-
-function getAreaColor(area: string): string {
-  return AREA_HEX[area as Area] ?? AREA_HEX.OU;
 }
 
 function buildDailyWeaknessItems(summary: StudyPerformanceSummary | null): DailyWeaknessItem[] {
@@ -291,17 +281,6 @@ function IconShield({ className }: { className?: string }) {
   );
 }
 
-function IconNotebook({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <rect x="5" y="3" width="14" height="18" rx="2" />
-      <path d="M9 7h6" />
-      <path d="M9 11h6" />
-      <path d="M9 15h4" />
-    </svg>
-  );
-}
-
 function IconCards({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
@@ -317,44 +296,6 @@ function IconArrowRight({ className }: { className?: string }) {
       <path d="M4 10h12" />
       <path d="m11 5 5 5-5 5" />
     </svg>
-  );
-}
-
-function ProgressRing({
-  pct,
-  label,
-  size = 128,
-}: {
-  pct: number;
-  label?: string;
-  size?: number;
-}) {
-  const radius = (size - 16) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const safePct = Math.max(0, Math.min(100, pct));
-  const offset = circumference * (1 - safePct / 100);
-
-  return (
-    <div className="relative inline-flex shrink-0 items-center justify-center" style={{ width: size, height: size }}>
-      <svg viewBox={`0 0 ${size} ${size}`} className="-rotate-90" aria-hidden="true">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--color-surface-muted)" strokeWidth="8" />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="var(--color-success)"
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="font-serif text-3xl leading-none text-ink">{safePct}%</span>
-        {label && <span className="mt-1 text-[11px] leading-tight text-muted">{label}</span>}
-      </div>
-    </div>
   );
 }
 
@@ -638,7 +579,7 @@ export default function TodayPage() {
       .slice(0, 3);
   }, [longitudinal, performanceSummary]);
 
-  const studentFirstName = firstName(displayName) ?? "Joseph";
+  const studentFirstName = firstName(displayName);
   const greeting = getGreeting(studentFirstName);
   const totalDoneQuestions = studies.reduce((sum, study) => sum + Math.max(0, Number(study.total_questions ?? 0)), 0);
   const totalCorrectQuestions = studies.reduce((sum, study) => sum + Math.max(0, Number(study.correct_questions ?? 0)), 0);
@@ -658,21 +599,42 @@ export default function TodayPage() {
   const nextActionTask = overdueTasks[0] ?? selectedDayTasks[0] ?? null;
   const nextActionSignals = [
     nextWeakness && nextWeakness.accuracyPct !== null && nextWeakness.accuracyPct < 60
-      ? { key: "recent-error", label: "erro recente", className: "border-red-200 bg-red-50 text-red-700" }
+      ? { key: "recent-error", label: "erro recente", className: "border-danger/40 text-danger" }
       : null,
     turboOverview && turboOverview.due_count > 10
-      ? { key: "urgent-review", label: "revisão urgente", className: "border-amber-200 bg-amber-50 text-amber-700" }
+      ? { key: "urgent-review", label: "revisão urgente", className: "border-warning/40 text-warning" }
       : null,
     nextWeakness && nextWeakness.daysSinceLastStudy !== null && nextWeakness.daysSinceLastStudy > 7
-      ? { key: "stalled-theme", label: "tema parado", className: "border-edge bg-surfaceMuted text-muted" }
+      ? { key: "stalled-theme", label: "tema parado", className: "border-edge text-muted" }
       : null,
   ].filter((item): item is { key: string; label: string; className: string } => item !== null);
+
+  // The single best next step, already decided by the system (weakness > scheduled task > maintenance).
+  const heroAction = nextWeakness
+    ? {
+        area: nextWeakness.area || "OU",
+        title: `Revisar ${nextWeakness.theme}`,
+        subtitle: nextWeakness.signal,
+        metric: nextWeakness.accuracyPct !== null ? `Acerto atual ${nextWeakness.accuracyPct}%` : null,
+        href: `/banco-de-questoes?area=${encodeURIComponent(nextWeakness.area)}&theme=${encodeURIComponent(nextWeakness.theme)}&answer_status=unanswered_or_wrong`,
+        ctaLabel: "Começar revisão",
+      }
+    : nextActionTask
+      ? {
+          area: nextActionTask.area || "OU",
+          title: `Resolver ${nextActionTask.theme}`,
+          subtitle: `${nextActionTask.expected_questions} questões programadas para hoje.`,
+          metric: null,
+          href: reviewTaskHref(nextActionTask),
+          ctaLabel: "Começar agora",
+        }
+      : null;
 
   function TaskRow({ task, overdue }: { task: ReviewTask; overdue?: boolean }) {
     const area = task.area as Area;
     const days = overdue ? getOverdueDays(task.due_date, today) : 0;
     const urgent = days >= 7;
-    const accentColor = AREA_HEX[area] ?? AREA_HEX.OU;
+    const accentColor = areaHex(area);
     const token = getAuthToken() ?? "";
     const isExpanded = expandedTaskId === task.task_id;
 
@@ -757,10 +719,71 @@ export default function TodayPage() {
         </div>
       </header>
 
-      {error && <div className="rounded-lg border border-danger bg-surface p-4 text-sm text-danger">{error}</div>}
+      {error && <Alert variant="danger">{error}</Alert>}
 
       {!error && (
-        <div className="grid gap-4 md:gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
+        <>
+          {/* Próxima ação — o único melhor passo, entregue pronto no topo */}
+          <section className="km-card overflow-hidden" aria-label="Sua próxima ação">
+            {heroAction ? (
+              <div className="flex flex-col sm:flex-row sm:items-stretch">
+                <div
+                  className="flex items-center justify-center py-6 sm:w-24 sm:py-0"
+                  style={{ backgroundColor: `color-mix(in srgb, ${areaHex(heroAction.area)} 14%, transparent)` }}
+                >
+                  <AreaIcon area={heroAction.area} size={44} colored />
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col gap-2 px-5 py-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Sua próxima ação</p>
+                  <h2 className="font-serif text-2xl font-semibold leading-tight text-ink md:text-3xl">{heroAction.title}</h2>
+                  <p className="text-sm text-muted">{heroAction.subtitle}</p>
+                  {(heroAction.metric || nextActionSignals.length > 0) && (
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      {heroAction.metric && (
+                        <span className="text-xs font-semibold" style={{ color: areaHex(heroAction.area) }}>{heroAction.metric}</span>
+                      )}
+                      {nextActionSignals.map((signal) => (
+                        <span
+                          key={signal.key}
+                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${signal.className}`}
+                        >
+                          {signal.label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center px-5 pb-5 sm:pb-0 sm:pr-5">
+                  <Link
+                    href={heroAction.href}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 sm:w-auto"
+                  >
+                    {heroAction.ctaLabel}
+                    <IconArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-start gap-3 px-5 py-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                  <IconShield className="h-6 w-6 shrink-0 text-success" />
+                  <div>
+                    <p className="font-semibold text-ink">Você está em dia.</p>
+                    <p className="text-sm text-muted">Um bloco leve de manutenção no banco mantém o ritmo.</p>
+                  </div>
+                </div>
+                <Link
+                  href="/banco-de-questoes"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 sm:w-auto"
+                >
+                  Abrir banco
+                  <IconArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            )}
+          </section>
+
+          <div className="grid gap-4 md:gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="space-y-4 md:space-y-6">
             <section className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -802,19 +825,18 @@ export default function TodayPage() {
                 {selectedDayTasks.length > 0 ? (
                   selectedDayTasks.map((task) => {
                     const isExpanded = expandedTaskId === task.task_id;
-                    const accentColor = getAreaColor(task.area);
+                    const accentColor = areaHex(task.area);
                     return (
                       <article key={task.task_id} className="overflow-hidden rounded-lg border border-edge bg-surface shadow-sm">
                         <div className="p-4">
-                          {/* Mobile layout: icon inline with text */}
-                          <div className="flex items-start gap-3 sm:hidden">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-edge bg-paper">
-                              <AreaIcon area={task.area} size={28} colored />
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-edge bg-paper sm:h-14 sm:w-14">
+                              <AreaIcon area={task.area} size={30} colored />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <h3 className="font-serif text-base font-semibold leading-snug text-ink">{task.theme}</h3>
-                              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                <span className="rounded-full px-2 py-0.5 text-xs font-semibold" style={{ color: accentColor, backgroundColor: `${accentColor}18` }}>
+                              <h3 className="font-serif text-base font-semibold leading-snug text-ink sm:text-lg">{task.theme}</h3>
+                              <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                <span className="rounded-full px-2 py-0.5 text-xs font-semibold" style={{ color: accentColor, backgroundColor: `color-mix(in srgb, ${accentColor} 14%, transparent)` }}>
                                   {AREA_FULL[task.area] ?? task.area}
                                 </span>
                                 <span className="text-xs text-muted">{task.expected_questions} questões</span>
@@ -822,46 +844,13 @@ export default function TodayPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="mt-3 space-y-2 sm:hidden">
-                            <ScoreBar pct={0} color={accentColor} />
-                            <div className="flex gap-2">
-                              <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center rounded-xl border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk">
-                                Estudar
-                              </Link>
-                              <Button type="button" variant="secondary" size="sm" className="flex-1" onClick={() => setExpandedTaskId(isExpanded ? null : task.task_id)}>
-                                Registrar
-                              </Button>
-                            </div>
-                          </div>
-                          {/* Desktop layout: 3-column grid */}
-                          <div className="hidden sm:grid sm:grid-cols-[5.5rem_minmax(0,1fr)_8rem] sm:items-center sm:gap-4">
-                            <div className="flex h-20 w-full items-center justify-center rounded-lg border border-edge bg-paper">
-                              <AreaIcon area={task.area} size={40} colored />
-                            </div>
-                            <div className="min-w-0">
-                              <h3 className="font-serif text-xl font-semibold leading-tight text-ink">{task.theme}</h3>
-                              <div className="mt-2 flex flex-wrap items-center gap-2">
-                                <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ color: accentColor, backgroundColor: `${accentColor}18` }}>
-                                  {AREA_FULL[task.area] ?? task.area}
-                                </span>
-                                <span className="text-xs text-muted">{task.expected_questions} questões</span>
-                                {task.is_critical && <span className="text-xs font-semibold text-warning">prioritária</span>}
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted">0/{task.expected_questions}</span>
-                              </div>
-                              <ScoreBar pct={0} color={accentColor} />
-                              <div className="flex gap-2">
-                                <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center rounded-xl border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk">
-                                  Estudar
-                                </Link>
-                                <Button type="button" variant="secondary" size="sm" className="flex-1" onClick={() => setExpandedTaskId(isExpanded ? null : task.task_id)}>
-                                  Registrar
-                                </Button>
-                              </div>
-                            </div>
+                          <div className="mt-3 flex items-center gap-2">
+                            <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 sm:flex-none">
+                              Estudar
+                            </Link>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => setExpandedTaskId(isExpanded ? null : task.task_id)}>
+                              {isExpanded ? "Fechar" : "Registrar manual"}
+                            </Button>
                           </div>
                         </div>
                         {isExpanded && (
@@ -886,113 +875,6 @@ export default function TodayPage() {
                         : `Nenhuma revisão pendente para ${selectedDayLabel.toLowerCase()} ${formatDayMonth(selectedDayIso)}.`}
                     </p>
                   </div>
-                )}
-              </div>
-            </section>
-
-            <section className="surface-hero overflow-hidden">
-              <div className="px-5 pb-3 pt-5">
-                <h2 className="font-serif text-2xl font-semibold">Próxima melhor ação</h2>
-                <p className="mt-1 text-sm text-muted">Baseado nos seus erros e revisões pendentes:</p>
-                {nextActionSignals.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {nextActionSignals.map((signal) => (
-                      <span
-                        key={signal.key}
-                        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${signal.className}`}
-                      >
-                        {signal.label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="mx-5 mb-5 overflow-hidden rounded-xl border border-edge/60">
-                {nextWeakness ? (() => {
-                  const areaColor = AREA_HEX[nextWeakness.area as Area] ?? AREA_HEX.OU;
-                  const weaknessHref = `/banco-de-questoes?area=${encodeURIComponent(nextWeakness.area)}&theme=${encodeURIComponent(nextWeakness.theme)}&answer_status=unanswered_or_wrong`;
-                  return (
-                    <div className="flex flex-col sm:flex-row">
-                      {/* Mobile: icon block centered at top */}
-                      <div
-                        className="flex items-center justify-center py-6 sm:hidden"
-                        style={{ backgroundColor: `${areaColor}18` }}
-                      >
-                        <AreaIcon area={nextWeakness.area} size={48} colored />
-                      </div>
-                      {/* Desktop: icon column on left */}
-                      <div
-                        className="hidden shrink-0 items-center justify-center sm:flex sm:w-20 sm:self-stretch"
-                        style={{ backgroundColor: `${areaColor}18` }}
-                      >
-                        <AreaIcon area={nextWeakness.area} size={38} colored />
-                      </div>
-                      {/* Text */}
-                      <div className="flex min-w-0 flex-1 flex-col gap-1 px-4 py-3">
-                        <p className="font-semibold text-ink">Revisar {nextWeakness.theme}</p>
-                        <p className="text-xs text-muted">{nextWeakness.signal}</p>
-                        {nextWeakness.accuracyPct !== null && (
-                          <p className="text-xs font-medium" style={{ color: areaColor }}>
-                            Acerto atual: {nextWeakness.accuracyPct}%
-                          </p>
-                        )}
-                      </div>
-                      {/* Button mobile */}
-                      <div className="px-4 pb-4 sm:hidden">
-                        <Link
-                          href={weaknessHref}
-                          className="block w-full rounded-lg border border-primary bg-primary py-2.5 text-center text-sm font-semibold text-primaryInk"
-                        >
-                          Começar revisão
-                        </Link>
-                      </div>
-                      {/* Button desktop */}
-                      <div className="hidden shrink-0 items-center pr-4 sm:flex">
-                        <Link
-                          href={weaknessHref}
-                          className="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk"
-                        >
-                          Começar revisão
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })() : nextActionTask ? (
-                  <div className="flex flex-col sm:flex-row">
-                    {/* Mobile: icon block centered at top */}
-                    <div className="flex items-center justify-center bg-[var(--amber-tint)] py-6 text-warning sm:hidden">
-                      <IconNotebook className="h-12 w-12" />
-                    </div>
-                    {/* Desktop: icon column on left */}
-                    <div className="hidden shrink-0 items-center justify-center bg-[var(--amber-tint)] text-warning sm:flex sm:w-20 sm:self-stretch">
-                      <IconNotebook className="h-9 w-9" />
-                    </div>
-                    {/* Text */}
-                    <div className="flex min-w-0 flex-1 flex-col gap-1 px-4 py-3">
-                      <p className="font-semibold text-ink">Resolver {nextActionTask.theme}</p>
-                      <p className="text-xs text-muted">{nextActionTask.expected_questions} questões programadas.</p>
-                    </div>
-                    {/* Button mobile */}
-                    <div className="px-4 pb-4 sm:hidden">
-                      <Link
-                        href={reviewTaskHref(nextActionTask)}
-                        className="block w-full rounded-lg border border-primary bg-primary py-2.5 text-center text-sm font-semibold text-primaryInk"
-                      >
-                        Começar
-                      </Link>
-                    </div>
-                    {/* Button desktop */}
-                    <div className="hidden shrink-0 items-center pr-4 sm:flex">
-                      <Link
-                        href={reviewTaskHref(nextActionTask)}
-                        className="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk"
-                      >
-                        Começar
-                      </Link>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="px-4 py-4 text-sm text-muted">Você está sem pendências imediatas. Um bloco leve de manutenção no banco de questões mantém o ritmo.</p>
                 )}
               </div>
             </section>
@@ -1027,73 +909,43 @@ export default function TodayPage() {
           </div>
 
           <aside className="space-y-5">
+            {/* Progresso — uma leitura calma (acerto + meta), não cinco cards concorrentes */}
             <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
               <div className="flex items-start justify-between gap-3">
-                <h2 className="font-serif text-2xl font-semibold">Progresso geral</h2>
+                <h2 className="font-serif text-2xl font-semibold">Progresso</h2>
                 <Link href="/dados-e-relatorios" className="text-xs font-semibold text-primary hover:underline">Ver detalhes</Link>
               </div>
               <div className="mt-5 flex items-center gap-5">
                 <ProgressRing pct={globalAccuracy} label={`de ${totalDoneQuestions} questões`} />
-                <div className="min-w-0 flex-1 space-y-4">
+                <div className="min-w-0 flex-1 space-y-3">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm text-ink">Acertos</span>
-                    <span className="text-2xl font-semibold tabular-nums text-success">{totalCorrectQuestions}</span>
+                    <span className="text-xl font-semibold tabular-nums text-success">{totalCorrectQuestions}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm text-ink">Erros</span>
-                    <span className="text-2xl font-semibold tabular-nums text-danger">{totalWrongQuestions}</span>
+                    <span className="text-xl font-semibold tabular-nums text-danger">{totalWrongQuestions}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm text-ink">Pendentes</span>
-                    <span className="text-2xl font-semibold tabular-nums text-muted">{tasks.length}</span>
+                    <span className="text-xl font-semibold tabular-nums text-muted">{tasks.length}</span>
                   </div>
                 </div>
               </div>
-            </section>
-
-            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="font-serif text-2xl font-semibold">Meta semanal</h2>
-                <Link href="/rotina-e-metas" className="text-xs font-semibold text-primary hover:underline">Editar meta</Link>
-              </div>
-              <p className="mt-4 text-sm text-ink">Responder {weeklyGoal} questões</p>
-              <div className="mt-3 flex items-center gap-4">
-                <ScoreBar pct={weeklyGoalPct} color="var(--color-success)" />
-                <span className="w-20 shrink-0 text-right text-sm tabular-nums text-ink">{weeklyOpsMetrics.doneQuestionsWeek}/{weeklyGoal}</span>
-              </div>
-              <p className="mt-3 text-sm text-muted">
-                {weeklyOpsMetrics.daysRemainingInWeek} dia{weeklyOpsMetrics.daysRemainingInWeek === 1 ? "" : "s"} restante{weeklyOpsMetrics.daysRemainingInWeek === 1 ? "" : "s"}
-              </p>
-            </section>
-
-            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="font-serif text-2xl font-semibold">Resumo de desempenho</h2>
-                <Link href="/dados-e-relatorios/relatorio" className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
-                  Ver detalhes
-                  <IconArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-              <div className="mt-5 space-y-3">
-                {topAreaSummaries.length > 0 ? topAreaSummaries.map((areaSummary) => {
-                  const pct = Math.round(areaSummary.area_accuracy_pct ?? 0);
-                  const color = getAreaColor(areaSummary.area);
-                  return (
-                    <div key={areaSummary.area} className="space-y-1">
-                      <div className="flex items-center justify-between gap-3 text-sm">
-                        <span className="min-w-0 truncate text-ink">{AREA_FULL[areaSummary.area] ?? areaSummary.area}</span>
-                        <span className="font-semibold tabular-nums" style={{ color }}>{pct}%</span>
-                      </div>
-                      <ScoreBar pct={pct} color={color} />
-                    </div>
-                  );
-                }) : (
-                  <p className="text-sm text-muted">O resumo aparece depois dos primeiros registros.</p>
-                )}
+              <div className="mt-5 border-t border-edge pt-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-medium text-ink">Meta semanal</span>
+                  <Link href="/rotina-e-metas" className="text-xs font-semibold text-primary hover:underline">Editar</Link>
+                </div>
+                <div className="mt-2 flex items-center gap-3">
+                  <ScoreBar pct={weeklyGoalPct} color="var(--color-success)" />
+                  <span className="w-16 shrink-0 text-right text-sm tabular-nums text-ink">{weeklyOpsMetrics.doneQuestionsWeek}/{weeklyGoal}</span>
+                </div>
+                <p className="mt-2 text-xs text-muted">
+                  {weeklyOpsMetrics.daysRemainingInWeek} dia{weeklyOpsMetrics.daysRemainingInWeek === 1 ? "" : "s"} restante{weeklyOpsMetrics.daysRemainingInWeek === 1 ? "" : "s"} · meta de {weeklyGoal} questões
+                </p>
               </div>
             </section>
-
-            <BancoSidebarCard longitudinal={longitudinal} />
 
             {turboOverview && turboOverview.due_count > 0 && (
               <section
@@ -1123,28 +975,71 @@ export default function TodayPage() {
               </section>
             )}
 
-            {recentReviewStudies.length > 0 && (
-              <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
-                <h2 className="font-serif text-2xl font-semibold">Últimas revisões</h2>
-                <div className="mt-3 space-y-3">
-                  {recentReviewStudies.map((study) => (
-                    <Link
-                      key={study.study_id}
-                      href={study.import_session_id ? `/cronograma/importar/${study.import_session_id}/resultados` : `/banco-de-questoes?area=${encodeURIComponent(study.area)}&theme=${encodeURIComponent(study.theme)}`}
-                      className="block rounded-lg border border-edge bg-paper px-3 py-3 hover:border-primary"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="min-w-0 truncate text-sm font-semibold text-ink">{study.theme}</p>
-                        <span className="text-xs text-muted">{formatStudyDate(study.performed_at)}</span>
-                      </div>
-                      <p className="mt-1 text-xs text-muted">{study.correct_questions}/{study.total_questions} questões · {formatPercent(study.accuracy)}</p>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
+            {/* Aprofundamento opt-in — fica fora do caminho até o aluno pedir */}
+            <details className="group rounded-lg border border-edge bg-surface">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-sm font-semibold text-ink">
+                <span>Ver mais sobre seu desempenho</span>
+                <IconArrowRight className="h-4 w-4 text-muted transition-transform group-open:rotate-90" />
+              </summary>
+              <div className="space-y-5 border-t border-edge p-5">
+                {topAreaSummaries.length > 0 && (
+                  <div>
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="font-serif text-lg font-semibold">Resumo por área</h3>
+                      <Link href="/dados-e-relatorios/relatorio" className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+                        Relatório
+                        <IconArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                    <div className="mt-3 space-y-3">
+                      {topAreaSummaries.map((areaSummary) => {
+                        const pct = Math.round(areaSummary.area_accuracy_pct ?? 0);
+                        const color = areaHex(areaSummary.area);
+                        return (
+                          <div key={areaSummary.area} className="space-y-1">
+                            <div className="flex items-center justify-between gap-3 text-sm">
+                              <span className="min-w-0 truncate text-ink">{AREA_FULL[areaSummary.area] ?? areaSummary.area}</span>
+                              <span className="font-semibold tabular-nums" style={{ color }}>{pct}%</span>
+                            </div>
+                            <ScoreBar pct={pct} color={color} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <BancoSidebarCard longitudinal={longitudinal} />
+
+                {recentReviewStudies.length > 0 && (
+                  <div>
+                    <h3 className="font-serif text-lg font-semibold">Últimas revisões</h3>
+                    <div className="mt-3 space-y-3">
+                      {recentReviewStudies.map((study) => (
+                        <Link
+                          key={study.study_id}
+                          href={study.import_session_id ? `/cronograma/importar/${study.import_session_id}/resultados` : `/banco-de-questoes?area=${encodeURIComponent(study.area)}&theme=${encodeURIComponent(study.theme)}`}
+                          className="block rounded-lg border border-edge bg-paper px-3 py-3 hover:border-primary"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="min-w-0 truncate text-sm font-semibold text-ink">{study.theme}</p>
+                            <span className="text-xs text-muted">{formatStudyDate(study.performed_at)}</span>
+                          </div>
+                          <p className="mt-1 text-xs text-muted">{study.correct_questions}/{study.total_questions} questões · {formatPercent(study.accuracy)}</p>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {topAreaSummaries.length === 0 && recentReviewStudies.length === 0 && (
+                  <p className="text-sm text-muted">O resumo aparece depois dos primeiros registros.</p>
+                )}
+              </div>
+            </details>
           </aside>
-        </div>
+          </div>
+        </>
       )}
 
       <RescheduleSuggestionDialog

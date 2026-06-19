@@ -26,6 +26,9 @@ type ExamQuestionProps = {
   sessionStatus: QuestionBankSessionStatus;
   sessionStartedAt: string;
   examLabel: string;
+  answeredCount: number;
+  doubtfulCount: number;
+  unansweredCount: number;
   busy: boolean;
   onAnswer: (option: QuestionBankOption) => void;
   onToggleDoubtful: () => void;
@@ -42,6 +45,9 @@ export default function ExamQuestion({
   sessionStatus,
   sessionStartedAt,
   examLabel,
+  answeredCount,
+  doubtfulCount,
+  unansweredCount,
   busy,
   onAnswer,
   onToggleDoubtful,
@@ -65,49 +71,62 @@ export default function ExamQuestion({
 
   const isLate = elapsedSeconds >= 60 * 90;
   const isCritical = elapsedSeconds >= 60 * 120;
+  const progress = Math.round((Math.max(0, answeredCount) / Math.max(1, total)) * 100);
+  const averageSeconds = answeredCount > 0 ? Math.round(elapsedSeconds / answeredCount) : 0;
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
       {/* Exam header */}
       <header className="sticky top-0 z-10 border-b border-edge bg-surface px-4 py-3">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="hidden text-sm font-semibold text-ink sm:block truncate">{examLabel}</span>
-            <span className="text-xs text-muted">·</span>
-            <span className="text-sm text-muted whitespace-nowrap">Questão {position}/{total}</span>
-            {item.knowledge_nodes.find((n) => n.is_primary)?.node_name && (
-              <span className="hidden sm:block rounded-full border border-edge bg-surfaceMuted px-2 py-0.5 text-xs text-muted truncate max-w-[12rem]">
-                {item.knowledge_nodes.find((n) => n.is_primary)!.node_name}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <span
-              className={cx(
-                "font-mono text-sm tabular-nums transition-colors",
-                isCritical ? "font-bold text-danger" : isLate ? "text-warning" : "text-muted",
+        <div className="mx-auto max-w-5xl space-y-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="hidden truncate text-sm font-semibold text-ink sm:block">{examLabel}</span>
+              <span className="text-xs text-muted">·</span>
+              <span className="whitespace-nowrap text-sm text-muted">Questão {position}/{total}</span>
+              {item.knowledge_nodes.find((n) => n.is_primary)?.node_name && (
+                <span className="hidden max-w-[12rem] truncate rounded-full border border-edge bg-surfaceMuted px-2 py-0.5 text-xs text-muted sm:block">
+                  {item.knowledge_nodes.find((n) => n.is_primary)!.node_name}
+                </span>
               )}
-              aria-label="Tempo de prova"
-            >
-              {formatDuration(elapsedSeconds)}
-            </span>
-            <button
-              type="button"
-              onClick={onOpenMap}
-              className="rounded-xl border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:border-primary hover:text-ink"
-            >
-              Mapa
-            </button>
-            {!finalized && (
+            </div>
+            <div className="flex items-center gap-3">
+              <span
+                className={cx(
+                  "font-mono text-sm tabular-nums transition-colors",
+                  isCritical ? "font-bold text-danger" : isLate ? "text-warning" : "text-muted",
+                )}
+                aria-label="Tempo de prova"
+              >
+                {formatDuration(elapsedSeconds)}
+              </span>
               <button
                 type="button"
-                onClick={onFinalize}
-                disabled={busy}
-                className="rounded-xl border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger hover:text-white disabled:opacity-50"
+                onClick={onOpenMap}
+                className="rounded-xl border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:border-primary hover:text-ink"
               >
-                Finalizar prova
+                Mapa
               </button>
-            )}
+              {!finalized && (
+                <button
+                  type="button"
+                  onClick={onFinalize}
+                  disabled={busy}
+                  className="rounded-xl border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger hover:text-white disabled:opacity-50"
+                >
+                  Finalizar prova
+                </button>
+              )}
+            </div>
+          </div>
+          <div>
+            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+              <span>{answeredCount} respondidas · {unansweredCount} em aberto · {doubtfulCount} marcadas</span>
+              <span>{progress}%{averageSeconds > 0 ? ` · ${averageSeconds}s/questão` : ""}</span>
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-surfaceMuted">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+            </div>
           </div>
         </div>
       </header>
@@ -181,7 +200,14 @@ export default function ExamQuestion({
                 : "border-edge text-muted hover:border-warning hover:text-warning",
             )}
           >
-            {item.doubtful ? "✓ Marcada" : "Marcar para revisão"}
+            {item.doubtful ? (
+              <span className="inline-flex items-center gap-1.5">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5" aria-hidden="true">
+                  <path d="m5 10 3 3 7-8" />
+                </svg>
+                Marcada
+              </span>
+            ) : "Marcar para revisão"}
           </button>
           <div className="flex gap-2">
             <button

@@ -85,6 +85,7 @@ export type QuestionBankAdminPreview = {
   questions: Array<{
     number?: number | string;
     stem?: string;
+    options?: Record<string, string> | null;
     correct_answer?: string | null;
     confidence_score?: number;
     extraction_source?: string;
@@ -274,7 +275,9 @@ export async function importQuestionBankAdminFile(
   if (options?.question_overrides && Object.keys(options.question_overrides).length > 0) {
     form.set("question_overrides", JSON.stringify(options.question_overrides));
   }
-  if (options?.auto_pipeline) form.set("auto_pipeline", "true");
+  // Always send an explicit value: the server defaults to auto-pipeline ON, so an
+  // omitted field can no longer turn it off.
+  form.set("auto_pipeline", options?.auto_pipeline === false ? "false" : "true");
   return api<{
     imported_file_id: string;
     source_id: string | null;

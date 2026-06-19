@@ -14,6 +14,7 @@ import { getBlockedRedirectSessionKey } from "@/lib/storage-keys";
 import { ACTIVATE_ROUTE, INITIAL_GOAL_SETUP_ROUTE } from "@/lib/initialGoalSetup";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { NavbarProvider, NavbarContext } from "@/lib/NavbarContext";
+import { warmRoute, warmRouteData } from "@/lib/navigationWarmup";
 
 type BuildVersionPayload = {
   commit_sha: string;
@@ -22,6 +23,24 @@ type BuildVersionPayload = {
 };
 
 const SHOW_BUILD_BADGE = process.env.NEXT_PUBLIC_SHOW_BUILD_BADGE === "1";
+const PRIMARY_NAV_ROUTES = ["/hoje", "/banco-de-questoes", "/cards-adaptativos", "/revisoes", "/dados-e-relatorios"];
+
+type IdleCallbackHandle = number;
+type WindowWithIdleCallback = Window & {
+  requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => IdleCallbackHandle;
+  cancelIdleCallback?: (handle: IdleCallbackHandle) => void;
+};
+
+function scheduleIdleNavigationWarmup(task: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const win = window as WindowWithIdleCallback;
+  if (typeof win.requestIdleCallback === "function") {
+    const handle = win.requestIdleCallback(task, { timeout: 1200 });
+    return () => win.cancelIdleCallback?.(handle);
+  }
+  const timeoutId = window.setTimeout(task, 550);
+  return () => window.clearTimeout(timeoutId);
+}
 
 function shouldHideNavigationChrome(pathname: string): boolean {
   return (
@@ -47,7 +66,6 @@ const PAGE_TITLES: Record<string, string> = {
   "/estatisticas/relatorio": "Relatórios",
   "/desempenho": "Plano",
   "/rotina-e-metas": "Plano",
-  "/rotina": "Plano",
   "/perfil": "Perfil",
   "/caderno": "Caderno",
   "/semana": "Semana",
@@ -55,9 +73,6 @@ const PAGE_TITLES: Record<string, string> = {
   "/calendario": "Agenda",
   "/provas": "Simulados",
   "/dashboard": "Dashboard",
-  "/history": "Histórico",
-  "/log": "Log",
-  "/stats": "Estatísticas",
   "/admin": "Admin",
   "/hoje": "Hoje",
   "/today": "Hoje",
@@ -155,7 +170,7 @@ function BuildVersionBadge() {
   return (
     <span
       title={title}
-      className="pointer-events-none fixed right-2 z-[60] rounded border border-edge bg-paper/85 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-muted shadow-sm backdrop-blur supports-[backdrop-filter]:bg-paper/70 bottom-[calc(env(safe-area-inset-bottom,0px)+0.8rem)] md:bottom-3"
+      className="pointer-events-none fixed right-2 z-[60] rounded border border-edge bg-paper/85 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-muted shadow-sm backdrop-blur supports-[backdrop-filter]:bg-paper/70 bottom-[calc(env(safe-area-inset-bottom,0px)+4.85rem)] md:bottom-3"
       aria-label={`Build ${shortSha}`}
     >
       build: {shortSha}
@@ -173,13 +188,22 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
   const [pinnedSidebar, setPinnedSidebar] = useState(false);
   const showMobileTopBar = !isDesktopNavigation && shouldShowMobileTopBar(pathname, hideNavigationChrome);
+  const showMobileBottomTabs =
+    !isDesktopNavigation &&
+    !hideNavigationChrome &&
+    !pathname.startsWith("/banco-de-questoes/sessao") &&
+    !pathname.startsWith("/revisao-turbo/sessao");
   const mainClassName = hideNavigationChrome
     ? "min-h-screen"
     : isDesktopNavigation
       ? "max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8"
       : showMobileTopBar
-        ? "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]"
-        : "max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]";
+        ? showMobileBottomTabs
+          ? "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+5.25rem)]"
+          : "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]"
+        : showMobileBottomTabs
+          ? "max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+5.25rem)]"
+          : "max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]";
 
   useEffect(() => {
     if (pathname === INITIAL_GOAL_SETUP_ROUTE) {
@@ -230,6 +254,17 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       active = false;
     };
   }, [pathname, router]);
+
+  useEffect(() => {
+    if (hideNavigationChrome || pathname.startsWith("/banco-de-questoes/sessao")) return;
+    const token = getAuthToken();
+    return scheduleIdleNavigationWarmup(() => {
+      for (const href of PRIMARY_NAV_ROUTES) {
+        warmRoute(href, router);
+        if (href !== pathname) warmRouteData(href, token);
+      }
+    });
+  }, [hideNavigationChrome, pathname, router]);
 
   return (
     <>

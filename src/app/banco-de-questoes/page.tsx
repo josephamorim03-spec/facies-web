@@ -7,19 +7,21 @@ import {
   browseQuestionBankTopics,
   createQuestionBankSession,
   getReviewAgenda,
+  getQuestionBankNextAction,
   getQuestionBankPerformance,
-  getQuestionBankReviewQueue,
   previewQuestionBankAvailability,
   type QuestionBankAnswerStatus,
   type QuestionBankAvailability,
+  type QuestionBankNextAction,
   type QuestionBankPerformance,
   type QuestionBankQuestion,
   type QuestionBankResolutionMode,
-  type QuestionBankReviewQueue,
+  type QuestionBankSessionCreatePayload,
   type QuestionBankTopic,
 } from "@/lib/api";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useAuthToken } from "@/lib/useAuthToken";
+import { Alert } from "@/components/ui/Alert";
 import FiltersBar from "./_components/FiltersBar";
 import QuestionList from "./_components/QuestionList";
 import CreateSessionPanel from "./_components/CreateSessionPanel";
@@ -74,6 +76,7 @@ function IconChevronRight({ className }: { className?: string }) {
 }
 
 type SessionIntentCardProps = {
+  eyebrow: string;
   title: string;
   description: string;
   active: boolean;
@@ -81,7 +84,7 @@ type SessionIntentCardProps = {
   onClick: () => void;
 };
 
-function SessionIntentCard({ title, description, active, Icon, onClick }: SessionIntentCardProps) {
+function SessionIntentCard({ eyebrow, title, description, active, Icon, onClick }: SessionIntentCardProps) {
   return (
     <button
       type="button"
@@ -94,11 +97,124 @@ function SessionIntentCard({ title, description, active, Icon, onClick }: Sessio
     >
       <Icon className={cx("h-7 w-7 shrink-0 md:h-8 md:w-8", active ? "text-primary" : "text-muted")} />
       <div className="min-w-0 flex-1 md:flex-none">
+        <p className={cx("text-[10px] font-semibold uppercase tracking-[0.12em]", active ? "text-primary" : "text-muted")}>{eyebrow}</p>
         <h2 className={cx("font-serif text-base font-semibold leading-tight md:text-lg", active ? "text-ink" : "text-muted group-hover:text-ink")}>{title}</h2>
         <p className="mt-0.5 text-xs leading-relaxed text-muted md:mt-1 md:text-sm">{description}</p>
       </div>
       <IconChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 md:hidden" />
     </button>
+  );
+}
+
+function topicPathLabel(topic: QuestionBankTopic): string {
+  if (topic.path_label?.trim()) return topic.path_label.trim();
+  if ((topic.node_path?.length ?? 0) > 0) return topic.node_path.join(" / ");
+  return topic.node_name;
+}
+
+function adaptivePercent(topic: QuestionBankTopic): number {
+  const raw = Number(topic.adaptive_weight_score || topic.adaptive_weight || 0);
+  return Math.max(0, Math.min(100, raw <= 1 ? Math.round(raw * 100) : Math.round(raw)));
+}
+
+function strongestAdaptiveSignal(topic: QuestionBankTopic): string {
+  const factors = Object.entries(topic.adaptive_weight_factors ?? {})
+    .filter(([, value]) => Number.isFinite(Number(value)))
+    .sort(([, a], [, b]) => Number(b) - Number(a));
+  const top = factors[0]?.[0] ?? "";
+  if (top === "student_error_need") return "erro recente";
+  if (top === "due_pressure") return "revisão vencendo";
+  if (top === "bank_demand") return "alta cobrança";
+  if (top === "difficulty_fit") return "dificuldade adequada";
+  if (top === "novelty") return "novidade";
+  return "prioridade adaptativa";
+}
+
+type RecommendedTopicsPanelProps = {
+  topics: QuestionBankTopic[];
+  selectedTopics: QuestionBankTopic[];
+  activeIntent: "learning" | "simulation" | "weakness" | "near_miss";
+  onToggleTopic: (topic: QuestionBankTopic) => void;
+};
+
+function RecommendedTopicsPanel({
+  topics,
+  selectedTopics,
+  activeIntent,
+  onToggleTopic,
+}: RecommendedTopicsPanelProps) {
+  const selectedIds = new Set(selectedTopics.map((topic) => topic.knowledge_node_id));
+  const recommended = [...topics]
+    .filter((topic) => topic.question_count > 0)
+    .sort((a, b) => {
+      const scoreDelta = adaptivePercent(b) - adaptivePercent(a);
+      if (scoreDelta !== 0) return scoreDelta;
+      const depthDelta = (Number(b.depth ?? 0) - Number(a.depth ?? 0));
+      if (depthDelta !== 0) return depthDelta;
+      return b.question_count - a.question_count;
+    })
+    .slice(0, 6);
+
+  if (recommended.length === 0) return null;
+
+  const intentCopy =
+    activeIntent === "simulation"
+      ? "Recorte de prova para medir desempenho."
+      : activeIntent === "weakness"
+        ? "Onde poucas questões fecham mais lacuna."
+        : activeIntent === "near_miss"
+          ? "Itens no limiar entre acerto e erro."
+          : "Priorizadas pelo seu histórico.";
+
+  return (
+    <section className="km-card rounded-lg p-5" aria-label="Microcompetências recomendadas">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Próximo melhor foco</p>
+          <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight">Microcompetências sugeridas</h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted">{intentCopy}</p>
+        </div>
+        <span className="rounded-full border border-edge bg-surface px-3 py-1 text-xs font-semibold text-muted">
+          peso adaptativo
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        {recommended.map((topic) => {
+          const selected = selectedIds.has(topic.knowledge_node_id);
+          const percent = adaptivePercent(topic);
+          return (
+            <button
+              key={topic.knowledge_node_id}
+              type="button"
+              onClick={() => onToggleTopic(topic)}
+              aria-pressed={selected}
+              className={cx(
+                "rounded-xl border p-3 text-left transition-colors",
+                selected ? "border-primary bg-[var(--amber-tint)]" : "border-edge bg-paper hover:border-primary",
+              )}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
+                    {topic.node_code ?? "micro"} · {topic.question_count} questões
+                  </p>
+                  <p className="mt-0.5 line-clamp-2 text-sm font-semibold leading-snug text-ink">{topic.node_name}</p>
+                </div>
+                <span className={cx("shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold", selected ? "bg-primary text-primaryInk" : "bg-surfaceMuted text-muted")}>
+                  {percent}%
+                </span>
+              </div>
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surfaceMuted">
+                <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
+              </div>
+              <p className="mt-2 truncate text-xs text-muted">{topicPathLabel(topic)}</p>
+              <p className="mt-1 text-xs font-medium text-ink">{strongestAdaptiveSignal(topic)}</p>
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -111,6 +227,32 @@ type EntryContext = {
   theme: string | null;
   expectedQuestions: number | null;
 };
+
+const FALLBACK_NEXT_ACTION: QuestionBankNextAction = {
+  kind: "fresh_practice",
+  title: "Praticar questoes novas",
+  subtitle: "Um bloco adaptativo curto mantem o ritmo e cobre novas microcompetencias.",
+  meta: "~20 min - treino com correcao item a item",
+  cta_label: "Comecar treino",
+  area: null,
+  area_label: null,
+  signals: [],
+  start_payload: {
+    mode: "adaptive",
+    resolution_mode: "training",
+    answer_status: "unanswered",
+    only_unanswered: true,
+    limit: 10,
+  },
+  generated_at: "",
+};
+
+function signalClassName(severity: QuestionBankNextAction["signals"][number]["severity"]) {
+  if (severity === "critical") return "border-danger/40 text-danger";
+  if (severity === "warning") return "border-warning/40 text-warning";
+  if (severity === "success") return "border-success/40 text-success";
+  return "border-edge text-muted";
+}
 
 type SearchParamReader = { get(name: string): string | null };
 
@@ -195,13 +337,10 @@ function BancoDeQuestoesContent() {
   const [busy, setBusy] = useState(false);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nextAction, setNextAction] = useState<QuestionBankNextAction | null>(null);
   const [performance, setPerformance] = useState<QuestionBankPerformance | null>(null);
-  const [reviewQueue, setReviewQueue] = useState<QuestionBankReviewQueue>({
-    due_count: 0,
-    struggling_count: 0,
-    total: 0,
-  });
   const [dueTopicTaskCount, setDueTopicTaskCount] = useState(0);
+  const [manualOpen, setManualOpen] = useState(false);
 
   // Derived
   const maxSelectable = Math.max(1, Math.min(50, availability?.max_selectable ?? 50));
@@ -411,16 +550,16 @@ function BancoDeQuestoesContent() {
     }
   }
 
-  // Review queue: FSRS-due + struggling questions, surfaced as an actionable card.
+  // Next action: backend owns the decision; the page only renders and starts it.
   useEffect(() => {
     if (!tokenResolved) return;
     let active = true;
-    getQuestionBankReviewQueue(token)
-      .then((q) => {
-        if (active) setReviewQueue(q);
+    getQuestionBankNextAction(token)
+      .then((action) => {
+        if (active) setNextAction(action);
       })
       .catch(() => {
-        if (active) setReviewQueue({ due_count: 0, struggling_count: 0, total: 0 });
+        if (active) setNextAction(null);
       });
     getQuestionBankPerformance(token)
       .then((p) => {
@@ -446,19 +585,19 @@ function BancoDeQuestoesContent() {
     };
   }, [tokenResolved, token]);
 
-  async function startReviewSession() {
-    if (!tokenResolved || !reviewQueue || reviewQueue.total <= 0) return;
+  async function startRecommendedSession() {
+    if (!tokenResolved) return;
+    const action = nextAction ?? FALLBACK_NEXT_ACTION;
+    const { area: payloadArea, ...startPayload } = action.start_payload;
+    const payload: QuestionBankSessionCreatePayload = {
+      ...startPayload,
+      area: payloadArea ?? undefined,
+      performed_at: localNoonISO(entryContext.dateISO),
+    };
     setBusy(true);
     setError(null);
     try {
-      const created = await createQuestionBankSession(token, {
-        mode: "adaptive",
-        resolution_mode: "training",
-        answer_status: "needs_review",
-        only_unanswered: false,
-        limit: Math.max(1, Math.min(20, reviewQueue.total)),
-        performed_at: localNoonISO(entryContext.dateISO),
-      });
+      const created = await createQuestionBankSession(token, payload);
       router.push(`/banco-de-questoes/sessao/${created.session_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível iniciar a revisão.");
@@ -467,19 +606,97 @@ function BancoDeQuestoesContent() {
     }
   }
 
+  // Start a focused, deterministic training session on a single area — used by the
+  // recommended-session hero and the readiness shortcuts (no manual assembly needed).
+  async function startFocusedArea(targetArea: string, status: QuestionBankAnswerStatus = "needs_review") {
+    if (!tokenResolved) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const created = await createQuestionBankSession(token, {
+        mode: "adaptive",
+        resolution_mode: "training",
+        area: targetArea,
+        answer_status: status,
+        only_unanswered: false,
+        limit: 10,
+        performed_at: localNoonISO(entryContext.dateISO),
+      });
+      router.push(`/banco-de-questoes/sessao/${created.session_id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível iniciar a sessão.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function startFreshPractice() {
+    if (!tokenResolved) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const created = await createQuestionBankSession(token, {
+        mode: "adaptive",
+        resolution_mode: "training",
+        answer_status: "unanswered",
+        only_unanswered: true,
+        limit: 10,
+        performed_at: localNoonISO(entryContext.dateISO),
+      });
+      router.push(`/banco-de-questoes/sessao/${created.session_id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível iniciar a sessão.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (!tokenResolved) return <main className="p-6 text-sm text-muted">Carregando...</main>;
 
   const hasDueTopicTasks = dueTopicTaskCount > 0;
+  const recommended = nextAction ?? FALLBACK_NEXT_ACTION;
+  /*
   const hasQuestionReviewQueue = Boolean(reviewQueue && reviewQueue.total > 0);
+
+  // The single recommended session, decided deterministically: due reviews first,
+  // then the weakest area, then a fresh adaptive block. One decision, one CTA.
+  const weakestArea = (performance?.areas ?? [])
+    .filter((a) => a.level !== "consolidando")
+    .sort((a, b) => a.readiness - b.readiness)[0] ?? null;
+
+  const recommended = hasQuestionReviewQueue
+    ? {
+        title: "Revisar o que está vencendo",
+        subtitle: `${reviewQueue.total} ${reviewQueue.total === 1 ? "questão" : "questões"} em ponto de revisão${reviewQueue.due_count > 0 ? ` · ${reviewQueue.due_count} vencidas` : ""}${reviewQueue.struggling_count > 0 ? ` · ${reviewQueue.struggling_count} de baixo desempenho` : ""}`,
+        meta: "Treino com correção item a item",
+        cta: "Revisar agora",
+        start: () => void startReviewSession(),
+      }
+    : weakestArea
+      ? {
+          title: `Fortalecer ${weakestArea.label}`,
+          subtitle: weakestArea.next_action || `${Math.round((weakestArea.accuracy ?? 0) * 100)}% de acerto — foco nas lacunas desta área`,
+          meta: "~20 min · treino com correção item a item",
+          cta: "Começar",
+          start: () => void startFocusedArea(weakestArea.area),
+        }
+      : {
+          title: "Praticar questões novas",
+          subtitle: "Um bloco adaptativo curto mantém o ritmo e cobre novas microcompetências.",
+          meta: "~20 min · treino com correção item a item",
+          cta: "Começar treino",
+          start: () => void startFreshPractice(),
+        };
+  */
 
   return (
     <main className="min-h-screen bg-paper text-ink">
       <div className="mx-auto max-w-7xl space-y-6">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">Monte sua sessão</h1>
+            <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">Questões com raciocínio clínico</h1>
             <p className="mt-3 max-w-2xl text-base text-muted">
-              Escolha como deseja estudar e personalize o bloco com filtros do banco.
+              Comece pela missão do bloco. O banco usa seus erros, revisões e demanda da prova para sugerir o melhor foco.
             </p>
           </div>
           {entryContext.reviewTaskId && (
@@ -491,56 +708,134 @@ function BancoDeQuestoesContent() {
           )}
         </header>
 
-        {(hasDueTopicTasks || hasQuestionReviewQueue) && (
-          <section
-            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary bg-[var(--amber-tint)] px-4 py-3"
-            aria-label="Revisão pendente"
-          >
-            <p className="text-sm text-ink">
-              {hasDueTopicTasks ? (
-                <>
-                  <strong className="font-semibold">
-                    {dueTopicTaskCount === 1
-                      ? "1 tarefa de tópico para revisar hoje"
-                      : `${dueTopicTaskCount} tarefas de tópico para revisar hoje`}
-                  </strong>
-                  {reviewQueue && reviewQueue.total > 0
-                    ? ` · ${reviewQueue.total} questões pendentes no banco`
-                    : ""}
-                </>
-              ) : (
-                <>
-                  <strong className="font-semibold">
-                    {reviewQueue.total === 1
-                      ? "1 questão para revisar hoje"
-                      : `${reviewQueue.total} questões para revisar hoje`}
-                  </strong>
-                  {reviewQueue.due_count > 0 ? ` · ${reviewQueue.due_count} com revisão vencida` : ""}
-                  {reviewQueue.struggling_count > 0 ? ` · ${reviewQueue.struggling_count} com baixo desempenho` : ""}
-                </>
+        {/* Sessão recomendada — o único melhor próximo passo, já decidido pelo banco */}
+        <section className="km-card overflow-hidden" aria-label="Sessão recomendada">
+          <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Recomendado para hoje</p>
+              <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight md:text-3xl">{recommended.title}</h2>
+              <p className="mt-1 text-sm text-muted">{recommended.subtitle}</p>
+              <p className="mt-2 text-xs text-muted">{recommended.meta}</p>
+              {recommended.signals.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {recommended.signals.map((signal) => (
+                    <span
+                      key={signal.key}
+                      className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${signalClassName(signal.severity)}`}
+                    >
+                      {signal.label}
+                    </span>
+                  ))}
+                </div>
               )}
-            </p>
+            </div>
             <button
               type="button"
-              onClick={() => {
-                if (hasDueTopicTasks) {
-                  router.push("/cronograma");
-                  return;
-                }
-                void startReviewSession();
-              }}
-              disabled={!hasDueTopicTasks && busy}
-              className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm disabled:opacity-50"
+              onClick={() => void startRecommendedSession()}
+              disabled={busy}
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-6 py-3 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 disabled:opacity-50"
             >
-              {hasDueTopicTasks ? "Abrir cronograma" : "Revisar agora"}
+              {busy ? "Preparando..." : recommended.cta_label}
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
+              </svg>
             </button>
+          </div>
+          {hasDueTopicTasks && (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-edge px-5 py-3">
+              <p className="text-sm text-muted">
+                Você também tem <strong className="font-semibold text-ink">{dueTopicTaskCount}</strong> {dueTopicTaskCount === 1 ? "tarefa de tópico" : "tarefas de tópico"} no cronograma para hoje.
+              </p>
+              <button type="button" onClick={() => router.push("/cronograma")} className="text-sm font-semibold text-primary hover:underline">
+                Abrir cronograma
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* Prontidão por área — atalhos secundários; tocar inicia uma sessão focada */}
+        {performance && performance.areas.length > 0 && (
+          <section aria-label="Sua prontidão por área" className="km-card rounded-lg p-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-serif text-2xl font-semibold leading-tight">Sua prontidão</h2>
+              {performance.exam.simulation_count > 0 && (
+                <p className="text-sm text-muted">
+                  Simulado: {Math.round((performance.exam.accuracy ?? 0) * 100)}% de acerto
+                  {performance.exam.avg_time_ms ? ` · ${Math.round(performance.exam.avg_time_ms / 1000)}s/questão` : ""}
+                  {` · ${performance.exam.simulation_count} questões`}
+                </p>
+              )}
+            </div>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {performance.areas.map((a) => {
+                const pct = Math.round(a.readiness * 100);
+                const levelLabel = a.level === "consolidando" ? "Consolidando" : a.level === "atencao" ? "Atenção" : "Crítico";
+                const levelTone = a.level === "consolidando" ? "text-success" : a.level === "atencao" ? "text-warning" : "text-danger";
+                return (
+                  <li key={a.area}>
+                    <button
+                      type="button"
+                      onClick={() => void startFocusedArea(a.area, a.level === "consolidando" ? "unanswered" : "needs_review")}
+                      disabled={busy}
+                      className="w-full rounded-xl border border-edge bg-surface p-4 text-left transition hover:border-primary disabled:opacity-50"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-ink">{a.label}</span>
+                        <span className={`text-xs font-semibold ${levelTone}`}>{levelLabel} · {pct}%</span>
+                      </div>
+                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surfaceMuted">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                      </div>
+                      <p className="mt-2 text-xs text-muted">
+                        {a.questions_seen} feitas · {Math.round((a.accuracy ?? 0) * 100)}% acerto{a.due_count > 0 ? ` · ${a.due_count} vencidas` : ""}
+                      </p>
+                      <p className="mt-1 text-xs font-medium text-primary">{a.next_action}</p>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
           </section>
         )}
 
+        {error && (
+          <Alert
+            variant="danger"
+            action={
+              <button type="button" onClick={() => void refreshAvailability()} className="text-sm font-semibold text-danger underline">
+                Tentar novamente
+              </button>
+            }
+          >
+            {error}
+          </Alert>
+        )}
+
+        {/* Montador manual — todo o poder, recolhido até o aluno pedir */}
+        <section aria-label="Montar sessão manual">
+          <button
+            type="button"
+            onClick={() => setManualOpen((v) => !v)}
+            aria-expanded={manualOpen}
+            className="flex w-full items-center justify-between gap-3 rounded-lg border border-edge bg-surface px-5 py-4 text-left transition-colors hover:border-primary"
+          >
+            <div>
+              <h2 className="font-serif text-lg font-semibold leading-tight">Montar sessão manual</h2>
+              <p className="mt-0.5 text-sm text-muted">Escolha intenção, filtros, banca, ano e número de questões.</p>
+            </div>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={cx("h-5 w-5 shrink-0 text-muted transition-transform", manualOpen && "rotate-90")} aria-hidden="true">
+              <path d="m7 4 6 6-6 6" />
+            </svg>
+          </button>
+        </section>
+
+        {manualOpen && (
+        <div className="space-y-6">
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Tipos de sessão">
           <SessionIntentCard
+            eyebrow="01 · construir"
             title="Aprender um tema"
-            description="Resolva com feedback mais próximo e acompanhe o raciocínio item a item."
+            description="Resolva com feedback próximo e reconstrua o caminho diagnóstico item a item."
             active={activeIntent === "learning"}
             Icon={IconBookOpen}
             onClick={() => {
@@ -549,8 +844,9 @@ function BancoDeQuestoesContent() {
             }}
           />
           <SessionIntentCard
+            eyebrow="02 · medir"
             title="Simular prova"
-            description="Faça um bloco cronometrado e deixe a correção para o final."
+            description="Faça um bloco cronometrado, sem gabarito durante a execução."
             active={activeIntent === "simulation"}
             Icon={IconTrophy}
             onClick={() => {
@@ -559,8 +855,9 @@ function BancoDeQuestoesContent() {
             }}
           />
           <SessionIntentCard
+            eyebrow="03 · reparar"
             title="Corrigir fraquezas"
-            description="Puxe questões erradas, com baixo desempenho ou revisão vencida para fechar lacunas."
+            description="Puxe erros, baixo desempenho e revisões vencidas para fechar lacunas."
             active={activeIntent === "weakness"}
             Icon={IconTarget}
             onClick={() => {
@@ -569,8 +866,9 @@ function BancoDeQuestoesContent() {
             }}
           />
           <SessionIntentCard
+            eyebrow="04 · calibrar"
             title="Quase acertei"
-            description="Questões no limiar: você já oscila entre acerto e erro. As de maior retorno para revisar."
+            description="Ataque itens no limiar entre acerto e erro, onde a calibragem rende mais."
             active={activeIntent === "near_miss"}
             Icon={IconTarget}
             onClick={() => {
@@ -580,70 +878,12 @@ function BancoDeQuestoesContent() {
           />
         </section>
 
-        {performance && performance.areas.length > 0 && (
-          <section aria-label="Sua prontidão por área" className="km-card rounded-lg p-5">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-serif text-2xl font-semibold leading-tight">Sua prontidão</h2>
-              {performance.exam.simulation_count > 0 && (
-                <p className="text-sm text-muted">
-                  Simulado: {Math.round((performance.exam.accuracy ?? 0) * 100)}% de acerto
-                  {performance.exam.avg_time_ms
-                    ? ` · ${Math.round(performance.exam.avg_time_ms / 1000)}s/questão`
-                    : ""}
-                  {` · ${performance.exam.simulation_count} questões`}
-                </p>
-              )}
-            </div>
-            <p className="mt-1 text-sm text-muted">
-              Conhecimento e revisões por grande área — toque para focar nas lacunas.
-            </p>
-            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-              {performance.areas.map((a) => {
-                const pct = Math.round(a.readiness * 100);
-                const levelLabel =
-                  a.level === "consolidando"
-                    ? "Consolidando"
-                    : a.level === "atencao"
-                      ? "Atenção"
-                      : "Crítico";
-                const levelTone =
-                  a.level === "consolidando"
-                    ? "text-success"
-                    : a.level === "atencao"
-                      ? "text-warning"
-                      : "text-danger";
-                return (
-                  <li key={a.area}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleAreaChange(a.area);
-                        setResolutionMode("training");
-                        handleAnswerStatusChange("needs_review");
-                      }}
-                      className="w-full rounded-xl border border-edge bg-surface p-4 text-left transition hover:border-primary"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-ink">{a.label}</span>
-                        <span className={`text-xs font-semibold ${levelTone}`}>
-                          {levelLabel} · {pct}%
-                        </span>
-                      </div>
-                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surfaceMuted">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
-                      </div>
-                      <p className="mt-2 text-xs text-muted">
-                        {a.questions_seen} feitas · {Math.round((a.accuracy ?? 0) * 100)}% acerto
-                        {a.due_count > 0 ? ` · ${a.due_count} vencidas` : ""}
-                      </p>
-                      <p className="mt-1 text-xs font-medium text-ink">{a.next_action}</p>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
+        <RecommendedTopicsPanel
+          topics={topics}
+          selectedTopics={selectedTopics}
+          activeIntent={activeIntent}
+          onToggleTopic={toggleTopic}
+        />
 
         <section
           aria-label="Filtros e resumo do banco de questões"
@@ -700,40 +940,27 @@ function BancoDeQuestoesContent() {
           />
         </section>
 
-        {error && (
-          <div className="rounded-xl border border-danger bg-surface p-4 text-sm text-danger">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span>{error}</span>
-              <button
-                type="button"
-                onClick={() => void refreshAvailability()}
-                className="font-semibold underline"
-              >
-                Tentar novamente
-              </button>
-            </div>
-          </div>
+          <QuestionList
+            questions={questions}
+            selectedTopicSummary={selectedTopicSummary}
+            resolutionMode={resolutionMode}
+            busy={busy}
+            availability={availability}
+            onStartSession={() => void startSession()}
+          />
+        </div>
         )}
 
-        <QuestionList
-          questions={questions}
-          selectedTopicSummary={selectedTopicSummary}
-          resolutionMode={resolutionMode}
-          busy={busy}
-          availability={availability}
-          onStartSession={() => void startSession()}
-        />
-
-        {/* Mobile sticky start bar */}
+        {/* Mobile sticky bar — inicia a sessão recomendada */}
         <div className="fixed inset-x-0 bottom-0 z-20 border-t border-edge bg-paper/90 px-4 py-3 backdrop-blur-md md:hidden"
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}>
           <button
             type="button"
-            onClick={() => void startSession()}
-            disabled={busy || !availability || availability.available_count <= 0}
+            onClick={() => void startRecommendedSession()}
+            disabled={busy}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary py-3 text-sm font-semibold text-primaryInk shadow-sm transition disabled:opacity-40"
           >
-            {busy ? "Preparando..." : resolutionMode === "simulation" ? "Iniciar simulado" : "Iniciar treino"}
+            {busy ? "Preparando..." : recommended.cta_label}
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
               <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
             </svg>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import type {
@@ -21,7 +22,6 @@ import {
 } from "../../desempenho/_lib/perfilAnalytics";
 import { Area, Period } from "../../desempenho/_lib/perfilShared";
 import { useEstatisticasPageState } from "../_hooks/useEstatisticasPageState";
-import { GraficosSection } from "../graficos/GraficosSection";
 
 type TrendDirection = "up" | "flat" | "down";
 
@@ -148,6 +148,24 @@ function RelatorioSkeleton() {
     </div>
   );
 }
+
+function ChartSectionSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div key={`chart-section-skeleton-${index}`} className="space-y-3 rounded-sm border border-edge p-4">
+          <div className="h-4 w-32 rounded-sm bg-edge" />
+          <div className="h-56 w-full rounded-sm bg-edge" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const GraficosSection = dynamic(
+  () => import("../graficos/GraficosSection").then((mod) => mod.GraficosSection),
+  { loading: () => <ChartSectionSkeleton /> },
+);
 
 export type RelatorioBodyProps = {
   pending: ReviewTask[];

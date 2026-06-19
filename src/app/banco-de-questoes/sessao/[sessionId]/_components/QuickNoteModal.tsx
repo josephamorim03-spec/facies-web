@@ -5,6 +5,7 @@ import {
   createOperationalNote,
   type OperationalAreaCode,
   type OperationalQuestionOutcome,
+  type QuestionBankOption,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
 
@@ -19,6 +20,9 @@ type QuickNoteModalProps = {
   defaultArea: string | null | undefined;
   defaultTheme: string | null | undefined;
   questionOutcome: OperationalQuestionOutcome | null;
+  selectedOption?: QuestionBankOption | null;
+  correctAnswer?: QuestionBankOption | null;
+  errorHypothesis?: string | null;
   onClose: () => void;
 };
 
@@ -27,12 +31,24 @@ export default function QuickNoteModal({
   defaultArea,
   defaultTheme,
   questionOutcome,
+  selectedOption,
+  correctAnswer,
+  errorHypothesis,
   onClose,
 }: QuickNoteModalProps) {
   const { token } = useAuthToken();
+  const trimmedHypothesis = (errorHypothesis ?? "").trim();
   const [area, setArea] = useState<OperationalAreaCode>(() => normalizeArea(defaultArea));
-  const [insight, setInsight] = useState("");
-  const [body, setBody] = useState("");
+  const [insight, setInsight] = useState(() =>
+    trimmedHypothesis && selectedOption
+      ? `Que raciocínio me levou à alternativa ${selectedOption}?`
+      : "",
+  );
+  const [body, setBody] = useState(() => {
+    if (!trimmedHypothesis) return "";
+    const answerLine = correctAnswer ? `Gabarito: ${correctAnswer}.` : "Gabarito: revisar.";
+    return `Hipótese do erro: ${trimmedHypothesis}\n${answerLine}\n\nRaciocínio correto: `;
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -130,6 +146,21 @@ export default function QuickNoteModal({
             </button>
           ))}
         </div>
+
+        {trimmedHypothesis && (
+          <div className="mt-4 rounded-lg border border-warning bg-[var(--amber-tint)] p-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-warning">
+              Hipótese do distrator
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-ink">
+              {selectedOption ? `Sua escolha (${selectedOption}): ` : ""}
+              {trimmedHypothesis}
+            </p>
+            {correctAnswer && (
+              <p className="mt-1 text-xs text-muted">Gabarito: {correctAnswer}</p>
+            )}
+          </div>
+        )}
 
         <label className="mt-4 block text-xs font-semibold text-muted" htmlFor="quick-note-insight">
           O que não sabia?

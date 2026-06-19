@@ -9,8 +9,9 @@ export {
   getAPIErrorDetail,
   toAPIError,
   fetchRaw,
+  invalidateClientCache,
 } from "./api/shared/http";
-export type { APIError } from "./api/shared/http";
+export type { APIError, ClientCachePolicy } from "./api/shared/http";
 
 // Shared types
 export type { FsrsReviewRating, StudyKind, FullExamType } from "./api/types";
@@ -192,6 +193,7 @@ export {
   finalizeQuestionBankSession,
   reportQuestionProblem,
   getQuestionBankReviewQueue,
+  getQuestionBankNextAction,
   getQuestionBankPerformance,
 } from "./api/domains/question-bank";
 export type {
@@ -213,6 +215,11 @@ export type {
   QuestionBankSessionCreatePayload,
   QuestionBankReportType,
   QuestionBankReviewQueue,
+  QuestionBankNextAction,
+  QuestionBankNextActionKind,
+  QuestionBankNextActionSignal,
+  QuestionBankNextActionSignalSeverity,
+  QuestionBankNextActionStartPayload,
   QuestionBankPerformance,
   QuestionBankAreaReadiness,
   QuestionBankExamState,

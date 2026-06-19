@@ -83,6 +83,8 @@ export default function QuestionsManager() {
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [bulkAnalyzing, setBulkAnalyzing] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const LIMIT = 25;
@@ -115,6 +117,7 @@ export default function QuestionsManager() {
         setItems(res.items);
         setTotal(res.total);
         setOffset(nextOffset);
+        setSelected(new Set());
       } catch (err) {
         setError(err instanceof Error ? err.message : "Falha ao buscar questões.");
       } finally {
@@ -311,6 +314,67 @@ export default function QuestionsManager() {
     }
   }
 
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  const allVisibleSelected = items.length > 0 && items.every((item) => selected.has(item.id));
+
+  function toggleSelectAll() {
+    setSelected(allVisibleSelected ? new Set() : new Set(items.map((item) => item.id)));
+  }
+
+  async function bulkChangeStatus(action: "publish" | "unpublish" | "deprecate") {
+    const ids = items.filter((item) => selected.has(item.id)).map((item) => item.id);
+    if (ids.length === 0) return;
+    setError(null);
+    setBulkBusy(true);
+    let ok = 0;
+    let blocked = 0;
+    try {
+      for (const id of ids) {
+        const res = await updateQuestionBankQuestionStatus(id, action);
+        if ((res as { result?: string }).result === "blocked") blocked += 1;
+        else ok += 1;
+      }
+      const verb = action === "publish" ? "publicada(s)" : action === "unpublish" ? "despublicada(s)" : "depreciada(s)";
+      setNotice(`${ok} questão(ões) ${verb}${blocked ? ` · ${blocked} bloqueada(s) pelo gate de qualidade` : ""}.`);
+      void search(offset);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha na ação em lote.");
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
+  async function bulkDelete() {
+    const ids = items.filter((item) => selected.has(item.id)).map((item) => item.id);
+    if (ids.length === 0) return;
+    if (!window.confirm(`Apagar ${ids.length} questão(ões) do banco do aluno? (reversível, pode republicar)`)) {
+      return;
+    }
+    setError(null);
+    setBulkBusy(true);
+    let ok = 0;
+    try {
+      for (const id of ids) {
+        await deleteQuestionBankAdminQuestion(id);
+        ok += 1;
+      }
+      setNotice(`${ok} questão(ões) removida(s) do banco do aluno.`);
+      void search(offset);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao apagar em lote.");
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
   const inputCls =
     "rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100";
 
@@ -426,11 +490,49 @@ export default function QuestionsManager() {
         </div>
       </div>
 
+      {selected.size > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-800 dark:border-violet-900/40 dark:bg-violet-950/30 dark:text-violet-200">
+          <span className="font-semibold">{selected.size} selecionada(s)</span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => void bulkChangeStatus("publish")}
+              disabled={bulkBusy}
+              className="rounded-lg border border-green-300 px-3 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-950/30"
+            >
+              {bulkBusy ? "Processando..." : "Publicar selecionadas"}
+            </button>
+            <button
+              onClick={() => void bulkChangeStatus("unpublish")}
+              disabled={bulkBusy}
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+            >
+              Enviar p/ revisão
+            </button>
+            <button
+              onClick={() => void bulkDelete()}
+              disabled={bulkBusy}
+              className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30"
+            >
+              Apagar selecionadas
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tabela */}
       <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800">
         <table className="w-full text-left text-sm">
           <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-950 dark:text-gray-400">
             <tr>
+              <th className="px-4 py-3">
+                <input
+                  type="checkbox"
+                  aria-label="Selecionar todas"
+                  checked={allVisibleSelected}
+                  onChange={toggleSelectAll}
+                  className="h-4 w-4 cursor-pointer accent-violet-600"
+                />
+              </th>
               <th className="px-4 py-3">Enunciado</th>
               <th className="px-4 py-3">Tópico</th>
               <th className="px-4 py-3">Banca · Ano</th>
@@ -442,6 +544,15 @@ export default function QuestionsManager() {
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {items.map((item) => (
               <tr key={item.id} className="align-top">
+                <td className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    aria-label="Selecionar questão"
+                    checked={selected.has(item.id)}
+                    onChange={() => toggleSelect(item.id)}
+                    className="h-4 w-4 cursor-pointer accent-violet-600"
+                  />
+                </td>
                 <td className="max-w-md px-4 py-3 text-gray-900 dark:text-gray-100">
                   <p className="line-clamp-2">{item.stem}</p>
                   <div className="mt-1 flex flex-wrap gap-1">
@@ -509,7 +620,7 @@ export default function QuestionsManager() {
             ))}
             {!loading && items.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                   Nenhuma questão encontrada.
                 </td>
               </tr>

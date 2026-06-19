@@ -1,7 +1,26 @@
 // Tailwind class maps for area-based coloring.
 // Full class names are listed explicitly so Tailwind's content scanner keeps them.
-// For hex color values (Recharts SVG props), import AREA_COLORS from the
-// feature-specific shared lib instead.
+// For hex values (SVG/canvas/inline styles) use AREA_HEX / areaHex() below.
+
+// Canonical hex values for the medical areas — these mirror the theme-independent
+// `--area-*` CSS variables in globals.css. This is the SINGLE source of truth:
+// feature libs and pages must import from here instead of redefining their own map.
+export const AREA_HEX: Record<string, string> = {
+  GO: "#B65AA0",
+  PD: "#2E79A8",
+  MP: "#A97816",
+  CG: "#B44A4F",
+  CM: "#2D8B62",
+  OU: "#8C928E",
+};
+
+/** Canonical color for a full mock-exam (mirrors --area-full-exam in globals.css). */
+export const AREA_FULL_EXAM_HEX = "#0F4C5C";
+
+/** Safe area-color accessor: case-insensitive, falls back to the neutral "Outras" tone. */
+export function areaHex(area: string | null | undefined): string {
+  return AREA_HEX[(area ?? "").toUpperCase()] ?? AREA_HEX.OU;
+}
 
 export const AREA_BG_CLASS: Record<string, string> = {
   GO: "bg-area-go",

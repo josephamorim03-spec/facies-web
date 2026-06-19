@@ -1,19 +1,15 @@
 import React from "react";
 
+import { AREA_HEX } from "@/lib/areaColors";
+
 export type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
 export type Tab = "registro" | "pesquisar";
 export type SortTime = "recent" | "oldest" | "";
 export type SortWeight = "desc" | "asc" | "";
 
 export const AREAS: Area[] = ["GO", "PD", "MP", "CG", "CM", "OU"];
-export const AREA_COLORS: Record<Area, string> = {
-  GO: "#B65AA0",
-  PD: "#2E79A8",
-  MP: "#A97816",
-  CG: "#B44A4F",
-  CM: "#2D8B62",
-  OU: "#8C928E",
-};
+// Single source of truth — re-exported from the canonical area palette in lib/areaColors.
+export const AREA_COLORS: Record<Area, string> = AREA_HEX;
 
 export const MAX_FILE_MB = 10;
 export const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;

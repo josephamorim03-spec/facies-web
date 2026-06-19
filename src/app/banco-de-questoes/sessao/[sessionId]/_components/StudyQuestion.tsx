@@ -27,7 +27,7 @@ function sourceLabel(source: Record<string, unknown>): string {
 function difficultyChip(d: number | null | undefined): { label: string; className: string } | null {
   if (d == null) return null;
   if (d < 0.35) return { label: "Fácil", className: "text-success border-success/40" };
-  if (d < 0.55) return { label: "Médio", className: "text-amber-600 border-amber-300" };
+  if (d < 0.55) return { label: "Médio", className: "text-muted border-edge" };
   if (d < 0.75) return { label: "Difícil", className: "text-warning border-warning/40" };
   return { label: "Muito difícil", className: "text-danger border-danger/40" };
 }
@@ -105,6 +105,56 @@ const REPORT_LABELS: Record<QuestionBankReportType, string> = {
   outdated: "Desatualizada",
   other: "Outro",
 };
+
+function ClinicalCyclePanel({
+  answered,
+  revealed,
+  needsCorrection,
+  isCorrect,
+}: {
+  answered: boolean;
+  revealed: boolean;
+  needsCorrection: boolean;
+  isCorrect: boolean | null;
+}) {
+  const activeIndex = !answered ? 0 : !revealed ? 1 : needsCorrection ? 2 : 3;
+  const steps = [
+    { label: "Calibrar", detail: "confiança e dúvida" },
+    { label: "Decidir", detail: "alternativa escolhida" },
+    { label: "Diagnosticar", detail: isCorrect ? "validar acerto" : "entender o erro" },
+    { label: "Reparar", detail: "correção e caderno" },
+  ];
+
+  return (
+    <div className="rounded-xl border border-edge bg-surface p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Ciclo clínico</p>
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {steps.map((step, index) => {
+          const done = index < activeIndex;
+          const active = index === activeIndex;
+          return (
+            <div
+              key={step.label}
+              className={cx(
+                "rounded-lg border px-2.5 py-2",
+                active
+                  ? "border-primary bg-[var(--amber-tint)]"
+                  : done
+                    ? "border-success/40 bg-surface"
+                    : "border-edge bg-paper",
+              )}
+            >
+              <p className={cx("text-xs font-semibold", active ? "text-primary" : done ? "text-success" : "text-muted")}>
+                {index + 1}. {step.label}
+              </p>
+              <p className="mt-0.5 text-[11px] leading-snug text-muted">{step.detail}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export default function StudyQuestion({
   item,
@@ -212,6 +262,13 @@ export default function StudyQuestion({
               })()}
             </div>
 
+            <ClinicalCyclePanel
+              answered={item.answered}
+              revealed={revealed}
+              needsCorrection={item.needs_correction}
+              isCorrect={item.is_correct}
+            />
+
             {/* Stem */}
             <p className="max-w-[65ch] whitespace-pre-wrap text-base leading-8 text-ink">
               {item.stem}
@@ -238,7 +295,7 @@ export default function StudyQuestion({
             {canCaptureAnswerSignals && (
               <div className="rounded-xl border border-edge bg-surface p-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Confianca</span>
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Confiança</span>
                   <div className="flex gap-1">
                     {CONFIDENCE_OPTIONS.map((value) => (
                       <button
@@ -266,7 +323,7 @@ export default function StudyQuestion({
                         : "border-edge bg-paper text-muted hover:border-warning hover:text-warning",
                     )}
                   >
-                    Em duvida
+                    Em dúvida
                   </button>
                 </div>
               </div>
@@ -323,9 +380,12 @@ export default function StudyQuestion({
                 item.is_correct ? "border-success bg-surface" : "border-danger bg-surface",
               )}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className={cx("text-sm font-semibold", item.is_correct ? "text-success" : "text-danger")}>
-                    {item.is_correct ? "Correto" : "Incorreto"} · Gabarito {item.correct_answer}
-                  </p>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Resultado da decisão</p>
+                    <p className={cx("mt-1 text-sm font-semibold", item.is_correct ? "text-success" : "text-danger")}>
+                      {item.is_correct ? "Correto" : "Incorreto"} · Gabarito {item.correct_answer}
+                    </p>
+                  </div>
                   {onQuickNote && (
                     <button
                       type="button"
@@ -343,15 +403,18 @@ export default function StudyQuestion({
             {revealed && item.distractor_diagnosis && Object.keys(item.distractor_diagnosis).length > 0 && (
               <div className="rounded-xl border border-edge bg-surface p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                  Diagnóstico de erro
+                  Diagnóstico do raciocínio
                 </p>
                 {item.selected_option && item.distractor_diagnosis[item.selected_option] && (
-                  <p className="mt-2 text-sm text-ink">
-                    <span className="font-semibold">Sua escolha ({item.selected_option}):</span>{" "}
-                    {item.distractor_diagnosis[item.selected_option]}
-                  </p>
+                  <div className="mt-2 rounded-lg border border-warning bg-[var(--amber-tint)] p-3">
+                    <p className="text-xs font-semibold text-warning">Hipótese principal</p>
+                    <p className="mt-1 text-sm text-ink">
+                      <span className="font-semibold">Sua escolha ({item.selected_option}):</span>{" "}
+                      {item.distractor_diagnosis[item.selected_option]}
+                    </p>
+                  </div>
                 )}
-                <ul className="mt-2 space-y-1">
+                <ul className="mt-3 space-y-1.5">
                   {Object.entries(item.distractor_diagnosis)
                     .filter(([letter]) => letter !== item.selected_option)
                     .map(([letter, text]) => (
@@ -465,12 +528,16 @@ export default function StudyQuestion({
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Resposta correta</p>
                 <p className="mt-1 text-2xl font-bold text-ink">{item.correct_answer}</p>
               </div>
-              <div className="rounded-2xl border border-edge bg-surface p-4 text-sm text-muted">
-                <p className="font-semibold text-ink">Explicação</p>
-                <p className="mt-2 leading-relaxed">
-                  Use o botão &ldquo;Me explique de outro jeito&rdquo; abaixo para pedir uma explicação personalizada.
-                </p>
-              </div>
+              {item.needs_correction && (
+                <div className="rounded-2xl border border-edge bg-surface p-4 text-sm text-muted">
+                  <p className="font-semibold text-ink">Roteiro de reparo</p>
+                  <ol className="mt-2 list-decimal space-y-1 pl-4 leading-relaxed">
+                    <li>Nomeie o dado-chave do enunciado.</li>
+                    <li>Explique por que a alternativa escolhida seduz.</li>
+                    <li>Salve uma correção curta se o erro ainda estiver vivo.</li>
+                  </ol>
+                </div>
+              )}
             </aside>
           )}
         </div>

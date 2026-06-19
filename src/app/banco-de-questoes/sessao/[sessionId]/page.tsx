@@ -27,6 +27,9 @@ type QuickNoteTarget = {
   area: string | null;
   theme: string | null;
   questionOutcome: OperationalQuestionOutcome | null;
+  selectedOption: QuestionBankOption | null;
+  correctAnswer: QuestionBankOption | null;
+  errorHypothesis: string | null;
 };
 
 type CorrectionConfidenceLevel = "low" | "medium" | "high";
@@ -293,13 +296,22 @@ export default function SessionPage() {
           onFinalize={() => void finalize()}
           onQuickNote={
             currentItem.question_id
-              ? () =>
+              ? () => {
+                  const selected = currentItem.selected_option;
+                  const errorHypothesis =
+                    selected && currentItem.is_correct === false
+                      ? (currentItem.distractor_diagnosis?.[selected]?.trim() || null)
+                      : null;
                   setQuickNoteTarget({
                     questionId: currentItem.question_id,
                     area: session.area,
                     theme: quickNoteTheme,
                     questionOutcome: quickNoteOutcome,
-                  })
+                    selectedOption: selected,
+                    correctAnswer: currentItem.correct_answer,
+                    errorHypothesis,
+                  });
+                }
               : undefined
           }
           onShowHistory={
@@ -315,6 +327,9 @@ export default function SessionPage() {
             defaultArea={quickNoteTarget.area}
             defaultTheme={quickNoteTarget.theme}
             questionOutcome={quickNoteTarget.questionOutcome}
+            selectedOption={quickNoteTarget.selectedOption}
+            correctAnswer={quickNoteTarget.correctAnswer}
+            errorHypothesis={quickNoteTarget.errorHypothesis}
             onClose={() => setQuickNoteTarget(null)}
           />
         )}
@@ -344,6 +359,9 @@ export default function SessionPage() {
         sessionStatus={session.status}
         sessionStartedAt={session.created_at}
         examLabel={examLabel}
+        answeredCount={session.answered_count}
+        doubtfulCount={session.doubtful_count}
+        unansweredCount={session.unanswered_count}
         busy={busy}
         onAnswer={(opt) => void answer(currentPosition, opt)}
         onToggleDoubtful={() => void toggleDoubtful(currentPosition)}

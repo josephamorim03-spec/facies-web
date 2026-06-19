@@ -1,4 +1,5 @@
 import { ReviewTask } from "@/lib/api";
+import { AREA_HEX, AREA_FULL_EXAM_HEX } from "@/lib/areaColors";
 import { Area, Period, ThemeListSort } from "./perfilShared";
 
 export const AREAS: Area[] = ["GO", "PD", "MP", "CG", "CM", "OU"];
@@ -10,10 +11,9 @@ export const AREA_LABELS: Record<Area, string> = {
   CM: "Clínica Médica",
   OU: "Outras",
 };
-export const AREA_COLORS: Record<Area, string> = {
-  GO: "#B65AA0", PD: "#2E79A8", CG: "#B44A4F", CM: "#2D8B62", MP: "#A97816", OU: "#8C928E",
-};
-export const FULL_EXAM_COLOR = "#0F4C5C";
+// Single source of truth — re-exported from the canonical area palette in lib/areaColors.
+export const AREA_COLORS: Record<Area, string> = AREA_HEX;
+export const FULL_EXAM_COLOR = AREA_FULL_EXAM_HEX;
 
 export const PERIOD_LABELS: Record<Period, string> = {
   semanal: "Semanal", mensal: "Mensal", geral: "Geral",

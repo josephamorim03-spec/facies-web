@@ -11,6 +11,7 @@ import {
   type QuestionBankSession,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
+import { ProgressRing } from "@/components/ui/ProgressRing";
 import AttemptHistoryModal from "../../../_components/AttemptHistoryModal";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -52,28 +53,8 @@ function formatAccuracy(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
 
-function ProgressRing({ accuracy }: { accuracy: number }) {
-  const r = 44;
-  const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - accuracy);
-  const color = accuracy >= 0.7 ? "var(--color-success)" : accuracy >= 0.5 ? "var(--color-warning)" : "var(--color-danger)";
-
-  return (
-    <svg width="120" height="120" viewBox="0 0 120 120" aria-hidden="true">
-      <circle cx="60" cy="60" r={r} fill="none" stroke="var(--color-surfaceMuted)" strokeWidth="10" />
-      <circle
-        cx="60" cy="60" r={r} fill="none"
-        stroke={color} strokeWidth="10"
-        strokeDasharray={circ}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        transform="rotate(-90 60 60)"
-      />
-      <text x="60" y="65" textAnchor="middle" fontSize="22" fontWeight="700" fill="var(--color-ink)">
-        {formatAccuracy(accuracy)}
-      </text>
-    </svg>
-  );
+function accuracyColor(accuracy: number): string {
+  return accuracy >= 0.7 ? "var(--color-success)" : accuracy >= 0.5 ? "var(--color-warning)" : "var(--color-danger)";
 }
 
 type Tab = "resumo" | "erros" | "acertos" | "marcadas";
@@ -121,6 +102,32 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
   const markedItems = items.filter((i) => i.doubtful);
   const unansweredItems = items.filter((i) => !i.answered);
   const accuracy = session.total_questions > 0 ? correctItems.length / session.total_questions : 0;
+  const primaryWeakNode = diagnosis?.nodes
+    .filter((node) => node.accuracy < 0.6 && (node.correct + node.wrong) >= 1)
+    .sort((a, b) => a.accuracy - b.accuracy)[0] ?? null;
+  const primaryAction = primaryWeakNode
+    ? {
+        title: `Treinar ${primaryWeakNode.node_name ?? "microcompetência fraca"}`,
+        detail: `${formatAccuracy(primaryWeakNode.accuracy)} de acerto nesta sessão · ${primaryWeakNode.correct + primaryWeakNode.wrong} questão(ões)`,
+        href: `/banco-de-questoes?theme=${encodeURIComponent(primaryWeakNode.node_name ?? "")}&answer_status=unanswered_or_wrong`,
+      }
+    : wrongItems.length > 0
+      ? {
+          title: "Revisar os erros desta sessão",
+          detail: `${wrongItems.length} questão(ões) para reconstruir raciocínio`,
+          href: "/banco-de-questoes?answer_status=wrong",
+        }
+      : markedItems.length > 0
+        ? {
+            title: "Rever questões marcadas",
+            detail: `${markedItems.length} questão(ões) que merecem segunda leitura`,
+            href: "/banco-de-questoes?answer_status=answered",
+          }
+        : {
+            title: "Iniciar novo bloco adaptativo",
+            detail: "Mantenha o ritmo com outra missão curta",
+            href: "/banco-de-questoes",
+          };
 
   const TABS: { id: Tab; label: string; count?: number }[] = [
     { id: "resumo", label: "Resumo" },
@@ -144,8 +151,8 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
 
         {/* Score bar */}
         <div className="km-card flex flex-col items-center gap-6 p-6 sm:flex-row">
-          <ProgressRing accuracy={accuracy} />
-          <div className="grid flex-1 grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
+          <ProgressRing pct={accuracy * 100} size={120} color={accuracyColor(accuracy)} />
+          <div className="grid flex-1 grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Acertos</p>
               <p className="mt-1 text-2xl font-bold text-success">{correctItems.length}</p>
@@ -164,6 +171,53 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
             </div>
           </div>
         </div>
+
+        <section className="km-card border-primary p-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Próxima melhor ação</p>
+              <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight">{primaryAction.title}</h2>
+              <p className="mt-1 text-sm text-muted">{primaryAction.detail}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push(primaryAction.href)}
+              className="rounded-xl border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk shadow-sm"
+            >
+              Começar agora
+            </button>
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            {wrongItems.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("erros")}
+                className="rounded-xl border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+              >
+                Ver erros
+                <span className="mt-1 block text-xs font-normal text-muted">Diagnóstico e correções</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => router.push("/caderno")}
+              className="rounded-xl border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+            >
+              Abrir caderno
+              <span className="mt-1 block text-xs font-normal text-muted">Revisar notas e cards</span>
+            </button>
+            {finalizeOut && finalizeOut.created_tasks.length > 0 && (
+              <button
+                type="button"
+                onClick={() => router.push("/cronograma")}
+                className="rounded-xl border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+              >
+                Ver agenda
+                <span className="mt-1 block text-xs font-normal text-muted">{finalizeOut.created_tasks.length} revisão(ões) criada(s)</span>
+              </button>
+            )}
+          </div>
+        </section>
 
         {/* Tabs */}
         <div className="border-b border-edge">
@@ -305,9 +359,9 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
 
             {/* Behavioral insights */}
             {diagnosis && (diagnosis.impulsive_count >= 2 || diagnosis.overconfident_count >= 2) && (
-              <div className="km-card border-amber-200 bg-amber-50/40 p-4 md:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-amber-700">Padrão identificado</p>
-                <div className="mt-2 space-y-1 text-xs text-amber-800">
+              <div className="km-card border-warning/40 p-4 md:col-span-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Padrão identificado</p>
+                <div className="mt-2 space-y-1 text-xs text-muted">
                   {diagnosis.impulsive_count >= 2 && (
                     <p>• {diagnosis.impulsive_count} questão(ões) respondida(s) muito rapidamente e errada(s) — releia o enunciado antes de marcar.</p>
                   )}
@@ -327,9 +381,15 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
             markedItems;
 
           if (displayItems.length === 0) {
+            const emptyMessage =
+              activeTab === "erros"
+                ? "Nenhum erro nesta sessão. Excelente trabalho!"
+                : activeTab === "acertos"
+                  ? "Nenhum acerto registrado nesta sessão."
+                  : "Você não marcou nenhuma questão.";
             return (
               <div className="rounded-xl border border-dashed border-edge bg-surface p-8 text-center text-sm text-muted">
-                Nenhuma questão nesta categoria.
+                {emptyMessage}
               </div>
             );
           }
@@ -352,6 +412,14 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
                   <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-ink">{item.stem}</p>
                   {item.selected_option && !item.is_correct && (
                     <p className="mt-2 text-xs text-danger">Você respondeu: {item.selected_option}</p>
+                  )}
+                  {activeTab === "erros" && item.selected_option && item.distractor_diagnosis?.[item.selected_option] && (
+                    <div className="mt-3 rounded-lg border border-warning bg-[var(--amber-tint)] p-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Hipótese do erro</p>
+                      <p className="mt-1 text-sm leading-relaxed text-ink">
+                        {item.distractor_diagnosis[item.selected_option]}
+                      </p>
+                    </div>
                   )}
                   {item.attempt_stats && item.attempt_stats.attempt_count > 0 && (
                     <button
@@ -380,13 +448,15 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
                               return next;
                             })
                           }
-                          className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 hover:text-amber-900"
+                          className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-ink"
                         >
-                          <span>{isExpanded ? "▲" : "▼"}</span>
+                          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={cx("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} aria-hidden="true">
+                            <path d="m7 4 6 6-6 6" />
+                          </svg>
                           Minha correção
                         </button>
                         {isExpanded && (
-                          <blockquote className="mt-2 whitespace-pre-wrap border-l-2 border-amber-300 pl-3 text-xs leading-relaxed text-ink/80">
+                          <blockquote className="mt-2 whitespace-pre-wrap border-l-2 border-edge pl-3 text-xs leading-relaxed text-ink/80">
                             {correction.response_value}
                           </blockquote>
                         )}

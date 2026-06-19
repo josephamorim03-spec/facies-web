@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 import QuestionsManager from "./_components/QuestionsManager";
 import {
@@ -238,6 +238,7 @@ export default function QuestionBankAdminPage() {
   const [pipelineStatus, setPipelineStatus] = useState<QuestionBankAdminPipelineStatus | null>(null);
   const [readiness, setReadiness] = useState<QuestionBankAdminReadiness | null>(null);
   const [preview, setPreview] = useState<QuestionBankAdminPreview | null>(null);
+  const [previewOpen, setPreviewOpen] = useState<Set<string>>(new Set());
   const [metadataText, setMetadataText] = useState(JSON.stringify(DEFAULT_METADATA, null, 2));
   const [questionOverrides, setQuestionOverrides] = useState<Record<string, Record<string, unknown>>>({});
   const [file, setFile] = useState<File | null>(null);
@@ -247,7 +248,7 @@ export default function QuestionBankAdminPage() {
   const [jobType, setJobType] = useState<string>(JOB_TYPES[0]!);
   const [batchSize, setBatchSize] = useState<number>(3);
   const [workers, setWorkers] = useState<number>(1);
-  const [autoPipeline, setAutoPipeline] = useState<boolean>(false);
+  const [autoPipeline, setAutoPipeline] = useState<boolean>(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [expandedError, setExpandedError] = useState<string | null>(null);
   const [reviewItems, setReviewItems] = useState<QuestionBankReviewQueueItem[]>([]);
@@ -756,10 +757,27 @@ export default function QuestionBankAdminPage() {
                             const ocrUsed = Boolean(question.ocr_used || diagnostic?.ocr_used);
                             const blockers = compactCodes(diagnostic?.blockers);
                             const warnings = compactCodes(diagnostic?.warnings);
+                            const rowKey = number || question.stem || "";
+                            const isOpen = previewOpen.has(rowKey);
                             return (
-                              <tr key={number || question.stem} className="border-t border-gray-100 align-top dark:border-gray-800">
+                              <Fragment key={rowKey}>
+                              <tr className="border-t border-gray-100 align-top dark:border-gray-800">
                                 <td className="px-3 py-3 font-semibold text-gray-700 dark:text-gray-200">
-                                  {number || "-"}
+                                  <div>{number || "-"}</div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setPreviewOpen((prev) => {
+                                        const next = new Set(prev);
+                                        if (next.has(rowKey)) next.delete(rowKey);
+                                        else next.add(rowKey);
+                                        return next;
+                                      })
+                                    }
+                                    className="mt-1 rounded-md border border-gray-200 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                                  >
+                                    {isOpen ? "ocultar" : "ver"}
+                                  </button>
                                 </td>
                                 <td className="max-w-[260px] px-3 py-3 text-gray-600 dark:text-gray-300">
                                   {question.stem ? question.stem.slice(0, 150) + (question.stem.length > 150 ? "..." : "") : "-"}
@@ -821,6 +839,39 @@ export default function QuestionBankAdminPage() {
                                   );
                                 })}
                               </tr>
+                              {isOpen ? (
+                                <tr className="bg-gray-50/70 dark:bg-gray-950/40">
+                                  <td colSpan={5 + QUESTION_OVERRIDE_FIELDS.length} className="px-4 py-4">
+                                    <p className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-100">
+                                      {question.stem || "—"}
+                                    </p>
+                                    <div className="mt-3 grid gap-1.5">
+                                      {Object.entries(question.options ?? {}).map(([letter, text]) => {
+                                        const isCorrect =
+                                          String(question.correct_answer || "").toUpperCase() === letter.toUpperCase();
+                                        return (
+                                          <div
+                                            key={letter}
+                                            className={`flex gap-2 rounded-lg px-2 py-1 text-sm ${
+                                              isCorrect
+                                                ? "bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-200"
+                                                : "text-gray-700 dark:text-gray-200"
+                                            }`}
+                                          >
+                                            <span className="w-5 font-semibold">{letter}</span>
+                                            <span className="flex-1">{String(text)}</span>
+                                            {isCorrect ? <span className="text-xs font-semibold">gabarito</span> : null}
+                                          </div>
+                                        );
+                                      })}
+                                      {!question.options || Object.keys(question.options).length === 0 ? (
+                                        <p className="text-xs text-gray-400">Sem alternativas extraídas.</p>
+                                      ) : null}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ) : null}
+                              </Fragment>
                             );
                           })}
                         </tbody>

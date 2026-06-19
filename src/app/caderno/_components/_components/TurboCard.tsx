@@ -190,7 +190,7 @@ export function TurboCard({
             </span>
             <div className="flex items-center gap-1">
               {(turboNote.turbo_incorrect ?? 0) >= 4 && (
-                <span className="rounded-full border border-red-200 px-1.5 py-0.5 text-[9px] text-red-400">difícil</span>
+                <span className="rounded-full border border-danger/40 px-1.5 py-0.5 text-[9px] text-danger">difícil</span>
               )}
               {isStandbyRound && (
                 <span className="rounded-full border border-edge px-1.5 py-0.5 text-xs text-muted">pendente</span>
@@ -199,7 +199,7 @@ export function TurboCard({
           </div>
           <p className="mt-2">
             <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-edge bg-surface px-2 py-1 text-[10px] leading-none text-muted">
-              ↳ {currentWhyLabel}
+              {currentWhyLabel}
             </span>
           </p>
 

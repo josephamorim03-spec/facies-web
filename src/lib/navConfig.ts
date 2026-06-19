@@ -70,14 +70,14 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
           "/estatisticas",
           "/estatisticas/graficos",
           "/estatisticas/relatorio",
-          "/desempenho",
         ],
       },
       {
         href: "/rotina-e-metas",
         label: "PLANO",
         shortLabel: "Plano",
-        groupPaths: ["/rotina-e-metas", "/rotina"],
+        // /desempenho renders the plan/goals UI (re-exported by /rotina-e-metas) — group it here.
+        groupPaths: ["/rotina-e-metas", "/desempenho"],
       },
     ],
   },

@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { MouseEvent } from "react";
 import { isReviewSessionActive } from "@/lib/studyImportRuntime";
 import { clearAuthToken } from "@/lib/auth";
+
+type NavigationEventLike = {
+  preventDefault: () => void;
+};
 
 export function useSessionNavGuard({
   pathname,
@@ -18,23 +21,28 @@ export function useSessionNavGuard({
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [pendingNavHref, setPendingNavHref] = useState<string | null>(null);
 
-  function handleNavClick(e: MouseEvent, resolvedHref: string) {
-    e.preventDefault();
+  function guardNavigation(resolvedHref: string, event?: NavigationEventLike): boolean {
     if (pathname === resolvedHref) {
+      event?.preventDefault();
       setExitConfirmOpen(false);
       setPendingNavHref(null);
       onCloseDrawer?.();
-      return;
+      return false;
     }
     if (isReviewSessionActive()) {
+      event?.preventDefault();
       setPendingNavHref(resolvedHref);
       setExitConfirmOpen(true);
-      return;
+      return false;
     }
     setExitConfirmOpen(false);
     setPendingNavHref(null);
     onCloseDrawer?.();
-    router.replace(resolvedHref);
+    return true;
+  }
+
+  function handleNavClick(event: NavigationEventLike, resolvedHref: string) {
+    guardNavigation(resolvedHref, event);
   }
 
   function cancelExit() {
@@ -48,7 +56,7 @@ export function useSessionNavGuard({
     setExitConfirmOpen(false);
     setPendingNavHref(null);
     onCloseDrawer?.();
-    router.replace(href);
+    router.push(href);
   }
 
   function requestLogout() {
@@ -69,6 +77,7 @@ export function useSessionNavGuard({
   return {
     exitConfirmOpen,
     logoutConfirmOpen,
+    guardNavigation,
     handleNavClick,
     cancelExit,
     confirmExit,

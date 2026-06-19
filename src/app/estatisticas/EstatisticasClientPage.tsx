@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import type { StudyPerformanceSummary } from "@/lib/api";
 import { DesempenhoTab } from "../desempenho/_components/DesempenhoTab";
 import {
@@ -13,7 +14,6 @@ import {
 import { Area, Period } from "../desempenho/_lib/perfilShared";
 import { useEstatisticasPageState } from "./_hooks/useEstatisticasPageState";
 import { BancoDeQuestoesInsights } from "./_components/BancoDeQuestoesInsights";
-import { GraficosSection } from "./graficos/GraficosSection";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 
@@ -49,6 +49,11 @@ function HubBlockSkeleton({ rows = 3 }: { rows?: number }) {
     </div>
   );
 }
+
+const GraficosSection = dynamic(
+  () => import("./graficos/GraficosSection").then((mod) => mod.GraficosSection),
+  { loading: () => <HubBlockSkeleton rows={6} /> },
+);
 
 function EstatisticasPageSkeleton() {
   return (

@@ -3,13 +3,13 @@ import {
   DirectedStudyListItem,
   ReviewTask,
 } from "@/lib/api";
+import { AREA_HEX, AREA_FULL_EXAM_HEX } from "@/lib/areaColors";
 
 export type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
 
-export const AREA_COLORS: Record<string, string> = {
-  GO: "#B65AA0", PD: "#2E79A8", CG: "#B44A4F", CM: "#2D8B62", MP: "#A97816", OU: "#8C928E",
-};
-export const FULL_EXAM_COLOR = "#0F4C5C";
+// Single source of truth — re-exported from the canonical area palette in lib/areaColors.
+export const AREA_COLORS: Record<string, string> = AREA_HEX;
+export const FULL_EXAM_COLOR = AREA_FULL_EXAM_HEX;
 export const STUDY_KIND_TOPIC = "topic";
 export const STUDY_KIND_FULL_EXAM = "full_exam";
 export const FULL_EXAM_TYPE_LABELS: Record<string, string> = {

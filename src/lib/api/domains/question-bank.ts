@@ -81,6 +81,33 @@ export type QuestionBankReviewQueue = {
   struggling_count: number;
   total: number;
 };
+export type QuestionBankNextActionKind = "review_queue" | "weak_area" | "fresh_practice";
+export type QuestionBankNextActionSignalSeverity = "info" | "success" | "warning" | "critical";
+export type QuestionBankNextActionSignal = {
+  key: string;
+  label: string;
+  severity: QuestionBankNextActionSignalSeverity;
+};
+export type QuestionBankNextActionStartPayload = {
+  mode: "adaptive";
+  resolution_mode: "training";
+  area?: string | null;
+  answer_status: QuestionBankAnswerStatus;
+  only_unanswered: boolean;
+  limit: number;
+};
+export type QuestionBankNextAction = {
+  kind: QuestionBankNextActionKind;
+  title: string;
+  subtitle: string;
+  meta: string;
+  cta_label: string;
+  area: string | null;
+  area_label: string | null;
+  signals: QuestionBankNextActionSignal[];
+  start_payload: QuestionBankNextActionStartPayload;
+  generated_at: string;
+};
 
 export type QuestionBankAreaReadiness = {
   area: string;
@@ -358,6 +385,14 @@ export async function getQuestionBankReviewQueue(
   token: string,
 ): Promise<QuestionBankReviewQueue> {
   return api<QuestionBankReviewQueue>("/api/question-bank/review-queue", {
+    headers: authHeader(token),
+  });
+}
+
+export async function getQuestionBankNextAction(
+  token: string,
+): Promise<QuestionBankNextAction> {
+  return api<QuestionBankNextAction>("/api/question-bank/next-action", {
     headers: authHeader(token),
   });
 }
