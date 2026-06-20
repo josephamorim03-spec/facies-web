@@ -230,10 +230,10 @@ type EntryContext = {
 
 const FALLBACK_NEXT_ACTION: QuestionBankNextAction = {
   kind: "fresh_practice",
-  title: "Praticar questoes novas",
-  subtitle: "Um bloco adaptativo curto mantem o ritmo e cobre novas microcompetencias.",
-  meta: "~20 min - treino com correcao item a item",
-  cta_label: "Comecar treino",
+  title: "Praticar questões novas",
+  subtitle: "Um bloco adaptativo curto mantém o ritmo e cobre novas microcompetências.",
+  meta: "~20 min · treino com correção item a item",
+  cta_label: "Começar treino",
   area: null,
   area_label: null,
   signals: [],
@@ -630,64 +630,10 @@ function BancoDeQuestoesContent() {
     }
   }
 
-  async function startFreshPractice() {
-    if (!tokenResolved) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const created = await createQuestionBankSession(token, {
-        mode: "adaptive",
-        resolution_mode: "training",
-        answer_status: "unanswered",
-        only_unanswered: true,
-        limit: 10,
-        performed_at: localNoonISO(entryContext.dateISO),
-      });
-      router.push(`/banco-de-questoes/sessao/${created.session_id}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível iniciar a sessão.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   if (!tokenResolved) return <main className="p-6 text-sm text-muted">Carregando...</main>;
 
   const hasDueTopicTasks = dueTopicTaskCount > 0;
   const recommended = nextAction ?? FALLBACK_NEXT_ACTION;
-  /*
-  const hasQuestionReviewQueue = Boolean(reviewQueue && reviewQueue.total > 0);
-
-  // The single recommended session, decided deterministically: due reviews first,
-  // then the weakest area, then a fresh adaptive block. One decision, one CTA.
-  const weakestArea = (performance?.areas ?? [])
-    .filter((a) => a.level !== "consolidando")
-    .sort((a, b) => a.readiness - b.readiness)[0] ?? null;
-
-  const recommended = hasQuestionReviewQueue
-    ? {
-        title: "Revisar o que está vencendo",
-        subtitle: `${reviewQueue.total} ${reviewQueue.total === 1 ? "questão" : "questões"} em ponto de revisão${reviewQueue.due_count > 0 ? ` · ${reviewQueue.due_count} vencidas` : ""}${reviewQueue.struggling_count > 0 ? ` · ${reviewQueue.struggling_count} de baixo desempenho` : ""}`,
-        meta: "Treino com correção item a item",
-        cta: "Revisar agora",
-        start: () => void startReviewSession(),
-      }
-    : weakestArea
-      ? {
-          title: `Fortalecer ${weakestArea.label}`,
-          subtitle: weakestArea.next_action || `${Math.round((weakestArea.accuracy ?? 0) * 100)}% de acerto — foco nas lacunas desta área`,
-          meta: "~20 min · treino com correção item a item",
-          cta: "Começar",
-          start: () => void startFocusedArea(weakestArea.area),
-        }
-      : {
-          title: "Praticar questões novas",
-          subtitle: "Um bloco adaptativo curto mantém o ritmo e cobre novas microcompetências.",
-          meta: "~20 min · treino com correção item a item",
-          cta: "Começar treino",
-          start: () => void startFreshPractice(),
-        };
-  */
 
   return (
     <main className="min-h-screen bg-paper text-ink">

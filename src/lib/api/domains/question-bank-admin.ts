@@ -446,6 +446,30 @@ export type QuestionDna = {
   vector?: number[];
 };
 
+// Cross-area review: set when a textual duplicate was re-imported with a primary
+// area that diverges from the canonical's current primary. See dedup enrichment in
+// kbank/question_bank/pipeline.py (_enrich_canonical_from_duplicate).
+export type QuestionBankAdminTopicReview = {
+  status: "pending" | "resolved" | string;
+  reason?: string;
+  proposed_primary_node_id?: string | null;
+  current_primary_node_id?: string | null;
+  occurrence_id?: string | null;
+  source_id?: string | null;
+  resolution?: string;
+  resolved_by?: string;
+  resolved_at?: string;
+};
+
+export type QuestionBankAdminEnrichmentLogEntry = {
+  occurrence_id?: string | null;
+  source_id?: string | null;
+  candidate_id?: string | null;
+  added_node_ids?: string[];
+  bumped_node_ids?: string[];
+  proposed_primary_node_id?: string | null;
+};
+
 export type QuestionBankAdminQuestionListItem = {
   id: string;
   stem: string;
@@ -467,6 +491,8 @@ export type QuestionBankAdminQuestionListItem = {
   fingerprint_quality_flags: string[];
   fingerprint_schema_version: string | null;
   similar_fingerprint_count: number;
+  topic_review: QuestionBankAdminTopicReview | null;
+  needs_topic_review: boolean;
   updated_at: string | null;
 };
 
@@ -492,6 +518,9 @@ export type QuestionBankAdminQuestionNode = {
   knowledge_node_id: string;
   role: string | null;
   is_primary: boolean;
+  source: string | null;
+  weight: number | null;
+  confidence: number | null;
   node_name: string | null;
   node_code: string | null;
   node_type: string | null;
@@ -518,6 +547,8 @@ export type QuestionBankAdminQuestionDetail = {
   question_fingerprint: QuestionDna | null;
   distractor_diagnosis: Record<string, string>;
   similar_questions: QuestionBankAdminSimilarQuestion[];
+  topic_review: QuestionBankAdminTopicReview | null;
+  dedup_enrichment_log: QuestionBankAdminEnrichmentLogEntry[];
   edit_log: { by?: string; at?: string; fields?: string[] }[];
 };
 
@@ -535,6 +566,8 @@ export type QuestionBankAdminQuestionPatch = {
   difficulty_estimate?: number;
   primary_node_id?: string;
   distractor_diagnosis?: Record<string, string>;
+  // Clears a pending cross-area topic_review flag without changing the primary.
+  dismiss_topic_review?: boolean;
 };
 
 export type QuestionBankAdminEditResult = {
@@ -553,6 +586,7 @@ export async function searchQuestionBankAdminQuestions(params?: {
   year?: number;
   knowledge_node_id?: string;
   missing_topic?: boolean;
+  needs_topic_review?: boolean;
   has_image?: boolean;
   missing_fingerprint?: boolean;
   fingerprint_tag?: string;
@@ -570,6 +604,8 @@ export async function searchQuestionBankAdminQuestions(params?: {
   if (params?.year) search.set("year", String(params.year));
   if (params?.knowledge_node_id) search.set("knowledge_node_id", params.knowledge_node_id);
   if (params?.missing_topic !== undefined) search.set("missing_topic", params.missing_topic ? "true" : "false");
+  if (params?.needs_topic_review !== undefined)
+    search.set("needs_topic_review", params.needs_topic_review ? "true" : "false");
   if (params?.has_image !== undefined) search.set("has_image", params.has_image ? "true" : "false");
   if (params?.missing_fingerprint !== undefined)
     search.set("missing_fingerprint", params.missing_fingerprint ? "true" : "false");

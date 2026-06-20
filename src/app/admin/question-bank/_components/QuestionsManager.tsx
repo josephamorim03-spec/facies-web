@@ -78,6 +78,7 @@ export default function QuestionsManager() {
   const [dnaFilter, setDnaFilter] = useState<"" | "with" | "missing">("");
   const [lowConfidence, setLowConfidence] = useState(false);
   const [missingSimilar, setMissingSimilar] = useState(false);
+  const [needsReview, setNeedsReview] = useState(false);
   const [items, setItems] = useState<QuestionBankAdminQuestionListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -107,6 +108,7 @@ export default function QuestionsManager() {
           board_code: boardCode || undefined,
           year: year ? Number(year) : undefined,
           missing_topic: topicFilter === "missing" ? true : topicFilter === "with" ? false : undefined,
+          needs_topic_review: needsReview || undefined,
           has_image: hasImage === "" ? undefined : hasImage === "true",
           missing_fingerprint: dnaFilter === "missing" ? true : dnaFilter === "with" ? false : undefined,
           fingerprint_low_confidence: lowConfidence || undefined,
@@ -124,7 +126,7 @@ export default function QuestionsManager() {
         setLoading(false);
       }
     },
-    [q, status, boardCode, year, topicFilter, hasImage, dnaFilter, lowConfidence, missingSimilar],
+    [q, status, boardCode, year, topicFilter, needsReview, hasImage, dnaFilter, lowConfidence, missingSimilar],
   );
 
   // Debounced auto-search on filter changes.
@@ -218,6 +220,32 @@ export default function QuestionsManager() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao salvar.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // Resolve a cross-area "reavaliar tópico" flag: promote the proposed area to primary,
+  // or dismiss the flag while keeping the current primary.
+  async function resolveTopicReview(opts: { primaryNodeId?: string; dismiss?: boolean }) {
+    if (!detail) return;
+    setSaving(true);
+    setError(null);
+    setBlockers([]);
+    try {
+      const result = await editQuestionBankAdminQuestion(
+        detail.id,
+        opts.primaryNodeId ? { primary_node_id: opts.primaryNodeId } : { dismiss_topic_review: true },
+      );
+      if (result.result === "updated") {
+        setNotice(opts.primaryNodeId ? "Tópico primário atualizado." : "Sinalização dispensada.");
+        closeEditor();
+        void search(offset);
+      } else if (result.result === "blocked") {
+        setBlockers(result.blockers ?? []);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao resolver a sinalização.");
     } finally {
       setSaving(false);
     }
@@ -428,16 +456,21 @@ export default function QuestionsManager() {
           <option value="with">Com DNA</option>
           <option value="missing">Sem DNA</option>
         </select>
+        <select value={needsReview ? "yes" : ""} onChange={(e) => setNeedsReview(e.target.value === "yes")} className={inputCls}>
+          <option value="">Revisão: todas</option>
+          <option value="yes">Reavaliar tópico</option>
+        </select>
       </div>
 
       {/* Filas pré-definidas (atalhos de filtro) */}
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <span className="text-gray-500 dark:text-gray-400">Filas:</span>
         {([
-          ["Sem tópico", () => { setTopicFilter("missing"); setDnaFilter(""); setLowConfidence(false); setMissingSimilar(false); }],
-          ["Sem DNA", () => { setDnaFilter("missing"); setTopicFilter(""); setLowConfidence(false); setMissingSimilar(false); }],
-          ["DNA baixa confiança", () => { setLowConfidence(true); setDnaFilter("with"); setTopicFilter(""); setMissingSimilar(false); }],
-          ["Sem similares", () => { setMissingSimilar(true); setDnaFilter("with"); setTopicFilter(""); setLowConfidence(false); }],
+          ["Sem tópico", () => { setTopicFilter("missing"); setDnaFilter(""); setLowConfidence(false); setMissingSimilar(false); setNeedsReview(false); }],
+          ["Reavaliar tópico", () => { setNeedsReview(true); setTopicFilter(""); setDnaFilter(""); setLowConfidence(false); setMissingSimilar(false); }],
+          ["Sem DNA", () => { setDnaFilter("missing"); setTopicFilter(""); setLowConfidence(false); setMissingSimilar(false); setNeedsReview(false); }],
+          ["DNA baixa confiança", () => { setLowConfidence(true); setDnaFilter("with"); setTopicFilter(""); setMissingSimilar(false); setNeedsReview(false); }],
+          ["Sem similares", () => { setMissingSimilar(true); setDnaFilter("with"); setTopicFilter(""); setLowConfidence(false); setNeedsReview(false); }],
         ] as const).map(([label, apply]) => (
           <button
             key={label}
@@ -447,9 +480,9 @@ export default function QuestionsManager() {
             {label}
           </button>
         ))}
-        {(topicFilter || dnaFilter || lowConfidence || missingSimilar) && (
+        {(topicFilter || dnaFilter || lowConfidence || missingSimilar || needsReview) && (
           <button
-            onClick={() => { setTopicFilter(""); setDnaFilter(""); setLowConfidence(false); setMissingSimilar(false); }}
+            onClick={() => { setTopicFilter(""); setDnaFilter(""); setLowConfidence(false); setMissingSimilar(false); setNeedsReview(false); }}
             className="rounded-full border border-gray-200 px-3 py-1 text-gray-400 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800"
           >
             limpar
@@ -556,6 +589,11 @@ export default function QuestionsManager() {
                 <td className="max-w-md px-4 py-3 text-gray-900 dark:text-gray-100">
                   <p className="line-clamp-2">{item.stem}</p>
                   <div className="mt-1 flex flex-wrap gap-1">
+                    {item.needs_topic_review && (
+                      <span className="inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                        reavaliar tópico
+                      </span>
+                    )}
                     {item.has_image && (
                       <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500 dark:bg-gray-800 dark:text-gray-400">
                         imagem
@@ -661,6 +699,42 @@ export default function QuestionsManager() {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Editar questão</h3>
               <button onClick={closeEditor} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" aria-label="Fechar">×</button>
             </div>
+
+            {detail.topic_review?.status === "pending" && (() => {
+              const proposedId = detail.topic_review.proposed_primary_node_id ?? "";
+              const proposed = detail.nodes.find((n) => n.knowledge_node_id === proposedId);
+              const proposedLabel = proposed
+                ? [proposed.node_code, proposed.node_name].filter(Boolean).join(" · ")
+                : proposedId;
+              return (
+                <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+                  <p className="font-semibold">Reavaliar tópico primário</p>
+                  <p className="mt-1">
+                    Uma reimportação trouxe esta questão com uma área diferente do tópico primário atual
+                    {proposedLabel ? <> — sugerido: <span className="font-medium">{proposedLabel}</span></> : null}.
+                    Confirme o primário ou dispense.
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {proposedId && (
+                      <button
+                        onClick={() => void resolveTopicReview({ primaryNodeId: proposedId })}
+                        disabled={saving}
+                        className="rounded-lg bg-amber-600 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
+                      >
+                        Tornar primário
+                      </button>
+                    )}
+                    <button
+                      onClick={() => void resolveTopicReview({ dismiss: true })}
+                      disabled={saving}
+                      className="rounded-lg border border-amber-300 px-3 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-950/40"
+                    >
+                      Dispensar
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
 
             {detail.question_fingerprint && (
               <div className="mt-4 flex flex-wrap items-center gap-1.5 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
@@ -798,6 +872,25 @@ export default function QuestionsManager() {
                 )}
               </div>
             </div>
+
+            {detail.nodes.some((n) => !n.is_primary) && (
+              <div className="mt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Tópicos secundários</p>
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {detail.nodes.filter((n) => !n.is_primary).map((n) => (
+                    <span
+                      key={`${n.knowledge_node_id}-${n.role ?? ""}`}
+                      className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                    >
+                      {[n.node_code, n.node_name].filter(Boolean).join(" · ") || n.knowledge_node_id}
+                      {n.source === "dedup_enrichment" ? (
+                        <span className="text-gray-400 dark:text-gray-500">· reimporte</span>
+                      ) : null}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {detail.image_refs.length > 0 && (
               <div className="mt-4">
