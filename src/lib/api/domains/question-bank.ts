@@ -206,6 +206,16 @@ export type QuestionBankLongitudinalNode = {
   days_since_last_seen: number | null;
   last_error_at: string | null;
 };
+export type QuestionBankAnchorObjectiveWeakness = {
+  trap_pattern: string;
+  label: string;
+  error_count: number;
+  knowledge_node_id?: string | null;
+  mastery_score?: number | null;
+  retention_score?: number | null;
+  exposure_count?: number | null;
+  last_error_at?: string | null;
+};
 export type QuestionBankLongitudinalDiagnosis = {
   user_id: string;
   total_nodes_studied: number;
@@ -218,6 +228,7 @@ export type QuestionBankLongitudinalDiagnosis = {
   trap_sensitivity: number;
   overconfidence_score: number;
   impulsive_rate: number;
+  anchor_objective_weaknesses?: QuestionBankAnchorObjectiveWeakness[];
 };
 export type QuestionBankCorrectionItem = {
   response_id: string;

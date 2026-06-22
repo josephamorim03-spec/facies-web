@@ -65,6 +65,8 @@ type EditState = {
   difficulty: string;
   primaryNodeId: string;
   primaryNodeLabel: string;
+  anchorNodeId: string;
+  anchorNodeLabel: string;
   distractorDiagnosis: Record<string, string>;
 };
 
@@ -96,6 +98,8 @@ export default function QuestionsManager() {
   const [blockers, setBlockers] = useState<string[]>([]);
   const [nodeQuery, setNodeQuery] = useState("");
   const [nodeResults, setNodeResults] = useState<QuestionBankAdminKnowledgeNode[]>([]);
+  const [objectiveQuery, setObjectiveQuery] = useState("");
+  const [objectiveResults, setObjectiveResults] = useState<QuestionBankAdminKnowledgeNode[]>([]);
 
   const search = useCallback(
     async (nextOffset = 0) => {
@@ -158,6 +162,27 @@ export default function QuestionsManager() {
     };
   }, [nodeQuery]);
 
+  useEffect(() => {
+    if (!objectiveQuery.trim()) {
+      setObjectiveResults([]);
+      return;
+    }
+    let active = true;
+    const handle = setTimeout(() => {
+      listQuestionBankAdminKnowledgeNodes({ q: objectiveQuery, type: "learning_objective", limit: 12 })
+        .then((res) => {
+          if (active) setObjectiveResults(res.items);
+        })
+        .catch(() => {
+          if (active) setObjectiveResults([]);
+        });
+    }, 300);
+    return () => {
+      active = false;
+      clearTimeout(handle);
+    };
+  }, [objectiveQuery]);
+
   async function openEditor(questionId: string) {
     setError(null);
     setBlockers([]);
@@ -165,6 +190,7 @@ export default function QuestionsManager() {
       const d = await getQuestionBankAdminQuestion(questionId);
       setDetail(d);
       const primary = d.nodes.find((n) => n.is_primary);
+      const anchor = d.nodes.find((n) => (n.role ?? "").toLowerCase() === "anchor_objective");
       setEdit({
         stem: d.stem ?? "",
         alternatives: { A: "", B: "", C: "", D: "", E: "", ...d.alternatives },
@@ -172,6 +198,8 @@ export default function QuestionsManager() {
         difficulty: d.difficulty_estimate != null ? String(d.difficulty_estimate) : "",
         primaryNodeId: primary?.knowledge_node_id ?? "",
         primaryNodeLabel: primary?.node_name ?? "",
+        anchorNodeId: anchor?.knowledge_node_id ?? "",
+        anchorNodeLabel: anchor?.node_name ?? "",
         distractorDiagnosis: { ...(d.distractor_diagnosis ?? {}) },
       });
     } catch (err) {
@@ -185,6 +213,8 @@ export default function QuestionsManager() {
     setBlockers([]);
     setNodeQuery("");
     setNodeResults([]);
+    setObjectiveQuery("");
+    setObjectiveResults([]);
   }
 
   async function saveEdit() {
@@ -201,12 +231,19 @@ export default function QuestionsManager() {
           .map((l) => [l, (edit.distractorDiagnosis[l] ?? "").trim()])
           .filter(([, v]) => v),
       );
+      const currentAnchorId =
+        detail.nodes.find((n) => (n.role ?? "").toLowerCase() === "anchor_objective")
+          ?.knowledge_node_id ?? "";
       const result = await editQuestionBankAdminQuestion(detail.id, {
         canonical_stem_md: edit.stem,
         canonical_alternatives: alternatives,
         canonical_answer: edit.answer,
         difficulty_estimate: edit.difficulty ? Number(edit.difficulty) : undefined,
         primary_node_id: edit.primaryNodeId || undefined,
+        // Only send when changed: empty string clears, an id sets it.
+        ...(edit.anchorNodeId !== currentAnchorId
+          ? { anchor_objective_id: edit.anchorNodeId }
+          : {}),
         distractor_diagnosis: distractorDiagnosis,
       });
       if (result.result === "updated") {
@@ -866,6 +903,54 @@ export default function QuestionsManager() {
                       >
                         <span className="font-medium">{node.name}</span>
                         <span className="ml-2 text-xs text-gray-400">{node.type}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Objetivo âncora
+              </label>
+              <p className="mt-0.5 text-[11px] text-gray-400 dark:text-gray-500">
+                O objetivo fino que a questão realmente testa (o que diferencia a correta das erradas).
+              </p>
+              <div className="relative mt-1">
+                <input
+                  value={objectiveQuery || edit.anchorNodeLabel}
+                  onChange={(e) => setObjectiveQuery(e.target.value)}
+                  placeholder="Buscar objetivo…"
+                  className={`${inputCls} w-full ${edit.anchorNodeId ? "pr-16" : ""}`}
+                />
+                {edit.anchorNodeId ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEdit({ ...edit, anchorNodeId: "", anchorNodeLabel: "" });
+                      setObjectiveQuery("");
+                      setObjectiveResults([]);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-gray-200 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                  >
+                    limpar
+                  </button>
+                ) : null}
+                {objectiveResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                    {objectiveResults.map((node) => (
+                      <button
+                        key={node.id}
+                        onClick={() => {
+                          setEdit({ ...edit, anchorNodeId: node.id, anchorNodeLabel: node.name });
+                          setObjectiveQuery("");
+                          setObjectiveResults([]);
+                        }}
+                        className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+                      >
+                        <span className="font-medium">{node.name}</span>
+                        {node.code ? <span className="ml-2 text-xs text-gray-400">{node.code}</span> : null}
                       </button>
                     ))}
                   </div>

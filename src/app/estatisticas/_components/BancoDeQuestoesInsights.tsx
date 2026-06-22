@@ -97,7 +97,17 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
     (longitudinal.overconfidence_score ?? 0) > 0.05 ||
     (longitudinal.impulsive_rate ?? 0) > 0.05;
 
-  if (!hasPatterns && weakNodes.length === 0 && !hasMetacognition) return null;
+  const anchorWeaknesses = (longitudinal.anchor_objective_weaknesses ?? []).filter(
+    (w) => w.error_count > 0,
+  );
+
+  if (
+    !hasPatterns &&
+    weakNodes.length === 0 &&
+    !hasMetacognition &&
+    anchorWeaknesses.length === 0
+  )
+    return null;
 
   return (
     <section className="space-y-5">
@@ -185,6 +195,46 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
               );
             })}
           </div>
+        </div>
+      )}
+
+      {anchorWeaknesses.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+            Objetivos que você mais erra
+          </p>
+          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {anchorWeaknesses.map((w) => {
+              const mastery =
+                typeof w.mastery_score === "number" && Number.isFinite(w.mastery_score)
+                  ? pct(w.mastery_score)
+                  : null;
+              const exposure =
+                typeof w.exposure_count === "number" && Number.isFinite(w.exposure_count)
+                  ? Math.max(0, Math.round(w.exposure_count))
+                  : null;
+              const meta = [
+                `${w.error_count} ${w.error_count === 1 ? "erro" : "erros"}`,
+                mastery !== null ? `${mastery}% dom.` : null,
+                exposure !== null ? `${exposure} exp.` : null,
+              ].filter(Boolean);
+
+              return (
+                <li key={w.trap_pattern} className="border border-edge p-3">
+                  <p className="truncate text-xs font-semibold text-ink">{w.label}</p>
+                  <p className="mt-1 text-xs text-muted">{meta.join(" · ")}</p>
+                  {mastery !== null && (
+                    <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-edge">
+                      <div
+                        className={`h-full rounded-full ${mastery < 40 ? "bg-danger" : "bg-warning"}`}
+                        style={{ width: `${mastery}%` }}
+                      />
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
     </section>

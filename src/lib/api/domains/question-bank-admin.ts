@@ -576,6 +576,9 @@ export type QuestionBankAdminQuestionPatch = {
   canonical_answer?: string;
   difficulty_estimate?: number;
   primary_node_id?: string;
+  // Anchor objective (pedagogical profile): a learning_objective node id sets it; ""
+  // clears it; omit to leave unchanged. Validated server-side.
+  anchor_objective_id?: string;
   distractor_diagnosis?: Record<string, string>;
   // Clears a pending cross-area topic_review flag without changing the primary.
   dismiss_topic_review?: boolean;
