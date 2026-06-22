@@ -4,3 +4,5 @@ out/
 .env.local
 playwright-report/
 test-results/
+
+.vercel

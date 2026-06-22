@@ -5,30 +5,9 @@ import type { QuestionBankAnswerStatus, QuestionBankResolutionMode, QuestionBank
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const AREAS = ["", "GO", "CM", "CG", "MP", "PD", "OU"] as const;
-
-const AREA_FULL_LABELS: Record<string, string> = {
-  "": "Todas",
-  GO: "Ginecologia e Obstetrícia",
-  CM: "Clínica Médica",
-  CG: "Cirurgia Geral",
-  MP: "Medicina Preventiva",
-  PD: "Pediatria",
-  OU: "Outras",
-};
-
 const AREA_SHORT_LABELS: Record<string, string> = {
   "": "Todas", GO: "GO", CM: "CM", CG: "CG", MP: "MP", PD: "PD", OU: "OU",
 };
-
-function AreaLabel({ area }: { area: string }) {
-  return (
-    <>
-      <span className="hidden md:inline">{AREA_FULL_LABELS[area] ?? area}</span>
-      <span className="md:hidden">{AREA_SHORT_LABELS[area] ?? area}</span>
-    </>
-  );
-}
 
 const YEAR_OPTIONS = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026] as const;
 
@@ -202,7 +181,7 @@ function TopicTreeItem({
           />
           <span className="min-w-0 flex-1">
             <span className="block text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-              {node.node_code ?? "Sem código"} · {node.question_count} questões
+              {node.question_count} questões
               {childCount > 0 ? ` · ${childCount} subassunto${childCount > 1 ? "s" : ""}` : ""}
             </span>
             <span className="mt-0.5 block text-sm font-semibold leading-snug text-ink">{node.node_name}</span>
@@ -257,7 +236,7 @@ function TopicTreeList({
 
 export default function FiltersBar(props: FiltersBarProps) {
   const {
-    area, onAreaChange, search, onSearchChange, topics, selectedTopics, onToggleTopic,
+    area, search, onSearchChange, topics, selectedTopics, onToggleTopic,
     boardCodes, boardInput, onBoardInputChange,
     onAddBoardCode, onRemoveBoardCode, institution, onInstitutionChange,
     selectedYears, onSelectedYearsChange, answerStatus, onAnswerStatusChange,
@@ -297,7 +276,7 @@ export default function FiltersBar(props: FiltersBarProps) {
   const TABS: { id: FilterTab; label: string; value: string; indicator: boolean }[] = [
     {
       id: "assunto",
-      label: "Assunto",
+      label: "Especialidade / Assunto",
       value: selectedTopics.length > 0
         ? `${selectedTopics.length} tema${selectedTopics.length > 1 ? "s" : ""}`
         : (search.trim() || AREA_SHORT_LABELS[area] || "Todas"),
@@ -305,7 +284,7 @@ export default function FiltersBar(props: FiltersBarProps) {
     },
     {
       id: "banca",
-      label: "Banca",
+      label: "Instituição",
       value: boardCodes.length > 0 ? boardCodes.join(", ") : (institution.trim() || "Todas"),
       indicator: boardCodes.length > 0 || !!institution.trim(),
     },
@@ -368,30 +347,6 @@ export default function FiltersBar(props: FiltersBarProps) {
 
           {activeTab === "assunto" && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => onAreaChange("")}
-                    className={cx("km-chip", area === "" && "km-chip-active")}
-                  >
-                    <AreaLabel area="" />
-                  </button>
-                </div>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {AREAS.filter((a) => a !== "").map((areaOption) => (
-                    <button
-                      key={areaOption}
-                      type="button"
-                      onClick={() => onAreaChange(areaOption)}
-                      className={cx("km-chip", area === areaOption && "km-chip-active")}
-                    >
-                      <AreaLabel area={areaOption} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <div className="relative">
                 <input
                   value={search}
