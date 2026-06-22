@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useEffect } from "react";
+
 import type { QuestionBankOption, QuestionBankReportType, QuestionBankSessionItem, QuestionBankSessionStatus } from "@/lib/api";
 
 const OPTIONS: QuestionBankOption[] = ["A", "B", "C", "D", "E"];
@@ -193,6 +195,46 @@ export default function StudyQuestion({
   const canReveal = !finalized && item.answered && !revealed;
   const canCaptureAnswerSignals = !finalized && !item.answered;
   const progress = Math.round((position / total) * 100);
+
+  // Keyboard shortcuts for fast resolution: A–E (or 1–5) to answer, ←/→ to navigate,
+  // Enter to reveal then advance. Ignored while typing in a field or a button is focused.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const el = document.activeElement as HTMLElement | null;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || el?.isContentEditable) return;
+
+      if (event.key === "ArrowRight") {
+        if (position < total) { event.preventDefault(); onNext(); }
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        if (position > 1) { event.preventDefault(); onPrev(); }
+        return;
+      }
+      if (event.key === "Enter") {
+        if (tag === "BUTTON") return; // let the focused button handle its own click
+        if (canReveal) { event.preventDefault(); onReveal(); }
+        else if (position < total) { event.preventDefault(); onNext(); }
+        return;
+      }
+      if (canCaptureAnswerSignals && !busy) {
+        const key = event.key.toUpperCase();
+        const option = OPTIONS.includes(key as QuestionBankOption)
+          ? (key as QuestionBankOption)
+          : key >= "1" && key <= "5"
+            ? OPTIONS[Number(key) - 1]
+            : undefined;
+        if (option && item.alternatives[option]) {
+          event.preventDefault();
+          onAnswer(option);
+        }
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [position, total, canReveal, canCaptureAnswerSignals, busy, item.alternatives, onAnswer, onNext, onPrev, onReveal]);
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">

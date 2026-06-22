@@ -338,6 +338,7 @@ function BancoDeQuestoesContent() {
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nextAction, setNextAction] = useState<QuestionBankNextAction | null>(null);
+  const [nextActionLoading, setNextActionLoading] = useState(true);
   const [performance, setPerformance] = useState<QuestionBankPerformance | null>(null);
   const [dueTopicTaskCount, setDueTopicTaskCount] = useState(0);
   const [manualOpen, setManualOpen] = useState(false);
@@ -560,6 +561,9 @@ function BancoDeQuestoesContent() {
       })
       .catch(() => {
         if (active) setNextAction(null);
+      })
+      .finally(() => {
+        if (active) setNextActionLoading(false);
       });
     getQuestionBankPerformance(token)
       .then((p) => {
@@ -655,33 +659,42 @@ function BancoDeQuestoesContent() {
         </header>
 
         {/* Sessão recomendada — o único melhor próximo passo, já decidido pelo banco */}
-        <section className="km-card overflow-hidden" aria-label="Sessão recomendada">
+        <section className="km-card overflow-hidden" aria-label="Sessão recomendada" aria-busy={nextActionLoading}>
           <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Recomendado para hoje</p>
-              <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight md:text-3xl">{recommended.title}</h2>
-              <p className="mt-1 text-sm text-muted">{recommended.subtitle}</p>
-              <p className="mt-2 text-xs text-muted">{recommended.meta}</p>
-              {recommended.signals.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {recommended.signals.map((signal) => (
-                    <span
-                      key={signal.key}
-                      className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${signalClassName(signal.severity)}`}
-                    >
-                      {signal.label}
-                    </span>
-                  ))}
+              {nextActionLoading ? (
+                <div className="mt-2 animate-pulse space-y-2" aria-hidden="true">
+                  <div className="h-7 w-64 max-w-full rounded bg-surfaceMuted" />
+                  <div className="h-4 w-80 max-w-full rounded bg-surfaceMuted" />
                 </div>
+              ) : (
+                <>
+                  <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight md:text-3xl">{recommended.title}</h2>
+                  <p className="mt-1 text-sm text-muted">{recommended.subtitle}</p>
+                  <p className="mt-2 text-xs text-muted">{recommended.meta}</p>
+                  {recommended.signals.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {recommended.signals.map((signal) => (
+                        <span
+                          key={signal.key}
+                          className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${signalClassName(signal.severity)}`}
+                        >
+                          {signal.label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
             <button
               type="button"
               onClick={() => void startRecommendedSession()}
-              disabled={busy}
+              disabled={busy || nextActionLoading}
               className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-6 py-3 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 disabled:opacity-50"
             >
-              {busy ? "Preparando..." : recommended.cta_label}
+              {busy ? "Preparando..." : nextActionLoading ? "Carregando..." : recommended.cta_label}
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
                 <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
               </svg>
@@ -903,10 +916,10 @@ function BancoDeQuestoesContent() {
           <button
             type="button"
             onClick={() => void startRecommendedSession()}
-            disabled={busy}
+            disabled={busy || nextActionLoading}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary py-3 text-sm font-semibold text-primaryInk shadow-sm transition disabled:opacity-40"
           >
-            {busy ? "Preparando..." : recommended.cta_label}
+            {busy ? "Preparando..." : nextActionLoading ? "Carregando..." : recommended.cta_label}
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
               <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
             </svg>

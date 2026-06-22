@@ -132,11 +132,6 @@ const NAV_GROUPS = NAV_GROUPS_CONFIG.map((group) => ({
   })),
 }));
 
-const BOTTOM_TAB_HREFS = ["/hoje", "/banco-de-questoes", "/cards-adaptativos", "/revisoes", "/dados-e-relatorios"];
-const BOTTOM_TAB_ITEMS = BOTTOM_TAB_HREFS.map((href) =>
-  NAV_GROUPS.flatMap((group) => group.items).find((item) => item.href === href),
-).filter((item): item is (typeof NAV_GROUPS)[number]["items"][number] => Boolean(item));
-
 export const NAV_OPEN_EVENT = "kros:open-nav";
 
 function useNavHideCompletely(pathname: string) {
@@ -584,77 +579,3 @@ export function SidebarNav({
   );
 }
 
-export function BottomTabBar() {
-  const pathname = usePathname();
-  const isDesktopNavigation = useDesktopNavigationMode();
-  const hideCompletely =
-    useNavHideCompletely(pathname) ||
-    pathname.startsWith("/banco-de-questoes/sessao") ||
-    pathname.startsWith("/revisao-turbo/sessao");
-  const {
-    exitConfirmOpen,
-    logoutConfirmOpen,
-    guardNavigation,
-    cancelExit,
-    confirmExit,
-    cancelLogout,
-    confirmLogout,
-  } = useSessionNavGuard({ pathname });
-
-  if (hideCompletely || isDesktopNavigation) return null;
-
-  return (
-    <>
-      <nav
-        aria-label="Navegação principal"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-edge/70 bg-paper/95 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] backdrop-blur-md md:hidden"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-      >
-        <div className="mx-auto grid h-16 max-w-lg grid-cols-5 items-stretch gap-1 px-2 py-1.5">
-          {BOTTOM_TAB_ITEMS.map((item) => {
-            const { href, shortLabel, Icon } = item;
-            const active = isNavItemActive(pathname, item);
-            return (
-              <FastNavLink
-                key={href}
-                href={resolveNavHref(href)}
-                onNavigateGuard={guardNavigation}
-                aria-current={active ? "page" : undefined}
-                data-nav-surface="bottom-tab"
-                data-nav-item-href={href}
-                data-nav-active={active ? "true" : "false"}
-                className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-md px-1 text-[10px] font-semibold leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                  active
-                    ? "bg-surface text-ink"
-                    : "text-muted hover:bg-surfaceMuted hover:text-ink"
-                }`}
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                <span className="block max-w-full truncate">{shortLabel}</span>
-              </FastNavLink>
-            );
-          })}
-        </div>
-      </nav>
-
-      <ConfirmDialog
-        open={exitConfirmOpen}
-        title="Confirmar saída da sessão"
-        message="Deseja abandonar a sessão? O progresso será perdido."
-        cancelLabel="Continuar"
-        confirmLabel="Sair"
-        onCancel={cancelExit}
-        onConfirm={confirmExit}
-      />
-      <ConfirmDialog
-        open={logoutConfirmOpen}
-        title="Sair da conta"
-        message="Deseja encerrar sua sessão neste dispositivo?"
-        cancelLabel="Cancelar"
-        confirmLabel="Sair"
-        onCancel={cancelLogout}
-        onConfirm={confirmLogout}
-      />
-    </>
-  );
-}

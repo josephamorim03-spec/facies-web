@@ -74,6 +74,48 @@ export default function ExamQuestion({
   const progress = Math.round((Math.max(0, answeredCount) / Math.max(1, total)) * 100);
   const averageSeconds = answeredCount > 0 ? Math.round(elapsedSeconds / answeredCount) : 0;
 
+  // Keyboard shortcuts for the timed exam: A–E (or 1–5) to answer/change, ←/→ to
+  // navigate, M to mark for review. Ignored while typing or with a button focused.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const el = document.activeElement as HTMLElement | null;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || el?.isContentEditable) return;
+
+      if (event.key === "ArrowRight") {
+        if (position < total) { event.preventDefault(); onNext(); }
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        if (position > 1) { event.preventDefault(); onPrev(); }
+        return;
+      }
+      if (finalized || busy) return;
+      if (event.key === "Enter") {
+        if (tag !== "BUTTON" && position < total) { event.preventDefault(); onNext(); }
+        return;
+      }
+      if (event.key.toLowerCase() === "m") {
+        event.preventDefault();
+        onToggleDoubtful();
+        return;
+      }
+      const key = event.key.toUpperCase();
+      const option = OPTIONS.includes(key as QuestionBankOption)
+        ? (key as QuestionBankOption)
+        : key >= "1" && key <= "5"
+          ? OPTIONS[Number(key) - 1]
+          : undefined;
+      if (option && item.alternatives[option]) {
+        event.preventDefault();
+        onAnswer(option);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [position, total, finalized, busy, item.alternatives, onAnswer, onNext, onPrev, onToggleDoubtful]);
+
   return (
     <div className="flex min-h-screen flex-col bg-paper">
       {/* Exam header */}

@@ -211,23 +211,35 @@ export type QuestionBankAdminCandidatesResponse = {
 };
 
 export type QuestionBankReviewQueueItem = {
-  id: string;
-  occurrence_id: string | null;
-  source_id: string | null;
-  imported_file_id: string;
-  question_number: string | null;
-  raw_stem: string | null;
-  extraction_confidence: number | null;
+  question_id: string;
+  stem: string | null;
+  alternatives: Record<string, string> | null;
+  answer: string | null;
   status: string;
-  created_at: string | null;
-  dedup: {
-    decision_id: string | null;
-    decision: string | null;
-    confidence: number | null;
-    matched_question_id: string | null;
-    matched_candidate_id: string | null;
-    evidence: Record<string, unknown>;
+  classification_confidence: number | null;
+  publish_blockers: string[];
+  issues: Record<string, unknown>;
+  has_image: boolean;
+};
+
+export type QuestionBankReviewResolutionAction = "approve" | "override" | "discard" | "requeue";
+
+export type QuestionBankReviewResolutionOptions = {
+  reason?: string;
+  patch?: {
+    canonical_answer?: string;
+    canonical_stem_md?: string;
+    canonical_alternatives?: Record<string, string>;
+    add_primary_node_id?: string;
   };
+};
+
+export type QuestionBankReviewResolutionResult = {
+  result: string;
+  question_id: string;
+  status?: string;
+  blockers?: string[];
+  nodes_copied?: number;
 };
 
 export async function previewQuestionBankAdminImport(
@@ -380,27 +392,26 @@ export async function runQuestionBankAdminAll(background: boolean, importedFileI
 }
 
 export async function getQuestionBankReviewQueue(
-  options?: { limit?: number; offset?: number; imported_file_id?: string },
+  options?: { limit?: number; offset?: number },
 ): Promise<{ items: QuestionBankReviewQueueItem[]; total: number; limit: number; offset: number }> {
   const params = new URLSearchParams();
   if (options?.limit) params.set("limit", String(options.limit));
   if (options?.offset) params.set("offset", String(options.offset));
-  if (options?.imported_file_id) params.set("imported_file_id", options.imported_file_id);
   const qs = params.toString();
   return api<{ items: QuestionBankReviewQueueItem[]; total: number; limit: number; offset: number }>(
-    `/api/admin/question-bank/candidates/review-queue${qs ? `?${qs}` : ""}`,
+    `/api/admin/question-bank/review-queue${qs ? `?${qs}` : ""}`,
   );
 }
 
-export async function resolveQuestionBankReviewCandidate(
-  candidateId: string,
-  action: "accept_as_canonical" | "accept_as_duplicate" | "discard",
-  options?: { question_id?: string; reason?: string; review_note?: string },
-): Promise<{ candidate_id: string; action: string; question_id?: string; status?: string }> {
-  return api<{ candidate_id: string; action: string; question_id?: string; status?: string }>(
-    `/api/admin/question-bank/candidates/review-queue/${encodeURIComponent(candidateId)}`,
+export async function resolveQuestionBankReviewQuestion(
+  questionId: string,
+  action: QuestionBankReviewResolutionAction,
+  options?: QuestionBankReviewResolutionOptions,
+): Promise<QuestionBankReviewResolutionResult> {
+  return api<QuestionBankReviewResolutionResult>(
+    `/api/admin/question-bank/questions/${encodeURIComponent(questionId)}/resolve`,
     {
-      method: "PATCH",
+      method: "POST",
       body: JSON.stringify({ action, ...options }),
       headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
     },
@@ -677,25 +688,5 @@ export async function listQuestionBankAdminKnowledgeNodes(params?: {
   const qs = search.toString();
   return api<{ items: QuestionBankAdminKnowledgeNode[] }>(
     `/api/admin/question-bank/knowledge-nodes${qs ? `?${qs}` : ""}`,
-  );
-}
-
-export async function patchQuestionBankCandidate(
-  candidateId: string,
-  fields: {
-    raw_stem?: string;
-    raw_answer?: string;
-    raw_alternatives?: Record<string, string>;
-    institution?: string;
-    year?: number;
-  },
-): Promise<{ candidate: QuestionBankAdminCandidate; question: unknown }> {
-  return api<{ candidate: QuestionBankAdminCandidate; question: unknown }>(
-    `/api/admin/question-bank/candidates/${encodeURIComponent(candidateId)}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify(fields),
-      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
-    },
   );
 }

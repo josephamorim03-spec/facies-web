@@ -2,7 +2,7 @@
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Nav, { BottomTabBar, SidebarNav, NAV_OPEN_EVENT } from "@/components/Nav";
+import Nav, { SidebarNav, NAV_OPEN_EVENT } from "@/components/Nav";
 import PwaRegister from "@/components/PwaRegister";
 import { ToastProvider } from "@/lib/useToast";
 import { Toast } from "@/components/Toast";
@@ -170,7 +170,7 @@ function BuildVersionBadge() {
   return (
     <span
       title={title}
-      className="pointer-events-none fixed right-2 z-[60] rounded border border-edge bg-paper/85 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-muted shadow-sm backdrop-blur supports-[backdrop-filter]:bg-paper/70 bottom-[calc(env(safe-area-inset-bottom,0px)+4.85rem)] md:bottom-3"
+      className="pointer-events-none fixed right-2 z-[60] rounded border border-edge bg-paper/85 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-muted shadow-sm backdrop-blur supports-[backdrop-filter]:bg-paper/70 bottom-[calc(env(safe-area-inset-bottom,0px)+0.8rem)] md:bottom-3"
       aria-label={`Build ${shortSha}`}
     >
       build: {shortSha}
@@ -188,22 +188,13 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
   const [pinnedSidebar, setPinnedSidebar] = useState(false);
   const showMobileTopBar = !isDesktopNavigation && shouldShowMobileTopBar(pathname, hideNavigationChrome);
-  const showMobileBottomTabs =
-    !isDesktopNavigation &&
-    !hideNavigationChrome &&
-    !pathname.startsWith("/banco-de-questoes/sessao") &&
-    !pathname.startsWith("/revisao-turbo/sessao");
   const mainClassName = hideNavigationChrome
     ? "min-h-screen"
     : isDesktopNavigation
       ? "max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8"
       : showMobileTopBar
-        ? showMobileBottomTabs
-          ? "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+5.25rem)]"
-          : "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]"
-        : showMobileBottomTabs
-          ? "max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+5.25rem)]"
-          : "max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]";
+        ? "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]"
+        : "max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]";
 
   useEffect(() => {
     if (pathname === INITIAL_GOAL_SETUP_ROUTE) {
@@ -277,7 +268,6 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
-      <BottomTabBar />
       <Toast />
       <BuildVersionBadge />
     </>
