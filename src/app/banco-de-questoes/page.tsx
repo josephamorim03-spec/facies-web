@@ -453,7 +453,8 @@ function BancoDeQuestoesContent() {
         institution: institution.trim() || undefined,
         board_codes: boardCodes.length > 0 ? boardCodes : undefined,
         years: selectedYears.length > 0 ? selectedYears : undefined,
-        limit: 200,
+        include_empty: true,
+        limit: 300,
       });
       setTopics(found);
     } catch {

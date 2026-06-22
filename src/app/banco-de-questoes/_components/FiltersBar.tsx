@@ -126,7 +126,12 @@ function buildTopicTree(topics: QuestionBankTopic[]): TopicTreeNode[] {
     else roots.push(node);
   }
   const sortNodes = (nodes: TopicTreeNode[]) => {
-    nodes.sort((a, b) => topicPathLabel(a).localeCompare(topicPathLabel(b), "pt-BR"));
+    nodes.sort((a, b) => {
+      const orderA = typeof a.display_order === "number" ? a.display_order : Number.MAX_SAFE_INTEGER;
+      const orderB = typeof b.display_order === "number" ? b.display_order : Number.MAX_SAFE_INTEGER;
+      if (orderA !== orderB) return orderA - orderB;
+      return topicPathLabel(a).localeCompare(topicPathLabel(b), "pt-BR");
+    });
     for (const node of nodes) sortNodes(node.children);
   };
   sortNodes(roots);
@@ -152,12 +157,14 @@ function TopicTreeItem({
   const childCount = node.children.length;
   const expanded = childCount > 0 && expandedIds.has(node.knowledge_node_id);
   const indent = Math.min(node.treeDepth, 7) * 14;
+  const selectable = node.question_count > 0;
 
   return (
     <div style={{ paddingLeft: `${indent}px` }}>
       <div className={cx(
         "flex items-start gap-2 rounded-xl border p-2.5 transition-colors",
-        checked ? "border-primary bg-[var(--amber-tint)]" : "border-transparent hover:border-edge hover:bg-surface",
+        checked && selectable ? "border-primary bg-[var(--amber-tint)]" : "border-transparent",
+        selectable ? "hover:border-edge hover:bg-surface" : "opacity-65",
       )}>
         {childCount > 0 ? (
           <button
@@ -172,11 +179,14 @@ function TopicTreeItem({
         ) : (
           <span className="mt-0.5 h-6 w-6 shrink-0" aria-hidden="true" />
         )}
-        <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
+        <label className={cx("flex min-w-0 flex-1 items-start gap-3", selectable ? "cursor-pointer" : "cursor-not-allowed")}>
           <input
             type="checkbox"
             checked={checked}
-            onChange={() => onToggle(node)}
+            disabled={!selectable}
+            onChange={() => {
+              if (selectable) onToggle(node);
+            }}
             className="mt-1 h-4 w-4 shrink-0 accent-primary"
           />
           <span className="min-w-0 flex-1">
@@ -184,7 +194,7 @@ function TopicTreeItem({
               {node.question_count} questões
               {childCount > 0 ? ` · ${childCount} subassunto${childCount > 1 ? "s" : ""}` : ""}
             </span>
-            <span className="mt-0.5 block text-sm font-semibold leading-snug text-ink">{node.node_name}</span>
+            <span className={cx("mt-0.5 block text-sm font-semibold leading-snug", selectable ? "text-ink" : "text-muted")}>{node.node_name}</span>
             {topicPathLabel(node) !== node.node_name && (
               <span className="mt-0.5 block truncate text-xs text-muted">{topicPathLabel(node)}</span>
             )}
@@ -358,22 +368,30 @@ export default function FiltersBar(props: FiltersBarProps) {
                 />
                 {suggestionsFocused && search.trim() && (
                   <ul className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-y-auto rounded-xl border border-edge bg-surface shadow-[var(--soft-shadow)]">
-                    {flatTopics.slice(0, 8).map((topic) => (
-                      <li key={topic.knowledge_node_id}>
-                        <button
-                          type="button"
-                          onMouseDown={() => {
-                            onToggleTopic(topic);
-                            onSearchChange("");
-                            setSuggestionsFocused(false);
-                          }}
-                          className="flex w-full flex-col px-3 py-2 text-left hover:bg-surfaceMuted"
-                        >
-                          <span className="text-sm font-semibold">{topic.node_name}</span>
-                          <span className="text-xs text-muted">{topicPathLabel(topic)} · {topic.question_count} questões</span>
-                        </button>
-                      </li>
-                    ))}
+                    {flatTopics.slice(0, 8).map((topic) => {
+                      const selectable = topic.question_count > 0;
+                      return (
+                        <li key={topic.knowledge_node_id}>
+                          <button
+                            type="button"
+                            disabled={!selectable}
+                            onMouseDown={() => {
+                              if (!selectable) return;
+                              onToggleTopic(topic);
+                              onSearchChange("");
+                              setSuggestionsFocused(false);
+                            }}
+                            className={cx(
+                              "flex w-full flex-col px-3 py-2 text-left",
+                              selectable ? "hover:bg-surfaceMuted" : "cursor-not-allowed opacity-65",
+                            )}
+                          >
+                            <span className="text-sm font-semibold">{topic.node_name}</span>
+                            <span className="text-xs text-muted">{topicPathLabel(topic)} · {topic.question_count} questões</span>
+                          </button>
+                        </li>
+                      );
+                    })}
                     {flatTopics.length === 0 && (
                       <li className="px-3 py-2 text-sm text-muted">Nenhum resultado para &ldquo;{search}&rdquo;</li>
                     )}
