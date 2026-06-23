@@ -48,12 +48,12 @@ function IconGO({ className, style }: IconProps) {
       {/* Uterus body */}
       <path d="M12 21 L12 17" />
       <path d="M9.5 17 C9.5 14 8 11 9 8.5 C10 6 11 5 12 5 C13 5 14 6 15 8.5 C16 11 14.5 14 14.5 17 Z" />
-      {/* Left fallopian tube → ovary */}
+      {/* Left fallopian tube → ovary (solid) */}
       <path d="M9 9 C7 7.5 5.5 8 4.5 9.5" />
-      <ellipse cx="3.5" cy="10.5" rx="1.5" ry="1.2" />
-      {/* Right fallopian tube → ovary */}
+      <ellipse cx="3.5" cy="10.5" rx="1.4" ry="1.1" fill="currentColor" stroke="none" />
+      {/* Right fallopian tube → ovary (solid) */}
       <path d="M15 9 C17 7.5 18.5 8 19.5 9.5" />
-      <ellipse cx="20.5" cy="10.5" rx="1.5" ry="1.2" />
+      <ellipse cx="20.5" cy="10.5" rx="1.4" ry="1.1" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -67,11 +67,8 @@ function IconCG({ className, style }: IconProps) {
       <path d="M9 15 L17.5 6.5" />
       {/* Blade tip — sharp triangle */}
       <path d="M17.5 6.5 L20 4 L17 5.5 Z" fill="currentColor" stroke="none" />
-      {/* Cutting edge detail */}
-      <path d="M9 15 C11 13 14 10 17.5 6.5" strokeWidth="0.8" />
-      {/* Handle grip lines */}
-      <path d="M6.5 17.5 L7.2 16.8" strokeWidth="1.2" />
-      <path d="M7.8 16.2 L8.5 15.5" strokeWidth="1.2" />
+      {/* Handle grip mark — single discreet notch */}
+      <path d="M6.6 17.4 L7.6 16.4" strokeWidth="1.2" />
     </svg>
   );
 }
@@ -109,11 +106,8 @@ function IconCM({ className, style }: IconProps) {
       <path d="M6 7 C6 10 9 12 12 12 C15 12 18 10 18 7" />
       {/* Tube down and curve */}
       <path d="M12 12 C12 15 14 16 16 16 C18 16 19.5 17.5 19.5 19.5" />
-      {/* Chest piece (diaphragm) */}
-      <circle cx="19.5" cy="19.5" r="2.5" />
-      {/* Center cross */}
-      <line x1="19.5" y1="18" x2="19.5" y2="21" strokeWidth="1" />
-      <line x1="18" y1="19.5" x2="21" y2="19.5" strokeWidth="1" />
+      {/* Chest piece (diaphragm) — solid disc, no hollow center */}
+      <circle cx="19.5" cy="19.5" r="2.7" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -123,9 +117,12 @@ function IconMP({ className, style }: IconProps) {
     <svg viewBox={VIEWBOX} className={className} style={style} aria-hidden="true" {...STROKE_PROPS}>
       {/* Shield outline */}
       <path d="M12 3 L4 7 L4 13 C4 17.5 7.5 21 12 22.5 C16.5 21 20 17.5 20 13 L20 7 Z" />
-      {/* Medical cross inside */}
-      <line x1="12" y1="9" x2="12" y2="17" strokeWidth="2" />
-      <line x1="8.5" y1="13" x2="15.5" y2="13" strokeWidth="2" />
+      {/* Medical cross inside — solid plus */}
+      <path
+        d="M10.9 9.8 H13.1 V11.9 H15.2 V14.1 H13.1 V16.2 H10.9 V14.1 H8.8 V11.9 H10.9 Z"
+        fill="currentColor"
+        stroke="none"
+      />
     </svg>
   );
 }
