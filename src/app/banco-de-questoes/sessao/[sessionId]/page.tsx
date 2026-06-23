@@ -242,6 +242,7 @@ export default function SessionPage() {
   const quickNoteTheme = primaryNode?.node_name ?? session.theme ?? "Questão do banco";
   const quickNoteOutcome: OperationalQuestionOutcome | null =
     currentItem.is_correct === null ? null : currentItem.is_correct ? "correct" : "incorrect";
+  const sessionKindLabel = session.study_kind === "full_exam" ? "Prova" : "Simulado";
   const examLabel = [session.theme, session.area].filter(Boolean).join(" · ") || "Sessão";
 
   function navigateTo(pos: number) {
@@ -359,6 +360,7 @@ export default function SessionPage() {
         sessionStatus={session.status}
         sessionStartedAt={session.created_at}
         examLabel={examLabel}
+        sessionKindLabel={sessionKindLabel}
         answeredCount={session.answered_count}
         doubtfulCount={session.doubtful_count}
         unansweredCount={session.unanswered_count}
@@ -379,6 +381,7 @@ export default function SessionPage() {
           />
           <ExamMap
             items={session.items}
+            sessionKindLabel={sessionKindLabel}
             currentPosition={currentPosition}
             onNavigateTo={navigateTo}
             onClose={() => setShowMap(false)}

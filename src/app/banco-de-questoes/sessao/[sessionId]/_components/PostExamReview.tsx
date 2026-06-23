@@ -102,6 +102,12 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
   const markedItems = items.filter((i) => i.doubtful);
   const unansweredItems = items.filter((i) => !i.answered);
   const accuracy = session.total_questions > 0 ? correctItems.length / session.total_questions : 0;
+  const isFullExam = session.study_kind === "full_exam";
+  const resultLabel = isFullExam
+    ? "Resultado da prova"
+    : session.resolution_mode === "simulation"
+      ? "Revisão pós-simulado"
+      : "Resultado da sessão";
   const primaryWeakNode = diagnosis?.nodes
     .filter((node) => node.accuracy < 0.6 && (node.correct + node.wrong) >= 1)
     .sort((a, b) => a.accuracy - b.accuracy)[0] ?? null;
@@ -142,7 +148,7 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
 
         <header>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-            {session.resolution_mode === "simulation" ? "Revisão pós-prova" : "Resultado da sessão"}
+            {resultLabel}
           </p>
           <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight">
             {session.theme ?? "Sessão concluída"}

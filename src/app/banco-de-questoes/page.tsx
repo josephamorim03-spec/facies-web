@@ -18,6 +18,8 @@ import {
   type QuestionBankResolutionMode,
   type QuestionBankSessionCreatePayload,
   type QuestionBankTopic,
+  type FullExamType,
+  type StudyKind,
 } from "@/lib/api";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useAuthToken } from "@/lib/useAuthToken";
@@ -326,6 +328,10 @@ function BancoDeQuestoesContent() {
   const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("all");
   const [limit, setLimit] = useState(() => Math.max(1, Math.min(50, initialContext.expectedQuestions ?? 10)));
   const [resolutionMode, setResolutionMode] = useState<QuestionBankResolutionMode>("simulation");
+  const [studyKind, setStudyKind] = useState<StudyKind>("topic");
+  const [fullExamName, setFullExamName] = useState("");
+  const [fullExamYear, setFullExamYear] = useState(() => String(new Date().getFullYear()));
+  const [fullExamType, setFullExamType] = useState<FullExamType>("acesso_direto");
 
   // Topic state
   const [selectedTopics, setSelectedTopics] = useState<QuestionBankTopic[]>([]);
@@ -346,6 +352,13 @@ function BancoDeQuestoesContent() {
   // Derived
   const maxSelectable = Math.max(1, Math.min(50, availability?.max_selectable ?? 50));
   const clampedLimit = Math.max(1, Math.min(limit, maxSelectable));
+  const reviewTrailDefault = Boolean(entryContext.reviewTaskId) || selectedTopics.length === 1;
+  const [generateReviewTrail, setGenerateReviewTrail] = useState(reviewTrailDefault);
+  useEffect(() => {
+    setGenerateReviewTrail(reviewTrailDefault);
+  }, [reviewTrailDefault]);
+  const fullExamYearNumber = Number(fullExamYear);
+  const fullExamReady = fullExamName.trim().length > 0 && Number.isInteger(fullExamYearNumber) && fullExamYearNumber > 0;
 
   const selectedTopicSummary = selectedTopics.length > 0
     ? selectedTopics.map((t) => t.node_name).join(", ")
@@ -366,7 +379,7 @@ function BancoDeQuestoesContent() {
       ? "near_miss"
       : answerStatus === "wrong" || answerStatus === "needs_review"
         ? "weakness"
-        : resolutionMode === "simulation"
+        : studyKind === "full_exam" || resolutionMode === "simulation"
           ? "simulation"
           : "learning";
 
@@ -377,6 +390,7 @@ function BancoDeQuestoesContent() {
     setArea(context.area ?? "");
     setSearch(context.theme ?? "");
     setLimit(Math.max(1, Math.min(50, context.expectedQuestions ?? 10)));
+    setStudyKind("topic");
     setSelectedTopics([]);
     setQuestions([]);
   }, [routeSearchKey]);
@@ -534,16 +548,30 @@ function BancoDeQuestoesContent() {
 
   async function startSession() {
     if (!tokenResolved || clampedLimit <= 0) return;
+    if (studyKind === "full_exam" && !fullExamReady) {
+      setError("Informe nome, ano e tipo da prova para iniciar.");
+      return;
+    }
+    const payload: QuestionBankSessionCreatePayload = {
+      mode: studyKind === "full_exam" ? "by_exam" : "adaptive",
+      resolution_mode: studyKind === "full_exam" ? "simulation" : resolutionMode,
+      study_kind: studyKind,
+      ...filterParams({ limit: clampedLimit }),
+      performed_at: localNoonISO(entryContext.dateISO),
+      review_task_id: studyKind === "topic" ? entryContext.reviewTaskId ?? undefined : undefined,
+    };
+    if (studyKind === "full_exam") {
+      payload.full_exam_name = fullExamName.trim();
+      payload.full_exam_year = fullExamYearNumber;
+      payload.full_exam_type = fullExamType;
+      payload.generate_review_trail = false;
+    } else if (!entryContext.reviewTaskId) {
+      payload.generate_review_trail = generateReviewTrail;
+    }
     setBusy(true);
     setError(null);
     try {
-      const created = await createQuestionBankSession(token, {
-        mode: "adaptive",
-        resolution_mode: resolutionMode,
-        ...filterParams({ limit: clampedLimit }),
-        performed_at: localNoonISO(entryContext.dateISO),
-        review_task_id: entryContext.reviewTaskId ?? undefined,
-      });
+      const created = await createQuestionBankSession(token, payload);
       router.push(`/banco-de-questoes/sessao/${created.session_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível criar a sessão.");
@@ -799,6 +827,7 @@ function BancoDeQuestoesContent() {
             active={activeIntent === "learning"}
             Icon={IconBookOpen}
             onClick={() => {
+              setStudyKind("topic");
               setResolutionMode("training");
               handleAnswerStatusChange("unanswered");
             }}
@@ -810,6 +839,7 @@ function BancoDeQuestoesContent() {
             active={activeIntent === "simulation"}
             Icon={IconTrophy}
             onClick={() => {
+              setStudyKind("topic");
               setResolutionMode("simulation");
               handleAnswerStatusChange("unanswered");
             }}
@@ -821,6 +851,7 @@ function BancoDeQuestoesContent() {
             active={activeIntent === "weakness"}
             Icon={IconTarget}
             onClick={() => {
+              setStudyKind("topic");
               setResolutionMode("training");
               handleAnswerStatusChange("needs_review");
             }}
@@ -832,6 +863,7 @@ function BancoDeQuestoesContent() {
             active={activeIntent === "near_miss"}
             Icon={IconTarget}
             onClick={() => {
+              setStudyKind("topic");
               setResolutionMode("training");
               handleAnswerStatusChange("near_miss");
             }}
@@ -881,6 +913,17 @@ function BancoDeQuestoesContent() {
               onAnswerStatusChange={handleAnswerStatusChange}
               resolutionMode={resolutionMode}
               onResolutionModeChange={setResolutionMode}
+              studyKind={studyKind}
+              onStudyKindChange={setStudyKind}
+              fullExamName={fullExamName}
+              onFullExamNameChange={setFullExamName}
+              fullExamYear={fullExamYear}
+              onFullExamYearChange={setFullExamYear}
+              fullExamType={fullExamType}
+              onFullExamTypeChange={setFullExamType}
+              reviewTrailEnabled={generateReviewTrail}
+              onReviewTrailEnabledChange={setGenerateReviewTrail}
+              reviewTrailLocked={Boolean(entryContext.reviewTaskId)}
               limit={limit}
               clampedLimit={clampedLimit}
               maxSelectable={maxSelectable}
@@ -894,6 +937,8 @@ function BancoDeQuestoesContent() {
             busy={busy}
             clampedLimit={clampedLimit}
             resolutionMode={resolutionMode}
+            studyKind={studyKind}
+            canStartSession={studyKind !== "full_exam" || fullExamReady}
             onRefreshAvailability={() => void refreshAvailability()}
             onPreviewQuestions={() => void previewQuestions()}
             onStartSession={() => void startSession()}
@@ -904,6 +949,7 @@ function BancoDeQuestoesContent() {
             questions={questions}
             selectedTopicSummary={selectedTopicSummary}
             resolutionMode={resolutionMode}
+            studyKind={studyKind}
             busy={busy}
             availability={availability}
             onStartSession={() => void startSession()}

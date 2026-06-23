@@ -135,8 +135,10 @@ export default function CronogramaPage() {
       }),
     [doneTasks, studies, tasks, todayISO, weeklyGoal],
   );
+  // "Para revisar hoje" = só o que vence hoje. As atrasadas têm o banner próprio
+  // (e aparecem nas suas datas passadas no calendário); não devem reaparecer aqui.
   const todayReviewTasks = useMemo(
-    () => tasks.filter((task) => task.status !== "done" && (task.is_overdue || task.due_date <= todayISO)),
+    () => tasks.filter((task) => task.status !== "done" && task.due_date === todayISO),
     [tasks, todayISO],
   );
   const todayStudies = studiesByDate[todayISO] ?? [];
@@ -375,18 +377,6 @@ export default function CronogramaPage() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {/* Banner: revisões atrasadas */}
-      {new Date().getHours() >= 20 && tasks.filter((t) => t.is_overdue).length > 0 && (
-        <div className="rounded-xl border border-edge px-3 py-2 flex items-center justify-between gap-2">
-          <span className="text-xs text-muted">
-            {tasks.filter((t) => t.is_overdue).length} tarefa{tasks.filter((t) => t.is_overdue).length > 1 ? "s" : ""} atrasada{tasks.filter((t) => t.is_overdue).length > 1 ? "s" : ""}
-          </span>
-          <Button variant="outline" size="xs" loading={suggesting} onClick={handleAutoReschedule} className="shrink-0">
-            Reagendar atrasadas
-          </Button>
-        </div>
-      )}
-
       <CronogramaStreakCard streak={streak} loading={streakLoading} />
 
       {!loading && (
@@ -421,6 +411,18 @@ export default function CronogramaPage() {
           }}
         />
       </div>
+
+      {/* Revisões atrasadas — discreto, embaixo do calendário */}
+      {new Date().getHours() >= 20 && tasks.filter((t) => t.is_overdue).length > 0 && (
+        <div className="flex items-center justify-center gap-2 text-xs text-muted">
+          <span>
+            {tasks.filter((t) => t.is_overdue).length} tarefa{tasks.filter((t) => t.is_overdue).length > 1 ? "s" : ""} atrasada{tasks.filter((t) => t.is_overdue).length > 1 ? "s" : ""}
+          </span>
+          <Button variant="outline" size="xs" loading={suggesting} onClick={handleAutoReschedule} className="shrink-0">
+            Reagendar
+          </Button>
+        </div>
+      )}
 
       {!error && (
         <div className={summaryPositionClass}>

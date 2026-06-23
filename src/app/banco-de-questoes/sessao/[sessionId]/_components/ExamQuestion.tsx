@@ -26,6 +26,7 @@ type ExamQuestionProps = {
   sessionStatus: QuestionBankSessionStatus;
   sessionStartedAt: string;
   examLabel: string;
+  sessionKindLabel: string;
   answeredCount: number;
   doubtfulCount: number;
   unansweredCount: number;
@@ -45,6 +46,7 @@ export default function ExamQuestion({
   sessionStatus,
   sessionStartedAt,
   examLabel,
+  sessionKindLabel,
   answeredCount,
   doubtfulCount,
   unansweredCount,
@@ -138,7 +140,7 @@ export default function ExamQuestion({
                   "font-mono text-sm tabular-nums transition-colors",
                   isCritical ? "font-bold text-danger" : isLate ? "text-warning" : "text-muted",
                 )}
-                aria-label="Tempo de prova"
+                aria-label={`Tempo de ${sessionKindLabel.toLowerCase()}`}
               >
                 {formatDuration(elapsedSeconds)}
               </span>
@@ -156,7 +158,7 @@ export default function ExamQuestion({
                   disabled={busy}
                   className="rounded-xl border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger hover:text-white disabled:opacity-50"
                 >
-                  Finalizar prova
+                  Finalizar {sessionKindLabel.toLowerCase()}
                 </button>
               )}
             </div>

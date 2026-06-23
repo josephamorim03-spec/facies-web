@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { QuestionBankAvailability, QuestionBankResolutionMode } from "@/lib/api";
+import type { QuestionBankAvailability, QuestionBankResolutionMode, StudyKind } from "@/lib/api";
 
 function availabilityText(availability: QuestionBankAvailability | null): string {
   if (!availability) return "Calculando";
@@ -92,6 +92,8 @@ type CreateSessionPanelProps = {
   busy: boolean;
   clampedLimit: number;
   resolutionMode: QuestionBankResolutionMode;
+  studyKind: StudyKind;
+  canStartSession?: boolean;
   onRefreshAvailability: () => void;
   onPreviewQuestions: () => void;
   onStartSession: () => void;
@@ -103,14 +105,17 @@ export default function CreateSessionPanel({
   busy,
   clampedLimit,
   resolutionMode,
+  studyKind,
+  canStartSession = true,
   onRefreshAvailability,
   onPreviewQuestions,
   onStartSession,
 }: CreateSessionPanelProps) {
-  const startLabel = resolutionMode === "training" ? "Iniciar treino" : "Iniciar simulado";
-  const canStart = !busy && !!availability && availability.available_count > 0;
-  const estimatedMinutes = Math.max(10, Math.ceil(clampedLimit * (resolutionMode === "simulation" ? 1.5 : 2)));
+  const startLabel = studyKind === "full_exam" ? "Iniciar prova" : resolutionMode === "training" ? "Iniciar treino" : "Iniciar simulado";
+  const canStart = !busy && canStartSession && !!availability && availability.available_count > 0;
+  const estimatedMinutes = Math.max(10, Math.ceil(clampedLimit * (resolutionMode === "simulation" || studyKind === "full_exam" ? 1.5 : 2)));
   const modeLabel = resolutionMode === "simulation" ? "Correção ao final" : "Correção item a item";
+  const displayModeLabel = studyKind === "full_exam" ? "Registro em Provas" : modeLabel;
   const distribution = availability
     ? `${availability.unanswered_count} novas · ${availability.answered_count} vistas`
     : "Aguardando filtros";
@@ -143,7 +148,7 @@ export default function CreateSessionPanel({
           icon={<IconClock className="h-5 w-5" />}
           label="Tempo estimado"
           value={`${estimatedMinutes} min`}
-          detail={modeLabel}
+          detail={displayModeLabel}
         />
         <SummaryRow
           icon={<IconChart className="h-5 w-5" />}

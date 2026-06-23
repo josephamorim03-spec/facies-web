@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import type { QuestionBankAnswerStatus, QuestionBankResolutionMode, QuestionBankTopic } from "@/lib/api";
+import type {
+  FullExamType,
+  QuestionBankAnswerStatus,
+  QuestionBankResolutionMode,
+  QuestionBankTopic,
+  StudyKind,
+} from "@/lib/api";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -57,9 +63,10 @@ function deriveRealizacaoLabel(s: RealizacaoState): string {
   return parts.join(" + ");
 }
 
-const MODO_OPTIONS: { value: QuestionBankResolutionMode; label: string; help: string }[] = [
-  { value: "simulation", label: "Simulado", help: "Correção só no final." },
+const MODO_OPTIONS: { value: QuestionBankResolutionMode | "full_exam"; label: string; help: string }[] = [
   { value: "training", label: "Treino", help: "Correção manual item a item." },
+  { value: "simulation", label: "Simulado", help: "Correção só no final." },
+  { value: "full_exam", label: "Prova", help: "Fluxo de simulado salvo em Provas." },
 ];
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -89,6 +96,17 @@ export type FiltersBarProps = {
   onAnswerStatusChange: (v: QuestionBankAnswerStatus) => void;
   resolutionMode: QuestionBankResolutionMode;
   onResolutionModeChange: (v: QuestionBankResolutionMode) => void;
+  studyKind: StudyKind;
+  onStudyKindChange: (v: StudyKind) => void;
+  fullExamName: string;
+  onFullExamNameChange: (v: string) => void;
+  fullExamYear: string;
+  onFullExamYearChange: (v: string) => void;
+  fullExamType: FullExamType;
+  onFullExamTypeChange: (v: FullExamType) => void;
+  reviewTrailEnabled: boolean;
+  onReviewTrailEnabledChange: (v: boolean) => void;
+  reviewTrailLocked?: boolean;
   limit: number;
   clampedLimit: number;
   maxSelectable: number;
@@ -190,11 +208,7 @@ function TopicTreeItem({
             className="mt-1 h-4 w-4 shrink-0 accent-primary"
           />
           <span className="min-w-0 flex-1">
-            <span className="block text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-              {node.question_count} questões
-              {childCount > 0 ? ` · ${childCount} subassunto${childCount > 1 ? "s" : ""}` : ""}
-            </span>
-            <span className={cx("mt-0.5 block text-sm font-semibold leading-snug", selectable ? "text-ink" : "text-muted")}>{node.node_name}</span>
+            <span className={cx("block text-sm font-semibold leading-snug", selectable ? "text-ink" : "text-muted")}>{node.node_name}</span>
             {topicPathLabel(node) !== node.node_name && (
               <span className="mt-0.5 block truncate text-xs text-muted">{topicPathLabel(node)}</span>
             )}
@@ -250,7 +264,10 @@ export default function FiltersBar(props: FiltersBarProps) {
     boardCodes, boardInput, onBoardInputChange,
     onAddBoardCode, onRemoveBoardCode, institution, onInstitutionChange,
     selectedYears, onSelectedYearsChange, answerStatus, onAnswerStatusChange,
-    resolutionMode, onResolutionModeChange, limit, clampedLimit, maxSelectable, onLimitChange,
+    resolutionMode, onResolutionModeChange, studyKind, onStudyKindChange,
+    fullExamName, onFullExamNameChange, fullExamYear, onFullExamYearChange,
+    fullExamType, onFullExamTypeChange, reviewTrailEnabled, onReviewTrailEnabledChange,
+    reviewTrailLocked = false, limit, clampedLimit, maxSelectable, onLimitChange,
   } = props;
 
   const [activeTab, setActiveTab] = useState<FilterTab | null>("assunto");
@@ -313,7 +330,7 @@ export default function FiltersBar(props: FiltersBarProps) {
     {
       id: "modo",
       label: "Modo",
-      value: resolutionMode === "simulation" ? "Simulado" : "Treino",
+      value: studyKind === "full_exam" ? "Prova" : resolutionMode === "simulation" ? "Simulado" : "Treino",
       indicator: false,
     },
     {
@@ -576,21 +593,87 @@ export default function FiltersBar(props: FiltersBarProps) {
           )}
 
           {activeTab === "modo" && (
-            <div className="grid gap-3 md:grid-cols-2">
-              {MODO_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => onResolutionModeChange(option.value)}
-                  className={cx(
-                    "rounded-2xl border p-4 text-left transition-colors",
-                    resolutionMode === option.value ? "border-primary bg-surfaceMuted" : "border-edge bg-surface hover:border-primary",
-                  )}
-                >
-                  <span className="block text-sm font-semibold text-ink">{option.label}</span>
-                  <span className="mt-1 block text-xs text-muted">{option.help}</span>
-                </button>
-              ))}
+            <div className="space-y-4">
+              <div className="grid gap-3 md:grid-cols-3">
+                {MODO_OPTIONS.map((option) => {
+                  const active = option.value === "full_exam"
+                    ? studyKind === "full_exam"
+                    : studyKind === "topic" && resolutionMode === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        if (option.value === "full_exam") {
+                          onStudyKindChange("full_exam");
+                          onResolutionModeChange("simulation");
+                        } else {
+                          onStudyKindChange("topic");
+                          onResolutionModeChange(option.value);
+                        }
+                      }}
+                      className={cx(
+                        "rounded-2xl border p-4 text-left transition-colors",
+                        active ? "border-primary bg-surfaceMuted" : "border-edge bg-surface hover:border-primary",
+                      )}
+                    >
+                      <span className="block text-sm font-semibold text-ink">{option.label}</span>
+                      <span className="mt-1 block text-xs text-muted">{option.help}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {studyKind === "full_exam" ? (
+                <div className="grid gap-3 rounded-xl border border-edge bg-surface p-3 md:grid-cols-[1fr_7rem_11rem]">
+                  <label className="space-y-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Nome da prova</span>
+                    <input
+                      value={fullExamName}
+                      onChange={(e) => onFullExamNameChange(e.target.value)}
+                      placeholder="ENARE, USP, UNIFESP..."
+                      className="w-full"
+                    />
+                  </label>
+                  <label className="space-y-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Ano</span>
+                    <input
+                      type="number"
+                      min={1900}
+                      max={2100}
+                      value={fullExamYear}
+                      onChange={(e) => onFullExamYearChange(e.target.value)}
+                      className="w-full"
+                    />
+                  </label>
+                  <label className="space-y-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Tipo</span>
+                    <select
+                      value={fullExamType}
+                      onChange={(e) => onFullExamTypeChange(e.target.value as FullExamType)}
+                      className="w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm text-ink"
+                    >
+                      <option value="acesso_direto">Acesso direto</option>
+                      <option value="r_plus">R+</option>
+                    </select>
+                  </label>
+                </div>
+              ) : (
+                !reviewTrailLocked && (
+                  <label className="flex items-start gap-3 rounded-xl border border-edge bg-surface p-3">
+                    <input
+                      type="checkbox"
+                      checked={reviewTrailEnabled}
+                      onChange={(e) => onReviewTrailEnabledChange(e.target.checked)}
+                      className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                    />
+                    <span>
+                      <span className="block text-sm font-semibold text-ink">Gerar trilha de revisão</span>
+                      <span className="mt-0.5 block text-xs text-muted">Ligado por padrão em foco único; desligado em listas mistas.</span>
+                    </span>
+                  </label>
+                )
+              )}
             </div>
           )}
 

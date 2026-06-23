@@ -1,5 +1,6 @@
 import { api, authHeader } from "../shared/http";
 import type { FinalizationResult, ReviewTask } from "./study-import";
+import type { FullExamType, StudyKind } from "../types";
 
 export type QuestionBankOption = "A" | "B" | "C" | "D" | "E";
 export type QuestionBankMode = "adaptive" | "by_topic" | "by_exam";
@@ -174,6 +175,11 @@ export type QuestionBankSession = {
   status: QuestionBankSessionStatus;
   mode: QuestionBankMode;
   resolution_mode: QuestionBankResolutionMode;
+  study_kind: StudyKind;
+  full_exam_name: string | null;
+  full_exam_year: number | null;
+  full_exam_type: FullExamType | null;
+  review_trail_enabled: boolean;
   primary_knowledge_node_id: string | null;
   area: string | null;
   theme: string | null;
@@ -248,6 +254,11 @@ export type QuestionBankFinalizeResult = FinalizationResult & {
 export type QuestionBankSessionCreatePayload = {
   mode?: QuestionBankMode;
   resolution_mode?: QuestionBankResolutionMode;
+  study_kind?: StudyKind;
+  full_exam_name?: string | null;
+  full_exam_year?: number | null;
+  full_exam_type?: FullExamType | null;
+  generate_review_trail?: boolean | null;
   question_ids?: string[];
   knowledge_node_ids?: string[];
   area?: string;

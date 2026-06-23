@@ -1,6 +1,6 @@
 "use client";
 
-import type { QuestionBankAvailability, QuestionBankQuestion, QuestionBankResolutionMode } from "@/lib/api";
+import type { QuestionBankAvailability, QuestionBankQuestion, QuestionBankResolutionMode, StudyKind } from "@/lib/api";
 
 function sourceLabel(source: Record<string, unknown>): string {
   const institution = String(source?.institution ?? "").trim();
@@ -19,6 +19,7 @@ type QuestionListProps = {
   questions: QuestionBankQuestion[];
   selectedTopicSummary: string;
   resolutionMode: QuestionBankResolutionMode;
+  studyKind: StudyKind;
   busy: boolean;
   availability: QuestionBankAvailability | null;
   onStartSession: () => void;
@@ -28,13 +29,14 @@ export default function QuestionList({
   questions,
   selectedTopicSummary,
   resolutionMode,
+  studyKind,
   busy,
   availability,
   onStartSession,
 }: QuestionListProps) {
   if (questions.length === 0) return null;
 
-  const startLabel = resolutionMode === "training" ? "Iniciar treino" : "Iniciar simulado";
+  const startLabel = studyKind === "full_exam" ? "Iniciar prova" : resolutionMode === "training" ? "Iniciar treino" : "Iniciar simulado";
   const canStart = !busy && !!availability && availability.available_count > 0;
 
   return (

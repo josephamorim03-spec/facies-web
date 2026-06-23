@@ -8,16 +8,19 @@ function cx(...classes: Array<string | false | null | undefined>) {
 
 type ExamMapProps = {
   items: QuestionBankSessionItem[];
+  sessionKindLabel: string;
   currentPosition: number;
   onNavigateTo: (position: number) => void;
   onClose: () => void;
 };
 
-export default function ExamMap({ items, currentPosition, onNavigateTo, onClose }: ExamMapProps) {
+export default function ExamMap({ items, sessionKindLabel, currentPosition, onNavigateTo, onClose }: ExamMapProps) {
   return (
     <div className="fixed inset-y-0 right-0 z-30 flex w-72 flex-col border-l border-edge bg-surface shadow-[var(--soft-shadow)] md:w-64">
       <div className="flex items-center justify-between border-b border-edge px-4 py-3">
-        <h2 className="text-sm font-semibold text-ink">Mapa da prova</h2>
+        <h2 className="text-sm font-semibold text-ink">
+          {sessionKindLabel === "Prova" ? "Mapa da prova" : "Mapa do simulado"}
+        </h2>
         <button
           type="button"
           onClick={onClose}
