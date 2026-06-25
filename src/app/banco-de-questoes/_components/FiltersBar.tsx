@@ -275,21 +275,18 @@ export default function FiltersBar(props: FiltersBarProps) {
   const [realizacaoState, setRealizacaoState] = useState<RealizacaoState>(() => initRealizacaoState(answerStatus));
   // Sync local UI state when parent resets answerStatus (e.g. clicking an intent card)
   useEffect(() => { setRealizacaoState(initRealizacaoState(answerStatus)); }, [answerStatus]);
-  // Tracks IDs the user has manually collapsed
-  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => new Set());
+  // Árvore começa recolhida (como o Estratégia): rastreia o que o usuário expandiu.
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
 
-  // All topic IDs are expanded by default; subtract user-collapsed ones
+  // Recolhida por padrão; ao buscar, revela tudo para mostrar as correspondências.
+  const hasSearch = search.trim().length > 0;
   const expandedTopicIds = useMemo(
-    () => {
-      const all = new Set(topics.map((t) => t.knowledge_node_id));
-      for (const id of collapsedIds) all.delete(id);
-      return all;
-    },
-    [topics, collapsedIds],
+    () => (hasSearch ? new Set(topics.map((t) => t.knowledge_node_id)) : expandedIds),
+    [topics, expandedIds, hasSearch],
   );
 
   function toggleTopicExpanded(topicId: string) {
-    setCollapsedIds((prev) => {
+    setExpandedIds((prev) => {
       const next = new Set(prev);
       if (next.has(topicId)) next.delete(topicId); else next.add(topicId);
       return next;
@@ -305,7 +302,7 @@ export default function FiltersBar(props: FiltersBarProps) {
       id: "assunto",
       label: "Especialidade / Assunto",
       value: selectedTopics.length > 0
-        ? `${selectedTopics.length} tema${selectedTopics.length > 1 ? "s" : ""}`
+        ? `${selectedTopics.length} assunto${selectedTopics.length > 1 ? "s" : ""}`
         : (search.trim() || AREA_SHORT_LABELS[area] || "Todas"),
       indicator: selectedTopics.length > 0 || !!area || !!search.trim(),
     },
@@ -380,7 +377,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                   onChange={(e) => onSearchChange(e.target.value)}
                   onFocus={() => setSuggestionsFocused(true)}
                   onBlur={() => setTimeout(() => setSuggestionsFocused(false), 150)}
-                  placeholder="Buscar assunto, tema ou microcompetência"
+                  placeholder="Buscar especialidade, macrotema ou subtema"
                   className="w-full"
                 />
                 {suggestionsFocused && search.trim() && (

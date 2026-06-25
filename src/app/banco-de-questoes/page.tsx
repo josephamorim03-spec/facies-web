@@ -468,7 +468,7 @@ function BancoDeQuestoesContent() {
         board_codes: boardCodes.length > 0 ? boardCodes : undefined,
         years: selectedYears.length > 0 ? selectedYears : undefined,
         include_empty: true,
-        limit: 300,
+        limit: 1000,
       });
       setTopics(found);
     } catch {

@@ -200,6 +200,10 @@ test("question bank applies filters, calendar review context, and gated correcti
   await expect(page.locator("main aside")).toHaveCount(0);
   await expect(page.getByText(/12 .*dispon/i)).toBeVisible();
   await expect(page.getByText("Obstetricia").first()).toBeVisible();
+  // A árvore começa recolhida (como o Estratégia): o subtema só aparece após
+  // expandir o macrotema pai.
+  await expect(page.getByText("Placenta previa", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Expandir Obstetricia" }).click();
   await expect(page.getByText("Placenta previa", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: /Quantidade/ }).click();
