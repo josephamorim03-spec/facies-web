@@ -23,7 +23,7 @@ import {
 } from "@/lib/api";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useAuthToken } from "@/lib/useAuthToken";
-import { Alert } from "@/components/ui/Alert";
+import { useToast } from "@/lib/useToast";
 import FiltersBar from "./_components/FiltersBar";
 import QuestionList from "./_components/QuestionList";
 import CreateSessionPanel from "./_components/CreateSessionPanel";
@@ -177,7 +177,7 @@ function RecommendedTopicsPanel({
           <p className="mt-1 max-w-2xl text-sm text-muted">{intentCopy}</p>
         </div>
         <span className="rounded-full border border-edge bg-surface px-3 py-1 text-xs font-semibold text-muted">
-          peso adaptativo
+          prioridade adaptativa
         </span>
       </div>
 
@@ -204,14 +204,14 @@ function RecommendedTopicsPanel({
                   <p className="mt-0.5 line-clamp-2 text-sm font-semibold leading-snug text-ink">{topic.node_name}</p>
                 </div>
                 <span className={cx("shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold", selected ? "bg-primary text-primaryInk" : "bg-surfaceMuted text-muted")}>
-                  {percent}%
+                  {percent}
                 </span>
               </div>
               <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surfaceMuted">
                 <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
               </div>
               <p className="mt-2 truncate text-xs text-muted">{topicPathLabel(topic)}</p>
-              <p className="mt-1 text-xs font-medium text-ink">{strongestAdaptiveSignal(topic)}</p>
+              <p className="mt-1 text-xs font-medium text-ink">Prioridade: {strongestAdaptiveSignal(topic)}</p>
             </button>
           );
         })}
@@ -311,6 +311,7 @@ function BancoDeQuestoesContent() {
   const router = useRouter();
   const { setActions } = useNavbar();
   const { token, tokenResolved } = useAuthToken();
+  const { showToast } = useToast();
   const routeSearchParams = useSearchParams();
   const routeSearchKey = routeSearchParams.toString();
   const initialContext = useMemo(() => parseEntryContext(new URLSearchParams(routeSearchKey)), [routeSearchKey]);
@@ -347,7 +348,6 @@ function BancoDeQuestoesContent() {
   const [nextActionLoading, setNextActionLoading] = useState(true);
   const [performance, setPerformance] = useState<QuestionBankPerformance | null>(null);
   const [dueTopicTaskCount, setDueTopicTaskCount] = useState(0);
-  const [manualOpen, setManualOpen] = useState(false);
 
   // Derived
   const maxSelectable = Math.max(1, Math.min(50, availability?.max_selectable ?? 50));
@@ -453,11 +453,13 @@ function BancoDeQuestoesContent() {
       if (next.max_selectable > 0 && limit > next.max_selectable) setLimit(next.max_selectable);
     } catch (err) {
       setAvailability(null);
-      setError(err instanceof Error ? err.message : "Não foi possível calcular a disponibilidade.");
+      const message = err instanceof Error ? err.message : "Não foi possível calcular a disponibilidade.";
+      setError(message);
+      showToast(message, "error");
     } finally {
       setLoadingPreview(false);
     }
-  }, [filterParams, limit, token]);
+  }, [filterParams, limit, showToast, token]);
 
   const refreshTopics = useCallback(async () => {
     try {
@@ -540,7 +542,9 @@ function BancoDeQuestoesContent() {
       setQuestions(await browseQuestionBankQuestions(token, filterParams({ limit: clampedLimit })));
     } catch (err) {
       setQuestions([]);
-      setError(err instanceof Error ? err.message : "Não foi possível buscar questões.");
+      const message = err instanceof Error ? err.message : "Não foi possível buscar questões.";
+      setError(message);
+      showToast(message, "error");
     } finally {
       setBusy(false);
     }
@@ -549,7 +553,9 @@ function BancoDeQuestoesContent() {
   async function startSession() {
     if (!tokenResolved || clampedLimit <= 0) return;
     if (studyKind === "full_exam" && !fullExamReady) {
-      setError("Informe nome, ano e tipo da prova para iniciar.");
+      const message = "Informe nome, ano e tipo da prova para iniciar.";
+      setError(message);
+      showToast(message, "error");
       return;
     }
     const payload: QuestionBankSessionCreatePayload = {
@@ -574,7 +580,9 @@ function BancoDeQuestoesContent() {
       const created = await createQuestionBankSession(token, payload);
       router.push(`/banco-de-questoes/sessao/${created.session_id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível criar a sessão.");
+      const message = err instanceof Error ? err.message : "Não foi possível criar a sessão.";
+      setError(message);
+      showToast(message, "error");
     } finally {
       setBusy(false);
     }
@@ -633,7 +641,9 @@ function BancoDeQuestoesContent() {
       const created = await createQuestionBankSession(token, payload);
       router.push(`/banco-de-questoes/sessao/${created.session_id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível iniciar a revisão.");
+      const message = err instanceof Error ? err.message : "Não foi possível iniciar a revisão.";
+      setError(message);
+      showToast(message, "error");
     } finally {
       setBusy(false);
     }
@@ -657,7 +667,9 @@ function BancoDeQuestoesContent() {
       });
       router.push(`/banco-de-questoes/sessao/${created.session_id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível iniciar a sessão.");
+      const message = err instanceof Error ? err.message : "Não foi possível iniciar a sessão.";
+      setError(message);
+      showToast(message, "error");
     } finally {
       setBusy(false);
     }
@@ -667,15 +679,18 @@ function BancoDeQuestoesContent() {
 
   const hasDueTopicTasks = dueTopicTaskCount > 0;
   const recommended = nextAction ?? FALLBACK_NEXT_ACTION;
+  const canStartConfigured = !busy && (studyKind !== "full_exam" || fullExamReady) && !!availability && availability.available_count > 0;
+  const configuredStartLabel = studyKind === "full_exam" ? "Iniciar prova" : resolutionMode === "training" ? "Iniciar treino" : "Iniciar simulado";
 
   return (
     <main className="min-h-screen bg-paper text-ink">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <header className="flex flex-wrap items-end justify-between gap-4">
+      <div className="mx-auto max-w-7xl space-y-5">
+        <header className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">Questões com raciocínio clínico</h1>
-            <p className="mt-3 max-w-2xl text-base text-muted">
-              Comece pela missão do bloco. O banco usa seus erros, revisões e demanda da prova para sugerir o melhor foco.
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Banco de questões</p>
+            <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight md:text-4xl">Questões com raciocínio clínico</h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted">
+              Monte um bloco com foco, recorte e modo claros. A recomendação continua disponível como atalho.
             </p>
           </div>
           {entryContext.reviewTaskId && (
@@ -687,23 +702,24 @@ function BancoDeQuestoesContent() {
           )}
         </header>
 
-        {/* Sessão recomendada — o único melhor próximo passo, já decidido pelo banco */}
-        <section className="km-card overflow-hidden" aria-label="Sessão recomendada" aria-busy={nextActionLoading}>
-          <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <section className="rounded-xl border border-edge bg-surface px-4 py-3" aria-label="Sessão recomendada" aria-busy={nextActionLoading}>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Recomendado para hoje</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Atalho adaptativo</p>
               {nextActionLoading ? (
-                <div className="mt-2 animate-pulse space-y-2" aria-hidden="true">
-                  <div className="h-7 w-64 max-w-full rounded bg-surfaceMuted" />
-                  <div className="h-4 w-80 max-w-full rounded bg-surfaceMuted" />
+                <div className="mt-2 flex animate-pulse flex-col gap-2" aria-hidden="true">
+                  <div className="h-5 w-56 max-w-full rounded bg-surfaceMuted" />
+                  <div className="h-3 w-80 max-w-full rounded bg-surfaceMuted" />
                 </div>
               ) : (
                 <>
-                  <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight md:text-3xl">{recommended.title}</h2>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <h2 className="font-serif text-lg font-semibold leading-tight">{recommended.title}</h2>
+                    <span className="rounded-full border border-edge px-2 py-0.5 text-xs text-muted">{recommended.meta}</span>
+                  </div>
                   <p className="mt-1 text-sm text-muted">{recommended.subtitle}</p>
-                  <p className="mt-2 text-xs text-muted">{recommended.meta}</p>
                   {recommended.signals.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-2 flex flex-wrap gap-2">
                       {recommended.signals.map((signal) => (
                         <span
                           key={signal.key}
@@ -721,7 +737,7 @@ function BancoDeQuestoesContent() {
               type="button"
               onClick={() => void startRecommendedSession()}
               disabled={busy || nextActionLoading}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-6 py-3 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 disabled:opacity-50"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-edge bg-surface px-4 py-2 text-sm font-semibold text-primary transition-colors hover:border-primary disabled:opacity-50"
             >
               {busy ? "Preparando..." : nextActionLoading ? "Carregando..." : recommended.cta_label}
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
@@ -730,9 +746,9 @@ function BancoDeQuestoesContent() {
             </button>
           </div>
           {hasDueTopicTasks && (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-edge px-5 py-3">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-edge pt-3">
               <p className="text-sm text-muted">
-                Você também tem <strong className="font-semibold text-ink">{dueTopicTaskCount}</strong> {dueTopicTaskCount === 1 ? "tarefa de tópico" : "tarefas de tópico"} no cronograma para hoje.
+                Você tem <strong className="font-semibold text-ink">{dueTopicTaskCount}</strong> {dueTopicTaskCount === 1 ? "tarefa de tópico" : "tarefas de tópico"} no cronograma para hoje.
               </p>
               <button type="button" onClick={() => router.push("/cronograma")} className="text-sm font-semibold text-primary hover:underline">
                 Abrir cronograma
@@ -741,209 +757,141 @@ function BancoDeQuestoesContent() {
           )}
         </section>
 
-        {/* Prontidão por área — atalhos secundários; tocar inicia uma sessão focada */}
-        {performance && performance.areas.length > 0 && (
-          <section aria-label="Sua prontidão por área" className="km-card rounded-lg p-5">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-serif text-2xl font-semibold leading-tight">Sua prontidão</h2>
-              {performance.exam.simulation_count > 0 && (
-                <p className="text-sm text-muted">
-                  Simulado: {Math.round((performance.exam.accuracy ?? 0) * 100)}% de acerto
-                  {performance.exam.avg_time_ms ? ` · ${Math.round(performance.exam.avg_time_ms / 1000)}s/questão` : ""}
-                  {` · ${performance.exam.simulation_count} questões`}
-                </p>
-              )}
-            </div>
-            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-              {performance.areas.map((a) => {
-                const pct = Math.round(a.readiness * 100);
-                const levelLabel = a.level === "consolidando" ? "Consolidando" : a.level === "atencao" ? "Atenção" : "Crítico";
-                const levelTone = a.level === "consolidando" ? "text-success" : a.level === "atencao" ? "text-warning" : "text-danger";
-                return (
-                  <li key={a.area}>
-                    <button
-                      type="button"
-                      onClick={() => void startFocusedArea(a.area, a.level === "consolidando" ? "unanswered" : "needs_review")}
-                      disabled={busy}
-                      className="w-full rounded-xl border border-edge bg-surface p-4 text-left transition hover:border-primary disabled:opacity-50"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-ink">{a.label}</span>
-                        <span className={`text-xs font-semibold ${levelTone}`}>{levelLabel} · {pct}%</span>
-                      </div>
-                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surfaceMuted">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
-                      </div>
-                      <p className="mt-2 text-xs text-muted">
-                        {a.questions_seen} feitas · {Math.round((a.accuracy ?? 0) * 100)}% acerto{a.due_count > 0 ? ` · ${a.due_count} vencidas` : ""}
-                      </p>
-                      <p className="mt-1 text-xs font-medium text-primary">{a.next_action}</p>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
-
-        {error && (
-          <Alert
-            variant="danger"
-            action={
-              <button type="button" onClick={() => void refreshAvailability()} className="text-sm font-semibold text-danger underline">
-                Tentar novamente
-              </button>
-            }
-          >
-            {error}
-          </Alert>
-        )}
-
-        {/* Montador manual — todo o poder, recolhido até o aluno pedir */}
-        <section aria-label="Montar sessão manual">
-          <button
-            type="button"
-            onClick={() => setManualOpen((v) => !v)}
-            aria-expanded={manualOpen}
-            className="flex w-full items-center justify-between gap-3 rounded-lg border border-edge bg-surface px-5 py-4 text-left transition-colors hover:border-primary"
-          >
+        <section className="space-y-4" aria-label="Montador de sessão">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="font-serif text-lg font-semibold leading-tight">Montar sessão manual</h2>
-              <p className="mt-0.5 text-sm text-muted">Escolha intenção, filtros, banca, ano e número de questões.</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Montador guiado</p>
+              <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight">Defina o bloco do aluno</h2>
+              <p className="mt-1 text-sm text-muted">Escolha intenção, assunto, recorte e quantidade antes de iniciar.</p>
             </div>
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={cx("h-5 w-5 shrink-0 text-muted transition-transform", manualOpen && "rotate-90")} aria-hidden="true">
-              <path d="m7 4 6 6-6 6" />
-            </svg>
-          </button>
-        </section>
-
-        {manualOpen && (
-        <div className="space-y-6">
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Tipos de sessão">
-          <SessionIntentCard
-            eyebrow="01 · construir"
-            title="Aprender um tema"
-            description="Resolva com feedback próximo e reconstrua o caminho diagnóstico item a item."
-            active={activeIntent === "learning"}
-            Icon={IconBookOpen}
-            onClick={() => {
-              setStudyKind("topic");
-              setResolutionMode("training");
-              handleAnswerStatusChange("unanswered");
-            }}
-          />
-          <SessionIntentCard
-            eyebrow="02 · medir"
-            title="Simular prova"
-            description="Faça um bloco cronometrado, sem gabarito durante a execução."
-            active={activeIntent === "simulation"}
-            Icon={IconTrophy}
-            onClick={() => {
-              setStudyKind("topic");
-              setResolutionMode("simulation");
-              handleAnswerStatusChange("unanswered");
-            }}
-          />
-          <SessionIntentCard
-            eyebrow="03 · reparar"
-            title="Corrigir fraquezas"
-            description="Puxe erros, baixo desempenho e revisões vencidas para fechar lacunas."
-            active={activeIntent === "weakness"}
-            Icon={IconTarget}
-            onClick={() => {
-              setStudyKind("topic");
-              setResolutionMode("training");
-              handleAnswerStatusChange("needs_review");
-            }}
-          />
-          <SessionIntentCard
-            eyebrow="04 · calibrar"
-            title="Quase acertei"
-            description="Ataque itens no limiar entre acerto e erro, onde a calibragem rende mais."
-            active={activeIntent === "near_miss"}
-            Icon={IconTarget}
-            onClick={() => {
-              setStudyKind("topic");
-              setResolutionMode("training");
-              handleAnswerStatusChange("near_miss");
-            }}
-          />
-        </section>
-
-        <RecommendedTopicsPanel
-          topics={topics}
-          selectedTopics={selectedTopics}
-          activeIntent={activeIntent}
-          onToggleTopic={toggleTopic}
-        />
-
-        <section
-          aria-label="Filtros e resumo do banco de questões"
-          className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]"
-          data-testid="question-bank-top-filters"
-        >
-          <div className="km-card min-w-0 overflow-visible rounded-lg">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-edge px-5 py-4">
-              <div>
-                <h2 className="font-serif text-2xl font-semibold leading-tight">Filtros da sessão</h2>
-                <p className="mt-1 text-sm text-muted">Refine área, assunto, banca, ano e status das questões.</p>
-              </div>
-              <div className="rounded-full bg-surfaceMuted px-3 py-1 text-xs font-semibold text-muted">
-                {appliedFilterCount} filtro{appliedFilterCount === 1 ? "" : "s"}
-              </div>
-            </div>
-            <FiltersBar
-              area={area}
-              onAreaChange={handleAreaChange}
-              search={search}
-              onSearchChange={handleSearchChange}
-              topics={topics}
-              selectedTopics={selectedTopics}
-              onToggleTopic={toggleTopic}
-              boardCodes={boardCodes}
-              boardInput={boardInput}
-              onBoardInputChange={setBoardInput}
-              onAddBoardCode={addBoardCode}
-              onRemoveBoardCode={(code) => setBoardCodes((prev) => prev.filter((c) => c !== code))}
-              institution={institution}
-              onInstitutionChange={handleInstitutionChange}
-              selectedYears={selectedYears}
-              onSelectedYearsChange={handleSelectedYearsChange}
-              answerStatus={answerStatus}
-              onAnswerStatusChange={handleAnswerStatusChange}
-              resolutionMode={resolutionMode}
-              onResolutionModeChange={setResolutionMode}
-              studyKind={studyKind}
-              onStudyKindChange={setStudyKind}
-              fullExamName={fullExamName}
-              onFullExamNameChange={setFullExamName}
-              fullExamYear={fullExamYear}
-              onFullExamYearChange={setFullExamYear}
-              fullExamType={fullExamType}
-              onFullExamTypeChange={setFullExamType}
-              reviewTrailEnabled={generateReviewTrail}
-              onReviewTrailEnabledChange={setGenerateReviewTrail}
-              reviewTrailLocked={Boolean(entryContext.reviewTaskId)}
-              limit={limit}
-              clampedLimit={clampedLimit}
-              maxSelectable={maxSelectable}
-              onLimitChange={setLimit}
-            />
+            <span className="rounded-full bg-surfaceMuted px-3 py-1 text-xs font-semibold text-muted">
+              {appliedFilterCount} filtro{appliedFilterCount === 1 ? "" : "s"}
+            </span>
           </div>
 
-          <CreateSessionPanel
-            availability={availability}
-            loadingPreview={loadingPreview}
-            busy={busy}
-            clampedLimit={clampedLimit}
-            resolutionMode={resolutionMode}
-            studyKind={studyKind}
-            canStartSession={studyKind !== "full_exam" || fullExamReady}
-            onRefreshAvailability={() => void refreshAvailability()}
-            onPreviewQuestions={() => void previewQuestions()}
-            onStartSession={() => void startSession()}
-          />
-        </section>
+          <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4" aria-label="Tipos de sessão">
+            <SessionIntentCard
+              eyebrow="01 · construir"
+              title="Aprender um tema"
+              description="Feedback próximo e reconstrução do raciocínio item a item."
+              active={activeIntent === "learning"}
+              Icon={IconBookOpen}
+              onClick={() => {
+                setStudyKind("topic");
+                setResolutionMode("training");
+                handleAnswerStatusChange("unanswered");
+              }}
+            />
+            <SessionIntentCard
+              eyebrow="02 · medir"
+              title="Simular prova"
+              description="Bloco cronometrado, sem gabarito durante a execução."
+              active={activeIntent === "simulation"}
+              Icon={IconTrophy}
+              onClick={() => {
+                setStudyKind("topic");
+                setResolutionMode("simulation");
+                handleAnswerStatusChange("unanswered");
+              }}
+            />
+            <SessionIntentCard
+              eyebrow="03 · reparar"
+              title="Corrigir fraquezas"
+              description="Erros, baixo desempenho e revisões vencidas em foco."
+              active={activeIntent === "weakness"}
+              Icon={IconTarget}
+              onClick={() => {
+                setStudyKind("topic");
+                setResolutionMode("training");
+                handleAnswerStatusChange("needs_review");
+              }}
+            />
+            <SessionIntentCard
+              eyebrow="04 · calibrar"
+              title="Quase acertei"
+              description="Itens no limiar entre acerto e erro, onde calibrar rende mais."
+              active={activeIntent === "near_miss"}
+              Icon={IconTarget}
+              onClick={() => {
+                setStudyKind("topic");
+                setResolutionMode("training");
+                handleAnswerStatusChange("near_miss");
+              }}
+            />
+          </section>
+
+          <section
+            aria-label="Filtros e resumo do banco de questões"
+            className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem]"
+            data-testid="question-bank-top-filters"
+          >
+            <div className="min-w-0 space-y-4">
+              <RecommendedTopicsPanel
+                topics={topics}
+                selectedTopics={selectedTopics}
+                activeIntent={activeIntent}
+                onToggleTopic={toggleTopic}
+              />
+
+              <div className="km-card min-w-0 overflow-visible rounded-lg">
+                <FiltersBar
+                  area={area}
+                  onAreaChange={handleAreaChange}
+                  search={search}
+                  onSearchChange={handleSearchChange}
+                  topics={topics}
+                  selectedTopics={selectedTopics}
+                  onToggleTopic={toggleTopic}
+                  boardCodes={boardCodes}
+                  boardInput={boardInput}
+                  onBoardInputChange={setBoardInput}
+                  onAddBoardCode={addBoardCode}
+                  onRemoveBoardCode={(code) => setBoardCodes((prev) => prev.filter((c) => c !== code))}
+                  institution={institution}
+                  onInstitutionChange={handleInstitutionChange}
+                  selectedYears={selectedYears}
+                  onSelectedYearsChange={handleSelectedYearsChange}
+                  answerStatus={answerStatus}
+                  onAnswerStatusChange={handleAnswerStatusChange}
+                  resolutionMode={resolutionMode}
+                  onResolutionModeChange={setResolutionMode}
+                  studyKind={studyKind}
+                  onStudyKindChange={setStudyKind}
+                  fullExamName={fullExamName}
+                  onFullExamNameChange={setFullExamName}
+                  fullExamYear={fullExamYear}
+                  onFullExamYearChange={setFullExamYear}
+                  fullExamType={fullExamType}
+                  onFullExamTypeChange={setFullExamType}
+                  reviewTrailEnabled={generateReviewTrail}
+                  onReviewTrailEnabledChange={setGenerateReviewTrail}
+                  reviewTrailLocked={Boolean(entryContext.reviewTaskId)}
+                  limit={limit}
+                  clampedLimit={clampedLimit}
+                  maxSelectable={maxSelectable}
+                  onLimitChange={setLimit}
+                />
+              </div>
+            </div>
+
+            <CreateSessionPanel
+              availability={availability}
+              loadingPreview={loadingPreview}
+              busy={busy}
+              clampedLimit={clampedLimit}
+              resolutionMode={resolutionMode}
+              studyKind={studyKind}
+              canStartSession={studyKind !== "full_exam" || fullExamReady}
+              error={error}
+              onRefreshAvailability={() => void refreshAvailability()}
+              onPreviewQuestions={() => void previewQuestions()}
+              onStartSession={() => void startSession()}
+              onRetry={() => {
+                if (availability) void startSession();
+                else void refreshAvailability();
+              }}
+            />
+          </section>
 
           <QuestionList
             questions={questions}
@@ -954,26 +902,76 @@ function BancoDeQuestoesContent() {
             availability={availability}
             onStartSession={() => void startSession()}
           />
-        </div>
+        </section>
+
+        {performance && performance.areas.length > 0 && (
+          <section aria-label="Sua prontidão por área" className="rounded-xl border border-edge bg-surface p-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Atalhos de prontidão</p>
+                <h2 className="mt-1 font-serif text-xl font-semibold leading-tight">Áreas que merecem atenção</h2>
+              </div>
+              {performance.exam.simulation_count > 0 && (
+                <p className="text-sm text-muted">
+                  Simulado: {Math.round((performance.exam.accuracy ?? 0) * 100)}% de acerto
+                  {performance.exam.avg_time_ms ? ` · ${Math.round(performance.exam.avg_time_ms / 1000)}s/questão` : ""}
+                  {` · ${performance.exam.simulation_count} questões`}
+                </p>
+              )}
+            </div>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {performance.areas.slice(0, 4).map((a) => {
+                const pct = Math.round(a.readiness * 100);
+                const levelLabel = a.level === "consolidando" ? "Consolidando" : a.level === "atencao" ? "Atenção" : "Crítico";
+                const levelTone = a.level === "consolidando" ? "text-success" : a.level === "atencao" ? "text-warning" : "text-danger";
+                return (
+                  <li key={a.area}>
+                    <button
+                      type="button"
+                      onClick={() => void startFocusedArea(a.area, a.level === "consolidando" ? "unanswered" : "needs_review")}
+                      disabled={busy}
+                      className="w-full rounded-lg border border-edge bg-paper p-3 text-left transition hover:border-primary disabled:opacity-50"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-ink">{a.label}</span>
+                        <span className={`text-xs font-semibold ${levelTone}`}>{levelLabel} · {pct}%</span>
+                      </div>
+                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surfaceMuted">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                      </div>
+                      <p className="mt-2 text-xs text-muted">
+                        {a.questions_seen} feitas · {Math.round((a.accuracy ?? 0) * 100)}% acerto{a.due_count > 0 ? ` · ${a.due_count} vencidas` : ""}
+                      </p>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         )}
 
-        {/* Mobile sticky bar — inicia a sessão recomendada */}
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-edge bg-paper/90 px-4 py-3 backdrop-blur-md md:hidden"
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}>
+        <div
+          className="fixed inset-x-0 bottom-0 z-20 border-t border-edge bg-paper/95 px-4 py-3 backdrop-blur-md md:hidden"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
+        >
+          {error && (
+            <div className="mb-2 rounded-lg border border-danger bg-surface px-3 py-2 text-xs text-danger">
+              {error}
+            </div>
+          )}
           <button
             type="button"
-            onClick={() => void startRecommendedSession()}
-            disabled={busy || nextActionLoading}
+            onClick={() => void startSession()}
+            disabled={!canStartConfigured}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary py-3 text-sm font-semibold text-primaryInk shadow-sm transition disabled:opacity-40"
           >
-            {busy ? "Preparando..." : nextActionLoading ? "Carregando..." : recommended.cta_label}
+            {busy ? "Preparando..." : configuredStartLabel}
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
               <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
             </svg>
           </button>
         </div>
-        {/* Spacer so the sticky bar doesn't cover content */}
-        <div className="h-20 md:hidden" aria-hidden="true" />
+        <div className="h-24 md:hidden" aria-hidden="true" />
       </div>
     </main>
   );

@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react";
 import type { QuestionBankAvailability, QuestionBankResolutionMode, StudyKind } from "@/lib/api";
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
 
 function availabilityText(availability: QuestionBankAvailability | null): string {
   if (!availability) return "Calculando";
@@ -73,14 +75,14 @@ function SummaryRow({
   detail?: string;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-lg border border-edge bg-surface px-4 py-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center text-muted">
+    <div className="flex items-center gap-3 rounded-lg border border-edge bg-surface px-3 py-2.5">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surfaceMuted text-muted">
         {icon}
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-xs text-muted">{label}</p>
-        <p className="mt-0.5 text-lg font-semibold leading-tight text-ink">{value}</p>
-        {detail && <p className="mt-0.5 text-xs text-muted">{detail}</p>}
+        <p className="mt-0.5 text-base font-semibold leading-tight text-ink">{value}</p>
+        {detail && <p className="mt-0.5 truncate text-xs text-muted">{detail}</p>}
       </div>
     </div>
   );
@@ -94,9 +96,11 @@ type CreateSessionPanelProps = {
   resolutionMode: QuestionBankResolutionMode;
   studyKind: StudyKind;
   canStartSession?: boolean;
+  error?: string | null;
   onRefreshAvailability: () => void;
   onPreviewQuestions: () => void;
   onStartSession: () => void;
+  onRetry?: () => void;
 };
 
 export default function CreateSessionPanel({
@@ -107,9 +111,11 @@ export default function CreateSessionPanel({
   resolutionMode,
   studyKind,
   canStartSession = true,
+  error,
   onRefreshAvailability,
   onPreviewQuestions,
   onStartSession,
+  onRetry,
 }: CreateSessionPanelProps) {
   const startLabel = studyKind === "full_exam" ? "Iniciar prova" : resolutionMode === "training" ? "Iniciar treino" : "Iniciar simulado";
   const canStart = !busy && canStartSession && !!availability && availability.available_count > 0;
@@ -121,23 +127,19 @@ export default function CreateSessionPanel({
     : "Aguardando filtros";
 
   return (
-    <aside className="km-card rounded-lg p-5 lg:sticky lg:top-6 lg:self-start">
+    <aside className="km-card rounded-lg p-4 lg:sticky lg:top-6 lg:self-start">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-serif text-2xl font-semibold leading-tight">Resumo da sessão</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Sessão configurada</p>
+          <h2 className="mt-1 font-serif text-xl font-semibold leading-tight">Resumo</h2>
           <p className="mt-1 text-sm text-muted">{loadingPreview ? "Atualizando prévia..." : availabilityText(availability)}</p>
         </div>
-        <button
-          type="button"
-          onClick={onRefreshAvailability}
-          disabled={loadingPreview || busy}
-          className="rounded-lg border border-edge px-3 py-2 text-xs font-semibold text-muted transition-colors hover:border-primary hover:text-ink disabled:opacity-50"
-        >
+        <Button type="button" variant="secondary" size="xs" onClick={onRefreshAvailability} disabled={loadingPreview || busy}>
           Recalcular
-        </button>
+        </Button>
       </div>
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-4 space-y-2.5">
         <SummaryRow
           icon={<IconClipboard className="h-5 w-5" />}
           label="Número de questões"
@@ -158,27 +160,33 @@ export default function CreateSessionPanel({
         />
       </div>
 
-      <div className="mt-5 grid gap-2">
-        <button
-          type="button"
-          onClick={onStartSession}
-          disabled={busy || !canStart}
-          className="flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 disabled:opacity-50"
+      {error && (
+        <Alert
+          variant="danger"
+          className="mt-4"
+          action={
+            onRetry ? (
+              <button type="button" onClick={onRetry} className="text-xs font-semibold text-danger underline">
+                Tentar novamente
+              </button>
+            ) : undefined
+          }
         >
+          {error}
+        </Alert>
+      )}
+
+      <div className="mt-4 grid gap-2">
+        <Button type="button" variant="primary" size="md" onClick={onStartSession} disabled={busy || !canStart} className="w-full py-3">
           {busy ? "Preparando..." : startLabel}
           <IconArrowRight className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          onClick={onPreviewQuestions}
-          disabled={busy || !canStart}
-          className="rounded-lg border border-edge bg-surface px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:border-primary disabled:opacity-50"
-        >
+        </Button>
+        <Button type="button" variant="secondary" size="md" onClick={onPreviewQuestions} disabled={busy || !canStart} className="w-full">
           Ver prévia
-        </button>
+        </Button>
       </div>
 
-      <div className="mt-5 flex items-center gap-2 text-xs text-muted">
+      <div className="mt-4 flex items-center gap-2 text-xs text-muted">
         <IconShield className="h-5 w-5 shrink-0 text-success" />
         <span>Sua sessão será salva automaticamente ao finalizar.</span>
       </div>

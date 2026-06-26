@@ -238,6 +238,11 @@ export default function SessionPage() {
   if (!currentItem) return null;
 
   const total = session.total_questions;
+  // The displayed "n/total" + progress must track movement through the (possibly
+  // reranked) `items` array, not the stable `position` id — otherwise the counter
+  // and progress bar jump around as the adaptive order changes.
+  const currentIndex = session.items.findIndex((i) => i.position === currentPosition);
+  const displayPosition = currentIndex >= 0 ? currentIndex + 1 : currentPosition;
   const primaryNode = currentItem.knowledge_nodes.find((node) => node.is_primary) ?? currentItem.knowledge_nodes[0];
   const quickNoteTheme = primaryNode?.node_name ?? session.theme ?? "Questão do banco";
   const quickNoteOutcome: OperationalQuestionOutcome | null =
@@ -252,6 +257,40 @@ export default function SessionPage() {
     setShowMap(false);
   }
 
+  // Navigate by the order of `session.items` (which the backend rerank rewrites
+  // after each answer), not by numeric position. `position` is a stable id, so
+  // walking position±1 would ignore the adaptive order entirely.
+  function navigateToIndex(index: number) {
+    if (!session) return;
+    const items = session.items;
+    const target = items[Math.max(0, Math.min(items.length - 1, index))];
+    if (!target) return;
+    questionStartTimeRef.current = Date.now();
+    setCurrentPosition(target.position);
+    setShowMap(false);
+  }
+
+  // Training: advance to the next unanswered question in adaptive (array) order.
+  // After a rerank the unanswered items sit at the back sorted by priority, so
+  // this lands on the most valuable next question.
+  function goToNextAdaptive() {
+    if (!session) return;
+    const items = session.items;
+    const start = items.findIndex((i) => i.position === currentPosition);
+    for (let k = start + 1; k < items.length; k++) {
+      if (!items[k].answered) return navigateToIndex(k);
+    }
+    const firstUnanswered = items.findIndex((i) => !i.answered);
+    if (firstUnanswered >= 0) return navigateToIndex(firstUnanswered);
+    if (start + 1 < items.length) navigateToIndex(start + 1);
+  }
+
+  function goToPrevAdaptive() {
+    if (!session) return;
+    const start = session.items.findIndex((i) => i.position === currentPosition);
+    if (start > 0) navigateToIndex(start - 1);
+  }
+
   // Training mode
   if (session.resolution_mode === "training") {
     return (
@@ -263,7 +302,7 @@ export default function SessionPage() {
         )}
         <StudyQuestion
           item={currentItem}
-          position={currentPosition}
+          position={displayPosition}
           total={total}
           sessionStatus={session.status}
           revealed={Boolean(revealedPositions[currentPosition])}
@@ -292,8 +331,8 @@ export default function SessionPage() {
           onReportReasonChange={setReportReason}
           onSubmitReport={() => void submitReport(currentItem.question_id)}
           onCancelReport={() => setReportingQuestionId(null)}
-          onPrev={() => navigateTo(currentPosition - 1)}
-          onNext={() => navigateTo(currentPosition + 1)}
+          onPrev={() => goToPrevAdaptive()}
+          onNext={() => goToNextAdaptive()}
           onFinalize={() => void finalize()}
           onQuickNote={
             currentItem.question_id
