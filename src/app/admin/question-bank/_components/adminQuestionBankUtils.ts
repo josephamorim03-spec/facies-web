@@ -46,6 +46,9 @@ export const JOB_TYPES = [
   "publish_question",
 ] as const;
 
+export const DEFAULT_DEDUP_BATCH_SIZE = 200;
+export const DEFAULT_DEDUP_WORKERS = 4;
+
 export const JOB_TYPE_LABELS: Record<string, string> = {
   dedup_question: "Dedup",
   heuristic_classify_question: "Heuristica",
@@ -120,4 +123,19 @@ export function truncateText(value: string | null | undefined, maxLength: number
   const text = String(value ?? "").trim();
   if (!text) return "";
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+}
+
+export function formatArtifactReason(value: string | null | undefined): string {
+  switch (value) {
+    case "greedy_done":
+      return "artefato greedy";
+    case "repairing_temp":
+      return "arquivo repairing";
+    case "split_part":
+      return "parte de split";
+    case "repair_backup":
+      return "backup de reparo";
+    default:
+      return value ? "artefato tecnico" : "";
+  }
 }

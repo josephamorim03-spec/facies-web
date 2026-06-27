@@ -45,6 +45,15 @@ export default function PipelineDiagnosticsPanel({
   formatRelativeTime,
 }: Props) {
   const stages = selectedPipeline?.stage_stats || pipelineStatus?.stage_stats || [];
+  const formatAge = (seconds?: number | null) => {
+    if (!seconds || seconds <= 0) return "-";
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const remainder = minutes % 60;
+    return remainder ? `${hours}h ${remainder}min` : `${hours}h`;
+  };
 
   return (
     <div className="space-y-5">
@@ -73,7 +82,7 @@ export default function PipelineDiagnosticsPanel({
             <input
               type="number"
               min={1}
-              max={50}
+              max={500}
               value={batchSize}
               onChange={(event) => onBatchSizeChange(Number(event.target.value))}
               className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
@@ -113,6 +122,7 @@ export default function PipelineDiagnosticsPanel({
               <tr className="text-gray-500 dark:text-gray-400">
                 <th className="px-4 py-3 font-semibold">Etapa</th>
                 <th className="px-4 py-3 font-semibold">Jobs</th>
+                <th className="px-4 py-3 font-semibold">Mais antigo</th>
                 <th className="px-4 py-3 font-semibold">Media</th>
                 <th className="px-4 py-3 font-semibold">Erro</th>
               </tr>
@@ -140,6 +150,7 @@ export default function PipelineDiagnosticsPanel({
                       </button>
                     ) : null}
                   </td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatAge(stage.oldest_pending_age_seconds)}</td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{stage.avg_duration_ms ? `${stage.avg_duration_ms} ms` : "-"}</td>
                   <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
                     {stage.last_error ? (

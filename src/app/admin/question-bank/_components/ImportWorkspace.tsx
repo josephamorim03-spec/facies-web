@@ -12,9 +12,10 @@ import {
   CONTENT_METADATA_FIELDS,
   GRANDE_AREA_OPTIONS,
   QUESTION_OVERRIDE_FIELDS,
-  SOURCE_METADATA_FIELDS,
   compactCodes,
+  SOURCE_METADATA_FIELDS,
   fieldText,
+  formatArtifactReason,
 } from "./adminQuestionBankUtils";
 
 type Props = {
@@ -30,6 +31,7 @@ type Props = {
   activeQuestionOverrides: Record<string, Record<string, unknown>>;
   imports: QuestionBankAdminImportItem[];
   selectedImportId: string;
+  showArtifacts: boolean;
   onFileChange: (file: File | null) => void;
   onMetadataTextChange: (value: string) => void;
   onMetadataFieldChange: (key: string, value: string) => void;
@@ -40,6 +42,7 @@ type Props = {
   onPreview: () => void;
   onImport: () => void;
   onSelectImport: (importId: string) => void;
+  onShowArtifactsChange: (value: boolean) => void;
   formatRelativeTime: (date: Date | string) => string;
 };
 
@@ -56,6 +59,7 @@ export default function ImportWorkspace({
   activeQuestionOverrides,
   imports,
   selectedImportId,
+  showArtifacts,
   onFileChange,
   onMetadataTextChange,
   onMetadataFieldChange,
@@ -66,6 +70,7 @@ export default function ImportWorkspace({
   onPreview,
   onImport,
   onSelectImport,
+  onShowArtifactsChange,
   formatRelativeTime,
 }: Props) {
   const questions = preview?.questions ?? [];
@@ -397,14 +402,28 @@ export default function ImportWorkspace({
       </section>
 
       <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Historico</h2>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Historico</h2>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Imports operacionais, com rendimento e backlog por arquivo.</p>
+          </div>
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+            <input
+              type="checkbox"
+              checked={showArtifacts}
+              onChange={(event) => onShowArtifactsChange(event.target.checked)}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            Mostrar artefatos
+          </label>
+        </div>
         <div className="mt-4 overflow-auto rounded-lg border border-gray-200 dark:border-gray-800">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 dark:bg-gray-950">
               <tr className="text-gray-500 dark:text-gray-400">
                 <th className="px-4 py-3 font-semibold">Arquivo</th>
                 <th className="px-4 py-3 font-semibold">Anos</th>
-                <th className="px-4 py-3 font-semibold">Status</th>
+                <th className="px-4 py-3 font-semibold">Saida</th>
                 <th className="px-4 py-3 font-semibold">Fila</th>
                 <th className="px-4 py-3 font-semibold">Criado</th>
               </tr>
@@ -427,11 +446,41 @@ export default function ImportWorkspace({
                           </span>
                         ) : null}
                       </div>
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        {item.is_zero_ai_locked ? (
+                          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                            zero-IA
+                          </span>
+                        ) : null}
+                        {item.is_artifact ? (
+                          <span className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                            {formatArtifactReason(item.artifact_reason)}
+                          </span>
+                        ) : null}
+                        {(item.candidate_count ?? 0) > 0 && (item.candidate_count ?? 0) <= 2 ? (
+                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                            baixo rendimento
+                          </span>
+                        ) : null}
+                        {(item.published_question_count ?? 0) === 0 ? (
+                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                            sem publicacao
+                          </span>
+                        ) : null}
+                      </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">{item.source.exam_name || item.source.institution || "sem fonte"}</div>
                     </td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{item.years_detected.length ? item.years_detected.join(", ") : "-"}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{item.status || "-"}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">P {item.pipeline_counts?.pending ?? 0} / F {item.pipeline_counts?.failed ?? 0}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                      <div>{item.published_question_count ?? 0} publicadas</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500">
+                        {item.candidate_count ?? 0} candidatas / yield {Math.round((item.yield_ratio ?? 0) * 100)}%
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                      <div>P {item.pipeline_counts?.pending ?? 0} / R {item.pipeline_counts?.processing ?? 0}</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500">F {item.pipeline_counts?.failed ?? 0} / D {item.pipeline_counts?.done ?? 0}</div>
+                    </td>
                     <td className="px-4 py-3 text-xs text-gray-400 dark:text-gray-500">{item.created_at ? formatRelativeTime(item.created_at) : "-"}</td>
                   </tr>
                 );

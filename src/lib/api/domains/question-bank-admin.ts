@@ -142,6 +142,12 @@ export type QuestionBankAdminImportItem = {
   years_applied: number[];
   is_mixed_source: boolean;
   source_metadata: Record<string, unknown>;
+  candidate_count?: number;
+  published_question_count?: number;
+  yield_ratio?: number;
+  is_zero_ai_locked?: boolean;
+  is_artifact?: boolean;
+  artifact_reason?: string | null;
   pipeline_counts?: {
     pending: number;
     processing: number;
@@ -160,6 +166,19 @@ export type QuestionBankAdminPipelineStage = {
   avg_duration_ms: number | null;
   last_error: string | null;
   last_error_at: string | null;
+  oldest_pending_age_seconds?: number | null;
+};
+
+export type QuestionBankAdminHotspotItem = {
+  imported_file_id: string;
+  file_name: string | null;
+  source_label?: string | null;
+  candidate_count: number;
+  published_question_count: number;
+  yield_ratio: number;
+  is_zero_ai_locked: boolean;
+  is_artifact: boolean;
+  artifact_reason?: string | null;
 };
 
 export type QuestionBankEditorialFunnelStage = {
@@ -199,6 +218,7 @@ export type QuestionBankAdminPipelineSnapshot = {
     human_review_questions: number;
   };
   last_error_by_stage: Record<string, { message?: string; updated_at?: string }>;
+  oldest_pending_by_stage?: Array<{ job_type: string; n: number; oldest_pending_age_seconds: number }>;
   editorial_health?: QuestionBankEditorialHealth;
 };
 
@@ -206,6 +226,13 @@ export type QuestionBankAdminPipelineStatus = {
   summary: {
     published_questions: number;
     imported_files: number;
+    candidate_total: number;
+    dedup_pending_candidates: number;
+    canonical_questions: number;
+    zero_ai_published_questions: number;
+    retry_scheduled_jobs: number;
+    ready_pending_jobs: number;
+    artifact_imports: number;
     pending_jobs: number;
     processing_jobs: number;
     failed_jobs: number;
@@ -214,6 +241,11 @@ export type QuestionBankAdminPipelineStatus = {
     human_review_questions: number;
   };
   knowledge_nodes: Array<{ type: string; n: number }>;
+  backlog_hotspots: {
+    many_candidates_zero_published: QuestionBankAdminHotspotItem[];
+    low_yield_candidates: QuestionBankAdminHotspotItem[];
+    technical_artifacts: QuestionBankAdminHotspotItem[];
+  };
 } & QuestionBankAdminPipelineSnapshot;
 
 export type QuestionBankAdminReadiness = {
@@ -365,11 +397,12 @@ export async function importQuestionBankAdminFile(
 }
 
 export async function listQuestionBankAdminImports(
-  options?: { limit?: number; offset?: number },
+  options?: { limit?: number; offset?: number; show_artifacts?: boolean },
 ): Promise<{ imports: QuestionBankAdminImportItem[]; total: number; limit: number; offset: number }> {
   const params = new URLSearchParams();
   if (options?.limit) params.set("limit", String(options.limit));
   if (options?.offset) params.set("offset", String(options.offset));
+  if (options?.show_artifacts) params.set("show_artifacts", "true");
   const qs = params.toString();
   return api<{ imports: QuestionBankAdminImportItem[]; total: number; limit: number; offset: number }>(
     `/api/admin/question-bank/imports${qs ? `?${qs}` : ""}`,

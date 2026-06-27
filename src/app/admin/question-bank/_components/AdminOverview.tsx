@@ -47,6 +47,7 @@ export default function AdminOverview({
 }) {
   const editorialHealth = pipelineStatus?.editorial_health;
   const summary = pipelineStatus?.summary;
+  const hotspots = pipelineStatus?.backlog_hotspots;
   const healthTone =
     editorialHealth?.state === "blocked"
       ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200"
@@ -90,54 +91,125 @@ export default function AdminOverview({
         ) : null}
       </section>
 
-      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-        <StatCard label="Publicadas" value={summary?.published_questions ?? 0} helper="visiveis no banco" />
-        <StatCard label="Revisao humana" value={summary?.human_review_questions ?? 0} helper="questoes para curadoria" tone={summary?.human_review_questions ? "accent" : "default"} />
-        <StatCard label="Fila tecnica" value={summary?.pending_jobs ?? 0} helper="jobs, nao questoes" />
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+        <StatCard label="PDFs/imports" value={summary?.imported_files ?? 0} helper={`${summary?.artifact_imports ?? 0} artefatos fora da conta principal`} />
+        <StatCard label="Candidatos" value={summary?.candidate_total ?? 0} helper={`${summary?.dedup_pending_candidates ?? 0} ainda em dedup`} />
+        <StatCard label="Publicadas" value={summary?.published_questions ?? 0} helper={`${summary?.zero_ai_published_questions ?? 0} sem IA`} />
+        <StatCard label="Fila pronta" value={summary?.ready_pending_jobs ?? 0} helper="jobs prontos para claim" />
         <StatCard label="Rodando" value={summary?.processing_jobs ?? 0} tone="accent" helper="processando agora" />
-        <StatCard label="Falhas" value={summary?.failed_jobs ?? 0} tone={summary?.failed_jobs ? "danger" : "default"} helper="exigem retry" />
+        <StatCard label="Retry agendado" value={summary?.retry_scheduled_jobs ?? 0} tone={summary?.retry_scheduled_jobs ? "accent" : "default"} helper="aguardando backoff" />
       </section>
 
-      <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Leitura Editorial</p>
-            <h2 className="mt-1 text-xl font-semibold text-gray-900 dark:text-gray-100">Publicacao e qualidade</h2>
-            <div className={`mt-3 inline-flex rounded-lg border px-3 py-1 text-xs font-semibold ${healthTone}`}>
-              {editorialHealth?.label ?? "sem leitura"}
+      <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+        <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Leitura Editorial</p>
+              <h2 className="mt-1 text-xl font-semibold text-gray-900 dark:text-gray-100">Publicacao e qualidade</h2>
+              <div className={`mt-3 inline-flex rounded-lg border px-3 py-1 text-xs font-semibold ${healthTone}`}>
+                {editorialHealth?.label ?? "sem leitura"}
+              </div>
+            </div>
+            <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-2 xl:max-w-2xl xl:grid-cols-4">
+              <StatCard label="Baixa conf." value={editorialHealth?.low_confidence_questions ?? 0} helper="auditar" />
+              <StatCard label="Reports" value={editorialHealth?.open_reports ?? 0} helper="alunos" tone={editorialHealth?.open_reports ? "accent" : "default"} />
+              <StatCard label="Bloqueadas" value={editorialHealth?.blocked_questions ?? 0} helper="nao publicaveis" tone={editorialHealth?.blocked_questions ? "danger" : "default"} />
+              <StatCard label="Atencao" value={editorialHealth?.needs_attention ?? 0} helper="jobs presos" tone={editorialHealth?.needs_attention ? "danger" : "default"} />
             </div>
           </div>
-          <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-2 xl:max-w-2xl xl:grid-cols-4">
-            <StatCard label="Baixa conf." value={editorialHealth?.low_confidence_questions ?? 0} helper="auditar" />
-            <StatCard label="Reports" value={editorialHealth?.open_reports ?? 0} helper="alunos" tone={editorialHealth?.open_reports ? "accent" : "default"} />
-            <StatCard label="Bloqueadas" value={editorialHealth?.blocked_questions ?? 0} helper="nao publicaveis" tone={editorialHealth?.blocked_questions ? "danger" : "default"} />
-            <StatCard label="Atencao" value={editorialHealth?.needs_attention ?? 0} helper="jobs presos" tone={editorialHealth?.needs_attention ? "danger" : "default"} />
-          </div>
-        </div>
 
-        {editorialHealth?.funnel?.length ? (
-          <div className="mt-5 grid gap-2 md:grid-cols-3 xl:grid-cols-6">
-            {editorialHealth.funnel.map((stage) => (
-              <div key={stage.key} className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-950">
-                <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{stage.label}</div>
-                <div className="mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100">{stage.done}</div>
-                <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-                  fila {stage.pending} / rodando {stage.processing} / falha {stage.failed}
+          <div className="mt-5 grid gap-3 md:grid-cols-4">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+              <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Imports</div>
+              <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{summary?.imported_files ?? 0}</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+              <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Candidatos</div>
+              <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{summary?.candidate_total ?? 0}</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+              <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Canonicas</div>
+              <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{summary?.canonical_questions ?? 0}</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+              <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Publicadas</div>
+              <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{summary?.published_questions ?? 0}</div>
+            </div>
+          </div>
+          <div className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+            Conversao media:{" "}
+            <span className="font-semibold">
+              {summary?.imported_files
+                ? `${((summary.published_questions ?? 0) / Math.max(summary.imported_files, 1)).toFixed(1)} questoes/import`
+                : "0.0 questoes/import"}
+            </span>
+            {" "}e{" "}
+            <span className="font-semibold">
+              {summary?.candidate_total
+                ? `${(((summary.published_questions ?? 0) / Math.max(summary.candidate_total, 1)) * 100).toFixed(1)}% dos candidatos`
+                : "0.0% dos candidatos"}
+            </span>
+            {" "}chegando em publicacao.
+          </div>
+
+          {editorialHealth?.funnel?.length ? (
+            <div className="mt-5 grid gap-2 md:grid-cols-3 xl:grid-cols-6">
+              {editorialHealth.funnel.map((stage) => (
+                <div key={stage.key} className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-950">
+                  <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">{stage.label}</div>
+                  <div className="mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100">{stage.done}</div>
+                  <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                    fila {stage.pending} / rodando {stage.processing} / falha {stage.failed}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {editorialHealth?.top_actions?.length ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {editorialHealth.top_actions.map((action) => (
+                <span key={action} className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-600 dark:border-gray-800 dark:text-gray-300">
+                  {action}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </section>
+
+        <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div>
+            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Hotspots</p>
+            <h2 className="mt-1 text-xl font-semibold text-gray-900 dark:text-gray-100">Onde o backlog pesa</h2>
+          </div>
+          <div className="mt-4 space-y-4">
+            {([
+              ["Muitos candidatos, zero publicadas", hotspots?.many_candidates_zero_published ?? []],
+              ["Baixo rendimento (1-2 candidatas)", hotspots?.low_yield_candidates ?? []],
+              ["Artefatos tecnicos", hotspots?.technical_artifacts ?? []],
+            ] as const).map(([label, items]) => (
+              <div key={label} className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+                <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{label}</div>
+                <div className="mt-3 space-y-2">
+                  {items.length ? items.map((item) => (
+                    <div key={`${label}-${item.imported_file_id}`} className="flex items-start justify-between gap-3 text-sm">
+                      <div className="min-w-0">
+                        <div className="truncate font-medium text-gray-800 dark:text-gray-100">{item.file_name || item.imported_file_id}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{item.source_label || "sem fonte"}</div>
+                      </div>
+                      <div className="shrink-0 text-right text-xs text-gray-500 dark:text-gray-400">
+                        <div>{item.candidate_count} cand.</div>
+                        <div>{item.published_question_count} pub.</div>
+                      </div>
+                    </div>
+                  )) : (
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Sem itens relevantes agora.</div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
-        ) : null}
-
-        {editorialHealth?.top_actions?.length ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {editorialHealth.top_actions.map((action) => (
-              <span key={action} className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-600 dark:border-gray-800 dark:text-gray-300">
-                {action}
-              </span>
-            ))}
-          </div>
-        ) : null}
+        </section>
       </section>
     </>
   );

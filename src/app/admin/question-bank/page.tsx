@@ -9,6 +9,8 @@ import PipelineDiagnosticsPanel from "./_components/PipelineDiagnosticsPanel";
 import QuestionsManager from "./_components/QuestionsManager";
 import {
   DEFAULT_METADATA,
+  DEFAULT_DEDUP_BATCH_SIZE,
+  DEFAULT_DEDUP_WORKERS,
   JOB_TYPES,
   compactQuestionOverrides,
   formatRelativeTime,
@@ -54,9 +56,10 @@ export default function QuestionBankAdminPage() {
   const [busy, setBusy] = useState("");
   const [candidateStatus, setCandidateStatus] = useState("");
   const [jobType, setJobType] = useState<string>(JOB_TYPES[0]!);
-  const [batchSize, setBatchSize] = useState(3);
-  const [workers, setWorkers] = useState(1);
+  const [batchSize, setBatchSize] = useState(DEFAULT_DEDUP_BATCH_SIZE);
+  const [workers, setWorkers] = useState(DEFAULT_DEDUP_WORKERS);
   const [autoPipeline, setAutoPipeline] = useState(true);
+  const [showArtifacts, setShowArtifacts] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [expandedError, setExpandedError] = useState<string | null>(null);
   const [reviewItems, setReviewItems] = useState<QuestionBankReviewQueueItem[]>([]);
@@ -125,9 +128,10 @@ export default function QuestionBankAdminPage() {
   }
 
   async function loadImports(nextSelectedImportId?: string) {
-    const response = await listQuestionBankAdminImports({ limit: 12 });
+    const response = await listQuestionBankAdminImports({ limit: 12, show_artifacts: showArtifacts });
     setImports(response.imports);
-    const importId = nextSelectedImportId || selectedImportId || response.imports[0]?.id || "";
+    const visibleSelectedImportId = response.imports.find((item) => item.id === selectedImportId)?.id || "";
+    const importId = nextSelectedImportId || visibleSelectedImportId || response.imports[0]?.id || "";
     if (!importId) {
       setSelectedImport(null);
       setCandidates([]);
@@ -180,7 +184,7 @@ export default function QuestionBankAdminPage() {
         setPipelineStatus(status);
         setReadiness(readinessValue);
 
-        const response = await listQuestionBankAdminImports({ limit: 12 });
+        const response = await listQuestionBankAdminImports({ limit: 12, show_artifacts: showArtifacts });
         if (!active) return;
         setImports(response.imports);
 
@@ -208,7 +212,7 @@ export default function QuestionBankAdminPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [showArtifacts]);
 
   useEffect(() => {
     if (!selectedImportId) return;
@@ -257,6 +261,14 @@ export default function QuestionBankAdminPage() {
       setSelectedImport(detail);
       setCandidates(candidateResponse.items);
     });
+  }
+
+  function handleJobTypeChange(value: string) {
+    setJobType(value);
+    if (value === "dedup_question") {
+      setBatchSize(DEFAULT_DEDUP_BATCH_SIZE);
+      setWorkers(DEFAULT_DEDUP_WORKERS);
+    }
   }
 
   function handleRetryStage(stageJobType: string) {
@@ -340,6 +352,7 @@ export default function QuestionBankAdminPage() {
           activeQuestionOverrides={activeQuestionOverrides}
           imports={imports}
           selectedImportId={selectedImportId}
+          showArtifacts={showArtifacts}
           onFileChange={setFile}
           onMetadataTextChange={setMetadataText}
           onMetadataFieldChange={updateMetadataField}
@@ -363,6 +376,7 @@ export default function QuestionBankAdminPage() {
             await loadDashboard(result.imported_file_id);
           })}
           onSelectImport={selectImport}
+          onShowArtifactsChange={setShowArtifacts}
           formatRelativeTime={formatRelativeTime}
         />
 
@@ -375,7 +389,7 @@ export default function QuestionBankAdminPage() {
           batchSize={batchSize}
           workers={workers}
           expandedError={expandedError}
-          onJobTypeChange={setJobType}
+          onJobTypeChange={handleJobTypeChange}
           onBatchSizeChange={setBatchSize}
           onWorkersChange={setWorkers}
           onExpandedErrorChange={setExpandedError}
