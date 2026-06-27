@@ -31,6 +31,8 @@ type ExamQuestionProps = {
   doubtfulCount: number;
   unansweredCount: number;
   busy: boolean;
+  eliminated: QuestionBankOption[];
+  onToggleEliminate: (option: QuestionBankOption) => void;
   onAnswer: (option: QuestionBankOption) => void;
   onToggleDoubtful: () => void;
   onPrev: () => void;
@@ -51,6 +53,8 @@ export default function ExamQuestion({
   doubtfulCount,
   unansweredCount,
   busy,
+  eliminated,
+  onToggleEliminate,
   onAnswer,
   onToggleDoubtful,
   onPrev,
@@ -205,27 +209,57 @@ export default function ExamQuestion({
           {OPTIONS.map((option) => {
             if (!item.alternatives[option]) return null;
             const selected = item.selected_option === option;
+            const isEliminated = eliminated.includes(option);
             return (
-              <button
+              <div
                 key={option}
-                type="button"
-                onClick={() => onAnswer(option)}
-                disabled={busy || finalized}
                 className={cx(
-                  "flex w-full items-start gap-4 rounded-xl border px-4 py-4 text-left text-sm transition-colors disabled:cursor-not-allowed",
+                  "flex items-stretch overflow-hidden rounded-xl border text-sm transition-colors",
                   selected
                     ? "border-primary bg-[var(--amber-tint)] text-ink"
-                    : "border-edge bg-surface hover:border-primary disabled:opacity-70",
+                    : isEliminated
+                      ? "border-edge bg-surface opacity-60"
+                      : "border-edge bg-surface hover:border-primary",
                 )}
               >
-                <span className={cx(
-                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-bold",
-                  selected ? "border-primary bg-primary text-primaryInk" : "border-edge bg-paper text-ink",
-                )}>
-                  {option}
-                </span>
-                <span className="min-w-0 flex-1 leading-relaxed">{item.alternatives[option]}</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isEliminated) onToggleEliminate(option);
+                    onAnswer(option);
+                  }}
+                  disabled={busy || finalized}
+                  className="flex min-w-0 flex-1 items-start gap-4 px-4 py-4 text-left disabled:cursor-not-allowed"
+                >
+                  <span className={cx(
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-bold",
+                    selected ? "border-primary bg-primary text-primaryInk" : "border-edge bg-paper text-ink",
+                  )}>
+                    {option}
+                  </span>
+                  <span className={cx("min-w-0 flex-1 leading-relaxed", isEliminated && !selected && "text-muted line-through")}>
+                    {item.alternatives[option]}
+                  </span>
+                </button>
+                {!finalized && (
+                  <button
+                    type="button"
+                    onClick={() => onToggleEliminate(option)}
+                    disabled={busy}
+                    aria-pressed={isEliminated}
+                    aria-label={isEliminated ? `Restaurar alternativa ${option}` : `Riscar alternativa ${option}`}
+                    title={isEliminated ? "Restaurar" : "Riscar (eliminar)"}
+                    className={cx(
+                      "flex w-12 shrink-0 items-center justify-center border-l border-edge transition-colors",
+                      isEliminated ? "text-danger" : "text-muted hover:text-danger",
+                    )}
+                  >
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                      <path d="M4 10h12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>

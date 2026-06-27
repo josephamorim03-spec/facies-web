@@ -5,6 +5,7 @@ import type { StudyPerformanceSummary } from "@/lib/api";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import AreaDot from "@/components/AreaDot";
 import { AREA_BG_CLASS, AREA_TEXT_CLASS } from "@/lib/areaColors";
+import { healthStatement } from "@/lib/guidanceCopy";
 import {
   AREA_LABELS,
   AREAS,
@@ -215,14 +216,19 @@ export function DesempenhoTab({
             <div className="mt-2.5 flex justify-between text-xs text-muted">
               <span>{totalDoneQuestions} questões feitas</span>
               <div className="flex items-center gap-3">
-                {healthScore !== null && healthScore !== undefined && (
-                  <span className="font-medium">
-                    saúde{" "}
-                    <span className={healthScore >= 75 ? "text-emerald-600" : healthScore >= 55 ? "text-amber-600" : "text-red-500"}>
-                      {Math.round(healthScore)}%
+                {healthScore !== null && healthScore !== undefined && (() => {
+                  const h = healthStatement(healthScore);
+                  const toneClass =
+                    h.tone === "positive" ? "text-success"
+                    : h.tone === "attention" ? "text-warning"
+                    : h.tone === "critical" ? "text-danger"
+                    : "text-muted";
+                  return (
+                    <span className="font-medium" title={`Saúde do estudo: ${Math.round(healthScore)}% · ${h.phrase}`}>
+                      saúde <span className={toneClass}>{h.label.toLowerCase()}</span>
                     </span>
-                  </span>
-                )}
+                  );
+                })()}
                 {goal && <span>meta {goal}</span>}
               </div>
             </div>
@@ -564,9 +570,15 @@ export function DesempenhoTab({
                             {item.retention_pct !== null && item.retention_pct !== undefined ? ` · retenção ${Math.round(item.retention_pct)}%` : ""}
                             {" · "}{item.total_questions} questões
                           </p>
-                          <p className="text-muted">
-                            Ação: {item.action_hint ?? "Reforçar fundamentos e revisar erros recentes do tema."}
-                          </p>
+                          <Link
+                            href={`/banco-de-questoes?area=${encodeURIComponent(item.area)}&theme=${encodeURIComponent(item.theme)}&answer_status=unanswered_or_wrong`}
+                            className="mt-1 inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                          >
+                            {item.action_hint ?? "Reforçar este tema no banco"}
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5" aria-hidden="true">
+                              <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
+                            </svg>
+                          </Link>
                         </li>
                       ))}
                     </ul>

@@ -12,6 +12,7 @@ import {
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { ProgressRing } from "@/components/ui/ProgressRing";
+import ErrorFlashcardsPanel from "./ErrorFlashcardsPanel";
 import AttemptHistoryModal from "../../../_components/AttemptHistoryModal";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -73,6 +74,8 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
   const [corrections, setCorrections] = useState<QuestionBankCorrectionItem[]>([]);
   const [expandedCorrections, setExpandedCorrections] = useState<Set<string>>(new Set());
   const [historyQuestionId, setHistoryQuestionId] = useState<string | null>(null);
+  const [dismissedInsights, setDismissedInsights] = useState(false);
+  const [dismissedDiagnosisError, setDismissedDiagnosisError] = useState(false);
 
   useEffect(() => {
     if (!token || !session.session_id) return;
@@ -255,9 +258,12 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
         {activeTab === "resumo" && (
           <div className="grid gap-6 md:grid-cols-2">
             {/* Performance by node — or error fallback */}
-            {diagnosisError && !diagnosis && (
-              <div className="km-card p-4">
+            {diagnosisError && !diagnosis && !dismissedDiagnosisError && (
+              <div className="km-card flex items-start justify-between gap-3 p-4">
                 <p className="text-xs text-muted">Não foi possível carregar o diagnóstico.</p>
+                <button type="button" onClick={() => setDismissedDiagnosisError(true)} aria-label="Fechar" className="-mr-1 -mt-0.5 shrink-0 rounded-md p-1 text-muted transition-colors hover:bg-surfaceMuted hover:text-ink">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" /></svg>
+                </button>
               </div>
             )}
             {diagnosis && diagnosis.nodes.length > 0 && (
@@ -364,9 +370,14 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
             )}
 
             {/* Behavioral insights */}
-            {diagnosis && (diagnosis.impulsive_count >= 2 || diagnosis.overconfident_count >= 2) && (
+            {diagnosis && !dismissedInsights && (diagnosis.impulsive_count >= 2 || diagnosis.overconfident_count >= 2) && (
               <div className="km-card border-warning/40 p-4 md:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Padrão identificado</p>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Padrão identificado</p>
+                  <button type="button" onClick={() => setDismissedInsights(true)} aria-label="Fechar" className="-mr-1 -mt-0.5 shrink-0 rounded-md p-1 text-muted transition-colors hover:bg-surfaceMuted hover:text-ink">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" /></svg>
+                  </button>
+                </div>
                 <div className="mt-2 space-y-1 text-xs text-muted">
                   {diagnosis.impulsive_count >= 2 && (
                     <p>• {diagnosis.impulsive_count} questão(ões) respondida(s) muito rapidamente e errada(s) — releia o enunciado antes de marcar.</p>
@@ -376,6 +387,10 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
                   )}
                 </div>
               </div>
+            )}
+
+            {session.resolution_mode === "simulation" && wrongItems.length > 0 && token && (
+              <ErrorFlashcardsPanel token={token} session={session} wrongItems={wrongItems} />
             )}
           </div>
         )}

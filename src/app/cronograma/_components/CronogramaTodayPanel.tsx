@@ -51,9 +51,9 @@ export function CronogramaTodayPanel({
   const taskLabel = todayTasks.length === 1 ? "1 tarefa" : `${todayTasks.length} tarefas`;
   const questionLabel = dueQuestionTotal === 1 ? "1 questão" : `${dueQuestionTotal} questões`;
   const queueDetail = [
-    questionReviewQueue.due_count > 0 ? `${questionReviewQueue.due_count} vencidas por FSRS` : "",
+    questionReviewQueue.due_count > 0 ? `${questionReviewQueue.due_count} no ponto de revisão` : "",
     questionReviewQueue.struggling_count > 0
-      ? `${questionReviewQueue.struggling_count} por baixo desempenho`
+      ? `${questionReviewQueue.struggling_count} de baixo desempenho`
       : "",
   ].filter(Boolean).join(" · ");
 

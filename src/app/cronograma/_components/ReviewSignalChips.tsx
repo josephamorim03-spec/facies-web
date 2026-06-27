@@ -1,4 +1,5 @@
 import type { ReviewTask } from "@/lib/api";
+import { memoryPhrase, type GuidanceTone } from "@/lib/guidanceCopy";
 
 function formatPercent(value: number | null | undefined): string | null {
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
@@ -6,12 +7,33 @@ function formatPercent(value: number | null | undefined): string | null {
   return `${Math.round(Math.max(0, Math.min(100, pct)))}%`;
 }
 
+// node_retention pode vir 0–1 ou 0–100; memoryPhrase espera 0–1.
+function normalizeRetention(value: number | null | undefined): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  return value <= 1 ? value : value / 100;
+}
+
+function toneChipClass(tone: GuidanceTone): string {
+  if (tone === "critical") return "border-danger/40 bg-danger/10 text-danger";
+  if (tone === "attention") return "border-warning bg-[var(--amber-tint)] text-ink";
+  if (tone === "positive") return "border-success/40 bg-success/10 text-success";
+  return "border-edge bg-surface text-muted";
+}
+
+// Rótulo curto para o chip compacto (calendário): a frase completa fica no tooltip.
+function memoryShort(tone: GuidanceTone): string {
+  if (tone === "critical") return "Caiu";
+  if (tone === "attention") return "Esquecendo";
+  if (tone === "positive") return "Firme";
+  return "Sem leitura";
+}
+
 function pluralizeDueQuestion(count: number): string {
   return count === 1 ? "1 q vencida do tópico" : `${count} q vencidas do tópico`;
 }
 
 function pluralizeStrugglingQuestion(count: number): string {
-  return count === 1 ? "1 fraqueza no topico" : `${count} fraquezas no topico`;
+  return count === 1 ? "1 ponto fraco no tópico" : `${count} pontos fracos no tópico`;
 }
 
 export function hasReviewSignals(task: ReviewTask): boolean {
@@ -33,12 +55,14 @@ export function ReviewSignalChips({
   compact?: boolean;
   className?: string;
 }) {
-  const retention = formatPercent(task.node_retention);
+  const retentionPct = formatPercent(task.node_retention);
+  const retention01 = normalizeRetention(task.node_retention);
+  const memory = retention01 !== null ? memoryPhrase(retention01) : null;
   const mastery = formatPercent(task.node_mastery);
   const dueQuestionCount = Math.max(0, Number(task.due_question_count ?? 0));
   const strugglingQuestionCount = Math.max(0, Number(task.struggling_question_count ?? 0));
 
-  if (!retention && !mastery && !task.at_risk && dueQuestionCount <= 0 && strugglingQuestionCount <= 0) return null;
+  if (!memory && !mastery && !task.at_risk && dueQuestionCount <= 0 && strugglingQuestionCount <= 0) return null;
 
   const baseClass = compact
     ? "rounded-full border px-1.5 py-0.5 text-[9px] font-medium leading-none"
@@ -46,22 +70,27 @@ export function ReviewSignalChips({
 
   return (
     <div className={`flex flex-wrap items-center gap-1 ${className}`}>
-      {retention && (
-        <span className={`${baseClass} border-edge bg-surface text-muted`} title={`Retenção do nó: ${retention}`}>
-          {compact ? `Ret ${retention}` : `Retenção ${retention}`}
+      {/* Memória do tema — "retenção baixa" virou um estado legível, não um % técnico. */}
+      {memory && (
+        <span
+          className={`${baseClass} ${toneChipClass(memory.tone)}`}
+          title={`Memória do tópico${retentionPct ? `: ${retentionPct}` : ""}. ${memory.phrase}`}
+        >
+          {compact ? memoryShort(memory.tone) : memory.label}
         </span>
       )}
       {mastery && (
-        <span className={`${baseClass} border-edge bg-surface text-muted`} title={`Domínio do nó: ${mastery}`}>
+        <span className={`${baseClass} border-edge bg-surface text-muted`} title={`Domínio do tópico: ${mastery}`}>
           {compact ? `Dom ${mastery}` : `Domínio ${mastery}`}
         </span>
       )}
-      {task.at_risk && (
+      {/* Só mostra o aviso de risco quando não há leitura de memória (evita chip duplicado). */}
+      {task.at_risk && !memory && (
         <span
           className={`${baseClass} border-warning bg-[var(--amber-tint)] text-ink`}
-          title="A tarefa foi priorizada pelo desempenho recente no banco de questões."
+          title="O sistema adiantou esta revisão porque seu desempenho recente indica que você está começando a esquecer."
         >
-          vencida pela performance
+          {compact ? "Revisar já" : "Revisar antes de esquecer"}
         </span>
       )}
       {dueQuestionCount > 0 && (

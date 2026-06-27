@@ -69,6 +69,13 @@ export default function ImportWorkspace({
   formatRelativeTime,
 }: Props) {
   const questions = preview?.questions ?? [];
+  const readiness = previewSummary?.editorial_readiness;
+  const readinessTone =
+    readiness?.state === "blocked"
+      ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200"
+      : readiness?.state === "needs_review"
+        ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
+        : "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200";
 
   return (
     <div className="space-y-5">
@@ -182,6 +189,31 @@ export default function ImportWorkspace({
               <MetadataPill label="OCR" value={previewSummary.quality_summary?.ocr_summary?.used ? "usado" : previewSummary.quality_summary?.ocr_summary?.attempted ? "tentado" : null} />
               <MetadataPill label="paginas OCR" value={previewSummary.quality_summary?.ocr_summary?.pages_used} />
             </div>
+            {readiness ? (
+              <div className={`rounded-2xl border p-4 text-sm ${readinessTone}`}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-semibold uppercase opacity-70">Prontidao editorial</div>
+                    <div className="mt-1 text-lg font-semibold">{readiness.label}</div>
+                  </div>
+                  <div className="text-xs font-semibold uppercase opacity-70">risco {readiness.risk}</div>
+                </div>
+                <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+                  <span>{readiness.publishable_questions}/{readiness.total_questions} publicaveis</span>
+                  <span>{readiness.blocked_questions} bloqueadas</span>
+                  <span>{readiness.warning_questions} com alertas</span>
+                </div>
+                {readiness.blockers.length ? (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {readiness.blockers.map((blocker) => (
+                      <span key={blocker} className="rounded-full bg-white/50 px-2 py-0.5 text-[11px] font-semibold dark:bg-black/20">
+                        {blocker}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             {previewSummary.warnings.length ? (
               <div className="grid gap-3">
                 {previewSummary.warnings.map((warning) => (

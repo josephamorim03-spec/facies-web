@@ -36,6 +36,21 @@ export type QuestionBankQuestionDiagnostic = {
   stem_sample: string;
 };
 
+export type QuestionBankEditorialReadiness = {
+  state: "ready" | "needs_review" | "blocked" | string;
+  label: string;
+  risk: "baixo" | "medio" | "alto" | string;
+  total_questions: number;
+  blocked_questions: number;
+  warning_questions: number;
+  publishable_questions: number;
+  blockers: string[];
+  estimated_llm_calls?: {
+    cheap?: number;
+    strong?: string | number;
+  };
+};
+
 export type QuestionBankAdminPreviewSummary = {
   detected_metadata: Record<string, unknown>;
   override_metadata: Record<string, unknown>;
@@ -49,6 +64,7 @@ export type QuestionBankAdminPreviewSummary = {
     question_override_numbers?: string[];
   };
   question_editorial_metadata?: QuestionBankEditorialMetadata[];
+  editorial_readiness?: QuestionBankEditorialReadiness;
   years_detected: number[];
   years_applied: number[];
   is_mixed_source: boolean;
@@ -139,6 +155,29 @@ export type QuestionBankAdminPipelineStage = {
   last_error_at: string | null;
 };
 
+export type QuestionBankEditorialFunnelStage = {
+  key: string;
+  label: string;
+  pending: number;
+  processing: number;
+  done: number;
+  failed: number;
+};
+
+export type QuestionBankEditorialHealth = {
+  state: "ready" | "needs_review" | "blocked" | string;
+  label: string;
+  published_questions: number;
+  human_review_questions: number;
+  blocked_questions: number;
+  low_confidence_questions: number;
+  open_reports: number;
+  failed_jobs: number;
+  needs_attention: number;
+  top_actions: string[];
+  funnel: QuestionBankEditorialFunnelStage[];
+};
+
 export type QuestionBankAdminPipelineSnapshot = {
   pipeline_jobs: Array<{ job_type: string; status: string; n: number }>;
   stage_stats: QuestionBankAdminPipelineStage[];
@@ -153,6 +192,7 @@ export type QuestionBankAdminPipelineSnapshot = {
     human_review_questions: number;
   };
   last_error_by_stage: Record<string, { message?: string; updated_at?: string }>;
+  editorial_health?: QuestionBankEditorialHealth;
 };
 
 export type QuestionBankAdminPipelineStatus = {
@@ -220,6 +260,10 @@ export type QuestionBankReviewQueueItem = {
   publish_blockers: string[];
   issues: Record<string, unknown>;
   has_image: boolean;
+  open_reports?: number;
+  review_lane?: string;
+  suggested_action?: string;
+  ai_read_summary?: QuestionBankAiReadSummary;
 };
 
 export type QuestionBankReviewResolutionAction = "approve" | "override" | "discard" | "requeue";
@@ -537,6 +581,31 @@ export type QuestionBankAdminQuestionNode = {
   node_type: string | null;
 };
 
+export type QuestionBankAiReadSummary = {
+  route: string;
+  route_label: string;
+  classification: {
+    grande_area?: string | null;
+    tema?: string | null;
+    subtema?: string | null;
+    microcompetencia?: string | null;
+    difficulty?: number | string | null;
+    charge_pattern?: string | null;
+    reasoning_type?: string | null;
+    primary_node?: Array<string | null>;
+  };
+  confidence: number | null;
+  confidence_label: string;
+  confidence_multiplier: number;
+  review_lane: string;
+  suggested_action: string;
+  publish_blockers: string[];
+  review_reason?: string | null;
+  classification_agreement?: Record<string, unknown> | null;
+  open_reports: number;
+  adaptive_impact: string;
+};
+
 export type QuestionBankAdminQuestionDetail = {
   id: string;
   stem: string;
@@ -561,6 +630,7 @@ export type QuestionBankAdminQuestionDetail = {
   topic_review: QuestionBankAdminTopicReview | null;
   dedup_enrichment_log: QuestionBankAdminEnrichmentLogEntry[];
   edit_log: { by?: string; at?: string; fields?: string[] }[];
+  ai_read_summary?: QuestionBankAiReadSummary;
 };
 
 export type QuestionBankAdminKnowledgeNode = {

@@ -9,6 +9,15 @@ import {
 import { truncateText } from "./adminQuestionBankUtils";
 
 const ANSWER_OPTIONS = ["A", "B", "C", "D", "E"] as const;
+const LANE_LABELS: Record<string, string> = {
+  low_confidence: "Baixa confianca",
+  structure_answer: "Estrutura/gabarito",
+  student_report: "Reports de estudantes",
+  image_ocr: "Imagem/OCR",
+  topic_conflict: "Conflito de topico",
+  pipeline_failure: "Falha de pipeline",
+  editorial_review: "Revisao editorial",
+};
 
 type Props = {
   items: QuestionBankReviewQueueItem[];
@@ -27,6 +36,15 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({});
   const [busyKey, setBusyKey] = useState("");
   const [localError, setLocalError] = useState("");
+  const groupedItems = items.reduce<Record<string, QuestionBankReviewQueueItem[]>>((acc, item) => {
+    const lane = item.review_lane || "editorial_review";
+    acc[lane] = [...(acc[lane] || []), item];
+    return acc;
+  }, {});
+  const laneKeys = Object.keys(groupedItems).sort((a, b) => {
+    const order = ["student_report", "structure_answer", "low_confidence", "topic_conflict", "image_ocr", "pipeline_failure", "editorial_review"];
+    return (order.indexOf(a) === -1 ? 99 : order.indexOf(a)) - (order.indexOf(b) === -1 ? 99 : order.indexOf(b));
+  });
 
   async function submit(questionId: string, action: QuestionBankReviewResolutionAction) {
     const key = `${questionId}:${action}`;
@@ -89,7 +107,17 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
         </div>
       ) : null}
 
-      {items.map((item) => {
+      {laneKeys.map((lane) => (
+        <div key={lane} className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+              {LANE_LABELS[lane] || lane}
+            </span>
+            <span className="text-xs text-amber-700/70 dark:text-amber-200/70">
+              {groupedItems[lane]?.length ?? 0}
+            </span>
+          </div>
+          {groupedItems[lane]?.map((item) => {
         const blockers = item.publish_blockers ?? [];
         const alternatives = item.alternatives ?? {};
         const hasIssues = Object.keys(item.issues ?? {}).length > 0;
@@ -104,7 +132,14 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
                   </span>
                   {item.classification_confidence != null ? <span>conf. {item.classification_confidence.toFixed(2)}</span> : null}
                   {item.has_image ? <span>imagem</span> : null}
+                  {item.open_reports ? <span>{item.open_reports} report(s)</span> : null}
                 </div>
+                {item.suggested_action || item.ai_read_summary?.adaptive_impact ? (
+                  <div className="mt-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300">
+                    {item.suggested_action ? <div><span className="font-semibold">Acao:</span> {item.suggested_action}</div> : null}
+                    {item.ai_read_summary?.adaptive_impact ? <div className="mt-1"><span className="font-semibold">Impacto:</span> {item.ai_read_summary.adaptive_impact}</div> : null}
+                  </div>
+                ) : null}
 
                 {blockers.length > 0 ? (
                   <div className="mt-2 flex flex-wrap gap-1.5">
@@ -192,7 +227,9 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
             </div>
           </div>
         );
-      })}
+          })}
+        </div>
+      ))}
     </div>
   );
 }

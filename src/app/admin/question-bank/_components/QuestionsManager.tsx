@@ -773,6 +773,45 @@ export default function QuestionsManager() {
               );
             })()}
 
+            {detail.ai_read_summary && (() => {
+              const summary = detail.ai_read_summary;
+              const classification = summary.classification || {};
+              const chips = [
+                classification.grande_area,
+                classification.tema,
+                classification.subtema,
+                classification.microcompetencia,
+              ].filter(Boolean);
+              return (
+                <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-100">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide opacity-70">Leitura editorial da IA</p>
+                      <p className="mt-1 font-semibold">{summary.route_label} Â· confianca {summary.confidence_label}</p>
+                    </div>
+                    <span className="rounded-full bg-white/70 px-2 py-1 text-xs font-semibold dark:bg-black/20">
+                      {summary.review_lane}
+                    </span>
+                  </div>
+                  {chips.length ? (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {chips.map((chip) => (
+                        <span key={String(chip)} className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-medium dark:bg-black/20">
+                          {chip}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  <div className="mt-3 grid gap-1 text-xs sm:grid-cols-2">
+                    <span><span className="font-semibold">Acao:</span> {summary.suggested_action}</span>
+                    <span><span className="font-semibold">Impacto:</span> {summary.adaptive_impact}</span>
+                    {classification.charge_pattern ? <span><span className="font-semibold">Cobranca:</span> {classification.charge_pattern}</span> : null}
+                    {summary.open_reports ? <span><span className="font-semibold">Reports:</span> {summary.open_reports}</span> : null}
+                  </div>
+                </div>
+              );
+            })()}
+
             {detail.question_fingerprint && (
               <div className="mt-4 flex flex-wrap items-center gap-1.5 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
                 <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">DNA</span>

@@ -38,22 +38,27 @@ export default function QuickNoteModal({
 }: QuickNoteModalProps) {
   const { token } = useAuthToken();
   const trimmedHypothesis = (errorHypothesis ?? "").trim();
+  const theme = (defaultTheme ?? "").trim().slice(0, 120) || "Questão do banco";
+  const isError = questionOutcome === "incorrect";
+
+  // Pre-draft a retrieval-style card from the question's own signals (no LLM): the
+  // front is an active-recall cue; the back seeds the answer + the trap to refute.
   const [area, setArea] = useState<OperationalAreaCode>(() => normalizeArea(defaultArea));
   const [insight, setInsight] = useState(() =>
-    trimmedHypothesis && selectedOption
-      ? `Que raciocínio me levou à alternativa ${selectedOption}?`
-      : "",
+    isError && selectedOption
+      ? `Em ${theme}, por que a alternativa ${selectedOption} engana e qual é a conduta correta?`
+      : `Qual o ponto-chave de ${theme} que define a resposta correta?`,
   );
   const [body, setBody] = useState(() => {
-    if (!trimmedHypothesis) return "";
-    const answerLine = correctAnswer ? `Gabarito: ${correctAnswer}.` : "Gabarito: revisar.";
-    return `Hipótese do erro: ${trimmedHypothesis}\n${answerLine}\n\nRaciocínio correto: `;
+    const answerLine = correctAnswer ? `Resposta correta: ${correctAnswer}.` : "Resposta correta: revisar.";
+    return trimmedHypothesis && selectedOption
+      ? `${answerLine}\nArmadilha em ${selectedOption}: ${trimmedHypothesis}\n\nRaciocínio correto: `
+      : `${answerLine}\n\nRaciocínio correto: `;
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
-  const theme = (defaultTheme ?? "").trim().slice(0, 120) || "Questão do banco";
   const canSubmit = Boolean(token) && insight.trim().length >= 6 && Boolean(body.trim()) && !busy;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -74,7 +79,7 @@ export default function QuickNoteModal({
         question_outcome: questionOutcome,
         insight_question: insight.trim(),
         body: body.trim(),
-        weight: 7,
+        weight: isError ? 8 : 7,
         question_id: questionId,
       });
       setDone(true);
@@ -94,7 +99,7 @@ export default function QuickNoteModal({
           className="w-full max-w-sm rounded-lg border border-edge bg-paper p-6 text-center shadow-lg"
           onClick={(event) => event.stopPropagation()}
         >
-          <p className="text-sm font-semibold text-ink">Nota salva no caderno.</p>
+          <p className="text-sm font-semibold text-ink">Flashcard salvo no caderno.</p>
           <button
             type="button"
             onClick={onClose}
@@ -112,14 +117,14 @@ export default function QuickNoteModal({
       <form
         role="dialog"
         aria-modal="true"
-        aria-label="Nova nota do caderno"
+        aria-label="Novo flashcard"
         onSubmit={(event) => void handleSubmit(event)}
         onClick={(event) => event.stopPropagation()}
         className="w-full max-w-md rounded-lg border border-edge bg-paper p-5 shadow-lg"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-ink">Nova nota do caderno</p>
+            <p className="text-sm font-semibold text-ink">Novo flashcard</p>
             <p className="mt-1 text-xs text-muted">{theme}</p>
           </div>
           <button
@@ -163,7 +168,7 @@ export default function QuickNoteModal({
         )}
 
         <label className="mt-4 block text-xs font-semibold text-muted" htmlFor="quick-note-insight">
-          O que não sabia?
+          Frente · pergunta de recall
         </label>
         <input
           id="quick-note-insight"
@@ -178,7 +183,7 @@ export default function QuickNoteModal({
         />
 
         <label className="mt-4 block text-xs font-semibold text-muted" htmlFor="quick-note-body">
-          Anotação
+          Verso · resposta
         </label>
         <textarea
           id="quick-note-body"
@@ -196,7 +201,7 @@ export default function QuickNoteModal({
           disabled={!canSubmit}
           className="mt-4 w-full rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk disabled:opacity-50"
         >
-          {busy ? "Salvando..." : "Salvar nota"}
+          {busy ? "Salvando..." : "Salvar flashcard"}
         </button>
       </form>
     </div>

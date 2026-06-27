@@ -24,6 +24,8 @@ import {
 import { useNavbar } from "@/lib/NavbarContext";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useToast } from "@/lib/useToast";
+import { GuidanceNote } from "@/components/GuidanceNote";
+import type { GuidanceTone } from "@/lib/guidanceCopy";
 import FiltersBar from "./_components/FiltersBar";
 import QuestionList from "./_components/QuestionList";
 import CreateSessionPanel from "./_components/CreateSessionPanel";
@@ -236,6 +238,7 @@ const FALLBACK_NEXT_ACTION: QuestionBankNextAction = {
   subtitle: "Um bloco adaptativo curto mantém o ritmo e cobre novas microcompetências.",
   meta: "~20 min · treino com correção item a item",
   cta_label: "Começar treino",
+  rationale: "Sem revisões pendentes — um bloco curto de questões novas mantém o ritmo e mostra onde você ainda não foi testado.",
   area: null,
   area_label: null,
   signals: [],
@@ -254,6 +257,13 @@ function signalClassName(severity: QuestionBankNextAction["signals"][number]["se
   if (severity === "warning") return "border-warning/40 text-warning";
   if (severity === "success") return "border-success/40 text-success";
   return "border-edge text-muted";
+}
+
+// Tom da "voz do sistema" derivado do sinal mais grave da recomendação.
+function actionTone(action: QuestionBankNextAction): GuidanceTone {
+  if (action.signals.some((s) => s.severity === "critical")) return "critical";
+  if (action.signals.some((s) => s.severity === "warning")) return "attention";
+  return "neutral";
 }
 
 type SearchParamReader = { get(name: string): string | null };
@@ -348,6 +358,9 @@ function BancoDeQuestoesContent() {
   const [nextActionLoading, setNextActionLoading] = useState(true);
   const [performance, setPerformance] = useState<QuestionBankPerformance | null>(null);
   const [dueTopicTaskCount, setDueTopicTaskCount] = useState(0);
+  // Montagem manual fica recolhida por padrão: a recomendação é a entrada principal.
+  // O aluno abre o montador quando quer controlar o bloco no detalhe.
+  const [manualOpen, setManualOpen] = useState(false);
 
   // Derived
   const maxSelectable = Math.max(1, Math.min(50, availability?.max_selectable ?? 50));
@@ -718,6 +731,11 @@ function BancoDeQuestoesContent() {
                     <span className="rounded-full border border-edge px-2 py-0.5 text-xs text-muted">{recommended.meta}</span>
                   </div>
                   <p className="mt-1 text-sm text-muted">{recommended.subtitle}</p>
+                  {(recommended.rationale ?? "").trim() && (
+                    <GuidanceNote area={recommended.area} eyebrow="Por que agora" tone={actionTone(recommended)} className="mt-2">
+                      {recommended.rationale}
+                    </GuidanceNote>
+                  )}
                   {recommended.signals.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {recommended.signals.map((signal) => (
@@ -737,7 +755,7 @@ function BancoDeQuestoesContent() {
               type="button"
               onClick={() => void startRecommendedSession()}
               disabled={busy || nextActionLoading}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-edge bg-surface px-4 py-2 text-sm font-semibold text-primary transition-colors hover:border-primary disabled:opacity-50"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 disabled:opacity-50"
             >
               {busy ? "Preparando..." : nextActionLoading ? "Carregando..." : recommended.cta_label}
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
@@ -758,17 +776,29 @@ function BancoDeQuestoesContent() {
         </section>
 
         <section className="space-y-4" aria-label="Montador de sessão">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Montador guiado</p>
-              <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight">Defina o bloco do aluno</h2>
-              <p className="mt-1 text-sm text-muted">Escolha intenção, assunto, recorte e quantidade antes de iniciar.</p>
-            </div>
-            <span className="rounded-full bg-surfaceMuted px-3 py-1 text-xs font-semibold text-muted">
-              {appliedFilterCount} filtro{appliedFilterCount === 1 ? "" : "s"}
+          <button
+            type="button"
+            onClick={() => setManualOpen((open) => !open)}
+            aria-expanded={manualOpen}
+            className="flex w-full flex-wrap items-center justify-between gap-3 rounded-xl border border-edge bg-surface px-4 py-3 text-left transition-colors hover:border-primary"
+          >
+            <span className="min-w-0">
+              <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-primary">Montagem manual</span>
+              <span className="mt-1 block font-serif text-xl font-semibold leading-tight text-ink">Montar sessão</span>
+              <span className="mt-1 block text-sm text-muted">Intenção, assunto, recorte e quantidade — quando quiser controlar o bloco.</span>
             </span>
-          </div>
+            <span className="flex shrink-0 items-center gap-3">
+              <span className="rounded-full bg-surfaceMuted px-3 py-1 text-xs font-semibold text-muted">
+                {appliedFilterCount} filtro{appliedFilterCount === 1 ? "" : "s"}
+              </span>
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-muted transition-transform ${manualOpen ? "rotate-90" : ""}`} aria-hidden="true">
+                <path d="m7 4 6 6-6 6" />
+              </svg>
+            </span>
+          </button>
 
+          {manualOpen && (
+          <>
           <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4" aria-label="Tipos de sessão">
             <SessionIntentCard
               eyebrow="01 · construir"
@@ -902,6 +932,8 @@ function BancoDeQuestoesContent() {
             availability={availability}
             onStartSession={() => void startSession()}
           />
+          </>
+          )}
         </section>
 
         {performance && performance.areas.length > 0 && (
@@ -961,11 +993,11 @@ function BancoDeQuestoesContent() {
           )}
           <button
             type="button"
-            onClick={() => void startSession()}
-            disabled={!canStartConfigured}
+            onClick={() => void (manualOpen ? startSession() : startRecommendedSession())}
+            disabled={manualOpen ? !canStartConfigured : busy || nextActionLoading}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary py-3 text-sm font-semibold text-primaryInk shadow-sm transition disabled:opacity-40"
           >
-            {busy ? "Preparando..." : configuredStartLabel}
+            {busy ? "Preparando..." : manualOpen ? configuredStartLabel : recommended.cta_label}
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
               <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
             </svg>

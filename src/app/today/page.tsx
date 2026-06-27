@@ -34,6 +34,7 @@ import {
   triggerScheduleSuggestion,
 } from "@/lib/api";
 import { AreaIcon } from "@/components/AreaIcon";
+import { GuidanceNote } from "@/components/GuidanceNote";
 import { RescheduleSuggestionDialog } from "@/app/cronograma/_components/RescheduleSuggestionDialog";
 import { InlineLogForm } from "@/app/cronograma/_components/studyReview/InlineLogForm";
 import { IconPlus, IconRefresh } from "@/app/cronograma/_components/CronogramaIcons";
@@ -295,6 +296,15 @@ function IconArrowRight({ className }: { className?: string }) {
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <path d="M4 10h12" />
       <path d="m11 5 5 5-5 5" />
+    </svg>
+  );
+}
+
+function IconClock({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
     </svg>
   );
 }
@@ -610,11 +620,15 @@ export default function TodayPage() {
   ].filter((item): item is { key: string; label: string; className: string } => item !== null);
 
   // The single best next step, already decided by the system (weakness > scheduled task > maintenance).
+  // O "motivo" é a voz do tutor (serif): a mesma fonte da ação, para não soar como
+  // um segundo cérebro. "tone" só pinta o eyebrow da nota.
   const heroAction = nextWeakness
     ? {
         area: nextWeakness.area || "OU",
         title: `Revisar ${nextWeakness.theme}`,
-        subtitle: nextWeakness.signal,
+        reason: nextWeakness.action || nextWeakness.signal,
+        tone: "attention" as const,
+        minutes: 15,
         metric: nextWeakness.accuracyPct !== null ? `Acerto atual ${nextWeakness.accuracyPct}%` : null,
         href: `/banco-de-questoes?area=${encodeURIComponent(nextWeakness.area)}&theme=${encodeURIComponent(nextWeakness.theme)}&answer_status=unanswered_or_wrong`,
         ctaLabel: "Começar revisão",
@@ -623,7 +637,9 @@ export default function TodayPage() {
       ? {
           area: nextActionTask.area || "OU",
           title: `Resolver ${nextActionTask.theme}`,
-          subtitle: `${nextActionTask.expected_questions} questões programadas para hoje.`,
+          reason: "Esta revisão está programada para hoje no seu cronograma — fazê-la no dia mantém o espaçamento ideal.",
+          tone: "neutral" as const,
+          minutes: Math.max(10, Math.min(40, Math.round((Number(nextActionTask.expected_questions) || 10) * 1.5))),
           metric: null,
           href: reviewTaskHref(nextActionTask),
           ctaLabel: "Começar agora",
@@ -733,25 +749,29 @@ export default function TodayPage() {
                 >
                   <AreaIcon area={heroAction.area} size={44} colored />
                 </div>
-                <div className="flex min-w-0 flex-1 flex-col gap-2 px-5 py-5">
+                <div className="flex min-w-0 flex-1 flex-col gap-2.5 px-5 py-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Sua próxima ação</p>
                   <h2 className="font-serif text-2xl font-semibold leading-tight text-ink md:text-3xl">{heroAction.title}</h2>
-                  <p className="text-sm text-muted">{heroAction.subtitle}</p>
-                  {(heroAction.metric || nextActionSignals.length > 0) && (
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      {heroAction.metric && (
-                        <span className="text-xs font-semibold" style={{ color: areaHex(heroAction.area) }}>{heroAction.metric}</span>
-                      )}
-                      {nextActionSignals.map((signal) => (
-                        <span
-                          key={signal.key}
-                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${signal.className}`}
-                        >
-                          {signal.label}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  <GuidanceNote area={heroAction.area} eyebrow="Por que agora" tone={heroAction.tone}>
+                    {heroAction.reason}
+                  </GuidanceNote>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
+                      <IconClock className="h-3.5 w-3.5" />
+                      ~{heroAction.minutes} min
+                    </span>
+                    {heroAction.metric && (
+                      <span className="text-xs font-semibold" style={{ color: areaHex(heroAction.area) }}>{heroAction.metric}</span>
+                    )}
+                    {nextActionSignals.map((signal) => (
+                      <span
+                        key={signal.key}
+                        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${signal.className}`}
+                      >
+                        {signal.label}
+                      </span>
+                    ))}
+                  </div>
                 </div>
                 <div className="flex items-center px-5 pb-5 sm:pb-0 sm:pr-5">
                   <Link

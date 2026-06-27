@@ -77,6 +77,8 @@ type StudyQuestionProps = {
   confidenceRating: number | null;
   doubtfulDraft: boolean;
   correctionConfidenceLevel: CorrectionConfidenceLevel;
+  eliminated: QuestionBankOption[];
+  onToggleEliminate: (option: QuestionBankOption) => void;
   busy: boolean;
   reportOpen: boolean;
   reportType: QuestionBankReportType;
@@ -97,6 +99,8 @@ type StudyQuestionProps = {
   onPrev: () => void;
   onNext: () => void;
   onFinalize: () => void;
+  fixacaoCount?: number;
+  onFixar?: () => void;
   onQuickNote?: () => void;
   onShowHistory?: () => void;
 };
@@ -121,10 +125,10 @@ function ClinicalCyclePanel({
 }) {
   const activeIndex = !answered ? 0 : !revealed ? 1 : needsCorrection ? 2 : 3;
   const steps = [
-    { label: "Calibrar", detail: "confiança e dúvida" },
-    { label: "Decidir", detail: "alternativa escolhida" },
-    { label: "Diagnosticar", detail: isCorrect ? "validar acerto" : "entender o erro" },
-    { label: "Reparar", detail: "correção e caderno" },
+    { label: "Calibrar", detail: "o quanto você confia" },
+    { label: "Decidir", detail: "sua resposta" },
+    { label: "Diagnosticar", detail: isCorrect ? "validar o acerto" : "entender o erro" },
+    { label: "Reparar", detail: "reescrever o raciocínio" },
   ];
 
   return (
@@ -168,6 +172,8 @@ export default function StudyQuestion({
   confidenceRating,
   doubtfulDraft,
   correctionConfidenceLevel,
+  eliminated,
+  onToggleEliminate,
   busy,
   reportOpen,
   reportType,
@@ -188,6 +194,8 @@ export default function StudyQuestion({
   onPrev,
   onNext,
   onFinalize,
+  fixacaoCount = 0,
+  onFixar,
   onQuickNote,
   onShowHistory,
 }: StudyQuestionProps) {
@@ -236,6 +244,22 @@ export default function StudyQuestion({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [position, total, canReveal, canCaptureAnswerSignals, busy, item.alternatives, onAnswer, onNext, onPrev, onReveal]);
 
+  // Metacognitive calibration: compare recorded confidence/doubt against the outcome.
+  const calibrationNote: { tone: "danger" | "warning" | "success"; text: string } | null = (() => {
+    if (!revealed || item.is_correct === null) return null;
+    const conf = item.confidence_self_rating;
+    if (!item.is_correct && conf != null && conf >= 4) {
+      return { tone: "danger", text: "Excesso de confiança: você marcou confiança alta e errou — desconfie do que parece óbvio." };
+    }
+    if (item.is_correct && item.doubtful) {
+      return { tone: "success", text: "Bom instinto: acertou mesmo na dúvida — fixe o porquê para ganhar confiança." };
+    }
+    if (!item.is_correct && item.doubtful) {
+      return { tone: "warning", text: "Você hesitou e errou — boa candidata a flashcard para fechar a lacuna." };
+    }
+    return null;
+  })();
+
   return (
     <div className="flex min-h-screen flex-col bg-paper">
       {/* Top progress bar */}
@@ -274,15 +298,24 @@ export default function StudyQuestion({
               <p className="text-xs text-muted">{sourceLabel(item.source)}</p>
               {(() => {
                 const diff = difficultyChip(item.difficulty_estimate);
-                const reasons = selectionReasons(item.selection_reason);
+                const adaptive = item.adaptive_explanation;
+                const reasons = adaptive?.reasons?.length
+                  ? adaptive.reasons.slice(0, 3)
+                  : selectionReasons(item.selection_reason);
                 const stats = item.attempt_stats;
+                const editorial = item.editorial_quality;
                 const hasHistory = Boolean(onShowHistory && stats && stats.attempt_count > 0);
-                if (!diff && reasons.length === 0 && !hasHistory) return null;
+                if (!diff && reasons.length === 0 && !hasHistory && !editorial) return null;
                 return (
                   <div className="flex flex-wrap items-center gap-1.5">
                     {diff && (
                       <span className={cx("rounded border px-1.5 py-0.5 text-[10px] font-semibold", diff.className)}>
                         {diff.label}
+                      </span>
+                    )}
+                    {adaptive?.title && (
+                      <span className="rounded border border-primary/30 bg-surface px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                        {adaptive.title}
                       </span>
                     )}
                     {hasHistory && stats && (
@@ -299,6 +332,14 @@ export default function StudyQuestion({
                         {r}
                       </span>
                     ))}
+                    {editorial && (
+                      <span
+                        className="rounded border border-edge px-1.5 py-0.5 text-[10px] text-muted"
+                        title={editorial.message ?? undefined}
+                      >
+                        {editorial.badge}
+                      </span>
+                    )}
                   </div>
                 );
               })()}
@@ -378,28 +419,59 @@ export default function StudyQuestion({
                 const selected = item.selected_option === option;
                 const isCorrect = revealed && item.correct_answer === option;
                 const isWrong = revealed && selected && item.correct_answer !== option;
+                const isEliminated = eliminated.includes(option);
+                const canEliminate = !finalized && !item.answered;
                 return (
-                  <button
+                  <div
                     key={option}
-                    type="button"
-                    onClick={() => onAnswer(option)}
-                    disabled={busy || finalized || item.answered}
                     className={cx(
-                      "flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left text-sm transition-colors disabled:cursor-not-allowed",
+                      "flex items-stretch overflow-hidden rounded-xl border text-sm transition-colors",
                       isCorrect
                         ? "border-success bg-surface text-success"
                         : isWrong
                           ? "border-danger bg-surface text-danger"
                           : selected
                             ? "border-primary bg-[var(--amber-tint)]"
-                            : "border-edge bg-surface hover:border-primary disabled:opacity-70",
+                            : isEliminated
+                              ? "border-edge bg-surface opacity-60"
+                              : "border-edge bg-surface hover:border-primary",
                     )}
                   >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-edge bg-paper text-xs font-semibold text-ink">
-                      {option}
-                    </span>
-                    <span className="min-w-0 flex-1 leading-relaxed">{item.alternatives[option]}</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isEliminated) onToggleEliminate(option);
+                        onAnswer(option);
+                      }}
+                      disabled={busy || finalized || item.answered}
+                      className="flex min-w-0 flex-1 items-start gap-3 px-3 py-3 text-left disabled:cursor-not-allowed"
+                    >
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-edge bg-paper text-xs font-semibold text-ink">
+                        {option}
+                      </span>
+                      <span className={cx("min-w-0 flex-1 leading-relaxed", isEliminated && !selected && "text-muted line-through")}>
+                        {item.alternatives[option]}
+                      </span>
+                    </button>
+                    {canEliminate && (
+                      <button
+                        type="button"
+                        onClick={() => onToggleEliminate(option)}
+                        disabled={busy}
+                        aria-pressed={isEliminated}
+                        aria-label={isEliminated ? `Restaurar alternativa ${option}` : `Riscar alternativa ${option}`}
+                        title={isEliminated ? "Restaurar" : "Riscar (eliminar)"}
+                        className={cx(
+                          "flex w-11 shrink-0 items-center justify-center border-l border-edge transition-colors",
+                          isEliminated ? "text-danger" : "text-muted hover:text-danger",
+                        )}
+                      >
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                          <path d="M4 10h12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -422,22 +494,30 @@ export default function StudyQuestion({
                 item.is_correct ? "border-success bg-surface" : "border-danger bg-surface",
               )}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Resultado da decisão</p>
-                    <p className={cx("mt-1 text-sm font-semibold", item.is_correct ? "text-success" : "text-danger")}>
-                      {item.is_correct ? "Correto" : "Incorreto"} · Gabarito {item.correct_answer}
-                    </p>
-                  </div>
+                  <p className={cx("text-sm font-semibold", item.is_correct ? "text-success" : "text-danger")}>
+                    {item.is_correct ? "Correto" : "Incorreto"} · Gabarito {item.correct_answer}
+                  </p>
                   {onQuickNote && (
                     <button
                       type="button"
                       onClick={onQuickNote}
-                      className="rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:border-primary hover:text-ink"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:border-primary hover:text-ink"
                     >
-                      Anotar
+                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5" aria-hidden="true">
+                        <rect x="4" y="3" width="12" height="14" rx="1.5" /><path d="M7 7h6M7 10h6M7 13h3" />
+                      </svg>
+                      Criar flashcard
                     </button>
                   )}
                 </div>
+                {calibrationNote && (
+                  <p className={cx(
+                    "mt-2 text-xs",
+                    calibrationNote.tone === "danger" ? "text-danger" : calibrationNote.tone === "success" ? "text-success" : "text-warning",
+                  )}>
+                    {calibrationNote.text}
+                  </p>
+                )}
               </div>
             )}
 
@@ -450,7 +530,7 @@ export default function StudyQuestion({
                 {item.selected_option && item.distractor_diagnosis[item.selected_option] && (
                   <div className="mt-2 rounded-lg border border-warning bg-[var(--amber-tint)] p-3">
                     <p className="text-xs font-semibold text-warning">Hipótese principal</p>
-                    <p className="mt-1 text-sm text-ink">
+                    <p className="mt-1 font-serif text-sm leading-relaxed text-ink">
                       <span className="font-semibold">Sua escolha ({item.selected_option}):</span>{" "}
                       {item.distractor_diagnosis[item.selected_option]}
                     </p>
@@ -477,7 +557,7 @@ export default function StudyQuestion({
                 <textarea
                   value={correctionDraft}
                   onChange={(e) => onCorrectionChange(e.target.value)}
-                  placeholder="Explique o raciocínio correto e o motivo do erro."
+                  placeholder="Em poucas linhas: qual era o raciocínio certo e onde o seu desviou?"
                   className="mt-2 min-h-24 w-full resize-y"
                 />
                 <div className="mt-3 flex flex-wrap gap-1.5">
@@ -511,7 +591,7 @@ export default function StudyQuestion({
             {/* Report */}
             <div className="flex justify-end">
               {reportDone ? (
-                <span className="text-xs text-muted">Problema reportado</span>
+                <span className="text-xs text-muted">Enviado para revisao editorial</span>
               ) : (
                 <button
                   type="button"
@@ -607,14 +687,25 @@ export default function StudyQuestion({
             </button>
           </div>
           {!finalized && position === total && (
-            <button
-              type="button"
-              onClick={onFinalize}
-              disabled={busy}
-              className="rounded-xl border border-success bg-success px-5 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
-            >
-              Finalizar sessão
-            </button>
+            <div className="flex items-center gap-2">
+              {onFixar && fixacaoCount > 0 && (
+                <button
+                  type="button"
+                  onClick={onFixar}
+                  className="rounded-xl border border-primary px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-surfaceMuted"
+                >
+                  Fixar erros ({fixacaoCount})
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onFinalize}
+                disabled={busy}
+                className="rounded-xl border border-success bg-success px-5 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
+              >
+                Finalizar sessão
+              </button>
+            </div>
           )}
         </div>
       </div>

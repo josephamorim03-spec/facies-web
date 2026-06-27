@@ -4,8 +4,8 @@ import type { APIError } from "../shared/http";
 
 // ── Question Analysis Types ──────────────────────────────────────
 
-type AnalysisStatus = "completed" | "failed";
-type ProgressiveAnalysisStage = "processing" | "analysis_ready" | "completed" | "failed";
+type AnalysisStatus = "completed" | "failed" | "needs_review";
+type ProgressiveAnalysisStage = "processing" | "analysis_ready" | "completed" | "failed" | "needs_review";
 export type AnalysisDifficultyLevel = "baixa" | "média" | "alta";
 
 type QuestionAnalysisSignals = {
@@ -202,6 +202,7 @@ type AnalyzeSimulationErrorsProgressiveStartResponse = {
   analysis_ready: number;
   completed: number;
   failed: number;
+  needs_review?: number;
   handles: ProgressiveAnalyzeQuestionHandle[];
 };
 
@@ -224,6 +225,7 @@ type AnalyzeSimulationErrorsProgressiveStatusResponse = {
   analysis_ready: number;
   completed: number;
   failed: number;
+  needs_review?: number;
   done: boolean;
   results: AnalyzeSimulationErrorsProgressiveStatusItem[];
 };

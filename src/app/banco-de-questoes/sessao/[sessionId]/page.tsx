@@ -15,7 +15,9 @@ import {
   type QuestionBankSession,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
+import { Alert } from "@/components/ui/Alert";
 import StudyQuestion from "./_components/StudyQuestion";
+import FixacaoRound from "./_components/FixacaoRound";
 import QuickNoteModal from "./_components/QuickNoteModal";
 import ExamQuestion from "./_components/ExamQuestion";
 import ExamMap from "./_components/ExamMap";
@@ -56,6 +58,23 @@ export default function SessionPage() {
   // Navigation
   const [currentPosition, setCurrentPosition] = useState(1);
   const [showMap, setShowMap] = useState(false);
+
+  // Client-side alternative elimination ("cortar") — a visual study aid, per position.
+  // Never sent to the backend; does not affect the recorded attempt or FSRS.
+  const [eliminatedOptions, setEliminatedOptions] = useState<Record<number, QuestionBankOption[]>>({});
+
+  // Optional end-of-training retrieval round over the missed items (ungraded).
+  const [showFixacao, setShowFixacao] = useState(false);
+
+  function toggleEliminate(position: number, option: QuestionBankOption) {
+    setEliminatedOptions((prev) => {
+      const current = prev[position] ?? [];
+      const next = current.includes(option)
+        ? current.filter((o) => o !== option)
+        : [...current, option];
+      return { ...prev, [position]: next };
+    });
+  }
 
   // Reveal state (training mode)
   const [revealedPositions, setRevealedPositions] = useState<Record<number, boolean>>({});
@@ -291,16 +310,32 @@ export default function SessionPage() {
     if (start > 0) navigateToIndex(start - 1);
   }
 
+  // Non-blocking, dismissible error toast (replaces the old fixed red top banner).
+  const errorToast = error ? (
+    <div
+      className="fixed inset-x-0 bottom-4 z-50 mx-auto w-full max-w-md px-4"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
+      <Alert variant="danger" onDismiss={() => setError(null)} className="shadow-[var(--soft-shadow)]">
+        {error}
+      </Alert>
+    </div>
+  ) : null;
+
+  // Items worth re-testing at the end of a training session: missed or hesitated.
+  const fixacaoItems = session.items.filter((i) => i.answered && (i.is_correct === false || i.doubtful));
+
   // Training mode
   if (session.resolution_mode === "training") {
+    if (showFixacao && fixacaoItems.length > 0) {
+      return <FixacaoRound items={fixacaoItems} onExit={() => setShowFixacao(false)} />;
+    }
     return (
       <>
-        {error && (
-          <div className="fixed left-0 right-0 top-0 z-50 bg-danger px-4 py-2 text-center text-xs font-semibold text-white">
-            {error}
-          </div>
-        )}
+        {errorToast}
         <StudyQuestion
+          fixacaoCount={fixacaoItems.length}
+          onFixar={() => setShowFixacao(true)}
           item={currentItem}
           position={displayPosition}
           total={total}
@@ -310,6 +345,8 @@ export default function SessionPage() {
           confidenceRating={confidenceRatings[currentPosition] ?? currentItem.confidence_self_rating ?? null}
           doubtfulDraft={preAnswerDoubtful[currentPosition] ?? currentItem.doubtful}
           correctionConfidenceLevel={correctionConfidence[currentPosition] ?? "medium"}
+          eliminated={eliminatedOptions[currentPosition] ?? []}
+          onToggleEliminate={(opt) => toggleEliminate(currentPosition, opt)}
           busy={busy}
           reportOpen={reportingQuestionId === currentItem.question_id}
           reportType={reportType}
@@ -387,11 +424,7 @@ export default function SessionPage() {
   // Simulation mode
   return (
     <>
-      {error && (
-        <div className="fixed left-0 right-0 top-0 z-50 bg-danger px-4 py-2 text-center text-xs font-semibold text-white">
-          {error}
-        </div>
-      )}
+      {errorToast}
       <ExamQuestion
         item={currentItem}
         position={currentPosition}
@@ -404,6 +437,8 @@ export default function SessionPage() {
         doubtfulCount={session.doubtful_count}
         unansweredCount={session.unanswered_count}
         busy={busy}
+        eliminated={eliminatedOptions[currentPosition] ?? []}
+        onToggleEliminate={(opt) => toggleEliminate(currentPosition, opt)}
         onAnswer={(opt) => void answer(currentPosition, opt)}
         onToggleDoubtful={() => void toggleDoubtful(currentPosition)}
         onPrev={() => navigateTo(currentPosition - 1)}

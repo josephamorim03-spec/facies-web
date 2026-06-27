@@ -104,6 +104,8 @@ export type QuestionBankNextAction = {
   subtitle: string;
   meta: string;
   cta_label: string;
+  /** Porquê pedagógico em tom de tutor (a "voz do sistema"). Aditivo. */
+  rationale: string | null;
   area: string | null;
   area_label: string | null;
   signals: QuestionBankNextActionSignal[];
@@ -168,6 +170,8 @@ export type QuestionBankSessionItem = {
   // também aparece (pós-resposta no treino / pós-finalização).
   distractor_diagnosis?: Record<string, string>;
   difficulty_estimate?: number | null;
+  adaptive_explanation?: { title: string; reasons: string[] } | null;
+  editorial_quality?: { badge: string; message: string | null } | null;
   attempt_stats?: QuestionBankAttemptStats | null;
 };
 export type QuestionBankSession = {
@@ -435,8 +439,8 @@ export async function reportQuestionProblem(
   token: string,
   questionId: string,
   payload: { report_type?: QuestionBankReportType; report_reason?: string },
-): Promise<{ reported: boolean; report_id: string }> {
-  return api<{ reported: boolean; report_id: string }>(
+): Promise<{ result?: string; question_id?: string; open_reports?: number; flagged?: boolean }> {
+  return api<{ result?: string; question_id?: string; open_reports?: number; flagged?: boolean }>(
     `/api/question-bank/questions/${encodeURIComponent(questionId)}/report`,
     { method: "POST", headers: authHeader(token), body: JSON.stringify(payload) },
   );
