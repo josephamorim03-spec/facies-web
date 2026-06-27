@@ -475,6 +475,52 @@ export async function runQuestionBankAdminAll(background: boolean, importedFileI
   });
 }
 
+export type QuestionBankAiPreview = {
+  scope: { imported_file_id: string | null };
+  pending_by_stage: Record<string, number>;
+  estimated_llm_calls: number;
+};
+
+export async function getQuestionBankAdminAiPreview(
+  importedFileId?: string,
+): Promise<QuestionBankAiPreview> {
+  const params = new URLSearchParams();
+  if (importedFileId) params.set("imported_file_id", importedFileId);
+  const qs = params.toString();
+  return api<QuestionBankAiPreview>(
+    `/api/admin/question-bank/pipeline/ai-preview${qs ? `?${qs}` : ""}`,
+  );
+}
+
+export async function runQuestionBankAdminAi(options: {
+  maxLlmCalls: number;
+  includeStrong?: boolean;
+  importedFileId?: string;
+  workers?: number;
+  batch?: boolean;
+}): Promise<{
+  max_llm_calls: number;
+  llm_calls_used: number;
+  remaining_budget: number;
+  batch?: boolean;
+  totals: Record<string, number>;
+  scope: { imported_file_id: string | null };
+}> {
+  const params = new URLSearchParams({ max_llm_calls: String(options.maxLlmCalls) });
+  if (options.includeStrong === false) params.set("include_strong", "false");
+  if (options.importedFileId) params.set("imported_file_id", options.importedFileId);
+  if (options.workers) params.set("workers", String(options.workers));
+  if (options.batch) params.set("batch", "true");
+  return api<{
+    max_llm_calls: number;
+    llm_calls_used: number;
+    remaining_budget: number;
+    batch?: boolean;
+    totals: Record<string, number>;
+    scope: { imported_file_id: string | null };
+  }>(`/api/admin/question-bank/pipeline/run-ai?${params.toString()}`, { method: "POST" });
+}
+
 export async function getQuestionBankReviewQueue(
   options?: { limit?: number; offset?: number },
 ): Promise<{ items: QuestionBankReviewQueueItem[]; total: number; limit: number; offset: number }> {
