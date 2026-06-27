@@ -253,7 +253,7 @@ function TopicTreeItem({
   return (
     <div style={{ paddingLeft: `${indent}px` }}>
       <div className={cx(
-        "flex items-start gap-2 rounded-lg border p-2.5 transition-colors",
+        "flex min-w-0 items-start gap-2 rounded-lg border p-2.5 transition-colors",
         checked ? "border-primary bg-[var(--amber-tint)]" : "border-transparent",
         selectable ? "hover:border-edge hover:bg-surface" : "opacity-75",
       )}>
@@ -281,12 +281,17 @@ function TopicTreeItem({
             className="mt-1 h-4 w-4 shrink-0 accent-primary"
           />
           <span className="min-w-0 flex-1">
-            <span className={cx("block text-sm font-semibold leading-snug", selectable || node.synthetic ? "text-ink" : "text-muted")}>{node.node_name}</span>
+            <span className={cx("block break-words text-sm font-semibold leading-snug [overflow-wrap:anywhere]", selectable || node.synthetic ? "text-ink" : "text-muted")}>{node.node_name}</span>
             {topicPathLabel(node) !== node.node_name && (
-              <span className="mt-0.5 block truncate text-xs text-muted">{topicPathLabel(node)}</span>
+              <span className="mt-0.5 block line-clamp-2 break-words text-xs text-muted [overflow-wrap:anywhere]">{topicPathLabel(node)}</span>
             )}
             {node.synthetic && (
               <span className="mt-0.5 block text-xs text-muted">{node.question_count} questões nesse grupo</span>
+            )}
+            {!node.synthetic && node.question_count === 0 && (
+              <span className="mt-1 inline-block rounded-full border border-edge bg-surfaceMuted px-2 py-0.5 text-[11px] font-medium text-muted">
+                0 questões · em curadoria
+              </span>
             )}
           </span>
         </label>
@@ -430,8 +435,8 @@ export default function FiltersBar(props: FiltersBarProps) {
                         selectable ? "hover:bg-surfaceMuted" : "cursor-not-allowed opacity-65",
                       )}
                     >
-                      <span className="text-sm font-semibold">{topic.node_name}</span>
-                      <span className="text-xs text-muted">{topicPathLabel(topic)} · {topic.question_count} questões</span>
+                      <span className="break-words text-sm font-semibold [overflow-wrap:anywhere]">{topic.node_name}</span>
+                      <span className="break-words text-xs text-muted [overflow-wrap:anywhere]">{topicPathLabel(topic)} · {topic.question_count} questões</span>
                     </button>
                   </li>
                 );
@@ -461,10 +466,10 @@ export default function FiltersBar(props: FiltersBarProps) {
                 : "Nenhum tema selecionado"}
             </p>
             {selectedTopics.length > 0 ? (
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-2 flex min-w-0 flex-wrap gap-2">
                 {selectedTopics.map((topic) => (
-                  <span key={topic.knowledge_node_id} className="km-chip">
-                    {topicPathLabel(topic)}
+                  <span key={topic.knowledge_node_id} className="km-chip max-w-full items-start">
+                    <span className="min-w-0 break-words [overflow-wrap:anywhere]">{topicPathLabel(topic)}</span>
                     <button
                       type="button"
                       onClick={() => onToggleTopic(topic)}

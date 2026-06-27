@@ -1,18 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   finalizeQuestionBankSession,
+  getQuestionBankGuidedReview,
   getQuestionBankSession,
   recordQuestionBankAttempt,
   recordQuestionBankCorrection,
+  recordQuestionBankEvents,
   reportQuestionProblem,
+  submitQuestionBankGuidedReview,
   type OperationalQuestionOutcome,
   type QuestionBankFinalizeResult,
+  type QuestionBankGuidedReview,
+  type QuestionBankGuidedReviewValue,
   type QuestionBankOption,
   type QuestionBankReportType,
   type QuestionBankSession,
+  type QuestionBankStudentEventPayload,
+  type QuestionBankStudentEventType,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { Alert } from "@/components/ui/Alert";
@@ -72,8 +79,51 @@ export default function SessionPage() {
       const next = current.includes(option)
         ? current.filter((o) => o !== option)
         : [...current, option];
+      enqueueStudentEvent(position, "option_eliminated", {
+        option,
+        eliminated: next.includes(option),
+        eliminated_options: next,
+      });
       return { ...prev, [position]: next };
     });
+  }
+
+  async function loadGuidedReview(position: number) {
+    if (!session) return;
+    try {
+      const review = await getQuestionBankGuidedReview(token, session.session_id, position);
+      setGuidedReviews((prev) => ({ ...prev, [position]: review }));
+      if (review.existing_responses.length > 0) {
+        setGuidedResponses((prev) => ({
+          ...prev,
+          [position]: Object.fromEntries(
+            review.existing_responses
+              .filter((r) => ["yes", "partial", "no", "unsure"].includes(r.response_value))
+              .map((r) => [r.checkpoint_key, r.response_value as QuestionBankGuidedReviewValue]),
+          ),
+        }));
+      }
+    } catch {
+      // Keep the classic free-text correction available if checkpoints fail.
+    }
+  }
+
+  function revealAnswer(position: number) {
+    setRevealedPositions((prev) => ({ ...prev, [position]: true }));
+    enqueueStudentEvent(position, "answer_revealed", {
+      elapsed_ms: Date.now() - questionStartTimeRef.current,
+    });
+    void loadGuidedReview(position);
+  }
+
+  function changeConfidenceRating(position: number, value: number | null) {
+    setConfidenceRatings((prev) => ({ ...prev, [position]: value }));
+    if (value !== null) {
+      enqueueStudentEvent(position, "confidence_marked", {
+        confidence_self_rating: value,
+        phase: "pre_answer",
+      });
+    }
   }
 
   // Reveal state (training mode)
@@ -82,6 +132,8 @@ export default function SessionPage() {
   const [confidenceRatings, setConfidenceRatings] = useState<Record<number, number | null>>({});
   const [preAnswerDoubtful, setPreAnswerDoubtful] = useState<Record<number, boolean>>({});
   const [correctionConfidence, setCorrectionConfidence] = useState<Record<number, CorrectionConfidenceLevel>>({});
+  const [guidedReviews, setGuidedReviews] = useState<Record<number, QuestionBankGuidedReview>>({});
+  const [guidedResponses, setGuidedResponses] = useState<Record<number, Record<string, QuestionBankGuidedReviewValue>>>({});
 
   // Report state
   const [reportingQuestionId, setReportingQuestionId] = useState<string | null>(null);
@@ -93,6 +145,50 @@ export default function SessionPage() {
 
   // Track per-question start time so we can send time_ms to the backend
   const questionStartTimeRef = useRef<number>(Date.now());
+  const eventQueueRef = useRef<Record<number, QuestionBankStudentEventPayload[]>>({});
+  const eventFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const flushStudentEvents = useCallback(() => {
+    if (!session) return;
+    const queued = eventQueueRef.current;
+    eventQueueRef.current = {};
+    for (const [rawPosition, events] of Object.entries(queued)) {
+      if (events.length === 0) continue;
+      void recordQuestionBankEvents(token, session.session_id, Number(rawPosition), events).catch(() => {
+        eventQueueRef.current[Number(rawPosition)] = [
+          ...(eventQueueRef.current[Number(rawPosition)] ?? []),
+          ...events,
+        ];
+      });
+    }
+  }, [session, token]);
+
+  function newEventId(type: QuestionBankStudentEventType, position: number) {
+    return `sqe_${sessionId}_${position}_${type}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function enqueueStudentEvent(
+    position: number,
+    eventType: QuestionBankStudentEventType,
+    payload: Record<string, unknown> = {},
+  ) {
+    if (!session) return;
+    const event: QuestionBankStudentEventPayload = {
+      event_id: newEventId(eventType, position),
+      event_type: eventType,
+      occurred_at: new Date().toISOString(),
+      payload,
+    };
+    eventQueueRef.current[position] = [...(eventQueueRef.current[position] ?? []), event];
+    if (eventFlushTimerRef.current) clearTimeout(eventFlushTimerRef.current);
+    eventFlushTimerRef.current = setTimeout(flushStudentEvents, 700);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (eventFlushTimerRef.current) clearTimeout(eventFlushTimerRef.current);
+    };
+  }, []);
 
   // Load session on mount
   useEffect(() => {
@@ -117,12 +213,21 @@ export default function SessionPage() {
     if (!session) return;
     setBusy(true);
     setError(null);
+    const elapsedMs = Date.now() - questionStartTimeRef.current;
     try {
       const updated = await recordQuestionBankAttempt(token, session.session_id, position, {
         selected_option: selected,
-        time_ms: Date.now() - questionStartTimeRef.current,
+        time_ms: elapsedMs,
         doubtful: Boolean(preAnswerDoubtful[position]),
         confidence_self_rating: confidenceRatings[position] ?? null,
+      });
+      enqueueStudentEvent(position, "answer_selected", {
+        selected_option: selected,
+        time_to_first_answer_ms: elapsedMs,
+        time_ms: elapsedMs,
+        doubtful: Boolean(preAnswerDoubtful[position]),
+        confidence_self_rating: confidenceRatings[position] ?? null,
+        eliminated_options: eliminatedOptions[position] ?? [],
       });
       setSession(updated);
     } catch (err) {
@@ -138,6 +243,10 @@ export default function SessionPage() {
     if (!item) return;
     if (!item.selected_option) {
       setPreAnswerDoubtful((prev) => ({ ...prev, [position]: !Boolean(prev[position]) }));
+      enqueueStudentEvent(position, "doubt_marked", {
+        value: !Boolean(preAnswerDoubtful[position]),
+        phase: "pre_answer",
+      });
       return;
     }
     setBusy(true);
@@ -158,17 +267,42 @@ export default function SessionPage() {
   async function submitCorrection(position: number) {
     if (!session) return;
     const response = correctionDrafts[position]?.trim();
-    if (!response) return;
+    const review = guidedReviews[position];
+    const structuredResponses = Object.entries(guidedResponses[position] ?? {}).map(([checkpoint_key, response_value]) => ({
+      checkpoint_key,
+      response_value,
+      free_text: response || null,
+    }));
+    if (!response && structuredResponses.length === 0) return;
     setBusy(true);
     setError(null);
     try {
-      const out = await recordQuestionBankCorrection(token, session.session_id, position, {
-        prompt: "Qual foi o raciocínio correto e onde você errou?",
-        response_value: response,
-        confidence_delta: CORRECTION_CONFIDENCE_DELTA[correctionConfidence[position] ?? "medium"],
-      });
-      setSession(out.session);
+      if (review?.eligible && structuredResponses.length > 0) {
+        const out = await submitQuestionBankGuidedReview(token, session.session_id, position, {
+          event_id: newEventId("guided_checkpoint_answered", position),
+          responses: structuredResponses,
+          free_text: response || null,
+        });
+        setSession(out.session);
+        enqueueStudentEvent(position, "correction_saved", {
+          mode: "guided_review",
+          checkpoint_count: structuredResponses.length,
+          free_text_present: Boolean(response),
+        });
+      } else {
+        const out = await recordQuestionBankCorrection(token, session.session_id, position, {
+          prompt: "Qual foi o raciocínio correto e onde você errou?",
+          response_value: response,
+          confidence_delta: CORRECTION_CONFIDENCE_DELTA[correctionConfidence[position] ?? "medium"],
+        });
+        setSession(out.session);
+        enqueueStudentEvent(position, "correction_saved", {
+          mode: "free_text",
+          free_text_present: true,
+        });
+      }
       setCorrectionDrafts((prev) => ({ ...prev, [position]: "" }));
+      setGuidedResponses((prev) => ({ ...prev, [position]: {} }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível salvar a correção guiada.");
     } finally {
@@ -342,6 +476,8 @@ export default function SessionPage() {
           sessionStatus={session.status}
           revealed={Boolean(revealedPositions[currentPosition])}
           correctionDraft={correctionDrafts[currentPosition] ?? ""}
+          guidedReview={guidedReviews[currentPosition] ?? null}
+          guidedResponses={guidedResponses[currentPosition] ?? {}}
           confidenceRating={confidenceRatings[currentPosition] ?? currentItem.confidence_self_rating ?? null}
           doubtfulDraft={preAnswerDoubtful[currentPosition] ?? currentItem.doubtful}
           correctionConfidenceLevel={correctionConfidence[currentPosition] ?? "medium"}
@@ -353,9 +489,18 @@ export default function SessionPage() {
           reportReason={reportReason}
           reportDone={Boolean(reportDone[currentItem.question_id])}
           onAnswer={(opt) => void answer(currentPosition, opt)}
-          onReveal={() => setRevealedPositions((prev) => ({ ...prev, [currentPosition]: true }))}
+          onReveal={() => revealAnswer(currentPosition)}
           onCorrectionChange={(v) => setCorrectionDrafts((prev) => ({ ...prev, [currentPosition]: v }))}
-          onConfidenceRatingChange={(v) => setConfidenceRatings((prev) => ({ ...prev, [currentPosition]: v }))}
+          onGuidedResponseChange={(checkpointKey, value) =>
+            setGuidedResponses((prev) => ({
+              ...prev,
+              [currentPosition]: {
+                ...(prev[currentPosition] ?? {}),
+                [checkpointKey]: value,
+              },
+            }))
+          }
+          onConfidenceRatingChange={(v) => changeConfidenceRating(currentPosition, v)}
           onToggleDoubtful={() => void toggleDoubtful(currentPosition)}
           onCorrectionConfidenceChange={(v) => setCorrectionConfidence((prev) => ({ ...prev, [currentPosition]: v }))}
           onSubmitCorrection={() => void submitCorrection(currentPosition)}

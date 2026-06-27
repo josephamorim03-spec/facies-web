@@ -84,9 +84,9 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
   }
 
   return (
-    <div className="mt-4 space-y-3 rounded-2xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-800/40 dark:bg-amber-950/20">
+    <div className="mt-4 space-y-3 rounded-lg border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-800/40 dark:bg-amber-950/20">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200">Review global ({total})</h3>
+        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200">Revisao humana ({total})</h3>
         <div className="flex items-center gap-2">
           <button onClick={() => void onRefresh()} className="text-xs font-semibold text-amber-700 hover:text-amber-900 dark:text-amber-300">
             Atualizar
@@ -96,21 +96,21 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
       </div>
 
       {localError ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200">
           {localError}
         </div>
       ) : null}
 
       {items.length === 0 ? (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-          Nenhuma questao pendente.
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
+          Nenhuma questao em revisao.
         </div>
       ) : null}
 
       {laneKeys.map((lane) => (
         <div key={lane} className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+            <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
               {LANE_LABELS[lane] || lane}
             </span>
             <span className="text-xs text-amber-700/70 dark:text-amber-200/70">
@@ -122,12 +122,12 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
         const alternatives = item.alternatives ?? {};
         const hasIssues = Object.keys(item.issues ?? {}).length > 0;
         return (
-          <div key={item.question_id} className="rounded-2xl border border-amber-200 bg-white p-4 dark:border-amber-800/30 dark:bg-gray-900">
+          <div key={item.question_id} className="rounded-lg border border-amber-200 bg-white p-4 dark:border-amber-800/30 dark:bg-gray-900">
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_210px]">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400">
                   <span>{item.question_id.slice(0, 12)}</span>
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+                  <span className="rounded-md bg-amber-100 px-2 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
                     {item.status || "human_review_pending"}
                   </span>
                   {item.classification_confidence != null ? <span>conf. {item.classification_confidence.toFixed(2)}</span> : null}
@@ -135,7 +135,7 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
                   {item.open_reports ? <span>{item.open_reports} report(s)</span> : null}
                 </div>
                 {item.suggested_action || item.ai_read_summary?.adaptive_impact ? (
-                  <div className="mt-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300">
+                  <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300">
                     {item.suggested_action ? <div><span className="font-semibold">Acao:</span> {item.suggested_action}</div> : null}
                     {item.ai_read_summary?.adaptive_impact ? <div className="mt-1"><span className="font-semibold">Impacto:</span> {item.ai_read_summary.adaptive_impact}</div> : null}
                   </div>
@@ -146,7 +146,7 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
                     {blockers.map((blocker) => (
                       <span
                         key={`${item.question_id}-${blocker}`}
-                        className="rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 dark:bg-red-950/40 dark:text-red-200"
+                        className="rounded-md bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 dark:bg-red-950/40 dark:text-red-200"
                       >
                         {blocker}
                       </span>
@@ -165,7 +165,7 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
                       return (
                         <div
                           key={`${item.question_id}-${letter}`}
-                          className={`flex gap-2 rounded-lg px-2 py-1 text-xs ${
+                          className={`flex gap-2 rounded-md px-2 py-1 text-xs ${
                             isCorrect
                               ? "bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-200"
                               : "text-gray-700 dark:text-gray-200"
@@ -183,7 +183,7 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
                 {hasIssues ? (
                   <details className="mt-3 text-xs text-gray-500 dark:text-gray-400">
                     <summary className="cursor-pointer font-semibold">Issues</summary>
-                    <pre className="mt-2 overflow-auto rounded-xl bg-gray-950 p-3 text-gray-100">
+                    <pre className="mt-2 overflow-auto rounded-lg bg-gray-950 p-3 text-gray-100">
                       {JSON.stringify(item.issues, null, 2)}
                     </pre>
                   </details>
@@ -195,12 +195,12 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
                   value={reasonDrafts[item.question_id] ?? ""}
                   onChange={(event) => setReasonDrafts((prev) => ({ ...prev, [item.question_id]: event.target.value }))}
                   placeholder="Razao"
-                  className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-950"
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-950"
                 />
                 <select
                   value={answerDrafts[item.question_id] ?? ""}
                   onChange={(event) => setAnswerDrafts((prev) => ({ ...prev, [item.question_id]: event.target.value }))}
-                  className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-950"
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-950"
                 >
                   <option value="">Gabarito</option>
                   {ANSWER_OPTIONS.map((answer) => (
@@ -218,7 +218,7 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
                     key={action}
                     disabled={Boolean(busyKey)}
                     onClick={() => void submit(item.question_id, action)}
-                    className={`rounded-xl px-3 py-2 text-xs font-semibold disabled:cursor-wait disabled:opacity-60 ${classes}`}
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold disabled:cursor-wait disabled:opacity-60 ${classes}`}
                   >
                     {busyKey === `${item.question_id}:${action}` ? "..." : label}
                   </button>

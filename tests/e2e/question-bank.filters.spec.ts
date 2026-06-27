@@ -190,23 +190,16 @@ test("question bank applies filters, calendar review context, and gated correcti
 
   await page.goto("/banco-de-questoes?review_task_id=rt_e2e&date=2026-05-27&area=GO&theme=Obstetricia&expected_questions=12");
 
-  await expect(page.getByRole("link", { name: /Banco de Quest/ })).toBeVisible();
-  const recommendedSection = page.getByRole("region", { name: "SessÃ£o recomendada" });
+  await expect(page.getByRole("heading", { name: "Questões com raciocínio clínico" })).toBeVisible();
+  const recommendedSection = page.getByRole("region", { name: "Sessão recomendada" });
   await expect(recommendedSection.getByText("Fortalecer GO")).toBeVisible();
   await expect(recommendedSection.getByText("area critica")).toBeVisible();
 
-  await page.getByRole("button", { name: /Montar sess/i }).click();
   await expect(page.getByTestId("question-bank-top-filters")).toBeVisible();
-  await expect(page.locator("main aside")).toHaveCount(0);
+  await expect(page.locator("main aside")).toBeVisible();
   await expect(page.getByText(/12 .*dispon/i)).toBeVisible();
   await expect(page.getByText("Obstetricia").first()).toBeVisible();
-  // A árvore começa recolhida (como o Estratégia): o subtema só aparece após
-  // expandir o macrotema pai.
-  await expect(page.getByText("Placenta previa", { exact: true })).toHaveCount(0);
-  await page.getByRole("button", { name: "Expandir Obstetricia" }).click();
-  await expect(page.getByText("Placenta previa", { exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: /Quantidade/ }).click();
   const quantityInput = page.getByRole("spinbutton", { name: /Questões/i });
   await quantityInput.fill("99");
   await expect(quantityInput).toHaveValue("12");
@@ -232,4 +225,106 @@ test("question bank applies filters, calendar review context, and gated correcti
   await expect(page.getByText("Gabarito A")).toHaveCount(0);
   await page.getByRole("button", { name: "Ver gabarito" }).click();
   await expect(page.getByText("Gabarito A")).toBeVisible();
+});
+
+test("manual search filters topics without becoming a hidden session filter", async ({ page }) => {
+  await page.context().addCookies([
+    {
+      name: "krosmed_session",
+      value: "session_e2e",
+      url: E2E_BASE_URL,
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+
+  const createPayloads: Record<string, unknown>[] = [];
+  const topicRequestUrls: string[] = [];
+
+  await page.route("**/api/question-bank/availability**", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        total_count: 12,
+        answered_count: 0,
+        unanswered_count: 12,
+        available_count: 12,
+        max_selectable: 12,
+        answer_status: "unanswered",
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/topics**", async (route) => {
+    topicRequestUrls.push(route.request().url());
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify([topic, childTopic]) });
+  });
+  await page.route("**/api/question-bank/next-action", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        kind: "fresh_practice",
+        title: "Praticar questões novas",
+        subtitle: "Bloco curto",
+        meta: "~20 min",
+        cta_label: "Começar treino",
+        area: null,
+        area_label: null,
+        signals: [],
+        start_payload: { mode: "adaptive", resolution_mode: "training", answer_status: "unanswered", only_unanswered: true, limit: 10 },
+        generated_at: "2026-05-27T15:00:00Z",
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/performance", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        areas: [],
+        exam: { simulation_count: 0, accuracy: null, avg_time_ms: null, slow_rate: null },
+        generated_at: "2026-05-27T15:00:00Z",
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/review-queue", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ due_count: 0, struggling_count: 0, total: 0 }) });
+  });
+  await page.route("**/api/reviews/agenda", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        tasks: [],
+        due_question_total: 0,
+        struggling_question_total: 0,
+        question_review_total: 0,
+        generated_at: new Date().toISOString(),
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/sessions", async (route) => {
+    createPayloads.push(await route.request().postDataJSON());
+    await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(sessionPayload(false)) });
+  });
+  await page.route("**/api/question-bank/sessions/session_qb_e2e", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(sessionPayload(false)) });
+  });
+
+  await page.goto("/banco-de-questoes");
+
+  await page.getByPlaceholder("Buscar especialidade, macrotema ou subtema").fill("Placenta");
+  await expect(page.getByRole("button", { name: /Placenta previa/ }).first()).toBeVisible();
+  await expect
+    .poll(() => topicRequestUrls.some((url) => new URL(url).searchParams.get("search") === "Placenta"))
+    .toBe(true);
+
+  await page.getByRole("button", { name: /Iniciar simulado/ }).click();
+  await expect.poll(() => createPayloads.length).toBe(1);
+
+  const payload = createPayloads[0];
+  expect(payload.search).toBeUndefined();
+  expect(payload.knowledge_node_ids).toBeUndefined();
+  expect(payload).toMatchObject({
+    answer_status: "unanswered",
+    only_unanswered: true,
+    limit: 10,
+  });
 });

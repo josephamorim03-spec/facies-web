@@ -5,7 +5,7 @@ import {
 } from "@/lib/api/domains/question-bank-admin";
 
 import { JsonPanel } from "./AdminShared";
-import { JOB_TYPES } from "./adminQuestionBankUtils";
+import { JOB_TYPES, jobTypeLabel } from "./adminQuestionBankUtils";
 
 type Props = {
   pipelineStatus: QuestionBankAdminPipelineStatus | null;
@@ -48,11 +48,11 @@ export default function PipelineDiagnosticsPanel({
 
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+      <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Pipeline</h2>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Lotes, erros e retry.</p>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Fila tecnica</h2>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Jobs por etapa e reprocessamento.</p>
           </div>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -64,7 +64,7 @@ export default function PipelineDiagnosticsPanel({
               className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
             >
               {JOB_TYPES.map((type) => (
-                <option key={type} value={type}>{type}</option>
+                <option key={type} value={type}>{jobTypeLabel(type)}</option>
               ))}
             </select>
           </label>
@@ -94,25 +94,25 @@ export default function PipelineDiagnosticsPanel({
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             onClick={onRunBatch}
-            className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
+            className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
           >
             Rodar lote
           </button>
           <span className="text-xs text-gray-400 dark:text-gray-500">{selectedImportId ? "import selecionado" : "global"}</span>
           <button
             onClick={onRefresh}
-            className="rounded-full border border-gray-300 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+            className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
           >
             Recalcular
           </button>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
-          <table className="w-full text-left text-sm">
+        <div className="mt-4 overflow-auto rounded-lg border border-gray-200 dark:border-gray-800">
+          <table className="w-full min-w-[760px] text-left text-sm">
             <thead className="bg-gray-50 dark:bg-gray-950">
               <tr className="text-gray-500 dark:text-gray-400">
                 <th className="px-4 py-3 font-semibold">Etapa</th>
-                <th className="px-4 py-3 font-semibold">Fila</th>
+                <th className="px-4 py-3 font-semibold">Jobs</th>
                 <th className="px-4 py-3 font-semibold">Media</th>
                 <th className="px-4 py-3 font-semibold">Erro</th>
               </tr>
@@ -120,14 +120,21 @@ export default function PipelineDiagnosticsPanel({
             <tbody>
               {stages.map((stage) => (
                 <tr key={stage.job_type} className="border-t border-gray-100 dark:border-gray-800">
-                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{stage.job_type}</td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{jobTypeLabel(stage.job_type)}</div>
+                    <div className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{stage.job_type}</div>
+                  </td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                    <span>{stage.pending} p / {stage.processing} proc / {stage.done} ok</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      <span className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">fila {stage.pending}</span>
+                      <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">rodando {stage.processing}</span>
+                      <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">ok {stage.done}</span>
+                    </div>
                     {stage.failed > 0 ? (
                       <button
                         onClick={() => onRetryStage(stage.job_type)}
                         title={`Retry ${stage.failed} jobs falhos`}
-                        className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600 hover:bg-red-200 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/60"
+                        className="mt-2 rounded-md bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600 hover:bg-red-200 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/60"
                       >
                         retry {stage.failed}
                       </button>
@@ -144,7 +151,7 @@ export default function PipelineDiagnosticsPanel({
                           {stage.last_error.length > 56 ? `${stage.last_error.slice(0, 56)}...` : stage.last_error}
                         </button>
                         {expandedError === stage.job_type ? (
-                          <pre className="mt-1 max-w-xs overflow-auto rounded-xl bg-red-50 p-2 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                          <pre className="mt-1 max-w-xs overflow-auto rounded-lg bg-red-50 p-2 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">
                             {stage.last_error}
                           </pre>
                         ) : null}
@@ -161,10 +168,10 @@ export default function PipelineDiagnosticsPanel({
         </div>
       </section>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+      <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Diagnostics</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
             <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Readiness</div>
             <div className="mt-3 text-sm text-gray-700 dark:text-gray-200">
               <div>Status: <span className="font-semibold">{readiness?.status || "-"}</span></div>
@@ -174,7 +181,7 @@ export default function PipelineDiagnosticsPanel({
               <div>Workers: <span className="font-semibold">{readiness?.pipeline_workers ?? "-"}</span></div>
             </div>
           </div>
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
             <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Providers</div>
             <div className="mt-3 space-y-2 text-sm text-gray-700 dark:text-gray-200">
               <div>Cheap: <span className="font-semibold">{readiness?.providers.cheap.model || "-"}</span></div>
@@ -182,10 +189,13 @@ export default function PipelineDiagnosticsPanel({
             </div>
           </div>
         </div>
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
-          <JsonPanel title="Readiness raw" value={readiness} />
-          <JsonPanel title="Pipeline raw" value={pipelineStatus} />
-        </div>
+        <details className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-950">
+          <summary className="cursor-pointer text-sm font-semibold text-gray-700 dark:text-gray-200">JSON bruto</summary>
+          <div className="mt-3 grid gap-4 xl:grid-cols-2">
+            <JsonPanel title="Readiness raw" value={readiness} />
+            <JsonPanel title="Pipeline raw" value={pipelineStatus} />
+          </div>
+        </details>
       </section>
     </div>
   );

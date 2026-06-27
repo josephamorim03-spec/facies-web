@@ -286,9 +286,9 @@ async function proxyHandler(
     );
   } catch (err) {
     if (err instanceof UpstreamTimeoutError) {
-      return responseWithRequestId({ code: "upstream_timeout", message: "Tempo de resposta excedido. Tente novamente em instantes." }, 504, requestId);
+      return responseWithRequestId({ code: "upstream_timeout", message: "Backend demorou para responder. Tente novamente em instantes.", request_id: requestId }, 504, requestId);
     }
-    return responseWithRequestId({ code: "upstream_unavailable", message: "Serviço temporariamente indisponível. Tente novamente em instantes." }, 502, requestId);
+    return responseWithRequestId({ code: "upstream_unavailable", message: "Backend indisponível. Verifique se a API local está rodando em :8000 ou tente novamente em instantes.", request_id: requestId }, 502, requestId);
   }
 
   const responseHeaders = new Headers(upstreamResponse.headers);

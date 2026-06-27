@@ -121,6 +121,19 @@ function adaptivePercent(topic: QuestionBankTopic): number {
   return Math.max(0, Math.min(100, raw <= 1 ? Math.round(raw * 100) : Math.round(raw)));
 }
 
+function priorityLabel(percent: number): string {
+  if (percent >= 72) return "alta";
+  if (percent <= 35) return "baixa";
+  return "média";
+}
+
+function priorityClassName(percent: number, selected: boolean): string {
+  if (selected) return "bg-primary text-primaryInk";
+  if (percent >= 72) return "bg-[var(--amber-tint)] text-ink";
+  if (percent <= 35) return "bg-surfaceMuted text-muted";
+  return "bg-surfaceMuted text-ink";
+}
+
 function strongestAdaptiveSignal(topic: QuestionBankTopic): string {
   const factors = Object.entries(topic.adaptive_weight_factors ?? {})
     .filter(([, value]) => Number.isFinite(Number(value)))
@@ -171,49 +184,51 @@ function RecommendedTopicsPanel({
           : "Priorizadas pelo seu histórico.";
 
   return (
-    <section className="km-card rounded-lg p-5" aria-label="Microcompetências recomendadas">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <section className="rounded-lg border border-edge bg-surface p-4" aria-label="Microcompetências recomendadas">
+      <div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Próximo melhor foco</p>
-          <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight">Microcompetências sugeridas</h2>
-          <p className="mt-1 max-w-2xl text-sm text-muted">{intentCopy}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Sugestões do sistema</p>
+          <h3 className="mt-1 font-serif text-lg font-semibold leading-tight">Microcompetências</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted">{intentCopy}</p>
         </div>
-        <span className="rounded-full border border-edge bg-surface px-3 py-1 text-xs font-semibold text-muted">
-          prioridade adaptativa
-        </span>
       </div>
 
-      <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-3 space-y-2">
         {recommended.map((topic) => {
           const selected = selectedIds.has(topic.knowledge_node_id);
           const percent = adaptivePercent(topic);
+          const signal = strongestAdaptiveSignal(topic);
+          const confidence = typeof topic.classification_confidence_mean === "number"
+            ? Math.round(topic.classification_confidence_mean * 100)
+            : null;
           return (
             <button
               key={topic.knowledge_node_id}
               type="button"
               onClick={() => onToggleTopic(topic)}
               aria-pressed={selected}
+              title={topic.node_code ? `${topic.node_code} - ${topic.node_name}` : topic.node_name}
               className={cx(
-                "rounded-xl border p-3 text-left transition-colors",
+                "w-full rounded-lg border p-3 text-left transition-colors",
                 selected ? "border-primary bg-[var(--amber-tint)]" : "border-edge bg-paper hover:border-primary",
               )}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
-                    {topic.node_code ?? "micro"} · {topic.question_count} questões
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                    {topic.question_count} questões{confidence !== null ? ` · conf. ${confidence}%` : ""}
                   </p>
-                  <p className="mt-0.5 line-clamp-2 text-sm font-semibold leading-snug text-ink">{topic.node_name}</p>
+                  <p className="mt-0.5 line-clamp-2 break-words text-sm font-semibold leading-snug text-ink [overflow-wrap:anywhere]">{topic.node_name}</p>
                 </div>
-                <span className={cx("shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold", selected ? "bg-primary text-primaryInk" : "bg-surfaceMuted text-muted")}>
-                  {percent}
+                <span className={cx("shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold", priorityClassName(percent, selected))}>
+                  Prioridade {percent}/100
                 </span>
               </div>
               <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surfaceMuted">
                 <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
               </div>
-              <p className="mt-2 truncate text-xs text-muted">{topicPathLabel(topic)}</p>
-              <p className="mt-1 text-xs font-medium text-ink">Prioridade: {strongestAdaptiveSignal(topic)}</p>
+              <p className="mt-2 line-clamp-2 break-words text-xs text-muted [overflow-wrap:anywhere]">{topicPathLabel(topic)}</p>
+              <p className="mt-1 text-xs font-medium text-ink">Prioridade {priorityLabel(percent)} por {signal}</p>
             </button>
           );
         })}
@@ -336,7 +351,7 @@ function BancoDeQuestoesContent() {
   const [boardCodes, setBoardCodes] = useState<string[]>([]);
   const [boardInput, setBoardInput] = useState("");
   const [selectedYears, setSelectedYears] = useState<number[]>([]);
-  const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("all");
+  const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("unanswered");
   const [limit, setLimit] = useState(() => Math.max(1, Math.min(50, initialContext.expectedQuestions ?? 10)));
   const [resolutionMode, setResolutionMode] = useState<QuestionBankResolutionMode>("simulation");
   const [studyKind, setStudyKind] = useState<StudyKind>("topic");
@@ -358,9 +373,6 @@ function BancoDeQuestoesContent() {
   const [nextActionLoading, setNextActionLoading] = useState(true);
   const [performance, setPerformance] = useState<QuestionBankPerformance | null>(null);
   const [dueTopicTaskCount, setDueTopicTaskCount] = useState(0);
-  // Montagem manual fica recolhida por padrão: a recomendação é a entrada principal.
-  // O aluno abre o montador quando quer controlar o bloco no detalhe.
-  const [manualOpen, setManualOpen] = useState(false);
 
   // Derived
   const maxSelectable = Math.max(1, Math.min(50, availability?.max_selectable ?? 50));
@@ -375,15 +387,14 @@ function BancoDeQuestoesContent() {
 
   const selectedTopicSummary = selectedTopics.length > 0
     ? selectedTopics.map((t) => t.node_name).join(", ")
-    : search.trim() || "Filtro atual";
+    : area || "Filtro atual";
 
   const appliedFilterCount = [
     area,
-    search.trim(),
     institution.trim(),
     boardCodes.length > 0 ? "boards" : "",
     selectedYears.length > 0 ? "years" : "",
-    answerStatus !== "all" ? answerStatus : "",
+    answerStatus !== "unanswered" ? answerStatus : "",
     selectedTopics.length > 0 ? "topics" : "",
   ].filter(Boolean).length;
 
@@ -446,14 +457,13 @@ function BancoDeQuestoesContent() {
   const filterParams = useCallback((overrides?: { limit?: number }) => ({
     knowledge_node_ids: selectedTopics.length > 0 ? selectedTopics.map((t) => t.knowledge_node_id) : undefined,
     area: area || undefined,
-    search: search.trim() || undefined,
     institution: institution.trim() || undefined,
     board_codes: boardCodes.length > 0 ? boardCodes : undefined,
     years: selectedYears.length > 0 ? selectedYears : undefined,
     answer_status: answerStatus,
-    only_unanswered: false,
+    only_unanswered: answerStatus === "unanswered",
     limit: overrides?.limit,
-  }), [answerStatus, area, boardCodes, institution, search, selectedTopics, selectedYears]);
+  }), [answerStatus, area, boardCodes, institution, selectedTopics, selectedYears]);
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -495,10 +505,17 @@ function BancoDeQuestoesContent() {
     if (!tokenResolved) return;
     const timer = window.setTimeout(() => {
       void refreshAvailability();
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [refreshAvailability, tokenResolved]);
+
+  useEffect(() => {
+    if (!tokenResolved) return;
+    const timer = window.setTimeout(() => {
       void refreshTopics();
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [refreshAvailability, refreshTopics, tokenResolved]);
+  }, [refreshTopics, tokenResolved]);
 
   // ─── Handlers ────────────────────────────────────────────────────────────
 
@@ -514,7 +531,6 @@ function BancoDeQuestoesContent() {
 
   function handleSearchChange(next: string) {
     setSearch(next);
-    clearSelection();
   }
 
   function handleInstitutionChange(next: string) {
@@ -776,29 +792,19 @@ function BancoDeQuestoesContent() {
         </section>
 
         <section className="space-y-4" aria-label="Montador de sessão">
-          <button
-            type="button"
-            onClick={() => setManualOpen((open) => !open)}
-            aria-expanded={manualOpen}
-            className="flex w-full flex-wrap items-center justify-between gap-3 rounded-xl border border-edge bg-surface px-4 py-3 text-left transition-colors hover:border-primary"
-          >
+          <div className="flex w-full flex-wrap items-center justify-between gap-3 rounded-xl border border-edge bg-surface px-4 py-3">
             <span className="min-w-0">
               <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-primary">Montagem manual</span>
               <span className="mt-1 block font-serif text-xl font-semibold leading-tight text-ink">Montar sessão</span>
-              <span className="mt-1 block text-sm text-muted">Intenção, assunto, recorte e quantidade — quando quiser controlar o bloco.</span>
+              <span className="mt-1 block text-sm text-muted">Intenção, assunto, recorte e quantidade em um fluxo único.</span>
             </span>
             <span className="flex shrink-0 items-center gap-3">
               <span className="rounded-full bg-surfaceMuted px-3 py-1 text-xs font-semibold text-muted">
                 {appliedFilterCount} filtro{appliedFilterCount === 1 ? "" : "s"}
               </span>
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-muted transition-transform ${manualOpen ? "rotate-90" : ""}`} aria-hidden="true">
-                <path d="m7 4 6 6-6 6" />
-              </svg>
             </span>
-          </button>
+          </div>
 
-          {manualOpen && (
-          <>
           <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4" aria-label="Tipos de sessão">
             <SessionIntentCard
               eyebrow="01 · construir"
@@ -856,13 +862,6 @@ function BancoDeQuestoesContent() {
             data-testid="question-bank-top-filters"
           >
             <div className="min-w-0 space-y-4">
-              <RecommendedTopicsPanel
-                topics={topics}
-                selectedTopics={selectedTopics}
-                activeIntent={activeIntent}
-                onToggleTopic={toggleTopic}
-              />
-
               <div className="km-card min-w-0 overflow-visible rounded-lg">
                 <FiltersBar
                   area={area}
@@ -902,6 +901,12 @@ function BancoDeQuestoesContent() {
                   onLimitChange={setLimit}
                 />
               </div>
+              <RecommendedTopicsPanel
+                topics={topics}
+                selectedTopics={selectedTopics}
+                activeIntent={activeIntent}
+                onToggleTopic={toggleTopic}
+              />
             </div>
 
             <CreateSessionPanel
@@ -932,8 +937,6 @@ function BancoDeQuestoesContent() {
             availability={availability}
             onStartSession={() => void startSession()}
           />
-          </>
-          )}
         </section>
 
         {performance && performance.areas.length > 0 && (
@@ -993,11 +996,11 @@ function BancoDeQuestoesContent() {
           )}
           <button
             type="button"
-            onClick={() => void (manualOpen ? startSession() : startRecommendedSession())}
-            disabled={manualOpen ? !canStartConfigured : busy || nextActionLoading}
+            onClick={() => void startSession()}
+            disabled={!canStartConfigured}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary py-3 text-sm font-semibold text-primaryInk shadow-sm transition disabled:opacity-40"
           >
-            {busy ? "Preparando..." : manualOpen ? configuredStartLabel : recommended.cta_label}
+            {busy ? "Preparando..." : configuredStartLabel}
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
               <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
             </svg>

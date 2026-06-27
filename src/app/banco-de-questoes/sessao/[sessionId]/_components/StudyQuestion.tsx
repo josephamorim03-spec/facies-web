@@ -3,7 +3,14 @@
 
 import { useEffect } from "react";
 
-import type { QuestionBankOption, QuestionBankReportType, QuestionBankSessionItem, QuestionBankSessionStatus } from "@/lib/api";
+import type {
+  QuestionBankGuidedReview,
+  QuestionBankGuidedReviewValue,
+  QuestionBankOption,
+  QuestionBankReportType,
+  QuestionBankSessionItem,
+  QuestionBankSessionStatus,
+} from "@/lib/api";
 
 const OPTIONS: QuestionBankOption[] = ["A", "B", "C", "D", "E"];
 const CONFIDENCE_OPTIONS = [1, 2, 3, 4, 5];
@@ -12,6 +19,12 @@ const CORRECTION_CONFIDENCE_OPTIONS = [
   ["medium", "Entendi"],
   ["high", "Entendi bem"],
 ] as const;
+const GUIDED_REVIEW_OPTIONS: Array<[QuestionBankGuidedReviewValue, string]> = [
+  ["yes", "Sim"],
+  ["partial", "Parcial"],
+  ["no", "Não"],
+  ["unsure", "Não sei"],
+];
 
 type CorrectionConfidenceLevel = (typeof CORRECTION_CONFIDENCE_OPTIONS)[number][0];
 
@@ -74,6 +87,8 @@ type StudyQuestionProps = {
   sessionStatus: QuestionBankSessionStatus;
   revealed: boolean;
   correctionDraft: string;
+  guidedReview: QuestionBankGuidedReview | null;
+  guidedResponses: Record<string, QuestionBankGuidedReviewValue>;
   confidenceRating: number | null;
   doubtfulDraft: boolean;
   correctionConfidenceLevel: CorrectionConfidenceLevel;
@@ -87,6 +102,7 @@ type StudyQuestionProps = {
   onAnswer: (option: QuestionBankOption) => void;
   onReveal: () => void;
   onCorrectionChange: (v: string) => void;
+  onGuidedResponseChange: (checkpointKey: string, value: QuestionBankGuidedReviewValue) => void;
   onConfidenceRatingChange: (v: number | null) => void;
   onToggleDoubtful: () => void;
   onCorrectionConfidenceChange: (v: CorrectionConfidenceLevel) => void;
@@ -169,6 +185,8 @@ export default function StudyQuestion({
   sessionStatus,
   revealed,
   correctionDraft,
+  guidedReview,
+  guidedResponses,
   confidenceRating,
   doubtfulDraft,
   correctionConfidenceLevel,
@@ -182,6 +200,7 @@ export default function StudyQuestion({
   onAnswer,
   onReveal,
   onCorrectionChange,
+  onGuidedResponseChange,
   onConfidenceRatingChange,
   onToggleDoubtful,
   onCorrectionConfidenceChange,
@@ -554,33 +573,64 @@ export default function StudyQuestion({
                 <label className="text-xs font-semibold uppercase tracking-[0.14em] text-warning">
                   Correção guiada
                 </label>
+                {guidedReview?.eligible && guidedReview.checkpoints.length > 0 && (
+                  <div className="mt-3 space-y-3">
+                    {guidedReview.checkpoints.map((checkpoint) => (
+                      <div key={checkpoint.checkpoint_key} className="rounded-xl border border-warning/30 bg-surface p-3">
+                        <p className="text-sm font-semibold leading-relaxed text-ink">{checkpoint.prompt}</p>
+                        {checkpoint.micro_question && (
+                          <p className="mt-1 text-xs leading-relaxed text-muted">{checkpoint.micro_question}</p>
+                        )}
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {GUIDED_REVIEW_OPTIONS.map(([value, label]) => (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => onGuidedResponseChange(checkpoint.checkpoint_key, value)}
+                              className={cx(
+                                "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
+                                guidedResponses[checkpoint.checkpoint_key] === value
+                                  ? "border-primary bg-primary text-primaryInk"
+                                  : "border-edge bg-paper text-muted hover:border-primary hover:text-ink",
+                              )}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <textarea
                   value={correctionDraft}
                   onChange={(e) => onCorrectionChange(e.target.value)}
-                  placeholder="Em poucas linhas: qual era o raciocínio certo e onde o seu desviou?"
+                  placeholder={guidedReview?.eligible ? "Observação opcional" : "Em poucas linhas: qual era o raciocínio certo e onde o seu desviou?"}
                   className="mt-2 min-h-24 w-full resize-y"
                 />
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {CORRECTION_CONFIDENCE_OPTIONS.map(([value, label]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => onCorrectionConfidenceChange(value)}
-                      className={cx(
-                        "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
-                        correctionConfidenceLevel === value
-                          ? "border-primary bg-primary text-primaryInk"
-                          : "border-edge bg-paper text-muted hover:border-primary hover:text-ink",
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
+                {!guidedReview?.eligible && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {CORRECTION_CONFIDENCE_OPTIONS.map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => onCorrectionConfidenceChange(value)}
+                        className={cx(
+                          "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
+                          correctionConfidenceLevel === value
+                            ? "border-primary bg-primary text-primaryInk"
+                            : "border-edge bg-paper text-muted hover:border-primary hover:text-ink",
+                        )}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={onSubmitCorrection}
-                  disabled={busy || !correctionDraft.trim()}
+                  disabled={busy || (!correctionDraft.trim() && Object.keys(guidedResponses).length === 0)}
                   className="mt-3 rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk disabled:opacity-50"
                 >
                   Salvar correção

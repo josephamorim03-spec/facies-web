@@ -45,6 +45,7 @@ export type QuestionBankEditorialReadiness = {
   warning_questions: number;
   publishable_questions: number;
   blockers: string[];
+  pipeline_warnings?: string[];
   estimated_llm_calls?: {
     cheap?: number;
     strong?: string | number;
@@ -69,6 +70,12 @@ export type QuestionBankAdminPreviewSummary = {
   years_applied: number[];
   is_mixed_source: boolean;
   warnings: QuestionBankAdminWarning[];
+  can_import?: boolean;
+  can_auto_pipeline?: boolean;
+  import_blockers?: string[];
+  pipeline_blockers?: string[];
+  pipeline_warnings?: string[];
+  small_batch_well_formed?: boolean;
   quality_summary?: {
     total_questions?: number;
     blocked_questions?: number;
@@ -482,6 +489,47 @@ export async function enqueueQuestionBankQuestionAnalysis(
 ): Promise<{ question_id: string; candidate_id: string; job_id: string; status: string }> {
   return api<{ question_id: string; candidate_id: string; job_id: string; status: string }>(
     `/api/admin/question-bank/questions/${encodeURIComponent(questionId)}/analyze`,
+    { method: "POST", headers: { "x-krosmed-csrf": "1" } },
+  );
+}
+
+export type QuestionBankReport = {
+  question_id: string;
+  open_reports: number;
+  report_types: string | null;
+  last_reported_at: string | null;
+  status: string | null;
+  content_grade: string | null;
+  human_review_status: string | null;
+  canonical_answer: string | null;
+  question_page: number | null;
+  version: number | null;
+  exam_name: string | null;
+  year: number | null;
+  board_code: string | null;
+  source_file_path: string | null;
+  imported_file_name: string | null;
+  imported_file_path: string | null;
+  source_page: number | null;
+};
+
+export async function listQuestionBankReports(
+  options?: { status?: string; limit?: number },
+): Promise<{ reports: QuestionBankReport[] }> {
+  const params = new URLSearchParams();
+  if (options?.status) params.set("status", options.status);
+  if (options?.limit) params.set("limit", String(options.limit));
+  const qs = params.toString();
+  return api<{ reports: QuestionBankReport[] }>(
+    `/api/admin/question-bank/reports${qs ? `?${qs}` : ""}`,
+  );
+}
+
+export async function resolveQuestionBankReports(
+  questionId: string,
+): Promise<{ result: string; question_id: string }> {
+  return api<{ result: string; question_id: string }>(
+    `/api/admin/question-bank/reports/${encodeURIComponent(questionId)}/resolve`,
     { method: "POST", headers: { "x-krosmed-csrf": "1" } },
   );
 }

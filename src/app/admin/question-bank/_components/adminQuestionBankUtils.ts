@@ -46,6 +46,19 @@ export const JOB_TYPES = [
   "publish_question",
 ] as const;
 
+export const JOB_TYPE_LABELS: Record<string, string> = {
+  dedup_question: "Dedup",
+  heuristic_classify_question: "Heuristica",
+  cheap_ai_classify_question: "IA barata",
+  route_question_analysis: "Roteamento",
+  strong_ai_classify_question: "IA forte",
+  publish_question: "Publicacao",
+};
+
+export function jobTypeLabel(value: string): string {
+  return JOB_TYPE_LABELS[value] || value;
+}
+
 export function safeMetadataObject(text: string): Record<string, unknown> {
   try {
     const parsed = JSON.parse(text || "{}");

@@ -36,7 +36,12 @@ export type QuestionBankTopic = {
   question_count: number;
   primary_question_count: number;
   board_count: number;
+  avg_link_weight?: number | null;
+  avg_confidence?: number | null;
   difficulty_mean: number | null;
+  classification_confidence_mean?: number | null;
+  first_seen_year?: number | null;
+  last_seen_year?: number | null;
   recurrence_score: number;
   bank_demand_score: number;
   board_frequency: Record<string, number>;
@@ -170,6 +175,7 @@ export type QuestionBankSessionItem = {
   // também aparece (pós-resposta no treino / pós-finalização).
   distractor_diagnosis?: Record<string, string>;
   difficulty_estimate?: number | null;
+  pedagogical_profile?: Record<string, unknown>;
   adaptive_explanation?: { title: string; reasons: string[] } | null;
   editorial_quality?: { badge: string; message: string | null } | null;
   attempt_stats?: QuestionBankAttemptStats | null;
@@ -254,6 +260,82 @@ export type QuestionBankFinalizeResult = FinalizationResult & {
   created_tasks: ReviewTask[];
   session: QuestionBankSession;
   recommended_topics?: string[];
+};
+export type QuestionBankStudentEventType =
+  | "question_presented"
+  | "answer_selected"
+  | "answer_changed"
+  | "option_eliminated"
+  | "confidence_marked"
+  | "doubt_marked"
+  | "answer_revealed"
+  | "guided_checkpoint_answered"
+  | "correction_saved"
+  | "flashcard_created"
+  | "session_finalized";
+export type QuestionBankStudentEventPayload = {
+  event_id: string;
+  event_type: QuestionBankStudentEventType;
+  occurred_at?: string | null;
+  payload?: Record<string, unknown>;
+};
+export type QuestionBankGuidedReviewValue = "yes" | "partial" | "no" | "unsure";
+export type QuestionBankGuidedReviewCheckpoint = {
+  checkpoint_key: string;
+  prompt: string;
+  kind: string;
+  knowledge_node_id: string | null;
+  knowledge_node_name: string | null;
+  high_value_reason: string | null;
+  micro_question: string | null;
+  response_options: Record<QuestionBankGuidedReviewValue, string>;
+};
+export type QuestionBankGuidedReviewResponse = {
+  response_id?: string | null;
+  checkpoint_key: string;
+  knowledge_node_id?: string | null;
+  response_value: string;
+  confidence_self_rating?: number | null;
+  free_text?: string | null;
+  created_at?: string | null;
+};
+export type QuestionBankGuidedReview = {
+  question_id: string;
+  position: number;
+  eligible: boolean;
+  rationale: string | null;
+  checkpoints: QuestionBankGuidedReviewCheckpoint[];
+  existing_responses: QuestionBankGuidedReviewResponse[];
+};
+export type QuestionBankLearnerCompetency = {
+  knowledge_node_id: string;
+  node_name: string | null;
+  node_type: string | null;
+  exposure_count: number;
+  mastery_score: number;
+  retention_score: number;
+  confidence: number;
+  uncertainty: number;
+  needs_review: boolean;
+  overconfidence_score: number;
+  trap_sensitivity: number;
+  next_action: string | null;
+};
+export type QuestionBankLearnerModel = {
+  user_id: string;
+  generated_at: string;
+  competencies: QuestionBankLearnerCompetency[];
+  metacognition: Record<string, unknown>;
+  adaptive_summary: Record<string, unknown>;
+};
+export type QuestionBankLearningInsight = {
+  insight_id: string;
+  insight_type: string;
+  title: string;
+  body: string;
+  severity: string;
+  payload: Record<string, unknown>;
+  generated_at: string;
 };
 export type QuestionBankSessionCreatePayload = {
   mode?: QuestionBankMode;
@@ -366,6 +448,14 @@ export async function getQuestionBankLongitudinalDiagnosis(token: string): Promi
   return api<QuestionBankLongitudinalDiagnosis>("/api/question-bank/diagnosis/longitudinal", { headers: authHeader(token) });
 }
 
+export async function getQuestionBankLearnerModel(token: string): Promise<QuestionBankLearnerModel> {
+  return api<QuestionBankLearnerModel>("/api/question-bank/learner-model", { headers: authHeader(token) });
+}
+
+export async function getQuestionBankLearningInsights(token: string): Promise<QuestionBankLearningInsight[]> {
+  return api<QuestionBankLearningInsight[]>("/api/question-bank/learning-insights", { headers: authHeader(token) });
+}
+
 export async function recordQuestionBankAttempt(
   token: string,
   sessionId: string,
@@ -373,6 +463,50 @@ export async function recordQuestionBankAttempt(
   payload: { selected_option: QuestionBankOption; time_ms?: number | null; doubtful?: boolean; confidence_self_rating?: number | null },
 ): Promise<QuestionBankSession> {
   return api<QuestionBankSession>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/attempt`, { method: "PUT", headers: authHeader(token), body: JSON.stringify(payload) });
+}
+
+export async function recordQuestionBankEvents(
+  token: string,
+  sessionId: string,
+  position: number,
+  events: QuestionBankStudentEventPayload[],
+): Promise<{ events: Array<{ event_id: string; event_type: string; question_id: string; position: number | null; occurred_at: string }> }> {
+  return api<{ events: Array<{ event_id: string; event_type: string; question_id: string; position: number | null; occurred_at: string }> }>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/events`,
+    { method: "POST", headers: authHeader(token), body: JSON.stringify({ events }) },
+  );
+}
+
+export async function getQuestionBankGuidedReview(
+  token: string,
+  sessionId: string,
+  position: number,
+): Promise<QuestionBankGuidedReview> {
+  return api<QuestionBankGuidedReview>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/guided-review`,
+    { headers: authHeader(token) },
+  );
+}
+
+export async function submitQuestionBankGuidedReview(
+  token: string,
+  sessionId: string,
+  position: number,
+  payload: {
+    event_id?: string | null;
+    responses: Array<{
+      checkpoint_key: string;
+      response_value: QuestionBankGuidedReviewValue;
+      confidence_self_rating?: number | null;
+      free_text?: string | null;
+    }>;
+    free_text?: string | null;
+  },
+): Promise<{ response_ids: string[]; session: QuestionBankSession; competency_events: Record<string, unknown>[] }> {
+  return api<{ response_ids: string[]; session: QuestionBankSession; competency_events: Record<string, unknown>[] }>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/guided-review`,
+    { method: "POST", headers: authHeader(token), body: JSON.stringify(payload) },
+  );
 }
 
 export async function recordQuestionBankCorrection(

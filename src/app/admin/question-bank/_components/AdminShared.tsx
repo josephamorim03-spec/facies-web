@@ -8,10 +8,12 @@ import { truncateText } from "./adminQuestionBankUtils";
 export function StatCard({
   label,
   value,
+  helper,
   tone = "default",
 }: {
   label: string;
   value: number | string;
+  helper?: string;
   tone?: "default" | "danger" | "accent";
 }) {
   const toneClasses =
@@ -21,9 +23,10 @@ export function StatCard({
         ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/40 dark:text-blue-300"
         : "border-gray-200 bg-white text-gray-900 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100";
   return (
-    <div className={`rounded-2xl border p-3 ${toneClasses}`}>
+    <div className={`rounded-lg border p-3 ${toneClasses}`}>
       <p className="text-xs font-semibold uppercase opacity-70">{label}</p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
+      {helper ? <p className="mt-1 text-[11px] leading-4 opacity-70">{helper}</p> : null}
     </div>
   );
 }
@@ -34,7 +37,7 @@ export function MetadataPill({ label, value }: { label: string; value: unknown }
   }
   const rendered = Array.isArray(value) ? value.join(", ") : String(value);
   return (
-    <div className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200">
+    <div className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200">
       <span className="opacity-60">{label}: </span>
       <span>{rendered}</span>
     </div>
@@ -47,7 +50,7 @@ export function WarningBox({ warning }: { warning: QuestionBankAdminWarning }) {
       ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200"
       : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200";
   return (
-    <div className={`rounded-2xl border p-3 ${toneClasses}`}>
+    <div className={`rounded-lg border p-3 ${toneClasses}`}>
       <div className="text-xs font-semibold uppercase">{warning.code}</div>
       <div className="mt-1 text-sm">{warning.message}</div>
       {warning.reason || warning.provider ? (
@@ -61,7 +64,7 @@ export function WarningBox({ warning }: { warning: QuestionBankAdminWarning }) {
       {warning.samples?.length ? (
         <div className="mt-2 space-y-2 text-xs">
           {warning.samples.map((sample) => (
-            <div key={`${sample.question_number}-${sample.sample}`} className="rounded-xl bg-black/5 px-3 py-2 dark:bg-white/5">
+            <div key={`${sample.question_number}-${sample.sample}`} className="rounded-lg bg-black/5 px-3 py-2 dark:bg-white/5">
               <span className="font-semibold">Q{sample.question_number ?? "?"}</span>: {sample.sample}
             </div>
           ))}
@@ -106,7 +109,7 @@ export function CandidateRow({ item }: { item: QuestionBankAdminCandidate }) {
 
 export function JsonPanel({ title, value }: { title: string; value: unknown }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-gray-950/95 p-4 text-white dark:border-gray-800">
+    <div className="rounded-lg border border-gray-200 bg-gray-950/95 p-4 text-white dark:border-gray-800">
       <div className="mb-2 text-xs font-semibold uppercase text-gray-400">{title}</div>
       <pre className="overflow-auto text-xs leading-6 text-gray-100">{JSON.stringify(value, null, 2)}</pre>
     </div>

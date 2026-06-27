@@ -79,11 +79,11 @@ export default function ImportWorkspace({
 
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+      <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Imports</h2>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Preview, override e envio.</p>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ingestao</h2>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">PDF, metadados e preview editorial.</p>
           </div>
         </div>
         <div className="mt-4 grid gap-4">
@@ -98,7 +98,7 @@ export default function ImportWorkspace({
           </label>
           {file ? <div className="text-xs text-gray-500 dark:text-gray-400">{file.name}</div> : null}
 
-          <div className="grid gap-4 rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/60">
+          <div className="grid gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/60">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Prova</p>
@@ -145,7 +145,7 @@ export default function ImportWorkspace({
               </div>
             </div>
 
-            <details className="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
+            <details className="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
               <summary className="cursor-pointer text-sm font-semibold text-gray-700 dark:text-gray-200">JSON</summary>
               <textarea
                 value={metadataText}
@@ -165,17 +165,17 @@ export default function ImportWorkspace({
             Auto pipeline
           </label>
           <div className="flex flex-wrap gap-3">
-            <button onClick={onPreview} className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500">
+            <button onClick={onPreview} className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500">
               Preview
             </button>
-            <button onClick={onImport} className="rounded-full bg-gray-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white">
+            <button onClick={onImport} className="rounded-lg bg-gray-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white">
               Importar
             </button>
           </div>
         </div>
 
         {previewSummary ? (
-          <div className="mt-5 space-y-4 rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/70">
+          <div className="mt-5 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/70">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Preview</h3>
               <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Diagnostico antes de importar.</p>
@@ -190,7 +190,7 @@ export default function ImportWorkspace({
               <MetadataPill label="paginas OCR" value={previewSummary.quality_summary?.ocr_summary?.pages_used} />
             </div>
             {readiness ? (
-              <div className={`rounded-2xl border p-4 text-sm ${readinessTone}`}>
+              <div className={`rounded-lg border p-4 text-sm ${readinessTone}`}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="text-xs font-semibold uppercase opacity-70">Prontidao editorial</div>
@@ -206,8 +206,17 @@ export default function ImportWorkspace({
                 {readiness.blockers.length ? (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {readiness.blockers.map((blocker) => (
-                      <span key={blocker} className="rounded-full bg-white/50 px-2 py-0.5 text-[11px] font-semibold dark:bg-black/20">
+                      <span key={blocker} className="rounded-md bg-white/50 px-2 py-0.5 text-[11px] font-semibold dark:bg-black/20">
                         {blocker}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                {readiness.pipeline_warnings?.length ? (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {readiness.pipeline_warnings.map((warning) => (
+                      <span key={warning} className="rounded-md bg-white/50 px-2 py-0.5 text-[11px] font-semibold dark:bg-black/20">
+                        {warning}
                       </span>
                     ))}
                   </div>
@@ -221,13 +230,13 @@ export default function ImportWorkspace({
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-                Sem alertas criticos.
-              </div>
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
+                  Sem alertas criticos.
+                </div>
             )}
 
             {questions.length ? (
-              <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+              <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
                 <div className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
                   <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Overrides por questao</h4>
                 </div>
@@ -387,9 +396,9 @@ export default function ImportWorkspace({
         ) : null}
       </section>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+      <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Historico</h2>
-        <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
+        <div className="mt-4 overflow-auto rounded-lg border border-gray-200 dark:border-gray-800">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 dark:bg-gray-950">
               <tr className="text-gray-500 dark:text-gray-400">

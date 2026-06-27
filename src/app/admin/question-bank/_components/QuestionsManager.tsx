@@ -7,12 +7,15 @@ import {
   editQuestionBankAdminQuestion,
   enqueueQuestionBankQuestionAnalysis,
   getQuestionBankAdminQuestion,
+  listQuestionBankReports,
   listQuestionBankAdminKnowledgeNodes,
+  resolveQuestionBankReports,
   searchQuestionBankAdminQuestions,
   updateQuestionBankQuestionStatus,
   type QuestionBankAdminKnowledgeNode,
   type QuestionBankAdminQuestionDetail,
   type QuestionBankAdminQuestionListItem,
+  type QuestionBankReport,
 } from "@/lib/api/domains/question-bank-admin";
 
 const STATUS_OPTIONS = [
@@ -58,6 +61,12 @@ function statusTone(status: string | null): string {
   }
 }
 
+function reportSourceLabel(report: QuestionBankReport): string {
+  const file = report.imported_file_name || report.imported_file_path || report.source_file_path || "PDF nao informado";
+  const page = report.source_page ?? report.question_page;
+  return page == null ? file : `${file} - pag. ${page}`;
+}
+
 type EditState = {
   stem: string;
   alternatives: Record<string, string>;
@@ -82,6 +91,8 @@ export default function QuestionsManager() {
   const [missingSimilar, setMissingSimilar] = useState(false);
   const [needsReview, setNeedsReview] = useState(false);
   const [items, setItems] = useState<QuestionBankAdminQuestionListItem[]>([]);
+  const [reports, setReports] = useState<QuestionBankReport[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -140,6 +151,34 @@ export default function QuestionsManager() {
     firstRender.current = false;
     return () => clearTimeout(handle);
   }, [search]);
+
+  useEffect(() => {
+    void refreshReports();
+  }, []);
+
+  async function refreshReports() {
+    setReportsLoading(true);
+    try {
+      const res = await listQuestionBankReports({ status: "open", limit: 20 });
+      setReports(res.reports);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao carregar reports.");
+    } finally {
+      setReportsLoading(false);
+    }
+  }
+
+  async function resolveReport(questionId: string) {
+    setError(null);
+    try {
+      await resolveQuestionBankReports(questionId);
+      setNotice("Report resolvido.");
+      await refreshReports();
+      void search(offset);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao resolver report.");
+    }
+  }
 
   useEffect(() => {
     if (!nodeQuery.trim()) {
@@ -451,6 +490,60 @@ export default function QuestionsManager() {
           Busque, edite e remova questões. Editar revalida o gate de qualidade; apagar é soft-delete
           (sai do banco do aluno, reversível).
         </p>
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-100">Denuncias abertas</h3>
+            <p className="mt-1 text-xs text-amber-800/80 dark:text-amber-200/80">
+              {reportsLoading ? "Carregando..." : `${reports.length} questao(oes) reportada(s)`}
+            </p>
+          </div>
+          <button
+            onClick={() => void refreshReports()}
+            className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-200 dark:hover:bg-amber-950/40"
+          >
+            Atualizar reports
+          </button>
+        </div>
+        {reports.length > 0 ? (
+          <div className="mt-3 grid gap-2">
+            {reports.map((report) => (
+              <div key={report.question_id} className="rounded-lg border border-amber-200 bg-white p-3 dark:border-amber-900/40 dark:bg-gray-900">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-200">
+                      <span>{report.open_reports} report(s)</span>
+                      {report.report_types ? <span>{report.report_types}</span> : null}
+                      <span>{report.status || "sem status"}</span>
+                    </div>
+                    <div className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {reportSourceLabel(report)}
+                    </div>
+                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      {[report.board_code, report.exam_name, report.year].filter(Boolean).join(" - ") || "fonte sem metadados"}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    <button
+                      onClick={() => void openEditor(report.question_id)}
+                      className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => void resolveReport(report.question_id)}
+                      className="rounded-lg border border-green-300 px-3 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-950/30"
+                    >
+                      Resolver
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       {/* Filtros */}
@@ -787,7 +880,7 @@ export default function QuestionsManager() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide opacity-70">Leitura editorial da IA</p>
-                      <p className="mt-1 font-semibold">{summary.route_label} Â· confianca {summary.confidence_label}</p>
+                      <p className="mt-1 font-semibold">{summary.route_label} · confiança {summary.confidence_label}</p>
                     </div>
                     <span className="rounded-full bg-white/70 px-2 py-1 text-xs font-semibold dark:bg-black/20">
                       {summary.review_lane}

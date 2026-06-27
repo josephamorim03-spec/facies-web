@@ -38,18 +38,18 @@ export default function CandidatesPanel({
   onResolveReview,
 }: Props) {
   return (
-    <section className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+    <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Candidates</h2>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Extracao, status e revisao.</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Questoes extraidas</h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Candidatas do import selecionado.</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <button
             onClick={onOpenReviewQueue}
-            className="rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-300"
+            className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-300"
           >
-            Review {reviewTotal > 0 && <span className="ml-1 rounded-full bg-amber-200 px-1.5 py-0.5 text-xs dark:bg-amber-800">{reviewTotal}</span>}
+            Revisao {reviewTotal > 0 && <span className="ml-1 rounded-md bg-amber-200 px-1.5 py-0.5 text-xs dark:bg-amber-800">{reviewTotal}</span>}
           </button>
           <label className="grid gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
             Status
@@ -81,8 +81,8 @@ export default function CandidatesPanel({
         />
       ) : null}
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
-        <table className="w-full text-left text-sm">
+      <div className="mt-4 overflow-auto rounded-lg border border-gray-200 dark:border-gray-800">
+        <table className="w-full min-w-[900px] text-left text-sm">
           <thead className="bg-gray-50 dark:bg-gray-950">
             <tr className="text-gray-500 dark:text-gray-400">
               <th className="px-3 py-3 font-semibold">N</th>
