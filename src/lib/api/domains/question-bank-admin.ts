@@ -181,6 +181,13 @@ export type QuestionBankAdminHotspotItem = {
   artifact_reason?: string | null;
 };
 
+export type QuestionBankTaxonomyAuditExample = {
+  question_id: string;
+  stem_sample: string | null;
+  current_primary_node_id?: string | null;
+  target_primary_node_id?: string | null;
+};
+
 export type QuestionBankEditorialFunnelStage = {
   key: string;
   label: string;
@@ -233,6 +240,9 @@ export type QuestionBankAdminPipelineStatus = {
     retry_scheduled_jobs: number;
     ready_pending_jobs: number;
     artifact_imports: number;
+    published_without_specialty: number;
+    folder_taxonomy_conflicts: number;
+    folder_taxonomy_rehomes: number;
     pending_jobs: number;
     processing_jobs: number;
     failed_jobs: number;
@@ -245,6 +255,13 @@ export type QuestionBankAdminPipelineStatus = {
     many_candidates_zero_published: QuestionBankAdminHotspotItem[];
     low_yield_candidates: QuestionBankAdminHotspotItem[];
     technical_artifacts: QuestionBankAdminHotspotItem[];
+  };
+  taxonomy_audit: {
+    published_without_specialty: number;
+    folder_taxonomy_conflicts: number;
+    folder_taxonomy_rehomes: number;
+    conflict_examples: QuestionBankTaxonomyAuditExample[];
+    missing_specialty_examples: QuestionBankTaxonomyAuditExample[];
   };
 } & QuestionBankAdminPipelineSnapshot;
 

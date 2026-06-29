@@ -48,6 +48,7 @@ export default function AdminOverview({
   const editorialHealth = pipelineStatus?.editorial_health;
   const summary = pipelineStatus?.summary;
   const hotspots = pipelineStatus?.backlog_hotspots;
+  const taxonomyAudit = pipelineStatus?.taxonomy_audit;
   const healthTone =
     editorialHealth?.state === "blocked"
       ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200"
@@ -113,8 +114,8 @@ export default function AdminOverview({
             <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-2 xl:max-w-2xl xl:grid-cols-4">
               <StatCard label="Baixa conf." value={editorialHealth?.low_confidence_questions ?? 0} helper="auditar" />
               <StatCard label="Reports" value={editorialHealth?.open_reports ?? 0} helper="alunos" tone={editorialHealth?.open_reports ? "accent" : "default"} />
-              <StatCard label="Bloqueadas" value={editorialHealth?.blocked_questions ?? 0} helper="nao publicaveis" tone={editorialHealth?.blocked_questions ? "danger" : "default"} />
-              <StatCard label="Atencao" value={editorialHealth?.needs_attention ?? 0} helper="jobs presos" tone={editorialHealth?.needs_attention ? "danger" : "default"} />
+              <StatCard label="Sem specialty" value={summary?.published_without_specialty ?? 0} helper="gaveta incompleta" tone={summary?.published_without_specialty ? "danger" : "default"} />
+              <StatCard label="Rehomes" value={summary?.folder_taxonomy_rehomes ?? 0} helper="pasta venceu" tone={summary?.folder_taxonomy_rehomes ? "accent" : "default"} />
             </div>
           </div>
 
@@ -175,6 +176,21 @@ export default function AdminOverview({
               ))}
             </div>
           ) : null}
+
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+              <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Conflitos pasta x primario</div>
+              <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{summary?.folder_taxonomy_conflicts ?? 0}</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+              <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Sem specialty</div>
+              <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{summary?.published_without_specialty ?? 0}</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+              <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Re-homadas</div>
+              <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{summary?.folder_taxonomy_rehomes ?? 0}</div>
+            </div>
+          </div>
         </section>
 
         <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
@@ -201,6 +217,24 @@ export default function AdminOverview({
                         <div>{item.candidate_count} cand.</div>
                         <div>{item.published_question_count} pub.</div>
                       </div>
+                    </div>
+                  )) : (
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Sem itens relevantes agora.</div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {([
+              ["Conflitos de gaveta", taxonomyAudit?.conflict_examples ?? []],
+              ["Publicadas sem specialty", taxonomyAudit?.missing_specialty_examples ?? []],
+            ] as const).map(([label, items]) => (
+              <div key={label} className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+                <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{label}</div>
+                <div className="mt-3 space-y-2">
+                  {items.length ? items.map((item) => (
+                    <div key={`${label}-${item.question_id}`} className="text-sm">
+                      <div className="font-medium text-gray-800 dark:text-gray-100">{item.question_id}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{item.stem_sample || "sem amostra"}</div>
                     </div>
                   )) : (
                     <div className="text-sm text-gray-500 dark:text-gray-400">Sem itens relevantes agora.</div>
