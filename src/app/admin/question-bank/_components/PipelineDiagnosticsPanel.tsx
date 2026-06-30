@@ -128,9 +128,9 @@ export default function PipelineDiagnosticsPanel({
             <input
               type="number"
               min={1}
-              max={500}
+              max={50}
               value={batchSize}
-              onChange={(event) => onBatchSizeChange(Number(event.target.value))}
+              onChange={(event) => onBatchSizeChange(Math.min(50, Math.max(1, Number(event.target.value) || 1)))}
               className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
             />
           </label>
@@ -139,9 +139,9 @@ export default function PipelineDiagnosticsPanel({
             <input
               type="number"
               min={1}
-              max={10}
+              max={1}
               value={workers}
-              onChange={(event) => onWorkersChange(Number(event.target.value))}
+              onChange={() => onWorkersChange(1)}
               className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
             />
           </label>

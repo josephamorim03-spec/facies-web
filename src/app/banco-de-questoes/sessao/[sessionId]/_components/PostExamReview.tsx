@@ -105,12 +105,27 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
   const markedItems = items.filter((i) => i.doubtful);
   const unansweredItems = items.filter((i) => !i.answered);
   const accuracy = session.total_questions > 0 ? correctItems.length / session.total_questions : 0;
+  const diagnosedWrongCount = wrongItems.filter((item) => item.selected_option && item.distractor_diagnosis?.[item.selected_option]).length;
+  const scheduledCount = finalizeOut?.created_tasks.length ?? 0;
+  const savedCorrectionCount = corrections.length;
   const isFullExam = session.study_kind === "full_exam";
   const resultLabel = isFullExam
     ? "Resultado da prova"
     : session.resolution_mode === "simulation"
       ? "Revisão pós-simulado"
       : "Resultado da sessão";
+  const gainTitle =
+    wrongItems.length > 0
+      ? `${wrongItems.length} erro${wrongItems.length === 1 ? "" : "s"} virou${wrongItems.length === 1 ? "" : "aram"} material de estudo`
+      : correctItems.length === session.total_questions
+        ? "Sessão limpa: você confirmou domínio"
+        : "Sessão concluída com mapa mais claro";
+  const gainDetail =
+    wrongItems.length > 0
+      ? `${diagnosedWrongCount} com hipótese de armadilha, ${savedCorrectionCount} reparo${savedCorrectionCount === 1 ? "" : "s"} salvo${savedCorrectionCount === 1 ? "" : "s"} e ${scheduledCount} ${scheduledCount === 1 ? "revisão programada" : "revisões programadas"}.`
+      : markedItems.length > 0
+        ? `${markedItems.length} questão${markedItems.length === 1 ? "" : "ões"} marcada${markedItems.length === 1 ? "" : "s"} para segunda leitura.`
+        : "O melhor próximo passo é manter o ritmo com outro bloco curto.";
   const primaryWeakNode = diagnosis?.nodes
     .filter((node) => node.accuracy < 0.6 && (node.correct + node.wrong) >= 1)
     .sort((a, b) => a.accuracy - b.accuracy)[0] ?? null;
@@ -149,39 +164,44 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
     <main className="min-h-screen bg-paper px-4 py-6 text-ink md:px-6 md:py-8">
       <div className="mx-auto max-w-4xl space-y-6">
 
-        <header>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-            {resultLabel}
-          </p>
-          <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight">
-            {session.theme ?? "Sessão concluída"}
-          </h1>
-        </header>
-
-        {/* Score bar */}
-        <div className="km-card flex flex-col items-center gap-6 p-6 sm:flex-row">
-          <ProgressRing pct={accuracy * 100} size={120} color={accuracyColor(accuracy)} />
-          <div className="grid flex-1 grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
-            <div>
+        <header className="rounded-lg border border-edge bg-surface p-5 shadow-[var(--soft-shadow)]">
+          <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+                {resultLabel}
+              </p>
+              <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight">
+                {session.theme ?? "Sessão concluída"}
+              </h1>
+              <div className="mt-4 rounded-lg border border-primary/30 bg-[var(--amber-tint)] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Ganho da sessão</p>
+                <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight text-ink">{gainTitle}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{gainDetail}</p>
+              </div>
+            </div>
+            <ProgressRing pct={accuracy * 100} size={132} color={accuracyColor(accuracy)} />
+          </div>
+          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="rounded-lg border border-edge bg-paper px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Acertos</p>
               <p className="mt-1 text-2xl font-bold text-success">{correctItems.length}</p>
             </div>
-            <div>
+            <div className="rounded-lg border border-edge bg-paper px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Erros</p>
               <p className="mt-1 text-2xl font-bold text-danger">{wrongItems.length}</p>
             </div>
-            <div>
+            <div className="rounded-lg border border-edge bg-paper px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Marcadas</p>
               <p className="mt-1 text-2xl font-bold text-warning">{markedItems.length}</p>
             </div>
-            <div>
+            <div className="rounded-lg border border-edge bg-paper px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Em branco</p>
               <p className="mt-1 text-2xl font-bold text-muted">{unansweredItems.length}</p>
             </div>
           </div>
-        </div>
+        </header>
 
-        <section className="km-card border-primary p-4">
+        <section className="rounded-lg border border-primary bg-surface p-4 shadow-[var(--soft-shadow)]">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Próxima melhor ação</p>
@@ -191,7 +211,7 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
             <button
               type="button"
               onClick={() => router.push(primaryAction.href)}
-              className="rounded-xl border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk shadow-sm"
+              className="rounded-lg border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105"
             >
               Começar agora
             </button>
@@ -201,28 +221,28 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
               <button
                 type="button"
                 onClick={() => setActiveTab("erros")}
-                className="rounded-xl border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+                className="rounded-lg border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
               >
-                Ver erros
-                <span className="mt-1 block text-xs font-normal text-muted">Diagnóstico e correções</span>
+                Reparar erros
+                <span className="mt-1 block text-xs font-normal text-muted">{diagnosedWrongCount} com diagnóstico de armadilha</span>
               </button>
             )}
             <button
               type="button"
               onClick={() => router.push("/caderno")}
-              className="rounded-xl border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+              className="rounded-lg border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
             >
               Abrir caderno
-              <span className="mt-1 block text-xs font-normal text-muted">Revisar notas e cards</span>
+              <span className="mt-1 block text-xs font-normal text-muted">Revisar notas e cards salvos</span>
             </button>
-            {finalizeOut && finalizeOut.created_tasks.length > 0 && (
+            {scheduledCount > 0 && (
               <button
                 type="button"
                 onClick={() => router.push("/cronograma")}
-                className="rounded-xl border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+                className="rounded-lg border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
               >
                 Ver agenda
-                <span className="mt-1 block text-xs font-normal text-muted">{finalizeOut.created_tasks.length} revisão(ões) criada(s)</span>
+                <span className="mt-1 block text-xs font-normal text-muted">{scheduledCount} {scheduledCount === 1 ? "revisão criada" : "revisões criadas"}</span>
               </button>
             )}
           </div>
@@ -417,45 +437,77 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
 
           return (
             <div className="grid gap-3">
-              {displayItems.map((item) => (
-                <article key={item.question_id} className="km-card p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-xs text-muted">Questão {item.position}</p>
-                    {item.correct_answer && (
-                      <span className={cx(
-                        "rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                        item.is_correct ? "bg-success text-white" : "bg-danger text-white",
-                      )}>
-                        Gabarito {item.correct_answer}
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-ink">{item.stem}</p>
-                  {item.selected_option && !item.is_correct && (
-                    <p className="mt-2 text-xs text-danger">Você respondeu: {item.selected_option}</p>
-                  )}
-                  {activeTab === "erros" && item.selected_option && item.distractor_diagnosis?.[item.selected_option] && (
-                    <div className="mt-3 rounded-lg border border-warning bg-[var(--amber-tint)] p-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Hipótese do erro</p>
-                      <p className="mt-1 text-sm leading-relaxed text-ink">
-                        {item.distractor_diagnosis[item.selected_option]}
-                      </p>
+              {displayItems.map((item) => {
+                const selectedDiagnosis = item.selected_option ? item.distractor_diagnosis?.[item.selected_option] : null;
+                const correction = correctionByQuestionId.get(item.question_id);
+                const isExpanded = expandedCorrections.has(item.question_id);
+                const actionCopy =
+                  activeTab === "erros"
+                    ? correction
+                      ? "Reparo salvo: revise esta regra antes de refazer."
+                      : selectedDiagnosis
+                        ? "Leia a armadilha e transforme em uma regra curta."
+                        : "Reescreva o raciocínio correto antes de refazer."
+                    : activeTab === "acertos"
+                      ? "Nomeie o dado que confirmou o acerto e siga."
+                      : "Vale segunda leitura: era dúvida real ou excesso de cautela?";
+
+                return (
+                  <article key={item.question_id} className="rounded-lg border border-edge bg-surface p-4 shadow-[var(--soft-shadow)]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Questão {item.position}</p>
+                        <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-ink">{item.stem}</p>
+                      </div>
+                      {item.correct_answer && (
+                        <span className={cx(
+                          "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                          item.is_correct ? "bg-success text-white" : "bg-danger text-white",
+                        )}>
+                          Gabarito {item.correct_answer}
+                        </span>
+                      )}
                     </div>
-                  )}
-                  {item.attempt_stats && item.attempt_stats.attempt_count > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setHistoryQuestionId(item.question_id)}
-                      className="mt-2 text-xs font-semibold text-muted transition hover:text-ink"
-                    >
-                      Histórico · {item.attempt_stats.correct_count}/{item.attempt_stats.attempt_count} acertos
-                    </button>
-                  )}
-                  {activeTab === "erros" && correctionByQuestionId.has(item.question_id) && (() => {
-                    const correction = correctionByQuestionId.get(item.question_id)!;
-                    const isExpanded = expandedCorrections.has(item.question_id);
-                    return (
-                      <div className="mt-3 border-t border-edge pt-3">
+
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {item.selected_option && (
+                        <span className={cx(
+                          "rounded-full border px-2.5 py-1 text-xs font-semibold",
+                          item.is_correct ? "border-success/40 text-success" : "border-danger/40 text-danger",
+                        )}>
+                          Sua resposta: {item.selected_option}
+                        </span>
+                      )}
+                      {item.doubtful && (
+                        <span className="rounded-full border border-warning/40 bg-[var(--amber-tint)] px-2.5 py-1 text-xs font-semibold text-warning">
+                          Marcada
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-3 rounded-lg border border-edge bg-paper px-3 py-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Próximo uso deste item</p>
+                      <p className="mt-1 text-sm leading-relaxed text-ink">{actionCopy}</p>
+                    </div>
+
+                    {activeTab === "erros" && selectedDiagnosis && (
+                      <div className="mt-3 rounded-lg border border-warning/50 bg-[var(--amber-tint)] p-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Hipótese do erro</p>
+                        <p className="mt-1 text-sm leading-relaxed text-ink">{selectedDiagnosis}</p>
+                      </div>
+                    )}
+
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      {item.attempt_stats && item.attempt_stats.attempt_count > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setHistoryQuestionId(item.question_id)}
+                          className="text-xs font-semibold text-muted transition hover:text-ink"
+                        >
+                          Histórico · {item.attempt_stats.correct_count}/{item.attempt_stats.attempt_count} acertos
+                        </button>
+                      )}
+                      {activeTab === "erros" && correction && (
                         <button
                           type="button"
                           onClick={() =>
@@ -476,16 +528,17 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
                           </svg>
                           Minha correção
                         </button>
-                        {isExpanded && (
-                          <blockquote className="mt-2 whitespace-pre-wrap border-l-2 border-edge pl-3 text-xs leading-relaxed text-ink/80">
-                            {correction.response_value}
-                          </blockquote>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </article>
-              ))}
+                      )}
+                    </div>
+
+                    {activeTab === "erros" && correction && isExpanded && (
+                      <blockquote className="mt-3 whitespace-pre-wrap border-l-2 border-primary pl-3 text-xs leading-relaxed text-ink/80">
+                        {correction.response_value}
+                      </blockquote>
+                    )}
+                  </article>
+                );
+              })}
             </div>
           );
         })()}

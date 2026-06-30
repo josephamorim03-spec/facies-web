@@ -20,6 +20,7 @@ type IconProps = { className?: string; style?: React.CSSProperties };
 
 export const AREA_COLORS: Record<string, string> = {
   GO: "#B65AA0",
+  OB: "#8B6FB6",
   PD: "#2E79A8",
   CG: "#B44A4F",
   CM: "#2D8B62",
@@ -29,6 +30,7 @@ export const AREA_COLORS: Record<string, string> = {
 
 export const AREA_FULL_LABELS: Record<string, string> = {
   GO: "Ginecologia e Obstetrícia",
+  OB: "Obstetrícia",
   PD: "Pediatria",
   CG: "Cirurgia Geral",
   CM: "Clínica Médica",
@@ -37,7 +39,7 @@ export const AREA_FULL_LABELS: Record<string, string> = {
 };
 
 export const AREA_SHORT_LABELS: Record<string, string> = {
-  GO: "GO", PD: "PD", CG: "CG", CM: "CM", MP: "MP", OU: "OU",
+  GO: "GO", OB: "OB", PD: "PD", CG: "CG", CM: "CM", MP: "MP", OU: "OU",
 };
 
 // ── Individual area icons ──────────────────────────────────────────────────
@@ -146,6 +148,7 @@ function IconOU({ className, style }: IconProps) {
 
 const ICON_MAP: Record<string, (p: IconProps) => React.JSX.Element> = {
   GO: IconGO,
+  OB: IconGO,
   CG: IconCG,
   PD: IconPD,
   CM: IconCM,

@@ -7,6 +7,7 @@
 // feature libs and pages must import from here instead of redefining their own map.
 export const AREA_HEX: Record<string, string> = {
   GO: "#B65AA0",
+  OB: "#8B6FB6",
   PD: "#2E79A8",
   MP: "#A97816",
   CG: "#B44A4F",
@@ -24,6 +25,7 @@ export function areaHex(area: string | null | undefined): string {
 
 export const AREA_BG_CLASS: Record<string, string> = {
   GO: "bg-area-go",
+  OB: "bg-area-go",
   PD: "bg-area-ped",
   MP: "bg-area-mp",
   CG: "bg-area-cg",
@@ -33,6 +35,7 @@ export const AREA_BG_CLASS: Record<string, string> = {
 
 export const AREA_TEXT_CLASS: Record<string, string> = {
   GO: "text-area-go",
+  OB: "text-area-go",
   PD: "text-area-ped",
   MP: "text-area-mp",
   CG: "text-area-cg",
@@ -42,6 +45,7 @@ export const AREA_TEXT_CLASS: Record<string, string> = {
 
 export const AREA_BORDER_CLASS: Record<string, string> = {
   GO: "border-area-go",
+  OB: "border-area-go",
   PD: "border-area-ped",
   MP: "border-area-mp",
   CG: "border-area-cg",

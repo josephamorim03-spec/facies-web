@@ -225,6 +225,8 @@ test("question bank applies filters, calendar review context, and gated correcti
   await expect(page.getByText("Gabarito A")).toHaveCount(0);
   await page.getByRole("button", { name: "Ver gabarito" }).click();
   await expect(page.getByText("Gabarito A")).toBeVisible();
+  await expect(page.getByText("Momento de aprendizagem")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Próxima/ })).toBeVisible();
 });
 
 test("manual search filters topics without becoming a hidden session filter", async ({ page }) => {

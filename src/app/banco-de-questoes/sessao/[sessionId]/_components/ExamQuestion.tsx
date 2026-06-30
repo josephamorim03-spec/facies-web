@@ -19,6 +19,41 @@ function formatDuration(seconds: number): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
+function sourceLabel(source: Record<string, unknown>): string {
+  const institution = String(source?.institution ?? "").trim();
+  const board = String(source?.board_code ?? "").trim();
+  const year = String(source?.year ?? "").trim();
+  return [institution || "Instituição", board, year].filter(Boolean).join(" · ");
+}
+
+function IconFlag({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M5 17V4" />
+      <path d="M5 4h8l-1 3 1 3H5" />
+    </svg>
+  );
+}
+
+function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <rect x="3.5" y="3.5" width="5" height="5" rx="1" />
+      <rect x="11.5" y="3.5" width="5" height="5" rx="1" />
+      <rect x="3.5" y="11.5" width="5" height="5" rx="1" />
+      <rect x="11.5" y="11.5" width="5" height="5" rx="1" />
+    </svg>
+  );
+}
+
+function IconMinus({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M4 10h12" />
+    </svg>
+  );
+}
+
 type ExamQuestionProps = {
   item: QuestionBankSessionItem;
   position: number;
@@ -79,9 +114,8 @@ export default function ExamQuestion({
   const isCritical = elapsedSeconds >= 60 * 120;
   const progress = Math.round((Math.max(0, answeredCount) / Math.max(1, total)) * 100);
   const averageSeconds = answeredCount > 0 ? Math.round(elapsedSeconds / answeredCount) : 0;
+  const primaryNode = item.knowledge_nodes.find((n) => n.is_primary) ?? item.knowledge_nodes[0];
 
-  // Keyboard shortcuts for the timed exam: A–E (or 1–5) to answer/change, ←/→ to
-  // navigate, M to mark for review. Ignored while typing or with a button focused.
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
@@ -90,16 +124,25 @@ export default function ExamQuestion({
       if (tag === "INPUT" || tag === "TEXTAREA" || el?.isContentEditable) return;
 
       if (event.key === "ArrowRight") {
-        if (position < total) { event.preventDefault(); onNext(); }
+        if (position < total) {
+          event.preventDefault();
+          onNext();
+        }
         return;
       }
       if (event.key === "ArrowLeft") {
-        if (position > 1) { event.preventDefault(); onPrev(); }
+        if (position > 1) {
+          event.preventDefault();
+          onPrev();
+        }
         return;
       }
       if (finalized || busy) return;
       if (event.key === "Enter") {
-        if (tag !== "BUTTON" && position < total) { event.preventDefault(); onNext(); }
+        if (tag !== "BUTTON" && position < total) {
+          event.preventDefault();
+          onNext();
+        }
         return;
       }
       if (event.key.toLowerCase() === "m") {
@@ -124,25 +167,33 @@ export default function ExamQuestion({
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
-      {/* Exam header */}
-      <header className="sticky top-0 z-10 border-b border-edge bg-surface px-4 py-3">
-        <div className="mx-auto max-w-5xl space-y-3">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="hidden truncate text-sm font-semibold text-ink sm:block">{examLabel}</span>
-              <span className="text-xs text-muted">·</span>
-              <span className="whitespace-nowrap text-sm text-muted">Questão {position}/{total}</span>
-              {item.knowledge_nodes.find((n) => n.is_primary)?.node_name && (
-                <span className="hidden max-w-[12rem] truncate rounded-full border border-edge bg-surfaceMuted px-2 py-0.5 text-xs text-muted sm:block">
-                  {item.knowledge_nodes.find((n) => n.is_primary)!.node_name}
+      <header className="sticky top-0 z-10 border-b border-edge bg-surface/95 px-4 py-3 backdrop-blur">
+        <div className="mx-auto max-w-6xl space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+                {sessionKindLabel} em execução
+              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <span className="truncate font-serif text-lg font-semibold leading-tight text-ink">
+                  {examLabel}
                 </span>
-              )}
+                {primaryNode?.node_name && (
+                  <span className="max-w-[14rem] truncate rounded-full border border-edge bg-paper px-2 py-0.5 text-xs text-muted">
+                    {primaryNode.node_name}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <span
                 className={cx(
-                  "font-mono text-sm tabular-nums transition-colors",
-                  isCritical ? "font-bold text-danger" : isLate ? "text-warning" : "text-muted",
+                  "rounded-lg border px-3 py-2 font-mono text-sm font-semibold tabular-nums transition-colors",
+                  isCritical
+                    ? "border-danger/40 text-danger"
+                    : isLate
+                      ? "border-warning/40 text-warning"
+                      : "border-edge text-ink",
                 )}
                 aria-label={`Tempo de ${sessionKindLabel.toLowerCase()}`}
               >
@@ -151,8 +202,9 @@ export default function ExamQuestion({
               <button
                 type="button"
                 onClick={onOpenMap}
-                className="rounded-xl border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:border-primary hover:text-ink"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-edge px-3 py-2 text-xs font-semibold text-muted hover:border-primary hover:text-ink"
               >
+                <IconGrid className="h-3.5 w-3.5" />
                 Mapa
               </button>
               {!finalized && (
@@ -160,52 +212,77 @@ export default function ExamQuestion({
                   type="button"
                   onClick={onFinalize}
                   disabled={busy}
-                  className="rounded-xl border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger hover:text-white disabled:opacity-50"
+                  className="rounded-lg border border-danger px-3 py-2 text-xs font-semibold text-danger hover:bg-danger hover:text-white disabled:opacity-50"
                 >
                   Finalizar {sessionKindLabel.toLowerCase()}
                 </button>
               )}
             </div>
           </div>
-          <div>
-            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
-              <span>{answeredCount} respondidas · {unansweredCount} em aberto · {doubtfulCount} marcadas</span>
-              <span>{progress}%{averageSeconds > 0 ? ` · ${averageSeconds}s/questão` : ""}</span>
+
+          <div className="grid gap-2 md:grid-cols-[1fr_auto] md:items-end">
+            <div>
+              <div className="mb-1.5 flex items-center justify-between gap-2 text-xs text-muted">
+                <span>Questão {position} de {total}</span>
+                <span>{progress}% respondido</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-surfaceMuted">
+                <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+              </div>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-surfaceMuted">
-              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+            <div className="grid grid-cols-3 gap-1.5 text-center text-xs">
+              <div className="rounded-lg border border-edge bg-paper px-3 py-2">
+                <p className="font-semibold text-ink">{answeredCount}</p>
+                <p className="text-muted">feitas</p>
+              </div>
+              <div className="rounded-lg border border-edge bg-paper px-3 py-2">
+                <p className="font-semibold text-ink">{unansweredCount}</p>
+                <p className="text-muted">abertas</p>
+              </div>
+              <div className="rounded-lg border border-edge bg-paper px-3 py-2">
+                <p className="font-semibold text-warning">{doubtfulCount}</p>
+                <p className="text-muted">marcadas</p>
+              </div>
             </div>
           </div>
+          {averageSeconds > 0 && (
+            <p className="text-right text-xs text-muted">{averageSeconds}s por questão em média</p>
+          )}
         </div>
       </header>
 
-      {/* Body */}
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 md:px-6">
-        {/* Stem */}
-        <p className="whitespace-pre-wrap text-base leading-9 text-ink">
-          {item.stem}
-        </p>
-
-        {/* Images */}
-        {item.image_refs.length > 0 && (
-          <div className="mt-6 grid gap-3 md:grid-cols-2">
-            {item.image_refs.map((src) => (
-              <img
-                key={src}
-                src={src}
-                alt="Imagem da questão"
-                className="rounded-xl border border-edge bg-surface"
-                onError={(event) => {
-                  // Sessões antigas podem ter URLs assinadas já expiradas.
-                  event.currentTarget.style.display = "none";
-                }}
-              />
-            ))}
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-7 md:px-6">
+        <section className="rounded-lg border border-edge bg-surface p-4 md:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-muted">{sourceLabel(item.source)}</p>
+            {item.selected_option && (
+              <span className="rounded-full border border-primary/40 bg-[var(--amber-tint)] px-2.5 py-1 text-xs font-semibold text-primary">
+                Resposta {item.selected_option}
+              </span>
+            )}
           </div>
-        )}
+          <p className="mt-4 whitespace-pre-wrap text-base leading-9 text-ink">
+            {item.stem}
+          </p>
 
-        {/* Alternatives */}
-        <div className="mt-8 grid gap-3">
+          {item.image_refs.length > 0 && (
+            <div className="mt-6 grid gap-3 md:grid-cols-2">
+              {item.image_refs.map((src) => (
+                <img
+                  key={src}
+                  src={src}
+                  alt="Imagem da questão"
+                  className="rounded-lg border border-edge bg-surface"
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="mt-5 grid gap-2.5">
           {OPTIONS.map((option) => {
             if (!item.alternatives[option]) return null;
             const selected = item.selected_option === option;
@@ -214,7 +291,7 @@ export default function ExamQuestion({
               <div
                 key={option}
                 className={cx(
-                  "flex items-stretch overflow-hidden rounded-xl border text-sm transition-colors",
+                  "flex items-stretch overflow-hidden rounded-lg border text-sm transition-colors",
                   selected
                     ? "border-primary bg-[var(--amber-tint)] text-ink"
                     : isEliminated
@@ -248,61 +325,52 @@ export default function ExamQuestion({
                     disabled={busy}
                     aria-pressed={isEliminated}
                     aria-label={isEliminated ? `Restaurar alternativa ${option}` : `Riscar alternativa ${option}`}
-                    title={isEliminated ? "Restaurar" : "Riscar (eliminar)"}
+                    title={isEliminated ? "Restaurar" : "Riscar"}
                     className={cx(
                       "flex w-12 shrink-0 items-center justify-center border-l border-edge transition-colors",
                       isEliminated ? "text-danger" : "text-muted hover:text-danger",
                     )}
                   >
-                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
-                      <path d="M4 10h12" />
-                    </svg>
+                    <IconMinus />
                   </button>
                 )}
               </div>
             );
           })}
-        </div>
+        </section>
       </main>
 
-      {/* Footer navigation */}
-      <footer className="sticky bottom-0 border-t border-edge bg-surface px-4 py-3">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+      <footer className="sticky bottom-0 border-t border-edge bg-surface/95 px-4 py-3 backdrop-blur">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3">
           <button
             type="button"
             onClick={onToggleDoubtful}
             className={cx(
-              "rounded-xl border px-4 py-2 text-sm font-semibold transition-colors",
+              "inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-semibold transition-colors",
               item.doubtful
                 ? "border-warning bg-warning text-white"
                 : "border-edge text-muted hover:border-warning hover:text-warning",
             )}
           >
-            {item.doubtful ? (
-              <span className="inline-flex items-center gap-1.5">
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5" aria-hidden="true">
-                  <path d="m5 10 3 3 7-8" />
-                </svg>
-                Marcada
-              </span>
-            ) : "Marcar para revisão"}
+            <IconFlag className="h-3.5 w-3.5" />
+            {item.doubtful ? "Marcada" : "Marcar para revisão"}
           </button>
           <div className="flex gap-2">
             <button
               type="button"
               disabled={position <= 1}
               onClick={onPrev}
-              className="rounded-xl border border-edge px-4 py-2 text-sm font-semibold text-muted hover:border-primary hover:text-ink disabled:opacity-40"
+              className="rounded-lg border border-edge px-4 py-2 text-sm font-semibold text-muted hover:border-primary hover:text-ink disabled:opacity-40"
             >
-              ← Anterior
+              Anterior
             </button>
             <button
               type="button"
               disabled={position >= total}
               onClick={onNext}
-              className="rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm disabled:opacity-40"
+              className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm disabled:opacity-40"
             >
-              Próxima →
+              Próxima
             </button>
           </div>
         </div>

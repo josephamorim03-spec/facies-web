@@ -71,6 +71,19 @@ function IconTarget({ className }: { className?: string }) {
   );
 }
 
+function IconCalibrate({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M4 14a8 8 0 0 1 16 0" />
+      <path d="M6.5 17h11" />
+      <path d="M12 14l4-4" />
+      <circle cx="12" cy="14" r="1.6" />
+      <path d="M7.5 12.5h.01" />
+      <path d="M16.5 12.5h.01" />
+    </svg>
+  );
+}
+
 function IconChevronRight({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
@@ -833,7 +846,7 @@ function BancoDeQuestoesContent() {
             <SessionIntentCard
               eyebrow="03 · reparar"
               title="Corrigir fraquezas"
-              description="Erros, baixo desempenho e revisões vencidas em foco."
+              description="Erros, revisões vencidas e baixo desempenho para reparar lacunas."
               active={activeIntent === "weakness"}
               Icon={IconTarget}
               onClick={() => {
@@ -845,9 +858,9 @@ function BancoDeQuestoesContent() {
             <SessionIntentCard
               eyebrow="04 · calibrar"
               title="Quase acertei"
-              description="Itens no limiar entre acerto e erro, onde calibrar rende mais."
+              description="Itens no limite para treinar confiança e discriminação fina."
               active={activeIntent === "near_miss"}
-              Icon={IconTarget}
+              Icon={IconCalibrate}
               onClick={() => {
                 setStudyKind("topic");
                 setResolutionMode("training");

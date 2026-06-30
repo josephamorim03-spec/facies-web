@@ -58,7 +58,7 @@ export default function QuestionBankAdminPage() {
   const [jobType, setJobType] = useState<string>(JOB_TYPES[0]!);
   const [batchSize, setBatchSize] = useState(DEFAULT_DEDUP_BATCH_SIZE);
   const [workers, setWorkers] = useState(DEFAULT_DEDUP_WORKERS);
-  const [autoPipeline, setAutoPipeline] = useState(true);
+  const [autoPipeline, setAutoPipeline] = useState(false);
   const [showArtifacts, setShowArtifacts] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [expandedError, setExpandedError] = useState<string | null>(null);
@@ -330,9 +330,13 @@ export default function QuestionBankAdminPage() {
         busy={busy}
         onRefresh={() => void runSafely("Atualizando paineis", async () => loadDashboard())}
         onRunAll={() => {
-          if (!window.confirm("Rodar pipeline completo em background?")) return;
+          if (!selectedImportId) {
+            setError("Selecione um import para rodar o pipeline completo de forma escopada.");
+            return;
+          }
+          if (!window.confirm("Rodar pipeline completo em background apenas para o import selecionado?")) return;
           void runSafely("Rodando pipeline completo", async () => {
-            await runQuestionBankAdminAll(true);
+            await runQuestionBankAdminAll(true, selectedImportId);
             await loadDashboard(selectedImportId);
           });
         }}

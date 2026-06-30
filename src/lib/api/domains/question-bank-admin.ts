@@ -387,9 +387,9 @@ export async function importQuestionBankAdminFile(
   if (options?.question_overrides && Object.keys(options.question_overrides).length > 0) {
     form.set("question_overrides", JSON.stringify(options.question_overrides));
   }
-  // Always send an explicit value: the server defaults to auto-pipeline ON, so an
-  // omitted field can no longer turn it off.
-  form.set("auto_pipeline", options?.auto_pipeline === false ? "false" : "true");
+  // Always send an explicit value. Phase 1 imports are intentionally staged:
+  // upload first, then process a scoped batch after readiness checks.
+  form.set("auto_pipeline", options?.auto_pipeline === true ? "true" : "false");
   return api<{
     imported_file_id: string;
     source_id: string | null;
@@ -460,8 +460,8 @@ export async function processQuestionBankAdminBatch(
 ): Promise<{ job_type: string; processed: number; failed: number; skipped: number }> {
   const params = new URLSearchParams({
     job_type: jobType,
-    batch_size: String(batchSize),
-    workers: String(workers),
+    batch_size: String(Math.min(50, Math.max(1, Math.floor(batchSize) || 1))),
+    workers: String(Math.min(1, Math.max(1, Math.floor(workers) || 1))),
   });
   if (importedFileId) params.set("imported_file_id", importedFileId);
   return api<{ job_type: string; processed: number; failed: number; skipped: number }>(
@@ -472,7 +472,11 @@ export async function processQuestionBankAdminBatch(
   );
 }
 
-export async function runQuestionBankAdminAll(background: boolean, importedFileId?: string): Promise<{
+export async function runQuestionBankAdminAll(
+  background: boolean,
+  importedFileId?: string,
+  options?: { confirmUnscoped?: boolean },
+): Promise<{
   launched: boolean;
   background: boolean;
   workers?: number;
@@ -481,6 +485,7 @@ export async function runQuestionBankAdminAll(background: boolean, importedFileI
 }> {
   const params = new URLSearchParams({ background: background ? "true" : "false" });
   if (importedFileId) params.set("imported_file_id", importedFileId);
+  else if (options?.confirmUnscoped) params.set("confirm_unscoped", "RUN_ALL_UNSCOPED");
   return api<{
     launched: boolean;
     background: boolean;

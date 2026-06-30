@@ -12,6 +12,7 @@ import type {
 const AREA_OPTIONS = [
   { value: "", label: "Todas" },
   { value: "GO", label: "GO" },
+  { value: "OB", label: "OB" },
   { value: "CM", label: "CM" },
   { value: "CG", label: "CG" },
   { value: "MP", label: "MP" },

@@ -78,6 +78,67 @@ function jsonError(code: string, status: number, requestId: string, message?: st
   );
 }
 
+function isAllowedQuestionBankAdminPath(method: string, questionBankPath: string): boolean {
+  const pathname = questionBankPath.split("?")[0] ?? "";
+  const normalizedMethod = method.toUpperCase();
+  const readOnlyPatterns = [
+    /^\/v1\/admin\/ui\/config$/,
+    /^\/v1\/admin\/pipeline\/(status|readiness|ai-preview)$/,
+    /^\/v1\/admin\/imports$/,
+    /^\/v1\/admin\/imports\/[^/]+$/,
+    /^\/v1\/admin\/imports\/[^/]+\/(candidates|pipeline-summary)$/,
+    /^\/v1\/admin\/review-queue$/,
+    /^\/v1\/admin\/reports$/,
+    /^\/v1\/admin\/questions$/,
+    /^\/v1\/admin\/questions\/[^/]+$/,
+    /^\/v1\/admin\/knowledge-nodes$/,
+    /^\/v1\/admin\/taxonomy\/suggestions$/,
+  ];
+  const mutationPatterns: Record<string, RegExp[]> = {
+    POST: [
+      /^\/v1\/admin\/imports\/(preview|files)$/,
+      /^\/v1\/admin\/pipeline\/(process-batch|run-all|run-ai|backfill-fingerprints)$/,
+      /^\/v1\/admin\/questions\/[^/]+\/(resolve|analyze)$/,
+      /^\/v1\/admin\/reports\/[^/]+\/resolve$/,
+      /^\/v1\/admin\/taxonomy\/versions$/,
+    ],
+    PATCH: [
+      /^\/v1\/admin\/questions\/[^/]+$/,
+      /^\/v1\/admin\/questions\/[^/]+\/status$/,
+      /^\/v1\/admin\/candidates\/[^/]+$/,
+      /^\/v1\/admin\/candidates\/review-queue\/[^/]+$/,
+      /^\/v1\/admin\/taxonomy\/suggestions\/[^/]+$/,
+    ],
+    DELETE: [/^\/v1\/admin\/questions\/[^/]+$/],
+  };
+  if (normalizedMethod === "GET") {
+    return readOnlyPatterns.some((pattern) => pattern.test(pathname));
+  }
+  return (mutationPatterns[normalizedMethod] ?? []).some((pattern) => pattern.test(pathname));
+}
+
+function sanitizeUpstreamHeaders(headers: Headers): Headers {
+  const responseHeaders = new Headers(headers);
+  for (const header of [
+    "connection",
+    "content-encoding",
+    "content-length",
+    "keep-alive",
+    "proxy-authenticate",
+    "proxy-authorization",
+    "server",
+    "set-cookie",
+    "te",
+    "trailer",
+    "transfer-encoding",
+    "upgrade",
+    "x-powered-by",
+  ]) {
+    responseHeaders.delete(header);
+  }
+  return responseHeaders;
+}
+
 function logAdminProxyEvent(
   level: "info" | "warn" | "error",
   event: string,
@@ -187,6 +248,15 @@ export async function proxyQuestionBankAdmin(
   },
 ): Promise<NextResponse> {
   const requestId = createRequestId(request.headers.get("x-request-id"));
+  const method = init?.method ?? request.method;
+  if (!isAllowedQuestionBankAdminPath(method, questionBankPath)) {
+    logAdminProxyEvent("warn", "path_rejected", {
+      request_id: requestId,
+      method,
+      path: questionBankPath.split("?")[0],
+    });
+    return jsonError("admin_proxy_path_rejected", 403, requestId);
+  }
   const authError = await authorizeAdmin(request, requestId);
   if (authError) return authError;
 
@@ -251,7 +321,7 @@ export async function proxyQuestionBankAdmin(
       target_origin: safeOrigin(target),
     });
   }
-  const responseHeaders = new Headers(upstream.headers);
+  const responseHeaders = sanitizeUpstreamHeaders(upstream.headers);
   responseHeaders.set("X-Request-Id", responseHeaders.get("X-Request-Id") || requestId);
   // upstream.text() já entrega o corpo descomprimido; content-length/encoding do
   // upstream descrevem o corpo comprimido e quebram o navegador (ERR_CONTENT_DECODING_FAILED).

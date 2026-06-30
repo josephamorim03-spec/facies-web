@@ -55,6 +55,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
   }, [wrongItems]);
 
   const draftKey = (questionId: string, index: number) => `${questionId}_${index}`;
+  const selectedCount = selected.size;
 
   async function generate() {
     setLoading(true);
@@ -154,20 +155,21 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
   const resultsWithDrafts = (response?.results ?? []).filter((r) => r.caderno_drafts.length > 0);
 
   return (
-    <section className="km-card p-4 md:col-span-2">
+    <section className="rounded-lg border border-edge bg-surface p-4 shadow-[var(--soft-shadow)] md:col-span-2">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="font-serif text-lg font-semibold leading-tight">Flashcards dos seus erros</h3>
-          <p className="mt-0.5 text-sm text-muted">A IA transforma os erros em cards de revisão espaçada — você escolhe quais salvar.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">De erro para revisão ativa</p>
+          <h3 className="mt-1 font-serif text-xl font-semibold leading-tight">Flashcards dos seus erros</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted">A IA transforma os erros em perguntas de recall. Você escolhe o que realmente merece voltar no caderno.</p>
         </div>
         {!response && (
           <button
             type="button"
             onClick={() => void generate()}
             disabled={loading}
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 disabled:opacity-50"
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 disabled:opacity-50"
           >
-            {loading ? "Analisando seus erros…" : "Gerar flashcards (IA)"}
+            {loading ? "Analisando seus erros..." : "Gerar cards dos erros"}
           </button>
         )}
       </div>
@@ -184,10 +186,17 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
 
       {resultsWithDrafts.length > 0 && (
         <div className="mt-4 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-edge bg-paper px-3 py-2">
+            <p className="text-xs font-semibold text-ink">
+              {selectedCount === 0 ? "Selecione os cards que valem revisar." : `${selectedCount} card${selectedCount === 1 ? "" : "s"} selecionado${selectedCount === 1 ? "" : "s"}.`}
+            </p>
+            <p className="text-xs text-muted">Salve só o que fecha uma lacuna real.</p>
+          </div>
           {resultsWithDrafts.map((result) => {
             const position = positionByQuestionId.get(result.question_id);
+            const selectedForQuestion = result.caderno_drafts.filter((d) => selected.has(draftKey(result.question_id, d.flashcard_index)));
             return (
-              <div key={result.question_id} className="rounded-xl border border-edge bg-paper p-3">
+              <div key={result.question_id} className="rounded-lg border border-edge bg-paper p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">
                   {position ? `Questão ${position}` : "Questão"}
                 </p>
@@ -203,7 +212,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
                         onClick={() => toggle(key)}
                         disabled={isSaved}
                         aria-pressed={isSelected}
-                        className={`block w-full rounded-lg border p-3 text-left transition-colors ${
+                        className={`flex w-full gap-3 rounded-lg border p-3 text-left transition-colors ${
                           isSaved
                             ? "border-success/40 bg-surface opacity-70"
                             : isSelected
@@ -211,9 +220,23 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
                               : "border-edge bg-surface hover:border-primary"
                         }`}
                       >
-                        <p className="text-sm font-semibold text-ink">{draft.note_payload.insight_question}</p>
-                        <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-xs text-muted">{draft.note_payload.body}</p>
-                        {isSaved && <p className="mt-1 text-xs font-semibold text-success">Salvo no caderno</p>}
+                        <span
+                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border text-[10px] font-bold ${
+                            isSaved
+                              ? "border-success bg-success text-white"
+                              : isSelected
+                                ? "border-primary bg-primary text-primaryInk"
+                                : "border-edge bg-paper text-transparent"
+                          }`}
+                          aria-hidden="true"
+                        >
+                          ✓
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-ink">{draft.note_payload.insight_question}</span>
+                          <span className="mt-1 block line-clamp-3 whitespace-pre-wrap text-xs text-muted">{draft.note_payload.body}</span>
+                          {isSaved && <span className="mt-1 block text-xs font-semibold text-success">Salvo no caderno</span>}
+                        </span>
                       </button>
                     );
                   })}
@@ -223,10 +246,10 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
                   <button
                     type="button"
                     onClick={() => void saveForQuestion(result)}
-                    disabled={savingQuestion === result.question_id}
+                    disabled={savingQuestion === result.question_id || selectedForQuestion.length === 0}
                     className="rounded-lg border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-surfaceMuted disabled:opacity-50"
                   >
-                    {savingQuestion === result.question_id ? "Salvando…" : "Salvar selecionados"}
+                    {savingQuestion === result.question_id ? "Salvando..." : selectedForQuestion.length > 0 ? `Salvar ${selectedForQuestion.length}` : "Salvar"}
                   </button>
                 </div>
               </div>

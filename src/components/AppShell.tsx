@@ -23,7 +23,7 @@ type BuildVersionPayload = {
 };
 
 const SHOW_BUILD_BADGE = process.env.NEXT_PUBLIC_SHOW_BUILD_BADGE === "1";
-const PRIMARY_NAV_ROUTES = ["/hoje", "/banco-de-questoes", "/cards-adaptativos", "/revisoes", "/dados-e-relatorios"];
+const PRIMARY_NAV_ROUTES = ["/hoje", "/banco-de-questoes", "/cards-adaptativos", "/dados-e-relatorios"];
 
 type IdleCallbackHandle = number;
 type WindowWithIdleCallback = Window & {

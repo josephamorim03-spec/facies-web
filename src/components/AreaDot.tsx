@@ -1,7 +1,8 @@
-type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
+type Area = "GO" | "OB" | "PD" | "MP" | "CG" | "CM" | "OU";
 
 const AREA_COLORS: Record<Area, string> = {
   GO: "bg-area-go",
+  OB: "bg-area-go",
   PD: "bg-area-ped",
   MP: "bg-area-mp",
   CG: "bg-area-cg",

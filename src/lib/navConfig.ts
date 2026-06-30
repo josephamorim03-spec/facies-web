@@ -49,12 +49,6 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         shortLabel: "Cards",
         groupPaths: ["/cards-adaptativos", "/revisao-turbo", "/caderno"],
       },
-      {
-        href: "/revisoes",
-        label: "REVISÕES",
-        shortLabel: "Revisões",
-        groupPaths: ["/revisoes"],
-      },
     ],
   },
   {

@@ -26,7 +26,7 @@ export const CONTENT_METADATA_FIELDS = [
   ["microcompetencia", "Micro"],
 ] as const;
 
-export const GRANDE_AREA_OPTIONS = ["CG", "CM", "PD", "MP", "GO", "OU"] as const;
+export const GRANDE_AREA_OPTIONS = ["CG", "CM", "PD", "MP", "GO", "OB", "OU"] as const;
 const GRANDE_AREA_SET = new Set<string>(GRANDE_AREA_OPTIONS);
 
 export const QUESTION_OVERRIDE_FIELDS = [
@@ -46,8 +46,8 @@ export const JOB_TYPES = [
   "publish_question",
 ] as const;
 
-export const DEFAULT_DEDUP_BATCH_SIZE = 200;
-export const DEFAULT_DEDUP_WORKERS = 4;
+export const DEFAULT_DEDUP_BATCH_SIZE = 50;
+export const DEFAULT_DEDUP_WORKERS = 1;
 
 export const JOB_TYPE_LABELS: Record<string, string> = {
   dedup_question: "Dedup",
