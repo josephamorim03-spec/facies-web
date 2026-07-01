@@ -553,11 +553,14 @@ function BancoDeQuestoesContent() {
       ]);
       setTaxonomyTopics(taxonomy);
       setMicroTopics(micros);
-    } catch {
+    } catch (err) {
       setTaxonomyTopics([]);
       setMicroTopics([]);
+      const message = err instanceof Error ? err.message : "Não foi possível carregar os assuntos do banco de questões.";
+      setError(message);
+      showToast(message, "error");
     }
-  }, [area, boardCodes, institution, search, selectedYears, token]);
+  }, [area, boardCodes, institution, search, selectedYears, showToast, token]);
 
   useEffect(() => {
     if (!tokenResolved) return;
