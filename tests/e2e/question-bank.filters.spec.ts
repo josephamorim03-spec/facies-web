@@ -6,10 +6,10 @@ const topic = {
   parent_knowledge_node_id: null,
   node_code: "GO",
   node_name: "Obstetricia",
-  node_type: "theme",
-  node_path: ["GO", "Obstetricia"],
-  path_label: "GO / Obstetricia",
-  depth: 1,
+  node_type: "specialty",
+  node_path: ["Medicina", "Obstetricia"],
+  path_label: "Medicina / Obstetricia",
+  depth: 0,
   description: null,
   question_count: 12,
   primary_question_count: 12,
@@ -30,9 +30,9 @@ const childTopic = {
   knowledge_node_id: "placenta-node",
   parent_knowledge_node_id: "go-node",
   node_name: "Placenta previa",
-  node_type: "microcompetency",
-  node_path: ["GO", "Obstetricia", "Placenta previa"],
-  path_label: "GO / Obstetricia / Placenta previa",
+  node_type: "subtheme",
+  node_path: ["Medicina", "Obstetricia", "Placenta previa"],
+  path_label: "Medicina / Obstetricia / Placenta previa",
   depth: 2,
   question_count: 6,
 };
@@ -199,6 +199,7 @@ test("question bank applies filters, calendar review context, and gated correcti
   await expect(page.locator("main aside")).toBeVisible();
   await expect(page.getByText(/12 .*dispon/i)).toBeVisible();
   await expect(page.getByText("Obstetricia").first()).toBeVisible();
+  await expect(page.getByTestId("question-bank-top-filters")).not.toContainText("Medicina");
 
   const quantityInput = page.getByRole("spinbutton", { name: /Questões/i });
   await quantityInput.fill("99");
@@ -317,6 +318,10 @@ test("manual search filters topics without becoming a hidden session filter", as
   await expect
     .poll(() => topicRequestUrls.some((url) => new URL(url).searchParams.get("search") === "Placenta"))
     .toBe(true);
+  await expect
+    .poll(() => topicRequestUrls.some((url) => new URL(url).searchParams.get("include_empty") === "false"))
+    .toBe(true);
+  await expect(page.getByTestId("question-bank-top-filters")).not.toContainText("Medicina");
 
   await page.getByRole("button", { name: /Iniciar simulado/ }).click();
   await expect.poll(() => createPayloads.length).toBe(1);
@@ -329,4 +334,173 @@ test("manual search filters topics without becoming a hidden session filter", as
     only_unanswered: true,
     limit: 10,
   });
+});
+
+test("builder keeps requested quantity above 50 before availability resolves", async ({ page }) => {
+  await page.context().addCookies([
+    {
+      name: "krosmed_session",
+      value: "session_e2e",
+      url: E2E_BASE_URL,
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+
+  const createPayloads: Record<string, unknown>[] = [];
+
+  await page.route("**/api/question-bank/availability**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        total_count: 120,
+        answered_count: 0,
+        unanswered_count: 120,
+        available_count: 120,
+        max_selectable: 120,
+        answer_status: "unanswered",
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/topics**", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify([topic, childTopic]) });
+  });
+  await page.route("**/api/question-bank/next-action", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        kind: "fresh_practice",
+        title: "Praticar questoes novas",
+        subtitle: "Bloco estendido",
+        meta: "~60 min",
+        cta_label: "Comecar treino",
+        area: null,
+        area_label: null,
+        signals: [],
+        start_payload: { mode: "adaptive", resolution_mode: "training", answer_status: "unanswered", only_unanswered: true, limit: 10 },
+        generated_at: "2026-05-27T15:00:00Z",
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/performance", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        areas: [],
+        exam: { simulation_count: 0, accuracy: null, avg_time_ms: null, slow_rate: null },
+        generated_at: "2026-05-27T15:00:00Z",
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/review-queue", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ due_count: 0, struggling_count: 0, total: 0 }) });
+  });
+  await page.route("**/api/reviews/agenda", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        tasks: [],
+        due_question_total: 0,
+        struggling_question_total: 0,
+        question_review_total: 0,
+        generated_at: new Date().toISOString(),
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/sessions", async (route) => {
+    createPayloads.push(await route.request().postDataJSON());
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({ ...sessionPayload(false), session_id: "session_qb_large" }),
+    });
+  });
+  await page.route("**/api/question-bank/sessions/session_qb_large", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ ...sessionPayload(false), session_id: "session_qb_large" }),
+    });
+  });
+
+  await page.goto("/banco-de-questoes?expected_questions=75");
+
+  const quantityInput = page.getByRole("spinbutton", { name: /Questões/i });
+  await expect(quantityInput).toHaveValue("75");
+  await expect(page.getByText(/120 .*dispon/i)).toBeVisible();
+
+  await quantityInput.fill("99");
+  await expect(quantityInput).toHaveValue("99");
+
+  await page.getByRole("button", { name: /Iniciar simulado/ }).click();
+  await expect.poll(() => createPayloads.length).toBe(1);
+  expect(createPayloads[0]).toMatchObject({ limit: 99 });
+});
+
+test("simulation session allows answer changes by click and keyboard", async ({ page }) => {
+  await page.context().addCookies([
+    {
+      name: "krosmed_session",
+      value: "session_e2e",
+      url: E2E_BASE_URL,
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+
+  const attemptPayloads: Record<string, unknown>[] = [];
+  const eventTypes: string[] = [];
+  let selectedOption: "A" | "B" | null = null;
+
+  const simulationSession = () => ({
+    ...sessionPayload(Boolean(selectedOption)),
+    session_id: "session_qb_sim_change",
+    resolution_mode: "simulation",
+    answered_count: selectedOption ? 1 : 0,
+    unanswered_count: selectedOption ? 0 : 1,
+    unanswered_question_numbers: selectedOption ? [] : [1],
+    items: [
+      {
+        ...item,
+        selected_option: selectedOption,
+        answered: Boolean(selectedOption),
+        correct_answer: null,
+        is_correct: null,
+      },
+    ],
+  });
+
+  await page.route("**/api/question-bank/sessions/session_qb_sim_change", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(simulationSession()) });
+  });
+  await page.route("**/api/question-bank/sessions/session_qb_sim_change/items/1/attempt", async (route) => {
+    const payload = await route.request().postDataJSON();
+    attemptPayloads.push(payload);
+    selectedOption = payload.selected_option === "B" ? "B" : "A";
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(simulationSession()) });
+  });
+  await page.route("**/api/question-bank/sessions/session_qb_sim_change/items/1/events", async (route) => {
+    const payload = await route.request().postDataJSON();
+    for (const event of payload.events ?? []) {
+      if (typeof event?.event_type === "string") eventTypes.push(event.event_type);
+    }
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ events: [] }) });
+  });
+
+  await page.goto("/banco-de-questoes/sessao/session_qb_sim_change");
+
+  await expect(page.getByText("Atalhos:")).toBeVisible();
+  await expect(page.getByText("A-E ou 1-5 respondem")).toBeVisible();
+
+  await page.getByRole("button", { name: /^A\s+Placenta/ }).click();
+  await expect(page.getByText("Resposta A")).toBeVisible();
+
+  await page.keyboard.press("B");
+  await expect(page.getByText("Resposta B")).toBeVisible();
+  await page.waitForTimeout(800);
+
+  expect(attemptPayloads).toHaveLength(2);
+  expect(attemptPayloads[0]).toMatchObject({ selected_option: "A" });
+  expect(attemptPayloads[1]).toMatchObject({ selected_option: "B" });
+  expect(eventTypes).toEqual(expect.arrayContaining(["answer_selected", "answer_changed"]));
 });

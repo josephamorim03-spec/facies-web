@@ -34,6 +34,14 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+const QUESTION_BANK_LIMIT_CAP = 1000;
+
+function clampQuestionLimit(value: number | null | undefined, fallback = 10) {
+  const numericValue = Number(value ?? fallback);
+  if (!Number.isFinite(numericValue)) return fallback;
+  return Math.max(1, Math.min(QUESTION_BANK_LIMIT_CAP, Math.trunc(numericValue)));
+}
+
 function IconBookOpen({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
@@ -124,8 +132,21 @@ function SessionIntentCard({ eyebrow, title, description, active, Icon, onClick 
 }
 
 function topicPathLabel(topic: QuestionBankTopic): string {
-  if (topic.path_label?.trim()) return topic.path_label.trim();
-  if ((topic.node_path?.length ?? 0) > 0) return topic.node_path.join(" / ");
+  const normalized = (value: string) =>
+    value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+  const sanitize = (parts: string[]) => {
+    const cleaned = parts.map((part) => part.trim()).filter(Boolean);
+    while (cleaned.length > 0 && normalized(cleaned[0]) === "medicina") cleaned.shift();
+    return cleaned;
+  };
+  const nodePath = Array.isArray(topic.node_path)
+    ? sanitize(topic.node_path.map((part) => String(part)))
+    : [];
+  if (nodePath.length > 0) return nodePath.join(" / ");
+  if (topic.path_label?.trim()) {
+    const fromLabel = sanitize(topic.path_label.split(/\s*(?:\/|>)\s*/));
+    if (fromLabel.length > 0) return fromLabel.join(" / ");
+  }
   return topic.node_name;
 }
 
@@ -365,7 +386,7 @@ function BancoDeQuestoesContent() {
   const [boardInput, setBoardInput] = useState("");
   const [selectedYears, setSelectedYears] = useState<number[]>([]);
   const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("unanswered");
-  const [limit, setLimit] = useState(() => Math.max(1, Math.min(50, initialContext.expectedQuestions ?? 10)));
+  const [limit, setLimit] = useState(() => clampQuestionLimit(initialContext.expectedQuestions ?? 10));
   const [resolutionMode, setResolutionMode] = useState<QuestionBankResolutionMode>("simulation");
   const [studyKind, setStudyKind] = useState<StudyKind>("topic");
   const [fullExamName, setFullExamName] = useState("");
@@ -388,8 +409,10 @@ function BancoDeQuestoesContent() {
   const [dueTopicTaskCount, setDueTopicTaskCount] = useState(0);
 
   // Derived
-  const maxSelectable = Math.max(1, Math.min(50, availability?.max_selectable ?? 50));
-  const clampedLimit = Math.max(1, Math.min(limit, maxSelectable));
+  const requestedLimit = clampQuestionLimit(limit);
+  const maxSelectable = availability ? Math.max(0, availability.max_selectable) : requestedLimit;
+  const limitMax = Math.max(1, Math.min(QUESTION_BANK_LIMIT_CAP, maxSelectable || requestedLimit));
+  const clampedLimit = Math.max(1, Math.min(requestedLimit, limitMax));
   const reviewTrailDefault = Boolean(entryContext.reviewTaskId) || selectedTopics.length === 1;
   const [generateReviewTrail, setGenerateReviewTrail] = useState(reviewTrailDefault);
   useEffect(() => {
@@ -426,7 +449,7 @@ function BancoDeQuestoesContent() {
     setEntryContext(context);
     setArea(context.area ?? "");
     setSearch(context.theme ?? "");
-    setLimit(Math.max(1, Math.min(50, context.expectedQuestions ?? 10)));
+    setLimit(clampQuestionLimit(context.expectedQuestions ?? 10));
     setStudyKind("topic");
     setSelectedTopics([]);
     setQuestions([]);
@@ -486,7 +509,9 @@ function BancoDeQuestoesContent() {
     try {
       const next = await previewQuestionBankAvailability(token, { ...filterParams(), mode: "adaptive" });
       setAvailability(next);
-      if (next.max_selectable > 0 && limit > next.max_selectable) setLimit(next.max_selectable);
+      if (next.max_selectable > 0 && requestedLimit > next.max_selectable) {
+        setLimit(clampQuestionLimit(next.max_selectable));
+      }
     } catch (err) {
       setAvailability(null);
       const message = err instanceof Error ? err.message : "Não foi possível calcular a disponibilidade.";
@@ -495,7 +520,7 @@ function BancoDeQuestoesContent() {
     } finally {
       setLoadingPreview(false);
     }
-  }, [filterParams, limit, showToast, token]);
+  }, [filterParams, requestedLimit, showToast, token]);
 
   const refreshTopics = useCallback(async () => {
     try {
@@ -505,7 +530,7 @@ function BancoDeQuestoesContent() {
         institution: institution.trim() || undefined,
         board_codes: boardCodes.length > 0 ? boardCodes : undefined,
         years: selectedYears.length > 0 ? selectedYears : undefined,
-        include_empty: true,
+        include_empty: false,
         limit: 1000,
       });
       setTopics(found);
@@ -911,6 +936,7 @@ function BancoDeQuestoesContent() {
                   limit={limit}
                   clampedLimit={clampedLimit}
                   maxSelectable={maxSelectable}
+                  limitMax={limitMax}
                   onLimitChange={setLimit}
                 />
               </div>

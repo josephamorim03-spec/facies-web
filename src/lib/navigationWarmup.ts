@@ -93,7 +93,7 @@ export function warmRouteData(href: string, token: string | null | undefined): v
     );
   } else if (pathname === "/banco-de-questoes") {
     requests.push(
-      browseQuestionBankTopics(token, { limit: 40 }),
+      browseQuestionBankTopics(token, { limit: 40, include_empty: false }),
       previewQuestionBankAvailability(token),
       getQuestionBankReviewQueue(token),
       getQuestionBankPerformance(token),
@@ -141,7 +141,7 @@ export function warmRouteData(href: string, token: string | null | undefined): v
     );
   } else if (pathname === "/provas") {
     requests.push(
-      browseQuestionBankTopics(token, { limit: 30 }),
+      browseQuestionBankTopics(token, { limit: 30, include_empty: false }),
       getQuestionBankPerformance(token),
       listDirectedStudies(token),
     );
@@ -149,4 +149,3 @@ export function warmRouteData(href: string, token: string | null | undefined): v
 
   void Promise.allSettled(requests);
 }
-

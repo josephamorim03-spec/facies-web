@@ -113,6 +113,7 @@ export type FiltersBarProps = {
   limit: number;
   clampedLimit: number;
   maxSelectable: number;
+  limitMax: number;
   onLimitChange: (v: number) => void;
 };
 
@@ -120,15 +121,49 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+function normalizeTopicSegment(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function sanitizeTopicPathParts(parts: string[]): string[] {
+  const cleaned = parts.map((part) => part.trim()).filter(Boolean);
+  while (cleaned.length > 0 && normalizeTopicSegment(cleaned[0]) === "medicina") {
+    cleaned.shift();
+  }
+  return cleaned;
+}
+
+function topicPathParts(topic: Pick<QuestionBankTopic, "node_name" | "node_path" | "path_label">): string[] {
+  if (Array.isArray(topic.node_path) && topic.node_path.length > 0) {
+    const direct = sanitizeTopicPathParts(topic.node_path.map((part) => String(part)));
+    if (direct.length > 0) return direct;
+  }
+  if (topic.path_label?.trim()) {
+    const split = topic.path_label.split(/\s*(?:\/|>)\s*/);
+    const cleaned = sanitizeTopicPathParts(split);
+    if (cleaned.length > 0) return cleaned;
+  }
+  return sanitizeTopicPathParts([topic.node_name]);
+}
+
+function isForbiddenStudentRoot(topic: Pick<QuestionBankTopic, "node_name" | "node_path" | "path_label">): boolean {
+  return normalizeTopicSegment(topic.node_name) === "medicina" && topicPathParts(topic).length === 0;
+}
+
 function topicPathLabel(topic: QuestionBankTopic): string {
-  if (topic.path_label?.trim()) return topic.path_label.trim();
-  if ((topic.node_path?.length ?? 0) > 0) return topic.node_path.join(" / ");
+  const parts = topicPathParts(topic);
+  if (parts.length > 0) return parts.join(" / ");
   return topic.node_name;
 }
 
 function topicDepth(topic: QuestionBankTopic): number {
+  const parts = topicPathParts(topic);
+  if (parts.length > 0) return Math.max(0, parts.length - 1);
   if (typeof topic.depth === "number" && Number.isFinite(topic.depth)) return Math.max(0, topic.depth);
-  if ((topic.node_path?.length ?? 0) > 1) return topic.node_path.length - 1;
   return 0;
 }
 
@@ -183,6 +218,7 @@ function normalizeDepth(nodes: TopicTreeNode[], depth = 0) {
 function buildTopicTree(topics: QuestionBankTopic[]): TopicTreeNode[] {
   const byId = new Map<string, TopicTreeNode>();
   for (const topic of topics) {
+    if (isForbiddenStudentRoot(topic)) continue;
     byId.set(topic.knowledge_node_id, { ...topic, children: [], treeDepth: topicDepth(topic) });
   }
 
@@ -197,8 +233,9 @@ function buildTopicTree(topics: QuestionBankTopic[]): TopicTreeNode[] {
   const groupedRoots: TopicTreeNode[] = [];
   const groupByLabel = new Map<string, TopicTreeNode>();
   for (const node of roots) {
-    const firstPath = node.node_path?.[0]?.trim();
-    const shouldGroup = Boolean(firstPath && firstPath !== node.node_name && topicDepth(node) > 0);
+    const pathParts = topicPathParts(node);
+    const firstPath = pathParts[0]?.trim();
+    const shouldGroup = Boolean(firstPath && firstPath !== node.node_name && pathParts.length > 1);
     if (!shouldGroup || !firstPath) {
       groupedRoots.push(node);
       continue;
@@ -347,7 +384,7 @@ export default function FiltersBar(props: FiltersBarProps) {
     resolutionMode, onResolutionModeChange, studyKind, onStudyKindChange,
     fullExamName, onFullExamNameChange, fullExamYear, onFullExamYearChange,
     fullExamType, onFullExamTypeChange, reviewTrailEnabled, onReviewTrailEnabledChange,
-    reviewTrailLocked = false, limit, clampedLimit, maxSelectable, onLimitChange,
+    reviewTrailLocked = false, limit, clampedLimit, maxSelectable, limitMax, onLimitChange,
   } = props;
 
   const [suggestionsFocused, setSuggestionsFocused] = useState(false);
@@ -723,19 +760,19 @@ export default function FiltersBar(props: FiltersBarProps) {
             <input
               type="number"
               min={1}
-              max={maxSelectable}
+              max={limitMax}
               value={limit}
-              onChange={(e) => onLimitChange(Math.max(1, Math.min(maxSelectable, Number(e.target.value) || 1)))}
+              onChange={(e) => onLimitChange(Math.max(1, Math.min(limitMax, Number(e.target.value) || 1)))}
             />
           </label>
           <div className="space-y-2">
             <input
               type="range"
               min={1}
-              max={maxSelectable}
+              max={limitMax}
               value={clampedLimit}
               onChange={(e) => onLimitChange(Number(e.target.value))}
-              style={{ "--track-bg": `linear-gradient(to right, var(--range-fill) 0%, var(--range-fill) ${(clampedLimit / maxSelectable) * 100}%, var(--range-rest) ${(clampedLimit / maxSelectable) * 100}%, var(--range-rest) 100%)` } as CSSProperties}
+              style={{ "--track-bg": `linear-gradient(to right, var(--range-fill) 0%, var(--range-fill) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) 100%)` } as CSSProperties}
               aria-label="Quantidade de questões"
             />
             <p className="text-xs text-muted">Máximo selecionável com os filtros atuais: {maxSelectable}</p>
