@@ -416,7 +416,10 @@ export async function previewQuestionBankAvailability(
   if (params.answer_status) q.set("answer_status", params.answer_status);
   if (params.only_unanswered !== undefined) q.set("only_unanswered", params.only_unanswered ? "true" : "false");
   if (params.mode) q.set("mode", params.mode);
-  return api<QuestionBankAvailability>(`/api/question-bank/availability${q.toString() ? `?${q.toString()}` : ""}`, { headers: authHeader(token) });
+  return api<QuestionBankAvailability>(`/api/question-bank/availability${q.toString() ? `?${q.toString()}` : ""}`, {
+    headers: authHeader(token),
+    retry: false,
+  });
 }
 
 export async function browseQuestionBankQuestions(

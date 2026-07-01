@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState, type JSX } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   browseQuestionBankQuestions,
@@ -407,6 +407,7 @@ function BancoDeQuestoesContent() {
   const [nextActionLoading, setNextActionLoading] = useState(true);
   const [performance, setPerformance] = useState<QuestionBankPerformance | null>(null);
   const [dueTopicTaskCount, setDueTopicTaskCount] = useState(0);
+  const availabilityRequestSeq = useRef(0);
 
   // Derived
   const requestedLimit = clampQuestionLimit(limit);
@@ -504,21 +505,25 @@ function BancoDeQuestoesContent() {
   // ─── Data fetching ───────────────────────────────────────────────────────
 
   const refreshAvailability = useCallback(async () => {
+    const requestSeq = availabilityRequestSeq.current + 1;
+    availabilityRequestSeq.current = requestSeq;
     setLoadingPreview(true);
     setError(null);
     try {
       const next = await previewQuestionBankAvailability(token, { ...filterParams(), mode: "adaptive" });
+      if (availabilityRequestSeq.current !== requestSeq) return;
       setAvailability(next);
       if (next.max_selectable > 0 && requestedLimit > next.max_selectable) {
         setLimit(clampQuestionLimit(next.max_selectable));
       }
     } catch (err) {
+      if (availabilityRequestSeq.current !== requestSeq) return;
       setAvailability(null);
       const message = err instanceof Error ? err.message : "Não foi possível calcular a disponibilidade.";
       setError(message);
       showToast(message, "error");
     } finally {
-      setLoadingPreview(false);
+      if (availabilityRequestSeq.current === requestSeq) setLoadingPreview(false);
     }
   }, [filterParams, requestedLimit, showToast, token]);
 

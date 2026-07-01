@@ -22,6 +22,8 @@ test("question-bank proxy allows storage and scoped compaction routes", () => {
 test("question-bank proxy keeps compact and backfill routes scoped", () => {
   assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/imports/compact"), false);
   assert.equal(isAllowedQuestionBankAdminPath("DELETE", "/v1/admin/imports/import-123/compact"), false);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/topics/refresh-cache"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/topics/refresh-cache"), false);
   assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/student-taxonomy/backfill/conflicts"), true);
   assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/student-taxonomy/backfill"), true);
   assert.equal(

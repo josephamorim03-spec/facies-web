@@ -20,6 +20,7 @@ export function isAllowedQuestionBankAdminPath(method: string, questionBankPath:
     POST: [
       /^\/v1\/admin\/imports\/(preview|files)$/,
       /^\/v1\/admin\/imports\/[^/]+\/compact$/,
+      /^\/v1\/admin\/topics\/refresh-cache$/,
       /^\/v1\/admin\/pipeline\/(process-batch|run-all|run-ai|backfill-fingerprints)$/,
       /^\/v1\/admin\/questions\/[^/]+\/(resolve|analyze)$/,
       /^\/v1\/admin\/student-taxonomy\/backfill$/,
