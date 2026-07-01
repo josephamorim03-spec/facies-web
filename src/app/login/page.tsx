@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import { clearAuthToken, setAuthToken } from "@/lib/auth";
 import { resolveAuthenticatedLandingRoute } from "@/lib/initialGoalSetup";
 import { loginLocalAccount } from "@/lib/api";
@@ -11,6 +10,8 @@ import { useInstallPrompt } from "./_hooks/useInstallPrompt";
 import { LoginForm } from "./_components/LoginForm";
 import { GoogleSection } from "./_components/GoogleSection";
 import { InstallBanner } from "./_components/InstallBanner";
+import { KrosIntro } from "./_components/KrosIntro";
+import styles from "./LoginPremium.module.css";
 
 function LoginPageContent() {
   const router = useRouter();
@@ -85,52 +86,70 @@ function LoginPageContent() {
   }, [router]);
 
   return (
-    <div className="bg-paper min-h-screen w-full flex items-center justify-center px-4 py-6">
-      <div className={`w-full max-w-md space-y-6${installState !== "hidden" ? " pb-20" : ""}`}>
-        <div className="text-center space-y-2">
-          <Image
-            src="/icon-192.png"
-            alt="KrosMed"
-            width={56}
-            height={56}
-            className="mx-auto rounded-xl"
-            priority
-          />
-          <h1 className="text-2xl font-serif text-ink">KrosMed</h1>
-          <p className="text-sm text-muted">
-            {isDevMode ? "Ambiente de desenvolvimento" : "Entre com sua conta Google"}
-          </p>
-        </div>
+    <main className={`${styles.screen} w-full text-ink`}>
+      <div className={`${styles.shell}${installState !== "hidden" ? " pb-28 sm:pb-10" : ""}`}>
+        <section className={styles.composition}>
+          <div className={styles.brandBlock}>
+            <div className={styles.logoField}>
+              <KrosIntro />
+            </div>
 
-        {sessionExpired && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800">
-            Sua sessão expirou. Entre novamente para continuar.
+            <div className={styles.wordmark}>
+              <h1
+                className={`${styles.wordmarkText} font-serif text-[2rem] font-semibold leading-none text-ink sm:text-[2.25rem]`}
+              >
+                KROSMED
+              </h1>
+            </div>
+
+            <p
+              className={`${styles.pitch} mx-auto mt-3 max-w-[23rem] text-sm leading-6 text-muted [text-wrap:balance]`}
+            >
+              Preparação médica com precisão, ritmo e inteligência.
+            </p>
           </div>
-        )}
 
-        {isDevMode ? (
-          <LoginForm
-            loginEmail={loginEmail}
-            setLoginEmail={setLoginEmail}
-            loginPassword={loginPassword}
-            setLoginPassword={setLoginPassword}
-            loginBusy={loginBusy}
-            loginError={loginError}
-            googleClientId={googleClientId}
-            googleButtonRef={googleButtonRef}
-            googleError={googleError}
-            installState={installState}
-            onLogin={handleLocalLogin}
-            onSwitchView={() => undefined}
-          />
-        ) : (
-          <GoogleSection
-            googleClientId={googleClientId}
-            googleButtonRef={googleButtonRef}
-            googleError={googleError}
-            onGoogleError={setGoogleError}
-          />
-        )}
+          <div className={styles.accessPanel}>
+            <p className={styles.accessLine}>
+              {isDevMode ? "Ambiente de desenvolvimento" : "Entre com sua conta Google para continuar."}
+            </p>
+
+            <div className="mt-4 space-y-4">
+              {sessionExpired && (
+                <div
+                  role="alert"
+                  className="rounded-lg bg-[var(--amber-tint)] px-4 py-3 text-center text-sm text-ink shadow-sm"
+                >
+                  Sua sessão expirou. Entre novamente para continuar.
+                </div>
+              )}
+
+              {isDevMode ? (
+                <LoginForm
+                  loginEmail={loginEmail}
+                  setLoginEmail={setLoginEmail}
+                  loginPassword={loginPassword}
+                  setLoginPassword={setLoginPassword}
+                  loginBusy={loginBusy}
+                  loginError={loginError}
+                  googleClientId={googleClientId}
+                  googleButtonRef={googleButtonRef}
+                  googleError={googleError}
+                  installState={installState}
+                  onLogin={handleLocalLogin}
+                  onSwitchView={() => undefined}
+                />
+              ) : (
+                <GoogleSection
+                  googleClientId={googleClientId}
+                  googleButtonRef={googleButtonRef}
+                  googleError={googleError}
+                  onGoogleError={setGoogleError}
+                />
+              )}
+            </div>
+          </div>
+        </section>
       </div>
 
       <InstallBanner
@@ -139,7 +158,7 @@ function LoginPageContent() {
         onInstall={handleInstall}
         onCloseTooltip={() => setShowIosTooltip(false)}
       />
-    </div>
+    </main>
   );
 }
 

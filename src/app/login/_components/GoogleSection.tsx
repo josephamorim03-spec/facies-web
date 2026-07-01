@@ -18,11 +18,11 @@ export function GoogleSection({
   return (
     <>
       {googleClientId ? (
-        <div ref={googleButtonRef} className="flex justify-center" />
+        <div ref={googleButtonRef} className="flex min-h-[44px] justify-center" />
       ) : (
         <button
           type="button"
-          className="w-full flex items-center justify-center gap-2 border border-edge py-2 text-sm text-ink hover:bg-edge transition-colors"
+          className="mx-auto flex h-11 w-full max-w-[320px] items-center justify-center gap-2 rounded-lg border border-edge bg-surface px-4 py-2 text-sm font-medium text-ink shadow-sm transition-colors hover:bg-surfaceMuted"
           onClick={() =>
             onGoogleError?.(
               "Configure NEXT_PUBLIC_GOOGLE_CLIENT_ID para habilitar o login com Google.",
