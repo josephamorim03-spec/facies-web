@@ -48,14 +48,14 @@ function IconGO({ className, style }: IconProps) {
   return (
     <svg viewBox={VIEWBOX} className={className} style={style} aria-hidden="true" {...STROKE_PROPS}>
       {/* Uterus body */}
-      <path d="M12 21 L12 17" />
-      <path d="M9.5 17 C9.5 14 8 11 9 8.5 C10 6 11 5 12 5 C13 5 14 6 15 8.5 C16 11 14.5 14 14.5 17 Z" />
+      <path d="M12 21 L12 17.2" />
+      <path d="M9.4 17.2 C9.4 14.8 8.7 12.6 8.7 10.2 C8.7 7.2 10.3 4.5 12 4.5 C13.7 4.5 15.3 7.2 15.3 10.2 C15.3 12.6 14.6 14.8 14.6 17.2 Z" />
       {/* Left fallopian tube → ovary (solid) */}
-      <path d="M9 9 C7 7.5 5.5 8 4.5 9.5" />
-      <ellipse cx="3.5" cy="10.5" rx="1.4" ry="1.1" fill="currentColor" stroke="none" />
+      <path d="M8.7 8.9 C7.4 7.8 5.8 8.2 4.8 9.6" />
+      <ellipse cx="3.8" cy="10.2" rx="1.15" ry="0.95" fill="currentColor" stroke="none" />
       {/* Right fallopian tube → ovary (solid) */}
-      <path d="M15 9 C17 7.5 18.5 8 19.5 9.5" />
-      <ellipse cx="20.5" cy="10.5" rx="1.4" ry="1.1" fill="currentColor" stroke="none" />
+      <path d="M15.3 8.9 C16.6 7.8 18.2 8.2 19.2 9.6" />
+      <ellipse cx="20.2" cy="10.2" rx="1.15" ry="0.95" fill="currentColor" stroke="none" />
     </svg>
   );
 }

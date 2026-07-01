@@ -107,7 +107,12 @@ function IconRevise({ className }: { className?: string }) {
 function KrosmedIcon({ className }: { className?: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src="/kroslogo-menu.png" alt="" aria-hidden="true" className={className} />
+    <img
+      src="/brand/kros-logo-vector.svg"
+      alt=""
+      aria-hidden="true"
+      className={[className, "dark:invert dark:brightness-[1.08]"].filter(Boolean).join(" ")}
+    />
   );
 }
 
@@ -356,7 +361,7 @@ export default function Nav({ displayName, photoUrl }: { displayName?: string | 
             <div className="mb-6 flex items-center">
               <div className="flex items-center gap-2">
                 <KrosmedIcon className="w-6 h-6 shrink-0" />
-                <span className="font-serif text-base font-semibold tracking-[0.06em] uppercase"><span className="text-ink">KROS</span><span className="text-primary">MED</span></span>
+                <span className="font-serif text-base font-semibold tracking-[0.06em] uppercase"><span className="text-ink">KROS</span><span className="text-primary dark:text-ink">MED</span></span>
               </div>
             </div>
             <div className="flex-1 space-y-1">
@@ -485,7 +490,7 @@ export function SidebarNav({
           <div className={`flex items-center gap-2 ${!visible ? "justify-center" : ""}`}>
             <KrosmedIcon className="w-6 h-6 shrink-0" />
             {visible && (
-              <span className="font-serif text-base font-semibold tracking-[0.06em] uppercase whitespace-nowrap"><span className="text-ink">KROS</span><span className="text-primary">MED</span></span>
+              <span className="font-serif text-base font-semibold tracking-[0.06em] uppercase whitespace-nowrap"><span className="text-ink">KROS</span><span className="text-primary dark:text-ink">MED</span></span>
             )}
             {visible && pinned && (
               <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-primary">fixado</span>
@@ -578,4 +583,3 @@ export function SidebarNav({
     </>
   );
 }
-
