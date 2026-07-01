@@ -1,0 +1,31 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { isAllowedQuestionBankAdminPath } from "../../src/app/api/admin/question-bank/_questionBankAdminPaths.ts";
+
+test("question-bank proxy allows the current reports routes", () => {
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/questions/reports"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("PATCH", "/v1/admin/questions/reports/report-123"), true);
+});
+
+test("question-bank proxy rejects the legacy reports routes", () => {
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/reports"), false);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/reports/question-123/resolve"), false);
+});
+
+test("question-bank proxy allows storage and scoped compaction routes", () => {
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/storage/summary"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/imports/import-123/compact"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/imports/import-123/compact?dry_run=true"), true);
+});
+
+test("question-bank proxy keeps compact and backfill routes scoped", () => {
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/imports/compact"), false);
+  assert.equal(isAllowedQuestionBankAdminPath("DELETE", "/v1/admin/imports/import-123/compact"), false);
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/student-taxonomy/backfill/conflicts"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/student-taxonomy/backfill"), true);
+  assert.equal(
+    isAllowedQuestionBankAdminPath("POST", "/v1/admin/student-taxonomy/backfill/conflicts/question-1/resolve"),
+    true,
+  );
+});

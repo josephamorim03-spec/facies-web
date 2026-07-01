@@ -157,6 +157,22 @@ export type QuestionBankAdminImportItem = {
   pipeline?: QuestionBankAdminPipelineSnapshot;
 };
 
+type QuestionBankAdminImportWireItem = Partial<QuestionBankAdminImportItem> & {
+  active_jobs?: number;
+  failed_jobs?: number;
+  quarantine_jobs?: number;
+  candidates?: number;
+  questions?: number;
+};
+
+type QuestionBankAdminImportsWireResponse = {
+  imports?: QuestionBankAdminImportWireItem[];
+  items?: QuestionBankAdminImportWireItem[];
+  total?: number;
+  limit?: number;
+  offset?: number;
+};
+
 export type QuestionBankAdminPipelineStage = {
   job_type: string;
   pending: number;
@@ -277,6 +293,55 @@ export type QuestionBankAdminReadiness = {
     strong: { provider: string; model: string; configured: boolean };
   };
   pipeline: QuestionBankAdminPipelineSnapshot;
+};
+
+export type QuestionBankAdminStorageSummary = {
+  pg_database_size: number;
+  headroom_bytes: number | null;
+  warn_bytes?: number;
+  pause_bytes?: number;
+  top_relations: Array<{
+    schema: string | null;
+    name: string | null;
+    kind: string | null;
+    total_bytes: number;
+    table_bytes: number;
+    toast_bytes: number;
+  }>;
+  dead_tuples: Array<{
+    table: string | null;
+    live: number;
+    dead: number;
+    last_vacuum?: string | null;
+    last_autovacuum?: string | null;
+    last_analyze?: string | null;
+    last_autoanalyze?: string | null;
+  }>;
+  compactable: {
+    counts: Record<string, number>;
+    estimated_bytes: Record<string, number>;
+  };
+  image_storage: {
+    backend: string;
+    bucket?: string | null;
+    endpoint_configured?: boolean;
+    access_key_configured?: boolean;
+    secret_key_configured?: boolean;
+    durable?: boolean;
+    lifecycle_days?: string | null;
+    questions_with_images?: number;
+  };
+};
+
+export type QuestionBankAdminCompactionResult = {
+  imported_file_id: string | null;
+  dry_run: boolean;
+  mode: string;
+  include_failed: boolean;
+  counts: Record<string, number>;
+  estimated_bytes: Record<string, number>;
+  skipped?: boolean;
+  reason?: string;
 };
 
 export type QuestionBankAdminCandidate = {
@@ -421,9 +486,55 @@ export async function listQuestionBankAdminImports(
   if (options?.offset) params.set("offset", String(options.offset));
   if (options?.show_artifacts) params.set("show_artifacts", "true");
   const qs = params.toString();
-  return api<{ imports: QuestionBankAdminImportItem[]; total: number; limit: number; offset: number }>(
+  const payload = await api<QuestionBankAdminImportsWireResponse>(
     `/api/admin/question-bank/imports${qs ? `?${qs}` : ""}`,
   );
+  const rawItems: QuestionBankAdminImportWireItem[] = payload.imports ?? payload.items ?? [];
+  const imports = rawItems.map((item) => {
+    const source = item.source ?? { institution: null, exam_name: null, year: null, access_type: null };
+    const activeJobs = Number(item.active_jobs ?? 0);
+    const failedJobs = Number(item.failed_jobs ?? 0);
+    return {
+      id: String(item.id ?? ""),
+      file_name: item.file_name ?? null,
+      file_sha256: item.file_sha256 ?? null,
+      source_id: item.source_id ?? null,
+      status: item.status ?? null,
+      created_at: item.created_at ?? null,
+      updated_at: item.updated_at ?? null,
+      detected_metadata: item.detected_metadata ?? {},
+      import_metadata: item.import_metadata ?? {},
+      source: {
+        institution: source.institution ?? null,
+        exam_name: source.exam_name ?? null,
+        year: source.year ?? null,
+        access_type: source.access_type ?? null,
+      },
+      years_detected: item.years_detected ?? [],
+      years_applied: item.years_applied ?? [],
+      is_mixed_source: item.is_mixed_source ?? false,
+      source_metadata: item.source_metadata ?? {},
+      candidate_count: item.candidate_count ?? item.candidates ?? 0,
+      published_question_count: item.published_question_count ?? item.questions ?? 0,
+      yield_ratio: item.yield_ratio,
+      is_zero_ai_locked: item.is_zero_ai_locked ?? false,
+      is_artifact: item.is_artifact ?? false,
+      artifact_reason: item.artifact_reason ?? null,
+      pipeline_counts: item.pipeline_counts ?? {
+        pending: activeJobs,
+        processing: 0,
+        done: 0,
+        failed: failedJobs + Number(item.quarantine_jobs ?? 0),
+      },
+      pipeline: item.pipeline,
+    } satisfies QuestionBankAdminImportItem;
+  }).filter((item) => item.id);
+  return {
+    imports,
+    total: Number(payload.total ?? imports.length),
+    limit: Number(payload.limit ?? options?.limit ?? imports.length),
+    offset: Number(payload.offset ?? options?.offset ?? 0),
+  };
 }
 
 export async function getQuestionBankAdminImport(importId: string): Promise<QuestionBankAdminImportItem> {
@@ -454,6 +565,32 @@ export async function getQuestionBankAdminReadiness(): Promise<QuestionBankAdmin
     throw await toAPIError(res);
   }
   return (await parseJsonSafe(res)) as QuestionBankAdminReadiness;
+}
+
+export async function getQuestionBankAdminStorageSummary(): Promise<QuestionBankAdminStorageSummary> {
+  return api<QuestionBankAdminStorageSummary>("/api/admin/question-bank/storage/summary");
+}
+
+export async function compactQuestionBankAdminImport(
+  importId: string,
+  options?: {
+    dryRun?: boolean;
+    includeFailed?: boolean;
+    mode?: "conservative" | "aggressive";
+  },
+): Promise<QuestionBankAdminCompactionResult> {
+  return api<QuestionBankAdminCompactionResult>(
+    `/api/admin/question-bank/imports/${encodeURIComponent(importId)}/compact`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        dry_run: options?.dryRun !== false,
+        include_failed: options?.includeFailed === true,
+        mode: options?.mode,
+      }),
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+    },
+  );
 }
 
 export async function processQuestionBankAdminBatch(
@@ -599,43 +736,66 @@ export async function enqueueQuestionBankQuestionAnalysis(
 }
 
 export type QuestionBankReport = {
+  id: string;
   question_id: string;
-  open_reports: number;
-  report_types: string | null;
-  last_reported_at: string | null;
+  reported_by_user_id: string | null;
+  report_type: string | null;
+  report_reason: string | null;
   status: string | null;
-  content_grade: string | null;
-  human_review_status: string | null;
-  canonical_answer: string | null;
-  question_page: number | null;
-  version: number | null;
-  exam_name: string | null;
-  year: number | null;
-  board_code: string | null;
-  source_file_path: string | null;
-  imported_file_name: string | null;
-  imported_file_path: string | null;
-  source_page: number | null;
+  created_at: string | null;
+  resolved_at: string | null;
+  resolved_by: string | null;
+  resolution_note: string | null;
+  question: {
+    status: string | null;
+    stem: string | null;
+    answer: string | null;
+    is_blocked: boolean;
+    blocked_reason: string | null;
+    source: {
+      institution: string | null;
+      exam_name: string | null;
+      year: number | null;
+    };
+  };
 };
 
 export async function listQuestionBankReports(
   options?: { status?: string; limit?: number },
-): Promise<{ reports: QuestionBankReport[] }> {
+): Promise<{ items: QuestionBankReport[]; total: number; limit: number; offset: number }> {
   const params = new URLSearchParams();
-  if (options?.status) params.set("status", options.status);
+  params.set("status", options?.status ?? "pending");
   if (options?.limit) params.set("limit", String(options.limit));
   const qs = params.toString();
-  return api<{ reports: QuestionBankReport[] }>(
-    `/api/admin/question-bank/reports${qs ? `?${qs}` : ""}`,
+  return api<{ items: QuestionBankReport[]; total: number; limit: number; offset: number }>(
+    `/api/admin/question-bank/questions/reports${qs ? `?${qs}` : ""}`,
   );
 }
 
 export async function resolveQuestionBankReports(
-  questionId: string,
-): Promise<{ result: string; question_id: string }> {
-  return api<{ result: string; question_id: string }>(
-    `/api/admin/question-bank/reports/${encodeURIComponent(questionId)}/resolve`,
-    { method: "POST", headers: { "x-krosmed-csrf": "1" } },
+  reportId: string,
+): Promise<{
+  id: string;
+  question_id: string;
+  status: string | null;
+  resolved_at: string | null;
+  resolved_by: string | null;
+  resolution_note: string | null;
+}> {
+  return api<{
+    id: string;
+    question_id: string;
+    status: string | null;
+    resolved_at: string | null;
+    resolved_by: string | null;
+    resolution_note: string | null;
+  }>(
+    `/api/admin/question-bank/questions/reports/${encodeURIComponent(reportId)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ action: "resolve" }),
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+    },
   );
 }
 

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { readAdminEmails } from "../_adminEmails";
+import { isAllowedQuestionBankAdminPath } from "./_questionBankAdminPaths";
+
 const SESSION_COOKIE_NAME = "krosmed_session";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
@@ -62,59 +65,11 @@ function isTrustedMutation(request: NextRequest): boolean {
   );
 }
 
-function adminEmails(): Set<string> {
-  return new Set(
-    String(process.env.OPS_ADMIN_EMAILS ?? "")
-      .split(",")
-      .map((email) => email.trim().toLowerCase())
-      .filter(Boolean),
-  );
-}
-
 function jsonError(code: string, status: number, requestId: string, message?: string): NextResponse {
   return NextResponse.json(
     { code, message, request_id: requestId },
     { status, headers: { "X-Request-Id": requestId } },
   );
-}
-
-function isAllowedQuestionBankAdminPath(method: string, questionBankPath: string): boolean {
-  const pathname = questionBankPath.split("?")[0] ?? "";
-  const normalizedMethod = method.toUpperCase();
-  const readOnlyPatterns = [
-    /^\/v1\/admin\/ui\/config$/,
-    /^\/v1\/admin\/pipeline\/(status|readiness|ai-preview)$/,
-    /^\/v1\/admin\/imports$/,
-    /^\/v1\/admin\/imports\/[^/]+$/,
-    /^\/v1\/admin\/imports\/[^/]+\/(candidates|pipeline-summary)$/,
-    /^\/v1\/admin\/review-queue$/,
-    /^\/v1\/admin\/reports$/,
-    /^\/v1\/admin\/questions$/,
-    /^\/v1\/admin\/questions\/[^/]+$/,
-    /^\/v1\/admin\/knowledge-nodes$/,
-    /^\/v1\/admin\/taxonomy\/suggestions$/,
-  ];
-  const mutationPatterns: Record<string, RegExp[]> = {
-    POST: [
-      /^\/v1\/admin\/imports\/(preview|files)$/,
-      /^\/v1\/admin\/pipeline\/(process-batch|run-all|run-ai|backfill-fingerprints)$/,
-      /^\/v1\/admin\/questions\/[^/]+\/(resolve|analyze)$/,
-      /^\/v1\/admin\/reports\/[^/]+\/resolve$/,
-      /^\/v1\/admin\/taxonomy\/versions$/,
-    ],
-    PATCH: [
-      /^\/v1\/admin\/questions\/[^/]+$/,
-      /^\/v1\/admin\/questions\/[^/]+\/status$/,
-      /^\/v1\/admin\/candidates\/[^/]+$/,
-      /^\/v1\/admin\/candidates\/review-queue\/[^/]+$/,
-      /^\/v1\/admin\/taxonomy\/suggestions\/[^/]+$/,
-    ],
-    DELETE: [/^\/v1\/admin\/questions\/[^/]+$/],
-  };
-  if (normalizedMethod === "GET") {
-    return readOnlyPatterns.some((pattern) => pattern.test(pathname));
-  }
-  return (mutationPatterns[normalizedMethod] ?? []).some((pattern) => pattern.test(pathname));
 }
 
 function sanitizeUpstreamHeaders(headers: Headers): Headers {
@@ -174,7 +129,7 @@ async function authorizeAdmin(request: NextRequest, requestId: string): Promise<
     return jsonError("csrf_rejected", 403, requestId);
   }
 
-  const allowedEmails = adminEmails();
+  const allowedEmails = readAdminEmails();
   if (allowedEmails.size === 0) {
     logAdminProxyEvent("error", "admin_not_configured", {
       request_id: requestId,

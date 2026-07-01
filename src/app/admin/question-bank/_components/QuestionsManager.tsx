@@ -62,9 +62,9 @@ function statusTone(status: string | null): string {
 }
 
 function reportSourceLabel(report: QuestionBankReport): string {
-  const file = report.imported_file_name || report.imported_file_path || report.source_file_path || "PDF nao informado";
-  const page = report.source_page ?? report.question_page;
-  return page == null ? file : `${file} - pag. ${page}`;
+  const stem = report.question.stem?.trim();
+  if (stem) return stem;
+  return `Questao ${report.question_id}`;
 }
 
 type EditState = {
@@ -161,8 +161,8 @@ export default function QuestionsManager() {
     setReportsLoading(true);
     setReportsError(null);
     try {
-      const res = await listQuestionBankReports({ status: "open", limit: 20 });
-      setReports(res.reports);
+      const res = await listQuestionBankReports({ status: "pending", limit: 20 });
+      setReports(res.items);
     } catch (err) {
       setReports([]);
       const status = typeof err === "object" && err !== null ? Number((err as { status?: unknown }).status) : NaN;
@@ -176,10 +176,10 @@ export default function QuestionsManager() {
     }
   }
 
-  async function resolveReport(questionId: string) {
+  async function resolveReport(reportId: string) {
     setError(null);
     try {
-      await resolveQuestionBankReports(questionId);
+      await resolveQuestionBankReports(reportId);
       setNotice("Report resolvido.");
       await refreshReports();
       void search(offset);
@@ -505,7 +505,7 @@ export default function QuestionsManager() {
           <div>
             <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-100">Denuncias abertas</h3>
             <p className="mt-1 text-xs text-amber-800/80 dark:text-amber-200/80">
-              {reportsLoading ? "Carregando..." : `${reports.length} questao(oes) reportada(s)`}
+              {reportsLoading ? "Carregando..." : `${reports.length} report(s) pendente(s)`}
             </p>
           </div>
           <button
@@ -518,19 +518,23 @@ export default function QuestionsManager() {
         {reports.length > 0 ? (
           <div className="mt-3 grid gap-2">
             {reports.map((report) => (
-              <div key={report.question_id} className="rounded-lg border border-amber-200 bg-white p-3 dark:border-amber-900/40 dark:bg-gray-900">
+              <div key={report.id} className="rounded-lg border border-amber-200 bg-white p-3 dark:border-amber-900/40 dark:bg-gray-900">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-200">
-                      <span>{report.open_reports} report(s)</span>
-                      {report.report_types ? <span>{report.report_types}</span> : null}
+                      {report.report_type ? <span>{report.report_type}</span> : null}
                       <span>{report.status || "sem status"}</span>
+                      <span>{report.question.status || "questao sem status"}</span>
                     </div>
                     <div className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
                       {reportSourceLabel(report)}
                     </div>
                     <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {[report.board_code, report.exam_name, report.year].filter(Boolean).join(" - ") || "fonte sem metadados"}
+                      {[
+                        report.question.source.institution,
+                        report.question.source.exam_name,
+                        report.question.source.year,
+                      ].filter(Boolean).join(" - ") || "fonte sem metadados"}
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-2">
@@ -541,7 +545,7 @@ export default function QuestionsManager() {
                       Editar
                     </button>
                     <button
-                      onClick={() => void resolveReport(report.question_id)}
+                      onClick={() => void resolveReport(report.id)}
                       className="rounded-lg border border-green-300 px-3 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-950/30"
                     >
                       Resolver

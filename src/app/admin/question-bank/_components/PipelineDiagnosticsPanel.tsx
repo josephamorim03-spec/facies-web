@@ -1,16 +1,33 @@
 import { useState } from "react";
 
 import {
+  compactQuestionBankAdminImport,
   getQuestionBankAdminAiPreview,
+  getQuestionBankAdminStorageSummary,
   runQuestionBankAdminAi,
   type QuestionBankAiPreview,
+  type QuestionBankAdminCompactionResult,
   type QuestionBankAdminPipelineSnapshot,
   type QuestionBankAdminPipelineStatus,
   type QuestionBankAdminReadiness,
+  type QuestionBankAdminStorageSummary,
 } from "@/lib/api/domains/question-bank-admin";
 
 import { JsonPanel } from "./AdminShared";
 import { JOB_TYPES, jobTypeLabel } from "./adminQuestionBankUtils";
+
+function formatBytes(value?: number | null): string {
+  if (!value || value <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let scaled = value;
+  let idx = 0;
+  while (scaled >= 1024 && idx < units.length - 1) {
+    scaled /= 1024;
+    idx += 1;
+  }
+  const digits = idx <= 1 ? 0 : 1;
+  return `${scaled.toFixed(digits)} ${units[idx]}`;
+}
 
 type Props = {
   pipelineStatus: QuestionBankAdminPipelineStatus | null;
@@ -59,6 +76,10 @@ export default function PipelineDiagnosticsPanel({
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiPreview, setAiPreview] = useState<QuestionBankAiPreview | null>(null);
   const [aiResult, setAiResult] = useState<Awaited<ReturnType<typeof runQuestionBankAdminAi>> | null>(null);
+  const [storageBusy, setStorageBusy] = useState(false);
+  const [storageError, setStorageError] = useState<string | null>(null);
+  const [storageSummary, setStorageSummary] = useState<QuestionBankAdminStorageSummary | null>(null);
+  const [compactDryRun, setCompactDryRun] = useState<QuestionBankAdminCompactionResult | null>(null);
 
   async function previewAi() {
     setAiBusy(true);
@@ -88,6 +109,40 @@ export default function PipelineDiagnosticsPanel({
       setAiError(err instanceof Error ? err.message : "Falha ao rodar IA dirigida.");
     } finally {
       setAiBusy(false);
+    }
+  }
+
+  async function refreshStorageSummary() {
+    setStorageBusy(true);
+    setStorageError(null);
+    try {
+      setStorageSummary(await getQuestionBankAdminStorageSummary());
+    } catch (err) {
+      setStorageError(err instanceof Error ? err.message : "Falha ao consultar storage.");
+    } finally {
+      setStorageBusy(false);
+    }
+  }
+
+  async function runCompactDryRun() {
+    if (!selectedImportId) {
+      setStorageError("Selecione um import para simular a compactacao.");
+      return;
+    }
+    setStorageBusy(true);
+    setStorageError(null);
+    try {
+      const result = await compactQuestionBankAdminImport(selectedImportId, {
+        dryRun: true,
+        includeFailed: false,
+        mode: "aggressive",
+      });
+      setCompactDryRun(result);
+      setStorageSummary(await getQuestionBankAdminStorageSummary());
+    } catch (err) {
+      setStorageError(err instanceof Error ? err.message : "Falha no dry-run de compactacao.");
+    } finally {
+      setStorageBusy(false);
     }
   }
 
@@ -314,6 +369,44 @@ export default function PipelineDiagnosticsPanel({
             <div className="mt-3 space-y-2 text-sm text-gray-700 dark:text-gray-200">
               <div>Cheap: <span className="font-semibold">{readiness?.providers.cheap.model || "-"}</span></div>
               <div>Strong: <span className="font-semibold">{readiness?.providers.strong.model || "-"}</span></div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Storage</div>
+              <div className="mt-2 grid gap-2 text-sm text-gray-700 dark:text-gray-200 sm:grid-cols-2 lg:grid-cols-4">
+                <div>DB: <span className="font-semibold">{formatBytes(storageSummary?.pg_database_size)}</span></div>
+                <div>Folga: <span className="font-semibold">{formatBytes(storageSummary?.headroom_bytes)}</span></div>
+                <div>Imagens: <span className="font-semibold">{storageSummary?.image_storage.backend || "-"}</span></div>
+                <div>Duravel: <span className="font-semibold">{storageSummary?.image_storage.durable ? "sim" : storageSummary ? "nao" : "-"}</span></div>
+              </div>
+              {compactDryRun ? (
+                <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">
+                  Dry-run: {Object.entries(compactDryRun.counts || {}).map(([key, value]) => `${key} ${value}`).join(" / ") || "sem itens"}.
+                  {" "}Estimado: {formatBytes(Object.values(compactDryRun.estimated_bytes || {}).reduce((sum, value) => sum + value, 0))}.
+                </p>
+              ) : null}
+              {storageError ? <p className="mt-2 text-sm text-red-600 dark:text-red-400">{storageError}</p> : null}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => void refreshStorageSummary()}
+                disabled={storageBusy}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                Storage
+              </button>
+              <button
+                type="button"
+                onClick={() => void runCompactDryRun()}
+                disabled={storageBusy || !selectedImportId}
+                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white"
+              >
+                Dry-run compact
+              </button>
             </div>
           </div>
         </div>

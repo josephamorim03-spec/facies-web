@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { readAdminEmails } from "../_adminEmails";
+
 const SESSION_COOKIE_NAME = "krosmed_session";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
@@ -59,15 +61,6 @@ function isTrustedMutation(request: NextRequest): boolean {
   );
 }
 
-function adminEmails(): Set<string> {
-  return new Set(
-    String(process.env.OPS_ADMIN_EMAILS ?? "")
-      .split(",")
-      .map((email) => email.trim().toLowerCase())
-      .filter(Boolean),
-  );
-}
-
 function jsonError(code: string, status: number, requestId: string): NextResponse {
   return NextResponse.json({ code, request_id: requestId }, { status, headers: { "X-Request-Id": requestId } });
 }
@@ -77,7 +70,7 @@ async function authorizeAdmin(request: NextRequest, requestId: string): Promise<
     return jsonError("csrf_rejected", 403, requestId);
   }
 
-  const allowedEmails = adminEmails();
+  const allowedEmails = readAdminEmails();
   if (allowedEmails.size === 0) {
     return jsonError("admin_not_configured", 403, requestId);
   }
