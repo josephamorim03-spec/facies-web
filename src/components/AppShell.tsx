@@ -2,6 +2,7 @@
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import Nav, { SidebarNav, NAV_OPEN_EVENT } from "@/components/Nav";
 import PwaRegister from "@/components/PwaRegister";
 import { ToastProvider } from "@/lib/useToast";
@@ -15,6 +16,13 @@ import { ACTIVATE_ROUTE, INITIAL_GOAL_SETUP_ROUTE } from "@/lib/initialGoalSetup
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { NavbarProvider, NavbarContext } from "@/lib/NavbarContext";
 import { warmRoute, warmRouteData } from "@/lib/navigationWarmup";
+import {
+  acknowledgeSessionExpired,
+  isSessionExpirationSuppressedPath,
+  SESSION_EXPIRED_LOGIN_URL,
+  startSessionExpiredRedirect,
+  subscribeSessionExpired,
+} from "@/lib/sessionExpiration";
 
 type BuildVersionPayload = {
   commit_sha: string;
@@ -187,6 +195,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
   const [pinnedSidebar, setPinnedSidebar] = useState(false);
+  const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
   const showMobileTopBar = !isDesktopNavigation && shouldShowMobileTopBar(pathname, hideNavigationChrome);
   const mainClassName = hideNavigationChrome
     ? "min-h-screen"
@@ -201,6 +210,22 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       blockedNavigationPathRef.current = null;
     }
   }, [pathname]);
+
+  useEffect(() => {
+    return subscribeSessionExpired(() => {
+      if (isSessionExpirationSuppressedPath(window.location.pathname)) return;
+      if (window.location.pathname === ACTIVATE_ROUTE) return;
+      setSessionExpiredOpen(true);
+    });
+  }, []);
+
+  function redirectToExpiredLogin() {
+    acknowledgeSessionExpired();
+    setSessionExpiredOpen(false);
+    if (startSessionExpiredRedirect()) {
+      router.replace(SESSION_EXPIRED_LOGIN_URL);
+    }
+  }
 
   useEffect(() => {
     if (
@@ -270,6 +295,16 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       </div>
       <Toast />
       <BuildVersionBadge />
+      <ConfirmDialog
+        open={sessionExpiredOpen && !isSessionExpirationSuppressedPath(pathname) && pathname !== ACTIVATE_ROUTE}
+        title="Sua sessão foi encerrada"
+        message="Por segurança, sua sessão expirou. Entre novamente para continuar usando a KrosMed."
+        cancelLabel="Fechar"
+        confirmLabel="Entrar novamente"
+        onCancel={redirectToExpiredLogin}
+        onConfirm={redirectToExpiredLogin}
+        zIndexClassName="z-[80]"
+      />
     </>
   );
 }

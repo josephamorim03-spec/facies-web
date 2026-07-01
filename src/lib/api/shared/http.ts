@@ -1,4 +1,11 @@
 import { clearAuthToken } from "../../auth";
+import {
+  dispatchSessionExpired,
+  isProtectedApiPath,
+  isSessionExpirationSuppressedPath,
+  SESSION_EXPIRED_HEADER,
+  SESSION_EXPIRED_MESSAGE,
+} from "../../sessionExpiration";
 import { repairMojibake, repairMojibakeDeep } from "../../textEncoding";
 
 export type APIError = { message: string; status?: number; details?: unknown };
@@ -517,6 +524,36 @@ function shouldRetryMethod(
   return hasIdempotencyKey || retryPolicy.allowRetryOnNonIdempotent;
 }
 
+function buildSessionExpiredError(details?: unknown): APIError {
+  const requestId =
+    details && typeof details === "object" && !Array.isArray(details)
+      ? (details as Record<string, unknown>).request_id
+      : undefined;
+  return {
+    message: SESSION_EXPIRED_MESSAGE,
+    status: 401,
+    details: {
+      code: "session_expired",
+      ...(typeof requestId === "string" ? { request_id: requestId } : {}),
+    },
+  };
+}
+
+function shouldHandleSessionExpired(path: string, res: Response): boolean {
+  return res.status === 401 && isProtectedApiPath(path);
+}
+
+function handleSessionExpiredResponse(path: string, res: Response): void {
+  if (!shouldHandleSessionExpired(path, res)) return;
+  if (typeof window !== "undefined" && !isSessionExpirationSuppressedPath(window.location.pathname)) {
+    invalidateClientCache();
+    clearAuthToken();
+    dispatchSessionExpired({
+      reason: res.headers.get(SESSION_EXPIRED_HEADER) === "1" ? "expired" : "unauthorized",
+    });
+  }
+}
+
 export async function toAPIError(res: Response): Promise<APIError> {
   const body = await parseJsonSafe(res);
   const rawDetail = body?.detail;
@@ -576,6 +613,7 @@ export async function fetchRaw(path: string, init?: APIRequestInit): Promise<Res
         headers,
       });
       if (!canRetry || !retryStatuses.has(response.status) || attempt >= maxAttempts) {
+        handleSessionExpiredResponse(path, response);
         return response;
       }
       const retryAfterMs = parseRetryAfterMs(response.headers.get("Retry-After"));
@@ -610,32 +648,10 @@ async function requestApi<T>(path: string, init?: APIRequestInit): Promise<T> {
 
     if (!res.ok) {
       const err = await toAPIError(res);
-      if (res.status === 401) {
-        const details = err.details as Record<string, unknown> | undefined;
-        const detailValue = details?.detail;
-        const detailCode =
-          detailValue && typeof detailValue === "object"
-            ? String((detailValue as Record<string, unknown>).code ?? "").toLowerCase()
-            : typeof details?.code === "string"
-              ? details.code.toLowerCase()
-              : "";
-        const detailText = typeof detailValue === "string" ? detailValue.toLowerCase() : "";
-        const isUnknownLocalAccount =
-          detailCode === "unknown_local_account" || detailText.includes("unknown local account");
-        const isExpiredSession =
-          detailText.includes("invalid bearer token") || detailText.includes("expired");
-
-        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
-          invalidateClientCache();
-          if (isUnknownLocalAccount) {
-            clearAuthToken();
-            window.location.assign("/login");
-          } else if (isExpiredSession) {
-            clearAuthToken();
-            window.location.assign("/login?reason=expired");
-          }
-        }
-      }
+      const sessionExpiredError = shouldHandleSessionExpired(path, res)
+        ? buildSessionExpiredError(err.details)
+        : null;
+      if (sessionExpiredError) throw sessionExpiredError;
       throw err;
     }
     return (await parseJsonSafe(res)) as T;
@@ -672,7 +688,12 @@ export function authHeader(token: string): Record<string, string> {
 export async function fetchBlob(path: string, init?: APIRequestInit): Promise<Blob> {
   const res = await fetchRaw(path, init);
   if (!res.ok) {
-    throw await toAPIError(res);
+    const err = await toAPIError(res);
+    const sessionExpiredError = shouldHandleSessionExpired(path, res)
+      ? buildSessionExpiredError(err.details)
+      : null;
+    if (sessionExpiredError) throw sessionExpiredError;
+    throw err;
   }
   return res.blob();
 }

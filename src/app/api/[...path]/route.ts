@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 const SESSION_COOKIE_NAME = "krosmed_session";
 const TOKEN_COOKIE_NAME = "krosmed_token";
+const SESSION_EXPIRED_HEADER = "X-KrosMed-Session-Expired";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -186,6 +187,18 @@ function expireLegacyTokenCookie(response: NextResponse, secure: boolean): void 
   });
 }
 
+function expireSessionCookie(response: NextResponse, secure: boolean): void {
+  response.cookies.set({
+    name: SESSION_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    path: "/",
+    maxAge: 0,
+  });
+}
+
 function setSessionCookie(response: NextResponse, accessToken: string, secure: boolean): void {
   response.cookies.set({
     name: SESSION_COOKIE_NAME,
@@ -197,6 +210,13 @@ function setSessionCookie(response: NextResponse, accessToken: string, secure: b
     maxAge: SESSION_MAX_AGE_SECONDS,
   });
   expireLegacyTokenCookie(response, secure);
+}
+
+function isProtectedProxyPath(pathKey: string): boolean {
+  if (!pathKey) return false;
+  if (pathKey === "version") return false;
+  if (pathKey.startsWith("auth/")) return false;
+  return true;
 }
 
 function redactAccessTokenPayload(payload: unknown): unknown {
@@ -248,27 +268,21 @@ async function proxyHandler(
       requestId,
     );
   }
+
+  const proxyPath = buildProxyPath(pathParts);
+  const pathKey = pathParts.join("/");
   const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value?.trim() || "";
-  if (sessionToken && isJwtExpired(sessionToken)) {
+  if (sessionToken && isProtectedProxyPath(pathKey) && isJwtExpired(sessionToken)) {
     const expiredResponse = responseWithRequestId(
       { code: "oidc_token_invalid", message: "Token expired" },
       401,
       requestId,
     );
-    expiredResponse.cookies.set({
-      name: SESSION_COOKIE_NAME,
-      value: "",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: isSecureRequest(request),
-      path: "/",
-      maxAge: 0,
-    });
+    expiredResponse.headers.set(SESSION_EXPIRED_HEADER, "1");
+    expireSessionCookie(expiredResponse, isSecureRequest(request));
     return expiredResponse;
   }
 
-  const proxyPath = buildProxyPath(pathParts);
-  const pathKey = pathParts.join("/");
   const upstreamUrl = `${proxyTarget()}/${proxyPath}${request.nextUrl.search}`;
 
   let upstreamResponse: Response;
@@ -302,6 +316,9 @@ async function proxyHandler(
   responseHeaders.delete("content-encoding");
   responseHeaders.delete("content-length");
   responseHeaders.set("X-Request-Id", responseHeaders.get("X-Request-Id") || requestId);
+  if (upstreamResponse.status === 401 && isProtectedProxyPath(pathKey)) {
+    responseHeaders.set(SESSION_EXPIRED_HEADER, "1");
+  }
 
   const contentType = upstreamResponse.headers.get("content-type")?.toLowerCase() ?? "";
   const shouldInspectAuthPayload =
@@ -337,6 +354,9 @@ async function proxyHandler(
     statusText: upstreamResponse.statusText,
     headers: responseHeaders,
   });
+  if (upstreamResponse.status === 401 && isProtectedProxyPath(pathKey)) {
+    expireSessionCookie(response, isSecureRequest(request));
+  }
 
   return response;
 }

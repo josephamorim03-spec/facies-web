@@ -120,7 +120,7 @@ function LoginPageContent() {
                   role="alert"
                   className="rounded-lg bg-[var(--amber-tint)] px-4 py-3 text-center text-sm text-ink shadow-sm"
                 >
-                  Sua sessão expirou. Entre novamente para continuar.
+                  Sua sessão expirou por segurança. Entre novamente para continuar.
                 </div>
               )}
 

@@ -1,3 +1,5 @@
+import { resetSessionExpirationState } from "./sessionExpiration";
+
 const TOKEN_KEY = "krosmed_token";
 const SESSION_KEY = "krosmed_session";
 const INTERNAL_CSRF_HEADER = "X-KrosMed-CSRF";
@@ -33,6 +35,7 @@ export async function establishAuthSession(token: string): Promise<void> {
 
 export function setAuthToken(token: string): void {
   if (typeof window === "undefined") return;
+  resetSessionExpirationState();
   void establishAuthSession(token).catch(() => undefined);
 }
 
