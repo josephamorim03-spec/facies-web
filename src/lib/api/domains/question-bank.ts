@@ -384,7 +384,7 @@ function appendArrayParams(q: URLSearchParams, key: string, values?: string[]) {
 
 export async function browseQuestionBankTopics(
   token: string,
-  params: { area?: string; search?: string; institution?: string; node_type?: string; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_empty?: boolean; limit?: number } = {},
+  params: { area?: string; search?: string; institution?: string; node_type?: string; node_types?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_empty?: boolean; limit?: number } = {},
 ): Promise<QuestionBankTopic[]> {
   const q = new URLSearchParams();
   if (params.area?.trim()) q.set("area", params.area.trim());
@@ -395,9 +395,14 @@ export async function browseQuestionBankTopics(
   if (params.year_to) q.set("year_to", String(params.year_to));
   if (typeof params.include_empty === "boolean") q.set("include_empty", String(params.include_empty));
   if (params.limit) q.set("limit", String(params.limit));
+  appendArrayParams(q, "node_types", params.node_types);
   appendArrayParams(q, "board_codes", params.board_codes);
   appendArrayParams(q, "years", params.years?.map(String));
-  return api<QuestionBankTopic[]>(`/api/question-bank/topics${q.toString() ? `?${q.toString()}` : ""}`, { headers: authHeader(token) });
+  return api<QuestionBankTopic[]>(`/api/question-bank/topics${q.toString() ? `?${q.toString()}` : ""}`, {
+    headers: authHeader(token),
+    cache: "no-store",
+    clientCache: false,
+  });
 }
 
 export async function previewQuestionBankAvailability(
