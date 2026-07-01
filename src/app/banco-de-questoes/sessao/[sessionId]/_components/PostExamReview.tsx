@@ -24,6 +24,7 @@ import AttemptHistoryModal from "../../../_components/AttemptHistoryModal";
 type NodeDiagnosis = {
   knowledge_node_id: string;
   node_name: string | null;
+  node_type?: string | null;
   correct: number;
   wrong: number;
   accuracy: number;

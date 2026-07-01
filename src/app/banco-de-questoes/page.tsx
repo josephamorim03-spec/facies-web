@@ -395,7 +395,8 @@ function BancoDeQuestoesContent() {
 
   // Topic state
   const [selectedTopics, setSelectedTopics] = useState<QuestionBankTopic[]>([]);
-  const [topics, setTopics] = useState<QuestionBankTopic[]>([]);
+  const [taxonomyTopics, setTaxonomyTopics] = useState<QuestionBankTopic[]>([]);
+  const [microTopics, setMicroTopics] = useState<QuestionBankTopic[]>([]);
 
   // Preview state
   const [availability, setAvailability] = useState<QuestionBankAvailability | null>(null);
@@ -453,6 +454,8 @@ function BancoDeQuestoesContent() {
     setLimit(clampQuestionLimit(context.expectedQuestions ?? 10));
     setStudyKind("topic");
     setSelectedTopics([]);
+    setTaxonomyTopics([]);
+    setMicroTopics([]);
     setQuestions([]);
   }, [routeSearchKey]);
 
@@ -529,7 +532,7 @@ function BancoDeQuestoesContent() {
 
   const refreshTopics = useCallback(async () => {
     try {
-      const found = await browseQuestionBankTopics(token, {
+      const common = {
         area: area || undefined,
         search: search.trim() || undefined,
         institution: institution.trim() || undefined,
@@ -537,10 +540,22 @@ function BancoDeQuestoesContent() {
         years: selectedYears.length > 0 ? selectedYears : undefined,
         include_empty: false,
         limit: 1000,
-      });
-      setTopics(found);
+      };
+      const [taxonomy, micros] = await Promise.all([
+        browseQuestionBankTopics(token, {
+          ...common,
+          node_types: ["specialty", "theme", "subtheme"],
+        }),
+        browseQuestionBankTopics(token, {
+          ...common,
+          node_types: ["microcompetency"],
+        }),
+      ]);
+      setTaxonomyTopics(taxonomy);
+      setMicroTopics(micros);
     } catch {
-      setTopics([]);
+      setTaxonomyTopics([]);
+      setMicroTopics([]);
     }
   }, [area, boardCodes, institution, search, selectedYears, token]);
 
@@ -911,7 +926,7 @@ function BancoDeQuestoesContent() {
                   onAreaChange={handleAreaChange}
                   search={search}
                   onSearchChange={handleSearchChange}
-                  topics={topics}
+                  topics={taxonomyTopics}
                   selectedTopics={selectedTopics}
                   onToggleTopic={toggleTopic}
                   boardCodes={boardCodes}
@@ -946,7 +961,7 @@ function BancoDeQuestoesContent() {
                 />
               </div>
               <RecommendedTopicsPanel
-                topics={topics}
+                topics={microTopics}
                 selectedTopics={selectedTopics}
                 activeIntent={activeIntent}
                 onToggleTopic={toggleTopic}
