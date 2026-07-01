@@ -74,6 +74,7 @@ type ExamQuestionProps = {
   onNext: () => void;
   onOpenMap: () => void;
   onFinalize: () => void;
+  finalizeLabel?: string;
 };
 
 export default function ExamQuestion({
@@ -96,6 +97,7 @@ export default function ExamQuestion({
   onNext,
   onOpenMap,
   onFinalize,
+  finalizeLabel,
 }: ExamQuestionProps) {
   const finalized = sessionStatus === "finalized";
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -214,7 +216,7 @@ export default function ExamQuestion({
                   disabled={busy}
                   className="rounded-lg border border-danger px-3 py-2 text-xs font-semibold text-danger hover:bg-danger hover:text-white disabled:opacity-50"
                 >
-                  Finalizar {sessionKindLabel.toLowerCase()}
+                  {finalizeLabel ?? `Finalizar ${sessionKindLabel.toLowerCase()}`}
                 </button>
               )}
             </div>

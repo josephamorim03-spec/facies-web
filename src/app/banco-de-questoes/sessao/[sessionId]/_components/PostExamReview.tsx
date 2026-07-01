@@ -6,9 +6,13 @@ import {
   api,
   authHeader,
   getSessionCorrections,
+  reportQuestionBankSessionItem,
+  setQuestionBankSessionItemExclusion,
   type QuestionBankCorrectionItem,
   type QuestionBankFinalizeResult,
+  type QuestionBankReportType,
   type QuestionBankSession,
+  type QuestionBankSessionItem,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { ProgressRing } from "@/components/ui/ProgressRing";
@@ -58,14 +62,23 @@ function accuracyColor(accuracy: number): string {
   return accuracy >= 0.7 ? "var(--color-success)" : accuracy >= 0.5 ? "var(--color-warning)" : "var(--color-danger)";
 }
 
-type Tab = "resumo" | "erros" | "acertos" | "marcadas";
+type Tab = "resumo" | "erros" | "acertos" | "marcadas" | "descartadas";
 
 type PostExamReviewProps = {
   session: QuestionBankSession;
   finalizeOut?: QuestionBankFinalizeResult | null;
+  busy?: boolean;
+  onFinalize?: () => void;
+  onSessionChange?: (session: QuestionBankSession) => void;
 };
 
-export default function PostExamReview({ session, finalizeOut }: PostExamReviewProps) {
+export default function PostExamReview({
+  session,
+  finalizeOut,
+  busy = false,
+  onFinalize,
+  onSessionChange,
+}: PostExamReviewProps) {
   const router = useRouter();
   const { token } = useAuthToken();
   const [activeTab, setActiveTab] = useState<Tab>("resumo");
@@ -76,6 +89,11 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
   const [historyQuestionId, setHistoryQuestionId] = useState<string | null>(null);
   const [dismissedInsights, setDismissedInsights] = useState(false);
   const [dismissedDiagnosisError, setDismissedDiagnosisError] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [localBusy, setLocalBusy] = useState(false);
+  const [reportingPosition, setReportingPosition] = useState<number | null>(null);
+  const [reportType, setReportType] = useState<QuestionBankReportType>("error");
+  const [reportReason, setReportReason] = useState("");
 
   useEffect(() => {
     if (!token || !session.session_id) return;
@@ -100,11 +118,16 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
   );
 
   const items = session.items;
-  const correctItems = items.filter((i) => i.is_correct === true);
-  const wrongItems = items.filter((i) => i.is_correct === false);
-  const markedItems = items.filter((i) => i.doubtful);
-  const unansweredItems = items.filter((i) => !i.answered);
-  const accuracy = session.total_questions > 0 ? correctItems.length / session.total_questions : 0;
+  const activeReview = session.status === "active" && Boolean(session.results_revealed_at);
+  const isWorking = busy || localBusy;
+  const reportedItems = items.filter((i) => i.reported_problem);
+  const excludedItems = items.filter((i) => i.excluded_from_scoring);
+  const scoredItems = items.filter((i) => !i.excluded_from_scoring && !i.is_annulled);
+  const correctItems = scoredItems.filter((i) => i.is_correct === true);
+  const wrongItems = scoredItems.filter((i) => i.is_correct === false);
+  const markedItems = scoredItems.filter((i) => i.doubtful);
+  const unansweredItems = scoredItems.filter((i) => !i.answered);
+  const accuracy = scoredItems.length > 0 ? correctItems.length / scoredItems.length : 0;
   const diagnosedWrongCount = wrongItems.filter((item) => item.selected_option && item.distractor_diagnosis?.[item.selected_option]).length;
   const scheduledCount = finalizeOut?.created_tasks.length ?? 0;
   const savedCorrectionCount = corrections.length;
@@ -117,7 +140,7 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
   const gainTitle =
     wrongItems.length > 0
       ? `${wrongItems.length} erro${wrongItems.length === 1 ? "" : "s"} virou${wrongItems.length === 1 ? "" : "aram"} material de estudo`
-      : correctItems.length === session.total_questions
+      : correctItems.length === scoredItems.length
         ? "Sessão limpa: você confirmou domínio"
         : "Sessão concluída com mapa mais claro";
   const gainDetail =
@@ -158,7 +181,49 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
     { id: "erros", label: "Erros", count: wrongItems.length },
     { id: "acertos", label: "Acertos", count: correctItems.length },
     { id: "marcadas", label: "Marcadas", count: markedItems.length },
+    { id: "descartadas", label: "Descartadas", count: excludedItems.length },
   ];
+
+  async function submitSessionReport(item: QuestionBankSessionItem) {
+    if (!token || !activeReview) return;
+    setLocalBusy(true);
+    setActionError(null);
+    try {
+      const updated = await reportQuestionBankSessionItem(token, session.session_id, item.position, {
+        report_type: reportType,
+        report_reason: reportReason.trim() || undefined,
+      });
+      onSessionChange?.(updated);
+      setReportingPosition(null);
+      setReportReason("");
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Nao foi possivel denunciar a questao.");
+    } finally {
+      setLocalBusy(false);
+    }
+  }
+
+  async function toggleExclusion(item: QuestionBankSessionItem) {
+    if (!token || !activeReview || !item.reported_problem) return;
+    setLocalBusy(true);
+    setActionError(null);
+    try {
+      const updated = await setQuestionBankSessionItemExclusion(
+        token,
+        session.session_id,
+        item.position,
+        {
+          excluded: !item.excluded_from_scoring,
+          exclusion_reason: "reported_quality_issue",
+        },
+      );
+      onSessionChange?.(updated);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Nao foi possivel atualizar o descarte.");
+    } finally {
+      setLocalBusy(false);
+    }
+  }
 
   return (
     <main className="min-h-screen bg-paper px-4 py-6 text-ink md:px-6 md:py-8">
@@ -181,7 +246,7 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
             </div>
             <ProgressRing pct={accuracy * 100} size={132} color={accuracyColor(accuracy)} />
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5">
             <div className="rounded-lg border border-edge bg-paper px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Acertos</p>
               <p className="mt-1 text-2xl font-bold text-success">{correctItems.length}</p>
@@ -198,8 +263,73 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Em branco</p>
               <p className="mt-1 text-2xl font-bold text-muted">{unansweredItems.length}</p>
             </div>
+            <div className="rounded-lg border border-edge bg-paper px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Descartadas</p>
+              <p className="mt-1 text-2xl font-bold text-muted">{excludedItems.length}</p>
+            </div>
           </div>
         </header>
+
+        {activeReview && (
+          <section className="rounded-lg border border-primary bg-surface p-4 shadow-[var(--soft-shadow)]">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                  Resultado ainda nao contabilizado
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-muted">
+                  {reportedItems.length > 0
+                    ? "Revise as questoes denunciadas antes de gravar seu desempenho."
+                    : "Conferiu o resultado? Grave para atualizar seu desempenho e agenda."}
+                </p>
+                {actionError && <p className="mt-2 text-xs font-semibold text-danger">{actionError}</p>}
+              </div>
+              <button
+                type="button"
+                onClick={onFinalize}
+                disabled={isWorking}
+                className="rounded-lg border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 disabled:opacity-50"
+              >
+                Contabilizar resultado
+              </button>
+            </div>
+          </section>
+        )}
+
+        {activeReview && reportedItems.length > 0 && (
+          <section className="rounded-lg border border-warning/50 bg-[var(--amber-tint)] p-4 shadow-[var(--soft-shadow)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-warning">
+              Questoes denunciadas
+            </p>
+            <div className="mt-3 grid gap-2">
+              {reportedItems.map((item) => (
+                <label
+                  key={item.question_id}
+                  className="flex items-start justify-between gap-3 rounded-lg border border-warning/30 bg-surface px-3 py-2"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-ink">
+                      Questao {item.position}
+                    </span>
+                    <span className="mt-0.5 line-clamp-2 block text-xs leading-relaxed text-muted">
+                      {item.stem}
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2 text-xs font-semibold text-ink">
+                    <input
+                      type="checkbox"
+                      checked={item.excluded_from_scoring}
+                      disabled={isWorking}
+                      onChange={() => void toggleExclusion(item)}
+                      className="h-4 w-4 accent-[var(--color-primary)]"
+                    />
+                    Nao contabilizar
+                  </span>
+                </label>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="rounded-lg border border-primary bg-surface p-4 shadow-[var(--soft-shadow)]">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -415,10 +545,11 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
           </div>
         )}
 
-        {(activeTab === "erros" || activeTab === "acertos" || activeTab === "marcadas") && (() => {
+        {(activeTab === "erros" || activeTab === "acertos" || activeTab === "marcadas" || activeTab === "descartadas") && (() => {
           const displayItems =
             activeTab === "erros" ? wrongItems :
             activeTab === "acertos" ? correctItems :
+            activeTab === "descartadas" ? excludedItems :
             markedItems;
 
           if (displayItems.length === 0) {
@@ -442,7 +573,9 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
                 const correction = correctionByQuestionId.get(item.question_id);
                 const isExpanded = expandedCorrections.has(item.question_id);
                 const actionCopy =
-                  activeTab === "erros"
+                  activeTab === "descartadas"
+                    ? "Esta questao ficou fora do seu resultado e da adaptabilidade."
+                    : activeTab === "erros"
                     ? correction
                       ? "Reparo salvo: revise esta regra antes de refazer."
                       : selectedDiagnosis
@@ -467,7 +600,85 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
                           Gabarito {item.correct_answer}
                         </span>
                       )}
+                      {activeReview && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setReportingPosition((prev) =>
+                              prev === item.position ? null : item.position,
+                            )
+                          }
+                          className="text-xs font-semibold text-muted transition hover:text-ink"
+                        >
+                          {item.reported_problem ? "Editar denuncia" : "Denunciar questao"}
+                        </button>
+                      )}
+                      {activeReview && item.reported_problem && (
+                        <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink">
+                          <input
+                            type="checkbox"
+                            checked={item.excluded_from_scoring}
+                            disabled={isWorking}
+                            onChange={() => void toggleExclusion(item)}
+                            className="h-4 w-4 accent-[var(--color-primary)]"
+                          />
+                          Nao contabilizar
+                        </label>
+                      )}
                     </div>
+
+                    {activeReview && reportingPosition === item.position && (
+                      <div className="mt-3 rounded-lg border border-edge bg-paper p-3">
+                        <div className="flex flex-wrap gap-2">
+                          {(["error", "unclear", "outdated", "other"] as QuestionBankReportType[]).map((type) => (
+                            <button
+                              key={type}
+                              type="button"
+                              onClick={() => setReportType(type)}
+                              className={cx(
+                                "rounded-full border px-2.5 py-1 text-xs font-semibold",
+                                reportType === type
+                                  ? "border-primary bg-primary text-primaryInk"
+                                  : "border-edge text-muted hover:text-ink",
+                              )}
+                            >
+                              {type === "error"
+                                ? "Erro"
+                                : type === "unclear"
+                                  ? "Confusa"
+                                  : type === "outdated"
+                                    ? "Desatualizada"
+                                    : "Outro"}
+                            </button>
+                          ))}
+                        </div>
+                        <textarea
+                          value={reportReason}
+                          onChange={(event) => setReportReason(event.target.value)}
+                          maxLength={4000}
+                          rows={3}
+                          className="mt-3 w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm outline-none focus:border-primary"
+                          placeholder="O que parece errado nesta questao?"
+                        />
+                        <div className="mt-2 flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setReportingPosition(null)}
+                            className="rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isWorking}
+                            onClick={() => void submitSessionReport(item)}
+                            className="rounded-lg border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primaryInk disabled:opacity-50"
+                          >
+                            Enviar denuncia
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {item.selected_option && (
@@ -481,6 +692,16 @@ export default function PostExamReview({ session, finalizeOut }: PostExamReviewP
                       {item.doubtful && (
                         <span className="rounded-full border border-warning/40 bg-[var(--amber-tint)] px-2.5 py-1 text-xs font-semibold text-warning">
                           Marcada
+                        </span>
+                      )}
+                      {item.reported_problem && (
+                        <span className="rounded-full border border-warning/40 bg-[var(--amber-tint)] px-2.5 py-1 text-xs font-semibold text-warning">
+                          Denunciada
+                        </span>
+                      )}
+                      {item.excluded_from_scoring && (
+                        <span className="rounded-full border border-edge bg-surfaceMuted px-2.5 py-1 text-xs font-semibold text-muted">
+                          Descartada por voce
                         </span>
                       )}
                     </div>

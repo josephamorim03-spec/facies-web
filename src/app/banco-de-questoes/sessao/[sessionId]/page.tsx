@@ -9,6 +9,7 @@ import {
   recordQuestionBankAttempt,
   recordQuestionBankCorrection,
   recordQuestionBankEvents,
+  revealQuestionBankSessionResults,
   reportQuestionProblem,
   submitQuestionBankGuidedReview,
   type OperationalQuestionOutcome,
@@ -315,7 +316,20 @@ export default function SessionPage() {
     setBusy(true);
     setError(null);
     try {
-      const out = await finalizeQuestionBankSession(token, session.session_id, { confirm_unanswered: true });
+      if (
+        session.resolution_mode === "simulation" &&
+        session.status === "active" &&
+        !session.results_revealed_at
+      ) {
+        const updated = await revealQuestionBankSessionResults(token, session.session_id);
+        setSession(updated);
+        setFinalizeOut(null);
+        return;
+      }
+      const out = await finalizeQuestionBankSession(token, session.session_id, {
+        confirm_unanswered: true,
+        confirm_reported_items: true,
+      });
       setFinalizeOut(out);
       setSession(out.session);
     } catch (err) {
@@ -382,9 +396,17 @@ export default function SessionPage() {
     );
   }
 
-  // Finalized: show post-exam review
-  if (session.status === "finalized") {
-    return <PostExamReview session={session} finalizeOut={finalizeOut} />;
+  // Finalized or corrected-but-not-yet-accounted simulation: show post-exam review.
+  if (session.status === "finalized" || session.results_revealed_at) {
+    return (
+      <PostExamReview
+        session={session}
+        finalizeOut={finalizeOut}
+        busy={busy}
+        onFinalize={() => void finalize()}
+        onSessionChange={setSession}
+      />
+    );
   }
 
   const currentItem = session.items.find((i) => i.position === currentPosition) ?? session.items[0];
@@ -590,6 +612,7 @@ export default function SessionPage() {
         onNext={() => navigateTo(currentPosition + 1)}
         onOpenMap={() => setShowMap(true)}
         onFinalize={() => void finalize()}
+        finalizeLabel={`Corrigir ${sessionKindLabel.toLowerCase()}`}
       />
       {showMap && (
         <>

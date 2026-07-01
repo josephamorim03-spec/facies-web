@@ -6,6 +6,7 @@ export type QuestionBankOption = "A" | "B" | "C" | "D" | "E";
 export type QuestionBankMode = "adaptive" | "by_topic" | "by_exam";
 export type QuestionBankResolutionMode = "training" | "simulation";
 export type QuestionBankSessionStatus = "active" | "finalized" | "invalidated";
+export type QuestionBankScoringMode = "immediate" | "deferred_until_finalize";
 export type QuestionBankAnswerStatus = "unanswered" | "answered" | "correct" | "wrong" | "all" | "unanswered_or_wrong" | "needs_review" | "near_miss";
 export type QuestionBankNode = {
   knowledge_node_id: string;
@@ -178,6 +179,15 @@ export type QuestionBankSessionItem = {
   pedagogical_profile?: Record<string, unknown>;
   adaptive_explanation?: { title: string; reasons: string[] } | null;
   editorial_quality?: { badge: string; message: string | null } | null;
+  is_annulled: boolean;
+  reported_problem: boolean;
+  report_type: QuestionBankReportType | null;
+  report_reason: string | null;
+  reported_at: string | null;
+  excluded_from_scoring: boolean;
+  exclusion_reason: string | null;
+  exclusion_note: string | null;
+  excluded_at: string | null;
   attempt_stats?: QuestionBankAttemptStats | null;
 };
 export type QuestionBankSession = {
@@ -185,6 +195,7 @@ export type QuestionBankSession = {
   status: QuestionBankSessionStatus;
   mode: QuestionBankMode;
   resolution_mode: QuestionBankResolutionMode;
+  scoring_mode: QuestionBankScoringMode;
   study_kind: StudyKind;
   full_exam_name: string | null;
   full_exam_year: number | null;
@@ -207,9 +218,13 @@ export type QuestionBankSession = {
   items: QuestionBankSessionItem[];
   created_at: string;
   updated_at: string;
+  results_revealed_at: string | null;
   finalized_at: string | null;
   directed_study_id: string | null;
   review_task_id: string | null;
+  reported_problem_count: number;
+  excluded_from_scoring_count: number;
+  scorable_question_count: number;
 };
 export type QuestionBankLongitudinalNode = {
   knowledge_node_id: string;
@@ -528,8 +543,49 @@ export async function getSessionCorrections(
   );
 }
 
-export async function finalizeQuestionBankSession(token: string, sessionId: string, options?: { confirm_unanswered?: boolean }): Promise<QuestionBankFinalizeResult> {
-  const q = new URLSearchParams({ confirm_unanswered: options?.confirm_unanswered ? "true" : "false" });
+export async function revealQuestionBankSessionResults(
+  token: string,
+  sessionId: string,
+): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/reveal-results`,
+    { method: "POST", headers: authHeader(token) },
+  );
+}
+
+export async function reportQuestionBankSessionItem(
+  token: string,
+  sessionId: string,
+  position: number,
+  payload: { report_type?: QuestionBankReportType; report_reason?: string },
+): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/report`,
+    { method: "POST", headers: authHeader(token), body: JSON.stringify(payload) },
+  );
+}
+
+export async function setQuestionBankSessionItemExclusion(
+  token: string,
+  sessionId: string,
+  position: number,
+  payload: { excluded: boolean; exclusion_reason?: string; exclusion_note?: string | null },
+): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/exclusion`,
+    { method: "PUT", headers: authHeader(token), body: JSON.stringify(payload) },
+  );
+}
+
+export async function finalizeQuestionBankSession(
+  token: string,
+  sessionId: string,
+  options?: { confirm_unanswered?: boolean; confirm_reported_items?: boolean },
+): Promise<QuestionBankFinalizeResult> {
+  const q = new URLSearchParams({
+    confirm_unanswered: options?.confirm_unanswered ? "true" : "false",
+    confirm_reported_items: options?.confirm_reported_items ? "true" : "false",
+  });
   return api<QuestionBankFinalizeResult>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/finalize?${q.toString()}`, { method: "POST", headers: authHeader(token) });
 }
 
