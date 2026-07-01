@@ -146,6 +146,9 @@ type StudyQuestionProps = {
   onFixar?: () => void;
   onQuickNote?: () => void;
   onShowHistory?: () => void;
+  onRequestAiCorrection?: () => void;
+  aiCorrectionRequesting?: boolean;
+  aiCorrectionRequested?: boolean;
 };
 
 const REPORT_LABELS: Record<QuestionBankReportType, string> = {
@@ -264,6 +267,20 @@ function phaseState(item: QuestionBankSessionItem, revealed: boolean): { label: 
   };
 }
 
+function isMicroNode(node: QuestionBankSessionItem["knowledge_nodes"][number]): boolean {
+  return String(node.node_type ?? "").toLowerCase().includes("micro")
+    || String(node.role ?? "").toLowerCase().includes("micro");
+}
+
+function hasCanonicalCorrection(item: QuestionBankSessionItem): boolean {
+  const diagnosis = item.distractor_diagnosis ?? {};
+  if (Object.keys(diagnosis).length > 0) return true;
+  const profile = item.pedagogical_profile;
+  if (!profile || typeof profile !== "object") return false;
+  const checkpoints = (profile as Record<string, unknown>).checkpoints;
+  return Array.isArray(checkpoints) && checkpoints.length > 0;
+}
+
 export default function StudyQuestion({
   item,
   position,
@@ -303,6 +320,9 @@ export default function StudyQuestion({
   onFixar,
   onQuickNote,
   onShowHistory,
+  onRequestAiCorrection,
+  aiCorrectionRequesting = false,
+  aiCorrectionRequested = false,
 }: StudyQuestionProps) {
   const finalized = sessionStatus === "finalized";
   const canReveal = !finalized && item.answered && !revealed;
@@ -310,6 +330,8 @@ export default function StudyQuestion({
   const progress = Math.round((position / total) * 100);
   const phase = phaseState(item, revealed);
   const primaryNode = item.knowledge_nodes.find((n) => n.is_primary) ?? item.knowledge_nodes[0];
+  const microNodes = item.knowledge_nodes.filter(isMicroNode);
+  const correctionAvailable = hasCanonicalCorrection(item);
   const selectedDiagnosis = item.selected_option ? item.distractor_diagnosis?.[item.selected_option]?.trim() : "";
   const hasGuidedResponses = Object.keys(guidedResponses).length > 0;
 
@@ -658,6 +680,35 @@ export default function StudyQuestion({
                     </span>
                   )}
                 </div>
+                {microNodes.length > 0 && (
+                  <div className="mt-4 rounded-lg border border-edge bg-paper p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Microcompetencias testadas</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {microNodes.slice(0, 4).map((node) => (
+                        <span key={node.knowledge_node_id} className="rounded-full border border-primary/30 bg-surface px-2.5 py-1 text-xs font-semibold text-primary">
+                          {node.node_name || "Microcompetencia"}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {!correctionAvailable && onRequestAiCorrection && (
+                  <div className="mt-4 rounded-lg border border-warning/50 bg-[var(--amber-tint)] p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <p className="max-w-[56ch] text-sm leading-relaxed text-muted">
+                        Esta questao ainda nao tem correcao canonica da IA. Voce pode solicitar o enriquecimento agora; quando o worker finalizar, ela entra como questao com correcao.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={onRequestAiCorrection}
+                        disabled={aiCorrectionRequesting || aiCorrectionRequested}
+                        className="rounded-lg border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {aiCorrectionRequesting ? "Solicitando..." : aiCorrectionRequested ? "IA solicitada" : "Rodar IA canonica"}
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {onQuickNote && (
                   <button
                     type="button"
@@ -721,6 +772,11 @@ export default function StudyQuestion({
                           </span>
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-semibold leading-relaxed text-ink">{checkpoint.prompt}</p>
+                            {checkpoint.knowledge_node_name && (
+                              <span className="mt-1 inline-flex rounded-full border border-primary/30 bg-paper px-2 py-0.5 text-[10px] font-semibold text-primary">
+                                {checkpoint.knowledge_node_name}
+                              </span>
+                            )}
                             {checkpoint.micro_question && (
                               <p className="mt-1 text-xs leading-relaxed text-muted">{checkpoint.micro_question}</p>
                             )}

@@ -11,6 +11,7 @@ import {
   getQuestionBankPerformance,
   previewQuestionBankAvailability,
   type QuestionBankAnswerStatus,
+  type QuestionBankCorrectionStatus,
   type QuestionBankAvailability,
   type QuestionBankNextAction,
   type QuestionBankPerformance,
@@ -386,6 +387,7 @@ function BancoDeQuestoesContent() {
   const [boardInput, setBoardInput] = useState("");
   const [selectedYears, setSelectedYears] = useState<number[]>([]);
   const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("unanswered");
+  const [correctionStatus, setCorrectionStatus] = useState<QuestionBankCorrectionStatus>("all");
   const [limit, setLimit] = useState(() => clampQuestionLimit(initialContext.expectedQuestions ?? 10));
   const [resolutionMode, setResolutionMode] = useState<QuestionBankResolutionMode>("simulation");
   const [studyKind, setStudyKind] = useState<StudyKind>("topic");
@@ -433,6 +435,7 @@ function BancoDeQuestoesContent() {
     boardCodes.length > 0 ? "boards" : "",
     selectedYears.length > 0 ? "years" : "",
     answerStatus !== "unanswered" ? answerStatus : "",
+    correctionStatus !== "all" ? correctionStatus : "",
     selectedTopics.length > 0 ? "topics" : "",
   ].filter(Boolean).length;
 
@@ -451,6 +454,7 @@ function BancoDeQuestoesContent() {
     setEntryContext(context);
     setArea(context.area ?? "");
     setSearch(context.theme ?? "");
+    setCorrectionStatus("all");
     setLimit(clampQuestionLimit(context.expectedQuestions ?? 10));
     setStudyKind("topic");
     setSelectedTopics([]);
@@ -502,8 +506,9 @@ function BancoDeQuestoesContent() {
     years: selectedYears.length > 0 ? selectedYears : undefined,
     answer_status: answerStatus,
     only_unanswered: answerStatus === "unanswered",
+    correction_status: correctionStatus,
     limit: overrides?.limit,
-  }), [answerStatus, area, boardCodes, institution, selectedTopics, selectedYears]);
+  }), [answerStatus, area, boardCodes, correctionStatus, institution, selectedTopics, selectedYears]);
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -606,6 +611,11 @@ function BancoDeQuestoesContent() {
 
   function handleAnswerStatusChange(next: QuestionBankAnswerStatus) {
     setAnswerStatus(next);
+    setQuestions([]);
+  }
+
+  function handleCorrectionStatusChange(next: QuestionBankCorrectionStatus) {
+    setCorrectionStatus(next);
     setQuestions([]);
   }
 
@@ -943,6 +953,8 @@ function BancoDeQuestoesContent() {
                   onSelectedYearsChange={handleSelectedYearsChange}
                   answerStatus={answerStatus}
                   onAnswerStatusChange={handleAnswerStatusChange}
+                  correctionStatus={correctionStatus}
+                  onCorrectionStatusChange={handleCorrectionStatusChange}
                   resolutionMode={resolutionMode}
                   onResolutionModeChange={setResolutionMode}
                   studyKind={studyKind}

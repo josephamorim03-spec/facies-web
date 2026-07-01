@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type {
   FullExamType,
   QuestionBankAnswerStatus,
+  QuestionBankCorrectionStatus,
   QuestionBankResolutionMode,
   QuestionBankTopic,
   StudyKind,
@@ -97,6 +98,8 @@ export type FiltersBarProps = {
   onSelectedYearsChange: (years: number[]) => void;
   answerStatus: QuestionBankAnswerStatus;
   onAnswerStatusChange: (v: QuestionBankAnswerStatus) => void;
+  correctionStatus: QuestionBankCorrectionStatus;
+  onCorrectionStatusChange: (v: QuestionBankCorrectionStatus) => void;
   resolutionMode: QuestionBankResolutionMode;
   onResolutionModeChange: (v: QuestionBankResolutionMode) => void;
   studyKind: StudyKind;
@@ -381,6 +384,7 @@ export default function FiltersBar(props: FiltersBarProps) {
     boardCodes, boardInput, onBoardInputChange,
     onAddBoardCode, onRemoveBoardCode, institution, onInstitutionChange,
     selectedYears, onSelectedYearsChange, answerStatus, onAnswerStatusChange,
+    correctionStatus, onCorrectionStatusChange,
     resolutionMode, onResolutionModeChange, studyKind, onStudyKindChange,
     fullExamName, onFullExamNameChange, fullExamYear, onFullExamYearChange,
     fullExamType, onFullExamTypeChange, reviewTrailEnabled, onReviewTrailEnabledChange,
@@ -662,6 +666,25 @@ export default function FiltersBar(props: FiltersBarProps) {
                 ))}
               </div>
             )}
+            <div className="border-t border-edge pt-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted">Correcao IA</p>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["all", "Todas"],
+                  ["with_correction", "Com correcao"],
+                  ["without_correction", "Sem correcao"],
+                ] as const).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => onCorrectionStatusChange(value)}
+                    className={cx("km-chip", correctionStatus === value && "km-chip-active")}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>

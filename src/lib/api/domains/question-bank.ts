@@ -8,6 +8,7 @@ export type QuestionBankResolutionMode = "training" | "simulation";
 export type QuestionBankSessionStatus = "active" | "finalized" | "invalidated";
 export type QuestionBankScoringMode = "immediate" | "deferred_until_finalize";
 export type QuestionBankAnswerStatus = "unanswered" | "answered" | "correct" | "wrong" | "all" | "unanswered_or_wrong" | "needs_review" | "near_miss";
+export type QuestionBankCorrectionStatus = "all" | "with_correction" | "without_correction";
 export type QuestionBankNode = {
   knowledge_node_id: string;
   parent_knowledge_node_id: string | null;
@@ -59,6 +60,7 @@ export type QuestionBankAvailability = {
   available_count: number;
   max_selectable: number;
   answer_status: QuestionBankAnswerStatus;
+  correction_status: QuestionBankCorrectionStatus;
 };
 export type QuestionBankAttemptStats = {
   attempt_count: number;
@@ -372,6 +374,7 @@ export type QuestionBankSessionCreatePayload = {
   limit?: number;
   only_unanswered?: boolean;
   answer_status?: QuestionBankAnswerStatus;
+  correction_status?: QuestionBankCorrectionStatus;
   performed_at?: string;
   review_task_id?: string;
 };
@@ -407,7 +410,7 @@ export async function browseQuestionBankTopics(
 
 export async function previewQuestionBankAvailability(
   token: string,
-  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; mode?: QuestionBankMode } = {},
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus; mode?: QuestionBankMode } = {},
 ): Promise<QuestionBankAvailability> {
   const q = new URLSearchParams();
   appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
@@ -420,6 +423,7 @@ export async function previewQuestionBankAvailability(
   if (params.year_to) q.set("year_to", String(params.year_to));
   if (params.answer_status) q.set("answer_status", params.answer_status);
   if (params.only_unanswered !== undefined) q.set("only_unanswered", params.only_unanswered ? "true" : "false");
+  if (params.correction_status && params.correction_status !== "all") q.set("correction_status", params.correction_status);
   if (params.mode) q.set("mode", params.mode);
   return api<QuestionBankAvailability>(`/api/question-bank/availability${q.toString() ? `?${q.toString()}` : ""}`, {
     headers: authHeader(token),
@@ -429,7 +433,7 @@ export async function previewQuestionBankAvailability(
 
 export async function browseQuestionBankQuestions(
   token: string,
-  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; limit?: number; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean } = {},
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; limit?: number; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus } = {},
 ): Promise<QuestionBankQuestion[]> {
   const q = new URLSearchParams();
   appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
@@ -443,7 +447,18 @@ export async function browseQuestionBankQuestions(
   if (params.limit) q.set("limit", String(params.limit));
   if (params.answer_status) q.set("answer_status", params.answer_status);
   if (params.only_unanswered !== undefined) q.set("only_unanswered", params.only_unanswered ? "true" : "false");
+  if (params.correction_status && params.correction_status !== "all") q.set("correction_status", params.correction_status);
   return api<QuestionBankQuestion[]>(`/api/question-bank/questions${q.toString() ? `?${q.toString()}` : ""}`, { headers: authHeader(token) });
+}
+
+export async function requestQuestionBankAICorrection(
+  token: string,
+  questionId: string,
+): Promise<{ question_id: string; candidate_id?: string; job_id?: string; status: string; source?: string }> {
+  return api<{ question_id: string; candidate_id?: string; job_id?: string; status: string; source?: string }>(
+    `/api/question-bank/questions/${encodeURIComponent(questionId)}/ai-correction`,
+    { method: "POST", headers: authHeader(token), body: JSON.stringify({ source: "student_requested" }), timeoutMs: 45000 },
+  );
 }
 
 export async function createQuestionBankSession(token: string, payload: QuestionBankSessionCreatePayload): Promise<QuestionBankSession> {

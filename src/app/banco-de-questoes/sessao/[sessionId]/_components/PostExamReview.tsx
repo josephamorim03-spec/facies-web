@@ -55,6 +55,13 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+function microNodes(item: QuestionBankSessionItem) {
+  return item.knowledge_nodes.filter((node) =>
+    String(node.node_type ?? "").toLowerCase().includes("micro")
+    || String(node.role ?? "").toLowerCase().includes("micro")
+  );
+}
+
 function formatAccuracy(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
@@ -592,6 +599,15 @@ export default function PostExamReview({
                       <div className="min-w-0">
                         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Questão {item.position}</p>
                         <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-ink">{item.stem}</p>
+                        {microNodes(item).length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {microNodes(item).slice(0, 4).map((node) => (
+                              <span key={node.knowledge_node_id} className="rounded-full border border-primary/30 bg-paper px-2 py-0.5 text-[10px] font-semibold text-primary">
+                                {node.node_name || "Microcompetencia"}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       {item.correct_answer && (
                         <span className={cx(

@@ -11,6 +11,7 @@ import {
   recordQuestionBankEvents,
   revealQuestionBankSessionResults,
   reportQuestionProblem,
+  requestQuestionBankAICorrection,
   submitQuestionBankGuidedReview,
   type OperationalQuestionOutcome,
   type QuestionBankFinalizeResult,
@@ -141,6 +142,8 @@ export default function SessionPage() {
   const [reportType, setReportType] = useState<QuestionBankReportType>("error");
   const [reportReason, setReportReason] = useState("");
   const [reportDone, setReportDone] = useState<Record<string, boolean>>({});
+  const [aiCorrectionRequested, setAiCorrectionRequested] = useState<Record<string, boolean>>({});
+  const [aiCorrectionRequesting, setAiCorrectionRequesting] = useState<Record<string, boolean>>({});
   const [quickNoteTarget, setQuickNoteTarget] = useState<QuickNoteTarget | null>(null);
   const [historyQuestionId, setHistoryQuestionId] = useState<string | null>(null);
 
@@ -374,6 +377,21 @@ export default function SessionPage() {
     }
   }
 
+  async function requestAiCorrection(questionId: string) {
+    if (!tokenResolved || !questionId) return;
+    setAiCorrectionRequesting((prev) => ({ ...prev, [questionId]: true }));
+    setError(null);
+    try {
+      await requestQuestionBankAICorrection(token, questionId);
+      setAiCorrectionRequested((prev) => ({ ...prev, [questionId]: true }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Nao foi possivel solicitar a IA canonica.";
+      setError(message);
+    } finally {
+      setAiCorrectionRequesting((prev) => ({ ...prev, [questionId]: false }));
+    }
+  }
+
   // ─── Render ───────────────────────────────────────────────────────────────
 
   if (!tokenResolved || loading) {
@@ -581,6 +599,13 @@ export default function SessionPage() {
               ? () => setHistoryQuestionId(currentItem.question_id)
               : undefined
           }
+          onRequestAiCorrection={
+            currentItem.question_id
+              ? () => void requestAiCorrection(currentItem.question_id)
+              : undefined
+          }
+          aiCorrectionRequesting={Boolean(aiCorrectionRequesting[currentItem.question_id])}
+          aiCorrectionRequested={Boolean(aiCorrectionRequested[currentItem.question_id])}
         />
         {quickNoteTarget && (
           <QuickNoteModal
