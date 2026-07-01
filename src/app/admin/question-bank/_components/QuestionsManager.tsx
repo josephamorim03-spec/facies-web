@@ -93,6 +93,7 @@ export default function QuestionsManager() {
   const [items, setItems] = useState<QuestionBankAdminQuestionListItem[]>([]);
   const [reports, setReports] = useState<QuestionBankReport[]>([]);
   const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -158,11 +159,18 @@ export default function QuestionsManager() {
 
   async function refreshReports() {
     setReportsLoading(true);
+    setReportsError(null);
     try {
       const res = await listQuestionBankReports({ status: "open", limit: 20 });
       setReports(res.reports);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao carregar reports.");
+      setReports([]);
+      const status = typeof err === "object" && err !== null ? Number((err as { status?: unknown }).status) : NaN;
+      if (status === 404) {
+        setReportsError("Painel de reports indisponivel neste ambiente.");
+      } else {
+        setReportsError(err instanceof Error ? err.message : "Falha ao carregar reports.");
+      }
     } finally {
       setReportsLoading(false);
     }
@@ -543,6 +551,9 @@ export default function QuestionsManager() {
               </div>
             ))}
           </div>
+        ) : null}
+        {reportsError ? (
+          <p className="mt-3 text-xs text-amber-900/80 dark:text-amber-200/80">{reportsError}</p>
         ) : null}
       </div>
 

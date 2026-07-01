@@ -1,4 +1,4 @@
-import { api, fetchRaw, parseJsonSafe, STUDY_IMPORT_SESSION_CREATE_TIMEOUT_MS } from "../shared/http";
+import { api, fetchRaw, parseJsonSafe, STUDY_IMPORT_SESSION_CREATE_TIMEOUT_MS, toAPIError } from "../shared/http";
 
 export type QuestionBankAdminWarning = {
   code: string;
@@ -449,7 +449,11 @@ export async function getQuestionBankAdminPipelineStatus(): Promise<QuestionBank
 }
 
 export async function getQuestionBankAdminReadiness(): Promise<QuestionBankAdminReadiness> {
-  return api<QuestionBankAdminReadiness>("/api/admin/question-bank/pipeline/readiness");
+  const res = await fetchRaw("/api/admin/question-bank/pipeline/readiness");
+  if (!res.ok && res.status !== 503) {
+    throw await toAPIError(res);
+  }
+  return (await parseJsonSafe(res)) as QuestionBankAdminReadiness;
 }
 
 export async function processQuestionBankAdminBatch(

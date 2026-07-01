@@ -250,6 +250,13 @@ export default function ExamQuestion({
           {averageSeconds > 0 && (
             <p className="text-right text-xs text-muted">{averageSeconds}s por questão em média</p>
           )}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+            <span className="font-semibold text-ink">Atalhos:</span>
+            <span>A-E ou 1-5 respondem</span>
+            <span>Setas navegam</span>
+            <span>Enter avanca</span>
+            <span>M marca revisao</span>
+          </div>
         </div>
       </header>
 

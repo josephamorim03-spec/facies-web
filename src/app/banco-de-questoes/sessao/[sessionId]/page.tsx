@@ -212,24 +212,42 @@ export default function SessionPage() {
 
   async function answer(position: number, selected: QuestionBankOption) {
     if (!session) return;
+    const currentItem = session.items.find((item) => item.position === position);
+    if (!currentItem) return;
+    const existingSelectedOption = currentItem.selected_option;
+    if (currentItem.answered && existingSelectedOption === selected) return;
     setBusy(true);
     setError(null);
     const elapsedMs = Date.now() - questionStartTimeRef.current;
+    const nextDoubtful = existingSelectedOption
+      ? Boolean(currentItem.doubtful)
+      : Boolean(preAnswerDoubtful[position]);
+    const nextConfidence = existingSelectedOption
+      ? currentItem.confidence_self_rating ?? confidenceRatings[position] ?? null
+      : confidenceRatings[position] ?? null;
     try {
       const updated = await recordQuestionBankAttempt(token, session.session_id, position, {
         selected_option: selected,
         time_ms: elapsedMs,
-        doubtful: Boolean(preAnswerDoubtful[position]),
-        confidence_self_rating: confidenceRatings[position] ?? null,
+        doubtful: nextDoubtful,
+        confidence_self_rating: nextConfidence,
       });
-      enqueueStudentEvent(position, "answer_selected", {
+      const eventType: QuestionBankStudentEventType = existingSelectedOption
+        ? "answer_changed"
+        : "answer_selected";
+      const eventPayload: Record<string, unknown> = {
         selected_option: selected,
-        time_to_first_answer_ms: elapsedMs,
         time_ms: elapsedMs,
-        doubtful: Boolean(preAnswerDoubtful[position]),
-        confidence_self_rating: confidenceRatings[position] ?? null,
+        doubtful: nextDoubtful,
+        confidence_self_rating: nextConfidence,
         eliminated_options: eliminatedOptions[position] ?? [],
-      });
+      };
+      if (existingSelectedOption) {
+        eventPayload.previous_selected_option = existingSelectedOption;
+      } else {
+        eventPayload.time_to_first_answer_ms = elapsedMs;
+      }
+      enqueueStudentEvent(position, eventType, eventPayload);
       setSession(updated);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível registrar a resposta.");
