@@ -13,6 +13,8 @@ import type {
   QuestionBankSessionStatus,
 } from "@/lib/api";
 import { cognitiveAutopsyCopy } from "@/lib/guidanceCopy";
+import FontScaleControl from "./FontScaleControl";
+import { useQuestionFontScale } from "./useQuestionFontScale";
 
 const OPTIONS: QuestionBankOption[] = ["A", "B", "C", "D", "E"];
 const CONFIDENCE_OPTIONS = [
@@ -341,6 +343,7 @@ export default function StudyQuestion({
   const selectedDiagnosis = item.selected_option ? item.distractor_diagnosis?.[item.selected_option]?.trim() : "";
   const cognitiveCopy = cognitiveAutopsyCopy(item.cognitive_signal?.primary_tag);
   const hasGuidedResponses = Object.keys(guidedResponses).length > 0;
+  const fontScale = useQuestionFontScale();
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -491,16 +494,24 @@ export default function StudyQuestion({
                     );
                   })()}
                 </div>
-                {canReveal && (
-                  <button
-                    type="button"
-                    onClick={onReveal}
-                    aria-label="Ver gabarito"
-                    className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105"
-                  >
-                    Ver gabarito
-                  </button>
-                )}
+                <div className="flex shrink-0 items-center gap-2">
+                  <FontScaleControl
+                    increase={fontScale.increase}
+                    decrease={fontScale.decrease}
+                    canIncrease={fontScale.canIncrease}
+                    canDecrease={fontScale.canDecrease}
+                  />
+                  {canReveal && (
+                    <button
+                      type="button"
+                      onClick={onReveal}
+                      aria-label="Ver gabarito"
+                      className="rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105"
+                    >
+                      Ver gabarito
+                    </button>
+                  )}
+                </div>
               </div>
 
               <ClinicalCyclePanel
@@ -510,7 +521,7 @@ export default function StudyQuestion({
                 isCorrect={item.is_correct}
               />
 
-              <p className="mt-5 max-w-[72ch] whitespace-pre-wrap text-base leading-8 text-ink">
+              <p className={cx("mt-5 max-w-[72ch] whitespace-pre-wrap text-justify hyphens-auto text-ink", fontScale.stemClass)}>
                 {item.stem}
               </p>
 
@@ -597,7 +608,8 @@ export default function StudyQuestion({
                     <div
                       key={option}
                       className={cx(
-                        "flex items-stretch overflow-hidden rounded-lg border text-sm transition-colors",
+                        "flex items-stretch overflow-hidden rounded-lg border transition-colors",
+                        fontScale.alternativeClass,
                         isCorrect
                           ? "border-success bg-surface text-success"
                           : isWrong

@@ -5,6 +5,8 @@
 export const THEME_KEY = "theme";
 export const LOG_LAST_AREA_KEY = "log_last_area";
 export const ROUTINE_COMMITMENTS_KEY = "routine_commitments";
+/** Nível (índice) do tamanho de fonte da questão no banco de questões. */
+export const QUESTION_FONT_SIZE_KEY = "question_font_size";
 
 /** Dynamic key family — one entry per subject area. */
 export function logThemesKey(area: string): string {
