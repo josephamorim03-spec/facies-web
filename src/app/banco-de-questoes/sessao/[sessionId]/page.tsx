@@ -95,6 +95,7 @@ export default function SessionPage() {
     try {
       const review = await getQuestionBankGuidedReview(token, session.session_id, position);
       setGuidedReviews((prev) => ({ ...prev, [position]: review }));
+      setGuidedReviewErrors((prev) => (prev[position] ? { ...prev, [position]: false } : prev));
       if (review.existing_responses.length > 0) {
         setGuidedResponses((prev) => ({
           ...prev,
@@ -106,7 +107,9 @@ export default function SessionPage() {
         }));
       }
     } catch {
-      // Keep the classic free-text correction available if checkpoints fail.
+      // Keep the classic free-text correction available if checkpoints fail, but
+      // flag it so the student sees a retry instead of a silently blank panel.
+      setGuidedReviewErrors((prev) => ({ ...prev, [position]: true }));
     }
   }
 
@@ -135,6 +138,7 @@ export default function SessionPage() {
   const [preAnswerDoubtful, setPreAnswerDoubtful] = useState<Record<number, boolean>>({});
   const [correctionConfidence, setCorrectionConfidence] = useState<Record<number, CorrectionConfidenceLevel>>({});
   const [guidedReviews, setGuidedReviews] = useState<Record<number, QuestionBankGuidedReview>>({});
+  const [guidedReviewErrors, setGuidedReviewErrors] = useState<Record<number, boolean>>({});
   const [guidedResponses, setGuidedResponses] = useState<Record<number, Record<string, QuestionBankGuidedReviewValue>>>({});
 
   // Report state
@@ -194,10 +198,13 @@ export default function SessionPage() {
     };
   }, []);
 
-  // Load session on mount
-  useEffect(() => {
+  // Load (or reload) the session. Exposed via useCallback so the error state can
+  // offer a retry instead of dead-ending the student when the first fetch times
+  // out or 5xxs — the most common way the banco "doesn't show up".
+  const loadSession = useCallback(() => {
     if (!tokenResolved || !sessionId) return;
     setLoading(true);
+    setError(null);
     getQuestionBankSession(token, sessionId)
       .then((s) => {
         setSession(s);
@@ -210,6 +217,11 @@ export default function SessionPage() {
       .catch(() => setError("Não foi possível carregar a sessão."))
       .finally(() => setLoading(false));
   }, [tokenResolved, token, sessionId]);
+
+  // Load session on mount / when auth resolves.
+  useEffect(() => {
+    loadSession();
+  }, [loadSession]);
 
   // ─── Handlers ────────────────────────────────────────────────────────────
 
@@ -234,6 +246,7 @@ export default function SessionPage() {
         time_ms: elapsedMs,
         doubtful: nextDoubtful,
         confidence_self_rating: nextConfidence,
+        eliminated_options: eliminatedOptions[position] ?? [],
       });
       const eventType: QuestionBankStudentEventType = existingSelectedOption
         ? "answer_changed"
@@ -277,6 +290,7 @@ export default function SessionPage() {
         selected_option: item.selected_option,
         doubtful: !item.doubtful,
         confidence_self_rating: item.confidence_self_rating ?? confidenceRatings[position] ?? null,
+        eliminated_options: eliminatedOptions[position] ?? [],
       });
       setSession(updated);
     } catch {
@@ -404,15 +418,24 @@ export default function SessionPage() {
 
   if (error && !session) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-paper">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-paper px-4 text-center">
         <p className="text-sm text-danger">{error}</p>
-        <button
-          type="button"
-          onClick={() => router.push("/banco-de-questoes")}
-          className="rounded-xl border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
-        >
-          Voltar ao banco
-        </button>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => loadSession()}
+            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primaryInk hover:opacity-90"
+          >
+            Tentar novamente
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push("/banco-de-questoes")}
+            className="rounded-xl border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
+          >
+            Voltar ao banco
+          </button>
+        </div>
       </main>
     );
   }
@@ -535,6 +558,8 @@ export default function SessionPage() {
           revealed={Boolean(revealedPositions[currentPosition])}
           correctionDraft={correctionDrafts[currentPosition] ?? ""}
           guidedReview={guidedReviews[currentPosition] ?? null}
+          guidedReviewError={Boolean(guidedReviewErrors[currentPosition])}
+          onRetryGuidedReview={() => void loadGuidedReview(currentPosition)}
           guidedResponses={guidedResponses[currentPosition] ?? {}}
           confidenceRating={confidenceRatings[currentPosition] ?? currentItem.confidence_self_rating ?? null}
           doubtfulDraft={preAnswerDoubtful[currentPosition] ?? currentItem.doubtful}

@@ -3,6 +3,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { addHttpOnlySession } from "./support/authCookies";
 import { forceDesktopNavigation } from "./support/desktopNav";
 
+function navSidebar(page: Page) {
+  return page.locator("aside").filter({ has: page.locator("[data-nav-surface='sidebar']") });
+}
+
 async function mockShellApi(page: Page) {
   await page.route("**/api/**", async (route) => {
     const request = route.request();
@@ -69,6 +73,21 @@ async function mockShellApi(page: Page) {
       return json({ area_summaries: [], diagnosis: { ready: false, weaknesses: [] } });
     }
 
+    if (method === "GET" && path === "/api/question-bank/sessions") {
+      return json([]);
+    }
+
+    if (method === "GET" && path === "/api/question-bank/diagnosis/longitudinal") {
+      return json({
+        trap_sensitivity: 0,
+        overconfidence_score: 0,
+        impulsive_rate: 0,
+        weak_node_ids: [],
+        at_risk_node_ids: [],
+        nodes: [],
+      });
+    }
+
     if (method === "GET" && path === "/api/reviews/agenda") {
       return json({
         tasks: [],
@@ -108,11 +127,12 @@ test.describe("Navigation shell", () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/semana");
 
-    const sidebar = page.locator("aside");
+    // Páginas podem ter <aside> próprio — mirar na sidebar de navegação.
+    const sidebar = navSidebar(page);
     await expect(sidebar).toBeVisible();
 
     // Wait for all mocked API responses to settle
-    await expect(page.locator("[data-nav-surface='sidebar']")).toBeVisible();
+    await expect(page.locator("[data-nav-surface='sidebar']").first()).toBeVisible();
     await page.waitForTimeout(500);
 
     await expect(page).toHaveScreenshot("sidebar-layout.png", {
@@ -122,10 +142,11 @@ test.describe("Navigation shell", () => {
   });
 
   const desktopCases = [
-    { path: "/semana", activeHref: "/agenda-operacional" },
+    { path: "/semana", activeHref: "/hoje" },
     { path: "/caderno", activeHref: "/cards-adaptativos" },
+    { path: "/revisoes", activeHref: "/revisoes" },
     { path: "/dados-e-relatorios/graficos", activeHref: "/dados-e-relatorios" },
-    { path: "/rotina", activeHref: "/rotina-e-metas" },
+    { path: "/desempenho", activeHref: "/rotina-e-metas" },
   ];
 
   for (const { path, activeHref } of desktopCases) {
@@ -133,7 +154,7 @@ test.describe("Navigation shell", () => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(path);
 
-      const sidebar = page.locator("aside");
+      const sidebar = navSidebar(page);
       await expect(sidebar).toBeVisible();
 
       const activeItems = sidebar.locator("[data-nav-surface='sidebar'][data-nav-active='true']");
@@ -147,10 +168,13 @@ test.describe("Navigation shell", () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/semana");
 
-    const agendaItem = page.locator("aside [data-nav-item-href='/agenda-operacional']");
+    // A sidebar colapsa por padrão; os labels só renderizam expandida (hover/fixada).
+    await navSidebar(page).hover();
+
+    const agendaItem = page.locator("aside [data-nav-item-href='/dados-e-relatorios']");
     const agendaLabel = agendaItem.locator("span");
     await expect(agendaItem).toBeVisible();
-    await expect(agendaLabel).toHaveText("Agenda Operacional");
+    await expect(agendaLabel).toHaveText("Desempenho");
 
     const [itemBox, labelBox] = await Promise.all([agendaItem.boundingBox(), agendaLabel.boundingBox()]);
     expect(itemBox).not.toBeNull();
@@ -171,7 +195,7 @@ test.describe("Navigation shell mobile drawer", () => {
   });
 
   test("keeps grouped mobile drawer item active", async ({ page }) => {
-    await page.goto("/rotina");
+    await page.goto("/desempenho");
     await page.getByLabel("Menu").click();
 
     const activeItems = page.locator("[data-nav-surface='drawer'][data-nav-active='true']");

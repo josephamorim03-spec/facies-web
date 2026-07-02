@@ -44,6 +44,13 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         groupPaths: ["/banco-de-questoes"],
       },
       {
+        href: "/revisoes",
+        label: "SESSÕES",
+        shortLabel: "Sessões",
+        // /provas redireciona para /revisoes?tipo=provas — cobre o instante pré-redirect.
+        groupPaths: ["/revisoes", "/provas"],
+      },
+      {
         href: "/cards-adaptativos",
         label: "CARDS",
         shortLabel: "Cards",

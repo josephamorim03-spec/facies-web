@@ -13,6 +13,7 @@ import {
   getTurboAreaStats,
   listDirectedStudies,
   listEvents,
+  listQuestionBankSessions,
   listReviewTasks,
   listScheduleSuggestions,
   previewQuestionBankAvailability,
@@ -104,11 +105,12 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       getOperationalStreak(token),
       getTurboAreaStats(token),
     );
-  } else if (pathname === "/revisoes") {
+  } else if (pathname === "/revisoes" || pathname === "/provas") {
+    // /provas redireciona para /revisoes?tipo=provas — mesmo conjunto de dados.
     requests.push(
-      getReviewAgenda(token),
+      listQuestionBankSessions(token, { limit: 30 }),
       listReviewTasks(token, { status: "pending" }),
-      getQuestionBankReviewQueue(token),
+      getStudyPerformanceSummary(token),
       getQuestionBankLongitudinalDiagnosis(token),
     );
   } else if (
@@ -138,12 +140,6 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       listEvents(token),
       listScheduleSuggestions(token),
       getStudyPerformanceSummary(token),
-    );
-  } else if (pathname === "/provas") {
-    requests.push(
-      browseQuestionBankTopics(token, { limit: 30, include_empty: false }),
-      getQuestionBankPerformance(token),
-      listDirectedStudies(token),
     );
   }
 

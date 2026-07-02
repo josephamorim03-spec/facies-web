@@ -3,6 +3,7 @@
 
 import { useEffect } from "react";
 
+import { GuidanceNote } from "@/components/GuidanceNote";
 import type {
   QuestionBankGuidedReview,
   QuestionBankGuidedReviewValue,
@@ -11,6 +12,7 @@ import type {
   QuestionBankSessionItem,
   QuestionBankSessionStatus,
 } from "@/lib/api";
+import { cognitiveAutopsyCopy } from "@/lib/guidanceCopy";
 
 const OPTIONS: QuestionBankOption[] = ["A", "B", "C", "D", "E"];
 const CONFIDENCE_OPTIONS = [
@@ -115,6 +117,8 @@ type StudyQuestionProps = {
   revealed: boolean;
   correctionDraft: string;
   guidedReview: QuestionBankGuidedReview | null;
+  guidedReviewError?: boolean;
+  onRetryGuidedReview?: () => void;
   guidedResponses: Record<string, QuestionBankGuidedReviewValue>;
   confidenceRating: number | null;
   doubtfulDraft: boolean;
@@ -289,6 +293,8 @@ export default function StudyQuestion({
   revealed,
   correctionDraft,
   guidedReview,
+  guidedReviewError = false,
+  onRetryGuidedReview,
   guidedResponses,
   confidenceRating,
   doubtfulDraft,
@@ -333,6 +339,7 @@ export default function StudyQuestion({
   const microNodes = item.knowledge_nodes.filter(isMicroNode);
   const correctionAvailable = hasCanonicalCorrection(item);
   const selectedDiagnosis = item.selected_option ? item.distractor_diagnosis?.[item.selected_option]?.trim() : "";
+  const cognitiveCopy = cognitiveAutopsyCopy(item.cognitive_signal?.primary_tag);
   const hasGuidedResponses = Object.keys(guidedResponses).length > 0;
 
   useEffect(() => {
@@ -722,22 +729,37 @@ export default function StudyQuestion({
               </section>
             )}
 
-            {revealed && item.distractor_diagnosis && Object.keys(item.distractor_diagnosis).length > 0 && (
+            {revealed && ((item.distractor_diagnosis && Object.keys(item.distractor_diagnosis).length > 0) || cognitiveCopy) && (
               <section className="rounded-lg border border-edge bg-surface p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
                   Diagnóstico do raciocínio
                 </p>
-                {item.selected_option && item.distractor_diagnosis[item.selected_option] && (
+                {cognitiveCopy && (
+                  <GuidanceNote
+                    eyebrow="Autopsia do raciocinio"
+                    tone={cognitiveCopy.tone}
+                    className="mt-3"
+                  >
+                    <span className="block font-semibold">{cognitiveCopy.label}</span>
+                    <span className="mt-1 block">{cognitiveCopy.phrase}</span>
+                    <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.1em] text-muted">
+                      Pergunta de forca
+                    </span>
+                    <span className="block">{cognitiveCopy.forcingQuestion}</span>
+                    <span className="mt-2 block text-xs text-muted">{cognitiveCopy.rule}</span>
+                  </GuidanceNote>
+                )}
+                {item.selected_option && item.distractor_diagnosis?.[item.selected_option] && (
                   <div className="mt-3 rounded-lg border border-warning/50 bg-[var(--amber-tint)] p-3">
                     <p className="text-xs font-semibold text-warning">Por que sua alternativa parecia boa</p>
                     <p className="mt-1 font-serif text-sm leading-relaxed text-ink">
                       <span className="font-semibold">Escolha {item.selected_option}:</span>{" "}
-                      {item.distractor_diagnosis[item.selected_option]}
+                      {selectedDiagnosis}
                     </p>
                   </div>
                 )}
                 <div className="mt-3 grid gap-2">
-                  {Object.entries(item.distractor_diagnosis)
+                  {Object.entries(item.distractor_diagnosis ?? {})
                     .filter(([letter]) => letter !== item.selected_option)
                     .map(([letter, text]) => (
                       <div key={letter} className="rounded-lg border border-edge bg-paper px-3 py-2 text-sm text-muted">
@@ -762,6 +784,21 @@ export default function StudyQuestion({
                     Alto valor pedagógico
                   </span>
                 </div>
+                {guidedReviewError && !guidedReview && (
+                  <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-warning/30 bg-surface px-3 py-2 text-xs text-muted">
+                    <span>Não foi possível carregar a revisão guiada.</span>
+                    {onRetryGuidedReview && (
+                      <button
+                        type="button"
+                        onClick={onRetryGuidedReview}
+                        className="font-semibold text-warning underline underline-offset-2 hover:opacity-80"
+                      >
+                        Tentar novamente
+                      </button>
+                    )}
+                    <span className="text-muted">Você ainda pode escrever sua correção abaixo.</span>
+                  </div>
+                )}
                 {guidedReview?.eligible && guidedReview.checkpoints.length > 0 && (
                   <div className="mt-3 space-y-3">
                     {guidedReview.checkpoints.map((checkpoint, index) => (

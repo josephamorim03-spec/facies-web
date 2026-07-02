@@ -1,84 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  api,
-  authHeader,
-  getSessionCorrections,
-  reportQuestionBankSessionItem,
-  setQuestionBankSessionItemExclusion,
-  type QuestionBankCorrectionItem,
-  type QuestionBankFinalizeResult,
-  type QuestionBankReportType,
-  type QuestionBankSession,
-  type QuestionBankSessionItem,
-} from "@/lib/api";
-import { useAuthToken } from "@/lib/useAuthToken";
+import type { QuestionBankReportType } from "@/lib/api";
 import { ProgressRing } from "@/components/ui/ProgressRing";
+import { cognitivePatternSummary } from "@/lib/guidanceCopy";
 import ErrorFlashcardsPanel from "./ErrorFlashcardsPanel";
 import AttemptHistoryModal from "../../../_components/AttemptHistoryModal";
+import { PostExamTabs } from "./_postExamReview/PostExamTabs";
+import { ReportedItemsPanel } from "./_postExamReview/ReportedItemsPanel";
+import { usePostExamReviewData } from "./_postExamReview/usePostExamReviewData";
+import type { PostExamReviewProps, PostExamReviewTab } from "./_postExamReview/types";
+import { accuracyColor, cx, formatAccuracy, microNodes } from "./_postExamReview/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type NodeDiagnosis = {
-  knowledge_node_id: string;
-  node_name: string | null;
-  node_type?: string | null;
-  correct: number;
-  wrong: number;
-  accuracy: number;
-};
-
-type SessionDiagnosis = {
-  session_id: string;
-  total: number;
-  correct: number;
-  wrong: number;
-  accuracy: number;
-  nodes: NodeDiagnosis[];
-  weak_node_ids: string[];
-  charge_pattern_breakdown: Record<string, number>;
-  answer_type_breakdown: Record<string, number>;
-  reasoning_type_breakdown: Record<string, number>;
-  error_reasons: Record<string, number>;
-  confident_and_wrong: number;
-  doubtful_and_wrong: number;
-  metacognitive_accuracy: number | null;
-  impulsive_count: number;
-  overconfident_count: number;
-};
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function cx(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
-
-function microNodes(item: QuestionBankSessionItem) {
-  return item.knowledge_nodes.filter((node) =>
-    String(node.node_type ?? "").toLowerCase().includes("micro")
-    || String(node.role ?? "").toLowerCase().includes("micro")
-  );
-}
-
-function formatAccuracy(value: number): string {
-  return `${Math.round(value * 100)}%`;
-}
-
-function accuracyColor(accuracy: number): string {
-  return accuracy >= 0.7 ? "var(--color-success)" : accuracy >= 0.5 ? "var(--color-warning)" : "var(--color-danger)";
-}
-
-type Tab = "resumo" | "erros" | "acertos" | "marcadas" | "descartadas";
-
-type PostExamReviewProps = {
-  session: QuestionBankSession;
-  finalizeOut?: QuestionBankFinalizeResult | null;
-  busy?: boolean;
-  onFinalize?: () => void;
-  onSessionChange?: (session: QuestionBankSession) => void;
-};
 
 export default function PostExamReview({
   session,
@@ -88,45 +25,32 @@ export default function PostExamReview({
   onSessionChange,
 }: PostExamReviewProps) {
   const router = useRouter();
-  const { token } = useAuthToken();
-  const [activeTab, setActiveTab] = useState<Tab>("resumo");
-  const [diagnosis, setDiagnosis] = useState<SessionDiagnosis | null>(null);
-  const [diagnosisError, setDiagnosisError] = useState(false);
-  const [corrections, setCorrections] = useState<QuestionBankCorrectionItem[]>([]);
-  const [expandedCorrections, setExpandedCorrections] = useState<Set<string>>(new Set());
-  const [historyQuestionId, setHistoryQuestionId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<PostExamReviewTab>("resumo");
   const [dismissedInsights, setDismissedInsights] = useState(false);
   const [dismissedDiagnosisError, setDismissedDiagnosisError] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [localBusy, setLocalBusy] = useState(false);
-  const [reportingPosition, setReportingPosition] = useState<number | null>(null);
-  const [reportType, setReportType] = useState<QuestionBankReportType>("error");
-  const [reportReason, setReportReason] = useState("");
-
-  useEffect(() => {
-    if (!token || !session.session_id) return;
-    api<SessionDiagnosis>(
-      `/api/question-bank/sessions/${encodeURIComponent(session.session_id)}/diagnosis`,
-      { headers: authHeader(token) },
-    )
-      .then(setDiagnosis)
-      .catch(() => setDiagnosisError(true));
-  }, [token, session.session_id]);
-
-  useEffect(() => {
-    if (!token || !session.session_id) return;
-    getSessionCorrections(token, session.session_id)
-      .then(setCorrections)
-      .catch(() => {});
-  }, [token, session.session_id]);
-
-  const correctionByQuestionId = useMemo(
-    () => new Map(corrections.map((correction) => [correction.question_id, correction])),
-    [corrections],
-  );
-
   const items = session.items;
   const activeReview = session.status === "active" && Boolean(session.results_revealed_at);
+  const {
+    token,
+    diagnosis,
+    diagnosisError,
+    corrections,
+    correctionByQuestionId,
+    expandedCorrections,
+    setExpandedCorrections,
+    historyQuestionId,
+    setHistoryQuestionId,
+    actionError,
+    localBusy,
+    reportingPosition,
+    setReportingPosition,
+    reportType,
+    setReportType,
+    reportReason,
+    setReportReason,
+    submitSessionReport,
+    toggleExclusion,
+  } = usePostExamReviewData({ session, activeReview, onSessionChange });
   const isWorking = busy || localBusy;
   const reportedItems = items.filter((i) => i.reported_problem);
   const excludedItems = items.filter((i) => i.excluded_from_scoring);
@@ -184,54 +108,26 @@ export default function PostExamReview({
             href: "/banco-de-questoes",
           };
 
-  const TABS: { id: Tab; label: string; count?: number }[] = [
+  const dominantCognitiveTag = diagnosis?.dominant_cognitive_tag ?? null;
+  const dominantCognitiveCount = dominantCognitiveTag
+    ? (diagnosis?.cognitive_breakdown?.[dominantCognitiveTag] ?? 0)
+    : 0;
+  const cognitivePattern = cognitivePatternSummary(
+    dominantCognitiveTag,
+    dominantCognitiveCount,
+  );
+  const cognitivePatternHref =
+    dominantCognitiveTag === "knowledge_gap" && primaryWeakNode
+      ? primaryAction.href
+      : "/banco-de-questoes?answer_status=wrong";
+
+  const TABS: { id: PostExamReviewTab; label: string; count?: number }[] = [
     { id: "resumo", label: "Resumo" },
     { id: "erros", label: "Erros", count: wrongItems.length },
     { id: "acertos", label: "Acertos", count: correctItems.length },
     { id: "marcadas", label: "Marcadas", count: markedItems.length },
     { id: "descartadas", label: "Descartadas", count: excludedItems.length },
   ];
-
-  async function submitSessionReport(item: QuestionBankSessionItem) {
-    if (!token || !activeReview) return;
-    setLocalBusy(true);
-    setActionError(null);
-    try {
-      const updated = await reportQuestionBankSessionItem(token, session.session_id, item.position, {
-        report_type: reportType,
-        report_reason: reportReason.trim() || undefined,
-      });
-      onSessionChange?.(updated);
-      setReportingPosition(null);
-      setReportReason("");
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Nao foi possivel denunciar a questao.");
-    } finally {
-      setLocalBusy(false);
-    }
-  }
-
-  async function toggleExclusion(item: QuestionBankSessionItem) {
-    if (!token || !activeReview || !item.reported_problem) return;
-    setLocalBusy(true);
-    setActionError(null);
-    try {
-      const updated = await setQuestionBankSessionItemExclusion(
-        token,
-        session.session_id,
-        item.position,
-        {
-          excluded: !item.excluded_from_scoring,
-          exclusion_reason: "reported_quality_issue",
-        },
-      );
-      onSessionChange?.(updated);
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Nao foi possivel atualizar o descarte.");
-    } finally {
-      setLocalBusy(false);
-    }
-  }
 
   return (
     <main className="min-h-screen bg-paper px-4 py-6 text-ink md:px-6 md:py-8">
@@ -304,39 +200,12 @@ export default function PostExamReview({
           </section>
         )}
 
-        {activeReview && reportedItems.length > 0 && (
-          <section className="rounded-lg border border-warning/50 bg-[var(--amber-tint)] p-4 shadow-[var(--soft-shadow)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-warning">
-              Questoes denunciadas
-            </p>
-            <div className="mt-3 grid gap-2">
-              {reportedItems.map((item) => (
-                <label
-                  key={item.question_id}
-                  className="flex items-start justify-between gap-3 rounded-lg border border-warning/30 bg-surface px-3 py-2"
-                >
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-ink">
-                      Questao {item.position}
-                    </span>
-                    <span className="mt-0.5 line-clamp-2 block text-xs leading-relaxed text-muted">
-                      {item.stem}
-                    </span>
-                  </span>
-                  <span className="flex shrink-0 items-center gap-2 text-xs font-semibold text-ink">
-                    <input
-                      type="checkbox"
-                      checked={item.excluded_from_scoring}
-                      disabled={isWorking}
-                      onChange={() => void toggleExclusion(item)}
-                      className="h-4 w-4 accent-[var(--color-primary)]"
-                    />
-                    Nao contabilizar
-                  </span>
-                </label>
-              ))}
-            </div>
-          </section>
+        {activeReview && (
+          <ReportedItemsPanel
+            items={reportedItems}
+            isWorking={isWorking}
+            onToggleExclusion={(item) => void toggleExclusion(item)}
+          />
         )}
 
         <section className="rounded-lg border border-primary bg-surface p-4 shadow-[var(--soft-shadow)]">
@@ -354,6 +223,26 @@ export default function PostExamReview({
               Começar agora
             </button>
           </div>
+          {cognitivePattern && (
+            <div className="mt-4 rounded-lg border border-warning/40 bg-[var(--amber-tint)] p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-warning">
+                Padrao cognitivo dominante
+              </p>
+              <h3 className="mt-1 font-serif text-lg font-semibold text-ink">
+                {cognitivePattern.label}
+              </h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted">
+                {cognitivePattern.phrase}
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push(cognitivePatternHref)}
+                className="mt-3 rounded-lg border border-warning/40 bg-surface px-3 py-1.5 text-xs font-semibold text-warning hover:border-warning"
+              >
+                Treinar esse padrao
+              </button>
+            </div>
+          )}
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
             {wrongItems.length > 0 && (
               <button
@@ -386,31 +275,7 @@ export default function PostExamReview({
           </div>
         </section>
 
-        {/* Tabs */}
-        <div className="border-b border-edge">
-          <nav className="flex gap-1 overflow-x-auto">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={cx(
-                  "flex items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition-colors",
-                  activeTab === tab.id
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted hover:text-ink",
-                )}
-              >
-                {tab.label}
-                {tab.count !== undefined && (
-                  <span className="rounded-full bg-surfaceMuted px-1.5 py-0.5 text-xs">
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
-        </div>
+        <PostExamTabs tabs={TABS} activeTab={activeTab} onSelect={setActiveTab} />
 
         {/* Tab content */}
         {activeTab === "resumo" && (

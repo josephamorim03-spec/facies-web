@@ -9,6 +9,8 @@ import type {
   QuestionBankTopic,
   StudyKind,
 } from "@/lib/api";
+import { TopicTreeList } from "./TopicTreeList";
+import { buildTopicTree, flattenTopicTree, topicPathLabel } from "./topicTree";
 
 const AREA_OPTIONS = [
   { value: "", label: "Todas" },
@@ -73,12 +75,6 @@ const MODO_OPTIONS: { value: QuestionBankResolutionMode | "full_exam"; label: st
   { value: "full_exam", label: "Prova", help: "Fluxo de simulado salvo em Provas." },
 ];
 
-type TopicTreeNode = QuestionBankTopic & {
-  children: TopicTreeNode[];
-  treeDepth: number;
-  synthetic?: boolean;
-};
-
 export type FiltersBarProps = {
   area: string;
   onAreaChange: (v: string) => void;
@@ -124,146 +120,6 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-function normalizeTopicSegment(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .toLowerCase();
-}
-
-function sanitizeTopicPathParts(parts: string[]): string[] {
-  const cleaned = parts.map((part) => part.trim()).filter(Boolean);
-  while (cleaned.length > 0 && normalizeTopicSegment(cleaned[0]) === "medicina") {
-    cleaned.shift();
-  }
-  return cleaned;
-}
-
-function topicPathParts(topic: Pick<QuestionBankTopic, "node_name" | "node_path" | "path_label">): string[] {
-  if (Array.isArray(topic.node_path) && topic.node_path.length > 0) {
-    const direct = sanitizeTopicPathParts(topic.node_path.map((part) => String(part)));
-    if (direct.length > 0) return direct;
-  }
-  if (topic.path_label?.trim()) {
-    const split = topic.path_label.split(/\s*(?:\/|>)\s*/);
-    const cleaned = sanitizeTopicPathParts(split);
-    if (cleaned.length > 0) return cleaned;
-  }
-  return sanitizeTopicPathParts([topic.node_name]);
-}
-
-function isForbiddenStudentRoot(topic: Pick<QuestionBankTopic, "node_name" | "node_path" | "path_label">): boolean {
-  return normalizeTopicSegment(topic.node_name) === "medicina" && topicPathParts(topic).length === 0;
-}
-
-function topicPathLabel(topic: QuestionBankTopic): string {
-  const parts = topicPathParts(topic);
-  if (parts.length > 0) return parts.join(" / ");
-  return topic.node_name;
-}
-
-function topicDepth(topic: QuestionBankTopic): number {
-  const parts = topicPathParts(topic);
-  if (parts.length > 0) return Math.max(0, parts.length - 1);
-  if (typeof topic.depth === "number" && Number.isFinite(topic.depth)) return Math.max(0, topic.depth);
-  return 0;
-}
-
-function makeSyntheticGroup(label: string, code: string | null): TopicTreeNode {
-  return {
-    knowledge_node_id: `synthetic:${code ?? "all"}:${label}`,
-    parent_knowledge_node_id: null,
-    node_code: code,
-    node_name: label,
-    node_type: "group",
-    node_path: [label],
-    path_label: label,
-    depth: 0,
-    display_order: null,
-    description: null,
-    question_count: 0,
-    primary_question_count: 0,
-    board_count: 0,
-    difficulty_mean: null,
-    recurrence_score: 0,
-    bank_demand_score: 0,
-    board_frequency: {},
-    charge_patterns: {},
-    answer_types: {},
-    adaptive_weight: 0,
-    adaptive_weight_score: 0,
-    adaptive_weight_factors: {},
-    children: [],
-    treeDepth: 0,
-    synthetic: true,
-  };
-}
-
-function sortTopicNodes(nodes: TopicTreeNode[]) {
-  nodes.sort((a, b) => {
-    if (a.synthetic !== b.synthetic) return a.synthetic ? -1 : 1;
-    const orderA = typeof a.display_order === "number" ? a.display_order : Number.MAX_SAFE_INTEGER;
-    const orderB = typeof b.display_order === "number" ? b.display_order : Number.MAX_SAFE_INTEGER;
-    if (orderA !== orderB) return orderA - orderB;
-    return topicPathLabel(a).localeCompare(topicPathLabel(b), "pt-BR");
-  });
-  for (const node of nodes) sortTopicNodes(node.children);
-}
-
-function normalizeDepth(nodes: TopicTreeNode[], depth = 0) {
-  for (const node of nodes) {
-    node.treeDepth = depth;
-    normalizeDepth(node.children, depth + 1);
-  }
-}
-
-function buildTopicTree(topics: QuestionBankTopic[]): TopicTreeNode[] {
-  const byId = new Map<string, TopicTreeNode>();
-  for (const topic of topics) {
-    if (isForbiddenStudentRoot(topic)) continue;
-    byId.set(topic.knowledge_node_id, { ...topic, children: [], treeDepth: topicDepth(topic) });
-  }
-
-  const roots: TopicTreeNode[] = [];
-  for (const node of byId.values()) {
-    const parentId = node.parent_knowledge_node_id?.trim();
-    const parent = parentId ? byId.get(parentId) : null;
-    if (parent && parent.knowledge_node_id !== node.knowledge_node_id) parent.children.push(node);
-    else roots.push(node);
-  }
-
-  const groupedRoots: TopicTreeNode[] = [];
-  const groupByLabel = new Map<string, TopicTreeNode>();
-  for (const node of roots) {
-    const pathParts = topicPathParts(node);
-    const firstPath = pathParts[0]?.trim();
-    const shouldGroup = Boolean(firstPath && firstPath !== node.node_name && pathParts.length > 1);
-    if (!shouldGroup || !firstPath) {
-      groupedRoots.push(node);
-      continue;
-    }
-    const groupKey = `${node.node_code ?? ""}:${firstPath}`;
-    let group = groupByLabel.get(groupKey);
-    if (!group) {
-      group = makeSyntheticGroup(firstPath, node.node_code);
-      groupByLabel.set(groupKey, group);
-      groupedRoots.push(group);
-    }
-    group.children.push(node);
-    group.question_count += Math.max(0, Number(node.question_count || 0));
-    group.primary_question_count += Math.max(0, Number(node.primary_question_count || 0));
-  }
-
-  sortTopicNodes(groupedRoots);
-  normalizeDepth(groupedRoots);
-  return groupedRoots;
-}
-
-function flattenTopicTree(nodes: TopicTreeNode[]): TopicTreeNode[] {
-  return nodes.flatMap((node) => [node, ...flattenTopicTree(node.children)]);
-}
-
 function SectionHeader({ step, title, detail }: { step: string; title: string; detail: string }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -272,108 +128,6 @@ function SectionHeader({ step, title, detail }: { step: string; title: string; d
         <h3 className="mt-0.5 font-serif text-xl font-semibold leading-tight text-ink">{title}</h3>
       </div>
       <p className="max-w-md text-sm text-muted">{detail}</p>
-    </div>
-  );
-}
-
-function TopicTreeItem({
-  node, selectedIds, expandedIds, onToggle, onToggleExpand,
-}: {
-  node: TopicTreeNode;
-  selectedIds: Set<string>;
-  expandedIds: Set<string>;
-  onToggle: (topic: QuestionBankTopic) => void;
-  onToggleExpand: (topicId: string) => void;
-}) {
-  const selectable = !node.synthetic && node.question_count > 0;
-  const checked = selectable && selectedIds.has(node.knowledge_node_id);
-  const childCount = node.children.length;
-  const expanded = childCount > 0 && expandedIds.has(node.knowledge_node_id);
-  const indent = Math.min(node.treeDepth, 7) * 14;
-
-  return (
-    <div style={{ paddingLeft: `${indent}px` }}>
-      <div className={cx(
-        "flex min-w-0 items-start gap-2 rounded-lg border p-2.5 transition-colors",
-        checked ? "border-primary bg-[var(--amber-tint)]" : "border-transparent",
-        selectable ? "hover:border-edge hover:bg-surface" : "opacity-75",
-      )}>
-        {childCount > 0 ? (
-          <button
-            type="button"
-            onClick={() => onToggleExpand(node.knowledge_node_id)}
-            className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-edge bg-surface text-xs text-muted hover:border-primary hover:text-ink"
-            aria-label={expanded ? `Recolher ${node.node_name}` : `Expandir ${node.node_name}`}
-            aria-expanded={expanded}
-          >
-            {expanded ? "−" : "+"}
-          </button>
-        ) : (
-          <span className="mt-0.5 h-6 w-6 shrink-0" aria-hidden="true" />
-        )}
-        <label className={cx("flex min-w-0 flex-1 items-start gap-3", selectable ? "cursor-pointer" : "cursor-default")}>
-          <input
-            type="checkbox"
-            checked={checked}
-            disabled={!selectable}
-            onChange={() => {
-              if (selectable) onToggle(node);
-            }}
-            className="mt-1 h-4 w-4 shrink-0 accent-primary"
-          />
-          <span className="min-w-0 flex-1">
-            <span className={cx("block break-words text-sm font-semibold leading-snug [overflow-wrap:anywhere]", selectable || node.synthetic ? "text-ink" : "text-muted")}>{node.node_name}</span>
-            {topicPathLabel(node) !== node.node_name && (
-              <span className="mt-0.5 block line-clamp-2 break-words text-xs text-muted [overflow-wrap:anywhere]">{topicPathLabel(node)}</span>
-            )}
-            {node.synthetic && (
-              <span className="mt-0.5 block text-xs text-muted">{node.question_count} questões nesse grupo</span>
-            )}
-            {!node.synthetic && node.question_count === 0 && (
-              <span className="mt-1 inline-block rounded-full border border-edge bg-surfaceMuted px-2 py-0.5 text-[11px] font-medium text-muted">
-                0 questões · em curadoria
-              </span>
-            )}
-          </span>
-        </label>
-      </div>
-      {expanded && childCount > 0 && (
-        <div className="mt-1 space-y-1">
-          <TopicTreeList nodes={node.children} selectedIds={selectedIds} expandedIds={expandedIds} onToggle={onToggle} onToggleExpand={onToggleExpand} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TopicTreeList({
-  nodes, selectedIds, expandedIds, onToggle, onToggleExpand,
-}: {
-  nodes: TopicTreeNode[];
-  selectedIds: Set<string>;
-  expandedIds: Set<string>;
-  onToggle: (topic: QuestionBankTopic) => void;
-  onToggleExpand: (topicId: string) => void;
-}) {
-  if (nodes.length === 0) {
-    return (
-      <div className="rounded-lg border border-dashed border-edge bg-surface p-4 text-sm text-muted">
-        Nenhum assunto encontrado para os filtros atuais.
-      </div>
-    );
-  }
-  return (
-    <div className="space-y-1">
-      {nodes.map((node) => (
-        <TopicTreeItem
-          key={node.knowledge_node_id}
-          node={node}
-          selectedIds={selectedIds}
-          expandedIds={expandedIds}
-          onToggle={onToggle}
-          onToggleExpand={onToggleExpand}
-        />
-      ))}
     </div>
   );
 }

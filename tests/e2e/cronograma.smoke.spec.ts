@@ -137,10 +137,10 @@ test.describe("Cronograma smoke", () => {
     const todayCell = page.locator(`[data-cell-iso="${today}"]`).first();
     await expect(todayCell).toBeVisible();
     await todayCell.click();
-    await page.getByLabel("Ver atividades do dia").click();
-    const dayDetailHeading = today.split("-").reverse().join("-");
-    await expect(page.getByRole("heading", { name: dayDetailHeading })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Registrar" }).first()).toBeVisible();
+    const addAction = page.getByTestId("calendar-action-plus");
+    await expect(addAction).toBeVisible();
+    await addAction.click();
+    await expect(page.getByRole("button", { name: "Resolver questoes do banco" })).toBeVisible();
   });
 
   test("abre agenda operacional pela rota dedicada", async ({ page }) => {

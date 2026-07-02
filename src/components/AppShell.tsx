@@ -64,7 +64,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/banco-de-questoes": "Questões",
   "/cards-adaptativos": "Cards",
   "/revisao-turbo": "Cards",
-  "/revisoes": "Revisões",
+  "/revisoes": "Sessões",
   "/cronograma": "Cronograma",
   "/dados-e-relatorios": "Desempenho",
   "/dados-e-relatorios/graficos": "Gráficos",

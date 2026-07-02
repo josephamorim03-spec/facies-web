@@ -49,6 +49,82 @@ export function readinessLabel(level: ReadinessLevel): GuidanceLabel {
   return READINESS[level];
 }
 
+export type CognitiveAutopsyCopy = GuidanceLabel & {
+  forcingQuestion: string;
+  rule: string;
+};
+
+const COGNITIVE_AUTOPSY: Record<string, CognitiveAutopsyCopy> = {
+  impulsive_haste: {
+    label: "Respondeu rapido demais",
+    phrase: "O erro parece ter vindo de pressa antes de completar a leitura.",
+    forcingQuestion: "Qual dado do enunciado voce ainda precisava conferir?",
+    rule: "Antes de marcar, releia idade, tempo de evolucao, negacoes e excecoes.",
+    tone: "attention",
+  },
+  premature_closure: {
+    label: "Fechou cedo",
+    phrase: "Voce provavelmente aceitou uma hipotese atraente cedo demais.",
+    forcingQuestion: "Que achado faria voce abandonar essa primeira hipotese?",
+    rule: "Obrigue uma alternativa contraria antes de confirmar a resposta.",
+    tone: "attention",
+  },
+  distractor_seduction: {
+    label: "Caiu no distrator",
+    phrase: "A alternativa escolhida parecia boa, mas desviava do alvo da questao.",
+    forcingQuestion: "O que essa alternativa explicava e o que ela deixava sem explicar?",
+    rule: "Compare a alternativa com o dado central, nao apenas com um detalhe familiar.",
+    tone: "attention",
+  },
+  fine_discrimination_gap: {
+    label: "Faltou discriminacao fina",
+    phrase: "Voce chegou perto, mas faltou separar duas alternativas parecidas.",
+    forcingQuestion: "Qual diferenca minima separava as duas finalistas?",
+    rule: "Nomeie o criterio que desempata antes de marcar.",
+    tone: "attention",
+  },
+  overconfident: {
+    label: "Confiou demais",
+    phrase: "A confianca veio maior que a evidencia disponivel.",
+    forcingQuestion: "O que justificava tanta confianca nessa escolha?",
+    rule: "Se a justificativa nao couber em uma frase, reduza a confianca.",
+    tone: "attention",
+  },
+  knowledge_gap: {
+    label: "Faltou base",
+    phrase: "O erro aponta uma base que ainda nao estava firme o suficiente.",
+    forcingQuestion: "Qual conceito-base precisava estar automatico aqui?",
+    rule: "Revise o conceito curto antes de buscar questoes mais dificeis.",
+    tone: "critical",
+  },
+  implementation_gap: {
+    label: "Faltou aplicar",
+    phrase: "Voce reconhecia a base, mas ela nao virou decisao na hora da questao.",
+    forcingQuestion: "Em que passo a teoria deixou de virar conduta?",
+    rule: "Treine casos irmaos para transformar conhecimento em decisao.",
+    tone: "attention",
+  },
+};
+
+export function cognitiveAutopsyCopy(tag: string | null | undefined): CognitiveAutopsyCopy | null {
+  const key = String(tag ?? "").trim();
+  if (!key || key === "unclassified") return null;
+  return COGNITIVE_AUTOPSY[key] ?? null;
+}
+
+export function cognitivePatternSummary(
+  tag: string | null | undefined,
+  count: number,
+): GuidanceLabel | null {
+  const copy = cognitiveAutopsyCopy(tag);
+  if (!copy) return null;
+  return {
+    label: copy.label,
+    phrase: `${copy.phrase} Esse padrao apareceu ${count} vezes nesta sessao.`,
+    tone: copy.tone,
+  };
+}
+
 /** "health_score_pct" (0–100) → estado legível, sem medidor de dashboard. */
 export function healthStatement(pct: number | null | undefined): GuidanceLabel {
   if (pct == null || Number.isNaN(pct)) {

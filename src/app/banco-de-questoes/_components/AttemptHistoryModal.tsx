@@ -6,6 +6,7 @@ import {
   type QuestionBankQuestionHistory,
 } from "@/lib/api/domains/question-bank";
 import { useAuthToken } from "@/lib/useAuthToken";
+import { formatDurationMs } from "@/lib/formatDuration";
 
 type AttemptHistoryModalProps = {
   questionId: string;
@@ -18,14 +19,6 @@ function formatAnsweredAt(iso: string): string {
   const day = date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
   const time = date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   return `${day} ${time}`;
-}
-
-function formatDuration(timeMs: number | null): string | null {
-  if (timeMs == null || timeMs <= 0) return null;
-  const totalSeconds = Math.round(timeMs / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
 function accuracyTone(ratio: number): string {
@@ -100,7 +93,7 @@ export default function AttemptHistoryModal({ questionId, onClose }: AttemptHist
           ) : (
             <ul className="space-y-2">
               {history.attempts.map((attempt) => {
-                const duration = formatDuration(attempt.time_ms);
+                const duration = formatDurationMs(attempt.time_ms);
                 return (
                   <li
                     key={attempt.attempt_id}

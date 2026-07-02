@@ -31,7 +31,12 @@ export type APIRequestInit = RequestInit & {
   clientCache?: ClientCachePolicy | false;
 };
 
-const DEFAULT_API_TIMEOUT_MS = 15000;
+// Must stay ABOVE the BFF proxy timeout (NEXT_API_PROXY_TIMEOUT_MS, default 25s in
+// web/src/app/api/[...path]/route.ts). The browser api() call wraps the proxy fetch,
+// so if this is smaller the client aborts before the proxy can return its structured
+// 504 ("upstream_timeout") — the student sees a generic timeout on requests the
+// backend would still have answered. Heavy endpoints override via timeoutMs.
+const DEFAULT_API_TIMEOUT_MS = 30000;
 export const STUDY_IMPORT_SESSION_CREATE_TIMEOUT_MS = 180000;
 const DEFAULT_MAX_ATTEMPTS = 2;
 const DEFAULT_RETRY_BASE_DELAY_MS = 220;

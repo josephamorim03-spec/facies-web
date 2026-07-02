@@ -58,12 +58,12 @@ test.describe("Auth flow", () => {
     // Set up session cookies first
     await context.addCookies([
       {
-        name: "agendar_token",
+        name: "krosmed_token",
         value: "token_e2e",
         url: "http://127.0.0.1:3000",
       },
       {
-        name: "agendar_session",
+        name: "krosmed_session",
         value: "session_e2e",
         url: "http://127.0.0.1:3000",
         httpOnly: true,
@@ -72,8 +72,8 @@ test.describe("Auth flow", () => {
     ]);
 
     const before = await context.cookies();
-    expect(before.some((c) => c.name === "agendar_token")).toBeTruthy();
-    expect(before.some((c) => c.name === "agendar_session")).toBeTruthy();
+    expect(before.some((c) => c.name === "krosmed_token")).toBeTruthy();
+    expect(before.some((c) => c.name === "krosmed_session")).toBeTruthy();
 
     // Perform logout via the API
     await page.goto("http://localhost:3000/api/version");
@@ -87,7 +87,7 @@ test.describe("Auth flow", () => {
     expect(status).toBe(204);
 
     const after = await context.cookies();
-    expect(after.some((c) => c.name === "agendar_token")).toBeFalsy();
-    expect(after.some((c) => c.name === "agendar_session")).toBeFalsy();
+    expect(after.some((c) => c.name === "krosmed_token")).toBeFalsy();
+    expect(after.some((c) => c.name === "krosmed_session")).toBeFalsy();
   });
 });

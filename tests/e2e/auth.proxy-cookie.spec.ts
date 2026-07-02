@@ -31,12 +31,12 @@ test.describe("Auth proxy + cookies", () => {
   test("logout endpoint clears both client and server auth cookies", async ({ context, page }) => {
     await context.addCookies([
       {
-        name: "agendar_token",
+        name: "krosmed_token",
         value: "token_e2e",
         url: E2E_BROWSER_URL,
       },
       {
-        name: "agendar_session",
+        name: "krosmed_session",
         value: "session_e2e",
         url: E2E_BROWSER_URL,
         httpOnly: true,
@@ -45,8 +45,8 @@ test.describe("Auth proxy + cookies", () => {
     ]);
 
     const before = await context.cookies();
-    expect(before.some((cookie) => cookie.name === "agendar_token")).toBeTruthy();
-    expect(before.some((cookie) => cookie.name === "agendar_session")).toBeTruthy();
+    expect(before.some((cookie) => cookie.name === "krosmed_token")).toBeTruthy();
+    expect(before.some((cookie) => cookie.name === "krosmed_session")).toBeTruthy();
 
     await page.goto(`${E2E_BROWSER_URL}/api/version`);
     const status = await page.evaluate(async () => {
@@ -61,8 +61,8 @@ test.describe("Auth proxy + cookies", () => {
     expect(status).toBe(204);
 
     const after = await context.cookies();
-    expect(after.some((cookie) => cookie.name === "agendar_token")).toBeFalsy();
-    expect(after.some((cookie) => cookie.name === "agendar_session")).toBeFalsy();
+    expect(after.some((cookie) => cookie.name === "krosmed_token")).toBeFalsy();
+    expect(after.some((cookie) => cookie.name === "krosmed_session")).toBeFalsy();
   });
 
   test("rejects mutating auth requests without the internal CSRF header", async ({ context }) => {

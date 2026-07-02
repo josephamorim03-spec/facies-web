@@ -3,20 +3,12 @@
 
 import { useEffect, useState } from "react";
 import type { QuestionBankOption, QuestionBankSessionItem, QuestionBankSessionStatus } from "@/lib/api";
+import { formatClock } from "@/lib/formatDuration";
 
 const OPTIONS: QuestionBankOption[] = ["A", "B", "C", "D", "E"];
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
-}
-
-function formatDuration(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  const mm = String(m).padStart(2, "0");
-  const ss = String(s).padStart(2, "0");
-  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
 function sourceLabel(source: Record<string, unknown>): string {
@@ -199,7 +191,7 @@ export default function ExamQuestion({
                 )}
                 aria-label={`Tempo de ${sessionKindLabel.toLowerCase()}`}
               >
-                {formatDuration(elapsedSeconds)}
+                {formatClock(elapsedSeconds)}
               </span>
               <button
                 type="button"
