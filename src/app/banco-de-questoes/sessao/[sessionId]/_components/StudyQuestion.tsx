@@ -13,6 +13,7 @@ import type {
   QuestionBankSessionStatus,
 } from "@/lib/api";
 import { cognitiveAutopsyCopy } from "@/lib/guidanceCopy";
+import { formatSourceLabel } from "@/lib/formatSource";
 import FontScaleControl from "./FontScaleControl";
 import { useQuestionFontScale } from "./useQuestionFontScale";
 
@@ -41,13 +42,6 @@ type Tone = "primary" | "success" | "warning" | "danger" | "muted";
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
-}
-
-function sourceLabel(source: Record<string, unknown>): string {
-  const institution = String(source?.institution ?? "").trim();
-  const board = String(source?.board_code ?? "").trim();
-  const year = String(source?.year ?? "").trim();
-  return [institution || "Instituição", board, year].filter(Boolean).join(" · ");
 }
 
 function difficultyChip(d: number | null | undefined): { label: string; className: string } | null {
@@ -448,7 +442,7 @@ export default function StudyQuestion({
             <section className="rounded-lg border border-edge bg-surface p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 space-y-1.5">
-                  <p className="text-xs text-muted">{sourceLabel(item.source)}</p>
+                  <p className="text-xs text-muted">{formatSourceLabel(item.source)}</p>
                   {(() => {
                     const diff = difficultyChip(item.difficulty_estimate);
                     const adaptive = item.adaptive_explanation;

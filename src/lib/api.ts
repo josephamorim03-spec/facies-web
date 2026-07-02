@@ -182,6 +182,7 @@ export type {
 export {
   browseQuestionBankTopics,
   browseQuestionBankQuestions,
+  listQuestionBankBoards,
   previewQuestionBankAvailability,
   createQuestionBankSession,
   listQuestionBankSessions,
@@ -215,6 +216,7 @@ export type {
   QuestionBankCorrectionStatus,
   QuestionBankNode,
   QuestionBankTopic,
+  QuestionBankBoard,
   QuestionBankAvailability,
   QuestionBankQuestion,
   QuestionBankSessionItem,

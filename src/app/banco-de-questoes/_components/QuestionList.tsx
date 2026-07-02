@@ -1,13 +1,7 @@
 "use client";
 
 import type { QuestionBankAvailability, QuestionBankQuestion, QuestionBankResolutionMode, StudyKind } from "@/lib/api";
-
-function sourceLabel(source: Record<string, unknown>): string {
-  const institution = String(source?.institution ?? "").trim();
-  const board = String(source?.board_code ?? "").trim();
-  const year = String(source?.year ?? "").trim();
-  return [institution || "Instituição não informada", board || "Banca não informada", year].filter(Boolean).join(" · ");
-}
+import { formatSourceLabel } from "@/lib/formatSource";
 
 function accuracyChipClass(ratio: number): string {
   if (ratio >= 0.7) return "border-success/40 text-success";
@@ -64,7 +58,7 @@ export default function QuestionList({
             <article key={question.id} className="rounded-xl border border-edge bg-paper p-4">
               <p className="line-clamp-4 text-sm leading-relaxed">{question.stem}</p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <p className="text-xs text-muted">{sourceLabel(question.source)}</p>
+                <p className="text-xs text-muted">{formatSourceLabel(question.source)}</p>
                 {stats && ratio !== null && (
                   <span
                     className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${accuracyChipClass(ratio)}`}

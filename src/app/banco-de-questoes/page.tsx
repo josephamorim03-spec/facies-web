@@ -9,8 +9,10 @@ import {
   getReviewAgenda,
   getQuestionBankNextAction,
   getQuestionBankPerformance,
+  listQuestionBankBoards,
   previewQuestionBankAvailability,
   type QuestionBankAnswerStatus,
+  type QuestionBankBoard,
   type QuestionBankCorrectionStatus,
   type QuestionBankAvailability,
   type QuestionBankNextAction,
@@ -382,9 +384,10 @@ function BancoDeQuestoesContent() {
   // Filter state
   const [area, setArea] = useState(() => initialContext.area ?? "");
   const [search, setSearch] = useState(() => initialContext.theme ?? "");
-  const [institution, setInstitution] = useState("");
   const [boardCodes, setBoardCodes] = useState<string[]>([]);
-  const [boardInput, setBoardInput] = useState("");
+  const [boards, setBoards] = useState<QuestionBankBoard[]>([]);
+  const [boardsLoading, setBoardsLoading] = useState(true);
+  const [boardsError, setBoardsError] = useState(false);
   const [selectedYears, setSelectedYears] = useState<number[]>([]);
   const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("unanswered");
   const [correctionStatus, setCorrectionStatus] = useState<QuestionBankCorrectionStatus>("all");
@@ -399,6 +402,10 @@ function BancoDeQuestoesContent() {
   const [selectedTopics, setSelectedTopics] = useState<QuestionBankTopic[]>([]);
   const [taxonomyTopics, setTaxonomyTopics] = useState<QuestionBankTopic[]>([]);
   const [microTopics, setMicroTopics] = useState<QuestionBankTopic[]>([]);
+  // true desde o mount: o fetch só dispara após debounce e a árvore não pode
+  // abrir como "nenhum assunto" enquanto ainda nem buscou.
+  const [topicsLoading, setTopicsLoading] = useState(true);
+  const [topicsError, setTopicsError] = useState(false);
 
   // Preview state
   const [availability, setAvailability] = useState<QuestionBankAvailability | null>(null);
@@ -431,7 +438,6 @@ function BancoDeQuestoesContent() {
 
   const appliedFilterCount = [
     area,
-    institution.trim(),
     boardCodes.length > 0 ? "boards" : "",
     selectedYears.length > 0 ? "years" : "",
     answerStatus !== "unanswered" ? answerStatus : "",
@@ -501,14 +507,13 @@ function BancoDeQuestoesContent() {
   const filterParams = useCallback((overrides?: { limit?: number }) => ({
     knowledge_node_ids: selectedTopics.length > 0 ? selectedTopics.map((t) => t.knowledge_node_id) : undefined,
     area: area || undefined,
-    institution: institution.trim() || undefined,
     board_codes: boardCodes.length > 0 ? boardCodes : undefined,
     years: selectedYears.length > 0 ? selectedYears : undefined,
     answer_status: answerStatus,
     only_unanswered: answerStatus === "unanswered",
     correction_status: correctionStatus,
     limit: overrides?.limit,
-  }), [answerStatus, area, boardCodes, correctionStatus, institution, selectedTopics, selectedYears]);
+  }), [answerStatus, area, boardCodes, correctionStatus, selectedTopics, selectedYears]);
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -536,11 +541,12 @@ function BancoDeQuestoesContent() {
   }, [filterParams, requestedLimit, showToast, token]);
 
   const refreshTopics = useCallback(async () => {
+    setTopicsLoading(true);
+    setTopicsError(false);
     try {
       const common = {
         area: area || undefined,
         search: search.trim() || undefined,
-        institution: institution.trim() || undefined,
         board_codes: boardCodes.length > 0 ? boardCodes : undefined,
         years: selectedYears.length > 0 ? selectedYears : undefined,
         include_empty: false,
@@ -561,11 +567,32 @@ function BancoDeQuestoesContent() {
     } catch (err) {
       setTaxonomyTopics([]);
       setMicroTopics([]);
+      setTopicsError(true);
       const message = err instanceof Error ? err.message : "Não foi possível carregar os assuntos do banco de questões.";
       setError(message);
       showToast(message, "error");
+    } finally {
+      setTopicsLoading(false);
     }
-  }, [area, boardCodes, institution, search, selectedYears, showToast, token]);
+  }, [area, boardCodes, search, selectedYears, showToast, token]);
+
+  const loadBoards = useCallback(async () => {
+    setBoardsLoading(true);
+    setBoardsError(false);
+    try {
+      setBoards(await listQuestionBankBoards(token));
+    } catch {
+      setBoards([]);
+      setBoardsError(true);
+    } finally {
+      setBoardsLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (!tokenResolved) return;
+    void loadBoards();
+  }, [loadBoards, tokenResolved]);
 
   useEffect(() => {
     if (!tokenResolved) return;
@@ -599,11 +626,6 @@ function BancoDeQuestoesContent() {
     setSearch(next);
   }
 
-  function handleInstitutionChange(next: string) {
-    setInstitution(next);
-    clearSelection();
-  }
-
   function handleSelectedYearsChange(next: number[]) {
     setSelectedYears(next);
     clearSelection();
@@ -625,13 +647,6 @@ function BancoDeQuestoesContent() {
       return exists ? prev.filter((t) => t.knowledge_node_id !== topic.knowledge_node_id) : [...prev, topic];
     });
     setQuestions([]);
-  }
-
-  function addBoardCode() {
-    const code = boardInput.trim().toUpperCase();
-    if (!code) return;
-    setBoardCodes((prev) => prev.includes(code) ? prev : [...prev, code]);
-    setBoardInput("");
   }
 
   async function previewQuestions() {
@@ -940,15 +955,17 @@ function BancoDeQuestoesContent() {
                   search={search}
                   onSearchChange={handleSearchChange}
                   topics={taxonomyTopics}
+                  topicsLoading={topicsLoading}
+                  topicsError={topicsError}
+                  onTopicsRetry={() => void refreshTopics()}
                   selectedTopics={selectedTopics}
                   onToggleTopic={toggleTopic}
                   boardCodes={boardCodes}
-                  boardInput={boardInput}
-                  onBoardInputChange={setBoardInput}
-                  onAddBoardCode={addBoardCode}
-                  onRemoveBoardCode={(code) => setBoardCodes((prev) => prev.filter((c) => c !== code))}
-                  institution={institution}
-                  onInstitutionChange={handleInstitutionChange}
+                  boards={boards}
+                  boardsLoading={boardsLoading}
+                  boardsError={boardsError}
+                  onBoardCodesChange={setBoardCodes}
+                  onBoardsRetry={() => void loadBoards()}
                   selectedYears={selectedYears}
                   onSelectedYearsChange={handleSelectedYearsChange}
                   answerStatus={answerStatus}

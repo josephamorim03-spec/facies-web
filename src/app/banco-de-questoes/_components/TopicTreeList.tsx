@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton } from "@/components/Skeleton";
 import type { QuestionBankTopic } from "@/lib/api";
 import type { TopicTreeNode } from "./topicTree";
 import { topicPathLabel } from "./topicTree";
@@ -14,6 +15,9 @@ type TopicTreeListProps = {
   expandedIds: Set<string>;
   onToggle: (topic: QuestionBankTopic) => void;
   onToggleExpand: (topicId: string) => void;
+  loading?: boolean;
+  error?: boolean;
+  onRetry?: () => void;
 };
 
 type TopicTreeItemProps = Omit<TopicTreeListProps, "nodes"> & {
@@ -100,8 +104,36 @@ export function TopicTreeList({
   expandedIds,
   onToggle,
   onToggleExpand,
+  loading = false,
+  error = false,
+  onRetry,
 }: TopicTreeListProps) {
   if (nodes.length === 0) {
+    if (loading) {
+      return (
+        <div className="space-y-1.5" aria-hidden="true">
+          {Array.from({ length: 6 }, (_, index) => (
+            <Skeleton key={index} className="h-10 rounded-lg" />
+          ))}
+        </div>
+      );
+    }
+    if (error) {
+      return (
+        <div className="rounded-lg border border-dashed border-edge bg-surface p-4 text-sm text-muted">
+          <p>Não foi possível carregar os assuntos agora.</p>
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="mt-2 rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted transition-colors hover:border-primary hover:text-ink"
+            >
+              Tentar novamente
+            </button>
+          )}
+        </div>
+      );
+    }
     return (
       <div className="rounded-lg border border-dashed border-edge bg-surface p-4 text-sm text-muted">
         Nenhum assunto encontrado para os filtros atuais.

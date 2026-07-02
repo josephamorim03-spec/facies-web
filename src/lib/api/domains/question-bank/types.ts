@@ -25,6 +25,14 @@ export type QuestionBankNode = {
   source: string | null;
 };
 
+export type QuestionBankBoard = {
+  board_code: string;
+  board_name: string;
+  question_count: number;
+  first_year?: number | null;
+  last_year?: number | null;
+};
+
 export type QuestionBankTopic = {
   knowledge_node_id: string;
   parent_knowledge_node_id: string | null;

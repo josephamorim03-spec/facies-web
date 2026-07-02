@@ -24,10 +24,11 @@ export async function browseQuestionBankTopics(
   appendArrayParams(q, "node_types", params.node_types);
   appendArrayParams(q, "board_codes", params.board_codes);
   appendArrayParams(q, "years", params.years?.map(String));
+  // Usa a política de cache do client (TTL+SWR, tags question-bank-topics):
+  // catálogo é referência quase-estática e mutações em /api/question-bank
+  // invalidam a tag automaticamente.
   return api<QuestionBankTopic[]>(`/api/question-bank/topics${q.toString() ? `?${q.toString()}` : ""}`, {
     headers: authHeader(token),
-    cache: "no-store",
-    clientCache: false,
   });
 }
 

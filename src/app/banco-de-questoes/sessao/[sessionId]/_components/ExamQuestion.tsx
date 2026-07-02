@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import type { QuestionBankOption, QuestionBankSessionItem, QuestionBankSessionStatus } from "@/lib/api";
 import { formatClock } from "@/lib/formatDuration";
+import { formatSourceLabel } from "@/lib/formatSource";
 import FontScaleControl from "./FontScaleControl";
 import { useQuestionFontScale } from "./useQuestionFontScale";
 
@@ -11,13 +12,6 @@ const OPTIONS: QuestionBankOption[] = ["A", "B", "C", "D", "E"];
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
-}
-
-function sourceLabel(source: Record<string, unknown>): string {
-  const institution = String(source?.institution ?? "").trim();
-  const board = String(source?.board_code ?? "").trim();
-  const year = String(source?.year ?? "").trim();
-  return [institution || "Instituição", board, year].filter(Boolean).join(" · ");
 }
 
 function IconFlag({ className = "h-4 w-4" }: { className?: string }) {
@@ -304,7 +298,7 @@ export default function ExamQuestion({
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-4 md:px-6 md:py-5">
         <section className="rounded-lg border border-edge bg-surface p-4 md:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-muted">{sourceLabel(item.source)}</p>
+            <p className="text-xs text-muted">{formatSourceLabel(item.source)}</p>
             {item.selected_option && (
               <span className="rounded-full border border-primary/40 bg-[var(--amber-tint)] px-2.5 py-1 text-xs font-semibold text-primary">
                 Resposta {item.selected_option}

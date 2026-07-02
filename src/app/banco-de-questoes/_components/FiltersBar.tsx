@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type {
   FullExamType,
   QuestionBankAnswerStatus,
+  QuestionBankBoard,
   QuestionBankCorrectionStatus,
   QuestionBankResolutionMode,
   QuestionBankTopic,
@@ -11,6 +12,7 @@ import type {
 } from "@/lib/api";
 import { TopicTreeList } from "./TopicTreeList";
 import { buildTopicTree, flattenTopicTree, topicPathLabel } from "./topicTree";
+import BancaPicker from "./BancaPicker";
 
 const AREA_OPTIONS = [
   { value: "", label: "Todas" },
@@ -81,15 +83,17 @@ export type FiltersBarProps = {
   search: string;
   onSearchChange: (v: string) => void;
   topics: QuestionBankTopic[];
+  topicsLoading?: boolean;
+  topicsError?: boolean;
+  onTopicsRetry?: () => void;
   selectedTopics: QuestionBankTopic[];
   onToggleTopic: (topic: QuestionBankTopic) => void;
   boardCodes: string[];
-  boardInput: string;
-  onBoardInputChange: (v: string) => void;
-  onAddBoardCode: () => void;
-  onRemoveBoardCode: (code: string) => void;
-  institution: string;
-  onInstitutionChange: (v: string) => void;
+  boards: QuestionBankBoard[];
+  boardsLoading?: boolean;
+  boardsError?: boolean;
+  onBoardCodesChange: (codes: string[]) => void;
+  onBoardsRetry?: () => void;
   selectedYears: number[];
   onSelectedYearsChange: (years: number[]) => void;
   answerStatus: QuestionBankAnswerStatus;
@@ -135,8 +139,8 @@ function SectionHeader({ step, title, detail }: { step: string; title: string; d
 export default function FiltersBar(props: FiltersBarProps) {
   const {
     area, onAreaChange, search, onSearchChange, topics, selectedTopics, onToggleTopic,
-    boardCodes, boardInput, onBoardInputChange,
-    onAddBoardCode, onRemoveBoardCode, institution, onInstitutionChange,
+    topicsLoading = false, topicsError = false, onTopicsRetry,
+    boardCodes, boards, boardsLoading, boardsError, onBoardCodesChange, onBoardsRetry,
     selectedYears, onSelectedYearsChange, answerStatus, onAnswerStatusChange,
     correctionStatus, onCorrectionStatusChange,
     resolutionMode, onResolutionModeChange, studyKind, onStudyKindChange,
@@ -252,6 +256,9 @@ export default function FiltersBar(props: FiltersBarProps) {
               expandedIds={expandedTopicIds}
               onToggle={onToggleTopic}
               onToggleExpand={toggleTopicExpanded}
+              loading={topicsLoading}
+              error={topicsError}
+              onRetry={onTopicsRetry}
             />
           </div>
 
@@ -288,62 +295,17 @@ export default function FiltersBar(props: FiltersBarProps) {
         <SectionHeader
           step="2. Recorte"
           title="Filtre fonte, ano e histórico"
-          detail={`${statusLabel} · ${boardCodes.length > 0 ? boardCodes.join(", ") : institution.trim() || "todas as instituições"}`}
+          detail={`${statusLabel} · ${boardCodes.length > 0 ? boardCodes.join(", ") : "todas as bancas"}`}
         />
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <div className="space-y-3 rounded-xl border border-edge bg-surface p-3">
-            <label className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Banca</label>
-            {boardCodes.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {boardCodes.map((code) => (
-                  <span key={code} className="km-chip">
-                    {code}
-                    <button
-                      type="button"
-                      onClick={() => onRemoveBoardCode(code)}
-                      className="ml-0.5 text-muted hover:text-ink"
-                      aria-label={`Remover ${code}`}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="flex gap-2">
-              <input
-                value={boardInput}
-                onChange={(e) => onBoardInputChange(e.target.value.toUpperCase())}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === ",") {
-                    onAddBoardCode();
-                    e.preventDefault();
-                  }
-                }}
-                placeholder="SMK, FUVEST... Enter para adicionar"
-                className="min-w-0 flex-1"
-              />
-              <button
-                type="button"
-                onClick={onAddBoardCode}
-                className="rounded-xl border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-
-          <label className="space-y-2 rounded-xl border border-edge bg-surface p-3">
-            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Instituição</span>
-            <input
-              value={institution}
-              onChange={(e) => onInstitutionChange(e.target.value)}
-              placeholder="USP, UNIFESP, ENARE..."
-              className="w-full"
-            />
-          </label>
-        </div>
+        <BancaPicker
+          boards={boards}
+          selected={boardCodes}
+          onChange={onBoardCodesChange}
+          loading={boardsLoading}
+          error={boardsError}
+          onRetry={onBoardsRetry}
+        />
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="space-y-3 rounded-xl border border-edge bg-surface p-3">

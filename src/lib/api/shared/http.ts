@@ -218,6 +218,10 @@ function defaultClientCachePolicy(pathname: string): ResolvedClientCachePolicy |
   if (pathname === "/api/question-bank/topics") {
     return { ttlMs: 5 * 60_000, swrMs: 30 * 60_000, tags: ["question-bank", "question-bank-topics"] };
   }
+  if (pathname === "/api/question-bank/boards") {
+    // Reference data (exam boards + counts) that only grows — cache generously.
+    return { ttlMs: 10 * 60_000, swrMs: 60 * 60_000, tags: ["question-bank", "question-bank-boards"] };
+  }
   if (pathname === "/api/question-bank/availability") {
     return { ttlMs: 30_000, swrMs: 2 * 60_000, tags: ["question-bank", "question-bank-availability"] };
   }
