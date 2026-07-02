@@ -273,6 +273,8 @@ export default function ExamQuestion({
                   key={src}
                   src={src}
                   alt="Imagem da questão"
+                  loading="lazy"
+                  decoding="async"
                   className="rounded-lg border border-edge bg-surface"
                   onError={(event) => {
                     event.currentTarget.style.display = "none";
