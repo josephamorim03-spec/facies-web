@@ -82,7 +82,7 @@ export function warmRouteData(href: string, token: string | null | undefined): v
 
   const requests: Array<Promise<unknown>> = [getProfile(token)];
 
-  if (pathname === "/hoje" || pathname === "/today") {
+  if (pathname === "/hoje") {
     requests.push(
       getReviewAgenda(token),
       listReviewTasks(token, { status: "pending" }),

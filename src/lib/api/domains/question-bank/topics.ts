@@ -10,12 +10,13 @@ import type {
 
 export async function browseQuestionBankTopics(
   token: string,
-  params: { area?: string; search?: string; institution?: string; node_type?: string; node_types?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_empty?: boolean; limit?: number } = {},
+  params: { area?: string; search?: string; institution?: string; institutions?: string[]; node_type?: string; node_types?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_empty?: boolean; limit?: number } = {},
 ): Promise<QuestionBankTopic[]> {
   const q = new URLSearchParams();
   if (params.area?.trim()) q.set("area", params.area.trim());
   if (params.search?.trim()) q.set("search", params.search.trim());
   if (params.institution?.trim()) q.set("institution", params.institution.trim());
+  appendArrayParams(q, "institutions", params.institutions);
   if (params.node_type?.trim()) q.set("node_type", params.node_type.trim());
   if (params.year_from) q.set("year_from", String(params.year_from));
   if (params.year_to) q.set("year_to", String(params.year_to));
@@ -34,11 +35,12 @@ export async function browseQuestionBankTopics(
 
 export async function previewQuestionBankAvailability(
   token: string,
-  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus; mode?: QuestionBankMode } = {},
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; institutions?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus; mode?: QuestionBankMode } = {},
 ): Promise<QuestionBankAvailability> {
   const q = new URLSearchParams();
   appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
   appendArrayParams(q, "board_codes", params.board_codes);
+  appendArrayParams(q, "institutions", params.institutions);
   appendArrayParams(q, "years", params.years?.map(String));
   if (params.area?.trim()) q.set("area", params.area.trim());
   if (params.search?.trim()) q.set("search", params.search.trim());

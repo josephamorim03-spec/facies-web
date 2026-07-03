@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createQuestionBankSession } from "@/lib/api";
 import { Skeleton } from "@/components/Skeleton";
@@ -34,10 +34,10 @@ function LoadingBlock() {
   );
 }
 
-export function SessoesContent() {
+export function SessoesContent({ initialTab = "inacabadas" }: { initialTab?: SessionsTab }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab = parseSessionsTab(searchParams.get("tipo"));
+  const tab = parseSessionsTab(searchParams.get("tipo") ?? initialTab);
   const { token, tokenResolved } = useAuthToken();
   const { sessions, tasks, performanceSummary, longitudinal, loading, error, reload } =
     useSessionsPanelData();
@@ -51,6 +51,32 @@ export function SessoesContent() {
     return result;
   }, [sessions]);
   const visibleSessions = useMemo(() => filterSessionsByTab(sessions, tab), [sessions, tab]);
+
+  useEffect(() => {
+    if (tab === "inacabadas") return;
+
+    const syncCanonicalTabUrl = () => {
+      if (window.location.pathname !== "/revisoes") return;
+      const currentParams = new URLSearchParams(window.location.search);
+      if (currentParams.get("tipo") === tab) return;
+      currentParams.set("tipo", tab);
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `/revisoes?${currentParams.toString()}${window.location.hash}`,
+      );
+    };
+
+    // Next can normalize the visible URL after hydration on this query-only page.
+    syncCanonicalTabUrl();
+    const animationFrame = window.requestAnimationFrame(syncCanonicalTabUrl);
+    const timeout = window.setTimeout(syncCanonicalTabUrl, 100);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.clearTimeout(timeout);
+    };
+  }, [tab]);
 
   function changeTab(next: SessionsTab) {
     router.replace(next === "inacabadas" ? "/revisoes" : `/revisoes?tipo=${next}`, {

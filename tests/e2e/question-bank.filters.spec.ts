@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const E2E_BASE_URL = "http://127.0.0.1:3000";
 const topic = {
@@ -55,6 +55,39 @@ const item = {
   is_correct: null,
 };
 
+const sourceOptions = [
+  {
+    option_key: "SMK",
+    label: "Smoke Board",
+    option_kind: "board",
+    question_count: 12,
+    first_year: 2023,
+    last_year: 2024,
+  },
+  {
+    option_key: "USP-SP",
+    label: "USP - SP",
+    option_kind: "institution",
+    question_count: 7,
+    first_year: 2023,
+    last_year: 2024,
+  },
+];
+
+const yearStats = [
+  { year: 2024, question_count: 8 },
+  { year: 2023, question_count: 4 },
+];
+
+async function mockQuestionBankMetadata(page: Page) {
+  await page.route("**/api/question-bank/sources", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(sourceOptions) });
+  });
+  await page.route("**/api/question-bank/years", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(yearStats) });
+  });
+}
+
 function sessionPayload(answered = false) {
   return {
     session_id: "session_qb_e2e",
@@ -99,6 +132,7 @@ test("question bank applies filters, calendar review context, and gated correcti
     },
   ]);
   const createPayloads: Record<string, unknown>[] = [];
+  await mockQuestionBankMetadata(page);
 
   await page.route("**/api/question-bank/availability**", async (route) => {
     await route.fulfill({
@@ -243,6 +277,7 @@ test("manual search filters topics without becoming a hidden session filter", as
 
   const createPayloads: Record<string, unknown>[] = [];
   const topicRequestUrls: string[] = [];
+  await mockQuestionBankMetadata(page);
 
   await page.route("**/api/question-bank/availability**", async (route) => {
     await route.fulfill({
@@ -313,6 +348,24 @@ test("manual search filters topics without becoming a hidden session filter", as
 
   await page.goto("/banco-de-questoes");
 
+  const filterPanel = page.getByTestId("question-bank-top-filters");
+  await expect(filterPanel).toContainText("2024");
+  await expect(filterPanel).not.toContainText("2016");
+
+  await page.getByRole("checkbox", { name: /Smoke Board/ }).check();
+  await page.getByRole("checkbox", { name: /USP - SP/ }).check();
+  await expect
+    .poll(() =>
+      topicRequestUrls.some((url) => {
+        const params = new URL(url).searchParams;
+        return (
+          params.getAll("board_codes").includes("SMK") &&
+          params.getAll("institutions").includes("USP-SP")
+        );
+      }),
+    )
+    .toBe(true);
+
   await page.getByPlaceholder("Buscar especialidade, macrotema ou subtema").fill("Placenta");
   await expect(page.getByRole("button", { name: /Placenta previa/ }).first()).toBeVisible();
   await expect
@@ -329,6 +382,8 @@ test("manual search filters topics without becoming a hidden session filter", as
   const payload = createPayloads[0];
   expect(payload.search).toBeUndefined();
   expect(payload.knowledge_node_ids).toBeUndefined();
+  expect(payload.board_codes).toEqual(["SMK"]);
+  expect(payload.institutions).toEqual(["USP-SP"]);
   expect(payload).toMatchObject({
     answer_status: "unanswered",
     only_unanswered: true,
@@ -348,6 +403,7 @@ test("builder keeps requested quantity above 50 before availability resolves", a
   ]);
 
   const createPayloads: Record<string, unknown>[] = [];
+  await mockQuestionBankMetadata(page);
 
   await page.route("**/api/question-bank/availability**", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 400));
@@ -489,9 +545,6 @@ test("simulation session allows answer changes by click and keyboard", async ({ 
 
   await page.goto("/banco-de-questoes/sessao/session_qb_sim_change");
 
-  await expect(page.getByText("Atalhos:")).toBeVisible();
-  await expect(page.getByText("A-E ou 1-5 respondem")).toBeVisible();
-
   await page.getByRole("button", { name: /^A\s+Placenta/ }).click();
   await expect(page.getByText("Resposta A")).toBeVisible();
 
@@ -503,4 +556,56 @@ test("simulation session allows answer changes by click and keyboard", async ({ 
   expect(attemptPayloads[0]).toMatchObject({ selected_option: "A" });
   expect(attemptPayloads[1]).toMatchObject({ selected_option: "B" });
   expect(eventTypes).toEqual(expect.arrayContaining(["answer_selected", "answer_changed"]));
+});
+
+test("session shows an honest placeholder when a question image is unavailable", async ({ page }) => {
+  await page.context().addCookies([
+    {
+      name: "krosmed_session",
+      value: "session_e2e",
+      url: E2E_BASE_URL,
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+
+  const brokenImageSrc = "/v1/images/expired-token";
+  const brokenSession = {
+    ...sessionPayload(false),
+    session_id: "session_qb_broken_image",
+    items: [
+      {
+        ...item,
+        image_refs: [brokenImageSrc],
+      },
+    ],
+  };
+
+  await page.route("**/api/profile", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        user_id: "user_e2e",
+        weekly_goal_questions: 300,
+        timezone: "America/Sao_Paulo",
+        reschedule_mode: "suggest",
+        shift_12h_capacity: 40,
+        shift_24h_capacity: 20,
+        display_name: "E2E User",
+        access_status: "active",
+        has_completed_initial_goal_setup: true,
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/sessions/session_qb_broken_image", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(brokenSession) });
+  });
+  await page.route("**/v1/images/expired-token", async (route) => {
+    await route.fulfill({ status: 410, contentType: "text/plain", body: "expired" });
+  });
+
+  await page.goto("/banco-de-questoes/sessao/session_qb_broken_image");
+
+  await expect(page.getByText("Imagem indisponível")).toBeVisible();
 });

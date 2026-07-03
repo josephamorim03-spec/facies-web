@@ -120,7 +120,6 @@ type IconComponent = (props: { className?: string }) => React.JSX.Element;
 
 const ICON_MAP: Record<string, IconComponent> = {
   "/hoje": IconToday,
-  "/today": IconToday,
   "/agenda-operacional": IconCalendar,
   "/banco-de-questoes": IconNotebook,
   "/provas": IconExam,
@@ -151,7 +150,7 @@ function useNavHideCompletely(pathname: string) {
 
 function resolveNavHref(href: string): string {
   if (href === "/agenda-operacional" || href === "/calendario") return getCronogramaAgendaHref();
-  if (href === "/today" || href === "/hoje") return "/hoje";
+  if (href === "/hoje") return "/hoje";
   return href;
 }
 

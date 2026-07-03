@@ -226,7 +226,7 @@ export default function PostExamReview({
           {cognitivePattern && (
             <div className="mt-4 rounded-lg border border-warning/40 bg-[var(--amber-tint)] p-3">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-warning">
-                Padrao cognitivo dominante
+                Padrão cognitivo dominante
               </p>
               <h3 className="mt-1 font-serif text-lg font-semibold text-ink">
                 {cognitivePattern.label}
@@ -239,7 +239,7 @@ export default function PostExamReview({
                 onClick={() => router.push(cognitivePatternHref)}
                 className="mt-3 rounded-lg border border-warning/40 bg-surface px-3 py-1.5 text-xs font-semibold text-warning hover:border-warning"
               >
-                Treinar esse padrao
+                Treinar esse padrão
               </button>
             </div>
           )}
@@ -583,7 +583,7 @@ export default function PostExamReview({
                       )}
                       {item.excluded_from_scoring && (
                         <span className="rounded-full border border-edge bg-surfaceMuted px-2.5 py-1 text-xs font-semibold text-muted">
-                          Descartada por voce
+                          Descartada por você
                         </span>
                       )}
                     </div>

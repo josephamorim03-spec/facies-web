@@ -125,7 +125,7 @@ test.describe("Navigation shell", () => {
 
   test("renders sidebar with consistent layout (visual regression)", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/semana");
+    await page.goto("/hoje");
 
     // Páginas podem ter <aside> próprio — mirar na sidebar de navegação.
     const sidebar = navSidebar(page);
@@ -142,7 +142,7 @@ test.describe("Navigation shell", () => {
   });
 
   const desktopCases = [
-    { path: "/semana", activeHref: "/hoje" },
+    { path: "/hoje", activeHref: "/hoje" },
     { path: "/caderno", activeHref: "/cards-adaptativos" },
     { path: "/revisoes", activeHref: "/revisoes" },
     { path: "/dados-e-relatorios/graficos", activeHref: "/dados-e-relatorios" },
@@ -164,9 +164,23 @@ test.describe("Navigation shell", () => {
     });
   }
 
+  for (const legacyPath of ["/semana", "/today"]) {
+    test(`redirects ${legacyPath} to /hoje`, async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(legacyPath);
+      await expect(page).toHaveURL(/\/hoje$/);
+
+      const sidebar = navSidebar(page);
+      await expect(sidebar).toBeVisible();
+      const activeItems = sidebar.locator("[data-nav-surface='sidebar'][data-nav-active='true']");
+      await expect(activeItems).toHaveCount(1);
+      await expect(activeItems).toHaveAttribute("data-nav-item-href", "/hoje");
+    });
+  }
+
   test("keeps long sidebar labels inside their container", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/semana");
+    await page.goto("/hoje");
 
     // A sidebar colapsa por padrão; os labels só renderizam expandida (hover/fixada).
     await navSidebar(page).hover();

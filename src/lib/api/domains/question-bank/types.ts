@@ -33,6 +33,20 @@ export type QuestionBankBoard = {
   last_year?: number | null;
 };
 
+export type QuestionBankSourceOption = {
+  option_key: string;
+  label: string;
+  option_kind: "board" | "institution";
+  question_count: number;
+  first_year?: number | null;
+  last_year?: number | null;
+};
+
+export type QuestionBankYearStat = {
+  year: number;
+  question_count: number;
+};
+
 export type QuestionBankTopic = {
   knowledge_node_id: string;
   parent_knowledge_node_id: string | null;
@@ -418,6 +432,7 @@ export type QuestionBankSessionCreatePayload = {
   area?: string;
   search?: string;
   institution?: string;
+  institutions?: string[];
   board_codes?: string[];
   year_from?: number;
   year_to?: number;

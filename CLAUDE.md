@@ -9,7 +9,7 @@
 ## Security
 - Never expose secrets in the browser. `NEXT_PUBLIC_*` is public by definition.
 - Do not store access tokens, refresh tokens, API keys, reset tokens, or privileged IDs in `localStorage`, `sessionStorage`, query strings, logs, analytics, or client-visible JSON.
-- Preserve the BFF/session model from `docs/core-contracts.md`: browser auth uses the Next BFF and `agendar_session` HttpOnly cookie.
+- Preserve the BFF/session model from `docs/core-contracts.md`: browser auth uses the Next BFF and `krosmed_session` HttpOnly cookie.
 - Mutating BFF requests must keep same-origin `Origin`/`Referer` checks and `X-KrosMed-CSRF: 1`.
 - Do not leak `access_token` responses to the browser after the BFF sets the session cookie.
 - Avoid `dangerouslySetInnerHTML` and raw `innerHTML`. If unavoidable, sanitize input and document why.

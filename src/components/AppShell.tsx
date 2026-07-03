@@ -76,14 +76,12 @@ const PAGE_TITLES: Record<string, string> = {
   "/rotina-e-metas": "Plano",
   "/perfil": "Perfil",
   "/caderno": "Caderno",
-  "/semana": "Semana",
   "/agenda-operacional": "Agenda",
   "/calendario": "Agenda",
   "/provas": "Simulados",
   "/dashboard": "Dashboard",
   "/admin": "Admin",
   "/hoje": "Hoje",
-  "/today": "Hoje",
 };
 
 function fallbackTitle(pathname: string): string {

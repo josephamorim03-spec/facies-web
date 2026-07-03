@@ -21,6 +21,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (pathname === "/provas") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/revisoes";
+    url.searchParams.set("tipo", "provas");
+    return NextResponse.redirect(url);
+  }
+
   if (pathname.startsWith("/agenda-operacional/importar") || pathname.startsWith("/cronograma/importar")) {
     const url = request.nextUrl.clone();
     url.pathname = "/banco-de-questoes";

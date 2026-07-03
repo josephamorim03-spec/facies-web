@@ -4,10 +4,11 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type {
   FullExamType,
   QuestionBankAnswerStatus,
-  QuestionBankBoard,
   QuestionBankCorrectionStatus,
   QuestionBankResolutionMode,
+  QuestionBankSourceOption,
   QuestionBankTopic,
+  QuestionBankYearStat,
   StudyKind,
 } from "@/lib/api";
 import { TopicTreeList } from "./TopicTreeList";
@@ -24,8 +25,6 @@ const AREA_OPTIONS = [
   { value: "PD", label: "PD" },
   { value: "OU", label: "OU" },
 ] as const;
-
-const YEAR_OPTIONS = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026] as const;
 
 type RealizacaoState = {
   unanswered: boolean;
@@ -89,11 +88,16 @@ export type FiltersBarProps = {
   selectedTopics: QuestionBankTopic[];
   onToggleTopic: (topic: QuestionBankTopic) => void;
   boardCodes: string[];
-  boards: QuestionBankBoard[];
-  boardsLoading?: boolean;
-  boardsError?: boolean;
-  onBoardCodesChange: (codes: string[]) => void;
-  onBoardsRetry?: () => void;
+  institutions: string[];
+  sources: QuestionBankSourceOption[];
+  sourcesLoading?: boolean;
+  sourcesError?: boolean;
+  onSourceSelectionChange: (selection: { boardCodes: string[]; institutions: string[] }) => void;
+  onSourcesRetry?: () => void;
+  yearStats: QuestionBankYearStat[];
+  yearsLoading?: boolean;
+  yearsError?: boolean;
+  onYearsRetry?: () => void;
   selectedYears: number[];
   onSelectedYearsChange: (years: number[]) => void;
   answerStatus: QuestionBankAnswerStatus;
@@ -140,7 +144,8 @@ export default function FiltersBar(props: FiltersBarProps) {
   const {
     area, onAreaChange, search, onSearchChange, topics, selectedTopics, onToggleTopic,
     topicsLoading = false, topicsError = false, onTopicsRetry,
-    boardCodes, boards, boardsLoading, boardsError, onBoardCodesChange, onBoardsRetry,
+    boardCodes, institutions, sources, sourcesLoading, sourcesError, onSourceSelectionChange, onSourcesRetry,
+    yearStats, yearsLoading, yearsError, onYearsRetry,
     selectedYears, onSelectedYearsChange, answerStatus, onAnswerStatusChange,
     correctionStatus, onCorrectionStatusChange,
     resolutionMode, onResolutionModeChange, studyKind, onStudyKindChange,
@@ -180,6 +185,11 @@ export default function FiltersBar(props: FiltersBarProps) {
 
   const modeLabel = studyKind === "full_exam" ? "Prova" : resolutionMode === "simulation" ? "Simulado" : "Treino";
   const statusLabel = deriveRealizacaoLabel(realizacaoState);
+  const selectedSourceCount = boardCodes.length + institutions.length;
+  const sourceDetail = selectedSourceCount > 0
+    ? `${selectedSourceCount} fonte${selectedSourceCount > 1 ? "s" : ""}`
+    : "todas as fontes";
+  const latestFiveYears = yearStats.slice(0, 5).map((item) => item.year);
 
   return (
     <div className="divide-y divide-edge">
@@ -295,47 +305,85 @@ export default function FiltersBar(props: FiltersBarProps) {
         <SectionHeader
           step="2. Recorte"
           title="Filtre fonte, ano e histórico"
-          detail={`${statusLabel} · ${boardCodes.length > 0 ? boardCodes.join(", ") : "todas as bancas"}`}
+          detail={`${statusLabel} · ${sourceDetail}`}
         />
 
         <BancaPicker
-          boards={boards}
-          selected={boardCodes}
-          onChange={onBoardCodesChange}
-          loading={boardsLoading}
-          error={boardsError}
-          onRetry={onBoardsRetry}
+          sources={sources}
+          selectedBoardCodes={boardCodes}
+          selectedInstitutions={institutions}
+          onChange={onSourceSelectionChange}
+          loading={sourcesLoading}
+          error={sourcesError}
+          onRetry={onSourcesRetry}
         />
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="space-y-3 rounded-xl border border-edge bg-surface p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Ano</p>
-              {selectedYears.length > 0 && (
-                <button type="button" onClick={() => onSelectedYearsChange([])} className="text-xs text-muted hover:text-ink">
-                  Limpar
-                </button>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {YEAR_OPTIONS.map((year) => {
-                const selected = selectedYears.includes(year);
-                return (
+              <div className="flex items-center gap-3">
+                {yearStats.length >= 5 && (
                   <button
-                    key={year}
                     type="button"
-                    onClick={() =>
-                      onSelectedYearsChange(
-                        selected ? selectedYears.filter((y) => y !== year) : [...selectedYears, year],
-                      )
-                    }
-                    className={cx("km-chip", selected && "km-chip-active")}
+                    onClick={() => onSelectedYearsChange(latestFiveYears)}
+                    className="text-xs text-muted hover:text-ink"
                   >
-                    {year}
+                    Últimos 5 anos
                   </button>
-                );
-              })}
+                )}
+                {selectedYears.length > 0 && (
+                  <button type="button" onClick={() => onSelectedYearsChange([])} className="text-xs text-muted hover:text-ink">
+                    Limpar
+                  </button>
+                )}
+              </div>
             </div>
+            {yearsLoading ? (
+              <div className="flex flex-wrap gap-2" aria-hidden="true">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <span key={i} className="h-8 w-16 animate-pulse rounded-full bg-surfaceMuted" />
+                ))}
+              </div>
+            ) : yearsError ? (
+              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-danger/40 bg-paper px-3 py-2 text-xs text-danger">
+                <span>Não foi possível carregar os anos.</span>
+                {onYearsRetry && (
+                  <button
+                    type="button"
+                    onClick={onYearsRetry}
+                    className="font-semibold underline underline-offset-2 hover:opacity-80"
+                  >
+                    Tentar novamente
+                  </button>
+                )}
+              </div>
+            ) : yearStats.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-edge px-3 py-4 text-center text-xs text-muted">
+                Nenhum ano disponível.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {yearStats.map(({ year, question_count }) => {
+                  const selected = selectedYears.includes(year);
+                  return (
+                    <button
+                      key={year}
+                      type="button"
+                      title={`${question_count} questões`}
+                      onClick={() =>
+                        onSelectedYearsChange(
+                          selected ? selectedYears.filter((y) => y !== year) : [...selectedYears, year],
+                        )
+                      }
+                      className={cx("km-chip", selected && "km-chip-active")}
+                    >
+                      {year}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="space-y-3 rounded-xl border border-edge bg-surface p-3">

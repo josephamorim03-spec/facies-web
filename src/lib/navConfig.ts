@@ -35,7 +35,7 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         href: "/hoje",
         label: "HOJE",
         shortLabel: "Hoje",
-        groupPaths: ["/hoje", "/today", "/calendario", "/agenda-operacional", "/cronograma", "/semana"],
+        groupPaths: ["/hoje", "/calendario", "/agenda-operacional", "/cronograma"],
       },
       {
         href: "/banco-de-questoes",

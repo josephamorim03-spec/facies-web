@@ -130,7 +130,7 @@ export function MetacognitionSidebar({
             </div>
             <IconArrowRight className="h-4 w-4 text-muted" />
           </Link>
-          <Link href="/today" className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-paper p-4 hover:border-primary">
+          <Link href="/hoje" className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-paper p-4 hover:border-primary">
             <div>
               <p className="text-sm font-semibold text-primary">Executar pendências</p>
               <p className="mt-1 text-xs text-muted">Voltar ao plano do dia.</p>

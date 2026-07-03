@@ -8,15 +8,14 @@ import { writeCronogramaViewModeSession } from "../_lib/viewModeSession";
 
 type ViewMode = "month" | "week";
 
-function IconWeek({ className }: { className?: string }) {
+function IconToday({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none"
       stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter"
       className={`shrink-0 ${className ?? ""}`} aria-hidden="true">
       <rect x="2.5" y="2.5" width="15" height="15" rx="2" />
-      <line x1="7" y1="6" x2="7" y2="15" />
-      <line x1="10" y1="6" x2="10" y2="15" />
-      <line x1="13" y1="6" x2="13" y2="15" />
+      <line x1="2.5" y1="6" x2="17.5" y2="6" />
+      <circle cx="10" cy="12" r="2.5" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -36,7 +35,7 @@ function IconMonth({ className }: { className?: string }) {
 }
 
 function persistViewFromHref(href: string) {
-  if (href === "/semana") writeCronogramaViewModeSession("week");
+  if (href === "/hoje") writeCronogramaViewModeSession("week");
   else if (href === "/agenda-operacional" || href === "/cronograma") {
     writeCronogramaViewModeSession("month");
   }
@@ -48,9 +47,9 @@ export function ViewModeSwitch({ activeView, hideOnMobile }: { activeView: ViewM
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const targetView: ViewMode = activeView === "month" ? "week" : "month";
-  const href = targetView === "week" ? "/semana" : "/agenda-operacional";
-  const label = targetView === "week" ? "Semana" : "Mês";
-  const Icon = targetView === "week" ? IconWeek : IconMonth;
+  const href = targetView === "week" ? "/hoje" : "/agenda-operacional";
+  const label = targetView === "week" ? "Hoje" : "Mês";
+  const Icon = targetView === "week" ? IconToday : IconMonth;
 
   // Mede o texto real no DOM para calcular a largura exata do botão expandido.
   // Evita dead space sem precisar chutar medidas de fonte.
@@ -121,15 +120,15 @@ export function ViewModeSwitch({ activeView, hideOnMobile }: { activeView: ViewM
       {/* Desktop: slim tab strip rendered at its position in the document flow */}
       <div className="hidden md:flex items-center gap-5 border-t border-edge pt-3">
         <Link
-          href="/semana"
-          onClick={() => persistViewFromHref("/semana")}
+          href="/hoje"
+          onClick={() => persistViewFromHref("/hoje")}
           className={`flex items-center gap-1.5 text-sm transition-colors ${
             activeView === "week" ? "text-ink font-medium" : "text-muted hover:text-ink"
           }`}
           aria-current={activeView === "week" ? "page" : undefined}
         >
-          <IconWeek className="w-4 h-4" />
-          <span className="font-serif">Semana</span>
+          <IconToday className="w-4 h-4" />
+          <span className="font-serif">Hoje</span>
         </Link>
         <Link
           href="/agenda-operacional"
@@ -153,9 +152,9 @@ export function ViewModeFabInline({ activeView }: { activeView: ViewMode }) {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const targetView: ViewMode = activeView === "month" ? "week" : "month";
-  const href = targetView === "week" ? "/semana" : "/agenda-operacional";
-  const label = targetView === "week" ? "Semana" : "Mês";
-  const Icon = targetView === "week" ? IconWeek : IconMonth;
+  const href = targetView === "week" ? "/hoje" : "/agenda-operacional";
+  const label = targetView === "week" ? "Hoje" : "Mês";
+  const Icon = targetView === "week" ? IconToday : IconMonth;
 
   const labelMeasureRef = useRef<HTMLSpanElement>(null);
   const [expandedWidth, setExpandedWidth] = useState("120px");

@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect } from "react";
@@ -14,6 +13,7 @@ import type {
 } from "@/lib/api";
 import { cognitiveAutopsyCopy } from "@/lib/guidanceCopy";
 import { formatSourceLabel } from "@/lib/formatSource";
+import { QuestionImageRefs } from "@/app/banco-de-questoes/_components/QuestionImageRefs";
 import FontScaleControl from "./FontScaleControl";
 import { useQuestionFontScale } from "./useQuestionFontScale";
 
@@ -519,23 +519,7 @@ export default function StudyQuestion({
                 {item.stem}
               </p>
 
-              {item.image_refs.length > 0 && (
-                <div className="mt-5 grid gap-3 md:grid-cols-2">
-                  {item.image_refs.map((src) => (
-                    <img
-                      key={src}
-                      src={src}
-                      alt="Imagem da questão"
-                      loading="lazy"
-                      decoding="async"
-                      className="rounded-lg border border-edge bg-surface"
-                      onError={(event) => {
-                        event.currentTarget.style.display = "none";
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
+              <QuestionImageRefs imageRefs={item.image_refs} className="mt-5 grid gap-3 md:grid-cols-2" />
             </section>
 
             {canCaptureAnswerSignals && (
@@ -744,14 +728,14 @@ export default function StudyQuestion({
                 </p>
                 {cognitiveCopy && (
                   <GuidanceNote
-                    eyebrow="Autopsia do raciocinio"
+                    eyebrow="Autópsia do raciocínio"
                     tone={cognitiveCopy.tone}
                     className="mt-3"
                   >
                     <span className="block font-semibold">{cognitiveCopy.label}</span>
                     <span className="mt-1 block">{cognitiveCopy.phrase}</span>
                     <span className="mt-2 block text-xs font-semibold uppercase tracking-[0.1em] text-muted">
-                      Pergunta de forca
+                      Pergunta de força
                     </span>
                     <span className="block">{cognitiveCopy.forcingQuestion}</span>
                     <span className="mt-2 block text-xs text-muted">{cognitiveCopy.rule}</span>

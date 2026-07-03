@@ -17,7 +17,7 @@ function markTaskOverdue(task: { due_date: string; ideal_due_date: string; due_a
   task.is_overdue = true;
 }
 
-test.describe("Semana bulk reschedule flow", () => {
+test.describe("Hoje bulk reschedule flow", () => {
   test.beforeEach(async ({ page }) => {
     await addHttpOnlySessionForPage(page);
   });
@@ -27,7 +27,7 @@ test.describe("Semana bulk reschedule flow", () => {
     const today = currentTodayISO();
     markTaskOverdue(db.pendingTasks[0], plusDays(today, -2));
 
-    await page.goto("/semana");
+    await page.goto("/hoje");
 
     await expect(page.getByRole("heading", { name: /Acesso rápido/i })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^Reagendar$/ })).toHaveCount(0);
@@ -49,7 +49,7 @@ test.describe("Semana bulk reschedule flow", () => {
     markTaskOverdue(db.pendingTasks[0], plusDays(today, -2));
     markTaskOverdue(db.pendingTasks[1], plusDays(today, -1));
 
-    await page.goto("/semana");
+    await page.goto("/hoje");
     await page.getByRole("button", { name: "Reagendar todas" }).click();
 
     const dialog = page.getByRole("dialog", { name: "Reagendar atrasadas" });
@@ -69,7 +69,7 @@ test.describe("Semana bulk reschedule flow", () => {
     markTaskOverdue(db.pendingTasks[0], plusDays(today, -2));
     markTaskOverdue(db.pendingTasks[1], plusDays(today, -1));
 
-    await page.goto("/semana");
+    await page.goto("/hoje");
     await expect(page.getByText(/Atrasadas - 2/i)).toBeVisible();
     const initialListReviewHits = db.apiHits.listReviewTasks;
 

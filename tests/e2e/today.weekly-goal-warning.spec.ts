@@ -88,7 +88,7 @@ test.describe("Today weekly goal warning", () => {
       },
     ];
 
-    await page.goto("/today");
+    await page.goto("/hoje");
 
     const weeklyHeader = page.locator("[data-weekly-header='true']");
     await expect(weeklyHeader).toBeVisible();
@@ -154,7 +154,7 @@ test.describe("Today weekly goal warning", () => {
       },
     ];
 
-    await page.goto("/today");
+    await page.goto("/hoje");
 
     await expect(page.locator("[data-weekly-goal-status='true']")).toContainText(/Abaixo do ritmo|Atraso alto/);
     const warningTrigger = page.getByLabel("Detalhes da meta semanal");
@@ -196,7 +196,7 @@ test.describe("Today weekly goal warning", () => {
       });
     });
 
-    await page.goto("/today");
+    await page.goto("/hoje");
 
     await expect(page.getByLabel("Detalhes da meta semanal")).toHaveCount(0);
     await expect(page.locator("[data-weekly-risk-inline='true']")).toContainText(/Risco/i);

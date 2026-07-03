@@ -17,6 +17,7 @@ import {
   type QuestionBankAdminQuestionListItem,
   type QuestionBankReport,
 } from "@/lib/api/domains/question-bank-admin";
+import { QuestionImageRefs } from "@/app/banco-de-questoes/_components/QuestionImageRefs";
 
 const STATUS_OPTIONS = [
   ["published", "Publicadas"],
@@ -1127,12 +1128,12 @@ export default function QuestionsManager() {
             {detail.image_refs.length > 0 && (
               <div className="mt-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Imagens</p>
-                <div className="mt-2 grid gap-2 md:grid-cols-3">
-                  {detail.image_refs.map((src) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={src} src={src} alt="Imagem da questão" className="rounded-lg border border-gray-200 dark:border-gray-700" onError={(e) => { e.currentTarget.style.display = "none"; }} />
-                  ))}
-                </div>
+                <QuestionImageRefs
+                  imageRefs={detail.image_refs}
+                  className="mt-2 grid gap-2 md:grid-cols-3"
+                  imageClassName="rounded-lg border border-gray-200 dark:border-gray-700"
+                  placeholderClassName="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-5 text-center text-xs font-semibold text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400"
+                />
               </div>
             )}
 

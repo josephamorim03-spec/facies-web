@@ -120,7 +120,7 @@ export function cognitivePatternSummary(
   if (!copy) return null;
   return {
     label: copy.label,
-    phrase: `${copy.phrase} Esse padrao apareceu ${count} vezes nesta sessao.`,
+    phrase: `${copy.phrase} Esse padrão apareceu ${count} vezes nesta sessão.`,
     tone: copy.tone,
   };
 }

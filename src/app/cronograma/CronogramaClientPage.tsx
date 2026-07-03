@@ -190,9 +190,9 @@ export default function CronogramaPage() {
         </button>
         <button
           type="button"
-          onClick={() => router.push("/semana")}
+          onClick={() => router.push("/hoje")}
           className="p-1.5 text-muted hover:text-ink"
-          aria-label="Visão semanal"
+          aria-label="Abrir hoje"
         >
           <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5" aria-hidden="true">
             <rect x="1.5" y="1" width="3.5" height="18" rx="0.5" />
@@ -358,9 +358,9 @@ export default function CronogramaPage() {
                 </span>
               </button>
               <button
-                onClick={() => router.push("/semana")}
+                onClick={() => router.push("/hoje")}
                 className="p-1.5 -mr-1 text-muted hover:text-ink shrink-0"
-                aria-label="Visão semanal"
+                aria-label="Abrir hoje"
                 style={WEEK_BUTTON_STABLE_STYLE}
               >
                 <svg viewBox="0 0 20 20" fill="currentColor" className="block w-5 h-5" aria-hidden="true">

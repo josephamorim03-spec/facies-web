@@ -5,13 +5,6 @@ const E2E_BASE_URL = "http://127.0.0.1:3000";
 export async function addHttpOnlySession(context: BrowserContext, value = "session_e2e") {
   await context.addCookies([
     {
-      name: "agendar_session",
-      value,
-      url: E2E_BASE_URL,
-      httpOnly: true,
-      sameSite: "Lax",
-    },
-    {
       name: "krosmed_session",
       value,
       url: E2E_BASE_URL,

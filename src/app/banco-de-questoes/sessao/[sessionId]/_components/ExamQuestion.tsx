@@ -1,10 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
 import type { QuestionBankOption, QuestionBankSessionItem, QuestionBankSessionStatus } from "@/lib/api";
 import { formatClock } from "@/lib/formatDuration";
 import { formatSourceLabel } from "@/lib/formatSource";
+import { QuestionImageRefs } from "@/app/banco-de-questoes/_components/QuestionImageRefs";
 import FontScaleControl from "./FontScaleControl";
 import { useQuestionFontScale } from "./useQuestionFontScale";
 
@@ -309,23 +309,7 @@ export default function ExamQuestion({
             {item.stem}
           </p>
 
-          {item.image_refs.length > 0 && (
-            <div className="mt-6 grid gap-3 md:grid-cols-2">
-              {item.image_refs.map((src) => (
-                <img
-                  key={src}
-                  src={src}
-                  alt="Imagem da questão"
-                  loading="lazy"
-                  decoding="async"
-                  className="rounded-lg border border-edge bg-surface"
-                  onError={(event) => {
-                    event.currentTarget.style.display = "none";
-                  }}
-                />
-              ))}
-            </div>
-          )}
+          <QuestionImageRefs imageRefs={item.image_refs} className="mt-6 grid gap-3 md:grid-cols-2" />
         </section>
 
         <section className="mt-5 grid gap-2.5">

@@ -10,7 +10,7 @@ export function PendingReviewsSection({ tasks }: { tasks: ReviewTask[] }) {
           <h2 className="font-serif text-2xl font-semibold">Revisões pendentes</h2>
           <p className="mt-1 text-sm text-muted">Acesse pelo banco de questões ou veja a agenda completa.</p>
         </div>
-        <Link href="/today" className="text-sm font-semibold text-primary hover:underline">Ver hoje</Link>
+        <Link href="/hoje" className="text-sm font-semibold text-primary hover:underline">Ver hoje</Link>
       </div>
       <div className="mt-4 space-y-3">
         {tasks.slice(0, 6).length > 0 ? tasks.slice(0, 6).map((task) => (

@@ -9,10 +9,10 @@ import {
   getReviewAgenda,
   getQuestionBankNextAction,
   getQuestionBankPerformance,
-  listQuestionBankBoards,
+  listQuestionBankSources,
+  listQuestionBankYears,
   previewQuestionBankAvailability,
   type QuestionBankAnswerStatus,
-  type QuestionBankBoard,
   type QuestionBankCorrectionStatus,
   type QuestionBankAvailability,
   type QuestionBankNextAction,
@@ -20,7 +20,9 @@ import {
   type QuestionBankQuestion,
   type QuestionBankResolutionMode,
   type QuestionBankSessionCreatePayload,
+  type QuestionBankSourceOption,
   type QuestionBankTopic,
+  type QuestionBankYearStat,
   type FullExamType,
   type StudyKind,
 } from "@/lib/api";
@@ -385,9 +387,13 @@ function BancoDeQuestoesContent() {
   const [area, setArea] = useState(() => initialContext.area ?? "");
   const [search, setSearch] = useState(() => initialContext.theme ?? "");
   const [boardCodes, setBoardCodes] = useState<string[]>([]);
-  const [boards, setBoards] = useState<QuestionBankBoard[]>([]);
-  const [boardsLoading, setBoardsLoading] = useState(true);
-  const [boardsError, setBoardsError] = useState(false);
+  const [institutions, setInstitutions] = useState<string[]>([]);
+  const [sources, setSources] = useState<QuestionBankSourceOption[]>([]);
+  const [sourcesLoading, setSourcesLoading] = useState(true);
+  const [sourcesError, setSourcesError] = useState(false);
+  const [yearStats, setYearStats] = useState<QuestionBankYearStat[]>([]);
+  const [yearsLoading, setYearsLoading] = useState(true);
+  const [yearsError, setYearsError] = useState(false);
   const [selectedYears, setSelectedYears] = useState<number[]>([]);
   const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("unanswered");
   const [correctionStatus, setCorrectionStatus] = useState<QuestionBankCorrectionStatus>("all");
@@ -438,7 +444,7 @@ function BancoDeQuestoesContent() {
 
   const appliedFilterCount = [
     area,
-    boardCodes.length > 0 ? "boards" : "",
+    boardCodes.length + institutions.length > 0 ? "sources" : "",
     selectedYears.length > 0 ? "years" : "",
     answerStatus !== "unanswered" ? answerStatus : "",
     correctionStatus !== "all" ? correctionStatus : "",
@@ -508,12 +514,13 @@ function BancoDeQuestoesContent() {
     knowledge_node_ids: selectedTopics.length > 0 ? selectedTopics.map((t) => t.knowledge_node_id) : undefined,
     area: area || undefined,
     board_codes: boardCodes.length > 0 ? boardCodes : undefined,
+    institutions: institutions.length > 0 ? institutions : undefined,
     years: selectedYears.length > 0 ? selectedYears : undefined,
     answer_status: answerStatus,
     only_unanswered: answerStatus === "unanswered",
     correction_status: correctionStatus,
     limit: overrides?.limit,
-  }), [answerStatus, area, boardCodes, correctionStatus, selectedTopics, selectedYears]);
+  }), [answerStatus, area, boardCodes, correctionStatus, institutions, selectedTopics, selectedYears]);
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -548,6 +555,7 @@ function BancoDeQuestoesContent() {
         area: area || undefined,
         search: search.trim() || undefined,
         board_codes: boardCodes.length > 0 ? boardCodes : undefined,
+        institutions: institutions.length > 0 ? institutions : undefined,
         years: selectedYears.length > 0 ? selectedYears : undefined,
         include_empty: false,
         limit: 1000,
@@ -574,25 +582,39 @@ function BancoDeQuestoesContent() {
     } finally {
       setTopicsLoading(false);
     }
-  }, [area, boardCodes, search, selectedYears, showToast, token]);
+  }, [area, boardCodes, institutions, search, selectedYears, showToast, token]);
 
-  const loadBoards = useCallback(async () => {
-    setBoardsLoading(true);
-    setBoardsError(false);
+  const loadSourceOptions = useCallback(async () => {
+    setSourcesLoading(true);
+    setSourcesError(false);
     try {
-      setBoards(await listQuestionBankBoards(token));
+      setSources(await listQuestionBankSources(token));
     } catch {
-      setBoards([]);
-      setBoardsError(true);
+      setSources([]);
+      setSourcesError(true);
     } finally {
-      setBoardsLoading(false);
+      setSourcesLoading(false);
+    }
+  }, [token]);
+
+  const loadYears = useCallback(async () => {
+    setYearsLoading(true);
+    setYearsError(false);
+    try {
+      setYearStats(await listQuestionBankYears(token));
+    } catch {
+      setYearStats([]);
+      setYearsError(true);
+    } finally {
+      setYearsLoading(false);
     }
   }, [token]);
 
   useEffect(() => {
     if (!tokenResolved) return;
-    void loadBoards();
-  }, [loadBoards, tokenResolved]);
+    void loadSourceOptions();
+    void loadYears();
+  }, [loadSourceOptions, loadYears, tokenResolved]);
 
   useEffect(() => {
     if (!tokenResolved) return;
@@ -628,6 +650,12 @@ function BancoDeQuestoesContent() {
 
   function handleSelectedYearsChange(next: number[]) {
     setSelectedYears(next);
+    clearSelection();
+  }
+
+  function handleSourceSelectionChange(next: { boardCodes: string[]; institutions: string[] }) {
+    setBoardCodes(next.boardCodes);
+    setInstitutions(next.institutions);
     clearSelection();
   }
 
@@ -961,11 +989,16 @@ function BancoDeQuestoesContent() {
                   selectedTopics={selectedTopics}
                   onToggleTopic={toggleTopic}
                   boardCodes={boardCodes}
-                  boards={boards}
-                  boardsLoading={boardsLoading}
-                  boardsError={boardsError}
-                  onBoardCodesChange={setBoardCodes}
-                  onBoardsRetry={() => void loadBoards()}
+                  institutions={institutions}
+                  sources={sources}
+                  sourcesLoading={sourcesLoading}
+                  sourcesError={sourcesError}
+                  onSourceSelectionChange={handleSourceSelectionChange}
+                  onSourcesRetry={() => void loadSourceOptions()}
+                  yearStats={yearStats}
+                  yearsLoading={yearsLoading}
+                  yearsError={yearsError}
+                  onYearsRetry={() => void loadYears()}
                   selectedYears={selectedYears}
                   onSelectedYearsChange={handleSelectedYearsChange}
                   answerStatus={answerStatus}

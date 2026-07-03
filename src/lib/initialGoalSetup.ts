@@ -5,7 +5,7 @@ import {
 } from "@/lib/studyImportRuntime";
 
 export const INITIAL_GOAL_SETUP_ROUTE = "/rotina-e-metas";
-export const DEFAULT_AUTHENTICATED_ROUTE = "/semana";
+export const DEFAULT_AUTHENTICATED_ROUTE = "/hoje";
 export const ACTIVATE_ROUTE = "/ativar-acesso";
 
 export async function requiresInitialGoalSetup(token: string): Promise<boolean> {

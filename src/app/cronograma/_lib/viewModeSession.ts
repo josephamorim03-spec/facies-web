@@ -27,6 +27,6 @@ export function writeCronogramaViewModeSession(viewMode: CronogramaViewMode): vo
   }
 }
 
-export function getCronogramaAgendaHref(): "/agenda-operacional" | "/semana" {
-  return readCronogramaViewModeSession() === "week" ? "/semana" : "/agenda-operacional";
+export function getCronogramaAgendaHref(): "/agenda-operacional" | "/hoje" {
+  return readCronogramaViewModeSession() === "week" ? "/hoje" : "/agenda-operacional";
 }

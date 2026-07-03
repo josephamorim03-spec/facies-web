@@ -9,7 +9,7 @@ export default function Home() {
   useEffect(() => {
     let active = true;
 
-    // The session cookie (agendar_session) is httpOnly — invisible to document.cookie.
+    // The session cookie (krosmed_session) is httpOnly — invisible to document.cookie.
     // We must make a lightweight API call that the Next.js proxy will forward
     // with the httpOnly cookie as an Authorization header.
     fetch("/api/profile", {
