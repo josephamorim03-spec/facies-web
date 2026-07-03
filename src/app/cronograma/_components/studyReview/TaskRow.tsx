@@ -2,7 +2,7 @@
 import AreaDot from "@/components/AreaDot";
 import { DirectedStudyListItem, ReviewTask } from "@/lib/api";
 import { IconCritical } from "../CronogramaIcons";
-import { Area, displayDate } from "../../_lib/cronogramaShared";
+import { Area, displayDate, topicPrimaryLabel } from "../../_lib/cronogramaShared";
 import { TaskDetail } from "./TaskDetail";
 import { ReviewSignalChips } from "../ReviewSignalChips";
 export function TaskRow({ task, token, studies, studyMap, overdue, onRefresh, logDateISO }: {
@@ -10,6 +10,7 @@ export function TaskRow({ task, token, studies, studyMap, overdue, onRefresh, lo
   studyMap: Map<string, DirectedStudyListItem>; overdue?: boolean; onRefresh: () => void; logDateISO?: string | null;
 }) {
   const isDone = task.status === "done";
+  const displayLabel = topicPrimaryLabel(task) || task.theme;
   const [expanded, setExpanded] = useState(false);
 
   if (isDone) {
@@ -27,7 +28,7 @@ export function TaskRow({ task, token, studies, studyMap, overdue, onRefresh, lo
         <AreaDot area={task.area as Area} size="md" />
         <div className="flex-1 min-w-0">
           <div className="min-w-0">
-            <span className={`text-sm ${overdue ? "italic text-muted" : ""}`}>{task.theme}</span>
+            <span className={`text-sm ${overdue ? "italic text-muted" : ""}`}>{displayLabel}</span>
             <span className="text-xs text-muted ml-2">{task.expected_questions}q</span>
             {task.is_critical && <IconCritical className="w-3 h-3 inline ml-1 align-middle" />}
             {overdue && <span className="text-xs text-muted ml-1">(vence {displayDate(task.due_date)})</span>}

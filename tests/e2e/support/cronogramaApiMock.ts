@@ -5,6 +5,7 @@ type ReviewTask = {
   user_id: string;
   area: string;
   theme: string;
+  subtheme: string | null;
   source_study_id: string;
   due_date: string;
   ideal_due_date: string;
@@ -21,6 +22,7 @@ type DirectedStudyListItem = {
   study_id: string;
   area: string;
   theme: string;
+  subtheme: string | null;
   total_questions: number;
   correct_questions: number;
   user_weight: number;
@@ -133,6 +135,7 @@ function createDb(): DbState {
         user_id: "user_e2e",
         area: "CM",
         theme: "Pneumonia",
+        subtheme: null,
         source_study_id: "study_initial_1",
         due_date: today,
         ideal_due_date: today,
@@ -149,6 +152,7 @@ function createDb(): DbState {
         user_id: "user_e2e",
         area: "PED",
         theme: "Asma",
+        subtheme: null,
         source_study_id: "study_initial_2",
         due_date: tomorrow,
         ideal_due_date: tomorrow,
@@ -167,6 +171,7 @@ function createDb(): DbState {
         user_id: "user_e2e",
         area: "GO",
         theme: "Pré-eclâmpsia",
+        subtheme: null,
         source_study_id: "study_review_done_1",
         due_date: yesterday,
         ideal_due_date: yesterday,
@@ -184,10 +189,11 @@ function createDb(): DbState {
         study_id: "study_initial_1",
         area: "CM",
         theme: "Pneumonia",
+        subtheme: null,
         total_questions: 30,
         correct_questions: 20,
         user_weight: 2,
-        performed_at: today,
+        performed_at: toDateTimeFromISO(today),
         created_at: now,
         accuracy: 66.7,
         is_review: false,
@@ -203,10 +209,11 @@ function createDb(): DbState {
         study_id: "study_review_done_1",
         area: "GO",
         theme: "Pré-eclâmpsia",
+        subtheme: null,
         total_questions: 20,
         correct_questions: 15,
         user_weight: 2,
-        performed_at: yesterday,
+        performed_at: toDateTimeFromISO(yesterday),
         created_at: now,
         accuracy: 75,
         is_review: true,
@@ -222,10 +229,11 @@ function createDb(): DbState {
         study_id: "study_full_exam_1",
         area: "MULTI",
         theme: "Simulado Maio",
+        subtheme: null,
         total_questions: 100,
         correct_questions: 70,
         user_weight: 3,
-        performed_at: tomorrow,
+        performed_at: toDateTimeFromISO(tomorrow),
         created_at: now,
         accuracy: 70,
         is_review: false,
@@ -554,15 +562,16 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
     // Study mutation (used by modal/detail flows)
     if (method === "POST" && path === "/api/studies/directed") {
       const payload = request.postDataJSON() as {
-        topic?: { area: string; theme: string };
+        topic?: { area: string; theme: string; subtheme?: string | null };
         study_kind?: "topic" | "full_exam";
         full_exam?: { full_exam_name: string; full_exam_year?: number | null; full_exam_type?: "acesso_direto" | "r_plus" | null };
         total_questions: number;
         correct_questions: number;
+        performed_at?: string | null;
       };
       db.counters.study += 1;
       db.counters.task += 1;
-      const performedAt = todayISO();
+      const performedAt = String(payload.performed_at || toDateTimeFromISO(todayISO()));
       const area = payload.topic?.area ?? "MULTI";
       const theme = payload.topic?.theme ?? payload.full_exam?.full_exam_name ?? "Simulado";
       const studyKind = payload.study_kind ?? (payload.full_exam ? "full_exam" : "topic");
@@ -570,6 +579,7 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
         study_id: `study_${db.counters.study}`,
         area,
         theme,
+        subtheme: payload.topic?.subtheme ?? null,
         total_questions: payload.total_questions,
         correct_questions: payload.correct_questions,
         user_weight: 2,
@@ -591,6 +601,7 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
         user_id: "user_e2e",
         area,
         theme,
+        subtheme: payload.topic?.subtheme ?? null,
         source_study_id: study.study_id,
         due_date: plusDays(performedAt, 1),
         ideal_due_date: plusDays(performedAt, 1),

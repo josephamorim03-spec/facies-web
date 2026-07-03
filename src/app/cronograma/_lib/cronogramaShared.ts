@@ -70,6 +70,41 @@ export function buildStudiesByDate(studies: DirectedStudyListItem[]): Record<str
   return map;
 }
 
+type TopicDisplayLike = {
+  area?: string | null;
+  theme?: string | null;
+  subtheme?: string | null;
+};
+
+export function topicPrimaryLabel(topic: TopicDisplayLike): string {
+  return String(topic.subtheme ?? topic.theme ?? "").trim();
+}
+
+export function topicSecondaryLabel(topic: TopicDisplayLike): string | null {
+  const primary = topicPrimaryLabel(topic);
+  const parentTheme = String(topic.theme ?? "").trim();
+  if (!primary) return null;
+  if (!topic.subtheme) return null;
+  return parentTheme && parentTheme !== primary ? parentTheme : null;
+}
+
+export function sameTopicIdentity(
+  left: TopicDisplayLike | null | undefined,
+  right: TopicDisplayLike | null | undefined,
+): boolean {
+  if (!left || !right) return false;
+  const leftArea = String(left.area ?? "").trim().toUpperCase();
+  const rightArea = String(right.area ?? "").trim().toUpperCase();
+  if (leftArea !== rightArea) return false;
+  const leftTheme = String(left.theme ?? "").trim();
+  const rightTheme = String(right.theme ?? "").trim();
+  if (leftTheme !== rightTheme) return false;
+  const leftSubtheme = String(left.subtheme ?? "").trim();
+  const rightSubtheme = String(right.subtheme ?? "").trim();
+  if (!leftSubtheme && !rightSubtheme) return true;
+  return leftSubtheme === rightSubtheme;
+}
+
 export function isFullExamStudy(study: DirectedStudyListItem): boolean {
   return study.study_kind === STUDY_KIND_FULL_EXAM;
 }
@@ -87,13 +122,13 @@ export function getRevisionNumber(task: ReviewTask, studies: DirectedStudyListIt
   const src = studyMap.get(task.source_study_id);
   if (!src) return 1;
   const sorted = studies
-    .filter((s) => isTopicStudy(s) && s.area === task.area && s.theme === task.theme)
+    .filter((s) => isTopicStudy(s) && sameTopicIdentity(s, task))
     .sort((a, b) => a.performed_at.localeCompare(b.performed_at));
   return sorted.findIndex((s) => s.study_id === src.study_id) + 1;
 }
 /** Cumulative accuracy across all study sessions (initial + reviews) for the same topic. */
 export function getAccuracy(task: ReviewTask, studies: DirectedStudyListItem[]): number | null {
-  const topicStudies = studies.filter((s) => isTopicStudy(s) && s.area === task.area && s.theme === task.theme);
+  const topicStudies = studies.filter((s) => isTopicStudy(s) && sameTopicIdentity(s, task));
   if (topicStudies.length === 0) return null;
   const totalQ = topicStudies.reduce((sum, s) => sum + s.total_questions, 0);
   const correctQ = topicStudies.reduce((sum, s) => sum + s.correct_questions, 0);

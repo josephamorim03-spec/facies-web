@@ -82,6 +82,7 @@ export type FiltersBarProps = {
   search: string;
   onSearchChange: (v: string) => void;
   topics: QuestionBankTopic[];
+  topicSuggestions: QuestionBankTopic[];
   topicsLoading?: boolean;
   topicsError?: boolean;
   onTopicsRetry?: () => void;
@@ -142,7 +143,7 @@ function SectionHeader({ step, title, detail }: { step: string; title: string; d
 
 export default function FiltersBar(props: FiltersBarProps) {
   const {
-    area, onAreaChange, search, onSearchChange, topics, selectedTopics, onToggleTopic,
+    area, onAreaChange, search, onSearchChange, topics, topicSuggestions, selectedTopics, onToggleTopic,
     topicsLoading = false, topicsError = false, onTopicsRetry,
     boardCodes, institutions, sources, sourcesLoading, sourcesError, onSourceSelectionChange, onSourcesRetry,
     yearStats, yearsLoading, yearsError, onYearsRetry,
@@ -227,7 +228,7 @@ export default function FiltersBar(props: FiltersBarProps) {
           />
           {suggestionsFocused && search.trim() && (
             <ul className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-y-auto rounded-xl border border-edge bg-surface shadow-[var(--soft-shadow)]">
-              {flatTopics.filter((topic) => !topic.synthetic).slice(0, 8).map((topic) => {
+              {topicSuggestions.slice(0, 8).map((topic) => {
                 const selectable = topic.question_count > 0;
                 return (
                   <li key={topic.knowledge_node_id}>
@@ -251,7 +252,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                   </li>
                 );
               })}
-              {flatTopics.filter((topic) => !topic.synthetic).length === 0 && (
+              {topicSuggestions.length === 0 && (
                 <li className="px-3 py-2 text-sm text-muted">Nenhum resultado para &ldquo;{search}&rdquo;</li>
               )}
             </ul>

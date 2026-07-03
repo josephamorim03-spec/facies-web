@@ -4,11 +4,8 @@ import { IconCards, IconStethoscope } from "../CronogramaIcons";
 import {
   eventFlags,
 } from "../../_lib/cronogramaShared";
-import { buildDayDotEntries } from "./derived";
+import { buildDayDotEntries, CalendarPopupTarget } from "./derived";
 import { CalendarDragEventMeta, isPastCalendarCell } from "./eventRules";
-
-type ExpandedRowState = { row: number; slots: number } | null;
-const MONTHLY_DOT_LIMIT = 4;
 
 export function CalendarGrid({
   gridRef,
@@ -23,11 +20,6 @@ export function CalendarGrid({
   isMobilePortrait,
   selectedDay,
   showDayDetail,
-  expandedCell,
-  expandedRow,
-  setExpandedCell,
-  setExpandedRow,
-  expandTimer,
   dragEventMeta,
   dragTaskId,
   dragFromISO,
@@ -67,11 +59,6 @@ export function CalendarGrid({
   isMobilePortrait: boolean;
   selectedDay: string | null;
   showDayDetail: boolean;
-  expandedCell: string | null;
-  expandedRow: ExpandedRowState;
-  setExpandedCell: (value: string | null) => void;
-  setExpandedRow: (value: ExpandedRowState) => void;
-  expandTimer: MutableRefObject<ReturnType<typeof setTimeout> | null>;
   dragEventMeta: CalendarDragEventMeta | null;
   dragTaskId: string | null;
   dragFromISO: string | null;
@@ -119,7 +106,7 @@ export function CalendarGrid({
   ) => void;
   clearDragState: () => void;
   interactive?: boolean;
-  onBarClick?: (task: ReviewTask, rect: DOMRect) => void;
+  onBarClick?: (target: CalendarPopupTarget, rect: DOMRect) => void;
   onDoubleClickEmpty?: () => void;
   taskRevisionMap?: Map<string, number>;
 }) {
@@ -252,23 +239,12 @@ export function CalendarGrid({
 
         const pendingTasks = dayTasks.filter((task) => task.status === "pending");
         const doneTasks = dayTasks.filter((task) => task.status === "done");
-        const isExpanded = expandedCell === iso;
-        const rowExpansion = expandedRow && expandedRow.row === rowIndex ? expandedRow : null;
-
         const allDots = buildDayDotEntries({
           dayStudies,
           pendingTasks,
           doneTasks,
         });
-        const baseVisibleDotLimit = showDayDetail
-          ? 4
-          : MONTHLY_DOT_LIMIT;
-        const visibleDotLimit = rowExpansion
-          ? (isExpanded ? allDots.length : Math.min(allDots.length, rowExpansion.slots))
-          : baseVisibleDotLimit;
-        const visibleDots = allDots.slice(0, visibleDotLimit);
-        const shouldRenderDotGrid = visibleDots.length > 0;
-        const hasOverflow = allDots.length > visibleDotLimit;
+        const shouldRenderDotGrid = allDots.length > 0;
         const dayCellMinHeight = showDayDetail
           ? (isMobilePortrait ? "min-h-[3.2rem]" : "min-h-[3rem]")
           : (isMobilePortrait ? "min-h-[6.35rem]" : "min-h-[6rem]");
@@ -302,11 +278,6 @@ export function CalendarGrid({
               if (!interactive) return;
               if (e.key !== "Enter" && e.key !== " ") return;
               e.preventDefault();
-              if (expandedRow && expandedRow.row !== rowIndex) {
-                setExpandedCell(null);
-                setExpandedRow(null);
-                if (expandTimer.current) clearTimeout(expandTimer.current);
-              }
               onDaySelect(isSelected ? null : iso);
               if (isSelected) onCloseDayDetailForSameDay();
             }}
@@ -314,11 +285,6 @@ export function CalendarGrid({
               if (!interactive) return;
               if (dragEventMeta) { handleEventDrop(iso); return; }
               if (dragTaskId && dragFromISO) { handleDrop(iso); return; }
-              if (expandedRow && expandedRow.row !== rowIndex) {
-                setExpandedCell(null);
-                setExpandedRow(null);
-                if (expandTimer.current) clearTimeout(expandTimer.current);
-              }
               onDaySelect(isSelected ? null : iso);
               if (isSelected) onCloseDayDetailForSameDay();
             }}
@@ -449,7 +415,7 @@ export function CalendarGrid({
 
             {shouldRenderDotGrid && (
               <div className={`flex flex-col gap-[2px] ${showDayDetail ? "mt-[7px]" : "mt-[15px]"} px-0.5`}>
-                {visibleDots.map((dot) => {
+                {allDots.map((dot) => {
                   if (dot.kind === "initial") {
                     const barH = showDayDetail ? "min-h-[16px]" : "min-h-[18px]";
                     const fontSize = showDayDetail ? "9px" : "10px";
@@ -460,6 +426,10 @@ export function CalendarGrid({
                         data-testid="calendar-day-dot"
                         data-dot-kind="initial"
                         title={dot.tooltip}
+                        onClick={interactive && dot.popupTarget ? (e) => {
+                          e.stopPropagation();
+                          onBarClick?.(dot.popupTarget!, (e.currentTarget as HTMLElement).getBoundingClientRect());
+                        } : undefined}
                         className={`flex w-full items-center gap-1 rounded-md px-1 py-0.5 ${barH} overflow-hidden shadow-sm`}
                         style={{ backgroundColor: dot.color, opacity: 0.7, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.14)" }}
                       >
@@ -485,12 +455,17 @@ export function CalendarGrid({
                         data-testid="calendar-day-dot"
                         data-dot-kind="full_exam"
                         title={dot.tooltip}
+                        onClick={interactive && dot.popupTarget ? (e) => {
+                          e.stopPropagation();
+                          onBarClick?.(dot.popupTarget!, (e.currentTarget as HTMLElement).getBoundingClientRect());
+                        } : undefined}
                         className={`w-full rounded-sm overflow-hidden ${showDayDetail ? "h-1.5" : "h-2"}`}
                         style={{ backgroundColor: dot.color }}
                       />
                     );
                   }
                   const isDone = dot.kind === "done";
+                  const isPending = dot.kind === "pending";
                   const barH = showDayDetail ? "min-h-[16px]" : "min-h-[18px]";
                   const fontSize = showDayDetail ? "9px" : "10px";
                   const chipFontSize = showDayDetail ? "8px" : "9px";
@@ -500,20 +475,20 @@ export function CalendarGrid({
                       key={dot.key}
                       data-testid="calendar-day-dot"
                       data-dot-kind={dot.kind}
-                      draggable={interactive && !showDayDetail && dot.kind === "pending" && !!dot.task && !isTouchDevice}
+                      draggable={interactive && !showDayDetail && isPending && !!dot.task && !isTouchDevice}
                       title={dot.tooltip}
-                      onClick={interactive && dot.task ? (e) => {
+                      onClick={interactive && dot.popupTarget ? (e) => {
                         e.stopPropagation();
-                        onBarClick?.(dot.task!, (e.currentTarget as HTMLElement).getBoundingClientRect());
+                        onBarClick?.(dot.popupTarget!, (e.currentTarget as HTMLElement).getBoundingClientRect());
                       } : undefined}
                       onContextMenu={dot.task ? (e) => e.preventDefault() : undefined}
-                      onTouchStart={interactive && !showDayDetail && dot.task ? (e) => {
+                      onTouchStart={interactive && !showDayDetail && isPending && dot.task ? (e) => {
                         startTouchDrag(e, dot.task!, iso, dot.color);
                       } : undefined}
-                      onPointerDown={interactive && !showDayDetail && dot.task ? (e) => {
+                      onPointerDown={interactive && !showDayDetail && isPending && dot.task ? (e) => {
                         startPointerTouchDrag(e, dot.task!, iso, dot.color);
                       } : undefined}
-                      onDragStart={interactive && !showDayDetail && dot.task ? (e) => {
+                      onDragStart={interactive && !showDayDetail && isPending && dot.task ? (e) => {
                         if (touchDragTouchId.current !== null || taskDragOrigin.current === "touch") {
                           e.preventDefault();
                           return;
@@ -521,21 +496,21 @@ export function CalendarGrid({
                         e.stopPropagation();
                         beginTaskDrag(dot.task!, iso);
                       } : undefined}
-                      onDragEnd={interactive && !showDayDetail && dot.task ? () => {
+                      onDragEnd={interactive && !showDayDetail && isPending && dot.task ? () => {
                         if (taskDragOrigin.current === "touch" || touchDragTouchId.current !== null) return;
                         clearDragState();
                       } : undefined}
-                      className={`flex w-full items-center gap-1 rounded-md px-1 py-0.5 ${barH} overflow-hidden shadow-sm ${dot.task ? "select-none touch-none" : ""} ${
+                      className={`flex w-full items-center gap-1 rounded-md px-1 py-0.5 ${barH} overflow-hidden shadow-sm ${isPending && dot.task ? "select-none touch-none" : ""} ${
                         dot.task && touchDraggingTaskId === dot.task.task_id ? "ring-1 ring-white/60 scale-[1.02]" : ""
                       } ${dot.task && dragTaskId === dot.task.task_id ? "ring-1 ring-white/60" : ""}`}
                       style={{
                         backgroundColor: dot.color,
                         opacity: isDone ? 0.45 : 1,
                         boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.14)",
-                        WebkitUserSelect: dot.task ? "none" : undefined,
-                        userSelect: dot.task ? "none" : undefined,
-                        WebkitTouchCallout: dot.task ? "none" : undefined,
-                        touchAction: dot.task ? "none" : undefined,
+                        WebkitUserSelect: isPending && dot.task ? "none" : undefined,
+                        userSelect: isPending && dot.task ? "none" : undefined,
+                        WebkitTouchCallout: isPending && dot.task ? "none" : undefined,
+                        touchAction: isPending && dot.task ? "none" : undefined,
                         WebkitTapHighlightColor: dot.task ? "transparent" : undefined,
                       }}
                     >
@@ -552,35 +527,12 @@ export function CalendarGrid({
                         className="min-w-0 flex-1 truncate font-semibold leading-none text-white"
                         style={{ fontSize }}
                       >
-                        {dot.task?.theme ?? dot.tooltip?.split(": ")[1] ?? ""}
+                        {dot.theme ?? dot.task?.theme ?? dot.tooltip?.split(": ")[1] ?? ""}
                       </span>
                     </div>
                   );
                 })}
               </div>
-            )}
-
-            {hasOverflow && (
-              <span
-                className="absolute bottom-0.5 right-0.5 text-[8px] text-muted leading-none cursor-pointer hover:text-ink"
-                title="Mostrar todos"
-                data-testid="calendar-day-overflow"
-                data-cell-iso={iso}
-                onClick={(e) => {
-                  if (!interactive) return;
-                  e.stopPropagation();
-                  if (expandTimer.current) clearTimeout(expandTimer.current);
-                  setExpandedCell(iso);
-                  const expandedRows = Math.max(2, Math.ceil(allDots.length / 2));
-                  setExpandedRow({ row: rowIndex, slots: expandedRows * 2 });
-                  expandTimer.current = setTimeout(() => {
-                    setExpandedCell(null);
-                    setExpandedRow(null);
-                  }, 8000);
-                }}
-              >
-                ...
-              </span>
             )}
           </div>
         );

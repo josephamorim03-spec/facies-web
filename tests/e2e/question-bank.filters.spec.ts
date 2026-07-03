@@ -37,6 +37,17 @@ const childTopic = {
   question_count: 6,
 };
 
+const otherAreaTopic = {
+  ...topic,
+  knowledge_node_id: "cm-node",
+  parent_knowledge_node_id: null,
+  node_code: "CM",
+  node_name: "Cardiologia",
+  node_path: ["Medicina", "Cardiologia"],
+  path_label: "Medicina / Cardiologia",
+  question_count: 9,
+};
+
 const item = {
   question_id: "q1",
   position: 1,
@@ -294,7 +305,7 @@ test("manual search filters topics without becoming a hidden session filter", as
   });
   await page.route("**/api/question-bank/topics**", async (route) => {
     topicRequestUrls.push(route.request().url());
-    await route.fulfill({ contentType: "application/json", body: JSON.stringify([topic, childTopic]) });
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify([topic, childTopic, otherAreaTopic]) });
   });
   await page.route("**/api/question-bank/next-action", async (route) => {
     await route.fulfill({
@@ -366,11 +377,18 @@ test("manual search filters topics without becoming a hidden session filter", as
     )
     .toBe(true);
 
+  const topicRequestsBeforeAreaChange = topicRequestUrls.length;
+  await expect(filterPanel).toContainText("Cardiologia");
+  await page.getByRole("button", { name: "GO" }).click();
+  await expect(filterPanel).not.toContainText("Cardiologia");
+  await page.waitForTimeout(400);
+  expect(topicRequestUrls).toHaveLength(topicRequestsBeforeAreaChange);
+
   await page.getByPlaceholder("Buscar especialidade, macrotema ou subtema").fill("Placenta");
   await expect(page.getByRole("button", { name: /Placenta previa/ }).first()).toBeVisible();
-  await expect
-    .poll(() => topicRequestUrls.some((url) => new URL(url).searchParams.get("search") === "Placenta"))
-    .toBe(true);
+  await expect(page.getByText("Obstetricia").first()).toBeVisible();
+  await page.waitForTimeout(400);
+  expect(topicRequestUrls.some((url) => new URL(url).searchParams.get("search") === "Placenta")).toBe(false);
   await expect
     .poll(() => topicRequestUrls.some((url) => new URL(url).searchParams.get("include_empty") === "false"))
     .toBe(true);

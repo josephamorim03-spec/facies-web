@@ -66,6 +66,7 @@ test.describe("Today weekly goal warning", () => {
         user_id: "user_e2e",
         area: "CM",
         theme: `Tema atrasado ${i}`,
+        subtheme: null,
         source_study_id: `study_source_${i}`,
         due_date: overdueDate,
         ideal_due_date: overdueDate,

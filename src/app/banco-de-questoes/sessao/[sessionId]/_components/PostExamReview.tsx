@@ -64,6 +64,7 @@ export default function PostExamReview({
   const scheduledCount = finalizeOut?.created_tasks.length ?? 0;
   const savedCorrectionCount = corrections.length;
   const isFullExam = session.study_kind === "full_exam";
+  const sessionDisplayLabel = session.subtheme ?? session.theme ?? "Sessao concluida";
   const resultLabel = isFullExam
     ? "Resultado da prova"
     : session.resolution_mode === "simulation"
@@ -140,7 +141,7 @@ export default function PostExamReview({
                 {resultLabel}
               </p>
               <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight">
-                {session.theme ?? "Sessão concluída"}
+                {sessionDisplayLabel}
               </h1>
               <div className="mt-4 rounded-lg border border-primary/30 bg-[var(--amber-tint)] p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Ganho da sessão</p>

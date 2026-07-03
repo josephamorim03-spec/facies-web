@@ -14,6 +14,18 @@ function normalizeTopicSegment(value: string): string {
     .toLowerCase();
 }
 
+const QUESTION_BANK_AREA_CODES = new Set(["GO", "OB", "PD", "MP", "CG", "CM", "OU"]);
+
+function topicAreaFromCode(value: string | null | undefined): string | null {
+  const normalized = String(value ?? "").trim().toUpperCase();
+  if (!normalized) return null;
+  if (normalized.startsWith("QB-")) {
+    const [, area] = normalized.split("-");
+    return area && QUESTION_BANK_AREA_CODES.has(area) ? area : null;
+  }
+  return QUESTION_BANK_AREA_CODES.has(normalized) ? normalized : null;
+}
+
 function sanitizeTopicPathParts(parts: string[]): string[] {
   const cleaned = parts.map((part) => part.trim()).filter(Boolean);
   while (cleaned.length > 0 && normalizeTopicSegment(cleaned[0]) === "medicina") {
@@ -33,6 +45,43 @@ function topicPathParts(topic: Pick<QuestionBankTopic, "node_name" | "node_path"
     if (cleaned.length > 0) return cleaned;
   }
   return sanitizeTopicPathParts([topic.node_name]);
+}
+
+function topicSearchValue(topic: Pick<QuestionBankTopic, "node_name" | "node_code" | "node_path" | "path_label">): string {
+  return normalizeTopicSegment(
+    [
+      topic.node_name,
+      topic.node_code ?? "",
+      topic.path_label ?? "",
+      ...(topic.node_path ?? []),
+    ].join(" "),
+  );
+}
+
+function resolveTopicArea(
+  topic: Pick<QuestionBankTopic, "knowledge_node_id" | "parent_knowledge_node_id" | "node_code">,
+  topicsById: Map<string, QuestionBankTopic>,
+  memo: Map<string, string | null>,
+  visiting: Set<string>,
+): string | null {
+  const cached = memo.get(topic.knowledge_node_id);
+  if (cached !== undefined) return cached;
+  const direct = topicAreaFromCode(topic.node_code);
+  if (direct) {
+    memo.set(topic.knowledge_node_id, direct);
+    return direct;
+  }
+  if (visiting.has(topic.knowledge_node_id)) {
+    memo.set(topic.knowledge_node_id, null);
+    return null;
+  }
+  visiting.add(topic.knowledge_node_id);
+  const parentId = topic.parent_knowledge_node_id?.trim();
+  const parent = parentId ? topicsById.get(parentId) : undefined;
+  const resolved = parent ? resolveTopicArea(parent, topicsById, memo, visiting) : null;
+  visiting.delete(topic.knowledge_node_id);
+  memo.set(topic.knowledge_node_id, resolved);
+  return resolved;
 }
 
 function isForbiddenStudentRoot(topic: Pick<QuestionBankTopic, "node_name" | "node_path" | "path_label">): boolean {
@@ -144,4 +193,48 @@ export function buildTopicTree(topics: QuestionBankTopic[]): TopicTreeNode[] {
 
 export function flattenTopicTree(nodes: TopicTreeNode[]): TopicTreeNode[] {
   return nodes.flatMap((node) => [node, ...flattenTopicTree(node.children)]);
+}
+
+export function filterTopicsLocally(
+  topics: QuestionBankTopic[],
+  params: {
+    area?: string;
+    search?: string;
+    preserveSearchAncestors?: boolean;
+  } = {},
+): QuestionBankTopic[] {
+  const normalizedArea = String(params.area ?? "").trim().toUpperCase();
+  const normalizedSearch = normalizeTopicSegment(String(params.search ?? ""));
+  const topicsById = new Map(topics.map((topic) => [topic.knowledge_node_id, topic]));
+  const areaMemo = new Map<string, string | null>();
+
+  const areaFiltered = normalizedArea
+    ? topics.filter(
+        (topic) =>
+          resolveTopicArea(topic, topicsById, areaMemo, new Set()) === normalizedArea,
+      )
+    : topics;
+
+  if (!normalizedSearch) return areaFiltered;
+
+  const filteredById = new Map(areaFiltered.map((topic) => [topic.knowledge_node_id, topic]));
+  const matchedIds = new Set(
+    areaFiltered
+      .filter((topic) => topicSearchValue(topic).includes(normalizedSearch))
+      .map((topic) => topic.knowledge_node_id),
+  );
+
+  if (!params.preserveSearchAncestors) {
+    return areaFiltered.filter((topic) => matchedIds.has(topic.knowledge_node_id));
+  }
+
+  const retainedIds = new Set(matchedIds);
+  for (const topicId of matchedIds) {
+    let parentId = filteredById.get(topicId)?.parent_knowledge_node_id?.trim() ?? "";
+    while (parentId) {
+      retainedIds.add(parentId);
+      parentId = filteredById.get(parentId)?.parent_knowledge_node_id?.trim() ?? "";
+    }
+  }
+  return areaFiltered.filter((topic) => retainedIds.has(topic.knowledge_node_id));
 }

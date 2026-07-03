@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { DirectedStudyListItem, ReviewTask } from "@/lib/api";
+import { topicPrimaryLabel } from "../_lib/cronogramaShared";
 
 type UseCronogramaSearchFiltersParams = {
   tasks: ReviewTask[];
@@ -20,8 +21,8 @@ export function useCronogramaSearchFilters({
 
   const allThemes = useMemo(() => {
     const set = new Set<string>();
-    for (const s of studies) set.add(s.theme);
-    for (const t of [...tasks, ...doneTasks]) set.add(t.theme);
+    for (const s of studies) set.add(topicPrimaryLabel(s) || s.theme);
+    for (const t of [...tasks, ...doneTasks]) set.add(topicPrimaryLabel(t) || t.theme);
     return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
   }, [studies, tasks, doneTasks]);
 

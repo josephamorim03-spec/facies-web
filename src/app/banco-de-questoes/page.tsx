@@ -34,6 +34,7 @@ import type { GuidanceTone } from "@/lib/guidanceCopy";
 import FiltersBar from "./_components/FiltersBar";
 import QuestionList from "./_components/QuestionList";
 import CreateSessionPanel from "./_components/CreateSessionPanel";
+import { filterTopicsLocally } from "./_components/topicTree";
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -45,6 +46,10 @@ function clampQuestionLimit(value: number | null | undefined, fallback = 10) {
   const numericValue = Number(value ?? fallback);
   if (!Number.isFinite(numericValue)) return fallback;
   return Math.max(1, Math.min(QUESTION_BANK_LIMIT_CAP, Math.trunc(numericValue)));
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "AbortError";
 }
 
 function IconBookOpen({ className }: { className?: string }) {
@@ -424,6 +429,8 @@ function BancoDeQuestoesContent() {
   const [performance, setPerformance] = useState<QuestionBankPerformance | null>(null);
   const [dueTopicTaskCount, setDueTopicTaskCount] = useState(0);
   const availabilityRequestSeq = useRef(0);
+  const availabilityAbortRef = useRef<AbortController | null>(null);
+  const topicsAbortRef = useRef<AbortController | null>(null);
 
   // Derived
   const requestedLimit = clampQuestionLimit(limit);
@@ -459,6 +466,21 @@ function BancoDeQuestoesContent() {
         : studyKind === "full_exam" || resolutionMode === "simulation"
           ? "simulation"
           : "learning";
+
+  const filteredTaxonomyTopics = useMemo(
+    () => filterTopicsLocally(taxonomyTopics, { area, search, preserveSearchAncestors: true }),
+    [area, search, taxonomyTopics],
+  );
+  const filteredMicroTopics = useMemo(
+    () => filterTopicsLocally(microTopics, { area, search, preserveSearchAncestors: false }),
+    [area, search, microTopics],
+  );
+  const topicSuggestions = useMemo(
+    () =>
+      filterTopicsLocally(taxonomyTopics, { area, search, preserveSearchAncestors: false })
+        .filter((topic) => topic.question_count > 0),
+    [area, search, taxonomyTopics],
+  );
 
   // Reset on URL change
   useEffect(() => {
@@ -508,6 +530,11 @@ function BancoDeQuestoesContent() {
     };
   }, [routeSearchKey, router, setActions]);
 
+  useEffect(() => () => {
+    availabilityAbortRef.current?.abort();
+    topicsAbortRef.current?.abort();
+  }, []);
+
   // ─── Filter params factory ───────────────────────────────────────────────
 
   const filterParams = useCallback((overrides?: { limit?: number }) => ({
@@ -527,33 +554,45 @@ function BancoDeQuestoesContent() {
   const refreshAvailability = useCallback(async () => {
     const requestSeq = availabilityRequestSeq.current + 1;
     availabilityRequestSeq.current = requestSeq;
+    availabilityAbortRef.current?.abort();
+    const controller = new AbortController();
+    availabilityAbortRef.current = controller;
     setLoadingPreview(true);
     setError(null);
     try {
-      const next = await previewQuestionBankAvailability(token, { ...filterParams(), mode: "adaptive" });
+      const next = await previewQuestionBankAvailability(
+        token,
+        { ...filterParams(), mode: "adaptive" },
+        { signal: controller.signal },
+      );
       if (availabilityRequestSeq.current !== requestSeq) return;
       setAvailability(next);
       if (next.max_selectable > 0 && requestedLimit > next.max_selectable) {
         setLimit(clampQuestionLimit(next.max_selectable));
       }
     } catch (err) {
+      if (controller.signal.aborted || isAbortError(err)) return;
       if (availabilityRequestSeq.current !== requestSeq) return;
       setAvailability(null);
       const message = err instanceof Error ? err.message : "Não foi possível calcular a disponibilidade.";
       setError(message);
       showToast(message, "error");
     } finally {
+      if (availabilityAbortRef.current === controller) {
+        availabilityAbortRef.current = null;
+      }
       if (availabilityRequestSeq.current === requestSeq) setLoadingPreview(false);
     }
   }, [filterParams, requestedLimit, showToast, token]);
 
   const refreshTopics = useCallback(async () => {
+    topicsAbortRef.current?.abort();
+    const controller = new AbortController();
+    topicsAbortRef.current = controller;
     setTopicsLoading(true);
     setTopicsError(false);
     try {
       const common = {
-        area: area || undefined,
-        search: search.trim() || undefined,
         board_codes: boardCodes.length > 0 ? boardCodes : undefined,
         institutions: institutions.length > 0 ? institutions : undefined,
         years: selectedYears.length > 0 ? selectedYears : undefined,
@@ -564,15 +603,17 @@ function BancoDeQuestoesContent() {
         browseQuestionBankTopics(token, {
           ...common,
           node_types: ["specialty", "theme", "subtheme"],
-        }),
+        }, { signal: controller.signal }),
         browseQuestionBankTopics(token, {
           ...common,
           node_types: ["microcompetency"],
-        }),
+        }, { signal: controller.signal }),
       ]);
+      if (controller.signal.aborted) return;
       setTaxonomyTopics(taxonomy);
       setMicroTopics(micros);
     } catch (err) {
+      if (controller.signal.aborted || isAbortError(err)) return;
       setTaxonomyTopics([]);
       setMicroTopics([]);
       setTopicsError(true);
@@ -580,9 +621,12 @@ function BancoDeQuestoesContent() {
       setError(message);
       showToast(message, "error");
     } finally {
+      if (topicsAbortRef.current === controller) {
+        topicsAbortRef.current = null;
+      }
       setTopicsLoading(false);
     }
-  }, [area, boardCodes, institutions, search, selectedYears, showToast, token]);
+  }, [boardCodes, institutions, selectedYears, showToast, token]);
 
   const loadSourceOptions = useCallback(async () => {
     setSourcesLoading(true);
@@ -982,7 +1026,8 @@ function BancoDeQuestoesContent() {
                   onAreaChange={handleAreaChange}
                   search={search}
                   onSearchChange={handleSearchChange}
-                  topics={taxonomyTopics}
+                  topics={filteredTaxonomyTopics}
+                  topicSuggestions={topicSuggestions}
                   topicsLoading={topicsLoading}
                   topicsError={topicsError}
                   onTopicsRetry={() => void refreshTopics()}
@@ -1026,7 +1071,7 @@ function BancoDeQuestoesContent() {
                 />
               </div>
               <RecommendedTopicsPanel
-                topics={microTopics}
+                topics={filteredMicroTopics}
                 selectedTopics={selectedTopics}
                 activeIntent={activeIntent}
                 onToggleTopic={toggleTopic}

@@ -472,17 +472,18 @@ export default function SessionPage() {
   if (!currentItem) return null;
 
   const total = session.total_questions;
+  const sessionDisplayLabel = session.subtheme ?? session.theme ?? "Sessao";
   // The displayed "n/total" + progress must track movement through the (possibly
   // reranked) `items` array, not the stable `position` id — otherwise the counter
   // and progress bar jump around as the adaptive order changes.
   const currentIndex = session.items.findIndex((i) => i.position === currentPosition);
   const displayPosition = currentIndex >= 0 ? currentIndex + 1 : currentPosition;
   const primaryNode = currentItem.knowledge_nodes.find((node) => node.is_primary) ?? currentItem.knowledge_nodes[0];
-  const quickNoteTheme = primaryNode?.node_name ?? session.theme ?? "Questão do banco";
+  const quickNoteTheme = primaryNode?.node_name ?? sessionDisplayLabel ?? "Questao do banco";
   const quickNoteOutcome: OperationalQuestionOutcome | null =
     currentItem.is_correct === null ? null : currentItem.is_correct ? "correct" : "incorrect";
   const sessionKindLabel = session.study_kind === "full_exam" ? "Prova" : "Simulado";
-  const examLabel = [session.theme, session.area].filter(Boolean).join(" · ") || "Sessão";
+  const examLabel = [sessionDisplayLabel, session.area].filter(Boolean).join(" · ") || "Sessao";
 
   function navigateTo(pos: number) {
     questionStartTimeRef.current = Date.now();

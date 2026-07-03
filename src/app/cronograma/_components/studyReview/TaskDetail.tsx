@@ -19,6 +19,9 @@ import {
   getAccuracy,
   getRevisionNumber,
   isTopicStudy,
+  sameTopicIdentity,
+  topicPrimaryLabel,
+  topicSecondaryLabel,
 } from "../../_lib/cronogramaShared";
 import { InlineLogForm } from "./InlineLogForm";
 import { parseStudyEditImpactPreview } from "./shared";
@@ -38,6 +41,8 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
 
   const accuracy = getAccuracy(task, studies);
   const revision = getRevisionNumber(task, studies, studyMap);
+  const displayLabel = topicPrimaryLabel(task) || task.theme;
+  const parentThemeLabel = topicSecondaryLabel(task);
   const isDone = task.status === "done";
   const [showLog, setShowLog] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -71,7 +76,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
     const byTaskId = studies.find((s) => s.origin_review_task_id === task.task_id);
     if (byTaskId) return byTaskId;
     const sorted = studies
-      .filter((s) => isTopicStudy(s) && s.area === task.area && s.theme === task.theme)
+      .filter((s) => isTopicStudy(s) && sameTopicIdentity(s, task))
       .sort((a, b) => a.performed_at.localeCompare(b.performed_at));
     return sorted[revision] ?? null;
   })() : null;
@@ -200,7 +205,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
   if (isDone && cancelConfirm) {
     return (
       <div className="space-y-2">
-        <p className="text-xs text-muted italic">Revisão #{revision} · {task.area} / {task.theme}</p>
+        <p className="text-xs text-muted italic">Revisão #{revision} · {task.area} / {displayLabel}</p>
         <p className="text-xs text-muted">Cancelar esta revisão irá devolvê-la para a fila de pendentes.</p>
         {editableStudy?.import_session_id && (
           <p className="text-xs text-warning">Atenção: esta revisão possui uma correção salva que será perdida ao cancelar.</p>
@@ -219,7 +224,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
   if (isDone && editMode) {
     return (
       <div className="mx-auto w-full max-w-xs space-y-2">
-        <p className="text-xs text-muted italic">Alterar revisão #{revision} · {task.area} / {task.theme}</p>
+        <p className="text-xs text-muted italic">Alterar revisão #{revision} · {task.area} / {displayLabel}</p>
         {editableStudy ? (
           <>
             {editableStudy.import_session_id && (
@@ -316,10 +321,12 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1">
-              <p className="text-sm leading-tight truncate">{task.theme}</p>
+              <p className="text-sm leading-tight truncate">{displayLabel}</p>
               <IconCheck className="w-3.5 h-3.5 text-ink shrink-0" />
             </div>
-            <p className="text-xs text-muted">{task.area} · Revisão realizada</p>
+            <p className="text-xs text-muted">
+              {task.area} · {parentThemeLabel ? `${parentThemeLabel} · ` : ""}Revisão realizada
+            </p>
             <ReviewSignalChips task={task} compact className="mt-1" />
           </div>
         </div>
@@ -346,8 +353,10 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
       <div className="flex items-center gap-2">
         <AreaDot area={task.area as Area} size="md" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium leading-tight">{task.theme}</p>
-          <p className="text-xs text-muted">{task.area}</p>
+          <p className="text-sm font-medium leading-tight">{displayLabel}</p>
+          <p className="text-xs text-muted">
+            {task.area}{parentThemeLabel ? ` · ${parentThemeLabel}` : ""}
+          </p>
         </div>
         {task.is_critical && <IconCritical className="w-3 h-3 inline ml-1 align-middle" />}
       </div>

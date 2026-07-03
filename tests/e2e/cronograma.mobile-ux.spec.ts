@@ -227,10 +227,24 @@ test.describe("Cronograma mobile portrait UX", () => {
     await expect(tooltip).toHaveClass(/opacity-0/);
   });
 
+  test("card para revisar hoje explicita a fila global do banco", async ({ page }) => {
+    await mockCronogramaApi(page);
+    await page.goto("/cronograma");
+
+    const panel = page.getByLabel("Para revisar hoje");
+    await expect(panel).toContainText("1 tarefa · 3 questoes na fila global do banco");
+    await expect(panel).toContainText("fila global");
+
+    await panel.getByRole("button", { name: /Expandir revisoes de hoje/i }).click();
+    await expect(panel).toContainText("2 no ponto de revisao · 1 tambem em baixo desempenho");
+  });
+
   test("detalhe do olho nao tem overflow lateral e dia com 5 marcadores nao exibe reticencias", async ({ page }) => {
     const { db } = await mockCronogramaApi(page);
     const selectedISO = todayISO();
-    const baseStudy = db.studies.find((study) => study.study_kind === "topic" && study.performed_at === selectedISO);
+    const baseStudy = db.studies.find(
+      (study) => study.study_kind === "topic" && study.performed_at.startsWith(`${selectedISO}T`),
+    );
     expect(baseStudy).toBeDefined();
     if (baseStudy) {
       db.studies.push(
@@ -257,7 +271,7 @@ test.describe("Cronograma mobile portrait UX", () => {
     const selectedISO = todayISO();
     const pendingTemplate = db.pendingTasks.find((task) => task.due_date === selectedISO);
     expect(pendingTemplate).toBeDefined();
-    db.studies = db.studies.filter((study) => study.performed_at !== selectedISO);
+    db.studies = db.studies.filter((study) => !study.performed_at.startsWith(`${selectedISO}T`));
     db.pendingTasks = db.pendingTasks.filter((task) => task.due_date !== selectedISO);
     if (pendingTemplate) {
       for (let index = 1; index <= 6; index += 1) {
@@ -273,12 +287,12 @@ test.describe("Cronograma mobile portrait UX", () => {
     await expect(page.locator(`[data-testid='calendar-day-overflow'][data-cell-iso='${selectedISO}']`)).toHaveCount(0);
   });
 
-  test("com 7 marcadores exibe reticencias", async ({ page }) => {
+  test("com 7 marcadores aumenta a altura da semana sem reticencias", async ({ page }) => {
     const { db } = await mockCronogramaApi(page);
     const selectedISO = todayISO();
     const pendingTemplate = db.pendingTasks.find((task) => task.due_date === selectedISO);
     expect(pendingTemplate).toBeDefined();
-    db.studies = db.studies.filter((study) => study.performed_at !== selectedISO);
+    db.studies = db.studies.filter((study) => !study.performed_at.startsWith(`${selectedISO}T`));
     db.pendingTasks = db.pendingTasks.filter((task) => task.due_date !== selectedISO);
     if (pendingTemplate) {
       for (let index = 1; index <= 7; index += 1) {
@@ -293,7 +307,40 @@ test.describe("Cronograma mobile portrait UX", () => {
 
     await page.goto("/cronograma");
 
-    await expect(page.locator(`[data-testid='calendar-day-overflow'][data-cell-iso='${selectedISO}']`)).toHaveCount(1);
+    await expect(page.locator(`[data-testid='calendar-day-overflow'][data-cell-iso='${selectedISO}']`)).toHaveCount(0);
+    await expect(page.locator(`[data-cell-iso='${selectedISO}'] [data-testid='calendar-day-dot']`)).toHaveCount(7);
+    await assertCalendarViewportNoCutAndSmallGap(page);
+  });
+
+  test("clicar em revisao concluida abre popup de resumo readonly", async ({ page }) => {
+    await mockCronogramaApi(page);
+    const doneISO = plusDays(todayISO(), -1);
+    await page.goto("/cronograma");
+
+    await page.locator(`[data-cell-iso='${doneISO}'] [data-dot-kind='done']`).first().click();
+
+    await expect(page.getByText("Revisao concluida")).toBeVisible();
+    await expect(page.getByText("15/20")).toBeVisible();
+    await expect(page.getByText("75%")).toBeVisible();
+  });
+
+  test("clicar em estudo inicial e prova concluida abre popup correto", async ({ page }) => {
+    await mockCronogramaApi(page);
+    const selectedISO = todayISO();
+    const examISO = plusDays(selectedISO, 1);
+    await page.goto("/cronograma");
+
+    await page.locator(`[data-cell-iso='${selectedISO}'] [data-dot-kind='initial']`).first().click();
+    await expect(page.getByText("CM · Estudo inicial")).toBeVisible();
+    await expect(page.getByText("20/30")).toBeVisible();
+    await expect(page.getByText("67%")).toBeVisible();
+
+    await page.mouse.click(5, 5);
+
+    await page.locator(`[data-cell-iso='${examISO}'] [data-dot-kind='full_exam']`).first().click();
+    await expect(page.getByText("MULTI · Acesso Direto · 2026")).toBeVisible();
+    await expect(page.getByText("70/100")).toBeVisible();
+    await expect(page.getByText("Acesso Direto")).toBeVisible();
   });
 
   test("streak em risco nao sinaliza antes de 20h", async ({ page }) => {

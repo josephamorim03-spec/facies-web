@@ -8,7 +8,7 @@ import {
   getAPIErrorDetail,
   ReviewTask,
 } from "@/lib/api";
-import { Area, displayDate } from "../../_lib/cronogramaShared";
+import { Area, displayDate, topicPrimaryLabel } from "../../_lib/cronogramaShared";
 import { useAnimatedDots } from "@/lib/useAnimatedDots";
 import { getErrorMessage } from "@/lib/error-utils";
 import { resolvePerformedAtISO } from "./shared";
@@ -29,7 +29,7 @@ export function InlineLogForm({ task, token, onDone, onCancel, logDateISO }: {
       review_task_id: task.task_id,
       date: logDateISO || task.due_date,
       area: task.area,
-      theme: task.theme,
+      theme: topicPrimaryLabel(task) || task.theme,
       expected_questions: String(Math.max(1, Number(task.expected_questions) || 1)),
     });
     router.push(`/banco-de-questoes?${params.toString()}`);
@@ -48,7 +48,7 @@ export function InlineLogForm({ task, token, onDone, onCancel, logDateISO }: {
     try {
       const derivedCorrect = correct !== "" ? c : Math.round(t * 0.75);
       const out = await createDirectedStudy(token, {
-        topic: { area: task.area, theme: task.theme },
+        topic: { area: task.area, theme: task.theme, subtheme: task.subtheme },
         total_questions: t,
         correct_questions: derivedCorrect,
         performed_at: performedAt,

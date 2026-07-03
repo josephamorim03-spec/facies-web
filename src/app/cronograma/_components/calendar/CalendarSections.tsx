@@ -4,8 +4,19 @@ import { CalendarEventOut, DirectedStudyListItem, ReviewTask } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { IconPlus } from "../CronogramaIcons";
 import { NewStudyForm } from "../CronogramaStudyReviewComponents";
-import { getAccuracy, getRevisionNumber, SHORT_MONTH_LABELS } from "../../_lib/cronogramaShared";
+import {
+  FULL_EXAM_TYPE_LABELS,
+  getAccuracy,
+  getRevisionNumber,
+  isFullExamStudy,
+  isTopicStudy,
+  sameTopicIdentity,
+  SHORT_MONTH_LABELS,
+  topicPrimaryLabel,
+  topicSecondaryLabel,
+} from "../../_lib/cronogramaShared";
 import { ReviewSignalChips } from "../ReviewSignalChips";
+import { CalendarPopupTarget } from "./derived";
 
 export function CalendarMonthNavigation({
   month,
@@ -109,51 +120,137 @@ export function CalendarActionButtons({
   );
 }
 
-export function TaskBarPopup({
-  task,
+function popupPosition(anchorRect: DOMRect): { top: number; left: number } {
+  const viewportHeight = typeof window === "undefined" ? 800 : window.innerHeight;
+  const viewportWidth = typeof window === "undefined" ? 1280 : window.innerWidth;
+  return {
+    top: Math.min(anchorRect.bottom + 8, viewportHeight - 240),
+    left: Math.min(Math.max(8, anchorRect.left), viewportWidth - 296),
+  };
+}
+
+function studyDisplayLabel(study: DirectedStudyListItem): string {
+  if (isFullExamStudy(study)) {
+    return String(study.full_exam_name ?? study.theme ?? "").trim() || "Prova";
+  }
+  return topicPrimaryLabel(study) || study.theme;
+}
+
+function studySecondaryText(study: DirectedStudyListItem): string {
+  if (isFullExamStudy(study)) {
+    const examType = study.full_exam_type ? FULL_EXAM_TYPE_LABELS[study.full_exam_type] : "Prova na integra";
+    return [study.area, examType, study.full_exam_year ? String(study.full_exam_year) : ""]
+      .filter(Boolean)
+      .join(" · ");
+  }
+  const parentThemeLabel = topicSecondaryLabel(study);
+  return [study.area, parentThemeLabel, study.is_review ? "Revisao concluida" : "Estudo inicial"]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function studyRecordType(study: DirectedStudyListItem): string {
+  if (isFullExamStudy(study)) return "Prova na integra";
+  return study.is_review ? "Revisao concluida" : "Estudo inicial";
+}
+
+function resolveCompletedReviewStudy(
+  task: ReviewTask,
+  studies: DirectedStudyListItem[],
+  studyMap: Map<string, DirectedStudyListItem>,
+): DirectedStudyListItem | null {
+  const byTaskId = studies.find((study) => study.origin_review_task_id === task.task_id);
+  if (byTaskId) return byTaskId;
+  const revision = getRevisionNumber(task, studies, studyMap);
+  const sorted = studies
+    .filter((study) => isTopicStudy(study) && sameTopicIdentity(study, task))
+    .sort((left, right) => left.performed_at.localeCompare(right.performed_at));
+  return sorted[revision] ?? null;
+}
+
+function ReadonlyStudyPopupContent({
+  study,
+}: {
+  study: DirectedStudyListItem;
+}) {
+  const displayLabel = studyDisplayLabel(study);
+  const secondary = studySecondaryText(study);
+  const recordType = studyRecordType(study);
+  return (
+    <>
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">{recordType}</p>
+        <p className="mt-0.5 text-sm font-semibold leading-snug text-ink">{displayLabel}</p>
+        <p className="mt-1 text-xs text-muted">{secondary}</p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+          <p className="text-[11px] text-muted leading-none">Registro</p>
+          <p className="mt-1 text-sm font-bold text-ink">{recordType}</p>
+        </div>
+        <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+          <p className="text-[11px] text-muted leading-none">Questoes</p>
+          <p className="mt-1 text-sm font-bold text-ink">
+            {study.correct_questions}/{study.total_questions}
+          </p>
+        </div>
+        <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+          <p className="text-[11px] text-muted leading-none">Acuracia</p>
+          <p className="mt-1 text-sm font-bold text-ink">{study.accuracy.toFixed(0)}%</p>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export function CalendarEntryPopup({
+  target,
   anchorRect,
   studies,
   studyMap,
   onClose,
 }: {
-  task: ReviewTask;
+  target: CalendarPopupTarget;
   anchorRect: DOMRect;
   studies: DirectedStudyListItem[];
   studyMap: Map<string, DirectedStudyListItem>;
   onClose: () => void;
 }) {
-  const accuracy = getAccuracy(task, studies);
-  const revision = getRevisionNumber(task, studies, studyMap);
-  const bancoParams = new URLSearchParams({
-    review_task_id: task.task_id,
-    date: task.due_date,
-    area: task.area,
-    search: task.theme,
-    expected_questions: String(task.expected_questions),
-  });
-  const bancoUrl = `/banco-de-questoes?${bancoParams.toString()}`;
-  const sessionTitle = `Revisão #${revision} — ${task.theme}`;
+  const { top: popupTop, left: popupLeft } = popupPosition(anchorRect);
 
-  const popupTop = Math.min(anchorRect.bottom + 8, window.innerHeight - 240);
-  const popupLeft = Math.min(Math.max(8, anchorRect.left), window.innerWidth - 296);
+  let content: React.ReactNode = null;
 
-  return (
-    <>
-      <div className="fixed inset-0 z-[60]" onClick={onClose} />
-      <div
-        className="fixed z-[61] w-72 max-w-[calc(100vw-1rem)] space-y-3 rounded-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)]"
-        style={{ top: popupTop, left: popupLeft }}
-        onClick={(e) => e.stopPropagation()}
-      >
+  if (target.kind === "pending") {
+    const task = target.task;
+    const accuracy = getAccuracy(task, studies);
+    const revision = getRevisionNumber(task, studies, studyMap);
+    const displayLabel = topicPrimaryLabel(task) || task.theme;
+    const parentThemeLabel = topicSecondaryLabel(task);
+    const bancoParams = new URLSearchParams({
+      review_task_id: task.task_id,
+      date: task.due_date,
+      area: task.area,
+      theme: displayLabel,
+      expected_questions: String(task.expected_questions),
+    });
+    const bancoUrl = `/banco-de-questoes?${bancoParams.toString()}`;
+    const sessionTitle = `Revisao #${revision} - ${displayLabel}`;
+
+    content = (
+      <>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">{task.area}</p>
-          <p className="mt-0.5 text-sm font-semibold text-ink leading-snug">{task.theme}</p>
+          <p className="mt-0.5 text-sm font-semibold text-ink leading-snug">{displayLabel}</p>
+          <p className="mt-1 text-xs text-muted">
+            {parentThemeLabel ? `${parentThemeLabel} · ` : ""}Revisao pendente
+          </p>
           <ReviewSignalChips task={task} compact className="mt-2" />
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
-            <p className="text-[11px] text-muted leading-none">Revisão</p>
+            <p className="text-[11px] text-muted leading-none">Revisao</p>
             <p className="mt-1 text-lg font-bold text-ink">#{revision}</p>
           </div>
           <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
@@ -163,7 +260,7 @@ export function TaskBarPopup({
             </p>
           </div>
           <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
-            <p className="text-[11px] text-muted leading-none">Mín. q</p>
+            <p className="text-[11px] text-muted leading-none">Min. q</p>
             <p className="mt-1 text-lg font-bold text-ink">{task.expected_questions}</p>
           </div>
         </div>
@@ -174,8 +271,61 @@ export function TaskBarPopup({
           aria-label={sessionTitle}
           className="flex w-full items-center justify-center rounded-xl border border-primary bg-primary py-2.5 text-xs font-semibold text-primaryInk transition-all hover:brightness-105"
         >
-          Abrir revisão no banco
+          Abrir revisao no banco
         </Link>
+      </>
+    );
+  } else if (target.kind === "done") {
+    const task = target.task;
+    const resolvedStudy = resolveCompletedReviewStudy(task, studies, studyMap);
+    const displayLabel = topicPrimaryLabel(task) || task.theme;
+    const parentThemeLabel = topicSecondaryLabel(task);
+    const revision = getRevisionNumber(task, studies, studyMap);
+
+    content = (
+      <>
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Revisao concluida</p>
+          <p className="mt-0.5 text-sm font-semibold text-ink leading-snug">{displayLabel}</p>
+          <p className="mt-1 text-xs text-muted">
+            {[task.area, parentThemeLabel, `Revisao #${revision}`].filter(Boolean).join(" · ")}
+          </p>
+          <ReviewSignalChips task={task} compact className="mt-2" />
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+            <p className="text-[11px] text-muted leading-none">Registro</p>
+            <p className="mt-1 text-sm font-bold text-ink">Revisao</p>
+          </div>
+          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+            <p className="text-[11px] text-muted leading-none">Questoes</p>
+            <p className="mt-1 text-sm font-bold text-ink">
+              {resolvedStudy ? `${resolvedStudy.correct_questions}/${resolvedStudy.total_questions}` : "—"}
+            </p>
+          </div>
+          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+            <p className="text-[11px] text-muted leading-none">Acuracia</p>
+            <p className="mt-1 text-sm font-bold text-ink">
+              {resolvedStudy ? `${resolvedStudy.accuracy.toFixed(0)}%` : "—"}
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  } else {
+    content = <ReadonlyStudyPopupContent study={target.study} />;
+  }
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[60]" onClick={onClose} />
+      <div
+        className="fixed z-[61] w-72 max-w-[calc(100vw-1rem)] space-y-3 rounded-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)]"
+        style={{ top: popupTop, left: popupLeft }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {content}
       </div>
     </>
   );

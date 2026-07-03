@@ -12,6 +12,8 @@ import {
   FULL_EXAM_COLOR,
   FULL_EXAM_TYPE_LABELS,
   isFullExamStudy,
+  topicPrimaryLabel,
+  topicSecondaryLabel,
 } from "../../_lib/cronogramaShared";
 import { parseStudyEditImpactPreview } from "./shared";
 import { getErrorMessage } from "@/lib/error-utils";
@@ -19,6 +21,10 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
   study: DirectedStudyListItem; token: string; onRefresh: () => void; onClose: () => void;
 }) {
   const studyIsFullExam = isFullExamStudy(study);
+  const displayLabel = studyIsFullExam
+    ? String(study.full_exam_name ?? study.theme ?? "").trim() || "Prova"
+    : topicPrimaryLabel(study) || study.theme;
+  const parentThemeLabel = studyIsFullExam ? null : topicSecondaryLabel(study);
   const [editing, setEditing] = useState(false);
   const [cancelConfirm, setCancelConfirm] = useState(false);
   const [total, setTotal] = useState(String(study.total_questions));
@@ -99,7 +105,7 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
     return (
       <div className="mx-auto w-full max-w-xs space-y-2">
         <p className="text-xs text-muted italic">
-          Alterar registro · {studyIsFullExam ? "PROVA" : study.area} / {study.theme}
+          Alterar registro · {studyIsFullExam ? "PROVA" : study.area} / {displayLabel}
         </p>
         <div className="flex gap-2 justify-center">
           <label className="text-xs text-muted flex flex-col gap-1">
@@ -183,15 +189,15 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
             }}
           />
         )}
-        <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
-            <p className="text-sm leading-tight truncate">{study.theme}</p>
+            <p className="text-sm leading-tight truncate">{displayLabel}</p>
             <IconCheck className="w-3.5 h-3.5 text-ink shrink-0" />
           </div>
           <p className="text-xs text-muted">
             {studyIsFullExam
               ? `PROVA · ${study.full_exam_type ? FULL_EXAM_TYPE_LABELS[study.full_exam_type] : "Prova na íntegra"}${study.full_exam_year ? ` · ${study.full_exam_year}` : ""}`
-              : `${study.area} · ${study.is_review ? "Revisão realizada" : "Estudo inicial"}`}
+              : `${study.area}${parentThemeLabel ? ` · ${parentThemeLabel}` : ""} · ${study.is_review ? "Revisão realizada" : "Estudo inicial"}`}
           </p>
         </div>
       </div>

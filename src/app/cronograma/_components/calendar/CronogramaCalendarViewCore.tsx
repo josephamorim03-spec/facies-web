@@ -17,12 +17,13 @@ import {
   CalendarEventMoveErrorToast,
   CalendarNoDisturbNotice,
   CalendarRescheduleWarningModal,
-  TaskBarPopup,
+  CalendarEntryPopup,
 } from "./CalendarSections";
 import {
   buildCalendarCells,
   buildSearchMatchDays,
   buildTasksByDate,
+  CalendarPopupTarget,
 } from "./derived";
 import { CalendarGrid } from "./CalendarGrid";
 import { useCalendarMonthNavigation } from "./hooks/useCalendarMonthNavigation";
@@ -66,6 +67,13 @@ function estimateCalendarGridHeightPx(params: {
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
+}
+
+function isSamePopupTarget(left: CalendarPopupTarget, right: CalendarPopupTarget): boolean {
+  if (left.kind !== right.kind) return false;
+  if ("task" in left && "task" in right) return left.task.task_id === right.task.task_id;
+  if ("study" in left && "study" in right) return left.study.study_id === right.study.study_id;
+  return false;
 }
 
 function measureGridContentHeight(gridEl: HTMLDivElement | null): number {
@@ -140,15 +148,15 @@ export function CronogramaCalendarView({
   const showDayDetail = false;
 
   const [modal, setModal] = useState<"create" | null>(null);
-  const [barPopup, setBarPopup] = useState<{ task: ReviewTask; rect: DOMRect } | null>(null);
+  const [barPopup, setBarPopup] = useState<{ target: CalendarPopupTarget; rect: DOMRect } | null>(null);
 
   function handleDaySelect(iso: string | null) {
     setSelectedDay(iso);
     setBarPopup(null);
   }
 
-  function handleBarClick(task: ReviewTask, rect: DOMRect) {
-    setBarPopup((prev) => prev?.task.task_id === task.task_id ? null : { task, rect });
+  function handleBarClick(target: CalendarPopupTarget, rect: DOMRect) {
+    setBarPopup((prev) => (prev && isSamePopupTarget(prev.target, target) ? null : { target, rect }));
   }
 
   const taskRevisionMap = useMemo(() => {
@@ -158,9 +166,6 @@ export function CronogramaCalendarView({
     }
     return map;
   }, [tasks, doneTasks, studies, studyMap]);
-  const [expandedCell, setExpandedCell] = useState<string | null>(null);
-  const [expandedRow, setExpandedRow] = useState<{ row: number; slots: number } | null>(null);
-  const expandTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [viewportWidth, setViewportWidthState] = useState(0);
   const [activeLayerHeight, setActiveLayerHeight] = useState(0);
   const [previewLayerHeight, setPreviewLayerHeight] = useState(0);
@@ -298,7 +303,7 @@ export function CronogramaCalendarView({
       window.removeEventListener("resize", measure);
       window.removeEventListener("orientationchange", measure);
     };
-  }, [year, month, showDayDetail, isMobilePortrait, expandedCell, expandedRow, transition.phase]);
+  }, [year, month, showDayDetail, isMobilePortrait, transition.phase]);
 
   useLayoutEffect(() => {
     const previewGrid = previewGridRef.current;
@@ -323,7 +328,7 @@ export function CronogramaCalendarView({
       window.removeEventListener("resize", measure);
       window.removeEventListener("orientationchange", measure);
     };
-  }, [transition.previewYear, transition.previewMonth, showDayDetail, isMobilePortrait, expandedCell, expandedRow, transition.phase]);
+  }, [transition.previewYear, transition.previewMonth, showDayDetail, isMobilePortrait, transition.phase]);
 
   const activeSnapshot = useMemo(
     () => buildMonthSnapshot(year, month),
@@ -508,11 +513,6 @@ export function CronogramaCalendarView({
                 isMobilePortrait={isMobilePortrait}
                 selectedDay={selectedDay}
                 showDayDetail={showDayDetail}
-                expandedCell={expandedCell}
-                expandedRow={expandedRow}
-                setExpandedCell={setExpandedCell}
-                setExpandedRow={setExpandedRow}
-                expandTimer={expandTimer}
                 dragEventMeta={dragEventMeta}
                 dragTaskId={dragTaskId}
                 dragFromISO={dragFromISO}
@@ -561,11 +561,6 @@ export function CronogramaCalendarView({
                   isMobilePortrait={isMobilePortrait}
                   selectedDay={null}
                   showDayDetail={showDayDetail}
-                  expandedCell={null}
-                  expandedRow={null}
-                  setExpandedCell={() => {}}
-                  setExpandedRow={() => {}}
-                  expandTimer={expandTimer}
                   dragEventMeta={null}
                   dragTaskId={null}
                   dragFromISO={null}
@@ -631,8 +626,8 @@ export function CronogramaCalendarView({
       />
 
       {barPopup && (
-        <TaskBarPopup
-          task={barPopup.task}
+        <CalendarEntryPopup
+          target={barPopup.target}
           anchorRect={barPopup.rect}
           studies={studies}
           studyMap={studyMap}

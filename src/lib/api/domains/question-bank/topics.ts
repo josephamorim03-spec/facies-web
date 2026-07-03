@@ -11,6 +11,7 @@ import type {
 export async function browseQuestionBankTopics(
   token: string,
   params: { area?: string; search?: string; institution?: string; institutions?: string[]; node_type?: string; node_types?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_empty?: boolean; limit?: number } = {},
+  init?: Pick<RequestInit, "signal">,
 ): Promise<QuestionBankTopic[]> {
   const q = new URLSearchParams();
   if (params.area?.trim()) q.set("area", params.area.trim());
@@ -30,12 +31,14 @@ export async function browseQuestionBankTopics(
   // invalidam a tag automaticamente.
   return api<QuestionBankTopic[]>(`/api/question-bank/topics${q.toString() ? `?${q.toString()}` : ""}`, {
     headers: authHeader(token),
+    signal: init?.signal,
   });
 }
 
 export async function previewQuestionBankAvailability(
   token: string,
   params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; institutions?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus; mode?: QuestionBankMode } = {},
+  init?: Pick<RequestInit, "signal">,
 ): Promise<QuestionBankAvailability> {
   const q = new URLSearchParams();
   appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
@@ -54,5 +57,6 @@ export async function previewQuestionBankAvailability(
   return api<QuestionBankAvailability>(`/api/question-bank/availability${q.toString() ? `?${q.toString()}` : ""}`, {
     headers: authHeader(token),
     retry: false,
+    signal: init?.signal,
   });
 }

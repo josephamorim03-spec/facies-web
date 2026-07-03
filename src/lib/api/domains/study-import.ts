@@ -104,6 +104,7 @@ export type ReviewTask = {
   user_id: string;
   area: string;
   theme: string;
+  subtheme: string | null;
   source_study_id: string;
   due_date: string;
   ideal_due_date: string;
@@ -164,6 +165,7 @@ export type DirectedStudyListItem = {
   study_id: string;
   area: string;
   theme: string;
+  subtheme: string | null;
   total_questions: number;
   correct_questions: number;
   user_weight: number;

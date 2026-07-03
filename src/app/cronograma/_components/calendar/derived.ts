@@ -4,18 +4,42 @@ import {
   FULL_EXAM_COLOR,
   isFullExamStudy,
   isTopicStudy,
+  topicPrimaryLabel,
 } from "../../_lib/cronogramaShared";
 
 export type CalendarVisibleCategory = "pending" | "done" | "initial" | "full_exam";
+
+export type CalendarPopupTarget =
+  | { kind: "pending"; task: ReviewTask }
+  | { kind: "done"; task: ReviewTask }
+  | { kind: "initial"; study: DirectedStudyListItem }
+  | { kind: "full_exam"; study: DirectedStudyListItem };
 
 export type CalendarDotEntry = {
   key: string;
   color: string;
   kind: CalendarVisibleCategory;
-  task?: ReviewTask;
-  tooltip?: string;
   theme?: string;
+  tooltip?: string;
+  task?: ReviewTask;
+  study?: DirectedStudyListItem;
+  popupTarget?: CalendarPopupTarget;
 };
+
+function matchesTopicLabel(value: string | null | undefined, query: string): boolean {
+  return String(value ?? "").trim().toLowerCase() === query;
+}
+
+function studyThemeLabel(study: DirectedStudyListItem): string {
+  if (isFullExamStudy(study)) {
+    return String(study.full_exam_name ?? study.theme ?? "").trim() || "Prova";
+  }
+  return topicPrimaryLabel(study) || study.theme;
+}
+
+function taskThemeLabel(task: ReviewTask): string {
+  return topicPrimaryLabel(task) || task.theme;
+}
 
 export function buildTasksByDate(
   tasks: ReviewTask[],
@@ -52,7 +76,13 @@ export function buildSearchMatchDays(params: {
 
   for (const [dateKey, dayStudies] of Object.entries(studiesByDate)) {
     for (const study of dayStudies) {
-      if (!study.is_review && study.theme.toLowerCase() === q) {
+      if (
+        !study.is_review
+        && (
+          matchesTopicLabel(studyThemeLabel(study), q)
+          || matchesTopicLabel(study.theme, q)
+        )
+      ) {
         matched.add(dateKey);
         break;
       }
@@ -60,10 +90,14 @@ export function buildSearchMatchDays(params: {
   }
 
   for (const task of tasks) {
-    if (task.theme.toLowerCase() === q) matched.add(task.due_date);
+    if (matchesTopicLabel(taskThemeLabel(task), q) || matchesTopicLabel(task.theme, q)) {
+      matched.add(task.due_date);
+    }
   }
   for (const task of doneTasks) {
-    if (task.theme.toLowerCase() === q) matched.add(task.due_date);
+    if (matchesTopicLabel(taskThemeLabel(task), q) || matchesTopicLabel(task.theme, q)) {
+      matched.add(task.due_date);
+    }
   }
 
   return matched;
@@ -79,35 +113,55 @@ export function buildDayDotEntries(params: {
   return [
     ...dayStudies
       .filter((study) => isTopicStudy(study) && !study.is_review)
-      .map((study) => ({
-        key: `i_${study.study_id}`,
-        color: AREA_COLORS[study.area] ?? "#ccc",
-        kind: "initial" as const,
-        tooltip: `${study.area}: ${study.theme}`,
-        theme: study.theme,
-      })),
+      .map((study) => {
+        const theme = studyThemeLabel(study);
+        return {
+          key: `i_${study.study_id}`,
+          color: AREA_COLORS[study.area] ?? "#ccc",
+          kind: "initial" as const,
+          theme,
+          tooltip: `${study.area}: ${theme}`,
+          study,
+          popupTarget: { kind: "initial" as const, study },
+        };
+      }),
     ...dayStudies
       .filter((study) => isFullExamStudy(study) && !study.is_review)
-      .map((study) => ({
-        key: `f_${study.study_id}`,
-        color: FULL_EXAM_COLOR,
-        kind: "full_exam" as const,
-        tooltip: `${
-          String(study.full_exam_name ?? "").trim() || String(study.theme ?? "").trim() || "Prova"
-        }${study.full_exam_year ? ` ${study.full_exam_year}` : ""}`,
-      })),
-    ...pendingTasks.map((task) => ({
-      key: task.task_id,
-      color: AREA_COLORS[task.area] ?? "#ccc",
-      kind: "pending" as const,
-      task,
-      tooltip: `${task.area}: ${task.theme}`,
-    })),
-    ...doneTasks.map((task) => ({
-      key: `d_${task.task_id}`,
-      color: AREA_COLORS[task.area] ?? "#ccc",
-      kind: "done" as const,
-      tooltip: `${task.area}: ${task.theme}`,
-    })),
+      .map((study) => {
+        const theme = studyThemeLabel(study);
+        return {
+          key: `f_${study.study_id}`,
+          color: FULL_EXAM_COLOR,
+          kind: "full_exam" as const,
+          theme,
+          tooltip: theme,
+          study,
+          popupTarget: { kind: "full_exam" as const, study },
+        };
+      }),
+    ...pendingTasks.map((task) => {
+      const theme = taskThemeLabel(task);
+      return {
+        key: task.task_id,
+        color: AREA_COLORS[task.area] ?? "#ccc",
+        kind: "pending" as const,
+        theme,
+        task,
+        tooltip: `${task.area}: ${theme}`,
+        popupTarget: { kind: "pending" as const, task },
+      };
+    }),
+    ...doneTasks.map((task) => {
+      const theme = taskThemeLabel(task);
+      return {
+        key: `d_${task.task_id}`,
+        color: AREA_COLORS[task.area] ?? "#ccc",
+        kind: "done" as const,
+        theme,
+        task,
+        tooltip: `${task.area}: ${theme}`,
+        popupTarget: { kind: "done" as const, task },
+      };
+    }),
   ];
 }
