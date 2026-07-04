@@ -213,40 +213,62 @@ export default function BancaPicker({
               Nenhuma fonte corresponde a &ldquo;{query.trim()}&rdquo;.
             </li>
           ) : (
-            filtered.map((source) => {
-              const checked = isSelected(source);
-              const yearRange = formatYearRange(source);
-              const key = normalizeKey(source.option_key);
-              const savedSource = sourceById.get(optionId(source)) ?? source;
-              return (
-                <li key={optionId(source)}>
-                  <label
-                    className={cx(
-                      "flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm transition",
-                      checked
-                        ? "border-primary bg-[var(--amber-tint)]"
-                        : "border-edge bg-paper hover:border-primary/50",
-                    )}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggle(savedSource)}
-                      className="h-4 w-4 shrink-0 accent-[var(--color-primary)]"
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium text-ink">{source.label}</span>
-                      <span className="block truncate text-xs text-muted">
-                        {sourceKindLabel(source.option_kind)}
-                        {source.option_kind === "board" && source.label.toUpperCase() !== key ? ` · ${key}` : ""}
-                        {yearRange ? ` · ${yearRange}` : ""}
-                      </span>
-                    </span>
-                    <span className="shrink-0 text-xs tabular-nums text-muted">{source.question_count}</span>
-                  </label>
+            // Seções separadas: Provas (bancas reais, atribuição precisa) e
+            // Instituições. O ano sai do rótulo (era o "Instituição · 2021"
+            // colado) e vira metadado discreto à direita, sob a contagem.
+            [
+              { heading: "Provas", items: filtered.filter((s) => s.option_kind === "board") },
+              { heading: "Instituições", items: filtered.filter((s) => s.option_kind !== "board") },
+            ]
+              .filter((section) => section.items.length > 0)
+              .map((section, _idx, sections) => (
+                <li key={section.heading} role="presentation">
+                  {sections.length > 1 ? (
+                    <p className="px-1 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">
+                      {section.heading}
+                    </p>
+                  ) : null}
+                  <ul className="space-y-1">
+                    {section.items.map((source) => {
+                      const checked = isSelected(source);
+                      const yearRange = formatYearRange(source);
+                      const key = normalizeKey(source.option_key);
+                      const savedSource = sourceById.get(optionId(source)) ?? source;
+                      return (
+                        <li key={optionId(source)}>
+                          <label
+                            className={cx(
+                              "flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm transition",
+                              checked
+                                ? "border-primary bg-[var(--amber-tint)]"
+                                : "border-edge bg-paper hover:border-primary/50",
+                            )}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggle(savedSource)}
+                              className="h-4 w-4 shrink-0 accent-[var(--color-primary)]"
+                            />
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate font-medium text-ink">{source.label}</span>
+                              {source.option_kind === "board" && source.label.toUpperCase() !== key ? (
+                                <span className="block truncate text-xs text-muted">{key}</span>
+                              ) : null}
+                            </span>
+                            <span className="flex shrink-0 flex-col items-end">
+                              <span className="text-xs tabular-nums text-muted">{source.question_count}</span>
+                              {yearRange ? (
+                                <span className="text-[10px] tabular-nums text-muted/80">{yearRange}</span>
+                              ) : null}
+                            </span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </li>
-              );
-            })
+              ))
           )}
         </ul>
       )}

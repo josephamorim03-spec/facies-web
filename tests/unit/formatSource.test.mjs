@@ -38,3 +38,21 @@ test("fonte totalmente vazia cai em 'Fonte não informada'", () => {
   assert.equal(formatSourceLabel(null), "Fonte não informada");
   assert.equal(formatSourceLabel({ institution: "  ", board_code: null, year: "" }), "Fonte não informada");
 });
+
+test("faixa de anos honesta: min != max vira 'período min–max'", () => {
+  assert.equal(
+    formatSourceLabel({ board_code: "REVALIDA", year: 2026, year_min: 2022, year_max: 2026 }),
+    "REVALIDA · período 2022–2026",
+  );
+});
+
+test("faixa degenerada (min == max) e fallback sem faixa mantêm o ano exato", () => {
+  assert.equal(
+    formatSourceLabel({ board_code: "AMP", year: 2024, year_min: 2024, year_max: 2024 }),
+    "AMP · 2024",
+  );
+  // payload antigo (sem year_min/max, ex. sessão criada antes da migration 030)
+  assert.equal(formatSourceLabel({ board_code: "AMP", year: 2024 }), "AMP · 2024");
+  // faixa inválida (lixo) não derruba o rótulo
+  assert.equal(formatSourceLabel({ year: 2024, year_min: "abc", year_max: 2024 }), "2024");
+});

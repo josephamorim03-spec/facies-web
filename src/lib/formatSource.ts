@@ -6,7 +6,29 @@ export type QuestionSourceLike = {
   board_name?: unknown;
   board_code?: unknown;
   year?: unknown;
+  year_min?: unknown;
+  year_max?: unknown;
 };
+
+function _yearInt(value: unknown): number | null {
+  const n = Number.parseInt(String(value ?? "").trim(), 10);
+  return Number.isFinite(n) && n >= 1900 && n <= 2100 ? n : null;
+}
+
+/**
+ * Ano honesto: fontes tipo Estratégia agrupam várias provas num PDF e só têm
+ * a FAIXA de anos — mostrar um ano único ali seria inventar dado (a questão
+ * "de 2026" podia ser de 2022). Com faixa real exibimos "período 2022–2026";
+ * ano exato (min == max) continua exato.
+ */
+function formatYearPart(source: QuestionSourceLike | null | undefined): string {
+  const min = _yearInt(source?.year_min);
+  const max = _yearInt(source?.year_max);
+  if (min !== null && max !== null) {
+    return min === max ? String(min) : `período ${min}–${max}`;
+  }
+  return String(source?.year ?? "").trim();
+}
 
 /**
  * Rótulo de fonte legível e deduplicado: "Instituição · Banca · Ano".
@@ -20,7 +42,7 @@ export type QuestionSourceLike = {
 export function formatSourceLabel(source: QuestionSourceLike | null | undefined): string {
   const institution = String(source?.institution ?? "").trim();
   const board = String(source?.board_name ?? source?.board_code ?? "").trim();
-  const year = String(source?.year ?? "").trim();
+  const year = formatYearPart(source);
 
   const parts: string[] = [];
   const seen = new Set<string>();
