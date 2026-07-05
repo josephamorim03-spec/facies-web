@@ -106,7 +106,7 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       getTurboAreaStats(token),
     );
   } else if (pathname === "/revisoes" || pathname === "/provas") {
-    // /provas redireciona para /revisoes?tipo=provas — mesmo conjunto de dados.
+    // /provas (Simulados) e /revisoes (Sessões) compartilham o mesmo painel de dados.
     requests.push(
       listQuestionBankSessions(token, { limit: 30 }),
       listReviewTasks(token, { status: "pending" }),

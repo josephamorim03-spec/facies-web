@@ -38,6 +38,7 @@ import {
 } from "@/lib/api";
 import { AreaIcon } from "@/components/AreaIcon";
 import { GuidanceNote } from "@/components/GuidanceNote";
+import { TrainerWhyPanel } from "@/components/trainer/TrainerWhyPanel";
 import { RescheduleSuggestionDialog } from "@/app/cronograma/_components/RescheduleSuggestionDialog";
 import { InlineLogForm } from "@/app/cronograma/_components/studyReview/InlineLogForm";
 import { IconPlus, IconRefresh } from "@/app/cronograma/_components/CronogramaIcons";
@@ -719,6 +720,10 @@ export default function TodayPage() {
               </div>
             )}
           </section>
+
+          {prescription && primaryAction && (
+            <TrainerWhyPanel action={primaryAction} closedLoop={prescription.closed_loop} />
+          )}
 
           <div className="grid gap-4 md:gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="space-y-4 md:space-y-6">

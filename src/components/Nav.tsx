@@ -121,11 +121,15 @@ type IconComponent = (props: { className?: string }) => React.JSX.Element;
 const ICON_MAP: Record<string, IconComponent> = {
   "/hoje": IconToday,
   "/agenda-operacional": IconCalendar,
+  "/cronograma": IconCalendar,
   "/banco-de-questoes": IconNotebook,
   "/provas": IconExam,
   "/cards-adaptativos": IconCards,
   "/revisoes": IconRevise,
+  "/caderno": IconNotebook,
+  "/estatisticas": IconChart,
   "/dados-e-relatorios": IconChart,
+  "/desempenho": IconSliders,
   "/rotina-e-metas": IconSliders,
 };
 
@@ -144,6 +148,8 @@ function useNavHideCompletely(pathname: string) {
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth") ||
     pathname === ACTIVATE_ROUTE ||
+    // Immersive question/simulado runner — the session page has its own exit.
+    pathname.startsWith("/banco-de-questoes/sessao") ||
     isStudyImportImmersivePath(pathname)
   );
 }

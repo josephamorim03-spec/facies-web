@@ -549,6 +549,19 @@ export default function SessionPage() {
     return (
       <>
         {errorToast}
+        {/* Persistent exit — the app chrome is hidden in the immersive session. */}
+        <button
+          type="button"
+          onClick={() => router.push("/banco-de-questoes")}
+          aria-label="Sair da sessão"
+          className="fixed left-2 z-40 inline-flex items-center gap-1 rounded-lg border border-edge bg-paper/90 px-2.5 py-1.5 text-xs font-semibold text-muted shadow-sm backdrop-blur transition hover:text-ink"
+          style={{ top: "calc(0.5rem + env(safe-area-inset-top, 0px))" }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5" aria-hidden>
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+          Sair
+        </button>
         <StudyQuestion
           fixacaoCount={fixacaoItems.length}
           onFixar={() => setShowFixacao(true)}

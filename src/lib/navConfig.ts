@@ -28,6 +28,9 @@ export function isNavItemActive(pathname: string, item: NavItemConfig): boolean 
   });
 }
 
+// Fase 2 — cada tela é uma vista do treinador (agir, revisar, medir, planejar).
+// Grupo 1 = ações principais; grupo 2 = itens secundários/overflow do drawer.
+// `isNavItemActive` ignora querystring → nunca usar `?tipo=...` em groupPaths.
 export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
   {
     items: [
@@ -35,7 +38,7 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         href: "/hoje",
         label: "HOJE",
         shortLabel: "Hoje",
-        groupPaths: ["/hoje", "/calendario", "/agenda-operacional", "/cronograma"],
+        groupPaths: ["/hoje"],
       },
       {
         href: "/banco-de-questoes",
@@ -44,41 +47,60 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         groupPaths: ["/banco-de-questoes"],
       },
       {
-        href: "/revisoes",
-        label: "SESSÕES",
-        shortLabel: "Sessões",
-        // /provas redireciona para /revisoes?tipo=provas — cobre o instante pré-redirect.
-        groupPaths: ["/revisoes", "/provas"],
+        href: "/cards-adaptativos",
+        label: "REVISÃO",
+        shortLabel: "Revisão",
+        groupPaths: ["/cards-adaptativos", "/revisao-turbo"],
       },
       {
-        href: "/cards-adaptativos",
-        label: "CARDS",
-        shortLabel: "Cards",
-        groupPaths: ["/cards-adaptativos", "/revisao-turbo", "/caderno"],
+        href: "/provas",
+        label: "SIMULADOS",
+        shortLabel: "Simulados",
+        // Só /provas — /revisoes (histórico) fica em "Sessões".
+        groupPaths: ["/provas"],
+      },
+      {
+        // Rótulo "Desempenho" = análise (/estatisticas). NÃO é a rota /desempenho (metas).
+        href: "/estatisticas",
+        label: "DESEMPENHO",
+        shortLabel: "Desempenho",
+        groupPaths: [
+          "/estatisticas",
+          "/estatisticas/graficos",
+          "/estatisticas/relatorio",
+          "/dados-e-relatorios",
+          "/dados-e-relatorios/graficos",
+          "/dados-e-relatorios/relatorio",
+        ],
       },
     ],
   },
   {
     items: [
       {
-        href: "/dados-e-relatorios",
-        label: "DESEMPENHO",
-        shortLabel: "Desempenho",
-        groupPaths: [
-          "/dados-e-relatorios",
-          "/dados-e-relatorios/graficos",
-          "/dados-e-relatorios/relatorio",
-          "/estatisticas",
-          "/estatisticas/graficos",
-          "/estatisticas/relatorio",
-        ],
+        href: "/cronograma",
+        label: "CRONOGRAMA",
+        shortLabel: "Cronograma",
+        groupPaths: ["/cronograma", "/calendario", "/agenda-operacional"],
       },
       {
-        href: "/rotina-e-metas",
+        // "Plano" = metas/rotina — a rota /desempenho (re-exportada por /rotina-e-metas).
+        href: "/desempenho",
         label: "PLANO",
         shortLabel: "Plano",
-        // /desempenho renders the plan/goals UI (re-exported by /rotina-e-metas) — group it here.
-        groupPaths: ["/rotina-e-metas", "/desempenho"],
+        groupPaths: ["/desempenho", "/rotina-e-metas"],
+      },
+      {
+        href: "/revisoes",
+        label: "SESSÕES",
+        shortLabel: "Sessões",
+        groupPaths: ["/revisoes"],
+      },
+      {
+        href: "/caderno",
+        label: "CADERNO",
+        shortLabel: "Caderno",
+        groupPaths: ["/caderno"],
       },
     ],
   },

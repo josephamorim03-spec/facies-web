@@ -27,6 +27,7 @@ import {
   type StudyKind,
 } from "@/lib/api";
 import { useNavbar } from "@/lib/NavbarContext";
+import { buildSessionCreateFromTrainerPayload } from "@/lib/trainer/session";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useToast } from "@/lib/useToast";
 import { GuidanceNote } from "@/components/GuidanceNote";
@@ -824,12 +825,9 @@ function BancoDeQuestoesContent() {
   async function startRecommendedSession() {
     if (!tokenResolved) return;
     const action = nextAction ?? FALLBACK_NEXT_ACTION;
-    const { area: payloadArea, ...startPayload } = action.start_payload;
-    const payload: QuestionBankSessionCreatePayload = {
-      ...startPayload,
-      area: payloadArea ?? undefined,
-      performed_at: localNoonISO(entryContext.dateISO),
-    };
+    const payload = buildSessionCreateFromTrainerPayload(action.start_payload, {
+      performedAt: localNoonISO(entryContext.dateISO),
+    });
     setBusy(true);
     setError(null);
     try {

@@ -31,7 +31,7 @@ type BuildVersionPayload = {
 };
 
 const SHOW_BUILD_BADGE = process.env.NEXT_PUBLIC_SHOW_BUILD_BADGE === "1";
-const PRIMARY_NAV_ROUTES = ["/hoje", "/banco-de-questoes", "/cards-adaptativos", "/dados-e-relatorios"];
+const PRIMARY_NAV_ROUTES = ["/hoje", "/banco-de-questoes", "/cards-adaptativos", "/provas", "/estatisticas"];
 
 type IdleCallbackHandle = number;
 type WindowWithIdleCallback = Window & {
@@ -56,6 +56,9 @@ function shouldHideNavigationChrome(pathname: string): boolean {
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth") ||
     pathname === ACTIVATE_ROUTE ||
+    // Immersive question/simulado runner: hide the full chrome (desktop sidebar
+    // included). The session page keeps its own visible "Sair" affordance.
+    pathname.startsWith("/banco-de-questoes/sessao") ||
     isStudyImportImmersivePath(pathname)
   );
 }

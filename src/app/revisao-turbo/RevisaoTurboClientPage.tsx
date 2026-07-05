@@ -1,7 +1,11 @@
 "use client";
 
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
-import { getOperationalTurboOverview, type OperationalTurboOverview } from "@/lib/api";
+import {
+  getOperationalTurboOverview,
+  recordTrainerRecommendationEvent,
+  type OperationalTurboOverview,
+} from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
 import { setReviewSessionActive } from "@/lib/studyImportRuntime";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
@@ -232,6 +236,7 @@ export default function RevisaoTurboClientPage() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [selectedArea, setSelectedArea] = useState<CardsAreaFilter>(ALL_AREAS);
   const [authReady, setAuthReady] = useState(false);
+  const trainerStartedRef = useRef<string | null>(null);
 
   useEffect(() => {
     setToken(getAuthToken());
@@ -332,6 +337,24 @@ export default function RevisaoTurboClientPage() {
     setSessionStarted(true);
     setError("");
     await startSession(undefined, count, selectedAreaCode);
+    recordTrainerStartedFromHandoff();
+  }
+
+  // Records the trainer `started` event when this turbo review was launched from
+  // a trainer flashcard_review action (handoff via ?rec=&src=). Deduped per rec;
+  // a direct visit (no rec) records nothing. Best-effort — never blocks the user.
+  function recordTrainerStartedFromHandoff() {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const rec = params.get("rec");
+    if (!rec || trainerStartedRef.current === rec) return;
+    trainerStartedRef.current = rec;
+    const src = params.get("src") ?? "/cards-adaptativos";
+    void recordTrainerRecommendationEvent(getAuthToken(), rec, {
+      event_type: "started",
+      event_id: `started:${rec}:${src}:turbo`,
+      payload: { source_page: src, action_kind: "flashcard_review" },
+    }).catch(() => null);
   }
 
   async function handleClose() {

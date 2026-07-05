@@ -314,6 +314,9 @@ export type {
   TrainerStartPayload,
   TrainerOutcomeTarget,
   TrainerEventType,
+  TrainerClosedLoop,
+  TrainerDailyLoad,
+  TrainerWhyFactor,
 } from "./api/domains/trainer";
 
 // Calendar domain

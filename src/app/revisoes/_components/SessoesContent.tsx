@@ -34,10 +34,20 @@ function LoadingBlock() {
   );
 }
 
-export function SessoesContent({ initialTab = "inacabadas" }: { initialTab?: SessionsTab }) {
+export function SessoesContent({
+  initialTab = "inacabadas",
+  lockedTab,
+  variant = "sessoes",
+}: {
+  initialTab?: SessionsTab;
+  /** When set, the tab is fixed (no switcher, no URL rewrites) — used by /provas. */
+  lockedTab?: SessionsTab;
+  variant?: "sessoes" | "simulados";
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab = parseSessionsTab(searchParams.get("tipo") ?? initialTab);
+  const tab = lockedTab ?? parseSessionsTab(searchParams.get("tipo") ?? initialTab);
+  const isSimulados = variant === "simulados";
   const { token, tokenResolved } = useAuthToken();
   const { sessions, tasks, performanceSummary, longitudinal, loading, error, reload } =
     useSessionsPanelData();
@@ -53,6 +63,8 @@ export function SessoesContent({ initialTab = "inacabadas" }: { initialTab?: Ses
   const visibleSessions = useMemo(() => filterSessionsByTab(sessions, tab), [sessions, tab]);
 
   useEffect(() => {
+    // Locked tab (e.g. /provas) never rewrites the URL to /revisoes.
+    if (lockedTab) return;
     if (tab === "inacabadas") return;
 
     const syncCanonicalTabUrl = () => {
@@ -76,7 +88,7 @@ export function SessoesContent({ initialTab = "inacabadas" }: { initialTab?: Ses
       window.cancelAnimationFrame(animationFrame);
       window.clearTimeout(timeout);
     };
-  }, [tab]);
+  }, [tab, lockedTab]);
 
   function changeTab(next: SessionsTab) {
     router.replace(next === "inacabadas" ? "/revisoes" : `/revisoes?tipo=${next}`, {
@@ -112,27 +124,44 @@ export function SessoesContent({ initialTab = "inacabadas" }: { initialTab?: Ses
       <div className="mx-auto max-w-7xl space-y-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">Sessões</h1>
+            <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">
+              {isSimulados ? "Simulados" : "Sessões"}
+            </h1>
             <p className="mt-3 max-w-2xl text-sm text-muted">
-              Continue sessões inacabadas, abra resultados de provas e simulados e acompanhe seu tempo de resposta.
+              {isSimulados
+                ? "Meça seu desempenho sob pressão: abra resultados de provas e simulados e acompanhe seu tempo de resposta e queda por fadiga."
+                : "Continue sessões inacabadas, abra resultados de provas e simulados e acompanhe seu tempo de resposta."}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/banco-de-questoes"
-              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-primary px-4 py-3 text-sm font-semibold text-primary hover:bg-surfaceMuted"
-            >
-              Nova sessão
-            </Link>
-            <button
-              type="button"
-              onClick={() => void startWeaknessSession()}
-              disabled={busy}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-3 text-sm font-semibold text-primaryInk disabled:opacity-50"
-            >
-              {busy ? "Criando..." : "Criar revisão inteligente"}
-              <IconArrowRight className="h-4 w-4" />
-            </button>
+            {isSimulados ? (
+              // Starting a simulado lives in Questões ("Simular prova") until Fase 3.
+              <Link
+                href="/banco-de-questoes"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-3 text-sm font-semibold text-primaryInk hover:brightness-105"
+              >
+                Iniciar simulado
+                <IconArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/banco-de-questoes"
+                  className="inline-flex min-h-10 items-center justify-center rounded-lg border border-primary px-4 py-3 text-sm font-semibold text-primary hover:bg-surfaceMuted"
+                >
+                  Nova sessão
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => void startWeaknessSession()}
+                  disabled={busy}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-3 text-sm font-semibold text-primaryInk disabled:opacity-50"
+                >
+                  {busy ? "Criando..." : "Criar revisão inteligente"}
+                  <IconArrowRight className="h-4 w-4" />
+                </button>
+              </>
+            )}
           </div>
         </header>
 
@@ -154,8 +183,8 @@ export function SessoesContent({ initialTab = "inacabadas" }: { initialTab?: Ses
         <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_23rem]">
           <div className="space-y-5">
             <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
-              <SessionsTabs value={tab} counts={counts} onChange={changeTab} />
-              <div className="mt-4">
+              {!lockedTab && <SessionsTabs value={tab} counts={counts} onChange={changeTab} />}
+              <div className={lockedTab ? "" : "mt-4"}>
                 <SessionList sessions={visibleSessions} tab={tab} />
               </div>
             </section>

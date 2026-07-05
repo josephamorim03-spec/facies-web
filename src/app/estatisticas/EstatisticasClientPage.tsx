@@ -15,6 +15,7 @@ import { Area, Period } from "../desempenho/_lib/perfilShared";
 import { useEstatisticasPageState } from "./_hooks/useEstatisticasPageState";
 import { BancoDeQuestoesInsights } from "./_components/BancoDeQuestoesInsights";
 import { useNavbar } from "@/lib/NavbarContext";
+import { TrainerContextStrip } from "@/components/trainer/TrainerContextStrip";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 
 type FullExamType = "acesso_direto" | "r_plus";
@@ -313,6 +314,7 @@ export default function EstatisticasClientPage() {
 
   return (
     <div className="space-y-6">
+      <TrainerContextStrip sourcePage="/estatisticas" />
       <DesempenhoTab
         loading={false}
         error=""
