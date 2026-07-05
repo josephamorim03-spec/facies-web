@@ -301,6 +301,21 @@ export type {
   StudyPerformanceSummary,
 } from "./api/domains/performance";
 
+// Trainer domain (single daily prescription)
+export {
+  getTrainerPrescription,
+  recordTrainerRecommendationEvent,
+} from "./api/domains/trainer";
+export type {
+  TrainerPrescription,
+  TrainerAction,
+  TrainerActionKind,
+  TrainerSignal,
+  TrainerStartPayload,
+  TrainerOutcomeTarget,
+  TrainerEventType,
+} from "./api/domains/trainer";
+
 // Calendar domain
 export {
   listEvents,

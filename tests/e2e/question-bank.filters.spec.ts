@@ -275,7 +275,7 @@ test("question bank applies filters, calendar review context, and gated correcti
   await expect(page.getByRole("button", { name: /Próxima/ })).toBeVisible();
 });
 
-test("manual search filters topics without becoming a hidden session filter", async ({ page }) => {
+test("manual search becomes an active session filter and clears selected topics", async ({ page }) => {
   await page.context().addCookies([
     {
       name: "krosmed_session",
@@ -288,9 +288,11 @@ test("manual search filters topics without becoming a hidden session filter", as
 
   const createPayloads: Record<string, unknown>[] = [];
   const topicRequestUrls: string[] = [];
+  const availabilityRequestUrls: string[] = [];
   await mockQuestionBankMetadata(page);
 
   await page.route("**/api/question-bank/availability**", async (route) => {
+    availabilityRequestUrls.push(route.request().url());
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
@@ -384,11 +386,20 @@ test("manual search filters topics without becoming a hidden session filter", as
   await page.waitForTimeout(400);
   expect(topicRequestUrls).toHaveLength(topicRequestsBeforeAreaChange);
 
+  await page.getByRole("button", { name: /Placenta previa/ }).first().click();
   await page.getByPlaceholder("Buscar especialidade, macrotema ou subtema").fill("Placenta");
   await expect(page.getByRole("button", { name: /Placenta previa/ }).first()).toBeVisible();
   await expect(page.getByText("Obstetricia").first()).toBeVisible();
   await page.waitForTimeout(400);
   expect(topicRequestUrls.some((url) => new URL(url).searchParams.get("search") === "Placenta")).toBe(false);
+  await expect
+    .poll(() =>
+      availabilityRequestUrls.some((url) => {
+        const params = new URL(url).searchParams;
+        return params.get("search") === "Placenta" && params.getAll("knowledge_node_ids").length === 0;
+      }),
+    )
+    .toBe(true);
   await expect
     .poll(() => topicRequestUrls.some((url) => new URL(url).searchParams.get("include_empty") === "false"))
     .toBe(true);
@@ -398,8 +409,9 @@ test("manual search filters topics without becoming a hidden session filter", as
   await expect.poll(() => createPayloads.length).toBe(1);
 
   const payload = createPayloads[0];
-  expect(payload.search).toBeUndefined();
+  expect(payload.search).toBe("Placenta");
   expect(payload.knowledge_node_ids).toBeUndefined();
+  expect(payload.generate_review_trail).toBeUndefined();
   expect(payload.board_codes).toEqual(["SMK"]);
   expect(payload.institutions).toEqual(["USP-SP"]);
   expect(payload).toMatchObject({

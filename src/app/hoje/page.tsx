@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useNavbar } from "@/lib/NavbarContext";
 import AreaDot from "@/components/AreaDot";
@@ -23,6 +23,8 @@ import {
   getQuestionBankLongitudinalDiagnosis,
   listScheduleSuggestions,
   getStudyPerformanceSummary,
+  getTrainerPrescription,
+  recordTrainerRecommendationEvent,
   listDirectedStudies,
   listReviewTasks,
   rejectScheduleSuggestion,
@@ -31,6 +33,7 @@ import {
   type QuestionBankLongitudinalDiagnosis,
   ReviewTask,
   type StudyPerformanceSummary,
+  type TrainerPrescription,
   triggerScheduleSuggestion,
 } from "@/lib/api";
 import { AreaIcon } from "@/components/AreaIcon";
@@ -45,18 +48,14 @@ import BancoSidebarCard from "./_components/BancoSidebarCard";
 
 type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
 
-type DailyWeaknessItem = {
-  key: string;
-  area: string;
-  theme: string;
-  accuracyPct: number | null;
-  daysSinceLastStudy: number | null;
-  totalQuestions: number;
-  signal: string;
-  action: string;
-  confidencePct: number | null;
-  impactPct: number | null;
-  source: "diagnosis" | "preliminary" | "banco";
+// CTA label for the trainer prescription's primary action, by action kind.
+const PRIMARY_ACTION_CTA: Record<string, string> = {
+  question_block: "Começar treino",
+  scheduled_review: "Revisar agora",
+  guided_correction: "Corrigir raciocínio",
+  flashcard_review: "Revisar cards",
+  simulation: "Iniciar simulado",
+  manual_study: "Abrir caderno",
 };
 
 function todayISO(): string {
@@ -87,63 +86,6 @@ function formatDayMonth(isoDate: string): string {
 function formatPercent(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
   return `${Math.round(Number(value))}%`;
-}
-
-function buildDailyWeaknessItems(summary: StudyPerformanceSummary | null): DailyWeaknessItem[] {
-  if (!summary) return [];
-
-  const areaSummaries = Array.isArray(summary.area_summaries) ? summary.area_summaries : [];
-  const studyGapByThemeKey = new Map(
-    areaSummaries.flatMap((areaSummary) =>
-      areaSummary.themes.map((theme) => [theme.key, theme.days_since_last_study ?? null] as const),
-    ),
-  );
-
-  const diagnosis = summary.diagnosis;
-  if (diagnosis?.ready && Array.isArray(diagnosis.weaknesses) && diagnosis.weaknesses.length > 0) {
-    return diagnosis.weaknesses.slice(0, 3).map((item) => ({
-      key: item.key,
-      area: item.area,
-      theme: item.theme,
-      accuracyPct: item.accuracy_pct,
-      daysSinceLastStudy: studyGapByThemeKey.get(item.key) ?? null,
-      totalQuestions: item.total_questions,
-      signal: item.dominant_signal || "Tema com perda relevante no histórico.",
-      action: item.action_hint || "Faça um bloco curto e revise os erros no mesmo dia.",
-      confidencePct: item.system_confidence_pct ?? null,
-      impactPct: item.impact_score_pct ?? null,
-      source: "diagnosis",
-    }));
-  }
-
-  return areaSummaries
-    .flatMap((areaSummary) =>
-      areaSummary.themes
-        .filter((theme) => theme.total_questions >= 20)
-        .map((theme) => ({
-          key: theme.key,
-          area: theme.area,
-          theme: theme.theme,
-          accuracyPct: theme.accuracy_pct,
-          daysSinceLastStudy: theme.days_since_last_study ?? null,
-          totalQuestions: theme.total_questions,
-          signal:
-            theme.consistency_score !== null && theme.consistency_score < 65
-              ? "Tema com desempenho instável nas tentativas."
-              : "Menor taxa de acerto entre os temas com amostra.",
-          action: "Resolver 15-25 questões e transformar os erros em cards.",
-          confidencePct: null,
-          impactPct: null,
-          source: "preliminary" as const,
-        })),
-    )
-    .sort((a, b) => {
-      const accA = a.accuracyPct ?? 101;
-      const accB = b.accuracyPct ?? 101;
-      if (accA !== accB) return accA - accB;
-      return b.totalQuestions - a.totalQuestions;
-    })
-    .slice(0, 3);
 }
 
 function TodaySkeleton() {
@@ -382,6 +324,8 @@ export default function TodayPage() {
   const [turboOverview, setTurboOverview] = useState<OperationalTurboOverview | null>(null);
   const [performanceSummary, setPerformanceSummary] = useState<StudyPerformanceSummary | null>(null);
   const [longitudinal, setLongitudinal] = useState<QuestionBankLongitudinalDiagnosis | null>(null);
+  const [prescription, setPrescription] = useState<TrainerPrescription | null>(null);
+  const shownRecommendationRef = useRef<string | null>(null);
   const [weeklyGoal, setWeeklyGoal] = useState(200);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -400,6 +344,7 @@ export default function TodayPage() {
   async function fetchTasks(showLoadingState: boolean = false) {
     const token = getAuthToken();
     const longitudinalRequest = getQuestionBankLongitudinalDiagnosis(token).catch(() => null);
+    const prescriptionRequest = getTrainerPrescription(token).catch(() => null);
 
     if (showLoadingState) setLoading(true);
     try {
@@ -420,6 +365,17 @@ export default function TodayPage() {
 
     void longitudinalRequest.then((diagnosis) => {
       setLongitudinal(diagnosis);
+    });
+
+    void prescriptionRequest.then((data) => {
+      setPrescription(data);
+      // Fire the `shown` lifecycle event once per recommendation (best-effort).
+      if (data && shownRecommendationRef.current !== data.recommendation_id) {
+        shownRecommendationRef.current = data.recommendation_id;
+        void recordTrainerRecommendationEvent(token, data.recommendation_id, {
+          event_type: "shown",
+        }).catch(() => null);
+      }
     });
   }
 
@@ -560,35 +516,6 @@ export default function TodayPage() {
     [doneTasks, studies, tasks, today, weeklyGoal],
   );
 
-  const dailyWeaknesses = useMemo((): DailyWeaknessItem[] => {
-    const studyItems = buildDailyWeaknessItems(performanceSummary);
-    const bancoItems: DailyWeaknessItem[] = (longitudinal?.nodes ?? [])
-      .filter((node) => node.exposure_count >= 2 && node.mastery_score < 0.5)
-      .sort((a, b) => a.mastery_score - b.mastery_score)
-      .slice(0, 2)
-      .map((node) => ({
-        key: `banco_${node.knowledge_node_id}`,
-        area: "",
-        theme: node.node_name ?? "Tópico do banco",
-        accuracyPct: Math.round(node.mastery_score * 100),
-        daysSinceLastStudy: node.days_since_last_seen,
-        totalQuestions: node.correct_count + node.error_count,
-        signal: "Domínio baixo no banco adaptativo.",
-        action: "Inicie uma sessão focada no banco adaptativo.",
-        confidencePct: null,
-        impactPct: null,
-        source: "banco",
-      }));
-
-    if (bancoItems.length === 0) {
-      return studyItems;
-    }
-
-    return [...studyItems, ...bancoItems]
-      .sort((a, b) => (a.accuracyPct ?? 101) - (b.accuracyPct ?? 101))
-      .slice(0, 3);
-  }, [longitudinal, performanceSummary]);
-
   const studentFirstName = firstName(displayName);
   const greeting = getGreeting(studentFirstName);
   const totalDoneQuestions = studies.reduce((sum, study) => sum + Math.max(0, Number(study.total_questions ?? 0)), 0);
@@ -605,46 +532,36 @@ export default function TodayPage() {
     .slice()
     .sort((a, b) => new Date(b.performed_at).getTime() - new Date(a.performed_at).getTime())
     .slice(0, 3);
-  const nextWeakness = dailyWeaknesses[0] ?? null;
-  const nextActionTask = overdueTasks[0] ?? selectedDayTasks[0] ?? null;
-  const nextActionSignals = [
-    nextWeakness && nextWeakness.accuracyPct !== null && nextWeakness.accuracyPct < 60
-      ? { key: "recent-error", label: "erro recente", className: "border-danger/40 text-danger" }
-      : null,
-    turboOverview && turboOverview.due_count > 10
-      ? { key: "urgent-review", label: "revisão urgente", className: "border-warning/40 text-warning" }
-      : null,
-    nextWeakness && nextWeakness.daysSinceLastStudy !== null && nextWeakness.daysSinceLastStudy > 7
-      ? { key: "stalled-theme", label: "tema parado", className: "border-edge text-muted" }
-      : null,
-  ].filter((item): item is { key: string; label: string; className: string } => item !== null);
+  // The single best next step is decided by the trainer policy engine
+  // (server-side), not reconstructed here. `/hoje` renders the prescription.
+  const primaryAction = prescription?.primary_action ?? null;
+  const nextActionSignals = (prescription?.signals ?? []).map((signal) => ({
+    key: signal.key,
+    label: signal.label,
+    className:
+      signal.severity === "critical"
+        ? "border-danger/40 text-danger"
+        : signal.severity === "warning"
+          ? "border-warning/40 text-warning"
+          : "border-edge text-muted",
+  }));
 
-  // The single best next step, already decided by the system (weakness > scheduled task > maintenance).
   // O "motivo" é a voz do tutor (serif): a mesma fonte da ação, para não soar como
   // um segundo cérebro. "tone" só pinta o eyebrow da nota.
-  const heroAction = nextWeakness
+  const heroAction = primaryAction
     ? {
-        area: nextWeakness.area || "OU",
-        title: `Revisar ${nextWeakness.theme}`,
-        reason: nextWeakness.action || nextWeakness.signal,
-        tone: "attention" as const,
-        minutes: 15,
-        metric: nextWeakness.accuracyPct !== null ? `Acerto atual ${nextWeakness.accuracyPct}%` : null,
-        href: `/banco-de-questoes?area=${encodeURIComponent(nextWeakness.area)}&theme=${encodeURIComponent(nextWeakness.theme)}&answer_status=unanswered_or_wrong`,
-        ctaLabel: "Começar revisão",
+        area: ((primaryAction.start_payload?.area ?? "OU") || "OU") as Area,
+        title: primaryAction.title,
+        reason: primaryAction.rationale,
+        tone: primaryAction.signals.some((s) => s.severity === "critical")
+          ? ("attention" as const)
+          : ("neutral" as const),
+        minutes: primaryAction.estimated_minutes,
+        metric: null as string | null,
+        href: primaryAction.href ?? "/banco-de-questoes",
+        ctaLabel: PRIMARY_ACTION_CTA[primaryAction.kind] ?? "Começar",
       }
-    : nextActionTask
-      ? {
-          area: nextActionTask.area || "OU",
-          title: `Resolver ${nextActionTask.theme}`,
-          reason: "Esta revisão está programada para hoje no seu cronograma — fazê-la no dia mantém o espaçamento ideal.",
-          tone: "neutral" as const,
-          minutes: Math.max(10, Math.min(40, Math.round((Number(nextActionTask.expected_questions) || 10) * 1.5))),
-          metric: null,
-          href: reviewTaskHref(nextActionTask),
-          ctaLabel: "Começar agora",
-        }
-      : null;
+    : null;
 
   function TaskRow({ task, overdue }: { task: ReviewTask; overdue?: boolean }) {
     const area = task.area as Area;

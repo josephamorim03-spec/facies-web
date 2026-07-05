@@ -437,6 +437,7 @@ function BancoDeQuestoesContent() {
   const maxSelectable = availability ? Math.max(0, availability.max_selectable) : requestedLimit;
   const limitMax = Math.max(1, Math.min(QUESTION_BANK_LIMIT_CAP, maxSelectable || requestedLimit));
   const clampedLimit = Math.max(1, Math.min(requestedLimit, limitMax));
+  const normalizedSearch = search.trim();
   const reviewTrailDefault = Boolean(entryContext.reviewTaskId) || selectedTopics.length === 1;
   const [generateReviewTrail, setGenerateReviewTrail] = useState(reviewTrailDefault);
   useEffect(() => {
@@ -456,6 +457,7 @@ function BancoDeQuestoesContent() {
     answerStatus !== "unanswered" ? answerStatus : "",
     correctionStatus !== "all" ? correctionStatus : "",
     selectedTopics.length > 0 ? "topics" : "",
+    normalizedSearch ? "search" : "",
   ].filter(Boolean).length;
 
   const activeIntent =
@@ -543,11 +545,12 @@ function BancoDeQuestoesContent() {
     board_codes: boardCodes.length > 0 ? boardCodes : undefined,
     institutions: institutions.length > 0 ? institutions : undefined,
     years: selectedYears.length > 0 ? selectedYears : undefined,
+    search: normalizedSearch || undefined,
     answer_status: answerStatus,
     only_unanswered: answerStatus === "unanswered",
     correction_status: correctionStatus,
     limit: overrides?.limit,
-  }), [answerStatus, area, boardCodes, correctionStatus, institutions, selectedTopics, selectedYears]);
+  }), [answerStatus, area, boardCodes, correctionStatus, institutions, normalizedSearch, selectedTopics, selectedYears]);
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -690,6 +693,7 @@ function BancoDeQuestoesContent() {
 
   function handleSearchChange(next: string) {
     setSearch(next);
+    clearSelection();
   }
 
   function handleSelectedYearsChange(next: number[]) {
@@ -759,7 +763,11 @@ function BancoDeQuestoesContent() {
       payload.full_exam_type = fullExamType;
       payload.generate_review_trail = false;
     } else if (!entryContext.reviewTaskId) {
-      payload.generate_review_trail = generateReviewTrail;
+      const deferSearchReviewTrailInference =
+        Boolean(normalizedSearch) && selectedTopics.length === 0 && !generateReviewTrail;
+      if (!deferSearchReviewTrailInference) {
+        payload.generate_review_trail = generateReviewTrail;
+      }
     }
     setBusy(true);
     setError(null);
