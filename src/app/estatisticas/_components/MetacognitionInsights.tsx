@@ -1,12 +1,32 @@
-"use client";
-
 import Link from "next/link";
 import { useMemo } from "react";
 import type { QuestionBankLongitudinalDiagnosis, StudyPerformanceSummary } from "@/lib/api";
-import { formatPct, pctNumber } from "./format";
-import { IconArrowRight } from "./icons";
 
-export function MetacognitionSidebar({
+// Sinais de metacognição do banco (pegadinha, confiança, impulsividade, domínio
+// por tópico). Antes viviam no Histórico; a análise pertence ao Desempenho.
+
+function formatPct(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
+  const normalized = Math.abs(Number(value)) <= 1 ? Number(value) * 100 : Number(value);
+  return `${Math.round(normalized)}%`;
+}
+
+function pctNumber(value: number | null | undefined): number {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return 0;
+  const normalized = Math.abs(Number(value)) <= 1 ? Number(value) * 100 : Number(value);
+  return Math.max(0, Math.min(100, Math.round(normalized)));
+}
+
+function IconArrowRight({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M4 10h12" />
+      <path d="m11 5 5 5-5 5" />
+    </svg>
+  );
+}
+
+export function MetacognitionInsights({
   longitudinal,
   performanceSummary,
 }: {
@@ -24,7 +44,7 @@ export function MetacognitionSidebar({
   );
 
   return (
-    <aside className="space-y-5">
+    <div className="grid gap-5 lg:grid-cols-2">
       <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
         <h2 className="font-serif text-2xl font-semibold">Metacognição geral</h2>
         <p className="mt-1 text-sm text-muted">Sinais agregados das respostas no banco.</p>
@@ -72,12 +92,12 @@ export function MetacognitionSidebar({
       </section>
 
       {masteryNodes.length > 0 && (
-        <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+        <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm lg:col-span-2">
           <div>
             <h2 className="font-serif text-2xl font-semibold">Domínio por tópico</h2>
             <p className="mt-1 text-sm text-muted">Banco de questões · ordenado por domínio</p>
           </div>
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
             {masteryNodes.map((node) => {
               const mastery = pctNumber(node.mastery_score);
               const retention = pctNumber(node.retention_score);
@@ -120,9 +140,9 @@ export function MetacognitionSidebar({
         </section>
       )}
 
-      <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+      <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm lg:col-span-2">
         <h2 className="font-serif text-2xl font-semibold">Ações recomendadas</h2>
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
           <Link href="/banco-de-questoes?answer_status=wrong" className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-paper p-4 hover:border-primary">
             <div>
               <p className="text-sm font-semibold text-primary">Revisar só erros</p>
@@ -146,6 +166,6 @@ export function MetacognitionSidebar({
           </Link>
         </div>
       </section>
-    </aside>
+    </div>
   );
 }

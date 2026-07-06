@@ -47,7 +47,6 @@ test("filterSessionsByTab: invalidada só aparece em todas", () => {
   assert.deepEqual(filterSessionsByTab(sessions, "inacabadas"), [active, exam]);
   assert.deepEqual(filterSessionsByTab(sessions, "resultados"), [finalized]);
   assert.deepEqual(filterSessionsByTab(sessions, "provas"), [exam]);
-  assert.deepEqual(filterSessionsByTab(sessions, "treinos"), [active, finalized]);
   assert.deepEqual(filterSessionsByTab(sessions, "todas"), sessions);
 });
 

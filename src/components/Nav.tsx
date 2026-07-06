@@ -84,22 +84,12 @@ function IconToday({ className }: { className?: string }) {
   );
 }
 
-function IconExam({ className }: { className?: string }) {
+function IconHistory({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2h-4" />
-      <rect x="9" y="2" width="6" height="4" rx="1" />
-      <line x1="9" y1="12" x2="15" y2="12" />
-      <line x1="9" y1="16" x2="13" y2="16" />
-    </svg>
-  );
-}
-
-function IconRevise({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <polyline points="1 4 1 10 7 10" />
-      <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <path d="M3 4v5h5" />
+      <path d="M12 7v5l3 2" />
     </svg>
   );
 }
@@ -123,9 +113,8 @@ const ICON_MAP: Record<string, IconComponent> = {
   "/agenda-operacional": IconCalendar,
   "/cronograma": IconCalendar,
   "/banco-de-questoes": IconNotebook,
-  "/provas": IconExam,
   "/cards-adaptativos": IconCards,
-  "/revisoes": IconRevise,
+  "/revisoes": IconHistory,
   "/caderno": IconNotebook,
   "/estatisticas": IconChart,
   "/dados-e-relatorios": IconChart,

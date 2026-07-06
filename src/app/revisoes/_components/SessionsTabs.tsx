@@ -5,8 +5,7 @@ import { SESSION_TAB_VALUES, type SessionsTab } from "@/lib/sessionsPanel";
 const TAB_LABELS: Record<SessionsTab, string> = {
   inacabadas: "Inacabadas",
   resultados: "Resultados",
-  provas: "Provas e simulados",
-  treinos: "Treinos",
+  provas: "Simulados",
   todas: "Todas",
 };
 

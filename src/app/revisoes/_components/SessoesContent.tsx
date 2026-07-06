@@ -13,45 +13,29 @@ import {
   type SessionsTab,
 } from "@/lib/sessionsPanel";
 import { IconArrowRight } from "./icons";
-import { MetacognitionSidebar } from "./MetacognitionSidebar";
-import { PendingReviewsSection } from "./PendingReviewsSection";
 import { SessionList } from "./SessionList";
-import { SessionsMetrics } from "./SessionsMetrics";
 import { SessionsTabs } from "./SessionsTabs";
 import { useSessionsPanelData } from "./useSessionsPanelData";
-import { CreateSimuladoPanel } from "@/app/provas/_components/CreateSimuladoPanel";
 
 function LoadingBlock() {
   return (
     <div className="space-y-4">
       <Skeleton className="h-10 w-56 rounded" />
-      <div className="grid gap-3 md:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton key={index} className="h-28 rounded-lg" />
-        ))}
-      </div>
+      <Skeleton className="h-10 w-full max-w-md rounded-full" />
       <Skeleton className="h-72 rounded-lg" />
     </div>
   );
 }
 
-export function SessoesContent({
-  initialTab = "inacabadas",
-  lockedTab,
-  variant = "sessoes",
-}: {
-  initialTab?: SessionsTab;
-  /** When set, the tab is fixed (no switcher, no URL rewrites) — used by /provas. */
-  lockedTab?: SessionsTab;
-  variant?: "sessoes" | "simulados";
-}) {
+// Histórico: o log de sessões (treinos + simulados). Retomar, ver resultado ou
+// concluir revisão — uma lista escaneável. Simulados é um filtro (?tipo=provas),
+// não uma página. Análise pedagógica vive em /estatisticas.
+export function SessoesContent({ initialTab = "inacabadas" }: { initialTab?: SessionsTab }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab = lockedTab ?? parseSessionsTab(searchParams.get("tipo") ?? initialTab);
-  const isSimulados = variant === "simulados";
-  const { token, tokenResolved } = useAuthToken();
-  const { sessions, tasks, performanceSummary, longitudinal, loading, error, reload } =
-    useSessionsPanelData();
+  const tab = parseSessionsTab(searchParams.get("tipo") ?? initialTab);
+  const { token } = useAuthToken();
+  const { sessions, loading, error, reload } = useSessionsPanelData();
   const [busy, setBusy] = useState(false);
 
   const counts = useMemo(() => {
@@ -64,8 +48,6 @@ export function SessoesContent({
   const visibleSessions = useMemo(() => filterSessionsByTab(sessions, tab), [sessions, tab]);
 
   useEffect(() => {
-    // Locked tab (e.g. /provas) never rewrites the URL to /revisoes.
-    if (lockedTab) return;
     if (tab === "inacabadas") return;
 
     const syncCanonicalTabUrl = () => {
@@ -89,7 +71,7 @@ export function SessoesContent({
       window.cancelAnimationFrame(animationFrame);
       window.clearTimeout(timeout);
     };
-  }, [tab, lockedTab]);
+  }, [tab]);
 
   function changeTab(next: SessionsTab) {
     router.replace(next === "inacabadas" ? "/revisoes" : `/revisoes?tipo=${next}`, {
@@ -112,7 +94,7 @@ export function SessoesContent({
     }
   }
 
-  if (!tokenResolved || loading) {
+  if (loading) {
     return (
       <main className="min-h-screen bg-paper text-ink">
         <LoadingBlock />
@@ -122,40 +104,31 @@ export function SessoesContent({
 
   return (
     <main className="min-h-screen bg-paper text-ink">
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">
-              {isSimulados ? "Simulados" : "Sessões"}
-            </h1>
+            <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">Histórico</h1>
             <p className="mt-3 max-w-2xl text-sm text-muted">
-              {isSimulados
-                ? "Meça seu desempenho sob pressão: abra resultados de provas e simulados e acompanhe seu tempo de resposta e queda por fadiga."
-                : "Continue sessões inacabadas, abra resultados de provas e simulados e acompanhe seu tempo de resposta."}
+              Retome sessões inacabadas, reveja resultados de treinos e simulados e acompanhe seu
+              tempo de resposta.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            {isSimulados ? (
-              <CreateSimuladoPanel />
-            ) : (
-              <>
-                <Link
-                  href="/banco-de-questoes"
-                  className="inline-flex min-h-10 items-center justify-center rounded-lg border border-primary px-4 py-3 text-sm font-semibold text-primary hover:bg-surfaceMuted"
-                >
-                  Nova sessão
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => void startWeaknessSession()}
-                  disabled={busy}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-3 text-sm font-semibold text-primaryInk disabled:opacity-50"
-                >
-                  {busy ? "Criando..." : "Criar revisão inteligente"}
-                  <IconArrowRight className="h-4 w-4" />
-                </button>
-              </>
-            )}
+            <Link
+              href="/banco-de-questoes"
+              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-primary px-4 py-3 text-sm font-semibold text-primary hover:bg-surfaceMuted"
+            >
+              Nova sessão
+            </Link>
+            <button
+              type="button"
+              onClick={() => void startWeaknessSession()}
+              disabled={busy}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-3 text-sm font-semibold text-primaryInk disabled:opacity-50"
+            >
+              {busy ? "Criando..." : "Criar revisão inteligente"}
+              <IconArrowRight className="h-4 w-4" />
+            </button>
           </div>
         </header>
 
@@ -172,19 +145,11 @@ export function SessoesContent({
           </div>
         )}
 
-        <SessionsMetrics sessions={sessions} />
-
-        <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_23rem]">
-          <div className="space-y-5">
-            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
-              {!lockedTab && <SessionsTabs value={tab} counts={counts} onChange={changeTab} />}
-              <div className={lockedTab ? "" : "mt-4"}>
-                <SessionList sessions={visibleSessions} tab={tab} />
-              </div>
-            </section>
-            <PendingReviewsSection tasks={tasks} />
+        <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+          <SessionsTabs value={tab} counts={counts} onChange={changeTab} />
+          <div className="mt-4">
+            <SessionList sessions={visibleSessions} tab={tab} />
           </div>
-          <MetacognitionSidebar longitudinal={longitudinal} performanceSummary={performanceSummary} />
         </section>
       </div>
     </main>

@@ -1,15 +1,8 @@
-import { Suspense } from "react";
-import { SessoesContent } from "../revisoes/_components/SessoesContent";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-// Canonical Simulados route: measurement/results view. Renders the sessions
-// panel locked to the "provas" tab (no redirect, no tab switching back to
-// /revisoes). Starting a simulado lives in Questões until Fase 3.
+// Simulados não é um destino próprio: é um filtro do Histórico de sessões
+// (uma só entidade QuestionBankSession, treino ou simulado). /provas continua
+// existindo como deep-link — aterrissa no Histórico já filtrado em Simulados.
 export default function ProvasPage() {
-  return (
-    <Suspense fallback={<main className="p-6 text-sm text-muted">Carregando...</main>}>
-      <SessoesContent initialTab="provas" lockedTab="provas" variant="simulados" />
-    </Suspense>
-  );
+  redirect("/revisoes?tipo=provas");
 }

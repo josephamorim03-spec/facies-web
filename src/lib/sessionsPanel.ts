@@ -1,13 +1,13 @@
-// Regras puras do painel de Sessões (/revisoes).
+// Regras puras do painel de Histórico (/revisoes).
 // TS puro, sem imports de runtime: consumido pelos unit tests via
 // `node --experimental-strip-types` (aliases `@/` não resolvem lá).
 // `SessionLike` é estrutural — `QuestionBankSession` é atribuível a ele.
 
+// Filtros do Histórico: Simulados (provas) é um recorte, não um destino de menu.
 export const SESSION_TAB_VALUES = [
   "inacabadas",
   "resultados",
   "provas",
-  "treinos",
   "todas",
 ] as const;
 
@@ -47,8 +47,6 @@ export function filterSessionsByTab<T extends SessionLike>(sessions: T[], tab: S
       return sessions.filter((session) => session.status === "finalized");
     case "provas":
       return sessions.filter((session) => session.status !== "invalidated" && isExamLike(session));
-    case "treinos":
-      return sessions.filter((session) => session.status !== "invalidated" && !isExamLike(session));
     case "todas":
       return sessions;
   }

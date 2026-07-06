@@ -31,7 +31,7 @@ type BuildVersionPayload = {
 };
 
 const SHOW_BUILD_BADGE = process.env.NEXT_PUBLIC_SHOW_BUILD_BADGE === "1";
-const PRIMARY_NAV_ROUTES = ["/hoje", "/banco-de-questoes", "/cards-adaptativos", "/provas", "/estatisticas"];
+const PRIMARY_NAV_ROUTES = ["/hoje", "/banco-de-questoes", "/cards-adaptativos", "/estatisticas"];
 
 type IdleCallbackHandle = number;
 type WindowWithIdleCallback = Window & {
@@ -67,7 +67,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/banco-de-questoes": "Questões",
   "/cards-adaptativos": "Cards",
   "/revisao-turbo": "Cards",
-  "/revisoes": "Sessões",
+  "/revisoes": "Histórico",
   "/cronograma": "Cronograma",
   "/dados-e-relatorios": "Desempenho",
   "/dados-e-relatorios/graficos": "Gráficos",
@@ -81,7 +81,6 @@ const PAGE_TITLES: Record<string, string> = {
   "/caderno": "Caderno",
   "/agenda-operacional": "Agenda",
   "/calendario": "Agenda",
-  "/provas": "Simulados",
   "/dashboard": "Dashboard",
   "/admin": "Admin",
   "/hoje": "Hoje",

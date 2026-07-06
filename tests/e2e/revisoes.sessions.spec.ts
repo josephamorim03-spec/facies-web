@@ -139,7 +139,7 @@ async function mockSessionsApi(page: Page) {
   });
 }
 
-test.describe("Painel de Sessões (/revisoes)", () => {
+test.describe("Histórico de sessões (/revisoes)", () => {
   test.beforeEach(async ({ context, page }) => {
     await forceDesktopNavigation(page);
     await addHttpOnlySession(context);
@@ -150,7 +150,7 @@ test.describe("Painel de Sessões (/revisoes)", () => {
   test("aba padrão mostra só inacabadas com CTAs corretos", async ({ page }) => {
     await page.goto("/revisoes");
 
-    await expect(page.getByRole("heading", { name: "Sessões", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Histórico", exact: true })).toBeVisible();
     await expect(page.locator("[data-sessions-tab='inacabadas']")).toHaveAttribute("aria-selected", "true");
 
     const rows = page.locator("[data-session-id]");
@@ -160,10 +160,10 @@ test.describe("Painel de Sessões (/revisoes)", () => {
       page.locator("[data-session-id='sess-simulation-revealed'] [data-session-cta='Concluir revisão']"),
     ).toBeVisible();
 
-    // Métricas do topo
-    await expect(page.locator("[data-sessions-metric='inacabadas']")).toContainText("2");
-    await expect(page.locator("[data-sessions-metric='resultados']")).toContainText("1");
-    await expect(page.locator("[data-sessions-metric='provas']")).toContainText("2");
+    // Contagens vivem nos filtros (segmentado), não em cards de métrica.
+    await expect(page.locator("[data-sessions-tab='inacabadas']")).toContainText("2");
+    await expect(page.locator("[data-sessions-tab='resultados']")).toContainText("1");
+    await expect(page.locator("[data-sessions-tab='provas']")).toContainText("2");
   });
 
   test("aba Resultados filtra e atualiza a URL", async ({ page }) => {

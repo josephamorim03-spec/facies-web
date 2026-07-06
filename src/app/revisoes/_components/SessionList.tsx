@@ -13,8 +13,7 @@ import { formatDate } from "./format";
 const EMPTY_COPY: Record<SessionsTab, string> = {
   inacabadas: "Nenhuma sessão em andamento. Comece uma nova no banco de questões.",
   resultados: "Nenhum resultado ainda. Finalize uma sessão para ver o desempenho aqui.",
-  provas: "Nenhuma prova ou simulado ainda. Monte um simulado no banco de questões.",
-  treinos: "Nenhum treino registrado ainda. Comece pelo banco de questões.",
+  provas: "Nenhum simulado ainda. Inicie um em Questões (cartão “Simular prova”).",
   todas: "Nenhuma sessão do banco registrada ainda.",
 };
 

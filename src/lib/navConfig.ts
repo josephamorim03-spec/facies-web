@@ -53,13 +53,6 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         groupPaths: ["/cards-adaptativos", "/revisao-turbo"],
       },
       {
-        href: "/provas",
-        label: "SIMULADOS",
-        shortLabel: "Simulados",
-        // Só /provas — /revisoes (histórico) fica em "Sessões".
-        groupPaths: ["/provas"],
-      },
-      {
         // Rótulo "Desempenho" = análise (/estatisticas). NÃO é a rota /desempenho (metas).
         href: "/estatisticas",
         label: "DESEMPENHO",
@@ -91,9 +84,11 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         groupPaths: ["/desempenho", "/rotina-e-metas"],
       },
       {
+        // "Histórico" = o log de sessões (treinos + simulados); Simulados é um
+        // filtro (?tipo=provas), não um destino. /provas redireciona pra cá.
         href: "/revisoes",
-        label: "SESSÕES",
-        shortLabel: "Sessões",
+        label: "HISTÓRICO",
+        shortLabel: "Histórico",
         groupPaths: ["/revisoes"],
       },
       {

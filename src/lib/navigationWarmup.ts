@@ -105,14 +105,9 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       getOperationalStreak(token),
       getTurboAreaStats(token),
     );
-  } else if (pathname === "/revisoes" || pathname === "/provas") {
-    // /provas (Simulados) e /revisoes (Sessões) compartilham o mesmo painel de dados.
-    requests.push(
-      listQuestionBankSessions(token, { limit: 30 }),
-      listReviewTasks(token, { status: "pending" }),
-      getStudyPerformanceSummary(token),
-      getQuestionBankLongitudinalDiagnosis(token),
-    );
+  } else if (pathname === "/revisoes") {
+    // Histórico é um log: só as sessões (análise pedagógica vive em /estatisticas).
+    requests.push(listQuestionBankSessions(token, { limit: 30 }));
   } else if (
     pathname === "/dados-e-relatorios" ||
     pathname === "/estatisticas" ||
