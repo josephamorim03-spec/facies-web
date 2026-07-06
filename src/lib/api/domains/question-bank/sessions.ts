@@ -37,6 +37,24 @@ export async function revealQuestionBankSessionResults(
   );
 }
 
+export type ConfidenceRatingInput = {
+  position: number;
+  confidence_self_rating: number;
+  event_id?: string;
+};
+
+/** Pre-reveal confidence (Fase 3). Does not change answers. */
+export async function postConfidenceReview(
+  token: string,
+  sessionId: string,
+  body: { review_id: string; ratings: ConfidenceRatingInput[] },
+): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/confidence-review`,
+    { method: "POST", headers: authHeader(token), body: JSON.stringify(body) },
+  );
+}
+
 export async function finalizeQuestionBankSession(
   token: string,
   sessionId: string,

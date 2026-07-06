@@ -6,11 +6,14 @@ import { isAllowedQuestionBankAdminPath } from "../../src/app/api/admin/question
 test("question-bank proxy allows the current reports routes", () => {
   assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/questions/reports"), true);
   assert.equal(isAllowedQuestionBankAdminPath("PATCH", "/v1/admin/questions/reports/report-123"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/questions/reports/report-123/triage"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/questions/reports/report-123/repair"), true);
 });
 
 test("question-bank proxy rejects the legacy reports routes", () => {
   assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/reports"), false);
   assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/reports/question-123/resolve"), false);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/questions/reports/report-123/delete"), false);
 });
 
 test("question-bank proxy allows storage and scoped compaction routes", () => {

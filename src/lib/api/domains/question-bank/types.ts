@@ -190,6 +190,100 @@ export type QuestionBankPerformance = {
   generated_at: string;
 };
 
+// ── Exam debrief (Fase 3) ────────────────────────────────────────────────────
+export type ExamDebriefSummary = {
+  total_questions: number;
+  answered: number;
+  omitted: number;
+  discarded: number;
+  correct: number;
+  wrong: number;
+  accuracy: number;
+  total_time_ms: number;
+  avg_time_ms: number | null;
+  time_budget_minutes: number | null;
+  observed_score: number;
+};
+export type ExamDebriefBlock = {
+  label: string;
+  count: number;
+  accuracy: number | null;
+  avg_time_ms: number | null;
+  omissions: number;
+  avg_confidence: number | null;
+  overconfident_wrong: number;
+  delta_accuracy_vs_prev: number | null;
+};
+export type ExamDebriefTimeline = {
+  by_position_thirds: ExamDebriefBlock[];
+  by_position_quarters: ExamDebriefBlock[];
+  by_trajectory_thirds: ExamDebriefBlock[];
+};
+export type ExamDebriefPacing = {
+  expected_ms_per_question: number | null;
+  residual_ms: number | null;
+  slow_count: number;
+  fast_count: number;
+  final_acceleration: boolean;
+  fatigue_suspected: boolean;
+  speededness: { method: string; detected: boolean; detail: string | null };
+  label: string;
+};
+export type ExamDebriefCalibration = {
+  bins: Array<{ confidence: number; count: number; accuracy: number | null }>;
+  brier: number | null;
+  overconfident_wrong: number;
+  uncertain_correct: number;
+  confidence_gap: number | null;
+  coverage: number;
+};
+export type ExamDebriefStrategy = {
+  marked: number;
+  eliminated: number;
+  omitted: number;
+  changed: number | null;
+  right_to_wrong: number | null;
+  wrong_to_right: number | null;
+  revisited: number | null;
+  never_visited: number | null;
+};
+export type ExamDebriefNode = {
+  knowledge_node_id: string;
+  node_name: string | null;
+  node_type: string | null;
+  correct: number;
+  wrong: number;
+  accuracy: number;
+};
+export type ExamDebriefFollowupAction = {
+  kind: string;
+  title: string;
+  rationale: string;
+  href: string;
+};
+export type ExamDebriefDataQuality = {
+  timing_source: string;
+  timing_coverage: number;
+  confidence_coverage: number;
+  pacing_basis: string;
+  idle_suspect: boolean;
+  notes: string[];
+};
+export type QuestionBankExamDebrief = {
+  session_id: string;
+  summary: ExamDebriefSummary;
+  timeline: ExamDebriefTimeline;
+  pacing: ExamDebriefPacing;
+  calibration: ExamDebriefCalibration;
+  strategy: ExamDebriefStrategy;
+  knowledge_breakdown: ExamDebriefNode[];
+  cognitive_breakdown: Record<string, number>;
+  dominant_cognitive_tag: string | null;
+  trainer_followup: ExamDebriefFollowupAction[];
+  data_quality: ExamDebriefDataQuality;
+  generated_at: string;
+};
+
 export type QuestionBankQuestion = {
   id: string;
   stem: string;
@@ -205,7 +299,17 @@ export type QuestionBankQuestion = {
   attempt_stats?: QuestionBankAttemptStats | null;
 };
 
-export type QuestionBankReportType = "error" | "unclear" | "outdated" | "other";
+export type QuestionBankReportType =
+  | "error"
+  | "unclear"
+  | "outdated"
+  | "other"
+  | "wrong_answer"
+  | "bad_structure"
+  | "missing_options"
+  | "truncated_or_merged_stem"
+  | "missing_media"
+  | "wrong_metadata";
 
 export type QuestionBankSessionItem = {
   question_id: string;
@@ -337,6 +441,7 @@ export type QuestionBankFinalizeResult = FinalizationResult & {
 
 export type QuestionBankStudentEventType =
   | "question_presented"
+  | "question_view_ended"
   | "answer_selected"
   | "answer_changed"
   | "option_eliminated"

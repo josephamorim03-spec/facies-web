@@ -746,6 +746,21 @@ export type QuestionBankReport = {
   resolved_at: string | null;
   resolved_by: string | null;
   resolution_note: string | null;
+  resolution_action?: string | null;
+  report_context?: Record<string, unknown>;
+  student_snapshot?: Record<string, unknown>;
+  source_issue_kind?: string | null;
+  severity?: string | null;
+  candidate_id?: string | null;
+  occurrence_id?: string | null;
+  imported_file_id?: string | null;
+  ai_triage_status?: string | null;
+  ai_triage_job_id?: string | null;
+  ai_diagnosis?: Record<string, unknown>;
+  suggested_patch?: Record<string, unknown>;
+  repair_status?: string | null;
+  repair_job_id?: string | null;
+  repair_action?: string | null;
   question: {
     status: string | null;
     stem: string | null;
@@ -794,6 +809,57 @@ export async function resolveQuestionBankReports(
     {
       method: "PATCH",
       body: JSON.stringify({ action: "resolve" }),
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+    },
+  );
+}
+
+export async function triageQuestionBankReport(
+  reportId: string,
+): Promise<{
+  report_id: string;
+  question_id: string;
+  ai_triage_status: string;
+  ai_triage_job_id: string | null;
+}> {
+  return api<{
+    report_id: string;
+    question_id: string;
+    ai_triage_status: string;
+    ai_triage_job_id: string | null;
+  }>(
+    `/api/admin/question-bank/questions/reports/${encodeURIComponent(reportId)}/triage`,
+    { method: "POST", headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" } },
+  );
+}
+
+export async function repairQuestionBankReport(
+  reportId: string,
+  payload: {
+    action: "apply_patch" | "reanalyze_question" | "rerun_import" | "block_question" | "reject" | "resolve";
+    resolution_note?: string;
+    patch?: Record<string, unknown>;
+  },
+): Promise<{
+  report_id: string;
+  question_id: string;
+  action: string;
+  repair_status: string;
+  repair_job_id: string | null;
+  status: string;
+}> {
+  return api<{
+    report_id: string;
+    question_id: string;
+    action: string;
+    repair_status: string;
+    repair_job_id: string | null;
+    status: string;
+  }>(
+    `/api/admin/question-bank/questions/reports/${encodeURIComponent(reportId)}/repair`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
       headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
     },
   );

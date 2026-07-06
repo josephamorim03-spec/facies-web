@@ -35,7 +35,7 @@ export function usePostExamReviewData({
   const [actionError, setActionError] = useState<string | null>(null);
   const [localBusy, setLocalBusy] = useState(false);
   const [reportingPosition, setReportingPosition] = useState<number | null>(null);
-  const [reportType, setReportType] = useState<QuestionBankReportType>("error");
+  const [reportType, setReportType] = useState<QuestionBankReportType>("wrong_answer");
   const [reportReason, setReportReason] = useState("");
 
   useEffect(() => {
@@ -69,6 +69,23 @@ export function usePostExamReviewData({
       const updated = await reportQuestionBankSessionItem(token, session.session_id, item.position, {
         report_type: reportType,
         report_reason: reportReason.trim() || undefined,
+        report_context: {
+          surface: "web_post_exam_review",
+          session_id: session.session_id,
+          position: item.position,
+          reported_after_reveal: true,
+          resolution_mode: session.resolution_mode,
+          study_kind: session.study_kind,
+          session_status: session.status,
+        },
+        student_snapshot: {
+          selected_option: item.selected_option,
+          answered: item.answered,
+          doubtful: item.doubtful,
+          confidence_self_rating: item.confidence_self_rating,
+          is_correct: item.is_correct,
+          correct_answer_visible: true,
+        },
       });
       onSessionChange?.(updated);
       setReportingPosition(null);

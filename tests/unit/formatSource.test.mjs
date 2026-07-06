@@ -39,10 +39,17 @@ test("fonte totalmente vazia cai em 'Fonte não informada'", () => {
   assert.equal(formatSourceLabel({ institution: "  ", board_code: null, year: "" }), "Fonte não informada");
 });
 
-test("faixa de anos honesta: min != max vira 'período min–max'", () => {
+test("ano exato prevalece sobre faixa herdada da fonte", () => {
   assert.equal(
     formatSourceLabel({ board_code: "REVALIDA", year: 2026, year_min: 2022, year_max: 2026 }),
-    "REVALIDA · período 2022–2026",
+    "REVALIDA · 2026",
+  );
+});
+
+test("faixa sem ano exato nao vira periodo de filtro", () => {
+  assert.equal(
+    formatSourceLabel({ board_code: "REVALIDA", year_min: 2022, year_max: 2026 }),
+    "REVALIDA",
   );
 });
 

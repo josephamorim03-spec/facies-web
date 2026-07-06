@@ -9,8 +9,10 @@ import {
   getQuestionBankAdminQuestion,
   listQuestionBankReports,
   listQuestionBankAdminKnowledgeNodes,
+  repairQuestionBankReport,
   resolveQuestionBankReports,
   searchQuestionBankAdminQuestions,
+  triageQuestionBankReport,
   updateQuestionBankQuestionStatus,
   type QuestionBankAdminKnowledgeNode,
   type QuestionBankAdminQuestionDetail,
@@ -68,6 +70,29 @@ function reportSourceLabel(report: QuestionBankReport): string {
   return `Questao ${report.question_id}`;
 }
 
+function objectKeys(value: unknown): string[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+  return Object.keys(value as Record<string, unknown>);
+}
+
+function reportDiagnosisSummary(report: QuestionBankReport): string | null {
+  const summary = report.ai_diagnosis?.summary;
+  return typeof summary === "string" && summary.trim() ? summary.trim() : null;
+}
+
+function reportRecommendedAction(report: QuestionBankReport): string | null {
+  const action = report.ai_diagnosis?.recommended_action;
+  return typeof action === "string" && action.trim() ? action.trim() : null;
+}
+
+function reportPatchFields(report: QuestionBankReport): string[] {
+  const patch = report.suggested_patch ?? {};
+  const questionKeys = objectKeys(patch["question_patch"]).map((key) => `questao.${key}`);
+  const candidateKeys = objectKeys(patch["candidate_patch"]).map((key) => `candidato.${key}`);
+  const topLevelKeys = objectKeys(patch).filter((key) => key !== "question_patch" && key !== "candidate_patch");
+  return [...questionKeys, ...candidateKeys, ...topLevelKeys];
+}
+
 type EditState = {
   stem: string;
   alternatives: Record<string, string>;
@@ -95,6 +120,7 @@ export default function QuestionsManager() {
   const [reports, setReports] = useState<QuestionBankReport[]>([]);
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
+  const [reportActionBusy, setReportActionBusy] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -186,6 +212,44 @@ export default function QuestionsManager() {
       void search(offset);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao resolver report.");
+    }
+  }
+
+  async function triageReport(reportId: string) {
+    setError(null);
+    setReportActionBusy(reportId);
+    try {
+      await triageQuestionBankReport(reportId);
+      setNotice("Diagnostico de IA enfileirado.");
+      await refreshReports();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao diagnosticar report.");
+    } finally {
+      setReportActionBusy(null);
+    }
+  }
+
+  async function repairReport(
+    reportId: string,
+    action: "apply_patch" | "reanalyze_question" | "block_question",
+  ) {
+    setError(null);
+    setReportActionBusy(reportId);
+    try {
+      await repairQuestionBankReport(reportId, { action });
+      setNotice(
+        action === "apply_patch"
+          ? "Patch aplicado pelo admin."
+          : action === "reanalyze_question"
+            ? "Reanalise enfileirada."
+            : "Questao bloqueada.",
+      );
+      await refreshReports();
+      void search(offset);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao executar reparo do report.");
+    } finally {
+      setReportActionBusy(null);
     }
   }
 
@@ -518,43 +582,96 @@ export default function QuestionsManager() {
         </div>
         {reports.length > 0 ? (
           <div className="mt-3 grid gap-2">
-            {reports.map((report) => (
-              <div key={report.id} className="rounded-lg border border-amber-200 bg-white p-3 dark:border-amber-900/40 dark:bg-gray-900">
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-200">
-                      {report.report_type ? <span>{report.report_type}</span> : null}
-                      <span>{report.status || "sem status"}</span>
-                      <span>{report.question.status || "questao sem status"}</span>
+            {reports.map((report) => {
+              const patchFields = reportPatchFields(report);
+              const diagnosis = reportDiagnosisSummary(report);
+              const recommendedAction = reportRecommendedAction(report);
+              const isReportBusy = reportActionBusy === report.id;
+              return (
+                <div key={report.id} className="rounded-lg border border-amber-200 bg-white p-3 dark:border-amber-900/40 dark:bg-gray-900">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-200">
+                        {report.source_issue_kind || report.report_type ? <span>{report.source_issue_kind || report.report_type}</span> : null}
+                        {report.severity ? <span>{report.severity}</span> : null}
+                        <span>IA: {report.ai_triage_status || "nao solicitada"}</span>
+                        <span>reparo: {report.repair_status || "nao solicitado"}</span>
+                        <span>{report.question.status || "questao sem status"}</span>
+                      </div>
+                      <div className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {reportSourceLabel(report)}
+                      </div>
+                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {[
+                          report.question.source.institution,
+                          report.question.source.exam_name,
+                          report.question.source.year,
+                        ].filter(Boolean).join(" - ") || "fonte sem metadados"}
+                      </div>
+                      {report.report_reason ? (
+                        <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">{report.report_reason}</p>
+                      ) : null}
+                      {diagnosis ? (
+                        <div className="mt-2 rounded-lg border border-amber-100 bg-amber-50/60 p-2 text-xs text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-100">
+                          <p>{diagnosis}</p>
+                          {recommendedAction ? <p className="mt-1 font-semibold">Acao sugerida: {recommendedAction}</p> : null}
+                          {patchFields.length > 0 ? (
+                            <p className="mt-1">Patch: {patchFields.slice(0, 5).join(", ")}</p>
+                          ) : null}
+                        </div>
+                      ) : null}
+                      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-gray-500 dark:text-gray-400">
+                        {report.candidate_id ? <span>candidate {report.candidate_id.slice(0, 8)}</span> : null}
+                        {report.imported_file_id ? <span>import {report.imported_file_id.slice(0, 8)}</span> : null}
+                      </div>
                     </div>
-                    <div className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {reportSourceLabel(report)}
+                    <div className="flex shrink-0 flex-wrap gap-2">
+                      <button
+                        onClick={() => void triageReport(report.id)}
+                        disabled={isReportBusy}
+                        className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:text-amber-200 dark:hover:bg-amber-950/40"
+                      >
+                        Diagnosticar com IA
+                      </button>
+                      <button
+                        onClick={() => void repairReport(report.id, "apply_patch")}
+                        disabled={isReportBusy || patchFields.length === 0}
+                        className="rounded-lg border border-blue-300 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:opacity-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/30"
+                      >
+                        Aplicar patch
+                      </button>
+                      <button
+                        onClick={() => void repairReport(report.id, "reanalyze_question")}
+                        disabled={isReportBusy}
+                        className="rounded-lg border border-purple-300 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-50 disabled:opacity-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-950/30"
+                      >
+                        Reanalisar
+                      </button>
+                      <button
+                        onClick={() => void repairReport(report.id, "block_question")}
+                        disabled={isReportBusy}
+                        className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30"
+                      >
+                        Bloquear
+                      </button>
+                      <button
+                        onClick={() => void openEditor(report.question_id)}
+                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => void resolveReport(report.id)}
+                        disabled={isReportBusy}
+                        className="rounded-lg border border-green-300 px-3 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-50 disabled:opacity-50 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-950/30"
+                      >
+                        Resolver
+                      </button>
                     </div>
-                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {[
-                        report.question.source.institution,
-                        report.question.source.exam_name,
-                        report.question.source.year,
-                      ].filter(Boolean).join(" - ") || "fonte sem metadados"}
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 flex-wrap gap-2">
-                    <button
-                      onClick={() => void openEditor(report.question_id)}
-                      className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => void resolveReport(report.id)}
-                      className="rounded-lg border border-green-300 px-3 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-950/30"
-                    >
-                      Resolver
-                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : null}
         {reportsError ? (

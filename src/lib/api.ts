@@ -207,6 +207,8 @@ export {
   getQuestionBankReviewQueue,
   getQuestionBankNextAction,
   getQuestionBankPerformance,
+  getQuestionBankExamDebrief,
+  postConfidenceReview,
 } from "./api/domains/question-bank";
 export type {
   QuestionBankOption,
@@ -249,6 +251,9 @@ export type {
   QuestionBankPerformance,
   QuestionBankAreaReadiness,
   QuestionBankExamState,
+  QuestionBankExamDebrief,
+  ExamDebriefBlock,
+  ExamDebriefFollowupAction,
 } from "./api/domains/question-bank";
 
 // Question Bank Admin domain

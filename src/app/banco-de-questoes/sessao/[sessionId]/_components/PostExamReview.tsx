@@ -6,12 +6,24 @@ import type { QuestionBankReportType } from "@/lib/api";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { cognitivePatternSummary } from "@/lib/guidanceCopy";
 import ErrorFlashcardsPanel from "./ErrorFlashcardsPanel";
+import ExamDebrief from "./ExamDebrief";
 import AttemptHistoryModal from "../../../_components/AttemptHistoryModal";
 import { PostExamTabs } from "./_postExamReview/PostExamTabs";
 import { ReportedItemsPanel } from "./_postExamReview/ReportedItemsPanel";
 import { usePostExamReviewData } from "./_postExamReview/usePostExamReviewData";
 import type { PostExamReviewProps, PostExamReviewTab } from "./_postExamReview/types";
 import { accuracyColor, cx, formatAccuracy, microNodes } from "./_postExamReview/utils";
+
+const REPORT_OPTIONS: Array<{ type: QuestionBankReportType; label: string }> = [
+  { type: "wrong_answer", label: "Gabarito errado" },
+  { type: "bad_structure", label: "Enunciado cortado" },
+  { type: "missing_options", label: "Alternativas quebradas" },
+  { type: "truncated_or_merged_stem", label: "Questões misturadas" },
+  { type: "missing_media", label: "Imagem/tabela faltando" },
+  { type: "wrong_metadata", label: "Metadados errados" },
+  { type: "outdated", label: "Desatualizada" },
+  { type: "other", label: "Outro" },
+];
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -130,9 +142,13 @@ export default function PostExamReview({
     { id: "descartadas", label: "Descartadas", count: excludedItems.length },
   ];
 
+  const examLike = isFullExam || session.resolution_mode === "simulation";
+
   return (
     <main className="min-h-screen bg-paper px-4 py-6 text-ink md:px-6 md:py-8">
       <div className="mx-auto max-w-4xl space-y-6">
+
+        {examLike && <ExamDebrief sessionId={session.session_id} />}
 
         <header className="rounded-lg border border-edge bg-surface p-5 shadow-[var(--soft-shadow)]">
           <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
@@ -513,7 +529,7 @@ export default function PostExamReview({
                     {activeReview && reportingPosition === item.position && (
                       <div className="mt-3 rounded-lg border border-edge bg-paper p-3">
                         <div className="flex flex-wrap gap-2">
-                          {(["error", "unclear", "outdated", "other"] as QuestionBankReportType[]).map((type) => (
+                          {REPORT_OPTIONS.map(({ type, label }) => (
                             <button
                               key={type}
                               type="button"
@@ -525,13 +541,7 @@ export default function PostExamReview({
                                   : "border-edge text-muted hover:text-ink",
                               )}
                             >
-                              {type === "error"
-                                ? "Erro"
-                                : type === "unclear"
-                                  ? "Confusa"
-                                  : type === "outdated"
-                                    ? "Desatualizada"
-                                    : "Outro"}
+                              {label}
                             </button>
                           ))}
                         </div>

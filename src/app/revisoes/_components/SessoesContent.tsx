@@ -19,6 +19,7 @@ import { SessionList } from "./SessionList";
 import { SessionsMetrics } from "./SessionsMetrics";
 import { SessionsTabs } from "./SessionsTabs";
 import { useSessionsPanelData } from "./useSessionsPanelData";
+import { CreateSimuladoPanel } from "@/app/provas/_components/CreateSimuladoPanel";
 
 function LoadingBlock() {
   return (
@@ -135,14 +136,7 @@ export function SessoesContent({
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {isSimulados ? (
-              // Starting a simulado lives in Questões ("Simular prova") until Fase 3.
-              <Link
-                href="/banco-de-questoes"
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-3 text-sm font-semibold text-primaryInk hover:brightness-105"
-              >
-                Iniciar simulado
-                <IconArrowRight className="h-4 w-4" />
-              </Link>
+              <CreateSimuladoPanel />
             ) : (
               <>
                 <Link

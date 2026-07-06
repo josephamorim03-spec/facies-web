@@ -10,7 +10,7 @@ import {
   recordQuestionBankCorrection,
   recordQuestionBankEvents,
   revealQuestionBankSessionResults,
-  reportQuestionProblem,
+  reportQuestionBankSessionItem,
   requestQuestionBankAICorrection,
   submitQuestionBankGuidedReview,
   type OperationalQuestionOutcome,
@@ -31,6 +31,7 @@ import QuickNoteModal from "./_components/QuickNoteModal";
 import ExamQuestion from "./_components/ExamQuestion";
 import ExamMap from "./_components/ExamMap";
 import PostExamReview from "./_components/PostExamReview";
+import { ConfidenceReviewStep } from "./_components/ConfidenceReviewStep";
 import AttemptHistoryModal from "../../_components/AttemptHistoryModal";
 
 type QuickNoteTarget = {
@@ -67,6 +68,7 @@ export default function SessionPage() {
   // Navigation
   const [currentPosition, setCurrentPosition] = useState(1);
   const [showMap, setShowMap] = useState(false);
+  const [confidenceStepOpen, setConfidenceStepOpen] = useState(false);
 
   // Client-side alternative elimination ("cortar") — a visual study aid, per position.
   // Never sent to the backend; does not affect the recorded attempt or FSRS.
@@ -143,7 +145,7 @@ export default function SessionPage() {
 
   // Report state
   const [reportingQuestionId, setReportingQuestionId] = useState<string | null>(null);
-  const [reportType, setReportType] = useState<QuestionBankReportType>("error");
+  const [reportType, setReportType] = useState<QuestionBankReportType>("wrong_answer");
   const [reportReason, setReportReason] = useState("");
   const [reportDone, setReportDone] = useState<Record<string, boolean>>({});
   const [aiCorrectionRequested, setAiCorrectionRequested] = useState<Record<string, boolean>>({});
@@ -197,6 +199,136 @@ export default function SessionPage() {
       if (eventFlushTimerRef.current) clearTimeout(eventFlushTimerRef.current);
     };
   }, []);
+
+  // ── Timing v1 (Fatia C): honest per-question visit tracking for simulados ──
+  // visible_ms via Page Visibility, idle suspicion at end of a stale visit,
+  // revisits via visit_index. Emitted through the existing event queue.
+  type VisitState = {
+    position: number;
+    visitId: string;
+    visitIndex: number;
+    enteredAt: number;
+    visibleAccumMs: number;
+    hiddenAccumMs: number;
+    lastVisibleStart: number | null;
+    hiddenStart: number | null;
+    activityCount: number;
+    focusLossCount: number;
+    lastActivityAt: number;
+    idleSuspectMs: number;
+  };
+  const visitRef = useRef<VisitState | null>(null);
+  const visitIndexByPosRef = useRef<Record<number, number>>({});
+  const IDLE_GAP_MS = 45_000;
+
+  const endVisitRef = useRef<(reason: string) => void>(() => {});
+  endVisitRef.current = (reason: string) => {
+    const v = visitRef.current;
+    if (!v) return;
+    visitRef.current = null;
+    const now = Date.now();
+    if (v.lastVisibleStart != null) v.visibleAccumMs += now - v.lastVisibleStart;
+    if (v.hiddenStart != null) v.hiddenAccumMs += now - v.hiddenStart;
+    const idleGap = now - v.lastActivityAt;
+    if (idleGap > IDLE_GAP_MS) v.idleSuspectMs += idleGap - IDLE_GAP_MS;
+    enqueueStudentEvent(v.position, "question_view_ended", {
+      schema_version: "timing_v1",
+      visit_id: v.visitId,
+      visit_index: v.visitIndex,
+      entered_at: new Date(v.enteredAt).toISOString(),
+      left_at: new Date(now).toISOString(),
+      wall_ms: now - v.enteredAt,
+      visible_ms: Math.round(v.visibleAccumMs),
+      hidden_ms: Math.round(v.hiddenAccumMs),
+      idle_suspect_ms: Math.round(v.idleSuspectMs),
+      activity_count: v.activityCount,
+      focus_loss_count: v.focusLossCount,
+      end_reason: reason,
+    });
+  };
+
+  // Begin/end a visit as the current question changes (simulation only).
+  useEffect(() => {
+    if (!session || session.resolution_mode !== "simulation" || session.status !== "active") return;
+    const position = currentPosition;
+    const now = Date.now();
+    const idx = visitIndexByPosRef.current[position] ?? 0;
+    visitIndexByPosRef.current[position] = idx + 1;
+    const hiddenNow = typeof document !== "undefined" && document.visibilityState === "hidden";
+    visitRef.current = {
+      position,
+      visitId: `${sessionId}_${position}_${now}_${Math.random().toString(36).slice(2, 6)}`,
+      visitIndex: idx,
+      enteredAt: now,
+      visibleAccumMs: 0,
+      hiddenAccumMs: 0,
+      lastVisibleStart: hiddenNow ? null : now,
+      hiddenStart: hiddenNow ? now : null,
+      activityCount: 0,
+      focusLossCount: 0,
+      lastActivityAt: now,
+      idleSuspectMs: 0,
+    };
+    enqueueStudentEvent(position, "question_presented", {
+      schema_version: "timing_v1",
+      visit_id: visitRef.current.visitId,
+      visit_index: idx,
+      entered_at: new Date(now).toISOString(),
+    });
+    return () => endVisitRef.current("navigate");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPosition, session?.session_id, session?.resolution_mode, session?.status]);
+
+  // Visibility / focus / activity / pagehide listeners (simulation only).
+  useEffect(() => {
+    if (!session || session.resolution_mode !== "simulation") return;
+    if (typeof document === "undefined") return;
+    const onVisibility = () => {
+      const v = visitRef.current;
+      if (!v) return;
+      const now = Date.now();
+      if (document.visibilityState === "hidden") {
+        if (v.lastVisibleStart != null) {
+          v.visibleAccumMs += now - v.lastVisibleStart;
+          v.lastVisibleStart = null;
+        }
+        if (v.hiddenStart == null) v.hiddenStart = now;
+      } else {
+        if (v.hiddenStart != null) {
+          v.hiddenAccumMs += now - v.hiddenStart;
+          v.hiddenStart = null;
+        }
+        v.lastVisibleStart = now;
+        v.lastActivityAt = now;
+      }
+    };
+    const onActivity = () => {
+      const v = visitRef.current;
+      if (!v) return;
+      v.activityCount += 1;
+      v.lastActivityAt = Date.now();
+    };
+    const onBlur = () => {
+      const v = visitRef.current;
+      if (v) v.focusLossCount += 1;
+    };
+    const onPageHide = () => {
+      endVisitRef.current("pagehide");
+      flushStudentEvents();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pointerdown", onActivity, { passive: true });
+    window.addEventListener("keydown", onActivity);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pointerdown", onActivity);
+      window.removeEventListener("keydown", onActivity);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("pagehide", onPageHide);
+    };
+  }, [session, flushStudentEvents]);
 
   // Load (or reload) the session. Exposed via useCallback so the error state can
   // offer a retry instead of dead-ending the student when the first fetch times
@@ -348,19 +480,18 @@ export default function SessionPage() {
 
   async function finalize() {
     if (!session) return;
+    // Exam-like + active + not revealed: capture pre-reveal confidence first.
+    if (
+      session.resolution_mode === "simulation" &&
+      session.status === "active" &&
+      !session.results_revealed_at
+    ) {
+      setConfidenceStepOpen(true);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      if (
-        session.resolution_mode === "simulation" &&
-        session.status === "active" &&
-        !session.results_revealed_at
-      ) {
-        const updated = await revealQuestionBankSessionResults(token, session.session_id);
-        setSession(updated);
-        setFinalizeOut(null);
-        return;
-      }
       const out = await finalizeQuestionBankSession(token, session.session_id, {
         confirm_unanswered: true,
         confirm_reported_items: true,
@@ -374,13 +505,48 @@ export default function SessionPage() {
     }
   }
 
+  // Actual reveal, after the (optional) confidence step. Never blocked by it.
+  async function proceedReveal() {
+    if (!session) return;
+    setConfidenceStepOpen(false);
+    setBusy(true);
+    setError(null);
+    try {
+      const updated = await revealQuestionBankSessionResults(token, session.session_id);
+      setSession(updated);
+      setFinalizeOut(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível corrigir a sessão.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function submitReport(questionId: string) {
+    if (!session) return;
+    const item = session.items.find((entry) => entry.question_id === questionId);
+    if (!item) return;
     setBusy(true);
     try {
-      await reportQuestionProblem(token, questionId, {
+      const updated = await reportQuestionBankSessionItem(token, session.session_id, item.position, {
         report_type: reportType,
         report_reason: reportReason.trim() || undefined,
+        report_context: {
+          surface: "web_question_session",
+          session_id: session.session_id,
+          position: item.position,
+          reported_after_reveal: Boolean(session.results_revealed_at),
+          resolution_mode: session.resolution_mode,
+          study_kind: session.study_kind,
+        },
+        student_snapshot: {
+          selected_option: item.selected_option,
+          answered: item.answered,
+          doubtful: item.doubtful,
+          confidence_self_rating: item.confidence_self_rating,
+        },
       });
+      setSession(updated);
       setReportDone((prev) => ({ ...prev, [questionId]: true }));
       setReportingQuestionId(null);
       setReportReason("");
@@ -674,6 +840,13 @@ export default function SessionPage() {
   return (
     <>
       {errorToast}
+      {confidenceStepOpen && (
+        <ConfidenceReviewStep
+          sessionId={session.session_id}
+          session={session}
+          onProceed={() => void proceedReveal()}
+        />
+      )}
       <ExamQuestion
         item={currentItem}
         position={currentPosition}

@@ -154,9 +154,25 @@ type StudyQuestionProps = {
 const REPORT_LABELS: Record<QuestionBankReportType, string> = {
   error: "Erro no gabarito",
   unclear: "Enunciado confuso",
+  wrong_answer: "Gabarito errado",
+  bad_structure: "Enunciado cortado",
+  missing_options: "Alternativas quebradas",
+  truncated_or_merged_stem: "Questões misturadas",
+  missing_media: "Imagem/tabela faltando",
+  wrong_metadata: "Metadados errados",
   outdated: "Desatualizada",
   other: "Outro",
 };
+const REPORT_OPTIONS: QuestionBankReportType[] = [
+  "wrong_answer",
+  "bad_structure",
+  "missing_options",
+  "truncated_or_merged_stem",
+  "missing_media",
+  "wrong_metadata",
+  "outdated",
+  "other",
+];
 
 function IconCheck({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -893,7 +909,7 @@ export default function StudyQuestion({
               <section className="rounded-lg border border-edge bg-surface p-3">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Qual o problema?</p>
                 <div className="mb-2 flex flex-wrap gap-1.5">
-                  {(Object.keys(REPORT_LABELS) as QuestionBankReportType[]).map((type) => (
+                  {REPORT_OPTIONS.map((type) => (
                     <button
                       key={type}
                       type="button"

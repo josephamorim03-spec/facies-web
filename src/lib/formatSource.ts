@@ -15,19 +15,15 @@ function _yearInt(value: unknown): number | null {
   return Number.isFinite(n) && n >= 1900 && n <= 2100 ? n : null;
 }
 
-/**
- * Ano honesto: fontes tipo Estratégia agrupam várias provas num PDF e só têm
- * a FAIXA de anos — mostrar um ano único ali seria inventar dado (a questão
- * "de 2026" podia ser de 2022). Com faixa real exibimos "período 2022–2026";
- * ano exato (min == max) continua exato.
- */
 function formatYearPart(source: QuestionSourceLike | null | undefined): string {
+  const exact = _yearInt(source?.year);
+  if (exact !== null) return String(exact);
+
   const min = _yearInt(source?.year_min);
   const max = _yearInt(source?.year_max);
-  if (min !== null && max !== null) {
-    return min === max ? String(min) : `período ${min}–${max}`;
-  }
-  return String(source?.year ?? "").trim();
+  if (min !== null && max !== null && min === max) return String(min);
+
+  return "";
 }
 
 /**

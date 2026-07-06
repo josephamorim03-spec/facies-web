@@ -5,6 +5,13 @@ import type {
   QuestionBankSession,
 } from "./types";
 
+type QuestionBankReportPayload = {
+  report_type?: QuestionBankReportType;
+  report_reason?: string;
+  report_context?: Record<string, unknown>;
+  student_snapshot?: Record<string, unknown>;
+};
+
 export async function getSessionCorrections(
   token: string,
   sessionId: string,
@@ -19,7 +26,7 @@ export async function reportQuestionBankSessionItem(
   token: string,
   sessionId: string,
   position: number,
-  payload: { report_type?: QuestionBankReportType; report_reason?: string },
+  payload: QuestionBankReportPayload,
 ): Promise<QuestionBankSession> {
   return api<QuestionBankSession>(
     `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/report`,
@@ -42,7 +49,7 @@ export async function setQuestionBankSessionItemExclusion(
 export async function reportQuestionProblem(
   token: string,
   questionId: string,
-  payload: { report_type?: QuestionBankReportType; report_reason?: string },
+  payload: QuestionBankReportPayload,
 ): Promise<{ result?: string; question_id?: string; open_reports?: number; flagged?: boolean }> {
   return api<{ result?: string; question_id?: string; open_reports?: number; flagged?: boolean }>(
     `/api/question-bank/questions/${encodeURIComponent(questionId)}/report`,

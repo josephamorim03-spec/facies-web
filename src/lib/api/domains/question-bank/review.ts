@@ -1,5 +1,6 @@
 import { api, authHeader } from "../../shared/http";
 import type {
+  QuestionBankExamDebrief,
   QuestionBankLearningInsight,
   QuestionBankLearnerModel,
   QuestionBankLongitudinalDiagnosis,
@@ -7,6 +8,16 @@ import type {
   QuestionBankPerformance,
   QuestionBankReviewQueue,
 } from "./types";
+
+export async function getQuestionBankExamDebrief(
+  token: string,
+  sessionId: string,
+): Promise<QuestionBankExamDebrief> {
+  return api<QuestionBankExamDebrief>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/exam-debrief`,
+    { headers: authHeader(token) },
+  );
+}
 
 export async function getQuestionBankLongitudinalDiagnosis(token: string): Promise<QuestionBankLongitudinalDiagnosis> {
   return api<QuestionBankLongitudinalDiagnosis>("/api/question-bank/diagnosis/longitudinal", { headers: authHeader(token) });

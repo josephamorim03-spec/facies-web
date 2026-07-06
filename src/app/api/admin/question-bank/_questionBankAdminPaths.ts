@@ -23,6 +23,7 @@ export function isAllowedQuestionBankAdminPath(method: string, questionBankPath:
       /^\/v1\/admin\/topics\/refresh-cache$/,
       /^\/v1\/admin\/pipeline\/(process-batch|run-all|run-ai|backfill-fingerprints)$/,
       /^\/v1\/admin\/questions\/[^/]+\/(resolve|analyze)$/,
+      /^\/v1\/admin\/questions\/reports\/[^/]+\/(triage|repair)$/,
       /^\/v1\/admin\/student-taxonomy\/backfill$/,
       /^\/v1\/admin\/student-taxonomy\/backfill\/conflicts\/[^/]+\/resolve$/,
       /^\/v1\/admin\/taxonomy\/versions$/,
