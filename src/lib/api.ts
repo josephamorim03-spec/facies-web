@@ -195,6 +195,7 @@ export {
   getSessionCorrections,
   recordQuestionBankAttempt,
   recordQuestionBankEvents,
+  recordQuestionBankEventsKeepalive,
   getQuestionBankGuidedReview,
   submitQuestionBankGuidedReview,
   recordQuestionBankCorrection,

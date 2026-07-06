@@ -38,6 +38,7 @@ export default function PostExamReview({
 }: PostExamReviewProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<PostExamReviewTab>("resumo");
+  const [examDebriefAvailable, setExamDebriefAvailable] = useState(false);
   const [dismissedInsights, setDismissedInsights] = useState(false);
   const [dismissedDiagnosisError, setDismissedDiagnosisError] = useState(false);
   const items = session.items;
@@ -148,7 +149,12 @@ export default function PostExamReview({
     <main className="min-h-screen bg-paper px-4 py-6 text-ink md:px-6 md:py-8">
       <div className="mx-auto max-w-4xl space-y-6">
 
-        {examLike && <ExamDebrief sessionId={session.session_id} />}
+        {examLike && (
+          <ExamDebrief
+            sessionId={session.session_id}
+            onAvailableChange={setExamDebriefAvailable}
+          />
+        )}
 
         <header className="rounded-lg border border-edge bg-surface p-5 shadow-[var(--soft-shadow)]">
           <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
@@ -225,6 +231,7 @@ export default function PostExamReview({
           />
         )}
 
+        {(!examLike || !examDebriefAvailable) && (
         <section className="rounded-lg border border-primary bg-surface p-4 shadow-[var(--soft-shadow)]">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="min-w-0">
@@ -291,6 +298,7 @@ export default function PostExamReview({
             )}
           </div>
         </section>
+        )}
 
         <PostExamTabs tabs={TABS} activeTab={activeTab} onSelect={setActiveTab} />
 

@@ -3,7 +3,8 @@
 // `node --experimental-strip-types` (aliases `@/` não resolvem lá).
 // `SessionLike` é estrutural — `QuestionBankSession` é atribuível a ele.
 
-// Filtros do Histórico: Simulados (provas) é um recorte, não um destino de menu.
+// Filtros do Histórico. /provas é a área canônica de Simulados, mas o histórico
+// completo ainda pode filtrar sessões exam-like.
 export const SESSION_TAB_VALUES = [
   "inacabadas",
   "resultados",

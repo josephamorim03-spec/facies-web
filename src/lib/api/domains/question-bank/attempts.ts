@@ -1,4 +1,4 @@
-import { api, authHeader } from "../../shared/http";
+import { api, authHeader, INTERNAL_CSRF_HEADER, INTERNAL_CSRF_VALUE } from "../../shared/http";
 import type {
   QuestionBankGuidedReview,
   QuestionBankGuidedReviewValue,
@@ -32,6 +32,29 @@ export async function recordQuestionBankEvents(
     `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/events`,
     { method: "POST", headers: authHeader(token), body: JSON.stringify({ events }) },
   );
+}
+
+export function recordQuestionBankEventsKeepalive(
+  token: string,
+  sessionId: string,
+  position: number,
+  events: QuestionBankStudentEventPayload[],
+): boolean {
+  if (typeof fetch !== "function" || events.length === 0) return false;
+  try {
+    const headers = new Headers(authHeader(token));
+    headers.set("Content-Type", "application/json");
+    headers.set(INTERNAL_CSRF_HEADER, INTERNAL_CSRF_VALUE);
+    void fetch(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/events`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ events }),
+      keepalive: true,
+    }).catch(() => {});
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function getQuestionBankGuidedReview(
