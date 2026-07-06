@@ -6,6 +6,7 @@ import { formatClock } from "@/lib/formatDuration";
 import { formatSourceLabel } from "@/lib/formatSource";
 import { QuestionImageRefs } from "@/app/banco-de-questoes/_components/QuestionImageRefs";
 import FontScaleControl from "./FontScaleControl";
+import { SessionExitButton } from "./SessionExitButton";
 import { useQuestionFontScale } from "./useQuestionFontScale";
 
 const OPTIONS: QuestionBankOption[] = ["A", "B", "C", "D", "E"];
@@ -70,6 +71,7 @@ type ExamQuestionProps = {
   onNext: () => void;
   onOpenMap: () => void;
   onFinalize: () => void;
+  onExit: () => void;
   finalizeLabel?: string;
 };
 
@@ -93,6 +95,7 @@ export default function ExamQuestion({
   onNext,
   onOpenMap,
   onFinalize,
+  onExit,
   finalizeLabel,
 }: ExamQuestionProps) {
   const finalized = sessionStatus === "finalized";
@@ -176,6 +179,7 @@ export default function ExamQuestion({
       >
         <div className="relative mx-auto max-w-6xl px-4">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2">
+            <SessionExitButton onExit={onExit} />
             <button
               type="button"
               onClick={() => setDetailsPinned((value) => !value)}

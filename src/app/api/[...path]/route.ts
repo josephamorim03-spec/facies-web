@@ -140,14 +140,6 @@ function buildUpstreamHeaders(request: NextRequest, requestId: string): Headers 
   return headers;
 }
 
-async function buildUpstreamBody(request: NextRequest): Promise<BodyInit | undefined> {
-  if (request.method === "GET" || request.method === "HEAD") {
-    return undefined;
-  }
-  const body = await request.arrayBuffer();
-  return body.byteLength > 0 ? body : undefined;
-}
-
 function buildProxyPath(pathParts: string[]): string {
   const cleanParts = pathParts.filter((part) => !!part).map((part) => encodeURIComponent(part));
   return cleanParts.join("/");
@@ -283,6 +275,29 @@ async function proxyHandler(
     return expiredResponse;
   }
 
+  const requestBody =
+    method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
+
+  // Defesa em profundidade: registrar revisão manualmente é proibido (a UI já não
+  // oferece). Revisões são concluídas resolvendo questões do banco.
+  if (method === "POST" && pathKey === "studies/directed" && requestBody && requestBody.byteLength > 0) {
+    try {
+      const parsed = JSON.parse(Buffer.from(requestBody).toString("utf8"));
+      if (parsed && typeof parsed === "object" && Boolean((parsed as Record<string, unknown>).is_review)) {
+        return responseWithRequestId(
+          {
+            code: "manual_review_disabled",
+            message: "Revisões são registradas resolvendo questões do banco.",
+          },
+          409,
+          requestId,
+        );
+      }
+    } catch {
+      // corpo não-JSON: deixa o upstream validar
+    }
+  }
+
   const upstreamUrl = `${proxyTarget()}/${proxyPath}${request.nextUrl.search}`;
 
   let upstreamResponse: Response;
@@ -292,7 +307,7 @@ async function proxyHandler(
       {
         method,
         headers: buildUpstreamHeaders(request, requestId),
-        body: await buildUpstreamBody(request),
+        body: requestBody && requestBody.byteLength > 0 ? requestBody : undefined,
         redirect: "manual",
         cache: "no-store",
       },

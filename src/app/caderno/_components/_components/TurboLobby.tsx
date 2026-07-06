@@ -83,7 +83,7 @@ export function TurboLobby({
 
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="rounded-lg border border-edge bg-surface p-3 shadow-sm">
-                <p className="text-[10px] uppercase tracking-widest text-muted">Por que estes cards</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted">Foco de agora</p>
                 <div className="mt-2 space-y-1.5">
                   {topReasons.length > 0 ? topReasons.map((reason) => (
                     <div key={reason.reason} className="flex items-start justify-between gap-3 text-sm">

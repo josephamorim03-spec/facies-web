@@ -25,6 +25,7 @@ import {
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { Alert } from "@/components/ui/Alert";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import StudyQuestion from "./_components/StudyQuestion";
 import FixacaoRound from "./_components/FixacaoRound";
 import QuickNoteModal from "./_components/QuickNoteModal";
@@ -69,6 +70,8 @@ export default function SessionPage() {
   const [currentPosition, setCurrentPosition] = useState(1);
   const [showMap, setShowMap] = useState(false);
   const [confidenceStepOpen, setConfidenceStepOpen] = useState(false);
+  // Sair do simulado pede confirmação (fica salvo, retomável); no treino sai direto.
+  const [simExitConfirmOpen, setSimExitConfirmOpen] = useState(false);
 
   // Client-side alternative elimination ("cortar") — a visual study aid, per position.
   // Never sent to the backend; does not affect the recorded attempt or FSRS.
@@ -715,20 +718,8 @@ export default function SessionPage() {
     return (
       <>
         {errorToast}
-        {/* Persistent exit — the app chrome is hidden in the immersive session. */}
-        <button
-          type="button"
-          onClick={() => router.push("/banco-de-questoes")}
-          aria-label="Sair da sessão"
-          className="fixed left-2 z-40 inline-flex items-center gap-1 rounded-lg border border-edge bg-paper/90 px-2.5 py-1.5 text-xs font-semibold text-muted shadow-sm backdrop-blur transition hover:text-ink"
-          style={{ top: "calc(0.5rem + env(safe-area-inset-top, 0px))" }}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5" aria-hidden>
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          Sair
-        </button>
         <StudyQuestion
+          onExit={() => router.push("/banco-de-questoes")}
           fixacaoCount={fixacaoItems.length}
           onFixar={() => setShowFixacao(true)}
           item={currentItem}
@@ -867,7 +858,20 @@ export default function SessionPage() {
         onNext={() => navigateTo(currentPosition + 1)}
         onOpenMap={() => setShowMap(true)}
         onFinalize={() => void finalize()}
+        onExit={() => setSimExitConfirmOpen(true)}
         finalizeLabel={`Corrigir ${sessionKindLabel.toLowerCase()}`}
+      />
+      <ConfirmDialog
+        open={simExitConfirmOpen}
+        title="Sair do simulado?"
+        message="Ele fica salvo — você pode retomar quando quiser em Questões ou no Histórico."
+        cancelLabel="Continuar simulado"
+        confirmLabel="Sair"
+        onCancel={() => setSimExitConfirmOpen(false)}
+        onConfirm={() => {
+          setSimExitConfirmOpen(false);
+          router.push("/banco-de-questoes");
+        }}
       />
       {showMap && (
         <>

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { GuidanceNote } from "@/components/GuidanceNote";
+import { SessionExitButton } from "./SessionExitButton";
 import type {
   QuestionBankGuidedReview,
   QuestionBankGuidedReviewValue,
@@ -142,6 +143,7 @@ type StudyQuestionProps = {
   onPrev: () => void;
   onNext: () => void;
   onFinalize: () => void;
+  onExit: () => void;
   fixacaoCount?: number;
   onFixar?: () => void;
   onQuickNote?: () => void;
@@ -334,6 +336,7 @@ export default function StudyQuestion({
   onPrev,
   onNext,
   onFinalize,
+  onExit,
   fixacaoCount = 0,
   onFixar,
   onQuickNote,
@@ -431,6 +434,7 @@ export default function StudyQuestion({
         <div className="mx-auto flex max-w-6xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex flex-wrap items-center gap-2">
+              <SessionExitButton onExit={onExit} />
               <span className={cx("rounded-full border px-2.5 py-1 text-xs font-semibold", toneClasses(phase.tone))}>
                 {phase.label}
               </span>

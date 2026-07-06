@@ -26,8 +26,10 @@ import {
   getTrainerPrescription,
   recordTrainerRecommendationEvent,
   listDirectedStudies,
+  listQuestionBankSessions,
   listReviewTasks,
   rejectScheduleSuggestion,
+  type QuestionBankSession,
   type ScheduleSuggestion,
   type OperationalTurboOverview,
   type QuestionBankLongitudinalDiagnosis,
@@ -38,10 +40,8 @@ import {
 } from "@/lib/api";
 import { AreaIcon } from "@/components/AreaIcon";
 import { GuidanceNote } from "@/components/GuidanceNote";
-import { TrainerWhyPanel } from "@/components/trainer/TrainerWhyPanel";
 import { RescheduleSuggestionDialog } from "@/app/cronograma/_components/RescheduleSuggestionDialog";
-import { InlineLogForm } from "@/app/cronograma/_components/studyReview/InlineLogForm";
-import { IconPlus, IconRefresh } from "@/app/cronograma/_components/CronogramaIcons";
+import { IconRefresh } from "@/app/cronograma/_components/CronogramaIcons";
 import { buildWeeklyOpsMetrics } from "@/app/cronograma/_lib/weeklyOpsMetrics";
 import { WeeklyOpsFullCardsSkeleton } from "@/app/cronograma/_components/WeeklyOpsCards";
 import { writeCronogramaViewModeSession } from "@/app/cronograma/_lib/viewModeSession";
@@ -57,6 +57,23 @@ const PRIMARY_ACTION_CTA: Record<string, string> = {
   flashcard_review: "Revisar cards",
   simulation: "Iniciar simulado",
   manual_study: "Abrir caderno",
+};
+
+// Rótulos curtos de fatores/ganhos — o "motivo" é respondido pelo conteúdo do
+// card (não por um painel "por que recebi isso").
+const TRAINER_FACTOR_LABEL: Record<string, string> = {
+  deficit: "lacuna",
+  forgetting: "esquecimento",
+  urgency: "urgência",
+  transfer_gap: "transferência",
+  uncertainty: "incerteza",
+  exam_weight: "peso na prova",
+};
+const TRAINER_OUTCOME_LABEL: Record<string, string> = {
+  retention: "retenção",
+  transfer: "transferência",
+  speed: "velocidade",
+  calibration: "calibração",
 };
 
 function todayISO(): string {
@@ -274,27 +291,46 @@ type TodayPageData = {
   studyData: DirectedStudyListItem[];
   cardsOverview: OperationalTurboOverview | null;
   performanceSummary: StudyPerformanceSummary | null;
+  activeSession: QuestionBankSession | null;
   weeklyGoal: number;
   displayName: string | null;
 };
 
+// Sessão em andamento mais recente para o card "Continue de onde parou".
+function pickMostRecentActive(sessions: QuestionBankSession[]): QuestionBankSession | null {
+  const active = sessions.filter((session) => session.status === "active");
+  if (active.length === 0) return null;
+  return active
+    .slice()
+    .sort(
+      (a, b) =>
+        Date.parse(b.updated_at ?? b.created_at) - Date.parse(a.updated_at ?? a.created_at),
+    )[0];
+}
+
 async function loadTodayPageData(token: string): Promise<TodayPageData> {
   const turboOverviewRequest = getOperationalTurboOverview(token, { previewLimit: 3 }).catch(() => null);
   const performanceSummaryRequest = getStudyPerformanceSummary(token).catch(() => null);
-  const [pendingData, doneData, studyData, profile, cardsOverview, performanceSummary] = await Promise.all([
-    listReviewTasks(token, { status: "pending" }),
-    listReviewTasks(token, { status: "done" }),
-    listDirectedStudies(token),
-    getProfile(token),
-    turboOverviewRequest,
-    performanceSummaryRequest,
-  ]);
+  const activeSessionRequest = listQuestionBankSessions(token, { limit: 5 }).catch(
+    () => [] as QuestionBankSession[],
+  );
+  const [pendingData, doneData, studyData, profile, cardsOverview, performanceSummary, recentSessions] =
+    await Promise.all([
+      listReviewTasks(token, { status: "pending" }),
+      listReviewTasks(token, { status: "done" }),
+      listDirectedStudies(token),
+      getProfile(token),
+      turboOverviewRequest,
+      performanceSummaryRequest,
+      activeSessionRequest,
+    ]);
   return {
     pendingData,
     doneData,
     studyData,
     cardsOverview,
     performanceSummary,
+    activeSession: pickMostRecentActive(recentSessions),
     weeklyGoal: Math.max(0, Number(profile.weekly_goal_questions ?? 0)),
     displayName: profile.display_name,
   };
@@ -325,13 +361,13 @@ export default function TodayPage() {
   const [turboOverview, setTurboOverview] = useState<OperationalTurboOverview | null>(null);
   const [performanceSummary, setPerformanceSummary] = useState<StudyPerformanceSummary | null>(null);
   const [longitudinal, setLongitudinal] = useState<QuestionBankLongitudinalDiagnosis | null>(null);
+  const [activeSession, setActiveSession] = useState<QuestionBankSession | null>(null);
   const [prescription, setPrescription] = useState<TrainerPrescription | null>(null);
   const shownRecommendationRef = useRef<string | null>(null);
   const [weeklyGoal, setWeeklyGoal] = useState(200);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [bulkSuggestionDialogOpen, setBulkSuggestionDialogOpen] = useState(false);
   const [bulkSuggestionLoading, setBulkSuggestionLoading] = useState(false);
   const [bulkSuggestionError, setBulkSuggestionError] = useState<string | null>(null);
@@ -356,6 +392,7 @@ export default function TodayPage() {
       setStudies(data.studyData);
       setTurboOverview(data.cardsOverview);
       setPerformanceSummary(data.performanceSummary);
+      setActiveSession(data.activeSession);
       setWeeklyGoal(data.weeklyGoal);
       setDisplayName(data.displayName);
     } catch (e: unknown) {
@@ -483,16 +520,6 @@ export default function TodayPage() {
     }
   }
 
-  function handleLogDone(taskId: string) {
-    setTasks((prev) => {
-      const completedTask = prev.find((task) => task.task_id === taskId);
-      if (completedTask) {
-        setDoneTasks((currentDone) => [{ ...completedTask, status: "done", is_overdue: false }, ...currentDone]);
-      }
-      return prev.filter((task) => task.task_id !== taskId);
-    });
-    setExpandedTaskId(null);
-  }
 
   const selectedDayTasks = useMemo(
     () => tasks.filter((task) => task.due_date === selectedDayIso),
@@ -569,8 +596,6 @@ export default function TodayPage() {
     const days = overdue ? getOverdueDays(task.due_date, today) : 0;
     const urgent = days >= 7;
     const accentColor = areaHex(area);
-    const token = getAuthToken() ?? "";
-    const isExpanded = expandedTaskId === task.task_id;
 
     return (
       <li
@@ -592,28 +617,14 @@ export default function TodayPage() {
             )}
           </div>
           <div className="flex w-full shrink-0 gap-2 sm:w-auto">
-            <Button
-              type="button"
-              variant={isExpanded ? "primary" : "secondary"}
-              size="sm"
-              className="flex-1 sm:flex-none"
-              leftIcon={<IconPlus className="h-3.5 w-3.5" />}
-              onClick={() => setExpandedTaskId(isExpanded ? null : task.task_id)}
+            <Link
+              href={reviewTaskHref(task)}
+              className="inline-flex flex-1 items-center justify-center rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-105 sm:flex-none"
             >
-              Registrar
-            </Button>
+              Estudar
+            </Link>
           </div>
         </div>
-        {isExpanded && (
-          <div className="mt-3 rounded-xl border border-edge bg-surface p-3 sm:ml-8">
-            <InlineLogForm
-              task={task}
-              token={token}
-              onDone={() => handleLogDone(task.task_id)}
-              onCancel={() => setExpandedTaskId(null)}
-            />
-          </div>
-        )}
       </li>
     );
   }
@@ -670,9 +681,32 @@ export default function TodayPage() {
                 <div className="flex min-w-0 flex-1 flex-col gap-2.5 px-5 py-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Sua próxima ação</p>
                   <h2 className="font-serif text-2xl font-semibold leading-tight text-ink md:text-3xl">{heroAction.title}</h2>
-                  <GuidanceNote area={heroAction.area} eyebrow="Por que agora" tone={heroAction.tone}>
+                  <GuidanceNote area={heroAction.area} eyebrow="Motivo" tone={heroAction.tone}>
                     {heroAction.reason}
                   </GuidanceNote>
+                  {primaryAction &&
+                    (primaryAction.why_factors.length > 0 || primaryAction.outcome_targets.length > 0) && (
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
+                        {primaryAction.why_factors.length > 0 && (
+                          <span>
+                            {primaryAction.why_factors
+                              .slice(0, 3)
+                              .map((wf) => TRAINER_FACTOR_LABEL[wf.factor] ?? wf.factor)
+                              .join(" · ")}
+                          </span>
+                        )}
+                        {primaryAction.outcome_targets.length > 0 && (
+                          <span className="inline-flex flex-wrap items-center gap-1">
+                            <span className="uppercase tracking-wide text-muted/70">ganho:</span>
+                            {primaryAction.outcome_targets.map((target) => (
+                              <span key={target} className="rounded-full border border-edge px-2 py-0.5 font-medium text-ink">
+                                {TRAINER_OUTCOME_LABEL[target] ?? target}
+                              </span>
+                            ))}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   <div className="mt-1 flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
                       <IconClock className="h-3.5 w-3.5" />
@@ -721,9 +755,34 @@ export default function TodayPage() {
             )}
           </section>
 
-          {prescription && primaryAction && (
-            <TrainerWhyPanel action={primaryAction} closedLoop={prescription.closed_loop} />
-          )}
+          {activeSession &&
+            (!heroAction || !heroAction.href.includes(activeSession.session_id)) && (
+              <section
+                className="flex flex-col gap-3 rounded-lg border border-edge bg-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                style={{ boxShadow: `inset 3px 0 0 ${areaHex((activeSession.area as Area) ?? "OU")}` }}
+                aria-label="Sessão em andamento"
+              >
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+                    Continue de onde parou
+                  </p>
+                  <p className="mt-1 truncate font-serif text-lg font-semibold leading-tight text-ink">
+                    {activeSession.theme ?? activeSession.full_exam_name ?? "Sessão do banco"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted">
+                    {activeSession.answered_count}/{activeSession.total_questions} respondidas
+                    {activeSession.resolution_mode === "simulation" ? " · simulado" : ""}
+                  </p>
+                </div>
+                <Link
+                  href={`/banco-de-questoes/sessao/${activeSession.session_id}`}
+                  className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-primary px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-surfaceMuted sm:w-auto"
+                >
+                  Continuar
+                  <IconArrowRight className="h-4 w-4" />
+                </Link>
+              </section>
+            )}
 
           <div className="grid gap-4 md:gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="space-y-4 md:space-y-6">
@@ -766,7 +825,6 @@ export default function TodayPage() {
               <div className="space-y-3">
                 {selectedDayTasks.length > 0 ? (
                   selectedDayTasks.map((task) => {
-                    const isExpanded = expandedTaskId === task.task_id;
                     const accentColor = areaHex(task.area);
                     return (
                       <article key={task.task_id} className="overflow-hidden rounded-lg border border-edge bg-surface shadow-sm">
@@ -787,24 +845,11 @@ export default function TodayPage() {
                             </div>
                           </div>
                           <div className="mt-3 flex items-center gap-2">
-                            <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 sm:flex-none">
+                            <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105">
                               Estudar
                             </Link>
-                            <Button type="button" variant="ghost" size="sm" onClick={() => setExpandedTaskId(isExpanded ? null : task.task_id)}>
-                              {isExpanded ? "Fechar" : "Registrar manual"}
-                            </Button>
                           </div>
                         </div>
-                        {isExpanded && (
-                          <div className="border-t border-edge bg-paper p-4">
-                            <InlineLogForm
-                              task={task}
-                              token={getAuthToken() ?? ""}
-                              onDone={() => handleLogDone(task.task_id)}
-                              onCancel={() => setExpandedTaskId(null)}
-                            />
-                          </div>
-                        )}
                       </article>
                     );
                   })

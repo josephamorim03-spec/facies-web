@@ -912,7 +912,7 @@ function BancoDeQuestoesContent() {
                   </div>
                   <p className="mt-1 text-sm text-muted">{recommended.subtitle}</p>
                   {(recommended.rationale ?? "").trim() && (
-                    <GuidanceNote area={recommended.area} eyebrow="Por que agora" tone={actionTone(recommended)} className="mt-2">
+                    <GuidanceNote area={recommended.area} eyebrow="Motivo" tone={actionTone(recommended)} className="mt-2">
                       {recommended.rationale}
                     </GuidanceNote>
                   )}

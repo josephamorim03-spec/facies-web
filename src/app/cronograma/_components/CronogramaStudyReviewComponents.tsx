@@ -1,5 +1,4 @@
 ﻿export {
-  InlineLogForm,
   NewStudyForm,
   StudyDotCard,
   TaskDetail,
