@@ -38,6 +38,38 @@ async function mockShellApi(page: Page) {
       return json({ user_id: "user_nav_e2e", display_name: "E2E User" });
     }
 
+    if (method === "GET" && path === "/api/trainer/prescription/today") {
+      return json({
+        recommendation_id: "rec_nav_e2e",
+        generated_at: new Date().toISOString(),
+        policy_version: "test",
+        primary_action: {
+          kind: "question_block",
+          title: "Treino leve",
+          rationale: "Mock do shell de navegação.",
+          priority_score: 1,
+          estimated_minutes: 5,
+          why_factors: [],
+          outcome_targets: [],
+          signals: [],
+          start_payload: null,
+          href: "/banco-de-questoes",
+        },
+        secondary_actions: [],
+        state_summary: { headline: "Tudo em dia", detail: null },
+        signals: [],
+        closed_loop: { measure: [], next_check: [], recalibration_hint: [] },
+        daily_load: {
+          prescribed_minutes: 5,
+          cognitive_load: "low",
+          pending_reviews: 0,
+          recommended_limit_minutes: 5,
+          overload_alert: false,
+        },
+        missing_sources: [],
+      });
+    }
+
     if (method === "GET" && path === "/api/notes/operational/streak") {
       return json({
         streak_days: 0,
@@ -62,6 +94,16 @@ async function mockShellApi(page: Page) {
         reason_counts: [],
         by_area: [],
         priority_preview: [],
+      });
+    }
+
+    if (method === "GET" && path === "/api/notes/operational/turbo/area-stats") {
+      return json({
+        total_notes: 0,
+        total_reviews: 0,
+        total_correct: 0,
+        total_incorrect: 0,
+        by_area: [],
       });
     }
 
@@ -98,6 +140,20 @@ async function mockShellApi(page: Page) {
       });
     }
 
+    if (method === "GET" && path === "/api/schedule/generate") {
+      return json({
+        mode: "NORMAL",
+        date: "2026-07-06",
+        focus_minutes: 0,
+        buffer_minutes: 0,
+        total_planned_minutes: 0,
+        recovery_mode: false,
+        rebalance_required: false,
+        reason: null,
+        blocks: [],
+      });
+    }
+
     if (
       method === "GET" &&
       [
@@ -127,11 +183,8 @@ test.describe("Navigation shell", () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/hoje");
 
-    // Páginas podem ter <aside> próprio — mirar na sidebar de navegação.
     const sidebar = navSidebar(page);
     await expect(sidebar).toBeVisible();
-
-    // Wait for all mocked API responses to settle
     await expect(page.locator("[data-nav-surface='sidebar']").first()).toBeVisible();
     await page.waitForTimeout(500);
 
@@ -143,10 +196,12 @@ test.describe("Navigation shell", () => {
 
   const desktopCases = [
     { path: "/hoje", activeHref: "/hoje" },
+    { path: "/calendario", activeHref: "/hoje" },
     { path: "/caderno", activeHref: "/cards-adaptativos" },
     { path: "/revisoes", activeHref: "/revisoes" },
-    { path: "/dados-e-relatorios/graficos", activeHref: "/dados-e-relatorios" },
-    { path: "/desempenho", activeHref: "/rotina-e-metas" },
+    { path: "/dados-e-relatorios/graficos", activeHref: "/estatisticas" },
+    { path: "/estatisticas/relatorio", activeHref: "/estatisticas" },
+    { path: "/desempenho", activeHref: "/desempenho" },
   ];
 
   for (const { path, activeHref } of desktopCases) {
@@ -181,22 +236,43 @@ test.describe("Navigation shell", () => {
   test("keeps long sidebar labels inside their container", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/hoje");
-
-    // A sidebar colapsa por padrão; os labels só renderizam expandida (hover/fixada).
     await navSidebar(page).hover();
 
-    const agendaItem = page.locator("aside [data-nav-item-href='/dados-e-relatorios']");
-    const agendaLabel = agendaItem.locator("span");
-    await expect(agendaItem).toBeVisible();
-    await expect(agendaLabel).toHaveText("Desempenho");
+    const desempenhoItem = page.locator("aside [data-nav-item-href='/estatisticas']");
+    const desempenhoLabel = desempenhoItem.locator("span");
+    await expect(desempenhoItem).toBeVisible();
+    await expect(desempenhoLabel).toHaveText("Desempenho");
 
-    const [itemBox, labelBox] = await Promise.all([agendaItem.boundingBox(), agendaLabel.boundingBox()]);
+    const [itemBox, labelBox] = await Promise.all([desempenhoItem.boundingBox(), desempenhoLabel.boundingBox()]);
     expect(itemBox).not.toBeNull();
     expect(labelBox).not.toBeNull();
     if (!itemBox || !labelBox) return;
 
     expect(labelBox.x).toBeGreaterThanOrEqual(itemBox.x);
     expect(labelBox.x + labelBox.width).toBeLessThanOrEqual(itemBox.x + itemBox.width + 1);
+  });
+
+  test("removes Cronograma and Caderno from desktop sidebar", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/hoje");
+
+    const sidebar = navSidebar(page);
+    await expect(sidebar).toBeVisible();
+    await expect(sidebar.locator("[data-nav-item-href='/cronograma']")).toHaveCount(0);
+    await expect(sidebar.locator("[data-nav-item-href='/caderno']")).toHaveCount(0);
+  });
+
+  test("shows reciprocal top-right links on desktop child pages", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+
+    await page.goto("/caderno");
+    await expect(page.getByRole("link", { name: "Cards" })).toHaveAttribute("href", "/cards-adaptativos");
+
+    await page.goto("/calendario");
+    await expect(page.getByRole("link", { name: "Hoje" }).first()).toHaveAttribute("href", "/hoje");
+
+    await page.goto("/estatisticas/relatorio");
+    await expect(page.getByRole("link", { name: "Desempenho" })).toHaveAttribute("href", "/estatisticas");
   });
 });
 
@@ -214,7 +290,32 @@ test.describe("Navigation shell mobile drawer", () => {
 
     const activeItems = page.locator("[data-nav-surface='drawer'][data-nav-active='true']");
     await expect(activeItems).toHaveCount(1);
-    await expect(activeItems).toHaveAttribute("data-nav-item-href", "/rotina-e-metas");
+    await expect(activeItems).toHaveAttribute("data-nav-item-href", "/desempenho");
     await expect(activeItems).toHaveAttribute("aria-current", "page");
+  });
+
+  test("removes Cronograma and Caderno from mobile drawer", async ({ page }) => {
+    await page.goto("/hoje");
+    await page.getByLabel("Menu").click();
+
+    await expect(page.locator("[data-nav-surface='drawer'][data-nav-item-href='/cronograma']")).toHaveCount(0);
+    await expect(page.locator("[data-nav-surface='drawer'][data-nav-item-href='/caderno']")).toHaveCount(0);
+  });
+
+  test("keeps reciprocal top-right links on mobile pairs", async ({ page }) => {
+    await page.goto("/hoje");
+    await expect(page.getByRole("link", { name: "Calendário" })).toHaveAttribute("href", "/calendario");
+
+    await page.goto("/calendario");
+    await expect(page.getByRole("link", { name: "Hoje" })).toHaveAttribute("href", "/hoje");
+
+    await page.goto("/caderno");
+    await expect(page.getByRole("link", { name: "Cards" })).toHaveAttribute("href", "/cards-adaptativos");
+
+    await page.goto("/estatisticas");
+    await expect(page.getByRole("link", { name: "Relatórios" })).toHaveAttribute("href", "/estatisticas/relatorio");
+
+    await page.goto("/estatisticas/relatorio");
+    await expect(page.getByRole("link", { name: "Desempenho" })).toHaveAttribute("href", "/estatisticas");
   });
 });

@@ -14,6 +14,7 @@ import { TurboReviewPanel } from "../caderno/_components/TurboReviewPanel";
 import { useTurboSession } from "../caderno/_hooks/useTurboSession";
 import { AREA_COLORS, Area } from "../caderno/_lib/cadernoShared";
 import { Skeleton } from "@/components/Skeleton";
+import { TopBarActionLink } from "@/components/TopBarActionLink";
 import Link from "next/link";
 
 function TurboLobbySkeleton() {
@@ -97,6 +98,18 @@ function IconChevron({ className }: { className?: string }) {
       aria-hidden="true"
     >
       <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+function NotebookIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <rect x="4" y="2" width="16" height="20" rx="1" />
+      <line x1="8" y1="2" x2="8" y2="22" />
+      <line x1="11" y1="7" x2="18" y2="7" />
+      <line x1="11" y1="11" x2="18" y2="11" />
+      <line x1="11" y1="15" x2="18" y2="15" />
     </svg>
   );
 }
@@ -202,20 +215,9 @@ function CardsAreaHeader({ selectedArea, onSelect, interactive = true, showLink 
       />
 
       {showLink && interactive ? (
-        <Link
-          href="/caderno"
-          className="p-1 flex items-center justify-end text-muted hover:text-ink shrink-0"
-          aria-label="Caderno"
-          title="Caderno"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
-            <rect x="4" y="2" width="16" height="20" rx="1" />
-            <line x1="8" y1="2" x2="8" y2="22" />
-            <line x1="11" y1="7" x2="18" y2="7" />
-            <line x1="11" y1="11" x2="18" y2="11" />
-            <line x1="11" y1="15" x2="18" y2="15" />
-          </svg>
-        </Link>
+        <TopBarActionLink href="/caderno" label="Caderno" title="Caderno">
+          <NotebookIcon className="h-5 w-5" />
+        </TopBarActionLink>
       ) : (
         <span className="block h-7 w-7" aria-hidden="true" />
       )}
@@ -247,20 +249,9 @@ export default function RevisaoTurboClientPage() {
     if (isDesktopNavigation) return;
     setTitle("Cards");
     setActions(
-      <Link
-        href="/caderno"
-        className="p-1.5 text-muted hover:text-ink"
-        aria-label="Caderno"
-        title="Caderno"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <rect x="4" y="2" width="16" height="20" rx="1" />
-          <line x1="8" y1="2" x2="8" y2="22" />
-          <line x1="11" y1="7" x2="18" y2="7" />
-          <line x1="11" y1="11" x2="18" y2="11" />
-          <line x1="11" y1="15" x2="18" y2="15" />
-        </svg>
-      </Link>,
+      <TopBarActionLink href="/caderno" label="Caderno" title="Caderno">
+        <NotebookIcon className="h-5 w-5" />
+      </TopBarActionLink>,
     );
     return () => { setTitle(null); setActions(null); };
   }, [isDesktopNavigation, setTitle, setActions]);

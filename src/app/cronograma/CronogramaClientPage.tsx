@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AreaDot from "@/components/AreaDot";
+import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { Button } from "@/components/ui/Button";
 import { IconSearch, IconX } from "./_components/CronogramaIcons";
 import { useNavbar } from "@/lib/NavbarContext";
@@ -39,12 +40,17 @@ function detectMobilePortraitMode(isDesktopNavigation: boolean): boolean {
   return isNarrowViewport && isPortrait;
 }
 
-const WEEK_BUTTON_STABLE_STYLE: CSSProperties = {
-  transform: "translateZ(0)",
-  WebkitTransform: "translateZ(0)",
-  backfaceVisibility: "hidden",
-  WebkitBackfaceVisibility: "hidden",
-};
+function TodayIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+      <circle cx="12" cy="16" r="3" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 
 export default function CronogramaPage() {
   const router = useRouter();
@@ -188,23 +194,13 @@ export default function CronogramaPage() {
             {todayDayNumber}
           </span>
         </button>
-        <button
-          type="button"
-          onClick={() => router.push("/hoje")}
-          className="p-1.5 text-muted hover:text-ink"
-          aria-label="Abrir hoje"
-        >
-          <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5" aria-hidden="true">
-            <rect x="1.5" y="1" width="3.5" height="18" rx="0.5" />
-            <rect x="6" y="1" width="3.5" height="18" rx="0.5" />
-            <rect x="10.5" y="1" width="3.5" height="18" rx="0.5" />
-            <rect x="15" y="1" width="3.5" height="18" rx="0.5" />
-          </svg>
-        </button>
+        <TopBarActionLink href="/hoje" label="Hoje" title="Hoje">
+          <TodayIcon className="h-5 w-5" />
+        </TopBarActionLink>
       </>,
     );
     return () => { setTitle(null); setActions(null); };
-  }, [isDesktopNavigation, searchOpen, calendarMonth, calendarYear, currentRealYear, todayDayNumber, setTitle, setActions, router]);
+  }, [isDesktopNavigation, searchOpen, calendarMonth, calendarYear, currentRealYear, todayDayNumber, setTitle, setActions]);
 
   return (
     <div
@@ -357,19 +353,9 @@ export default function CronogramaPage() {
                   {todayDayNumber}
                 </span>
               </button>
-              <button
-                onClick={() => router.push("/hoje")}
-                className="p-1.5 -mr-1 text-muted hover:text-ink shrink-0"
-                aria-label="Abrir hoje"
-                style={WEEK_BUTTON_STABLE_STYLE}
-              >
-                <svg viewBox="0 0 20 20" fill="currentColor" className="block w-5 h-5" aria-hidden="true">
-                  <rect x="1.5" y="1" width="3.5" height="18" rx="0.5"/>
-                  <rect x="6" y="1" width="3.5" height="18" rx="0.5"/>
-                  <rect x="10.5" y="1" width="3.5" height="18" rx="0.5"/>
-                  <rect x="15" y="1" width="3.5" height="18" rx="0.5"/>
-                </svg>
-              </button>
+              <TopBarActionLink href="/hoje" label="Hoje" title="Hoje" className="-mr-1">
+                <TodayIcon className="block h-5 w-5" />
+              </TopBarActionLink>
             </>
           )}
         </div>

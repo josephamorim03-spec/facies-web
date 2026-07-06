@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useNavbar } from "@/lib/NavbarContext";
+import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import type {
   DirectedStudyListItem,
@@ -85,6 +85,16 @@ function trendArrowClass(trend: TrendDirection): string {
   if (trend === "up") return "text-green-600";
   if (trend === "down") return "text-red-600";
   return "text-muted";
+}
+
+function ChartIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  );
 }
 
 const HEALTH_STATUS_COLOR: Record<string, string> = {
@@ -716,15 +726,9 @@ export default function RelatorioClientPage() {
   useEffect(() => {
     if (isDesktopNavigation) return;
     setActions(
-      <Link
-        href="/dados-e-relatorios"
-        className="p-1.5 text-muted hover:text-ink"
-        aria-label="Voltar"
-      >
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <path d="m12 4-6 6 6 6" />
-        </svg>
-      </Link>,
+      <TopBarActionLink href="/estatisticas" label="Desempenho" title="Desempenho">
+        <ChartIcon className="h-5 w-5" />
+      </TopBarActionLink>,
     );
     return () => { setActions(null); };
   }, [isDesktopNavigation, setActions]);
@@ -734,6 +738,17 @@ export default function RelatorioClientPage() {
 
   return (
     <div className="space-y-0">
+      {isDesktopNavigation && (
+        <div className="mb-4 grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
+          <span className="block h-7 w-7" aria-hidden="true" />
+          <span className="text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-ink">
+            RELATÓRIOS
+          </span>
+          <TopBarActionLink href="/estatisticas" label="Desempenho" title="Desempenho">
+            <ChartIcon className="h-5 w-5" />
+          </TopBarActionLink>
+        </div>
+      )}
 
       <div className="hidden print:block mb-5 border-b border-edge pb-4">
         <div className="flex items-center gap-2">

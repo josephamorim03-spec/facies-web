@@ -38,7 +38,7 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         href: "/hoje",
         label: "HOJE",
         shortLabel: "Hoje",
-        groupPaths: ["/hoje"],
+        groupPaths: ["/hoje", "/cronograma", "/calendario", "/agenda-operacional"],
       },
       {
         href: "/banco-de-questoes",
@@ -48,9 +48,9 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
       },
       {
         href: "/cards-adaptativos",
-        label: "REVISÃO",
-        shortLabel: "Revisão",
-        groupPaths: ["/cards-adaptativos", "/revisao-turbo"],
+        label: "CARDS",
+        shortLabel: "Cards",
+        groupPaths: ["/cards-adaptativos", "/revisao-turbo", "/caderno"],
       },
       {
         // Rótulo "Desempenho" = análise (/estatisticas). NÃO é a rota /desempenho (metas).
@@ -71,12 +71,6 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
   {
     items: [
       {
-        href: "/cronograma",
-        label: "CRONOGRAMA",
-        shortLabel: "Cronograma",
-        groupPaths: ["/cronograma", "/calendario", "/agenda-operacional"],
-      },
-      {
         // "Plano" = metas/rotina — a rota /desempenho (re-exportada por /rotina-e-metas).
         href: "/desempenho",
         label: "PLANO",
@@ -90,12 +84,6 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         label: "HISTÓRICO",
         shortLabel: "Histórico",
         groupPaths: ["/revisoes"],
-      },
-      {
-        href: "/caderno",
-        label: "CADERNO",
-        shortLabel: "Caderno",
-        groupPaths: ["/caderno"],
       },
     ],
   },

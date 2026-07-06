@@ -1,13 +1,15 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { IconChevron } from "./CadernoSkeletons";
 
 interface CadernoHeaderProps {
   tab: "registro" | "pesquisar";
   onToggleTab: () => void;
+  rightAction?: ReactNode;
 }
 
-export function CadernoHeader({ tab, onToggleTab }: CadernoHeaderProps) {
+export function CadernoHeader({ tab, onToggleTab, rightAction }: CadernoHeaderProps) {
   return (
     <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
       <div className="flex justify-start">
@@ -30,7 +32,7 @@ export function CadernoHeader({ tab, onToggleTab }: CadernoHeaderProps) {
           />
         </button>
       </div>
-      <span className="block h-7 w-7" aria-hidden="true" />
+      {rightAction ?? <span className="block h-7 w-7" aria-hidden="true" />}
     </div>
   );
 }

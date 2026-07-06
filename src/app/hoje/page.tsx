@@ -14,6 +14,7 @@ import { getAuthToken } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/error-utils";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useToast } from "@/lib/useToast";
+import { TopBarActionLink } from "@/components/TopBarActionLink";
 import {
   acceptScheduleSuggestionItem,
   acceptScheduleSuggestionAll,
@@ -632,11 +633,7 @@ export default function TodayPage() {
   useEffect(() => {
     setTitle("Hoje");
     setActions(
-      <Link
-        href="/calendario"
-        className="p-1.5 text-muted hover:text-ink"
-        aria-label="Visão mensal"
-      >
+      <TopBarActionLink href="/calendario" label="Calendário" title="Calendário">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
           <circle cx="5" cy="5" r="1.5" fill="currentColor" stroke="none" />
           <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none" />
@@ -648,7 +645,7 @@ export default function TodayPage() {
           <circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none" />
           <circle cx="19" cy="19" r="1.5" fill="currentColor" stroke="none" />
         </svg>
-      </Link>,
+      </TopBarActionLink>,
     );
     return () => { setTitle(null); setActions(null); };
   }, [setTitle, setActions]);

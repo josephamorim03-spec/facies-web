@@ -1,12 +1,12 @@
 ﻿"use client";
 
-import React, { useEffect } from "react";
-import Link from "next/link";
+import React, { useEffect, useMemo } from "react";
 import type { OperationalSourceType } from "@/lib/api";
 import type { Area } from "./_lib/cadernoShared";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { TrainerContextStrip } from "@/components/trainer/TrainerContextStrip";
 import { useCadernoPageState } from "./_hooks/useCadernoPageState";
 import { TurboReviewPanel } from "./_components/TurboReviewPanel";
@@ -15,25 +15,32 @@ import { CadernoRegistroPanel, CadernoRegistroSkeletonPanel } from "./_component
 import { CadernoPesquisarPanel, CadernoPesquisarSkeletonPanel } from "./_components/CadernoPesquisarPanel";
 import { CadernoNoteList } from "./_components/CadernoNoteList";
 
+function CardsIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <rect x="4" y="7" width="12" height="12" rx="1.5" />
+      <rect x="8" y="5" width="12" height="12" rx="1.5" />
+    </svg>
+  );
+}
+
 export default function CadernoClientPage() {
   const isDesktopNavigation = useDesktopNavigationMode();
   const { setActions } = useNavbar();
+  const cardsReturnAction = useMemo(
+    () => (
+      <TopBarActionLink href="/cards-adaptativos" label="Cards" title="Cards">
+        <CardsIcon className="h-5 w-5" />
+      </TopBarActionLink>
+    ),
+    [],
+  );
 
   useEffect(() => {
     if (isDesktopNavigation) return;
-    setActions(
-      <Link
-        href="/cards-adaptativos"
-        className="p-1.5 text-muted hover:text-ink"
-        aria-label="Voltar para Cards"
-      >
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <path d="m12 4-6 6 6 6" />
-        </svg>
-      </Link>,
-    );
+    setActions(cardsReturnAction);
     return () => { setActions(null); };
-  }, [isDesktopNavigation, setActions]);
+  }, [cardsReturnAction, isDesktopNavigation, setActions]);
 
   const {
     tab,
@@ -172,6 +179,7 @@ export default function CadernoClientPage() {
       <CadernoHeader
         tab={tab}
         onToggleTab={() => setTabWithSession(tab === "registro" ? "pesquisar" : "registro")}
+        rightAction={isDesktopNavigation ? cardsReturnAction : undefined}
       />
 
       {error && <p className="text-sm text-ink">{error}</p>}
