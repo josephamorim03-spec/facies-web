@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   isStudyImportImmersivePath,
@@ -440,19 +441,15 @@ export function SidebarNav({
   isDesktopNavigation,
   displayName,
   photoUrl,
-  pinned,
-  onPinChange,
 }: {
   isDesktopNavigation: boolean;
   displayName?: string | null;
   photoUrl?: string | null;
-  pinned?: boolean;
-  onPinChange?: (v: boolean) => void;
 }) {
   const pathname = usePathname();
   const hideCompletely = useNavHideCompletely(pathname);
   const [hovered, setHovered] = useState(false);
-  const visible = pinned || hovered;
+  const visible = hovered;
 
   const {
     exitConfirmOpen,
@@ -474,23 +471,20 @@ export function SidebarNav({
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* Wordmark — clique fixa/desfixa */}
-        <div
-          className={`border-b cursor-pointer transition-colors shrink-0 ${pinned ? "border-primary bg-surfaceMuted" : "border-edge hover:bg-surfaceMuted"}`}
+        {/* Wordmark — link para a home */}
+        <Link
+          href="/hoje"
+          className="block border-b border-edge transition-colors shrink-0 hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           style={{ padding: visible ? "1.25rem 1rem" : "0.875rem 0.625rem" }}
-          onClick={() => onPinChange?.(!pinned)}
-          title={pinned ? "Desafixar menu" : "Fixar menu"}
+          aria-label="KrosMed — início"
         >
           <div className={`flex items-center gap-2 ${!visible ? "justify-center" : ""}`}>
             <KrosmedIcon className="w-6 h-6 shrink-0" />
             {visible && (
               <span className="font-serif text-base font-semibold tracking-[0.06em] uppercase whitespace-nowrap"><span className="text-ink">KROS</span><span className="text-primary dark:text-ink">MED</span></span>
             )}
-            {visible && pinned && (
-              <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-primary">fixado</span>
-            )}
           </div>
-        </div>
+        </Link>
 
         {/* Nav items */}
         <nav className="flex-1 space-y-1 px-1.5 py-4 overflow-y-auto" aria-label="Navegação principal">

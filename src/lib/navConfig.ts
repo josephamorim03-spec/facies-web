@@ -52,6 +52,10 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         shortLabel: "Cards",
         groupPaths: ["/cards-adaptativos", "/revisao-turbo", "/caderno"],
       },
+    ],
+  },
+  {
+    items: [
       {
         // Rótulo "Desempenho" = análise (/estatisticas). NÃO é a rota /desempenho (metas).
         href: "/estatisticas",
@@ -66,17 +70,6 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
           "/dados-e-relatorios/relatorio",
         ],
       },
-    ],
-  },
-  {
-    items: [
-      {
-        // "Plano" = metas/rotina — a rota /desempenho (re-exportada por /rotina-e-metas).
-        href: "/desempenho",
-        label: "PLANO",
-        shortLabel: "Plano",
-        groupPaths: ["/desempenho", "/rotina-e-metas"],
-      },
       {
         // "Histórico" = o log de sessões (treinos + simulados); Simulados é um
         // filtro (?tipo=provas), não um destino. /provas redireciona pra cá.
@@ -84,6 +77,13 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         label: "HISTÓRICO",
         shortLabel: "Histórico",
         groupPaths: ["/revisoes"],
+      },
+      {
+        // "Metas" = metas/rotina — a rota /desempenho (re-exportada por /rotina-e-metas).
+        href: "/desempenho",
+        label: "METAS",
+        shortLabel: "Metas",
+        groupPaths: ["/desempenho", "/rotina-e-metas"],
       },
     ],
   },

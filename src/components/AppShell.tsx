@@ -194,7 +194,6 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const blockedNavigationPathRef = useRef<string | null>(null);
   const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
-  const [pinnedSidebar, setPinnedSidebar] = useState(false);
   const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
   const showMobileTopBar = !isDesktopNavigation && shouldShowMobileTopBar(pathname, hideNavigationChrome);
   const mainClassName = hideNavigationChrome
@@ -285,9 +284,9 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   return (
     <>
       <PwaRegister />
-      <SidebarNav isDesktopNavigation={isDesktopNavigation} displayName={userDisplayName} photoUrl={userPhotoUrl} pinned={pinnedSidebar} onPinChange={setPinnedSidebar} />
+      <SidebarNav isDesktopNavigation={isDesktopNavigation} displayName={userDisplayName} photoUrl={userPhotoUrl} />
       {showMobileTopBar && <MobileTopBar pathname={pathname} />}
-      <div className={hideNavigationChrome || !isDesktopNavigation ? "" : (pinnedSidebar ? "ml-52" : "ml-14")}>
+      <div className={hideNavigationChrome || !isDesktopNavigation ? "" : "ml-14"}>
         <main className={mainClassName}>
           <Nav displayName={userDisplayName} photoUrl={userPhotoUrl} />
           {children}

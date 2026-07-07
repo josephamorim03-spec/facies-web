@@ -7,7 +7,6 @@ import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
-import { TrainerContextStrip } from "@/components/trainer/TrainerContextStrip";
 import { useCadernoPageState } from "./_hooks/useCadernoPageState";
 import { TurboReviewPanel } from "./_components/TurboReviewPanel";
 import { CadernoHeader } from "./_components/CadernoHeader";
@@ -175,7 +174,6 @@ export default function CadernoClientPage() {
   // Main notebook
   return (
     <div className="space-y-5">
-      <TrainerContextStrip sourcePage="/caderno" />
       <CadernoHeader
         tab={tab}
         onToggleTab={() => setTabWithSession(tab === "registro" ? "pesquisar" : "registro")}
