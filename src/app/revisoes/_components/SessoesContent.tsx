@@ -27,8 +27,9 @@ function LoadingBlock() {
   );
 }
 
-// Histórico: o log de sessões (treinos + simulados). /provas é a área canônica
-// de Simulados; aqui o filtro "provas" segue existindo para auditoria/listagem.
+// Histórico: o log de sessões (treinos + simulados). Retomar, ver resultado ou
+// concluir revisão — uma lista escaneável. Simulados é um filtro (?tipo=provas),
+// não uma página. Análise pedagógica vive em /estatisticas.
 export function SessoesContent({ initialTab = "inacabadas" }: { initialTab?: SessionsTab }) {
   const router = useRouter();
   const searchParams = useSearchParams();

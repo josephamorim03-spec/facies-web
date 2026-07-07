@@ -9,7 +9,6 @@ import {
   recordQuestionBankAttempt,
   recordQuestionBankCorrection,
   recordQuestionBankEvents,
-  recordQuestionBankEventsKeepalive,
   revealQuestionBankSessionResults,
   reportQuestionBankSessionItem,
   requestQuestionBankAICorrection,
@@ -161,20 +160,14 @@ export default function SessionPage() {
   const questionStartTimeRef = useRef<number>(Date.now());
   const eventQueueRef = useRef<Record<number, QuestionBankStudentEventPayload[]>>({});
   const eventFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const changedPositionsRef = useRef<Set<number>>(new Set());
 
-  const flushStudentEvents = useCallback((options?: { keepalive?: boolean }) => {
+  const flushStudentEvents = useCallback(() => {
     if (!session) return;
     const queued = eventQueueRef.current;
     eventQueueRef.current = {};
     for (const [rawPosition, events] of Object.entries(queued)) {
       if (events.length === 0) continue;
-      const position = Number(rawPosition);
-      if (options?.keepalive) {
-        const accepted = recordQuestionBankEventsKeepalive(token, session.session_id, position, events);
-        if (accepted) continue;
-      }
-      void recordQuestionBankEvents(token, session.session_id, position, events).catch(() => {
+      void recordQuestionBankEvents(token, session.session_id, Number(rawPosition), events).catch(() => {
         eventQueueRef.current[Number(rawPosition)] = [
           ...(eventQueueRef.current[Number(rawPosition)] ?? []),
           ...events,
@@ -324,7 +317,7 @@ export default function SessionPage() {
     };
     const onPageHide = () => {
       endVisitRef.current("pagehide");
-      flushStudentEvents({ keepalive: true });
+      flushStudentEvents();
     };
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("pointerdown", onActivity, { passive: true });
@@ -401,7 +394,6 @@ export default function SessionPage() {
         eliminated_options: eliminatedOptions[position] ?? [],
       };
       if (existingSelectedOption) {
-        changedPositionsRef.current.add(position);
         eventPayload.previous_selected_option = existingSelectedOption;
       } else {
         eventPayload.time_to_first_answer_ms = elapsedMs;
@@ -843,7 +835,6 @@ export default function SessionPage() {
         <ConfidenceReviewStep
           sessionId={session.session_id}
           session={session}
-          changedPositions={Array.from(changedPositionsRef.current)}
           onProceed={() => void proceedReveal()}
         />
       )}

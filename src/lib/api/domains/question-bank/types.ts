@@ -324,7 +324,6 @@ export type QuestionBankSessionItem = {
   selected_option: QuestionBankOption | null;
   doubtful: boolean;
   confidence_self_rating: number | null;
-  time_ms: number | null;
   answered: boolean;
   needs_correction: boolean;
   correct_answer: QuestionBankOption | null;
@@ -549,5 +548,4 @@ export type QuestionBankSessionCreatePayload = {
   correction_status?: QuestionBankCorrectionStatus;
   performed_at?: string;
   review_task_id?: string;
-  time_limit_minutes?: number | null;
 };

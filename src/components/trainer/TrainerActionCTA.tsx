@@ -14,7 +14,9 @@ const SESSION_KINDS = new Set(["question_block", "scheduled_review"]);
 const FALLBACK_HREF: Record<string, string> = {
   flashcard_review: "/cards-adaptativos",
   manual_study: "/caderno",
-  simulation: "/provas",
+  // Iniciar um simulado vive em Questões (intenção "Simular prova"); /provas é
+  // só o histórico filtrado (medição), não a criação.
+  simulation: "/banco-de-questoes",
   guided_correction: "/banco-de-questoes",
 };
 
