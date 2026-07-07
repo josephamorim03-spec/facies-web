@@ -9,6 +9,19 @@ function secureCookieSuffix(): string {
   return window.location.protocol === "https:" ? "; Secure" : "";
 }
 
+/**
+ * Returns an empty string by design.
+ *
+ * Auth tokens are NEVER exposed to JavaScript. The login flow stores the
+ * access token in an httpOnly cookie (`krosmed_session`) set by the
+ * Next.js API route `/api/auth/session`. The BFF proxy (`/api/[...path]`)
+ * reads that cookie and injects `Authorization: Bearer <token>` when
+ * forwarding requests to the backend.
+ *
+ * This function exists for API compatibility with `authHeader()` but
+ * intentionally returns "" so that no token is ever added to client-side
+ * fetch headers. Auth is handled entirely server-side via cookies.
+ */
 export function getAuthToken(): string {
   return "";
 }
