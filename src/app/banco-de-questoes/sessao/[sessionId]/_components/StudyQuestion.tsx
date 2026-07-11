@@ -592,6 +592,24 @@ export default function StudyQuestion({
                 {item.stem}
               </p>
 
+              {aiWarningFlags.length > 0 && !reportDone && (
+                <div
+                  role="note"
+                  className="mt-4 flex max-w-[72ch] flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-warning bg-[var(--amber-tint)] px-3 py-2 text-sm"
+                >
+                  <span className="text-muted">
+                    Notamos um possível problema no enunciado desta questão.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onToggleReport}
+                    className="font-semibold text-warning underline underline-offset-2 transition hover:opacity-80"
+                  >
+                    Reportar
+                  </button>
+                </div>
+              )}
+
               <QuestionImageRefs imageRefs={item.image_refs} className="mt-5 grid gap-3 md:grid-cols-2" />
             </section>
 

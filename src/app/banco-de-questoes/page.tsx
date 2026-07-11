@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react";
+import { Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type JSX } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   browseQuestionBankQuestions,
@@ -392,7 +392,8 @@ function BancoDeQuestoesContent() {
 
   // Filter state
   const [area, setArea] = useState(() => initialContext.area ?? "");
-  const [search, setSearch] = useState(() => initialContext.theme ?? "");
+  const [searchDraft, setSearchDraft] = useState(() => initialContext.theme ?? "");
+  const [committedSearch, setCommittedSearch] = useState(() => (initialContext.theme ?? "").trim());
   const [boardCodes, setBoardCodes] = useState<string[]>([]);
   const [institutions, setInstitutions] = useState<string[]>([]);
   const [sources, setSources] = useState<QuestionBankSourceOption[]>([]);
@@ -433,16 +434,19 @@ function BancoDeQuestoesContent() {
   const [dueTopicTaskCount, setDueTopicTaskCount] = useState(0);
   const availabilityRequestSeq = useRef(0);
   const availabilityAbortRef = useRef<AbortController | null>(null);
+  const availabilityInFlightRef = useRef<{ key: string; promise: Promise<void> } | null>(null);
   const topicsAbortRef = useRef<AbortController | null>(null);
   const facetsRequestSeq = useRef(0);
   const facetsAbortRef = useRef<AbortController | null>(null);
+  const facetsInFlightRef = useRef<{ key: string; promise: Promise<void> } | null>(null);
 
   // Derived
   const requestedLimit = clampQuestionLimit(limit);
   const maxSelectable = availability ? Math.max(0, availability.max_selectable) : requestedLimit;
   const limitMax = Math.max(1, Math.min(QUESTION_BANK_LIMIT_CAP, maxSelectable || requestedLimit));
   const clampedLimit = Math.max(1, Math.min(requestedLimit, limitMax));
-  const normalizedSearch = search.trim();
+  const deferredSearchDraft = useDeferredValue(searchDraft);
+  const normalizedSearch = committedSearch.trim();
   const reviewTrailDefault = Boolean(entryContext.reviewTaskId) || selectedTopics.length === 1;
   const [generateReviewTrail, setGenerateReviewTrail] = useState(reviewTrailDefault);
   useEffect(() => {
@@ -475,26 +479,34 @@ function BancoDeQuestoesContent() {
           : "learning";
 
   const filteredTaxonomyTopics = useMemo(
-    () => filterTopicsLocally(taxonomyTopics, { area, search, preserveSearchAncestors: true }),
-    [area, search, taxonomyTopics],
+    () => filterTopicsLocally(taxonomyTopics, { area, search: searchDraft, preserveSearchAncestors: true }),
+    [area, searchDraft, taxonomyTopics],
   );
   const filteredMicroTopics = useMemo(
-    () => filterTopicsLocally(microTopics, { area, search, preserveSearchAncestors: false }),
-    [area, search, microTopics],
+    () => filterTopicsLocally(microTopics, { area, search: searchDraft, preserveSearchAncestors: false }),
+    [area, searchDraft, microTopics],
   );
   const topicSuggestions = useMemo(
     () =>
-      filterTopicsLocally(taxonomyTopics, { area, search, preserveSearchAncestors: false })
+      filterTopicsLocally(taxonomyTopics, { area, search: searchDraft, preserveSearchAncestors: false })
         .filter((topic) => topic.question_count > 0),
-    [area, search, taxonomyTopics],
+    [area, searchDraft, taxonomyTopics],
   );
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setCommittedSearch(deferredSearchDraft.trim());
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [deferredSearchDraft]);
 
   // Reset on URL change
   useEffect(() => {
     const context = parseEntryContext(new URLSearchParams(routeSearchKey));
     setEntryContext(context);
     setArea(context.area ?? "");
-    setSearch(context.theme ?? "");
+    setSearchDraft(context.theme ?? "");
+    setCommittedSearch((context.theme ?? "").trim());
     setCorrectionStatus("all");
     setLimit(clampQuestionLimit(context.expectedQuestions ?? 10));
     setStudyKind("topic");
@@ -562,6 +574,9 @@ function BancoDeQuestoesContent() {
   // ─── Data fetching ───────────────────────────────────────────────────────
 
   const refreshAvailability = useCallback(async () => {
+    const requestKey = JSON.stringify({ ...filterParams(), mode: "adaptive" });
+    if (availabilityInFlightRef.current?.key === requestKey) return;
+    availabilityInFlightRef.current = { key: requestKey, promise: Promise.resolve() };
     const requestSeq = availabilityRequestSeq.current + 1;
     availabilityRequestSeq.current = requestSeq;
     availabilityAbortRef.current?.abort();
@@ -590,6 +605,9 @@ function BancoDeQuestoesContent() {
     } finally {
       if (availabilityAbortRef.current === controller) {
         availabilityAbortRef.current = null;
+      }
+      if (availabilityInFlightRef.current?.key === requestKey) {
+        availabilityInFlightRef.current = null;
       }
       if (availabilityRequestSeq.current === requestSeq) setLoadingPreview(false);
     }
@@ -675,6 +693,18 @@ function BancoDeQuestoesContent() {
   // overwrites the global catalogs above with the recorte-aware options. Silent
   // (no skeleton) so the counts feel live as filters change.
   const refreshFacets = useCallback(async () => {
+    const requestKey = JSON.stringify({
+      knowledge_node_ids:
+        selectedTopics.length > 0 ? selectedTopics.map((t) => t.knowledge_node_id) : undefined,
+      area: area || undefined,
+      search: normalizedSearch || undefined,
+      board_codes: boardCodes.length > 0 ? boardCodes : undefined,
+      institutions: institutions.length > 0 ? institutions : undefined,
+      years: selectedYears.length > 0 ? selectedYears : undefined,
+      correction_status: correctionStatus,
+    });
+    if (facetsInFlightRef.current?.key === requestKey) return;
+    facetsInFlightRef.current = { key: requestKey, promise: Promise.resolve() };
     const seq = facetsRequestSeq.current + 1;
     facetsRequestSeq.current = seq;
     facetsAbortRef.current?.abort();
@@ -703,6 +733,7 @@ function BancoDeQuestoesContent() {
       // Keep the last good options on a transient facet error.
     } finally {
       if (facetsAbortRef.current === controller) facetsAbortRef.current = null;
+      if (facetsInFlightRef.current?.key === requestKey) facetsInFlightRef.current = null;
     }
   }, [area, boardCodes, correctionStatus, institutions, normalizedSearch, selectedTopics, selectedYears, token]);
 
@@ -743,7 +774,7 @@ function BancoDeQuestoesContent() {
   }
 
   function handleSearchChange(next: string) {
-    setSearch(next);
+    setSearchDraft(next);
     clearSelection();
   }
 
@@ -943,7 +974,7 @@ function BancoDeQuestoesContent() {
           </div>
           {entryContext.reviewTaskId && (
             <span className="rounded-lg border border-edge bg-[var(--amber-tint)] px-3 py-2 text-xs text-muted">
-              <strong className="font-semibold text-ink">{(entryContext.theme ?? search) || "Revisão"}</strong>
+              <strong className="font-semibold text-ink">{(entryContext.theme ?? searchDraft) || "Revisão"}</strong>
               {" · "}{(entryContext.area ?? area) || "Área"}
               {" · "}{entryContext.dateISO ?? "data do calendário"}
             </span>
@@ -1085,7 +1116,7 @@ function BancoDeQuestoesContent() {
                 <FiltersBar
                   area={area}
                   onAreaChange={handleAreaChange}
-                  search={search}
+                  search={searchDraft}
                   onSearchChange={handleSearchChange}
                   topics={filteredTaxonomyTopics}
                   topicSuggestions={topicSuggestions}
