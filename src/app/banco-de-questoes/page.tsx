@@ -9,6 +9,7 @@ import {
   getReviewAgenda,
   getQuestionBankNextAction,
   getQuestionBankPerformance,
+  listQuestionBankFacets,
   listQuestionBankSources,
   listQuestionBankYears,
   previewQuestionBankAvailability,
@@ -371,7 +372,7 @@ function parseEntryContext(params: SearchParamReader | null): EntryContext {
 
 export default function BancoDeQuestoesPage() {
   return (
-    <Suspense fallback={<main className="p-6 text-sm text-muted">Carregando...</main>}>
+    <Suspense fallback={<div className="p-6 text-sm text-muted">Carregando...</div>}>
       <BancoDeQuestoesContent />
     </Suspense>
   );
@@ -401,6 +402,7 @@ function BancoDeQuestoesContent() {
   const [yearsLoading, setYearsLoading] = useState(true);
   const [yearsError, setYearsError] = useState(false);
   const [selectedYears, setSelectedYears] = useState<number[]>([]);
+  const [includeNoYear, setIncludeNoYear] = useState(false);
   const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("unanswered");
   const [correctionStatus, setCorrectionStatus] = useState<QuestionBankCorrectionStatus>("all");
   const [limit, setLimit] = useState(() => clampQuestionLimit(initialContext.expectedQuestions ?? 10));
@@ -432,6 +434,8 @@ function BancoDeQuestoesContent() {
   const availabilityRequestSeq = useRef(0);
   const availabilityAbortRef = useRef<AbortController | null>(null);
   const topicsAbortRef = useRef<AbortController | null>(null);
+  const facetsRequestSeq = useRef(0);
+  const facetsAbortRef = useRef<AbortController | null>(null);
 
   // Derived
   const requestedLimit = clampQuestionLimit(limit);
@@ -536,6 +540,7 @@ function BancoDeQuestoesContent() {
   useEffect(() => () => {
     availabilityAbortRef.current?.abort();
     topicsAbortRef.current?.abort();
+    facetsAbortRef.current?.abort();
   }, []);
 
   // ─── Filter params factory ───────────────────────────────────────────────
@@ -546,12 +551,13 @@ function BancoDeQuestoesContent() {
     board_codes: boardCodes.length > 0 ? boardCodes : undefined,
     institutions: institutions.length > 0 ? institutions : undefined,
     years: selectedYears.length > 0 ? selectedYears : undefined,
+    include_no_year: includeNoYear || undefined,
     search: normalizedSearch || undefined,
     answer_status: answerStatus,
     only_unanswered: answerStatus === "unanswered",
     correction_status: correctionStatus,
     limit: overrides?.limit,
-  }), [answerStatus, area, boardCodes, correctionStatus, institutions, normalizedSearch, selectedTopics, selectedYears]);
+  }), [answerStatus, area, boardCodes, correctionStatus, includeNoYear, institutions, normalizedSearch, selectedTopics, selectedYears]);
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -664,6 +670,50 @@ function BancoDeQuestoesContent() {
     void loadYears();
   }, [loadSourceOptions, loadYears, tokenResolved]);
 
+  // Cross-filtered facets (Estratégia-style): one call whose year counts react to
+  // the selected banca and whose banca counts react to the selected years. It
+  // overwrites the global catalogs above with the recorte-aware options. Silent
+  // (no skeleton) so the counts feel live as filters change.
+  const refreshFacets = useCallback(async () => {
+    const seq = facetsRequestSeq.current + 1;
+    facetsRequestSeq.current = seq;
+    facetsAbortRef.current?.abort();
+    const controller = new AbortController();
+    facetsAbortRef.current = controller;
+    try {
+      const facets = await listQuestionBankFacets(
+        token,
+        {
+          knowledge_node_ids:
+            selectedTopics.length > 0 ? selectedTopics.map((t) => t.knowledge_node_id) : undefined,
+          area: area || undefined,
+          search: normalizedSearch || undefined,
+          board_codes: boardCodes.length > 0 ? boardCodes : undefined,
+          institutions: institutions.length > 0 ? institutions : undefined,
+          years: selectedYears.length > 0 ? selectedYears : undefined,
+          correction_status: correctionStatus,
+        },
+        controller.signal,
+      );
+      if (facetsRequestSeq.current !== seq) return;
+      setYearStats(facets.years);
+      setSources([...facets.boards, ...facets.institutions]);
+    } catch (err) {
+      if (controller.signal.aborted || isAbortError(err)) return;
+      // Keep the last good options on a transient facet error.
+    } finally {
+      if (facetsAbortRef.current === controller) facetsAbortRef.current = null;
+    }
+  }, [area, boardCodes, correctionStatus, institutions, normalizedSearch, selectedTopics, selectedYears, token]);
+
+  useEffect(() => {
+    if (!tokenResolved) return;
+    const timer = window.setTimeout(() => {
+      void refreshFacets();
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [refreshFacets, tokenResolved]);
+
   useEffect(() => {
     if (!tokenResolved) return;
     const timer = window.setTimeout(() => {
@@ -699,6 +749,11 @@ function BancoDeQuestoesContent() {
 
   function handleSelectedYearsChange(next: number[]) {
     setSelectedYears(next);
+    clearSelection();
+  }
+
+  function handleIncludeNoYearChange(next: boolean) {
+    setIncludeNoYear(next);
     clearSelection();
   }
 
@@ -868,7 +923,7 @@ function BancoDeQuestoesContent() {
     }
   }
 
-  if (!tokenResolved) return <main className="p-6 text-sm text-muted">Carregando...</main>;
+  if (!tokenResolved) return <div className="p-6 text-sm text-muted">Carregando...</div>;
 
   const hasDueTopicTasks = dueTopicTaskCount > 0;
   const recommended = nextAction ?? FALLBACK_NEXT_ACTION;
@@ -876,7 +931,7 @@ function BancoDeQuestoesContent() {
   const configuredStartLabel = studyKind === "full_exam" ? "Iniciar prova" : resolutionMode === "training" ? "Iniciar treino" : "Iniciar simulado";
 
   return (
-    <main className="min-h-screen bg-paper text-ink">
+    <div className="min-h-screen bg-paper text-ink">
       <div className="mx-auto max-w-7xl space-y-5">
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
@@ -1052,6 +1107,8 @@ function BancoDeQuestoesContent() {
                   onYearsRetry={() => void loadYears()}
                   selectedYears={selectedYears}
                   onSelectedYearsChange={handleSelectedYearsChange}
+                  includeNoYear={includeNoYear}
+                  onIncludeNoYearChange={handleIncludeNoYearChange}
                   answerStatus={answerStatus}
                   onAnswerStatusChange={handleAnswerStatusChange}
                   correctionStatus={correctionStatus}
@@ -1183,6 +1240,6 @@ function BancoDeQuestoesContent() {
         </div>
         <div className="h-24 md:hidden" aria-hidden="true" />
       </div>
-    </main>
+    </div>
   );
 }

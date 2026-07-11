@@ -43,8 +43,16 @@ export type QuestionBankSourceOption = {
 };
 
 export type QuestionBankYearStat = {
-  year: number;
+  // year=null is the "sem ano informado" bucket from the cross-filtered facets;
+  // the global /years endpoint never returns null.
+  year: number | null;
   question_count: number;
+};
+
+export type QuestionBankFacets = {
+  years: QuestionBankYearStat[];
+  boards: QuestionBankSourceOption[];
+  institutions: QuestionBankSourceOption[];
 };
 
 export type QuestionBankTopic = {
@@ -95,6 +103,78 @@ export type QuestionBankAttemptStats = {
   rolling_accuracy: number | null;
   last_is_correct: boolean | null;
   last_answered_at: string | null;
+};
+
+export type QuestionBankEditorialProfile = {
+  editorial_state: string;
+  review_lane: string;
+  student_trust_weight: number;
+  flags: string[];
+  publish_blockers: string[];
+  last_human_review_at: string | null;
+  last_ai_review_at: string | null;
+  review_source: string | null;
+  item_stats_snapshot: Record<string, unknown>;
+  adaptive_impact: unknown;
+  warning_message: string | null;
+};
+
+export type QuestionBankQualityInspectionFlag = {
+  code: string;
+  severity: "info" | "warning" | "blocking";
+  message: string;
+};
+
+export type QuestionBankQualityInspection = {
+  inspection_status: string;
+  warning_flags: QuestionBankQualityInspectionFlag[];
+  blocking_flags: QuestionBankQualityInspectionFlag[];
+  negative_stem_detected: boolean;
+  trap_patterns: string[];
+  editorial_risks: string[];
+  requires_human_review: boolean;
+  suggested_fix_available: boolean;
+  last_checked_at: string | null;
+};
+
+export type QuestionBankDnaProfile = {
+  schema_version: string;
+  charge_pattern: string | null;
+  reasoning_type: string | null;
+  answer_type: string | null;
+  negative_structure: string | null;
+  trap_signatures: string[];
+  distractor_quality: Record<string, unknown>;
+  difficulty_signals: Record<string, unknown>;
+  similarity_keys: string[];
+  quality_flags: string[];
+};
+
+export type QuestionBankAiRequestCapability = {
+  can_request: boolean;
+  request_mode: string;
+  reason: string | null;
+};
+
+export type QuestionBankAiQuota = {
+  feature_key: string;
+  quota_total: number;
+  quota_used: number;
+  quota_remaining: number;
+  estimated_units: number;
+  estimated_cost_band: string;
+  estimated_latency_band: string;
+  cache_eligible: boolean;
+  will_consume_new_budget: boolean;
+  reset_at: string | null;
+  quota_exceeded: boolean;
+};
+
+export type QuestionBankAiCacheSummary = {
+  cache_status: "none" | "personal" | "shared";
+  cache_eligible: boolean;
+  cache_reason: string | null;
+  analysis_record_id: number | null;
 };
 
 export type QuestionBankQuestionAttempt = {
@@ -148,6 +228,8 @@ export type QuestionBankNextActionStartPayload = {
   answer_status: QuestionBankAnswerStatus;
   only_unanswered: boolean;
   limit: number;
+  knowledge_node_ids?: string[] | null;
+  cognitive_mode?: string | null;
 };
 
 export type QuestionBankNextAction = {
@@ -332,6 +414,15 @@ export type QuestionBankSessionItem = {
   cognitive_signal?: QuestionBankCognitiveSignal | null;
   difficulty_estimate?: number | null;
   pedagogical_profile?: Record<string, unknown>;
+  editorial_profile?: QuestionBankEditorialProfile | null;
+  question_quality_inspection?: QuestionBankQualityInspection | null;
+  question_dna_profile?: QuestionBankDnaProfile | null;
+  pedagogical_profile_version?: number | null;
+  student_trust_weight?: number | null;
+  primary_microcompetency_label?: string | null;
+  anchor_objective_label?: string | null;
+  ai_request_status?: "idle" | "cached" | "queued" | "running" | "blocked_by_quality" | "completed";
+  ai_request_capability?: QuestionBankAiRequestCapability | null;
   adaptive_explanation?: { title: string; reasons: string[] } | null;
   editorial_quality?: { badge: string; message: string | null } | null;
   is_annulled: boolean;
@@ -392,9 +483,27 @@ export type QuestionBankLongitudinalNode = {
   error_count: number;
   performance_score: number;
   mastery_score: number;
+  trust_adjusted_mastery?: number | null;
   retention_score: number;
   days_since_last_seen: number | null;
   last_error_at: string | null;
+  recommended_block?: QuestionBankRecommendedBlock | null;
+};
+
+export type QuestionBankRecommendedBlock = {
+  node_id: string;
+  node_name: string;
+  label: string;
+  why_now: string;
+  failure_mode?: string | null;
+  action_mode: string;
+  recommended_question_count: number;
+  estimated_minutes: number;
+  success_signal?: string | null;
+  if_wrong_then?: string | null;
+  if_right_then?: string | null;
+  trust_adjusted_confidence: number;
+  evidence: Array<{ factor: string; detail: string; value: number }>;
 };
 
 export type QuestionBankAnchorObjectiveWeakness = {
@@ -421,6 +530,7 @@ export type QuestionBankLongitudinalDiagnosis = {
   overconfidence_score: number;
   impulsive_rate: number;
   anchor_objective_weaknesses?: QuestionBankAnchorObjectiveWeakness[];
+  recommended_blocks?: QuestionBankRecommendedBlock[];
 };
 
 export type QuestionBankCorrectionItem = {
@@ -437,6 +547,46 @@ export type QuestionBankFinalizeResult = FinalizationResult & {
   created_tasks: ReviewTask[];
   session: QuestionBankSession;
   recommended_topics?: string[];
+};
+
+export type QuestionBankAiRequestPreview = {
+  can_request: boolean;
+  request_mode: string;
+  checks_to_run: string[];
+  question_quality_inspection: QuestionBankQualityInspection;
+  question_dna_profile?: QuestionBankDnaProfile | null;
+  ai_request_capability?: QuestionBankAiRequestCapability | null;
+  quota: QuestionBankAiQuota;
+  cache_summary: QuestionBankAiCacheSummary;
+  estimated_cost_band: string;
+  estimated_latency_band: string;
+  blocked_reason: string | null;
+  recommended_next_step: string | null;
+};
+
+export type QuestionBankAiRequestResult = {
+  request_id: string;
+  status: string;
+  question_quality_inspection: QuestionBankQualityInspection;
+  quota_after: QuestionBankAiQuota;
+  cache_used: boolean;
+  review_task_id: string | null;
+  repair_draft_id: string | null;
+  analysis_record_id: number | null;
+};
+
+export type QuestionBankAiRequestStatusResult = {
+  request_id: string;
+  status: string;
+  question_quality_inspection?: QuestionBankQualityInspection | null;
+  question_dna_profile?: QuestionBankDnaProfile | null;
+  quota_after?: QuestionBankAiQuota | null;
+  cache_used: boolean;
+  review_task_id: string | null;
+  repair_draft_id: string | null;
+  analysis_record_id: number | null;
+  repair_draft?: Record<string, unknown> | null;
+  budget_usage_summary: Record<string, unknown>;
 };
 
 export type QuestionBankStudentEventType =
@@ -542,6 +692,7 @@ export type QuestionBankSessionCreatePayload = {
   year_from?: number;
   year_to?: number;
   years?: number[];
+  include_no_year?: boolean;
   limit?: number;
   only_unanswered?: boolean;
   answer_status?: QuestionBankAnswerStatus;

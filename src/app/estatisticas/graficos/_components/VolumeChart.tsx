@@ -122,7 +122,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
         {hasActiveSegments && (
           <div
             aria-hidden="true"
-            className="absolute top-0 left-0 h-full pointer-events-none z-20"
+            className="absolute top-0 left-0 hidden h-full pointer-events-none z-20 sm:block"
             style={{ width: CHART_Y_AXIS_WIDTH }}
           >
             {volumeSegmentLabelPositions.map(({ area, midY, count }) => (
@@ -142,6 +142,23 @@ export function VolumeChart({ state, refs, actions }: Props) {
           </div>
         )}
       </div>
+      {/* Em telas estreitas os rótulos por segmento (posicionados em px na coluna
+          de 40px) sobrepõem/cortam. Abaixo de sm eles saem de cima do gráfico e
+          viram uma legenda legível. */}
+      {hasActiveSegments && (
+        <ul className="flex flex-wrap gap-x-3 gap-y-1 sm:hidden" aria-label="Volume por área na semana ativa">
+          {volumeSegmentLabelPositions.map(({ area, count }) => (
+            <li key={area} className="flex items-center gap-1 text-[11px] font-medium leading-none tabular-nums">
+              <span
+                className="inline-block h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: AREA_COLORS[area] }}
+              />
+              <span className="opacity-80">{area}</span>
+              <span className="font-semibold">{count}</span>
+            </li>
+          ))}
+        </ul>
+      )}
       {activeVolumeSegments.length > 0 && (
         <div data-testid="volume-active-segments" data-areas={activeVolumeSegments.join(",")} className="sr-only">
           {activeVolumeSegments.join(",")}

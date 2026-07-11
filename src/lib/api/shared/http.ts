@@ -194,6 +194,9 @@ function defaultClientCachePolicy(pathname: string): ResolvedClientCachePolicy |
   if (pathname === "/api/profile") {
     return { ttlMs: 5 * 60_000, swrMs: 30 * 60_000, tags: ["profile"] };
   }
+  if (pathname === "/api/capabilities") {
+    return { ttlMs: 30_000, swrMs: 2 * 60_000, tags: ["capabilities"] };
+  }
   if (pathname === "/api/reviews/agenda") {
     return { ttlMs: 60_000, swrMs: 5 * 60_000, tags: ["reviews", "agenda"] };
   }
@@ -297,6 +300,14 @@ function mutationInvalidationTags(path: string): string[] {
     tags.add("reviews");
     tags.add("studies");
     tags.add("performance");
+  }
+  if (pathname.startsWith("/api/trainer")) {
+    tags.add("trainer");
+    tags.add("student-context");
+    tags.add("question-bank");
+    tags.add("reviews");
+    tags.add("performance");
+    tags.add("capabilities");
   }
   if (pathname.startsWith("/api/notes/operational")) {
     tags.add("notes");

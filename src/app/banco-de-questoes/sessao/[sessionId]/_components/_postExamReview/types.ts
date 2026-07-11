@@ -31,6 +31,14 @@ export type SessionDiagnosis = {
   metacognitive_accuracy: number | null;
   impulsive_count: number;
   overconfident_count: number;
+  recommended_blocks?: Array<{
+    node_id: string;
+    node_name: string;
+    label: string;
+    why_now: string;
+    recommended_question_count: number;
+    estimated_minutes: number;
+  }>;
 };
 
 export type PostExamReviewTab = "resumo" | "erros" | "acertos" | "marcadas" | "descartadas";

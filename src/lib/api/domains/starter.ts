@@ -10,7 +10,7 @@ export type PlanDraft = {
 export type ChangeSet = {
   changeset_id: string;
   expires_at: string;
-  status: "PENDING" | "APPLIED" | "EXPIRED" | string;
+  status: "DRAFT" | "APPLIED" | "EXPIRED" | "FAILED" | "NO_EFFECT" | "PENDING" | string;
   plan: PlanDraft;
 };
 

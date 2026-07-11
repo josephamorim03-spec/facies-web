@@ -154,6 +154,27 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
                   </div>
                 ) : null}
 
+                {item.question_quality_inspection ? (
+                  <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:border-blue-900/40 dark:bg-blue-950/20 dark:text-blue-200">
+                    <div className="flex flex-wrap gap-1.5">
+                      <span className="font-semibold">Inspeção:</span>
+                      <span>{item.question_quality_inspection.inspection_status}</span>
+                      {(item.question_quality_inspection.blocking_flags ?? []).slice(0, 2).map((flag) => (
+                        <span key={flag.code} className="rounded-full bg-white/70 px-2 py-0.5 dark:bg-black/20">{flag.message}</span>
+                      ))}
+                      {(item.question_quality_inspection.trap_patterns ?? []).slice(0, 2).map((trap) => (
+                        <span key={trap} className="rounded-full bg-white/70 px-2 py-0.5 dark:bg-black/20">{trap}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {item.repair_draft?.summary ? (
+                  <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-200">
+                    <span className="font-semibold">Repair draft:</span> {item.repair_draft.summary}
+                  </div>
+                ) : null}
+
                 <p className="mt-3 whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-100">
                   {truncateText(item.stem, 360) || "Sem enunciado"}
                 </p>

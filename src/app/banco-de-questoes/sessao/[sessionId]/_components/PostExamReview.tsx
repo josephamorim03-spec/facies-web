@@ -97,7 +97,14 @@ export default function PostExamReview({
   const primaryWeakNode = diagnosis?.nodes
     .filter((node) => node.accuracy < 0.6 && (node.correct + node.wrong) >= 1)
     .sort((a, b) => a.accuracy - b.accuracy)[0] ?? null;
-  const primaryAction = primaryWeakNode
+  const recommendedBlock = diagnosis?.recommended_blocks?.[0] ?? null;
+  const primaryAction = recommendedBlock
+    ? {
+        title: `Treinar ${recommendedBlock.label}`,
+        detail: `${recommendedBlock.recommended_question_count} questão(ões) em ~${recommendedBlock.estimated_minutes} min · ${recommendedBlock.why_now}`,
+        href: `/banco-de-questoes?knowledge_node_ids=${encodeURIComponent(recommendedBlock.node_id)}&answer_status=unanswered_or_wrong`,
+      }
+    : primaryWeakNode
     ? {
         title: `Treinar ${primaryWeakNode.node_name ?? "microcompetência fraca"}`,
         detail: `${formatAccuracy(primaryWeakNode.accuracy)} de acerto nesta sessão · ${primaryWeakNode.correct + primaryWeakNode.wrong} questão(ões)`,

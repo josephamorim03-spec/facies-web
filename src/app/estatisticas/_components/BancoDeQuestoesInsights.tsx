@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { QuestionBankLongitudinalDiagnosis } from "@/lib/api";
+import { Meter } from "@/components/ui/Meter";
 
 const CHARGE_LABELS: Record<string, string> = {
   case_based: "Caso clínico",
@@ -54,16 +55,14 @@ function ErrorPatternBars({
       <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">{title}</p>
       <div className="space-y-1.5">
         {entries.map(([key, value]) => (
-          <div key={key} className="flex items-center gap-2 text-xs">
-            <span className="w-32 shrink-0 truncate text-muted">{labels[key] ?? key}</span>
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-edge">
-              <div
-                className="h-full rounded-full bg-muted"
-                style={{ width: `${Math.round((value / max) * 100)}%` }}
-              />
-            </div>
-            <span className="w-10 shrink-0 text-right font-medium">{pct(value)}%</span>
-          </div>
+          <Meter
+            key={key}
+            label={labels[key] ?? key}
+            labelClassName="w-32 truncate text-muted"
+            pct={Math.round((value / max) * 100)}
+            value={`${pct(value)}%`}
+            valueClassName="w-10 text-right font-medium"
+          />
         ))}
       </div>
     </div>
@@ -100,12 +99,14 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
   const anchorWeaknesses = (longitudinal.anchor_objective_weaknesses ?? []).filter(
     (w) => w.error_count > 0,
   );
+  const recommendedBlocks = (longitudinal.recommended_blocks ?? []).slice(0, 3);
 
   if (
     !hasPatterns &&
     weakNodes.length === 0 &&
     !hasMetacognition &&
-    anchorWeaknesses.length === 0
+    anchorWeaknesses.length === 0 &&
+    recommendedBlocks.length === 0
   )
     return null;
 
@@ -119,6 +120,26 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
+        {recommendedBlocks.length > 0 && (
+          <div className="space-y-3 border border-edge p-4 md:col-span-2">
+            <p className="text-sm font-semibold">Blocos recomendados agora</p>
+            <div className="grid gap-3 md:grid-cols-3">
+              {recommendedBlocks.map((block) => (
+                <Link
+                  key={block.node_id}
+                  href={`/banco-de-questoes?knowledge_node_ids=${encodeURIComponent(block.node_id)}&answer_status=unanswered_or_wrong`}
+                  className="block border border-edge bg-paper p-3 hover:border-primary"
+                >
+                  <p className="text-xs font-semibold text-ink">{block.label}</p>
+                  <p className="mt-1 text-xs text-muted">{block.why_now}</p>
+                  <p className="mt-2 text-xs text-primary">
+                    {block.recommended_question_count} questoes · ~{block.estimated_minutes} min
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
         {hasPatterns && (
           <div className="space-y-4 border border-edge p-4">
             <p className="text-sm font-semibold">Onde os erros se concentram</p>

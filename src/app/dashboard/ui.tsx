@@ -9,7 +9,6 @@ import {
   ItemKind,
   Rating,
   StudyItem,
-  acceptAll,
   createItem,
   getChangeSet,
   listItems,
@@ -90,8 +89,6 @@ export default function ClientDashboard() {
 
   // Seed demo
   const [seedCount, setSeedCount] = useState<number>(10);
-
-  const canApply = useMemo(() => !!cs && cs.status === "PENDING", [cs]);
 
   const stats = useMemo(() => {
     const s = { NEW: 0, DUE: 0, SOON: 0, SCHEDULED: 0 };
@@ -175,21 +172,6 @@ export default function ClientDashboard() {
     } catch (e) {
       const ae = e as APIError;
       setErr(ae.message ?? "Erro ao atualizar");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function onAcceptAll() {
-    if (!cs) return;
-    setErr(null);
-    setLoading(true);
-    try {
-      const next = await acceptAll(token, cs.changeset_id);
-      setCs(next);
-    } catch (e) {
-      const ae = e as APIError;
-      setErr(ae.message ?? "Erro ao aplicar ChangeSet");
     } finally {
       setLoading(false);
     }
@@ -545,8 +527,12 @@ export default function ClientDashboard() {
             <button onClick={refreshChangeSet} disabled={loading || !cs} className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-60">
               Atualizar ChangeSet
             </button>
-            <button onClick={onAcceptAll} disabled={loading || !canApply} className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-60">
-              Accept all
+            <button
+              disabled
+              title="Aplicação automática será habilitada quando o planner gravar tarefas e horários reais."
+              className="rounded-lg border px-3 py-2 text-sm text-gray-500 disabled:opacity-60"
+            >
+              Aplicação indisponível
             </button>
           </div>
         </div>

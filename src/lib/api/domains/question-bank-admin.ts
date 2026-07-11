@@ -385,6 +385,30 @@ export type QuestionBankReviewQueueItem = {
   review_lane?: string;
   suggested_action?: string;
   ai_read_summary?: QuestionBankAiReadSummary;
+  question_quality_inspection?: {
+    inspection_status: string;
+    warning_flags?: Array<{ code: string; severity: string; message: string }>;
+    blocking_flags?: Array<{ code: string; severity: string; message: string }>;
+    trap_patterns?: string[];
+    editorial_risks?: string[];
+  };
+  question_dna_profile?: {
+    schema_version?: string;
+    charge_pattern?: string | null;
+    reasoning_type?: string | null;
+    answer_type?: string | null;
+    negative_structure?: string | null;
+    trap_signatures?: string[];
+    quality_flags?: string[];
+  };
+  repair_draft?: {
+    repair_draft_id?: string;
+    summary?: string;
+    suggested_fix_path?: string[];
+    checklist?: string[];
+  };
+  review_history?: Array<Record<string, unknown>>;
+  budget_summary?: Record<string, unknown>;
 };
 
 export type QuestionBankReviewResolutionAction = "approve" | "override" | "discard" | "requeue";
@@ -1010,6 +1034,30 @@ export type QuestionBankAdminQuestionDetail = {
   dedup_enrichment_log: QuestionBankAdminEnrichmentLogEntry[];
   edit_log: { by?: string; at?: string; fields?: string[] }[];
   ai_read_summary?: QuestionBankAiReadSummary;
+  question_quality_inspection?: {
+    inspection_status: string;
+    warning_flags?: Array<{ code: string; severity: string; message: string }>;
+    blocking_flags?: Array<{ code: string; severity: string; message: string }>;
+    trap_patterns?: string[];
+    editorial_risks?: string[];
+  };
+  question_dna_profile?: {
+    schema_version?: string;
+    charge_pattern?: string | null;
+    reasoning_type?: string | null;
+    answer_type?: string | null;
+    negative_structure?: string | null;
+    trap_signatures?: string[];
+    quality_flags?: string[];
+  };
+  repair_draft?: {
+    repair_draft_id?: string;
+    summary?: string;
+    suggested_fix_path?: string[];
+    checklist?: string[];
+  };
+  review_history?: Array<Record<string, unknown>>;
+  budget_summary?: Record<string, unknown>;
 };
 
 export type QuestionBankAdminKnowledgeNode = {

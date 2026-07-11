@@ -7,14 +7,6 @@ const SESSION_COOKIE_NAME = "krosmed_session";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
 
-function targetBase(): string {
-  return String(
-    process.env.QUESTION_BANK_ADMIN_BASE_URL ||
-      process.env.QUESTION_BANK_PUBLIC_BASE_URL ||
-      "",
-  ).replace(/\/+$/, "");
-}
-
 function apiTarget(): string {
   return String(process.env.NEXT_API_PROXY_TARGET || "http://127.0.0.1:8000").replace(/\/+$/, "");
 }
@@ -54,30 +46,21 @@ export async function POST(
   const userId = await currentUserId(request, token);
   if (!userId) return jsonError("not_authenticated", 401);
 
-  const baseUrl = targetBase();
-  const adminKey = String(process.env.QUESTION_BANK_ADMIN_API_KEY ?? "").trim();
-  if (!baseUrl || !adminKey) {
-    return jsonError(
-      "question_bank_ai_correction_unavailable",
-      503,
-      "Question Bank canonical AI enrichment is not configured.",
-    );
-  }
-
   const { questionId } = await context.params;
   const cleanQuestionId = String(questionId || "").trim();
   if (!cleanQuestionId) return jsonError("question_id_required", 422);
 
+  const incomingBody = await request.json().catch(() => ({}));
   const upstream = await fetch(
-    `${baseUrl}/v1/admin/questions/${encodeURIComponent(cleanQuestionId)}/analyze`,
+    `${apiTarget()}/question-bank/questions/${encodeURIComponent(cleanQuestionId)}/ai-correction`,
     {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        "X-Question-Bank-Admin-Key": adminKey,
       },
       body: JSON.stringify({
-        source: "student_requested",
+        ...(incomingBody && typeof incomingBody === "object" ? incomingBody : {}),
         requested_by_user_id: userId,
       }),
       cache: "no-store",

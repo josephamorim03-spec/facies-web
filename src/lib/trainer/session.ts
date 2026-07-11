@@ -15,6 +15,9 @@ type SessionStartFields = {
   only_unanswered?: boolean | null;
   limit?: number | null;
   review_task_id?: string | null;
+  // Fase 4: prescrição no nível da microcompetência.
+  knowledge_node_ids?: string[] | null;
+  cognitive_mode?: string | null;
 };
 
 /**
@@ -42,6 +45,9 @@ export function buildSessionCreateFromTrainerPayload(
   if (sp.only_unanswered != null) payload.only_unanswered = sp.only_unanswered;
   if (typeof sp.limit === "number") payload.limit = sp.limit;
   if (sp.review_task_id) payload.review_task_id = sp.review_task_id;
+  if (sp.knowledge_node_ids && sp.knowledge_node_ids.length > 0) {
+    payload.knowledge_node_ids = sp.knowledge_node_ids;
+  }
   if (opts?.performedAt) payload.performed_at = opts.performedAt;
   return payload;
 }

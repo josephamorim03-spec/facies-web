@@ -29,14 +29,21 @@ export type TrainerStartPayload = {
   only_unanswered?: boolean | null;
   limit?: number | null;
   review_task_id?: string | null;
+  knowledge_node_ids?: string[] | null;
+  cognitive_mode?: string | null;
 };
 
 export type TrainerAction = {
   kind: TrainerActionKind;
+  action_id?: string | null;
   title: string;
   rationale: string;
   priority_score: number;
   estimated_minutes: number;
+  source_module?: string | null;
+  required_capabilities?: string[];
+  blocked_reason?: string | null;
+  handoff?: Record<string, unknown> | null;
   why_factors: TrainerWhyFactor[];
   outcome_targets: TrainerOutcomeTarget[];
   signals: TrainerSignal[];

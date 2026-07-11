@@ -37,7 +37,7 @@ export async function browseQuestionBankTopics(
 
 export async function previewQuestionBankAvailability(
   token: string,
-  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; institutions?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus; mode?: QuestionBankMode } = {},
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; institutions?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_no_year?: boolean; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus; mode?: QuestionBankMode } = {},
   init?: Pick<RequestInit, "signal">,
 ): Promise<QuestionBankAvailability> {
   const q = new URLSearchParams();
@@ -50,6 +50,7 @@ export async function previewQuestionBankAvailability(
   if (params.institution?.trim()) q.set("institution", params.institution.trim());
   if (params.year_from) q.set("year_from", String(params.year_from));
   if (params.year_to) q.set("year_to", String(params.year_to));
+  if (params.include_no_year) q.set("include_no_year", "true");
   if (params.answer_status) q.set("answer_status", params.answer_status);
   if (params.only_unanswered !== undefined) q.set("only_unanswered", params.only_unanswered ? "true" : "false");
   if (params.correction_status && params.correction_status !== "all") q.set("correction_status", params.correction_status);

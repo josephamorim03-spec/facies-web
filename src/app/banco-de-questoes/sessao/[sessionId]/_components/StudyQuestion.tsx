@@ -5,6 +5,9 @@ import { useEffect } from "react";
 import { GuidanceNote } from "@/components/GuidanceNote";
 import { SessionExitButton } from "./SessionExitButton";
 import type {
+  QuestionBankAiRequestPreview,
+  QuestionBankAiRequestResult,
+  QuestionBankAiRequestStatusResult,
   QuestionBankGuidedReview,
   QuestionBankGuidedReviewValue,
   QuestionBankOption,
@@ -149,6 +152,8 @@ type StudyQuestionProps = {
   onQuickNote?: () => void;
   onShowHistory?: () => void;
   onRequestAiCorrection?: () => void;
+  aiRequestPreview?: QuestionBankAiRequestPreview | null;
+  aiRequestStatus?: QuestionBankAiRequestResult | QuestionBankAiRequestStatusResult | null;
   aiCorrectionRequesting?: boolean;
   aiCorrectionRequested?: boolean;
 };
@@ -299,6 +304,40 @@ function hasCanonicalCorrection(item: QuestionBankSessionItem): boolean {
   return Array.isArray(checkpoints) && checkpoints.length > 0;
 }
 
+function aiStatusLabel(status: string | undefined): string {
+  switch (status) {
+    case "cached":
+      return "Analise reaproveitavel";
+    case "completed":
+      return "Analise concluida";
+    case "blocked_by_quality":
+      return "Analise bloqueada";
+    case "running":
+      return "Analise em andamento";
+    case "queued":
+      return "Analise enfileirada";
+    default:
+      return "IA editorial";
+  }
+}
+
+function aiStatusMessage(status: string | undefined): string {
+  switch (status) {
+    case "cached":
+      return "Ja existe leitura reaproveitavel para esta questao. Reabrir nao consome nova cota.";
+    case "completed":
+      return "A IA concluiu a leitura editorial e pedagógica desta questao.";
+    case "blocked_by_quality":
+      return "A questao tem bloqueios editoriais e precisa de correcao antes da analise profunda.";
+    case "running":
+      return "A IA esta analisando a integridade e o DNA pedagogico da questao.";
+    case "queued":
+      return "A solicitacao foi aceita e deve rodar assim que houver capacidade.";
+    default:
+      return "A IA primeiro valida integridade, depois extrai DNA, microcompetencias e riscos editoriais.";
+  }
+}
+
 export default function StudyQuestion({
   item,
   position,
@@ -342,6 +381,8 @@ export default function StudyQuestion({
   onQuickNote,
   onShowHistory,
   onRequestAiCorrection,
+  aiRequestPreview = null,
+  aiRequestStatus = null,
   aiCorrectionRequesting = false,
   aiCorrectionRequested = false,
 }: StudyQuestionProps) {
@@ -352,7 +393,14 @@ export default function StudyQuestion({
   const phase = phaseState(item, revealed);
   const primaryNode = item.knowledge_nodes.find((n) => n.is_primary) ?? item.knowledge_nodes[0];
   const microNodes = item.knowledge_nodes.filter(isMicroNode);
+  const primaryMicroLabel = item.primary_microcompetency_label?.trim() || microNodes[0]?.node_name || "";
+  const editorialWarning = item.editorial_profile?.warning_message?.trim() || item.editorial_quality?.message || "";
   const correctionAvailable = hasCanonicalCorrection(item);
+  const aiInspection = aiRequestPreview?.question_quality_inspection ?? item.question_quality_inspection ?? null;
+  const aiBlockingFlags = aiInspection?.blocking_flags ?? [];
+  const aiWarningFlags = aiInspection?.warning_flags ?? [];
+  const aiQuota = aiRequestPreview?.quota ?? aiRequestStatus?.quota_after ?? null;
+  const aiStatus = aiRequestStatus?.status ?? item.ai_request_status ?? "idle";
   const selectedDiagnosis = item.selected_option ? item.distractor_diagnosis?.[item.selected_option]?.trim() : "";
   const cognitiveCopy = cognitiveAutopsyCopy(item.cognitive_signal?.primary_tag);
   const hasGuidedResponses = Object.keys(guidedResponses).length > 0;
@@ -472,7 +520,7 @@ export default function StudyQuestion({
                     const stats = item.attempt_stats;
                     const editorial = item.editorial_quality;
                     const hasHistory = Boolean(onShowHistory && stats && stats.attempt_count > 0);
-                    if (!diff && reasons.length === 0 && !hasHistory && !editorial && !adaptive?.title) return null;
+                    if (!diff && reasons.length === 0 && !hasHistory && !editorial && !adaptive?.title && !primaryMicroLabel) return null;
                     return (
                       <div className="flex flex-wrap items-center gap-1.5">
                         {diff && (
@@ -499,6 +547,11 @@ export default function StudyQuestion({
                             {r}
                           </span>
                         ))}
+                        {primaryMicroLabel && (
+                          <span className="rounded border border-primary/30 bg-paper px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                            Micro: {primaryMicroLabel}
+                          </span>
+                        )}
                         {editorial && (
                           <span className="rounded border border-edge px-1.5 py-0.5 text-[10px] text-muted" title={editorial.message ?? undefined}>
                             {editorial.badge}
@@ -711,19 +764,92 @@ export default function StudyQuestion({
                     </div>
                   </div>
                 )}
+                {editorialWarning && (
+                  <div className="mt-4 rounded-lg border border-warning/40 bg-[var(--amber-tint)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-warning">Aviso editorial</p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted">{editorialWarning}</p>
+                  </div>
+                )}
                 {!correctionAvailable && onRequestAiCorrection && (
                   <div className="mt-4 rounded-lg border border-warning/50 bg-[var(--amber-tint)] p-3">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="max-w-[56ch] text-sm leading-relaxed text-muted">
-                        Esta questao ainda nao tem correcao canonica da IA. Voce pode solicitar o enriquecimento agora; quando o worker finalizar, ela entra como questao com correcao.
-                      </p>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-warning">
+                          {aiStatusLabel(aiStatus)}
+                        </p>
+                        <p className="mt-1 max-w-[60ch] text-sm leading-relaxed text-muted">
+                          {aiStatusMessage(aiStatus)}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <span className="rounded-full border border-edge bg-paper px-2.5 py-1 text-xs text-muted">
+                            {aiRequestPreview?.cache_summary?.cache_status === "shared"
+                              ? "Usa cache compartilhado"
+                              : aiRequestPreview?.cache_summary?.cache_status === "personal"
+                                ? "Usa seu cache"
+                                : "Sem cache reaproveitavel"}
+                          </span>
+                          {aiQuota && (
+                            <>
+                              <span className="rounded-full border border-edge bg-paper px-2.5 py-1 text-xs text-muted">
+                                Custo {aiQuota.estimated_cost_band}
+                              </span>
+                              <span className="rounded-full border border-edge bg-paper px-2.5 py-1 text-xs text-muted">
+                                Cota restante {aiQuota.quota_remaining}/{aiQuota.quota_total}
+                              </span>
+                            </>
+                          )}
+                          {item.question_dna_profile?.negative_structure === "negative" && (
+                            <span className="rounded-full border border-warning/40 bg-paper px-2.5 py-1 text-xs font-semibold text-warning">
+                              Questao negativa
+                            </span>
+                          )}
+                        </div>
+                        {aiInspection && (aiBlockingFlags.length > 0 || aiWarningFlags.length > 0) && (
+                          <div className="mt-3 space-y-2">
+                            {aiBlockingFlags.length > 0 && (
+                              <div className="rounded-lg border border-danger/30 bg-surface p-2">
+                                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-danger">Bloqueios detectados</p>
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                  {aiBlockingFlags.slice(0, 3).map((flag) => (
+                                    <span key={flag.code} className="rounded-full border border-danger/30 px-2 py-1 text-[11px] font-semibold text-danger">
+                                      {flag.message}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {aiBlockingFlags.length === 0 && aiWarningFlags.length > 0 && (
+                              <div className="rounded-lg border border-edge bg-paper p-2">
+                                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">A IA vai verificar</p>
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                  {aiWarningFlags.slice(0, 3).map((flag) => (
+                                    <span key={flag.code} className="rounded-full border border-edge px-2 py-1 text-[11px] text-muted">
+                                      {flag.message}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                       <button
                         type="button"
                         onClick={onRequestAiCorrection}
-                        disabled={aiCorrectionRequesting || aiCorrectionRequested}
+                        disabled={aiCorrectionRequesting || aiStatus === "blocked_by_quality" || aiStatus === "completed" || aiStatus === "cached"}
                         className="rounded-lg border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {aiCorrectionRequesting ? "Solicitando..." : aiCorrectionRequested ? "IA solicitada" : "Rodar IA canonica"}
+                        {aiCorrectionRequesting
+                          ? "Analisando..."
+                          : aiStatus === "blocked_by_quality"
+                            ? "Corrigir antes de rodar"
+                            : aiStatus === "cached"
+                              ? "Analise em cache"
+                              : aiStatus === "completed"
+                                ? "Analise concluida"
+                                : aiCorrectionRequested
+                                  ? "Solicitacao enviada"
+                                  : "Solicitar IA editorial"}
                       </button>
                     </div>
                   </div>

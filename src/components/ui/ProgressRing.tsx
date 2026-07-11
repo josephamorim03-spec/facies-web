@@ -35,7 +35,7 @@ export function ProgressRing({
       role="img"
       aria-label={label ? `${safePct}% — ${label}` : `${safePct}%`}
     >
-      <svg viewBox={`0 0 ${size} ${size}`} className="-rotate-90" aria-hidden="true">
+      <svg viewBox={`0 0 ${size} ${size}`} className="h-full w-full -rotate-90" aria-hidden="true">
         <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={trackColor} strokeWidth={strokeWidth} />
         <circle
           cx={size / 2}
@@ -49,9 +49,9 @@ export function ProgressRing({
           strokeDashoffset={offset}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="font-serif text-3xl leading-none text-ink">{safePct}%</span>
-        {label && <span className="mt-1 text-[11px] leading-tight text-muted">{label}</span>}
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-2 text-center">
+        <span className="font-serif text-2xl leading-none text-ink sm:text-3xl">{safePct}%</span>
+        {label && <span className="mt-1 text-[11px] leading-tight text-muted [overflow-wrap:anywhere]">{label}</span>}
       </div>
     </div>
   );

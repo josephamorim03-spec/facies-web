@@ -185,6 +185,7 @@ export {
   listQuestionBankBoards,
   listQuestionBankSources,
   listQuestionBankYears,
+  listQuestionBankFacets,
   previewQuestionBankAvailability,
   createQuestionBankSession,
   listQuestionBankSessions,
@@ -204,6 +205,8 @@ export {
   finalizeQuestionBankSession,
   reportQuestionProblem,
   requestQuestionBankAICorrection,
+  getQuestionBankAiRequestPreview,
+  getQuestionBankAiRequestStatus,
   getQuestionBankReviewQueue,
   getQuestionBankNextAction,
   getQuestionBankPerformance,
@@ -223,10 +226,20 @@ export type {
   QuestionBankBoard,
   QuestionBankSourceOption,
   QuestionBankYearStat,
+  QuestionBankFacets,
   QuestionBankAvailability,
   QuestionBankQuestion,
   QuestionBankSessionItem,
   QuestionBankSession,
+  QuestionBankQualityInspection,
+  QuestionBankQualityInspectionFlag,
+  QuestionBankDnaProfile,
+  QuestionBankAiRequestCapability,
+  QuestionBankAiQuota,
+  QuestionBankAiCacheSummary,
+  QuestionBankAiRequestPreview,
+  QuestionBankAiRequestResult,
+  QuestionBankAiRequestStatusResult,
   QuestionBankLongitudinalNode,
   QuestionBankLongitudinalDiagnosis,
   QuestionBankCorrectionItem,
@@ -323,6 +336,18 @@ export type {
   TrainerDailyLoad,
   TrainerWhyFactor,
 } from "./api/domains/trainer";
+
+// Integration domain
+export {
+  getCapabilities,
+  startTrainerAction,
+} from "./api/domains/integration";
+export type {
+  CapabilitiesResponse,
+  CapabilityHealth,
+  CapabilityStatus,
+  LearningActionStartResult,
+} from "./api/domains/integration";
 
 // Calendar domain
 export {

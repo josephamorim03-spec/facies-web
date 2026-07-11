@@ -1,6 +1,7 @@
 "use client";
 
 import { AREA_BG_CLASS, AREA_TEXT_CLASS } from "@/lib/areaColors";
+import { Meter } from "@/components/ui/Meter";
 import type { GraficosState } from "../_hooks/useGraficosData";
 
 type Props = {
@@ -40,20 +41,15 @@ export function CardsAnalysis({ state }: Props) {
           <p className="text-[10px] text-muted">Barra: volume · Rótulo: acerto</p>
           <div className="space-y-2">
             {cardAnalysisRows.map((item) => (
-              <div key={item.area} className="flex items-center gap-2 text-xs">
-                <span className={`w-8 shrink-0 font-semibold ${AREA_TEXT_CLASS[item.area] ?? "text-ink"}`}>
-                  {item.area}
-                </span>
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-edge">
-                  <div
-                    className={`h-full rounded-full ${AREA_BG_CLASS[item.area] ?? "bg-edge"}`}
-                    style={{ width: `${item.volumePct}%` }}
-                  />
-                </div>
-                <span className="w-28 shrink-0 text-right text-muted tabular-nums">
-                  {item.reviewsTotal} rev.{item.accuracyPct !== null ? ` · ${item.accuracyPct}%` : ""}
-                </span>
-              </div>
+              <Meter
+                key={item.area}
+                label={item.area}
+                labelClassName={`w-8 font-semibold ${AREA_TEXT_CLASS[item.area] ?? "text-ink"}`}
+                pct={item.volumePct}
+                fillClassName={AREA_BG_CLASS[item.area] ?? "bg-edge"}
+                value={`${item.reviewsTotal} rev.${item.accuracyPct !== null ? ` · ${item.accuracyPct}%` : ""}`}
+                valueClassName="w-28 text-right text-muted tabular-nums"
+              />
             ))}
           </div>
         </>

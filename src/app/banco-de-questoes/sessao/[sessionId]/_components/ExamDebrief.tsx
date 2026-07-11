@@ -153,7 +153,10 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-edge, #e5e7eb)" />
                   <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                   <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} />
-                  <Tooltip />
+                  <Tooltip
+                    allowEscapeViewBox={{ x: false, y: false }}
+                    wrapperStyle={{ zIndex: 20, fontSize: 12 }}
+                  />
                   <Line type="monotone" dataKey="acuracia" stroke="var(--color-primary, #2563eb)" strokeWidth={2} connectNulls />
                 </LineChart>
               </ResponsiveContainer>
@@ -179,7 +182,10 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-edge, #e5e7eb)" />
                     <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                     <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} />
-                    <Tooltip />
+                    <Tooltip
+                    allowEscapeViewBox={{ x: false, y: false }}
+                    wrapperStyle={{ zIndex: 20, fontSize: 12 }}
+                  />
                     <Bar dataKey="acerto" fill="var(--color-primary, #2563eb)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>

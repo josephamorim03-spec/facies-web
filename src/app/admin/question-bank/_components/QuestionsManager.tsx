@@ -1050,6 +1050,36 @@ export default function QuestionsManager() {
               </div>
             )}
 
+            {detail.question_quality_inspection && (
+              <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-100">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Inspeção editorial</span>
+                  <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-semibold dark:bg-black/20">
+                    {detail.question_quality_inspection.inspection_status}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {(detail.question_quality_inspection.blocking_flags ?? []).map((flag) => (
+                    <span key={flag.code} className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-950/40 dark:text-red-200">
+                      {flag.message}
+                    </span>
+                  ))}
+                  {(detail.question_quality_inspection.warning_flags ?? []).slice(0, 3).map((flag) => (
+                    <span key={flag.code} className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
+                      {flag.message}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {detail.repair_draft?.summary && (
+              <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-200">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Repair draft</p>
+                <p className="mt-1">{detail.repair_draft.summary}</p>
+              </div>
+            )}
+
             {detail.similar_questions.length > 0 && (
               <div className="mt-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Questões similares (DNA)</p>

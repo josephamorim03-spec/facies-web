@@ -14,6 +14,7 @@ import type {
 import { TopicTreeList } from "./TopicTreeList";
 import { buildTopicTree, flattenTopicTree, topicPathLabel } from "./topicTree";
 import BancaPicker from "./BancaPicker";
+import YearPicker from "./YearPicker";
 
 const AREA_OPTIONS = [
   { value: "", label: "Todas" },
@@ -101,6 +102,8 @@ export type FiltersBarProps = {
   onYearsRetry?: () => void;
   selectedYears: number[];
   onSelectedYearsChange: (years: number[]) => void;
+  includeNoYear: boolean;
+  onIncludeNoYearChange: (v: boolean) => void;
   answerStatus: QuestionBankAnswerStatus;
   onAnswerStatusChange: (v: QuestionBankAnswerStatus) => void;
   correctionStatus: QuestionBankCorrectionStatus;
@@ -147,7 +150,8 @@ export default function FiltersBar(props: FiltersBarProps) {
     topicsLoading = false, topicsError = false, onTopicsRetry,
     boardCodes, institutions, sources, sourcesLoading, sourcesError, onSourceSelectionChange, onSourcesRetry,
     yearStats, yearsLoading, yearsError, onYearsRetry,
-    selectedYears, onSelectedYearsChange, answerStatus, onAnswerStatusChange,
+    selectedYears, onSelectedYearsChange, includeNoYear, onIncludeNoYearChange,
+    answerStatus, onAnswerStatusChange,
     correctionStatus, onCorrectionStatusChange,
     resolutionMode, onResolutionModeChange, studyKind, onStudyKindChange,
     fullExamName, onFullExamNameChange, fullExamYear, onFullExamYearChange,
@@ -190,7 +194,6 @@ export default function FiltersBar(props: FiltersBarProps) {
   const sourceDetail = selectedSourceCount > 0
     ? `${selectedSourceCount} fonte${selectedSourceCount > 1 ? "s" : ""}`
     : "todas as fontes";
-  const latestFiveYears = yearStats.slice(0, 5).map((item) => item.year);
 
   return (
     <div className="divide-y divide-edge">
@@ -319,73 +322,17 @@ export default function FiltersBar(props: FiltersBarProps) {
           onRetry={onSourcesRetry}
         />
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <div className="space-y-3 rounded-xl border border-edge bg-surface p-3">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Ano</p>
-              <div className="flex items-center gap-3">
-                {yearStats.length >= 5 && (
-                  <button
-                    type="button"
-                    onClick={() => onSelectedYearsChange(latestFiveYears)}
-                    className="text-xs text-muted hover:text-ink"
-                  >
-                    Últimos 5 anos
-                  </button>
-                )}
-                {selectedYears.length > 0 && (
-                  <button type="button" onClick={() => onSelectedYearsChange([])} className="text-xs text-muted hover:text-ink">
-                    Limpar
-                  </button>
-                )}
-              </div>
-            </div>
-            {yearsLoading ? (
-              <div className="flex flex-wrap gap-2" aria-hidden="true">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <span key={i} className="h-8 w-16 animate-pulse rounded-full bg-surfaceMuted" />
-                ))}
-              </div>
-            ) : yearsError ? (
-              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-danger/40 bg-paper px-3 py-2 text-xs text-danger">
-                <span>Não foi possível carregar os anos.</span>
-                {onYearsRetry && (
-                  <button
-                    type="button"
-                    onClick={onYearsRetry}
-                    className="font-semibold underline underline-offset-2 hover:opacity-80"
-                  >
-                    Tentar novamente
-                  </button>
-                )}
-              </div>
-            ) : yearStats.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-edge px-3 py-4 text-center text-xs text-muted">
-                Nenhum ano disponível.
-              </p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {yearStats.map(({ year, question_count }) => {
-                  const selected = selectedYears.includes(year);
-                  return (
-                    <button
-                      key={year}
-                      type="button"
-                      title={`${question_count} questões`}
-                      onClick={() =>
-                        onSelectedYearsChange(
-                          selected ? selectedYears.filter((y) => y !== year) : [...selectedYears, year],
-                        )
-                      }
-                      className={cx("km-chip", selected && "km-chip-active")}
-                    >
-                      {year}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <YearPicker
+            yearStats={yearStats}
+            selectedYears={selectedYears}
+            onSelectedYearsChange={onSelectedYearsChange}
+            includeNoYear={includeNoYear}
+            onIncludeNoYearChange={onIncludeNoYearChange}
+            loading={yearsLoading}
+            error={yearsError}
+            onRetry={onYearsRetry}
+          />
 
           <div className="space-y-3 rounded-xl border border-edge bg-surface p-3">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Status das questões</p>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { getAuthToken } from "@/lib/auth";
 import { useToast } from "@/lib/useToast";
-import { recordTrainerRecommendationEvent, type TrainerAction } from "@/lib/api";
+import { recordTrainerRecommendationEvent, startTrainerAction, type TrainerAction } from "@/lib/api";
 import { startTrainerQuestionSession, withTrainerHandoff } from "@/lib/trainer/session";
 
 // Kinds whose "start" means creating a question-bank session right here.
@@ -48,8 +48,29 @@ export function TrainerActionCTA({
     "inline-flex items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 disabled:opacity-60";
 
   async function handleClick() {
-    if (busy) return;
+    if (busy || action.blocked_reason) return;
     const token = getAuthToken();
+
+    if (action.action_id) {
+      setBusy(true);
+      try {
+        const result = await startTrainerAction(token, action.action_id, {
+          recommendation_id: recommendationId,
+          action,
+          source_page: sourcePage,
+        });
+        if (result.session_id) {
+          router.push(`/banco-de-questoes/sessao/${result.session_id}`);
+          return;
+        }
+        router.push(result.href ?? action.href ?? FALLBACK_HREF[action.kind] ?? "/hoje");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Não foi possível iniciar a ação.";
+        showToast(message, "error");
+        setBusy(false);
+      }
+      return;
+    }
 
     if (SESSION_KINDS.has(action.kind)) {
       setBusy(true);
@@ -83,7 +104,13 @@ export function TrainerActionCTA({
   }
 
   return (
-    <button type="button" onClick={handleClick} disabled={busy} className={`${baseClass} ${className}`}>
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={busy || Boolean(action.blocked_reason)}
+      title={action.blocked_reason ?? undefined}
+      className={`${baseClass} ${className}`}
+    >
       {busy ? "Abrindo…" : label ?? "Começar"}
       {!busy && (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4" aria-hidden>

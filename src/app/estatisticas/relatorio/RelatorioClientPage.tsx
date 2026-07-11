@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useNavbar } from "@/lib/NavbarContext";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
+import { Meter } from "@/components/ui/Meter";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import type {
   DirectedStudyListItem,
@@ -587,20 +588,15 @@ export function RelatorioBody({
             </div>
             <div className="space-y-2 pt-1">
               {cardRows.map((item) => (
-                <div key={item.area} className="flex items-center gap-2 text-xs">
-                  <span className={`w-8 shrink-0 font-semibold ${AREA_TEXT_CLASS[item.area] ?? "text-ink"}`}>
-                    {item.area}
-                  </span>
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-edge">
-                    <div
-                      className={`h-full rounded-full ${AREA_BG_CLASS[item.area] ?? "bg-edge"}`}
-                      style={{ width: `${item.volumePct}%` }}
-                    />
-                  </div>
-                  <span className="w-28 shrink-0 text-right text-muted tabular-nums">
-                    {item.reviewsTotal} rev. · {item.accuracyPct}%
-                  </span>
-                </div>
+                <Meter
+                  key={item.area}
+                  label={item.area}
+                  labelClassName={`w-8 font-semibold ${AREA_TEXT_CLASS[item.area] ?? "text-ink"}`}
+                  pct={item.volumePct}
+                  fillClassName={AREA_BG_CLASS[item.area] ?? "bg-edge"}
+                  value={`${item.reviewsTotal} rev. · ${item.accuracyPct}%`}
+                  valueClassName="w-28 text-right text-muted tabular-nums"
+                />
               ))}
             </div>
           </SectionCard>

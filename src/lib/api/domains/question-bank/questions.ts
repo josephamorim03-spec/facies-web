@@ -1,6 +1,9 @@
 import { api, authHeader } from "../../shared/http";
 import { appendArrayParams } from "./params";
 import type {
+  QuestionBankAiRequestPreview,
+  QuestionBankAiRequestResult,
+  QuestionBankAiRequestStatusResult,
   QuestionBankAnswerStatus,
   QuestionBankCorrectionStatus,
   QuestionBankQuestion,
@@ -9,7 +12,7 @@ import type {
 
 export async function browseQuestionBankQuestions(
   token: string,
-  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; institutions?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; limit?: number; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus } = {},
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; institutions?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_no_year?: boolean; limit?: number; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus } = {},
 ): Promise<QuestionBankQuestion[]> {
   const q = new URLSearchParams();
   appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
@@ -21,6 +24,7 @@ export async function browseQuestionBankQuestions(
   if (params.institution?.trim()) q.set("institution", params.institution.trim());
   if (params.year_from) q.set("year_from", String(params.year_from));
   if (params.year_to) q.set("year_to", String(params.year_to));
+  if (params.include_no_year) q.set("include_no_year", "true");
   if (params.limit) q.set("limit", String(params.limit));
   if (params.answer_status) q.set("answer_status", params.answer_status);
   if (params.only_unanswered !== undefined) q.set("only_unanswered", params.only_unanswered ? "true" : "false");
@@ -31,10 +35,41 @@ export async function browseQuestionBankQuestions(
 export async function requestQuestionBankAICorrection(
   token: string,
   questionId: string,
-): Promise<{ question_id: string; candidate_id?: string; job_id?: string; status: string; source?: string }> {
-  return api<{ question_id: string; candidate_id?: string; job_id?: string; status: string; source?: string }>(
+  options: { forceReanalyze?: boolean; sourcePage?: string } = {},
+): Promise<QuestionBankAiRequestResult> {
+  return api<QuestionBankAiRequestResult>(
     `/api/question-bank/questions/${encodeURIComponent(questionId)}/ai-correction`,
-    { method: "POST", headers: authHeader(token), body: JSON.stringify({ source: "student_requested" }), timeoutMs: 45000 },
+    {
+      method: "POST",
+      headers: authHeader(token),
+      body: JSON.stringify({
+        source: "student_requested",
+        source_page: options.sourcePage ?? "question_session",
+        force_reanalyze: options.forceReanalyze === true,
+      }),
+      timeoutMs: 45000,
+    },
+  );
+}
+
+export async function getQuestionBankAiRequestPreview(
+  token: string,
+  questionId: string,
+): Promise<QuestionBankAiRequestPreview> {
+  return api<QuestionBankAiRequestPreview>(
+    `/api/question-bank/questions/${encodeURIComponent(questionId)}/ai-request-preview`,
+    { headers: authHeader(token), cache: "no-store", clientCache: false },
+  );
+}
+
+export async function getQuestionBankAiRequestStatus(
+  token: string,
+  questionId: string,
+  requestId: string,
+): Promise<QuestionBankAiRequestStatusResult> {
+  return api<QuestionBankAiRequestStatusResult>(
+    `/api/question-bank/questions/${encodeURIComponent(questionId)}/ai-correction/${encodeURIComponent(requestId)}`,
+    { headers: authHeader(token), cache: "no-store", clientCache: false },
   );
 }
 

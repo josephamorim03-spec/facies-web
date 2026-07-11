@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   finalizeQuestionBankSession,
+  getQuestionBankAiRequestPreview,
+  getQuestionBankAiRequestStatus,
   getQuestionBankGuidedReview,
   getQuestionBankSession,
   recordQuestionBankAttempt,
@@ -15,6 +17,9 @@ import {
   submitQuestionBankGuidedReview,
   type OperationalQuestionOutcome,
   type QuestionBankFinalizeResult,
+  type QuestionBankAiRequestPreview,
+  type QuestionBankAiRequestResult,
+  type QuestionBankAiRequestStatusResult,
   type QuestionBankGuidedReview,
   type QuestionBankGuidedReviewValue,
   type QuestionBankOption,
@@ -153,6 +158,9 @@ export default function SessionPage() {
   const [reportDone, setReportDone] = useState<Record<string, boolean>>({});
   const [aiCorrectionRequested, setAiCorrectionRequested] = useState<Record<string, boolean>>({});
   const [aiCorrectionRequesting, setAiCorrectionRequesting] = useState<Record<string, boolean>>({});
+  const [aiRequestPreviewByQuestion, setAiRequestPreviewByQuestion] = useState<Record<string, QuestionBankAiRequestPreview | null>>({});
+  const [aiRequestPreviewLoadingByQuestion, setAiRequestPreviewLoadingByQuestion] = useState<Record<string, boolean>>({});
+  const [aiRequestStatusByQuestion, setAiRequestStatusByQuestion] = useState<Record<string, QuestionBankAiRequestResult | QuestionBankAiRequestStatusResult | null>>({});
   const [quickNoteTarget, setQuickNoteTarget] = useState<QuickNoteTarget | null>(null);
   const [historyQuestionId, setHistoryQuestionId] = useState<string | null>(null);
 
@@ -179,6 +187,29 @@ export default function SessionPage() {
   function newEventId(type: QuestionBankStudentEventType, position: number) {
     return `sqe_${sessionId}_${position}_${type}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   }
+
+  const currentQuestionId =
+    session?.items.find((i) => i.position === currentPosition)?.question_id ?? session?.items[0]?.question_id ?? null;
+
+  async function loadAiRequestPreview(questionId: string) {
+    if (!tokenResolved || !questionId) return;
+    setAiRequestPreviewLoadingByQuestion((prev) => ({ ...prev, [questionId]: true }));
+    try {
+      const preview = await getQuestionBankAiRequestPreview(token, questionId);
+      setAiRequestPreviewByQuestion((prev) => ({ ...prev, [questionId]: preview }));
+    } catch {
+      // Degrade silently: the student still keeps the normal correction/report flow.
+    } finally {
+      setAiRequestPreviewLoadingByQuestion((prev) => ({ ...prev, [questionId]: false }));
+    }
+  }
+
+  useEffect(() => {
+    if (!currentQuestionId || aiRequestPreviewByQuestion[currentQuestionId] || aiRequestPreviewLoadingByQuestion[currentQuestionId]) {
+      return;
+    }
+    void loadAiRequestPreview(currentQuestionId);
+  }, [currentQuestionId, aiRequestPreviewByQuestion, aiRequestPreviewLoadingByQuestion, token, tokenResolved]);
 
   function enqueueStudentEvent(
     position: number,
@@ -565,8 +596,18 @@ export default function SessionPage() {
     setAiCorrectionRequesting((prev) => ({ ...prev, [questionId]: true }));
     setError(null);
     try {
-      await requestQuestionBankAICorrection(token, questionId);
+      const result = await requestQuestionBankAICorrection(token, questionId, {
+        sourcePage: "question_session",
+      });
+      setAiRequestStatusByQuestion((prev) => ({ ...prev, [questionId]: result }));
       setAiCorrectionRequested((prev) => ({ ...prev, [questionId]: true }));
+      if (result.request_id) {
+        const status = await getQuestionBankAiRequestStatus(token, questionId, result.request_id).catch(() => null);
+        if (status) {
+          setAiRequestStatusByQuestion((prev) => ({ ...prev, [questionId]: status }));
+        }
+      }
+      await loadAiRequestPreview(questionId);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Nao foi possivel solicitar a IA canonica.";
       setError(message);
@@ -800,6 +841,8 @@ export default function SessionPage() {
               ? () => void requestAiCorrection(currentItem.question_id)
               : undefined
           }
+          aiRequestPreview={currentItem.question_id ? aiRequestPreviewByQuestion[currentItem.question_id] ?? null : null}
+          aiRequestStatus={currentItem.question_id ? aiRequestStatusByQuestion[currentItem.question_id] ?? null : null}
           aiCorrectionRequesting={Boolean(aiCorrectionRequesting[currentItem.question_id])}
           aiCorrectionRequested={Boolean(aiCorrectionRequested[currentItem.question_id])}
         />

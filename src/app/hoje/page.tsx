@@ -69,12 +69,21 @@ const TRAINER_FACTOR_LABEL: Record<string, string> = {
   transfer_gap: "transferência",
   uncertainty: "incerteza",
   exam_weight: "peso na prova",
+  under_coverage: "pouco praticado",
 };
 const TRAINER_OUTCOME_LABEL: Record<string, string> = {
   retention: "retenção",
   transfer: "transferência",
   speed: "velocidade",
   calibration: "calibração",
+};
+// Croskerry remediation mode (por microcompetência) → rótulo curto para o aluno.
+const TRAINER_MODE_LABEL: Record<string, string> = {
+  contrastive: "contraste de armadilhas",
+  calibration: "calibrar confiança",
+  slow_down: "desacelerar e checar",
+  spaced_review: "revisão no ponto",
+  focused_practice: "prática focada",
 };
 
 function todayISO(): string {
@@ -682,7 +691,9 @@ export default function TodayPage() {
                     {heroAction.reason}
                   </GuidanceNote>
                   {primaryAction &&
-                    (primaryAction.why_factors.length > 0 || primaryAction.outcome_targets.length > 0) && (
+                    (primaryAction.why_factors.length > 0 ||
+                      primaryAction.outcome_targets.length > 0 ||
+                      primaryAction.start_payload?.cognitive_mode) && (
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
                         {primaryAction.why_factors.length > 0 && (
                           <span>
@@ -690,6 +701,12 @@ export default function TodayPage() {
                               .slice(0, 3)
                               .map((wf) => TRAINER_FACTOR_LABEL[wf.factor] ?? wf.factor)
                               .join(" · ")}
+                          </span>
+                        )}
+                        {primaryAction.start_payload?.cognitive_mode && (
+                          <span className="inline-flex items-center rounded-full border border-edge px-2 py-0.5 font-medium text-ink">
+                            {TRAINER_MODE_LABEL[primaryAction.start_payload.cognitive_mode] ??
+                              primaryAction.start_payload.cognitive_mode}
                           </span>
                         )}
                         {primaryAction.outcome_targets.length > 0 && (

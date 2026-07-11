@@ -26,6 +26,21 @@ function normalizeKey(value: string): string {
   return value.trim().toUpperCase();
 }
 
+/**
+ * Replica kbank_source_token_norm do Postgres: upper, remove acentos,
+ * colapsa não-alfanuméricos para "-", trim de hífens nas bordas.
+ * Usado para deduplicar instituições variantes (ex: "USP-SP" vs "USP SP").
+ */
+function sourceTokenNorm(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function toggleKey(values: string[], key: string): string[] {
   const normalized = values.map(normalizeKey).filter(Boolean);
   return normalized.includes(key) ? normalized.filter((value) => value !== key) : [...normalized, key];
@@ -37,14 +52,6 @@ function optionId(option: QuestionBankSourceOption): string {
 
 function sourceKindLabel(kind: QuestionBankSourceOption["option_kind"]): string {
   return kind === "board" ? "Prova" : "Instituição";
-}
-
-function formatYearRange(option: QuestionBankSourceOption): string | null {
-  if (option.first_year && option.last_year && option.first_year !== option.last_year) {
-    return `${option.first_year}-${option.last_year}`;
-  }
-  if (option.first_year || option.last_year) return String(option.first_year ?? option.last_year);
-  return null;
 }
 
 export default function BancaPicker({
@@ -96,19 +103,48 @@ export default function BancaPicker({
     return chips;
   }, [selectedBoardSet, selectedInstitutionSet, sources]);
 
+  // Deduplica fontes que compartilham a mesma chave normalizada
+  // (kbank_source_token_norm). A API já agrupa, mas variantes sem alias
+  // podem chegar duplicadas (ex: "USP-SP" vs "USP SP"). Mantém o label com
+  // maior question_count como representante e soma as contagens.
+  const dedupedSources = useMemo(() => {
+    const byKey = new Map<string, QuestionBankSourceOption>();
+    for (const source of sources) {
+      const norm = sourceTokenNorm(source.option_key);
+      if (!norm) continue;
+      const existing = byKey.get(norm);
+      if (!existing) {
+        byKey.set(norm, { ...source, option_key: norm });
+        continue;
+      }
+      // Soma contagens e mantém o label com mais questões.
+      const merged: QuestionBankSourceOption = {
+        ...existing,
+        question_count: existing.question_count + source.question_count,
+        first_year: [existing.first_year, source.first_year]
+          .filter((y): y is number => y != null)
+          .reduce<number | undefined>((min, y) => (min === undefined ? y : Math.min(min, y)), undefined),
+        last_year: [existing.last_year, source.last_year]
+          .filter((y): y is number => y != null)
+          .reduce<number | undefined>((max, y) => (max === undefined ? y : Math.max(max, y)), undefined),
+        label: source.question_count > existing.question_count ? source.label : existing.label,
+      };
+      byKey.set(norm, merged);
+    }
+    return Array.from(byKey.values());
+  }, [sources]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return sources;
-    return sources.filter((source) => {
-      const yearRange = formatYearRange(source) ?? "";
+    if (!q) return dedupedSources;
+    return dedupedSources.filter((source) => {
       return (
         source.label.toLowerCase().includes(q) ||
         source.option_key.toLowerCase().includes(q) ||
-        sourceKindLabel(source.option_kind).toLowerCase().includes(q) ||
-        yearRange.includes(q)
+        sourceKindLabel(source.option_kind).toLowerCase().includes(q)
       );
     });
-  }, [sources, query]);
+  }, [dedupedSources, query]);
 
   function isSelected(source: QuestionBankSourceOption): boolean {
     const key = normalizeKey(source.option_key);
@@ -214,8 +250,9 @@ export default function BancaPicker({
             </li>
           ) : (
             // Seções separadas: Provas (bancas reais, atribuição precisa) e
-            // Instituições. O ano sai do rótulo (era o "Instituição · 2021"
-            // colado) e vira metadado discreto à direita, sob a contagem.
+            // Instituições. A banca é um eixo independente do ano — a contagem
+            // à direita já reflete o recorte de ano/tema atual (cross-filter),
+            // então não exibimos faixa de anos presa à banca.
             [
               { heading: "Provas", items: filtered.filter((s) => s.option_kind === "board") },
               { heading: "Instituições", items: filtered.filter((s) => s.option_kind !== "board") },
@@ -231,7 +268,6 @@ export default function BancaPicker({
                   <ul className="space-y-1">
                     {section.items.map((source) => {
                       const checked = isSelected(source);
-                      const yearRange = formatYearRange(source);
                       const key = normalizeKey(source.option_key);
                       const savedSource = sourceById.get(optionId(source)) ?? source;
                       return (
@@ -256,11 +292,8 @@ export default function BancaPicker({
                                 <span className="block truncate text-xs text-muted">{key}</span>
                               ) : null}
                             </span>
-                            <span className="flex shrink-0 flex-col items-end">
+                            <span className="flex shrink-0 items-center">
                               <span className="text-xs tabular-nums text-muted">{source.question_count}</span>
-                              {yearRange ? (
-                                <span className="text-[10px] tabular-nums text-muted/80">{yearRange}</span>
-                              ) : null}
                             </span>
                           </label>
                         </li>

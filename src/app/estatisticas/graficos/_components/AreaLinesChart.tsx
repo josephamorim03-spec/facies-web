@@ -127,7 +127,9 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
             key={label.key}
             data-testid="area-line-overlay-percent-label"
             data-week-index={label.weekIndex}
-            className="pointer-events-none absolute z-20 whitespace-nowrap text-[10px] font-bold leading-none"
+            /* Overlay denso (12 pontos × até 6 séries): fora de cima do gráfico
+               no mobile pra não vazar/sobrepor; a linha destacada + legenda bastam. */
+            className="pointer-events-none absolute z-20 hidden whitespace-nowrap text-[10px] font-bold leading-none sm:block"
             style={{
               left: label.placement.left,
               top: label.placement.top,
