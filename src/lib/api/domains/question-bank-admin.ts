@@ -784,6 +784,178 @@ export async function getQuestionBankAdminAiBatches(
   );
 }
 
+export type EditorialDimensionState = "pass" | "warning" | "fail" | "unknown";
+
+export type QuestionBankEditorialDimension = {
+  state: EditorialDimensionState;
+  summary: string;
+  evidence: string[];
+};
+
+export type QuestionBankEditorialReview = {
+  review_id: string | null;
+  question_id: string;
+  question_version: number;
+  review_status: "queued" | "running" | "draft_ready" | "approved" | "rejected" | "failed" | "stale" | null;
+  overall_state: "ready" | "needs_review" | "blocked" | null;
+  lane: string | null;
+  priority: "critical" | "high" | "medium" | "low" | null;
+  stem_preview: string;
+  question_status: string | null;
+  content_grade: string | null;
+  difficulty_estimate: number | null;
+  classification_confidence: number | null;
+  institution: string | null;
+  exam_name: string | null;
+  board_code: string | null;
+  primary_node_name: string | null;
+  year: number | null;
+  dimensions: Record<string, QuestionBankEditorialDimension> | null;
+  evidence: Array<Record<string, unknown> | string> | null;
+  difficulty_assessment: {
+    intended_level?: string;
+    predicted_score?: number | null;
+    cognitive_demand?: string;
+    confidence?: number | null;
+    rationale?: string;
+  } | null;
+  proposed_patch: Record<string, unknown> | null;
+  proposed_pedagogical_profile: Record<string, unknown> | null;
+  model: string | null;
+  prompt_version: string | null;
+  requested_by: string | null;
+  assigned_to: string | null;
+  decided_by: string | null;
+  decision_note: string | null;
+  open_reports: number;
+  age_reference: string | null;
+};
+
+export type QuestionBankEditorialQueueResponse = {
+  items: QuestionBankEditorialReview[];
+  total: number;
+  limit: number;
+  offset: number;
+  summary?: {
+    active?: number;
+    stale?: number;
+    failed?: number;
+    critical?: number;
+    oldest_active_seconds?: number | null;
+  };
+};
+
+export async function getQuestionBankEditorialQueue(options?: {
+  q?: string;
+  lane?: string;
+  priority?: string;
+  status?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<QuestionBankEditorialQueueResponse> {
+  const params = new URLSearchParams();
+  if (options?.q) params.set("q", options.q);
+  if (options?.lane) params.set("lane", options.lane);
+  if (options?.priority) params.set("priority", options.priority);
+  if (options?.status) params.set("status", options.status);
+  if (options?.limit) params.set("limit", String(options.limit));
+  if (options?.offset) params.set("offset", String(options.offset));
+  return api<QuestionBankEditorialQueueResponse>(
+    `/api/admin/question-bank/editorial-queue?${params.toString()}`,
+  );
+}
+
+export async function requestQuestionBankEditorialAnalysis(
+  questionId: string,
+): Promise<Record<string, unknown>> {
+  return api<Record<string, unknown>>(
+    `/api/admin/question-bank/questions/${encodeURIComponent(questionId)}/editorial-analysis`,
+    {
+      method: "POST",
+      body: JSON.stringify({}),
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+    },
+  );
+}
+
+export type QuestionBankEditorialBatchPreview = {
+  question_ids: string[];
+  count: number;
+  blocked_count: number;
+  blocked_question_ids: string[];
+  cached_count: number;
+  cached_question_ids: string[];
+  checks: string[];
+  model: string;
+  provider: string;
+  estimated_calls: number;
+  estimated_cost_band: string;
+};
+
+export async function requestQuestionBankEditorialBatch(
+  questionIds: string[],
+  previewOnly: boolean,
+): Promise<QuestionBankEditorialBatchPreview | { preview: QuestionBankEditorialBatchPreview; results: Record<string, unknown>[] }> {
+  return api<QuestionBankEditorialBatchPreview | { preview: QuestionBankEditorialBatchPreview; results: Record<string, unknown>[] }>(
+    "/api/admin/question-bank/editorial-analysis/batch",
+    {
+      method: "POST",
+      body: JSON.stringify({ question_ids: questionIds, preview_only: previewOnly }),
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+    },
+  );
+}
+
+export async function routeQuestionBankEditorialBatch(
+  questionIds: string[],
+  lane: string,
+): Promise<{ result: string; count: number; question_ids: string[] }> {
+  return api("/api/admin/question-bank/editorial-analysis/batch", {
+    method: "POST",
+    body: JSON.stringify({ question_ids: questionIds, operation: "route", lane }),
+    headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+  });
+}
+
+export async function decideQuestionBankEditorialReview(
+  reviewId: string,
+  action: "approve" | "reject" | "request_changes" | "specialist_review",
+  options?: { note?: string; acceptedPatch?: Record<string, unknown> },
+): Promise<Record<string, unknown>> {
+  return api<Record<string, unknown>>(
+    `/api/admin/question-bank/editorial-reviews/${encodeURIComponent(reviewId)}/decision`,
+    {
+      method: "POST",
+      body: JSON.stringify({ action, note: options?.note, accepted_patch: options?.acceptedPatch }),
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+    },
+  );
+}
+
+export type QuestionBankObservedItemQuality = {
+  question_id: string;
+  n: number;
+  unique_users: number;
+  p_value: number | null;
+  observed_difficulty: number | null;
+  facility_ci_low: number | null;
+  facility_ci_high: number | null;
+  wrong_option_counts: Record<string, number>;
+  functioning_distractors: number;
+  discrimination: number | null;
+  discrimination_n: number | null;
+  discrimination_form: string | null;
+  flags: string[];
+};
+
+export async function getQuestionBankObservedItemQuality(): Promise<{
+  min_attempts: number;
+  items_analyzed: number;
+  items: QuestionBankObservedItemQuality[];
+}> {
+  return api("/api/admin/question-bank/data-quality?min_attempts=30&limit=500");
+}
+
 export async function getQuestionBankReviewQueue(
   options?: { limit?: number; offset?: number },
 ): Promise<{ items: QuestionBankReviewQueueItem[]; total: number; limit: number; offset: number }> {
@@ -1093,6 +1265,12 @@ export type QuestionBankAdminQuestionDetail = {
   status: string | null;
   content_grade: string | null;
   difficulty_estimate: number | null;
+  difficulty_profile?: {
+    intended_level: "easy" | "medium" | "hard" | "very_hard" | "";
+    cognitive_demand: "recall" | "application" | "analysis" | "";
+    rationale: string;
+    origin: "human" | "ai" | "heuristic";
+  };
   classification_confidence: number | null;
   is_annulled: boolean;
   is_blocked: boolean;
@@ -1134,6 +1312,8 @@ export type QuestionBankAdminQuestionDetail = {
   };
   review_history?: Array<Record<string, unknown>>;
   budget_summary?: Record<string, unknown>;
+  editorial_summary?: Record<string, unknown>;
+  active_editorial_review?: Record<string, unknown> | null;
 };
 
 export type QuestionBankAdminKnowledgeNode = {
@@ -1148,6 +1328,12 @@ export type QuestionBankAdminQuestionPatch = {
   canonical_alternatives?: Record<string, string>;
   canonical_answer?: string;
   difficulty_estimate?: number;
+  difficulty_profile?: {
+    intended_level: string | null;
+    cognitive_demand: string | null;
+    rationale: string;
+    origin: "human" | "ai" | "heuristic";
+  };
   primary_node_id?: string;
   // Anchor objective (pedagogical profile): a learning_objective node id sets it; ""
   // clears it; omit to leave unchanged. Validated server-side.

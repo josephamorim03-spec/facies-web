@@ -173,7 +173,7 @@ export default function ExamQuestion({
   return (
     <div className="flex min-h-screen flex-col bg-paper">
       <header
-        className="sticky top-0 z-10 border-b border-edge bg-surface/95 backdrop-blur"
+        className="sticky top-0 z-10 border-b border-edge bg-surface"
         onMouseEnter={() => setDetailsHover(true)}
         onMouseLeave={() => setDetailsHover(false)}
       >
@@ -309,7 +309,7 @@ export default function ExamQuestion({
               </span>
             )}
           </div>
-          <p className={cx("mt-4 whitespace-pre-wrap text-justify hyphens-auto text-ink", fontScale.stemClass)}>
+          <p className={cx("paper-reading mt-4 whitespace-pre-wrap text-ink", fontScale.stemClass)}>
             {item.stem}
           </p>
 
@@ -375,7 +375,7 @@ export default function ExamQuestion({
         </section>
       </main>
 
-      <footer className="sticky bottom-0 border-t border-edge bg-surface/95 px-4 py-3 backdrop-blur">
+      <footer className="sticky bottom-0 border-t border-edge bg-surface px-4 py-3">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3">
           <button
             type="button"

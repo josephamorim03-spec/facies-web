@@ -34,3 +34,12 @@ test("question-bank proxy keeps compact and backfill routes scoped", () => {
     true,
   );
 });
+
+test("question-bank proxy exposes only the consolidated editorial contract", () => {
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/editorial-queue?lane=ai_draft"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/questions/q-1/editorial-analysis"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/editorial-analysis/batch"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/editorial-reviews/r-1/decision"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/pedagogical-drafts"), false);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/questions/q-1/anomaly-check"), false);
+});

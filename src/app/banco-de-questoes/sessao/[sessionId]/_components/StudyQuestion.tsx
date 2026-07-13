@@ -478,7 +478,7 @@ export default function StudyQuestion({
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
-      <div className="sticky top-0 z-10 border-b border-edge bg-surface/95 px-4 py-3 backdrop-blur">
+      <div className="sticky top-0 z-10 border-b border-edge bg-surface px-4 py-3">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -495,7 +495,7 @@ export default function StudyQuestion({
             </div>
             <div className="flex items-center gap-3">
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surfaceMuted">
-                <div className="h-full rounded-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }} />
+                <div className="h-full rounded-full bg-primary transition-[width] duration-[var(--motion-standard)]" style={{ width: `${progress}%` }} />
               </div>
               <span className="w-10 text-right text-xs font-semibold tabular-nums text-muted">{progress}%</span>
             </div>
@@ -581,14 +581,21 @@ export default function StudyQuestion({
                 </div>
               </div>
 
-              <ClinicalCyclePanel
-                answered={item.answered}
-                revealed={revealed}
-                needsCorrection={item.needs_correction}
-                isCorrect={item.is_correct}
-              />
+              {revealed ? (
+                <details className="mt-4">
+                  <summary className="cursor-pointer text-xs font-semibold text-muted">Ver ciclo de aprendizagem</summary>
+                  <div className="mt-2">
+                    <ClinicalCyclePanel
+                      answered={item.answered}
+                      revealed={revealed}
+                      needsCorrection={item.needs_correction}
+                      isCorrect={item.is_correct}
+                    />
+                  </div>
+                </details>
+              ) : null}
 
-              <p className={cx("mt-5 max-w-[72ch] whitespace-pre-wrap text-justify hyphens-auto text-ink", fontScale.stemClass)}>
+              <p className={cx("paper-reading mt-5 whitespace-pre-wrap text-ink", fontScale.stemClass)}>
                 {item.stem}
               </p>
 
@@ -697,7 +704,7 @@ export default function StudyQuestion({
                           onAnswer(option);
                         }}
                         disabled={busy || finalized || item.answered}
-                        className="flex min-w-0 flex-1 items-start gap-3 px-3 py-3 text-left disabled:cursor-not-allowed"
+                        className="flex min-h-11 min-w-0 flex-1 items-start gap-3 px-3 py-3 text-left disabled:cursor-not-allowed"
                       >
                         <span
                           className={cx(
@@ -1135,7 +1142,7 @@ export default function StudyQuestion({
         </div>
       </div>
 
-      <div className="sticky bottom-0 border-t border-edge bg-surface/95 px-4 py-3 backdrop-blur">
+      <div className="sticky bottom-0 border-t border-edge bg-surface px-4 py-3">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
           <div className="flex gap-2">
             <button

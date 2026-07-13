@@ -305,12 +305,16 @@ export default function FiltersBar(props: FiltersBarProps) {
         </div>
       </section>
 
-      <section className="space-y-4 p-4 md:p-5">
-        <SectionHeader
-          step="2. Recorte"
-          title="Filtre fonte, ano e histórico"
-          detail={`${statusLabel} · ${sourceDetail}`}
-        />
+      <details className="group p-4 md:p-5">
+        <summary className="paper-control flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 border border-edge bg-paper px-4 py-3 marker:hidden">
+          <span>
+            <span className="paper-eyebrow text-primary">Ajustar sessão</span>
+            <span className="mt-0.5 block font-serif text-lg font-semibold text-ink">Banca, ano e histórico</span>
+          </span>
+          <span className="text-right text-xs text-muted">{statusLabel} · {sourceDetail}<span className="ml-2 inline-block transition-transform group-open:rotate-180" aria-hidden="true">⌄</span></span>
+        </summary>
+
+        <div className="mt-4 space-y-4">
 
         <BancaPicker
           sources={sources}
@@ -399,7 +403,8 @@ export default function FiltersBar(props: FiltersBarProps) {
             </div>
           </div>
         </div>
-      </section>
+        </div>
+      </details>
 
       <section className="space-y-4 p-4 md:p-5">
         <SectionHeader

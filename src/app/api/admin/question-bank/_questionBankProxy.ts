@@ -118,7 +118,9 @@ function safeOrigin(value: string): string {
   }
 }
 
-async function authorizeAdmin(request: NextRequest, requestId: string): Promise<NextResponse | null> {
+type AdminAuthorization = { actor: string } | { error: NextResponse };
+
+async function authorizeAdmin(request: NextRequest, requestId: string): Promise<AdminAuthorization> {
   if (request.method !== "GET" && !isTrustedMutation(request)) {
     logAdminProxyEvent("warn", "csrf_rejected", {
       request_id: requestId,
@@ -126,7 +128,7 @@ async function authorizeAdmin(request: NextRequest, requestId: string): Promise<
       path: request.nextUrl.pathname,
       has_origin: Boolean(requestOrigin(request)),
     });
-    return jsonError("csrf_rejected", 403, requestId);
+    return { error: jsonError("csrf_rejected", 403, requestId) };
   }
 
   const allowedEmails = readAdminEmails();
@@ -136,7 +138,7 @@ async function authorizeAdmin(request: NextRequest, requestId: string): Promise<
       method: request.method,
       path: request.nextUrl.pathname,
     });
-    return jsonError("admin_not_configured", 403, requestId);
+    return { error: jsonError("admin_not_configured", 403, requestId) };
   }
 
   const proxyTarget = String(process.env.NEXT_API_PROXY_TARGET || "http://127.0.0.1:8000").replace(/\/+$/, "");
@@ -147,7 +149,7 @@ async function authorizeAdmin(request: NextRequest, requestId: string): Promise<
       method: request.method,
       path: request.nextUrl.pathname,
     });
-    return jsonError("not_authenticated", 401, requestId);
+    return { error: jsonError("not_authenticated", 401, requestId) };
   }
 
   const meResponse = await fetch(`${proxyTarget}/me`, {
@@ -166,7 +168,7 @@ async function authorizeAdmin(request: NextRequest, requestId: string): Promise<
       path: request.nextUrl.pathname,
       upstream_status: meResponse?.status ?? null,
     });
-    return jsonError("not_authenticated", 401, requestId);
+    return { error: jsonError("not_authenticated", 401, requestId) };
   }
 
   const identity = await meResponse.json().catch(() => null);
@@ -187,10 +189,10 @@ async function authorizeAdmin(request: NextRequest, requestId: string): Promise<
       has_email: Boolean(email),
       email_verified: verified,
     });
-    return jsonError("admin_forbidden", 403, requestId);
+    return { error: jsonError("admin_forbidden", 403, requestId) };
   }
 
-  return null;
+  return { actor: email };
 }
 
 export async function proxyQuestionBankAdmin(
@@ -212,8 +214,8 @@ export async function proxyQuestionBankAdmin(
     });
     return jsonError("admin_proxy_path_rejected", 403, requestId);
   }
-  const authError = await authorizeAdmin(request, requestId);
-  if (authError) return authError;
+  const authorization = await authorizeAdmin(request, requestId);
+  if ("error" in authorization) return authorization.error;
 
   const target = questionBankTarget();
   if (!target) {
@@ -243,6 +245,7 @@ export async function proxyQuestionBankAdmin(
 
   const headers = new Headers({
     "X-Question-Bank-Admin-Key": adminKey,
+    "X-KrosMed-Admin-Actor": authorization.actor,
     "X-Request-Id": requestId,
   });
   if (init?.contentType?.trim()) {

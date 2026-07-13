@@ -9,32 +9,37 @@
     "dev:api": "npm --prefix .. run dev:api",
     "dev:all": "npm --prefix .. run dev:all",
     "build": "next build",
+    "analyze": "next experimental-analyze --output",
+    "audit:security": "npm audit --audit-level=moderate",
     "start": "next start",
     "start:e2e": "next start --hostname 0.0.0.0 --port 3000",
     "typecheck": "next typegen && tsc --noEmit -p tsconfig.json",
     "generate:kros-intro": "node scripts/generate-kros-intro-sprite.mjs",
-    "lint": "node scripts/check-mojibake.mjs && eslint .",
+    "lint": "node scripts/check-mojibake.mjs && node scripts/check-student-ui-tokens.mjs && eslint .",
+    "lint:ui": "node scripts/check-student-ui-tokens.mjs",
     "test:unit": "node --test --experimental-strip-types tests/unit/*.test.mjs",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "node scripts/run-smoke-e2e.mjs",
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
-    "next": "16.1.6",
+    "next": "16.2.10",
+    "radix-ui": "^1.6.2",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "recharts": "^3.8.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.59.1",
-    "sharp": "0.34.5",
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "1.61.1",
     "@types/node": "22.13.5",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "autoprefixer": "10.4.20",
-    "eslint": "9.21.0",
-    "eslint-config-next": "16.1.6",
-    "postcss": "8.5.3",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.2.10",
+    "postcss": "8.5.19",
+    "sharp": "0.34.5",
     "tailwindcss": "3.4.17",
     "typescript": "5.7.3"
   },
@@ -43,5 +48,8 @@
       "sharp",
       "unrs-resolver"
     ]
+  },
+  "overrides": {
+    "postcss": "8.5.19"
   }
 }

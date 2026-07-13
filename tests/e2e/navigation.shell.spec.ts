@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 
 import { addHttpOnlySession } from "./support/authCookies";
 import { forceDesktopNavigation } from "./support/desktopNav";
@@ -66,6 +67,8 @@ async function mockShellApi(page: Page) {
           recommended_limit_minutes: 5,
           overload_alert: false,
         },
+        plan_progress: { completed_actions: 0, total_actions: 1 },
+        previous_outcome: null,
         missing_sources: [],
       });
     }
@@ -194,6 +197,15 @@ test.describe("Navigation shell", () => {
     });
   });
 
+  test("meets the automated WCAG gate on the Today shell", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/hoje");
+    await expect(page.getByRole("heading", { name: /Olá|Bom dia|Boa tarde|Boa noite/i })).toBeVisible();
+
+    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
+    expect(results.violations).toEqual([]);
+  });
+
   const desktopCases = [
     { path: "/hoje", activeHref: "/hoje" },
     { path: "/calendario", activeHref: "/planejar" },
@@ -292,6 +304,17 @@ test.describe("Navigation shell mobile drawer", () => {
     await expect(activeItems).toHaveCount(1);
     await expect(activeItems).toHaveAttribute("data-nav-item-href", "/planejar");
     await expect(activeItems).toHaveAttribute("aria-current", "page");
+  });
+
+  test("shows all five intentions without horizontal overflow", async ({ page }) => {
+    await page.goto("/hoje");
+    const bottomNav = page.getByRole("navigation", { name: "Navegação principal" });
+    await expect(bottomNav).toBeVisible();
+    for (const label of ["Hoje", "Praticar", "Revisar", "Acompanhar", "Planejar"]) {
+      await expect(bottomNav.getByText(label, { exact: true })).toBeVisible();
+    }
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(1);
   });
 
   test("removes Cronograma and Caderno from mobile drawer", async ({ page }) => {

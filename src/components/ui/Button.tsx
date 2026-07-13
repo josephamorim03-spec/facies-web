@@ -1,10 +1,10 @@
-import { type ButtonHTMLAttributes, type ReactNode } from "react";
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 
 export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
 export type ButtonSize = "xs" | "sm" | "md";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "border border-primary bg-primary text-primaryInk shadow-sm hover:brightness-105",
+  primary: "border border-primary bg-primary text-primaryInk hover:brightness-[1.04]",
   secondary: "border border-edge bg-surface text-muted hover:border-primary hover:text-ink hover:bg-surfaceMuted",
   outline: "border border-primary text-primary hover:bg-primary hover:text-primaryInk",
   ghost: "text-muted hover:bg-surfaceMuted hover:text-ink",
@@ -12,15 +12,14 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-  xs: "text-xs px-2 py-1",
-  sm: "text-xs px-3 py-1.5",
-  md: "text-sm px-4 py-2",
+  xs: "min-h-8 text-xs px-2.5 py-1",
+  sm: "min-h-10 text-xs px-3 py-2",
+  md: "min-h-11 text-sm px-4 py-2.5",
 };
 
 const BASE =
-  "inline-flex items-center justify-center gap-1.5 rounded-xl font-sans font-medium leading-none " +
-  "transition-colors disabled:cursor-not-allowed disabled:opacity-50 " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+  "paper-control inline-flex items-center justify-center gap-1.5 font-sans font-medium leading-none " +
+  "disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -29,7 +28,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   leftIcon?: ReactNode;
 };
 
-export function Button({
+export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   variant = "secondary",
   size = "sm",
   loading = false,
@@ -38,9 +37,10 @@ export function Button({
   children,
   className = "",
   ...rest
-}: Props) {
+}, ref) {
   return (
     <button
+      ref={ref}
       {...rest}
       disabled={disabled || loading}
       className={`${BASE} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
@@ -55,4 +55,4 @@ export function Button({
       )}
     </button>
   );
-}
+});

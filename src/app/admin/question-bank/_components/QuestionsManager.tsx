@@ -11,6 +11,7 @@ import {
   listQuestionBankAdminKnowledgeNodes,
   repairQuestionBankReport,
   resolveQuestionBankReports,
+  requestQuestionBankEditorialAnalysis,
   searchQuestionBankAdminQuestions,
   triageQuestionBankReport,
   updateQuestionBankQuestionStatus,
@@ -97,7 +98,9 @@ type EditState = {
   stem: string;
   alternatives: Record<string, string>;
   answer: string;
-  difficulty: string;
+  intendedLevel: "" | "easy" | "medium" | "hard" | "very_hard";
+  cognitiveDemand: "" | "recall" | "application" | "analysis";
+  difficultyRationale: string;
   primaryNodeId: string;
   primaryNodeLabel: string;
   anchorNodeId: string;
@@ -125,6 +128,7 @@ export default function QuestionsManager() {
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [bulkAnalyzing, setBulkAnalyzing] = useState(false);
+  const [anomalyCheckingId, setAnomalyCheckingId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -307,7 +311,9 @@ export default function QuestionsManager() {
         stem: d.stem ?? "",
         alternatives: { A: "", B: "", C: "", D: "", E: "", ...d.alternatives },
         answer: d.answer ?? "",
-        difficulty: d.difficulty_estimate != null ? String(d.difficulty_estimate) : "",
+        intendedLevel: d.difficulty_profile?.intended_level ?? "",
+        cognitiveDemand: d.difficulty_profile?.cognitive_demand ?? "",
+        difficultyRationale: d.difficulty_profile?.rationale ?? "",
         primaryNodeId: primary?.knowledge_node_id ?? "",
         primaryNodeLabel: primary?.node_name ?? "",
         anchorNodeId: anchor?.knowledge_node_id ?? "",
@@ -350,7 +356,12 @@ export default function QuestionsManager() {
         canonical_stem_md: edit.stem,
         canonical_alternatives: alternatives,
         canonical_answer: edit.answer,
-        difficulty_estimate: edit.difficulty ? Number(edit.difficulty) : undefined,
+        difficulty_profile: {
+          intended_level: edit.intendedLevel || null,
+          cognitive_demand: edit.cognitiveDemand || null,
+          rationale: edit.difficultyRationale.trim(),
+          origin: "human",
+        },
         primary_node_id: edit.primaryNodeId || undefined,
         // Only send when changed: empty string clears, an id sets it.
         ...(edit.anchorNodeId !== currentAnchorId
@@ -426,6 +437,19 @@ export default function QuestionsManager() {
       void search(offset);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao enfileirar análise.");
+    }
+  }
+
+  async function sendToEditorialCuration(item: QuestionBankAdminQuestionListItem) {
+    setError(null);
+    setAnomalyCheckingId(item.id);
+    try {
+      await requestQuestionBankEditorialAnalysis(item.id);
+      setNotice("Rascunho editorial criado. A decisão continua na aba Curadoria.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha na verificação do enunciado.");
+    } finally {
+      setAnomalyCheckingId(null);
     }
   }
 
@@ -903,6 +927,14 @@ export default function QuestionsManager() {
                         Analisar IA
                       </button>
                     ) : null}
+                    <button
+                      onClick={() => void sendToEditorialCuration(item)}
+                      disabled={anomalyCheckingId === item.id}
+                      title="Cria um rascunho editorial para decisão humana na aba Curadoria"
+                      className="rounded-lg border border-amber-300 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-50 disabled:opacity-50 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-950/30"
+                    >
+                      {anomalyCheckingId === item.id ? "Analisando…" : "Enviar à curadoria"}
+                    </button>
                     {item.status === "published" ? (
                       <button onClick={() => void changeStatus(item, "unpublish")} className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
                         Despublicar
@@ -1168,13 +1200,16 @@ export default function QuestionsManager() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Dificuldade (0–1)</label>
-                <input
-                  value={edit.difficulty}
-                  onChange={(e) => setEdit({ ...edit, difficulty: e.target.value })}
-                  placeholder="0.5"
-                  className={`${inputCls} mt-1 w-28`}
-                />
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Nível pretendido</label>
+                <select value={edit.intendedLevel} onChange={(e) => setEdit({ ...edit, intendedLevel: e.target.value as EditState["intendedLevel"] })} className={`${inputCls} mt-1`}>
+                  <option value="">Não definido</option><option value="easy">Fácil</option><option value="medium">Médio</option><option value="hard">Difícil</option><option value="very_hard">Muito difícil</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Demanda cognitiva</label>
+                <select value={edit.cognitiveDemand} onChange={(e) => setEdit({ ...edit, cognitiveDemand: e.target.value as EditState["cognitiveDemand"] })} className={`${inputCls} mt-1`}>
+                  <option value="">Não definida</option><option value="recall">Recordação</option><option value="application">Aplicação</option><option value="analysis">Análise</option>
+                </select>
               </div>
               <div className="relative min-w-[14rem] flex-1">
                 <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Tópico primário</label>
@@ -1203,6 +1238,11 @@ export default function QuestionsManager() {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Justificativa do nível · origem humana</label>
+              <textarea value={edit.difficultyRationale} onChange={(e) => setEdit({ ...edit, difficultyRationale: e.target.value })} rows={2} placeholder="Que evidência do item sustenta este nível?" className={`${inputCls} mt-1 w-full`} />
             </div>
 
             <div className="mt-4">

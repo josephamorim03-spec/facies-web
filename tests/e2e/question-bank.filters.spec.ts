@@ -365,6 +365,7 @@ test("manual search becomes an active session filter and clears selected topics"
   await expect(filterPanel).toContainText("2024");
   await expect(filterPanel).not.toContainText("2016");
 
+  await page.getByText("Ajustar sessão", { exact: true }).click();
   await page.getByRole("checkbox", { name: /Smoke Board/ }).check();
   await page.getByRole("checkbox", { name: /USP - SP/ }).check();
   await expect

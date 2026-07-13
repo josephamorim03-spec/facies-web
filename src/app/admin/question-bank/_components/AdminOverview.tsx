@@ -2,18 +2,18 @@ import { type QuestionBankAdminPipelineStatus } from "@/lib/api/domains/question
 
 import { StatCard } from "./AdminShared";
 
-type View = "ingestao" | "questoes";
+export type AdminQuestionBankView = "ingestao" | "curadoria" | "questoes";
 
 export function AdminViewSwitcher({
   view,
   onViewChange,
 }: {
-  view: View;
-  onViewChange: (view: View) => void;
+  view: AdminQuestionBankView;
+  onViewChange: (view: AdminQuestionBankView) => void;
 }) {
   return (
     <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 text-sm dark:border-gray-800 dark:bg-gray-950">
-      {([["ingestao", "Ingestao"], ["questoes", "Curadoria"]] as const).map(([value, label]) => (
+      {([["ingestao", "Ingestão"], ["curadoria", "Curadoria"], ["questoes", "Questões"]] as const).map(([value, label]) => (
         <button
           key={value}
           onClick={() => onViewChange(value)}

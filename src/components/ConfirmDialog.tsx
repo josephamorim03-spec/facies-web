@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import type { ReactNode } from "react";
+import { AlertDialog } from "radix-ui";
 import { Button } from "@/components/ui/Button";
 
 type ConfirmDialogProps = {
@@ -24,50 +25,38 @@ export function ConfirmDialog({
   onCancel,
   zIndexClassName = "z-[60]",
 }: ConfirmDialogProps) {
-  useEffect(() => {
-    if (!open) return;
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onCancel();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [open, onCancel]);
-
-  if (!open) return null;
-
   function isDangerLabel(label: string): boolean {
-    const normalized = label
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "");
+    const normalized = label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     return /(cancelar|sair|apagar|excluir|limpar|abandonar)/.test(normalized);
   }
 
   const confirmVariant = isDangerLabel(confirmLabel) ? "danger" : "outline";
 
   return (
-    <div
-      className={`fixed inset-0 bg-black/40 ${zIndexClassName} flex items-center justify-center p-4 modal-backdrop`}
-      onClick={onCancel}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title ?? "Confirmação"}
-        className="km-card w-full max-w-md space-y-4 p-5"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {title && <h2 className="font-serif text-lg leading-tight">{title}</h2>}
-        <div className="text-sm text-ink">{message}</div>
-        <div className="flex gap-2 justify-end">
-          <Button variant="secondary" size="sm" onClick={onCancel} autoFocus>
-            {cancelLabel}
-          </Button>
-          <Button variant={confirmVariant} size="sm" onClick={onConfirm}>
-            {confirmLabel}
-          </Button>
-        </div>
-      </div>
-    </div>
+    <AlertDialog.Root open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onCancel(); }}>
+      <AlertDialog.Portal>
+        <AlertDialog.Overlay className={`fixed inset-0 bg-ink/45 ${zIndexClassName}`} />
+        <AlertDialog.Content
+          className={`paper-overlay fixed left-1/2 top-1/2 ${zIndexClassName} w-[min(calc(100vw-2rem),28rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-edge bg-surface p-5 focus:outline-none`}
+        >
+          {title ? (
+            <AlertDialog.Title className="font-serif text-xl font-semibold leading-tight text-ink">{title}</AlertDialog.Title>
+          ) : (
+            <AlertDialog.Title className="sr-only">Confirmação</AlertDialog.Title>
+          )}
+          <AlertDialog.Description asChild>
+            <div className={`${title ? "mt-2" : ""} text-sm leading-relaxed text-muted`}>{message}</div>
+          </AlertDialog.Description>
+          <div className="mt-5 flex flex-wrap justify-end gap-2">
+            <AlertDialog.Cancel asChild>
+              <Button variant="secondary" size="sm">{cancelLabel}</Button>
+            </AlertDialog.Cancel>
+            <AlertDialog.Action asChild>
+              <Button variant={confirmVariant} size="sm" onClick={onConfirm}>{confirmLabel}</Button>
+            </AlertDialog.Action>
+          </div>
+        </AlertDialog.Content>
+      </AlertDialog.Portal>
+    </AlertDialog.Root>
   );
 }

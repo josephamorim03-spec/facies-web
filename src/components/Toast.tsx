@@ -26,22 +26,22 @@ export function Toast() {
     type === "success"
       ? "bg-ink text-paper border border-ink"
       : type === "error"
-        ? "border border-red-600 text-red-600 bg-paper"
+        ? "border border-danger text-danger bg-surface"
         : "border border-edge text-ink bg-paper";
 
   return (
-    <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] left-1/2 -translate-x-1/2 z-[90] w-[min(92vw,34rem)]">
+    <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+var(--mobile-nav-height)+0.75rem)] left-1/2 z-[90] w-[min(92vw,34rem)] -translate-x-1/2 md:bottom-5">
       <div
         key={id}
         role="status"
         aria-live="polite"
-        className={`relative px-5 py-4 text-sm shadow-lg rounded-md toast-enter ${typeClass}`}
+        className={`paper-overlay relative rounded-lg px-5 py-4 text-sm toast-enter ${typeClass}`}
       >
         <p className="pr-8 text-center leading-relaxed">{message}</p>
         <button
           type="button"
           onClick={dismissToast}
-          className="absolute right-2 top-2 text-xs text-muted hover:text-ink focus-visible:outline-none"
+          className="paper-control absolute right-1.5 top-1.5 flex h-9 w-9 items-center justify-center text-base text-muted hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none"
           aria-label="Fechar mensagem"
         >
           ×

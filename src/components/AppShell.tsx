@@ -3,7 +3,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import Nav, { SidebarNav, NAV_OPEN_EVENT } from "@/components/Nav";
+import Nav, { MobileBottomNav, SidebarNav, NAV_OPEN_EVENT } from "@/components/Nav";
 import PwaRegister from "@/components/PwaRegister";
 import { ToastProvider } from "@/lib/useToast";
 import { Toast } from "@/components/Toast";
@@ -115,7 +115,7 @@ function MobileTopBar({ pathname }: { pathname: string }) {
   const displayTitle = title ?? fallbackTitle(pathname);
   return (
     <header
-      className="fixed inset-x-0 top-0 z-30 flex h-12 items-center border-b border-edge/50 bg-paper/80 px-3 backdrop-blur-md md:hidden"
+      className="fixed inset-x-0 top-0 z-30 flex h-12 items-center border-b border-edge bg-paper px-3 md:hidden"
       style={{ paddingTop: "env(safe-area-inset-top, 0px)", height: "calc(3rem + env(safe-area-inset-top, 0px))" }}
     >
       <button
@@ -201,8 +201,8 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     : isDesktopNavigation
       ? "max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8"
       : showMobileTopBar
-        ? "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]"
-        : "max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)]";
+        ? "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+var(--mobile-nav-height)+1.25rem)]"
+        : "max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+var(--mobile-nav-height)+1.25rem)]";
 
   useEffect(() => {
     if (pathname === INITIAL_GOAL_SETUP_ROUTE) {
@@ -285,6 +285,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     <>
       <PwaRegister />
       <SidebarNav isDesktopNavigation={isDesktopNavigation} displayName={userDisplayName} photoUrl={userPhotoUrl} />
+      <MobileBottomNav isDesktopNavigation={isDesktopNavigation} />
       {showMobileTopBar && <MobileTopBar pathname={pathname} />}
       <div className={hideNavigationChrome || !isDesktopNavigation ? "" : "ml-14"}>
         <main className={mainClassName}>

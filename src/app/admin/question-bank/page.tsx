@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-import AdminOverview, { AdminViewSwitcher } from "./_components/AdminOverview";
+import AdminOverview, { AdminViewSwitcher, type AdminQuestionBankView } from "./_components/AdminOverview";
+import AiReviewPanel from "./_components/AiReviewPanel";
 import CandidatesPanel from "./_components/CandidatesPanel";
 import ImportWorkspace from "./_components/ImportWorkspace";
 import PipelineDiagnosticsPanel from "./_components/PipelineDiagnosticsPanel";
@@ -65,7 +66,8 @@ export default function QuestionBankAdminPage() {
   const [reviewItems, setReviewItems] = useState<QuestionBankReviewQueueItem[]>([]);
   const [showReviewQueue, setShowReviewQueue] = useState(false);
   const [reviewTotal, setReviewTotal] = useState(0);
-  const [view, setView] = useState<"ingestao" | "questoes">("ingestao");
+  const [view, setView] = useState<AdminQuestionBankView>("ingestao");
+  const [viewReady, setViewReady] = useState(false);
 
   const previewSummary = preview?.preview_summary;
   const previewDiagnostics = previewSummary?.question_diagnostics
@@ -76,6 +78,14 @@ export default function QuestionBankAdminPage() {
   );
   const metadataDraft = { ...DEFAULT_METADATA, ...safeMetadataObject(metadataText) };
   const activeQuestionOverrides = compactQuestionOverrides(questionOverrides);
+
+  useEffect(() => {
+    const requestedView = new URLSearchParams(window.location.search).get("view");
+    if (requestedView === "ingestao" || requestedView === "curadoria" || requestedView === "questoes") {
+      setView(requestedView);
+    }
+    setViewReady(true);
+  }, []);
 
   function parseMetadata(): Record<string, unknown> {
     const parsed = JSON.parse(metadataText || "{}");
@@ -309,7 +319,29 @@ export default function QuestionBankAdminPage() {
     }
   }
 
-  const viewSwitcher = <AdminViewSwitcher view={view} onViewChange={setView} />;
+  function changeView(nextView: AdminQuestionBankView) {
+    setView(nextView);
+    const url = new URL(window.location.href);
+    url.searchParams.set("view", nextView);
+    window.history.replaceState({}, "", url);
+  }
+
+  const viewSwitcher = <AdminViewSwitcher view={view} onViewChange={changeView} />;
+
+  if (!viewReady) {
+    return <div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800" aria-busy="true" />;
+  }
+
+  if (view === "curadoria") {
+    return (
+      <div className="space-y-6">
+        {viewSwitcher}
+        <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-gray-800" />}>
+          <AiReviewPanel />
+        </Suspense>
+      </div>
+    );
+  }
 
   if (view === "questoes") {
     return (

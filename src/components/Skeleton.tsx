@@ -3,5 +3,5 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className = "" }: SkeletonProps) {
-  return <div className={`block animate-pulse bg-surfaceMuted ${className}`} />;
+  return <div aria-hidden="true" className={`paper-skeleton block ${className}`} />;
 }

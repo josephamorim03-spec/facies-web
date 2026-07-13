@@ -40,7 +40,6 @@ import {
   triggerScheduleSuggestion,
 } from "@/lib/api";
 import { AreaIcon } from "@/components/AreaIcon";
-import { GuidanceNote } from "@/components/GuidanceNote";
 import { RescheduleSuggestionDialog } from "@/app/cronograma/_components/RescheduleSuggestionDialog";
 import { IconRefresh } from "@/app/cronograma/_components/CronogramaIcons";
 import { buildWeeklyOpsMetrics } from "@/app/cronograma/_lib/weeklyOpsMetrics";
@@ -48,6 +47,9 @@ import { WeeklyOpsFullCardsSkeleton } from "@/app/cronograma/_components/WeeklyO
 import { writeCronogramaViewModeSession } from "@/app/cronograma/_lib/viewModeSession";
 import BancoSidebarCard from "./_components/BancoSidebarCard";
 import { TrainerActionCTA } from "@/components/trainer/TrainerActionCTA";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { OutcomeCard } from "@/components/ui/OutcomeCard";
+import { StudyActionCard } from "@/components/ui/StudyActionCard";
 
 type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
 
@@ -268,15 +270,6 @@ function IconArrowRight({ className }: { className?: string }) {
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <path d="M4 10h12" />
       <path d="m11 5 5 5-5 5" />
-    </svg>
-  );
-}
-
-function IconClock({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
     </svg>
   );
 }
@@ -677,128 +670,57 @@ export default function TodayPage() {
       {!error && (
         <>
           {/* Próxima ação — o único melhor passo, entregue pronto no topo */}
-          <section className="km-card overflow-hidden" aria-label="Sua próxima ação">
+          <section aria-label="Sua próxima ação">
             {heroAction ? (
-              <div className="flex flex-col sm:flex-row sm:items-stretch">
-                <div
-                  className="flex items-center justify-center py-6 sm:w-24 sm:py-0"
-                  style={{ backgroundColor: `color-mix(in srgb, ${areaHex(heroAction.area)} 14%, transparent)` }}
-                >
-                  <AreaIcon area={heroAction.area} size={44} colored />
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col gap-2.5 px-5 py-5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-                    Sua próxima ação
-                    {prescription ? ` · ${prescription.plan_progress.completed_actions}/${prescription.plan_progress.total_actions} etapas` : ""}
-                  </p>
-                  <h2 className="font-serif text-2xl font-semibold leading-tight text-ink md:text-3xl">{heroAction.title}</h2>
-                  <GuidanceNote area={heroAction.area} eyebrow="Motivo" tone={heroAction.tone}>
-                    {heroAction.reason}
-                  </GuidanceNote>
-                  {primaryAction &&
-                    (primaryAction.why_factors.length > 0 ||
-                      primaryAction.outcome_targets.length > 0 ||
-                      primaryAction.start_payload?.cognitive_mode) && (
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
-                        {primaryAction.why_factors.length > 0 && (
-                          <span>
-                            {primaryAction.why_factors
-                              .slice(0, 3)
-                              .map((wf) => TRAINER_FACTOR_LABEL[wf.factor] ?? wf.factor)
-                              .join(" · ")}
-                          </span>
-                        )}
-                        {primaryAction.start_payload?.cognitive_mode && (
-                          <span className="inline-flex items-center rounded-full border border-edge px-2 py-0.5 font-medium text-ink">
-                            {TRAINER_MODE_LABEL[primaryAction.start_payload.cognitive_mode] ??
-                              primaryAction.start_payload.cognitive_mode}
-                          </span>
-                        )}
-                        {primaryAction.outcome_targets.length > 0 && (
-                          <span className="inline-flex flex-wrap items-center gap-1">
-                            <span className="uppercase tracking-wide text-muted/70">ganho:</span>
-                            {primaryAction.outcome_targets.map((target) => (
-                              <span key={target} className="rounded-full border border-edge px-2 py-0.5 font-medium text-ink">
-                                {TRAINER_OUTCOME_LABEL[target] ?? target}
-                              </span>
-                            ))}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
-                      <IconClock className="h-3.5 w-3.5" />
-                      ~{heroAction.minutes} min
-                    </span>
-                    {heroAction.metric && (
-                      <span className="text-xs font-semibold" style={{ color: areaHex(heroAction.area) }}>{heroAction.metric}</span>
-                    )}
-                    {nextActionSignals.map((signal) => (
-                      <span
-                        key={signal.key}
-                        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${signal.className}`}
-                      >
-                        {signal.label}
+              <StudyActionCard
+                eyebrow={`Sua próxima ação${prescription ? ` · ${prescription.plan_progress.completed_actions}/${prescription.plan_progress.total_actions} etapas` : ""}`}
+                title={heroAction.title}
+                reason={heroAction.reason}
+                minutes={heroAction.minutes}
+                expectedResult={primaryAction?.outcome_targets.map((target) => TRAINER_OUTCOME_LABEL[target] ?? target).join(" · ") || heroAction.metric}
+                leading={<AreaIcon area={heroAction.area} size={44} colored />}
+                metadata={
+                  <>
+                    {primaryAction?.why_factors.slice(0, 3).map((wf) => TRAINER_FACTOR_LABEL[wf.factor] ?? wf.factor).join(" · ")}
+                    {primaryAction?.start_payload?.cognitive_mode ? (
+                      <span className="rounded-full border border-edge px-2 py-0.5 font-medium text-ink">
+                        {TRAINER_MODE_LABEL[primaryAction.start_payload.cognitive_mode] ?? primaryAction.start_payload.cognitive_mode}
                       </span>
+                    ) : null}
+                    {nextActionSignals.map((signal) => (
+                      <span key={signal.key} className={`rounded-full border px-2 py-0.5 font-medium ${signal.className}`}>{signal.label}</span>
                     ))}
-                  </div>
-                </div>
-                <div className="flex items-center px-5 pb-5 sm:pb-0 sm:pr-5">
-                  {primaryAction && prescription ? (
-                    <TrainerActionCTA
-                      action={primaryAction}
-                      recommendationId={prescription.recommendation_id}
-                      sourcePage="/hoje"
-                      label={heroAction.ctaLabel}
-                      className="w-full px-5 py-3 sm:w-auto"
-                    />
-                  ) : null}
-                </div>
-              </div>
+                  </>
+                }
+                action={primaryAction && prescription ? (
+                  <TrainerActionCTA
+                    action={primaryAction}
+                    recommendationId={prescription.recommendation_id}
+                    sourcePage="/hoje"
+                    label={heroAction.ctaLabel}
+                    className="w-full px-5 py-3 sm:w-auto"
+                  />
+                ) : null}
+              />
             ) : (
-              <div className="flex flex-col items-start gap-3 px-5 py-6 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                  <IconShield className="h-6 w-6 shrink-0 text-success" />
-                  <div>
-                    <p className="font-semibold text-ink">Você está em dia.</p>
-                    <p className="text-sm text-muted">Um bloco leve de manutenção no banco mantém o ritmo.</p>
-                  </div>
-                </div>
-                <Link
-                  href="/banco-de-questoes"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 sm:w-auto"
-                >
-                  Abrir banco
-                  <IconArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
+              <EmptyState
+                title="Suficiente por hoje"
+                description="A carga adequada foi concluída. Você pode encerrar sem perder o ritmo; uma manutenção leve continua disponível se fizer sentido agora."
+                icon={<IconShield className="h-6 w-6 text-success" />}
+                action={<Link href="/banco-de-questoes" className="paper-control inline-flex min-h-11 items-center gap-2 border border-edge px-4 text-sm font-semibold text-ink">Manutenção opcional <IconArrowRight className="h-4 w-4" /></Link>}
+              />
             )}
           </section>
 
           {prescription?.previous_outcome && (
-            <section className="rounded-2xl border border-edge bg-surface p-5" aria-label="Resultado da última ação">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="max-w-2xl">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-success">Ciclo concluído</p>
-                  <h2 className="mt-1 font-serif text-xl font-semibold text-ink">O que mudou com sua última ação</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{prescription.previous_outcome.narrative}</p>
-                </div>
-                <div className="flex flex-wrap gap-2 sm:max-w-sm sm:justify-end">
-                  {prescription.previous_outcome.evidence.map((item) => (
-                    <div key={item.key} className="rounded-xl border border-edge bg-paper px-3 py-2">
-                      <p className="text-sm font-semibold text-ink">
-                        {item.value}{item.unit ? `${item.unit === "%" ? "" : " "}${item.unit}` : ""}
-                      </p>
-                      <p className="text-xs text-muted">{item.label}</p>
-                      <p className="mt-0.5 text-[10px] uppercase tracking-wide text-muted/70">
-                        {item.kind === "observed" ? "observado" : "estimativa"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
+            <OutcomeCard
+              narrative={prescription.previous_outcome.narrative}
+              evidence={prescription.previous_outcome.evidence.map((item) => ({
+                ...item,
+                unit: item.unit ? `${item.unit === "%" ? "" : " "}${item.unit}` : null,
+                kind: item.kind === "observed" ? "observed" : "estimated",
+              }))}
+            />
           )}
 
           {prescription && prescription.secondary_actions.length > 0 && (

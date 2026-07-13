@@ -77,33 +77,6 @@ function IconTrophy({ className }: { className?: string }) {
   );
 }
 
-function IconTarget({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v3" />
-      <path d="M22 12h-3" />
-      <path d="M12 22v-3" />
-      <path d="M2 12h3" />
-      <path d="m16 8 4-4" />
-    </svg>
-  );
-}
-
-function IconCalibrate({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M4 14a8 8 0 0 1 16 0" />
-      <path d="M6.5 17h11" />
-      <path d="M12 14l4-4" />
-      <circle cx="12" cy="14" r="1.6" />
-      <path d="M7.5 12.5h.01" />
-      <path d="M16.5 12.5h.01" />
-    </svg>
-  );
-}
-
 function IconChevronRight({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
@@ -128,8 +101,8 @@ function SessionIntentCard({ eyebrow, title, description, active, Icon, onClick 
       onClick={onClick}
       aria-pressed={active}
       className={cx(
-        "group flex items-center gap-4 rounded-xl border bg-surface p-4 text-left transition-all hover:shadow-[var(--soft-shadow)] md:flex-col md:items-start md:justify-between md:min-h-[8rem] md:p-5",
-        active ? "border-primary bg-surfaceMuted shadow-sm" : "border-edge hover:border-primary",
+        "paper-control group flex min-h-11 items-center gap-4 border bg-surface p-4 text-left transition-colors md:flex-col md:items-start md:justify-between md:min-h-[8rem] md:p-5",
+        active ? "border-primary bg-surfaceMuted" : "border-edge hover:border-primary",
       )}
     >
       <Icon className={cx("h-7 w-7 shrink-0 md:h-8 md:w-8", active ? "text-primary" : "text-muted")} />
@@ -959,7 +932,9 @@ function BancoDeQuestoesContent() {
   const hasDueTopicTasks = dueTopicTaskCount > 0;
   const recommended = nextAction ?? FALLBACK_NEXT_ACTION;
   const canStartConfigured = !busy && (studyKind !== "full_exam" || fullExamReady) && !!availability && availability.available_count > 0;
-  const configuredStartLabel = studyKind === "full_exam" ? "Iniciar prova" : resolutionMode === "training" ? "Iniciar treino" : "Iniciar simulado";
+  const configuredStartLabel = studyKind === "full_exam"
+    ? `Começar prova · ${clampedLimit} questões`
+    : `Começar ${clampedLimit} questões · ${resolutionMode === "training" ? "treino com correção" : "simulado"}`;
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -1055,7 +1030,7 @@ function BancoDeQuestoesContent() {
             </span>
           </div>
 
-          <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4" aria-label="Tipos de sessão">
+          <section className="grid grid-cols-1 gap-3 md:grid-cols-2" aria-label="Tipos de sessão">
             <SessionIntentCard
               eyebrow="01 · construir"
               title="Aprender um tema"
@@ -1078,30 +1053,6 @@ function BancoDeQuestoesContent() {
                 setStudyKind("topic");
                 setResolutionMode("simulation");
                 handleAnswerStatusChange("unanswered");
-              }}
-            />
-            <SessionIntentCard
-              eyebrow="03 · reparar"
-              title="Corrigir fraquezas"
-              description="Erros, revisões vencidas e baixo desempenho para reparar lacunas."
-              active={activeIntent === "weakness"}
-              Icon={IconTarget}
-              onClick={() => {
-                setStudyKind("topic");
-                setResolutionMode("training");
-                handleAnswerStatusChange("needs_review");
-              }}
-            />
-            <SessionIntentCard
-              eyebrow="04 · calibrar"
-              title="Quase acertei"
-              description="Itens no limite para treinar confiança e discriminação fina."
-              active={activeIntent === "near_miss"}
-              Icon={IconCalibrate}
-              onClick={() => {
-                setStudyKind("topic");
-                setResolutionMode("training");
-                handleAnswerStatusChange("near_miss");
               }}
             />
           </section>
@@ -1249,8 +1200,8 @@ function BancoDeQuestoesContent() {
         )}
 
         <div
-          className="fixed inset-x-0 bottom-0 z-20 border-t border-edge bg-paper/95 px-4 py-3 backdrop-blur-md md:hidden"
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
+          className="fixed inset-x-0 z-20 border-t border-edge bg-paper px-4 py-3 md:hidden"
+          style={{ bottom: "calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px))" }}
         >
           {error && (
             <div className="mb-2 rounded-lg border border-danger bg-surface px-3 py-2 text-xs text-danger">
@@ -1261,7 +1212,7 @@ function BancoDeQuestoesContent() {
             type="button"
             onClick={() => void startSession()}
             disabled={!canStartConfigured}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary py-3 text-sm font-semibold text-primaryInk shadow-sm transition disabled:opacity-40"
+            className="paper-control flex min-h-11 w-full items-center justify-center gap-2 border border-primary bg-primary py-3 text-sm font-semibold text-primaryInk transition disabled:opacity-40"
           >
             {busy ? "Preparando..." : configuredStartLabel}
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">

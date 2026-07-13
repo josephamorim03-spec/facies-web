@@ -453,7 +453,8 @@ export function SidebarNav({
   const pathname = usePathname();
   const hideCompletely = useNavHideCompletely(pathname);
   const [hovered, setHovered] = useState(false);
-  const visible = hovered;
+  const [pinned, setPinned] = useState(false);
+  const visible = hovered || pinned;
 
   const {
     exitConfirmOpen,
@@ -471,9 +472,13 @@ export function SidebarNav({
   return (
     <>
       <aside
-        className={`fixed inset-y-0 left-0 z-30 flex flex-col border-r border-edge bg-paper overflow-hidden transition-[width] duration-200 ease-out ${visible ? "w-52" : "w-14"}`}
+        className={`fixed inset-y-0 left-0 z-30 flex flex-col overflow-hidden border-r border-edge bg-paper transition-[width] duration-200 ease-out ${visible ? "w-52" : "w-14"}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
+        onFocusCapture={() => setHovered(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setHovered(false);
+        }}
       >
         {/* Wordmark — link para a home */}
         <Link
@@ -489,6 +494,19 @@ export function SidebarNav({
             )}
           </div>
         </Link>
+
+        <button
+          type="button"
+          onClick={() => setPinned((value) => !value)}
+          aria-expanded={visible}
+          aria-label={pinned ? "Recolher navegação" : "Manter navegação expandida"}
+          className={`paper-control mx-1.5 mt-2 flex min-h-10 items-center border border-transparent text-xs text-muted hover:border-edge hover:bg-surfaceMuted hover:text-ink ${visible ? "justify-between px-2.5" : "justify-center"}`}
+        >
+          {visible ? <span>{pinned ? "Recolher" : "Fixar aberta"}</span> : null}
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className={`h-4 w-4 transition-transform ${visible ? "rotate-180" : ""}`} aria-hidden="true">
+            <path d="m7 4 6 6-6 6" />
+          </svg>
+        </button>
 
         {/* Nav items */}
         <nav className="flex-1 space-y-1 px-1.5 py-4 overflow-y-auto" aria-label="Navegação principal">
@@ -507,9 +525,9 @@ export function SidebarNav({
                     data-nav-surface="sidebar"
                     data-nav-item-href={href}
                     data-nav-active={active ? "true" : "false"}
-                    className={`flex w-full min-w-0 items-center rounded-xl border py-2.5 text-xs font-medium leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${visible ? "gap-3 px-2.5" : "justify-center px-0"} ${
+                    className={`paper-control flex min-h-11 w-full min-w-0 items-center border text-xs font-medium leading-tight focus-visible:outline-none ${visible ? "gap-3 px-2.5" : "justify-center px-0"} ${
                       active
-                        ? "border-primary bg-surface text-ink shadow-sm"
+                        ? "border-primary bg-surface text-ink"
                         : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink"
                     }`}
                     aria-current={active ? "page" : undefined}
@@ -571,6 +589,65 @@ export function SidebarNav({
         confirmLabel="Sair"
         onCancel={cancelLogout}
         onConfirm={confirmLogout}
+      />
+    </>
+  );
+}
+
+export function MobileBottomNav({
+  isDesktopNavigation,
+}: {
+  isDesktopNavigation: boolean;
+}) {
+  const pathname = usePathname();
+  const hideCompletely = useNavHideCompletely(pathname);
+  const {
+    exitConfirmOpen,
+    guardNavigation,
+    cancelExit,
+    confirmExit,
+  } = useSessionNavGuard({ pathname });
+
+  if (hideCompletely || isDesktopNavigation) return null;
+
+  const items = NAV_GROUPS.flatMap((group) => group.items);
+
+  return (
+    <>
+      <nav
+        aria-label="Navegação principal"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-edge bg-paper px-1 pb-[env(safe-area-inset-bottom,0px)]"
+      >
+        <div className="mx-auto grid h-[var(--mobile-nav-height)] max-w-lg grid-cols-5">
+          {items.map((item) => {
+            const active = isNavItemActive(pathname, item);
+            const Icon = item.Icon;
+            return (
+              <FastNavLink
+                key={item.href}
+                href={resolveNavHref(item.href)}
+                onNavigateGuard={guardNavigation}
+                data-nav-surface="bottom"
+                data-nav-item-href={item.href}
+                data-nav-active={active ? "true" : "false"}
+                aria-current={active ? "page" : undefined}
+                className={`flex min-w-0 flex-col items-center justify-center gap-0.5 border-t-2 px-1 text-[10px] font-medium ${active ? "border-primary text-ink" : "border-transparent text-muted"}`}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="max-w-full truncate">{item.shortLabel}</span>
+              </FastNavLink>
+            );
+          })}
+        </div>
+      </nav>
+      <ConfirmDialog
+        open={exitConfirmOpen}
+        title="Confirmar saída da sessão"
+        message="Deseja abandonar a sessão? O progresso será perdido."
+        cancelLabel="Continuar revisão"
+        confirmLabel="Sair da sessão"
+        onCancel={cancelExit}
+        onConfirm={confirmExit}
       />
     </>
   );

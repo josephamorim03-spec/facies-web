@@ -146,7 +146,9 @@ test.describe("Cronograma smoke", () => {
     await page.getByLabel("Ir para hoje").click();
     const todayCell = page.locator(`[data-cell-iso="${today}"]`).first();
     await expect(todayCell).toBeVisible();
-    await todayCell.click();
+    // A célula pode conter barras clicáveis. Acione o próprio controle de dia
+    // pelo teclado para não abrir acidentalmente o detalhe de uma barra.
+    await todayCell.press("Enter");
     const addAction = page.getByTestId("calendar-action-plus");
     await expect(addAction).toBeVisible();
     await addAction.click();

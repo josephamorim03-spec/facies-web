@@ -191,7 +191,7 @@ export default function SessionPage() {
   const currentQuestionId =
     session?.items.find((i) => i.position === currentPosition)?.question_id ?? session?.items[0]?.question_id ?? null;
 
-  async function loadAiRequestPreview(questionId: string) {
+  const loadAiRequestPreview = useCallback(async (questionId: string) => {
     if (!tokenResolved || !questionId) return;
     setAiRequestPreviewLoadingByQuestion((prev) => ({ ...prev, [questionId]: true }));
     try {
@@ -202,14 +202,14 @@ export default function SessionPage() {
     } finally {
       setAiRequestPreviewLoadingByQuestion((prev) => ({ ...prev, [questionId]: false }));
     }
-  }
+  }, [token, tokenResolved]);
 
   useEffect(() => {
     if (!currentQuestionId || aiRequestPreviewByQuestion[currentQuestionId] || aiRequestPreviewLoadingByQuestion[currentQuestionId]) {
       return;
     }
     void loadAiRequestPreview(currentQuestionId);
-  }, [currentQuestionId, aiRequestPreviewByQuestion, aiRequestPreviewLoadingByQuestion, token, tokenResolved]);
+  }, [currentQuestionId, aiRequestPreviewByQuestion, aiRequestPreviewLoadingByQuestion, loadAiRequestPreview]);
 
   function enqueueStudentEvent(
     position: number,

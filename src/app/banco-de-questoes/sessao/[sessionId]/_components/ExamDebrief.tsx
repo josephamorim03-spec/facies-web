@@ -31,7 +31,7 @@ function pct(v: number | null | undefined): string {
 }
 
 function DebriefSkeleton() {
-  return <div className="h-40 animate-pulse rounded-2xl border border-edge bg-surface" />;
+  return <div className="paper-skeleton h-24 rounded-xl border border-edge bg-surface" aria-hidden="true" />;
 }
 
 /**
@@ -85,7 +85,9 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
     .map((b) => ({ label: `${b.confidence}`, acerto: b.accuracy === null ? 0 : Math.round(b.accuracy * 100) }));
 
   return (
-    <section aria-label="Debrief do simulado" className="rounded-2xl border border-edge bg-surface p-4 sm:p-5">
+    <details aria-label="Análise detalhada do simulado" className="rounded-xl border border-edge bg-surface p-4 sm:p-5">
+      <summary className="cursor-pointer font-serif text-lg font-semibold text-ink">Abrir análise detalhada do simulado</summary>
+      <div className="mt-4">
       {/* First fold */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -218,7 +220,8 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
       </div>
 
       {dq.notes.length > 0 && <p className="mt-3 text-xs text-muted">{dq.notes.join(" ")}</p>}
-    </section>
+      </div>
+    </details>
   );
 }
 

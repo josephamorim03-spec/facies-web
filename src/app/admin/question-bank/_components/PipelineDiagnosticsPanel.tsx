@@ -369,6 +369,36 @@ export default function PipelineDiagnosticsPanel({
                 {aiPreview.cost_estimate.avg_tokens_by_stage.cheap.completion_tokens}↓
                 {aiPreview.cost_estimate.avg_tokens_by_stage.cheap.sampled === 0 ? " (estimado)" : ""}
               </p>
+              {(aiPreview.results || []).length > 0 ? (
+                <div className="mt-2 border-t border-amber-200/50 pt-2 dark:border-amber-900/30">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    O que a IA vai completar (top {Math.min(5, aiPreview.results.length)})
+                  </p>
+                  <ul className="mt-1.5 space-y-1">
+                    {aiPreview.results.slice(0, 5).map((cand, idx) => (
+                      <li key={String(cand.question_id ?? idx)} className="flex flex-wrap items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
+                        <span className="font-mono text-gray-400 dark:text-gray-500">
+                          {String(cand.question_id ?? "?").slice(0, 8)}
+                        </span>
+                        {((cand.missing_capabilities as string[] | undefined) || []).map((cap) => (
+                          <span key={cap} className="rounded-full border border-gray-300 px-1.5 py-0.5 dark:border-gray-700">
+                            {cap === "microcompetency"
+                              ? "microcompetência"
+                              : cap === "pedagogical_profile"
+                                ? "perfil pedagógico"
+                                : cap === "distractor_diagnosis"
+                                  ? "diagnóstico de distratores"
+                                  : cap}
+                          </span>
+                        ))}
+                        {typeof cand.priority_score === "number" ? (
+                          <span className="text-gray-400 dark:text-gray-500">prioridade {(cand.priority_score as number).toFixed(2)}</span>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </div>
           ) : null}
           {aiResult ? (

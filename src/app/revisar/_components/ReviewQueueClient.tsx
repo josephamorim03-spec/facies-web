@@ -5,6 +5,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { TrainerActionCTA } from "@/components/trainer/TrainerActionCTA";
 import { Skeleton } from "@/components/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { OutcomeCard as PaperOutcomeCard } from "@/components/ui/OutcomeCard";
+import { StudyActionCard } from "@/components/ui/StudyActionCard";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import {
   getTrainerReviewQueue,
   recordTrainerRecommendationEvent,
@@ -60,27 +64,8 @@ function QueueSkeleton() {
 function OutcomeCard({ queue }: { queue: TrainerReviewQueue }) {
   const outcome = queue.previous_outcome;
   if (!outcome) return null;
-  const observed = outcome.evidence.filter((item) => item.kind === "observed");
-  const estimated = outcome.evidence.filter((item) => item.kind === "estimated");
   return (
-    <section className="rounded-2xl border border-edge bg-surface px-4 py-4 sm:px-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Último ciclo</p>
-      <p className="mt-2 text-sm leading-relaxed text-ink">{outcome.narrative}</p>
-      {(observed.length > 0 || estimated.length > 0) && (
-        <div className="mt-3 flex flex-wrap gap-2 text-xs">
-          {observed.map((item) => (
-            <span key={item.key} className="rounded-full border border-edge bg-paper px-3 py-1.5 text-ink">
-              {item.label}: {item.value}{item.unit ?? ""}
-            </span>
-          ))}
-          {estimated.map((item) => (
-            <span key={item.key} className="rounded-full border border-edge bg-surfaceMuted px-3 py-1.5 text-muted">
-              Estimativa · {item.label}: {item.value}{item.unit ?? ""}
-            </span>
-          ))}
-        </div>
-      )}
-    </section>
+    <PaperOutcomeCard narrative={outcome.narrative} evidence={outcome.evidence} />
   );
 }
 
@@ -95,29 +80,21 @@ function PrimaryReviewCard({
   if (!item) return null;
   const confidence = item.action.pedagogical_confidence;
   return (
-    <section className="rounded-2xl border border-primary/30 bg-surface p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Fazer agora</p>
-          <h2 className="mt-2 font-serif text-2xl font-semibold text-ink sm:text-3xl">
-            {item.action.title}
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-muted">{item.queue_reason}</p>
-          <div className="mt-4 flex flex-wrap gap-2 text-xs">
-            <span className="rounded-full border border-edge bg-paper px-3 py-1.5 text-ink">
-              {item.action.estimated_minutes} min
-            </span>
-            <span className="rounded-full border border-edge bg-paper px-3 py-1.5 text-ink">
-              {item.expected_result}
-            </span>
-            <span className={`rounded-full border px-3 py-1.5 ${confidenceTone(confidence?.level)}`}>
-              {confidence?.label ?? "Resultado ainda preliminar"}
-            </span>
-            <span className="rounded-full border border-edge bg-surfaceMuted px-3 py-1.5 text-muted">
-              {item.editorial_quality.label}
-            </span>
-          </div>
-        </div>
+    <StudyActionCard
+      eyebrow="Fazer agora"
+      title={item.action.title}
+      reason={item.queue_reason}
+      minutes={item.action.estimated_minutes}
+      expectedResult={item.expected_result}
+      metadata={(
+        <>
+          <span className={`rounded-full border px-2.5 py-1 ${confidenceTone(confidence?.level)}`}>
+            {confidence?.label ?? "Resultado ainda preliminar"}
+          </span>
+          <span>{item.editorial_quality.label}</span>
+        </>
+      )}
+      action={(
         <TrainerActionCTA
           action={item.action}
           recommendationId={queue.recommendation_id}
@@ -126,8 +103,8 @@ function PrimaryReviewCard({
           className="w-full shrink-0 lg:w-auto"
           onStale={onStale}
         />
-      </div>
-    </section>
+      )}
+    />
   );
 }
 
@@ -248,15 +225,13 @@ export function ReviewQueueClient() {
           {queue.primary_item ? (
             <PrimaryReviewCard queue={queue} onStale={() => void load()} />
           ) : (
-            <section className="rounded-2xl border border-edge bg-surface p-6 text-center">
-              <h2 className="font-serif text-2xl font-semibold text-ink">Você está em dia</h2>
-              <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-muted">
-                Não há revisões urgentes agora. Um bloco curto de recuperação mantém o aprendizado ativo sem criar acúmulo artificial.
-              </p>
-              <Link href="/praticar" className="mt-5 inline-flex rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary hover:bg-surfaceMuted">
+            <EmptyState
+              title="Suficiente por agora"
+              description="Você protegeu o que precisava hoje. Se quiser continuar, faça uma prática curta sem criar acúmulo artificial."
+              action={<Link href="/praticar" className="paper-control inline-flex min-h-11 items-center border border-primary px-4 py-2.5 text-sm font-semibold text-primary hover:bg-surfaceMuted">
                 Fazer prática curta
-              </Link>
-            </section>
+              </Link>}
+            />
           )}
 
           {queue.items.length > 1 && (
@@ -266,20 +241,18 @@ export function ReviewQueueClient() {
                   <h2 id="review-queue-title" className="font-serif text-2xl font-semibold text-ink">Na sequência</h2>
                   <p className="mt-1 text-sm text-muted">A ordem muda quando você conclui uma etapa.</p>
                 </div>
-                <div className="flex max-w-full gap-1 overflow-x-auto rounded-xl border border-edge bg-surface p-1" role="tablist" aria-label="Filtrar revisões">
-                  {FILTERS.map((item) => (
-                    <button
+                <Tabs value={filter} onValueChange={(value) => setFilter(value as QueueFilter)}>
+                  <TabsList aria-label="Filtrar revisões">
+                    {FILTERS.map((item) => (
+                    <TabsTrigger
                       key={item.key}
-                      type="button"
-                      role="tab"
-                      aria-selected={filter === item.key}
-                      onClick={() => setFilter(item.key)}
-                      className={`whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold ${filter === item.key ? "bg-primary text-primaryInk" : "text-muted hover:text-ink"}`}
+                      value={item.key}
                     >
                       {item.label}
-                    </button>
-                  ))}
-                </div>
+                    </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
               </div>
               <div className="space-y-3">
                 {remaining.map((item) => (

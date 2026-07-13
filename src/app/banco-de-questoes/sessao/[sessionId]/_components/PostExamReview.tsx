@@ -2,17 +2,22 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import type { QuestionBankReportType } from "@/lib/api";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { cognitivePatternSummary } from "@/lib/guidanceCopy";
 import ErrorFlashcardsPanel from "./ErrorFlashcardsPanel";
-import ExamDebrief from "./ExamDebrief";
 import AttemptHistoryModal from "../../../_components/AttemptHistoryModal";
 import { PostExamTabs } from "./_postExamReview/PostExamTabs";
 import { ReportedItemsPanel } from "./_postExamReview/ReportedItemsPanel";
 import { usePostExamReviewData } from "./_postExamReview/usePostExamReviewData";
 import type { PostExamReviewProps, PostExamReviewTab } from "./_postExamReview/types";
 import { accuracyColor, cx, formatAccuracy, microNodes } from "./_postExamReview/utils";
+
+const ExamDebrief = dynamic(() => import("./ExamDebrief"), {
+  ssr: false,
+  loading: () => <div className="paper-skeleton h-24 rounded-xl border border-edge bg-surface" aria-hidden="true" />,
+});
 
 const REPORT_OPTIONS: Array<{ type: QuestionBankReportType; label: string }> = [
   { type: "wrong_answer", label: "Gabarito errado" },
@@ -152,24 +157,26 @@ export default function PostExamReview({
 
         {examLike && <ExamDebrief sessionId={session.session_id} />}
 
-        <header className="rounded-lg border border-edge bg-surface p-5 shadow-[var(--soft-shadow)]">
+        <header className="rounded-lg border border-edge bg-surface p-5">
           <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-                {resultLabel}
+                O que você fez · {resultLabel}
               </p>
               <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight">
                 {sessionDisplayLabel}
               </h1>
               <div className="mt-4 rounded-lg border border-primary/30 bg-[var(--amber-tint)] p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Ganho da sessão</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">O que você aprendeu</p>
                 <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight text-ink">{gainTitle}</h2>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{gainDetail}</p>
               </div>
             </div>
             <ProgressRing pct={accuracy * 100} size={132} color={accuracyColor(accuracy)} />
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <details className="mt-5">
+            <summary className="cursor-pointer text-sm font-semibold text-muted">Ver métricas da sessão</summary>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
             <div className="rounded-lg border border-edge bg-paper px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Acertos</p>
               <p className="mt-1 text-2xl font-bold text-success">{correctItems.length}</p>
@@ -190,11 +197,12 @@ export default function PostExamReview({
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Descartadas</p>
               <p className="mt-1 text-2xl font-bold text-muted">{excludedItems.length}</p>
             </div>
-          </div>
+            </div>
+          </details>
         </header>
 
         {activeReview && (
-          <section className="rounded-lg border border-primary bg-surface p-4 shadow-[var(--soft-shadow)]">
+          <section className="rounded-lg border border-primary bg-surface p-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
@@ -227,20 +235,25 @@ export default function PostExamReview({
           />
         )}
 
-        <section className="rounded-lg border border-primary bg-surface p-4 shadow-[var(--soft-shadow)]">
+        <section className="rounded-lg border border-primary bg-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Próxima melhor ação</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">O que vale fazer agora</p>
               <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight">{primaryAction.title}</h2>
               <p className="mt-1 text-sm text-muted">{primaryAction.detail}</p>
             </div>
-            <button
-              type="button"
-              onClick={() => router.push("/revisar")}
-              className="rounded-lg border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105"
-            >
-              Continuar minha revisão
-            </button>
+            <div className="flex flex-col gap-2 sm:items-end">
+              <button
+                type="button"
+                onClick={() => router.push(primaryAction.href)}
+                className="paper-control min-h-11 border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:brightness-105"
+              >
+                {primaryAction.title}
+              </button>
+              <button type="button" onClick={() => router.push("/hoje")} className="min-h-11 px-3 text-sm font-semibold text-muted hover:text-ink">
+                Encerrar por hoje
+              </button>
+            </div>
           </div>
           {cognitivePattern && (
             <div className="mt-4 rounded-lg border border-warning/40 bg-[var(--amber-tint)] p-3">

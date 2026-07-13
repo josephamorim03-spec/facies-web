@@ -3,25 +3,35 @@
 @tailwind utilities;
 
 :root {
-  --color-paper: #F7F5EF;
-  --color-surface: #FFFCF7;
-  --color-surface-muted: #F0EDE6;
-  --color-edge:  #DED8CC;
-  --color-ink:   #202329;
-  --color-muted: #66707A;
-  --color-primary: #1560BE;
+  color-scheme: light;
+  --color-paper: #F5F2E9;
+  --color-surface: #FBF9F3;
+  --color-surface-muted: #ECE8DE;
+  --color-edge: #D4CEC1;
+  --color-ink: #1D211F;
+  --color-muted: #59635F;
+  --color-primary: #175A72;
   --color-primary-ink: #FBFCF8;
-  --color-accent: #1A6B72;
+  --color-accent: #4F665D;
   --color-accent-ink: #FBFCF8;
-  --color-success: #228453;
-  --color-danger: #B4232D;
-  --color-warning: #A66A00;
-  --color-info: #1D5D8F;
-  --amber-tint:  #FFF6E2;
-  --soft-shadow: 0 14px 34px rgba(29, 38, 45, 0.07);
+  --color-success: #2E6B4D;
+  --color-danger: #9D313A;
+  --color-warning: #855B0A;
+  --color-info: #315F77;
+  --amber-tint: #F5EBD3;
+  --soft-shadow: 0 10px 28px rgba(29, 33, 31, 0.055);
+  --overlay-shadow: 0 18px 48px rgba(29, 33, 31, 0.16);
   --range-fill:  var(--color-primary);
-  --range-rest:  #DCD8CE;
+  --range-rest: #D4CEC1;
   --range-thumb: var(--color-primary);
+  --radius-control: 0.5rem;
+  --radius-surface: 0.75rem;
+  --reading-measure: 68ch;
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 240ms;
+  --ease-paper: cubic-bezier(0.2, 0, 0, 1);
+  --mobile-nav-height: 4rem;
 
   /* Area palette — matches tailwind.config.js area.* tokens */
   --area-go:  #B65AA0;
@@ -34,22 +44,24 @@
 }
 
 .dark {
-  --color-paper: #121411;
-  --color-surface: #191B17;
-  --color-surface-muted: #22241F;
-  --color-edge:  #33362F;
-  --color-ink:   #F1EFE7;
-  --color-muted: #A4A096;
-  --color-primary: #8BB7E4;
-  --color-primary-ink: #07121F;
-  --color-accent: #4FBEC6;
-  --color-accent-ink: #071214;
-  --color-success: #68C48F;
+  color-scheme: dark;
+  --color-paper: #151613;
+  --color-surface: #1B1C18;
+  --color-surface-muted: #24251F;
+  --color-edge: #383A32;
+  --color-ink: #F0EEE5;
+  --color-muted: #AAA79D;
+  --color-primary: #91C5D8;
+  --color-primary-ink: #0D191D;
+  --color-accent: #9EB9AB;
+  --color-accent-ink: #111915;
+  --color-success: #75C397;
   --color-danger: #F07983;
   --color-warning: #E3B85B;
   --color-info: #79B8E6;
-  --amber-tint:  #2A2418;
-  --soft-shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
+  --amber-tint: #2A251A;
+  --soft-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  --overlay-shadow: 0 22px 56px rgba(0, 0, 0, 0.42);
   --range-fill:  var(--color-primary);
   --range-rest:  #33362F;
   --range-thumb: var(--color-primary);
@@ -65,6 +77,11 @@
     @apply bg-paper text-ink font-sans leading-relaxed;
     font-variant-ligatures: none;
     font-feature-settings: "liga" 0, "clig" 0;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
   }
 
   ::selection {
@@ -97,21 +114,23 @@
 
 @layer components {
   .km-card {
-    @apply rounded-2xl border border-edge bg-surface;
-    box-shadow: var(--soft-shadow);
+    @apply border border-edge bg-surface;
+    border-radius: var(--radius-surface);
   }
 
   .km-panel {
-    @apply rounded-xl border border-edge bg-surface;
+    @apply border border-edge bg-surface;
+    border-radius: var(--radius-surface);
   }
 
   .surface-hero {
-    @apply rounded-xl border border-edge bg-surface;
-    box-shadow: var(--soft-shadow);
+    @apply border border-edge bg-surface;
+    border-radius: var(--radius-surface);
   }
 
   .surface-panel {
-    @apply rounded-xl border border-edge bg-surface;
+    @apply border border-edge bg-surface;
+    border-radius: var(--radius-surface);
   }
 
   .surface-quiet {
@@ -119,7 +138,8 @@
   }
 
   .km-chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-edge bg-surface px-3 py-1 text-xs font-medium text-muted transition-colors;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-edge bg-surface px-3 py-1 text-xs font-medium text-muted;
+    transition: background-color var(--motion-fast) var(--ease-paper), border-color var(--motion-fast) var(--ease-paper), color var(--motion-fast) var(--ease-paper);
   }
 
   .km-chip-active {
@@ -129,6 +149,42 @@
   .km-muted-surface {
     background: color-mix(in srgb, var(--color-surface-muted) 74%, transparent);
   }
+
+  .paper-surface {
+    @apply border border-edge bg-surface;
+    border-radius: var(--radius-surface);
+  }
+
+  .paper-control {
+    border-radius: var(--radius-control);
+    transition: background-color var(--motion-fast) var(--ease-paper), border-color var(--motion-fast) var(--ease-paper), color var(--motion-fast) var(--ease-paper), opacity var(--motion-fast) var(--ease-paper);
+  }
+
+  .paper-eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-muted;
+  }
+
+  .paper-reading {
+    width: 100%;
+    max-width: var(--reading-measure);
+    text-align: left;
+    line-height: 1.68;
+    text-wrap: pretty;
+  }
+
+  .paper-overlay {
+    box-shadow: var(--overlay-shadow);
+  }
+
+  .paper-skeleton {
+    @apply bg-surfaceMuted;
+    animation: paper-skeleton-enter var(--motion-slow) var(--ease-paper) both;
+  }
+}
+
+@keyframes paper-skeleton-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ── Range slider — cross-browser consistent ─────────────────────────────── */
@@ -213,7 +269,7 @@ input[type="range"]:focus-visible {
 }
 
 .drawer-enter {
-  animation: drawer-slide-in 0.2s ease-out;
+  animation: drawer-slide-in var(--motion-base) var(--ease-paper);
 }
 @keyframes drawer-slide-in {
   from { transform: translateX(-100%); }
@@ -224,7 +280,7 @@ input[type="range"]:focus-visible {
   from { transform: translateY(10px); opacity: 0; }
   to   { transform: translateY(0); opacity: 1; }
 }
-.toast-enter { animation: toast-enter 150ms ease-out; }
+.toast-enter { animation: toast-enter var(--motion-fast) var(--ease-paper); }
 
 /* Tela: charts fora do viewport mas montados com largura real (não usar display:none) */
 @media screen {
