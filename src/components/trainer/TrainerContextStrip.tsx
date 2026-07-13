@@ -32,6 +32,12 @@ export function TrainerContextStrip({
           Sua ação de hoje
         </p>
         <p className="truncate text-sm font-medium text-ink">{action.title}</p>
+        <p className="mt-0.5 text-xs text-muted">
+          {action.estimated_minutes} min
+          {action.pedagogical_confidence?.label
+            ? ` · ${action.pedagogical_confidence.label}`
+            : ""}
+        </p>
       </div>
       <TrainerActionCTA
         action={action}

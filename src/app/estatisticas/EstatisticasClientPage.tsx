@@ -15,6 +15,7 @@ import { useEstatisticasPageState } from "./_hooks/useEstatisticasPageState";
 import { BancoDeQuestoesInsights } from "./_components/BancoDeQuestoesInsights";
 import { MetacognitionInsights } from "./_components/MetacognitionInsights";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
+import { TrainerContextStrip } from "@/components/trainer/TrainerContextStrip";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 
@@ -309,6 +310,7 @@ export default function EstatisticasClientPage() {
 
   return (
     <div className="space-y-6">
+      <TrainerContextStrip sourcePage="/acompanhar" />
       <DesempenhoTab
         loading={false}
         error=""

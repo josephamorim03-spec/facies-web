@@ -88,7 +88,9 @@ export function withTrainerHandoff(
   href: string,
   recommendationId: string,
   sourcePage: string,
+  actionId?: string | null,
 ): string {
   const sep = href.includes("?") ? "&" : "?";
-  return `${href}${sep}rec=${encodeURIComponent(recommendationId)}&src=${encodeURIComponent(sourcePage)}`;
+  const action = actionId ? `&act=${encodeURIComponent(actionId)}` : "";
+  return `${href}${sep}rec=${encodeURIComponent(recommendationId)}&src=${encodeURIComponent(sourcePage)}${action}`;
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { getAuthToken } from "@/lib/auth";
 import { useToast } from "@/lib/useToast";
+import { getAPIErrorCode } from "@/lib/api/shared/http";
 import { recordTrainerRecommendationEvent, startTrainerAction, type TrainerAction } from "@/lib/api";
 import { startTrainerQuestionSession, withTrainerHandoff } from "@/lib/trainer/session";
 
@@ -33,12 +34,14 @@ export function TrainerActionCTA({
   sourcePage,
   label,
   className = "",
+  onStale,
 }: {
   action: TrainerAction;
   recommendationId: string;
   sourcePage: string;
   label?: string;
   className?: string;
+  onStale?: () => void;
 }) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -56,15 +59,26 @@ export function TrainerActionCTA({
       try {
         const result = await startTrainerAction(token, action.action_id, {
           recommendation_id: recommendationId,
-          action,
           source_page: sourcePage,
         });
         if (result.session_id) {
           router.push(`/banco-de-questoes/sessao/${result.session_id}`);
           return;
         }
-        router.push(result.href ?? action.href ?? FALLBACK_HREF[action.kind] ?? "/hoje");
+        const target = result.href ?? action.href ?? FALLBACK_HREF[action.kind] ?? "/hoje";
+        router.push(
+          action.kind === "flashcard_review"
+            ? withTrainerHandoff(target, recommendationId, sourcePage, action.action_id)
+            : target,
+        );
       } catch (err) {
+        if (getAPIErrorCode(err) === "stale_recommendation") {
+          showToast("Sua prioridade mudou com os dados mais recentes. Atualizamos a fila.", "info");
+          onStale?.();
+          router.refresh();
+          setBusy(false);
+          return;
+        }
         const message = err instanceof Error ? err.message : "Não foi possível iniciar a ação.";
         showToast(message, "error");
         setBusy(false);
@@ -100,7 +114,7 @@ export function TrainerActionCTA({
         payload: { source_page: sourcePage, action_kind: action.kind, target_href: target },
       }).catch(() => null);
     }
-    router.push(withTrainerHandoff(target, recommendationId, sourcePage));
+    router.push(withTrainerHandoff(target, recommendationId, sourcePage, action.action_id));
   }
 
   return (

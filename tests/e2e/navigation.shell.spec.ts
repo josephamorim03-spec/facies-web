@@ -196,12 +196,12 @@ test.describe("Navigation shell", () => {
 
   const desktopCases = [
     { path: "/hoje", activeHref: "/hoje" },
-    { path: "/calendario", activeHref: "/hoje" },
-    { path: "/caderno", activeHref: "/cards-adaptativos" },
-    { path: "/revisoes", activeHref: "/revisoes" },
-    { path: "/dados-e-relatorios/graficos", activeHref: "/estatisticas" },
-    { path: "/estatisticas/relatorio", activeHref: "/estatisticas" },
-    { path: "/desempenho", activeHref: "/desempenho" },
+    { path: "/calendario", activeHref: "/planejar" },
+    { path: "/caderno", activeHref: "/revisar" },
+    { path: "/revisoes", activeHref: "/acompanhar" },
+    { path: "/dados-e-relatorios/graficos", activeHref: "/acompanhar" },
+    { path: "/estatisticas/relatorio", activeHref: "/acompanhar" },
+    { path: "/desempenho", activeHref: "/planejar" },
   ];
 
   for (const { path, activeHref } of desktopCases) {
@@ -238,12 +238,12 @@ test.describe("Navigation shell", () => {
     await page.goto("/hoje");
     await navSidebar(page).hover();
 
-    const desempenhoItem = page.locator("aside [data-nav-item-href='/estatisticas']");
-    const desempenhoLabel = desempenhoItem.locator("span");
-    await expect(desempenhoItem).toBeVisible();
-    await expect(desempenhoLabel).toHaveText("Desempenho");
+    const acompanharItem = page.locator("aside [data-nav-item-href='/acompanhar']");
+    const acompanharLabel = acompanharItem.locator("span");
+    await expect(acompanharItem).toBeVisible();
+    await expect(acompanharLabel).toHaveText("Acompanhar");
 
-    const [itemBox, labelBox] = await Promise.all([desempenhoItem.boundingBox(), desempenhoLabel.boundingBox()]);
+    const [itemBox, labelBox] = await Promise.all([acompanharItem.boundingBox(), acompanharLabel.boundingBox()]);
     expect(itemBox).not.toBeNull();
     expect(labelBox).not.toBeNull();
     if (!itemBox || !labelBox) return;
@@ -290,7 +290,7 @@ test.describe("Navigation shell mobile drawer", () => {
 
     const activeItems = page.locator("[data-nav-surface='drawer'][data-nav-active='true']");
     await expect(activeItems).toHaveCount(1);
-    await expect(activeItems).toHaveAttribute("data-nav-item-href", "/desempenho");
+    await expect(activeItems).toHaveAttribute("data-nav-item-href", "/planejar");
     await expect(activeItems).toHaveAttribute("aria-current", "page");
   });
 

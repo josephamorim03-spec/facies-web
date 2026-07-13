@@ -662,50 +662,126 @@ export async function runQuestionBankAdminAll(
   });
 }
 
-export type QuestionBankAiPreview = {
-  scope: { imported_file_id: string | null };
-  pending_by_stage: Record<string, number>;
-  estimated_llm_calls: number;
+export type QuestionBankAiStageTokens = {
+  prompt_tokens: number;
+  completion_tokens: number;
+  sampled: number;
 };
 
-export async function getQuestionBankAdminAiPreview(
-  importedFileId?: string,
-): Promise<QuestionBankAiPreview> {
-  const params = new URLSearchParams();
-  if (importedFileId) params.set("imported_file_id", importedFileId);
-  const qs = params.toString();
-  return api<QuestionBankAiPreview>(
-    `/api/admin/question-bank/pipeline/ai-preview${qs ? `?${qs}` : ""}`,
+export type QuestionBankAiCostEstimate = {
+  selected: number;
+  estimated_llm_calls: number;
+  estimated_cheap_calls: number;
+  estimated_strong_calls: number;
+  avg_tokens_by_stage: { cheap: QuestionBankAiStageTokens; strong: QuestionBankAiStageTokens };
+  cost_per_cheap_call_usd: number;
+  cost_per_strong_call_usd: number;
+  estimated_cost_usd: number;
+  estimated_cost_brl: number;
+  usd_brl_rate: number;
+} | null;
+
+export type QuestionBankAiEnrichmentResult = {
+  dry_run: boolean;
+  selected: number;
+  enqueued: number;
+  batch_mode?: boolean;
+  batch_id?: string | null;
+  counts: Record<string, number>;
+  cost_estimate: QuestionBankAiCostEstimate;
+  results: Array<{
+    status?: string;
+    action?: string;
+    question_id?: string;
+    job_id?: string;
+    [key: string]: unknown;
+  }>;
+};
+
+// Preview the economical AI enrichment (dry-run) against the real production endpoint.
+// Selection is global — the best N published questions still missing enrichment.
+export async function previewQuestionBankAdminAiEnrichment(options?: {
+  selectionLimit?: number;
+  questionIds?: string[];
+}): Promise<QuestionBankAiEnrichmentResult> {
+  return api<QuestionBankAiEnrichmentResult>(
+    "/api/admin/question-bank/ai-enrichment/request-batch",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+      body: JSON.stringify({
+        dry_run: true,
+        selection_limit: options?.selectionLimit,
+        question_ids: options?.questionIds,
+      }),
+    },
   );
 }
 
-export async function runQuestionBankAdminAi(options: {
-  maxLlmCalls: number;
-  includeStrong?: boolean;
-  importedFileId?: string;
-  workers?: number;
+export async function runQuestionBankAdminAiEnrichment(options: {
+  maxNewJobs: number;
+  selectionLimit?: number;
+  questionIds?: string[];
   batch?: boolean;
-}): Promise<{
-  max_llm_calls: number;
-  llm_calls_used: number;
-  remaining_budget: number;
-  batch?: boolean;
-  totals: Record<string, number>;
-  scope: { imported_file_id: string | null };
-}> {
-  const params = new URLSearchParams({ max_llm_calls: String(options.maxLlmCalls) });
-  if (options.includeStrong === false) params.set("include_strong", "false");
-  if (options.importedFileId) params.set("imported_file_id", options.importedFileId);
-  if (options.workers) params.set("workers", String(options.workers));
-  if (options.batch) params.set("batch", "true");
-  return api<{
-    max_llm_calls: number;
-    llm_calls_used: number;
-    remaining_budget: number;
-    batch?: boolean;
-    totals: Record<string, number>;
-    scope: { imported_file_id: string | null };
-  }>(`/api/admin/question-bank/pipeline/run-ai?${params.toString()}`, { method: "POST" });
+}): Promise<QuestionBankAiEnrichmentResult> {
+  return api<QuestionBankAiEnrichmentResult>(
+    "/api/admin/question-bank/ai-enrichment/request-batch",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+      body: JSON.stringify({
+        dry_run: false,
+        max_new_jobs: options.maxNewJobs,
+        selection_limit: options.selectionLimit,
+        question_ids: options.questionIds,
+        batch_mode: options.batch === true ? true : undefined,
+      }),
+    },
+  );
+}
+
+export type QuestionBankAdminPipelineJob = {
+  id: string;
+  job_type: string;
+  status: string;
+  question_id?: string | null;
+  candidate_id?: string | null;
+  attempts?: number;
+  max_attempts?: number;
+  error_log?: string | null;
+  updated_at?: string | null;
+};
+
+export async function getQuestionBankAdminPipelineJob(
+  jobId: string,
+): Promise<QuestionBankAdminPipelineJob> {
+  return api<QuestionBankAdminPipelineJob>(
+    `/api/admin/question-bank/pipeline/jobs/${encodeURIComponent(jobId)}`,
+  );
+}
+
+export type QuestionBankAiBatch = {
+  id: string;
+  stage: string;
+  status: string;
+  provider_batch_id?: string | null;
+  request_count: number;
+  completed_count: number;
+  failed_count: number;
+  total_tokens: number;
+  cost_usd: number;
+  cost_brl: number;
+  created_at?: string | null;
+  completed_at?: string | null;
+};
+
+export async function getQuestionBankAdminAiBatches(
+  limit = 10,
+): Promise<{ batches: QuestionBankAiBatch[] }> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  return api<{ batches: QuestionBankAiBatch[] }>(
+    `/api/admin/question-bank/ai-enrichment/batches?${params.toString()}`,
+  );
 }
 
 export async function getQuestionBankReviewQueue(

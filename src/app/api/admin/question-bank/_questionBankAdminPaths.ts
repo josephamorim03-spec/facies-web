@@ -3,7 +3,9 @@ export function isAllowedQuestionBankAdminPath(method: string, questionBankPath:
   const normalizedMethod = method.toUpperCase();
   const readOnlyPatterns = [
     /^\/v1\/admin\/ui\/config$/,
-    /^\/v1\/admin\/pipeline\/(status|readiness|ai-preview)$/,
+    /^\/v1\/admin\/pipeline\/(status|readiness)$/,
+    /^\/v1\/admin\/pipeline\/jobs\/[^/]+$/,
+    /^\/v1\/admin\/ai-enrichment\/batches$/,
     /^\/v1\/admin\/imports$/,
     /^\/v1\/admin\/imports\/[^/]+$/,
     /^\/v1\/admin\/imports\/[^/]+\/(candidates|pipeline-summary)$/,
@@ -21,7 +23,8 @@ export function isAllowedQuestionBankAdminPath(method: string, questionBankPath:
       /^\/v1\/admin\/imports\/(preview|files)$/,
       /^\/v1\/admin\/imports\/[^/]+\/compact$/,
       /^\/v1\/admin\/topics\/refresh-cache$/,
-      /^\/v1\/admin\/pipeline\/(process-batch|run-all|run-ai|backfill-fingerprints)$/,
+      /^\/v1\/admin\/pipeline\/(process-batch|run-all|backfill-fingerprints)$/,
+      /^\/v1\/admin\/ai-enrichment\/request-batch$/,
       /^\/v1\/admin\/questions\/[^/]+\/(resolve|analyze)$/,
       /^\/v1\/admin\/questions\/reports\/[^/]+\/(triage|repair)$/,
       /^\/v1\/admin\/student-taxonomy\/backfill$/,

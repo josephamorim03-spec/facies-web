@@ -136,11 +136,6 @@ export default function PostExamReview({
     dominantCognitiveTag,
     dominantCognitiveCount,
   );
-  const cognitivePatternHref =
-    dominantCognitiveTag === "knowledge_gap" && primaryWeakNode
-      ? primaryAction.href
-      : "/banco-de-questoes?answer_status=wrong";
-
   const TABS: { id: PostExamReviewTab; label: string; count?: number }[] = [
     { id: "resumo", label: "Resumo" },
     { id: "erros", label: "Erros", count: wrongItems.length },
@@ -241,10 +236,10 @@ export default function PostExamReview({
             </div>
             <button
               type="button"
-              onClick={() => router.push(primaryAction.href)}
+              onClick={() => router.push("/revisar")}
               className="rounded-lg border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105"
             >
-              Começar agora
+              Continuar minha revisão
             </button>
           </div>
           {cognitivePattern && (
@@ -260,10 +255,10 @@ export default function PostExamReview({
               </p>
               <button
                 type="button"
-                onClick={() => router.push(cognitivePatternHref)}
+                onClick={() => router.push("/revisar")}
                 className="mt-3 rounded-lg border border-warning/40 bg-surface px-3 py-1.5 text-xs font-semibold text-warning hover:border-warning"
               >
-                Treinar esse padrão
+                Recalibrar próximo passo
               </button>
             </div>
           )}
@@ -289,10 +284,10 @@ export default function PostExamReview({
             {scheduledCount > 0 && (
               <button
                 type="button"
-                onClick={() => router.push("/cronograma")}
+                onClick={() => router.push("/revisar")}
                 className="rounded-lg border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
               >
-                Ver agenda
+                Continuar revisão
                 <span className="mt-1 block text-xs font-normal text-muted">{scheduledCount} {scheduledCount === 1 ? "revisão criada" : "revisões criadas"}</span>
               </button>
             )}
@@ -350,7 +345,7 @@ export default function PostExamReview({
                 {wrongItems.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => router.push(`/banco-de-questoes?answer_status=wrong`)}
+                    onClick={() => router.push("/revisar")}
                     className="flex w-full items-center justify-between rounded-xl border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                   >
                     <div>
@@ -363,7 +358,7 @@ export default function PostExamReview({
                 {finalizeOut && finalizeOut.created_tasks.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => router.push("/cronograma")}
+                    onClick={() => router.push("/revisar")}
                     className="flex w-full items-center justify-between rounded-xl border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                   >
                     <div>
@@ -377,7 +372,7 @@ export default function PostExamReview({
                 )}
                 <button
                   type="button"
-                  onClick={() => router.push(`/banco-de-questoes`)}
+                  onClick={() => router.push("/praticar")}
                   className="flex w-full items-center justify-between rounded-xl border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                 >
                   <div>

@@ -28,9 +28,7 @@ export function isNavItemActive(pathname: string, item: NavItemConfig): boolean 
   });
 }
 
-// Fase 2 — cada tela é uma vista do treinador (agir, revisar, medir, planejar).
-// Grupo 1 = ações principais; grupo 2 = itens secundários/overflow do drawer.
-// `isNavItemActive` ignora querystring → nunca usar `?tipo=...` em groupPaths.
+// A navegação expõe intenções; os módulos continuam como ferramentas internas.
 export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
   {
     items: [
@@ -38,52 +36,52 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
         href: "/hoje",
         label: "HOJE",
         shortLabel: "Hoje",
-        groupPaths: ["/hoje", "/cronograma", "/calendario", "/agenda-operacional"],
+        groupPaths: ["/hoje"],
       },
       {
-        href: "/banco-de-questoes",
-        label: "QUESTÕES",
-        shortLabel: "Questões",
-        groupPaths: ["/banco-de-questoes"],
+        href: "/praticar",
+        label: "PRATICAR",
+        shortLabel: "Praticar",
+        groupPaths: ["/praticar", "/banco-de-questoes"],
       },
       {
-        href: "/cards-adaptativos",
-        label: "CARDS",
-        shortLabel: "Cards",
-        groupPaths: ["/cards-adaptativos", "/revisao-turbo", "/caderno"],
+        href: "/revisar",
+        label: "REVISAR",
+        shortLabel: "Revisar",
+        groupPaths: ["/revisar", "/cards-adaptativos", "/revisao-turbo", "/caderno"],
       },
     ],
   },
   {
     items: [
       {
-        // Rótulo "Desempenho" = análise (/estatisticas). NÃO é a rota /desempenho (metas).
-        href: "/estatisticas",
-        label: "DESEMPENHO",
-        shortLabel: "Desempenho",
+        href: "/acompanhar",
+        label: "ACOMPANHAR",
+        shortLabel: "Acompanhar",
         groupPaths: [
+          "/acompanhar",
           "/estatisticas",
           "/estatisticas/graficos",
           "/estatisticas/relatorio",
           "/dados-e-relatorios",
           "/dados-e-relatorios/graficos",
           "/dados-e-relatorios/relatorio",
+          "/revisoes",
+          "/provas",
         ],
       },
       {
-        // "Histórico" = o log de sessões (treinos + simulados); Simulados é um
-        // filtro (?tipo=provas), não um destino. /provas redireciona pra cá.
-        href: "/revisoes",
-        label: "HISTÓRICO",
-        shortLabel: "Histórico",
-        groupPaths: ["/revisoes"],
-      },
-      {
-        // "Metas" = metas/rotina — a rota /desempenho (re-exportada por /rotina-e-metas).
-        href: "/desempenho",
-        label: "METAS",
-        shortLabel: "Metas",
-        groupPaths: ["/desempenho", "/rotina-e-metas"],
+        href: "/planejar",
+        label: "PLANEJAR",
+        shortLabel: "Planejar",
+        groupPaths: [
+          "/planejar",
+          "/desempenho",
+          "/rotina-e-metas",
+          "/cronograma",
+          "/calendario",
+          "/agenda-operacional",
+        ],
       },
     ],
   },

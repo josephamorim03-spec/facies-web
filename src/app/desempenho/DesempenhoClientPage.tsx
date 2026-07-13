@@ -5,6 +5,7 @@ import {
   filterEffectiveRoutineEvents,
 } from "@/lib/calendarEventVisibility";
 import { RotinaTab } from "./_components/RotinaTab";
+import { TrainerContextStrip } from "@/components/trainer/TrainerContextStrip";
 import { usePerfilPageState } from "./_hooks/usePerfilPageState";
 import { isInternalSkipRoutineEvent } from "./_lib/perfilShared";
 
@@ -155,6 +156,7 @@ export default function PerfilPage() {
 
   return (
     <div className="space-y-6">
+      <TrainerContextStrip key={savedMsg || "trainer-plan"} sourcePage="/planejar" />
       <RotinaTab
         token={token}
         displayName={displayName}

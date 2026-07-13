@@ -1,6 +1,7 @@
 "use client";
 
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   getOperationalTurboOverview,
   recordTrainerRecommendationEvent,
@@ -226,6 +227,7 @@ function CardsAreaHeader({ selectedArea, onSelect, interactive = true, showLink 
 }
 
 export default function RevisaoTurboClientPage() {
+  const router = useRouter();
   const isDesktopNavigation = useDesktopNavigationMode();
   const { setTitle, setActions } = useNavbar();
   const [token, setToken] = useState("");
@@ -327,7 +329,15 @@ export default function RevisaoTurboClientPage() {
     setFinalTurboOverview(null);
     setSessionStarted(true);
     setError("");
-    await startSession(undefined, count, selectedAreaCode);
+    const params = new URLSearchParams(window.location.search);
+    const recommendationId = params.get("rec");
+    const actionId = params.get("act");
+    await startSession(
+      undefined,
+      count,
+      selectedAreaCode,
+      recommendationId && actionId ? { recommendationId, actionId } : undefined,
+    );
     recordTrainerStartedFromHandoff();
   }
 
@@ -400,6 +410,7 @@ export default function RevisaoTurboClientPage() {
           canSwipeNext={canNavigateNext}
           sessionStarted={sessionStarted}
           onCloseAction={handleClose}
+          onContinueReviewAction={() => router.push("/revisar")}
           onRevealAction={() => setTurboRevealed(true)}
           onStartAction={handleStart}
           onStartRepeatAction={startRepeat}

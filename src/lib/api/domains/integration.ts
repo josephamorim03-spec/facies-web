@@ -17,6 +17,7 @@ export type CapabilitiesResponse = {
 };
 
 export type LearningActionStartResult = {
+  run_id: string | null;
   action_id: string;
   action_kind: string;
   status: "started" | "handoff";
@@ -39,7 +40,7 @@ export async function startTrainerAction(
   actionId: string,
   payload: {
     recommendation_id: string;
-    action: TrainerAction;
+    action?: TrainerAction;
     source_page: string;
     event_id?: string;
   },

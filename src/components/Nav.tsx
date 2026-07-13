@@ -111,6 +111,10 @@ type IconComponent = (props: { className?: string }) => React.JSX.Element;
 
 const ICON_MAP: Record<string, IconComponent> = {
   "/hoje": IconToday,
+  "/praticar": IconNotebook,
+  "/revisar": IconCards,
+  "/acompanhar": IconChart,
+  "/planejar": IconCalendar,
   "/agenda-operacional": IconCalendar,
   "/cronograma": IconCalendar,
   "/banco-de-questoes": IconNotebook,

@@ -113,7 +113,12 @@ export function useTurboSession({ token, onPostActionSync }: UseTurboSessionArgs
     cardStartedAtRef.current = null;
   }, []);
 
-  const startSession = useCallback(async (noteIds?: string[], targetCards?: number, area?: OperationalAreaCode) => {
+  const startSession = useCallback(async (
+    noteIds?: string[],
+    targetCards?: number,
+    area?: OperationalAreaCode,
+    trainer?: { recommendationId: string; actionId: string },
+  ) => {
     turboActionLockRef.current = false;
     setTurboLoading(true);
     setTurboFeedback("");
@@ -129,6 +134,8 @@ export function useTurboSession({ token, onPostActionSync }: UseTurboSessionArgs
             ...(noteIds?.length ? { noteIds } : {}),
             ...(typeof targetCards === "number" ? { targetCards } : {}),
             ...(area ? { area } : {}),
+            ...(trainer?.recommendationId ? { recommendationId: trainer.recommendationId } : {}),
+            ...(trainer?.actionId ? { actionId: trainer.actionId } : {}),
           }
           : undefined,
       );

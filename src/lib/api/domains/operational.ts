@@ -327,12 +327,20 @@ export async function fetchTurboIntervalPreview(
 
 export async function startOperationalTurboSession(
   token: string,
-  options?: { noteIds?: string[]; targetCards?: number; area?: OperationalAreaCode },
+  options?: {
+    noteIds?: string[];
+    targetCards?: number;
+    area?: OperationalAreaCode;
+    recommendationId?: string;
+    actionId?: string;
+  },
 ): Promise<OperationalTurboSessionSnapshot> {
   const payload: Record<string, unknown> = {};
   if (options?.noteIds?.length) payload.note_ids = options.noteIds;
   if (typeof options?.targetCards === "number" && options.targetCards >= 1) payload.target_cards = options.targetCards;
   if (options?.area) payload.area = options.area;
+  if (options?.recommendationId) payload.recommendation_id = options.recommendationId;
+  if (options?.actionId) payload.action_id = options.actionId;
   return api<OperationalTurboSessionSnapshot>("/api/notes/operational/turbo/session/start", {
     method: "POST",
     headers: authHeader(token),

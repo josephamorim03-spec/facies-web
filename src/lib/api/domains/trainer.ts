@@ -1,6 +1,7 @@
 import { api, authHeader } from "../shared/http";
 
 export type TrainerActionKind =
+  | "resume_session"
   | "question_block"
   | "scheduled_review"
   | "guided_correction"
@@ -20,6 +21,21 @@ export type TrainerEventType =
 
 export type TrainerWhyFactor = { factor: string; detail: string };
 export type TrainerSignal = { key: string; label: string; severity: TrainerSignalSeverity };
+export type TrainerConfidenceLevel = "low" | "medium" | "high";
+export type TrainerPedagogicalConfidence = {
+  level: TrainerConfidenceLevel;
+  label: string;
+  reason: string;
+  evidence_count: number;
+  session_count: number;
+  editorial_coverage_pct: number | null;
+  missing_sources: string[];
+};
+export type TrainerEditorialQuality = {
+  state: "reviewed" | "mixed" | "consolidating" | "unknown" | "blocked";
+  label: string;
+  coverage_pct: number | null;
+};
 
 export type TrainerStartPayload = {
   mode?: string | null;
@@ -49,6 +65,7 @@ export type TrainerAction = {
   signals: TrainerSignal[];
   start_payload: TrainerStartPayload | null;
   href: string | null;
+  pedagogical_confidence?: TrainerPedagogicalConfidence | null;
 };
 
 export type TrainerClosedLoop = {
@@ -67,6 +84,31 @@ export type TrainerDailyLoad = {
 
 export type TrainerStateSummary = { headline: string; detail: string | null };
 
+export type TrainerEvidence = {
+  key: string;
+  label: string;
+  value: number | string;
+  unit: string | null;
+  kind: "observed" | "estimated";
+  confidence: "low" | "medium" | "high";
+  quality_context?: {
+    editorial_state: TrainerEditorialQuality["state"];
+    editorial_coverage_pct: number | null;
+    evidence_count: number;
+    session_count: number;
+    reasons: string[];
+  } | null;
+};
+
+export type TrainerOutcome = {
+  run_id: string;
+  action_kind: string;
+  completed_at: string;
+  narrative: string;
+  evidence: TrainerEvidence[];
+  next_step_changed: boolean;
+};
+
 export type TrainerPrescription = {
   recommendation_id: string;
   generated_at: string;
@@ -77,6 +119,8 @@ export type TrainerPrescription = {
   signals: TrainerSignal[];
   closed_loop: TrainerClosedLoop;
   daily_load: TrainerDailyLoad;
+  previous_outcome: TrainerOutcome | null;
+  plan_progress: { completed_actions: number; total_actions: number; label: string };
   missing_sources: string[];
 };
 
@@ -87,11 +131,67 @@ export type TrainerRecommendationEvent = {
   occurred_at: string;
 };
 
+export type TrainerReviewQueueItem = {
+  rank: number;
+  action: TrainerAction;
+  urgency_score: number;
+  expected_gain_score: number;
+  queue_reason: string;
+  expected_result: string;
+  editorial_quality: TrainerEditorialQuality;
+};
+
+export type TrainerReviewQueue = {
+  recommendation_id: string;
+  generated_at: string;
+  policy_version: string;
+  primary_item: TrainerReviewQueueItem | null;
+  items: TrainerReviewQueueItem[];
+  counts: { total: number; questions: number; corrections: number; cards: number };
+  daily_load: TrainerDailyLoad;
+  previous_outcome: TrainerOutcome | null;
+  missing_sources: string[];
+};
+
+export type TrainerDebrief = {
+  status: "completed" | "needs_review" | "unavailable";
+  question_id: string;
+  error_hypothesis: string;
+  socratic_question: string;
+  essential_concept: string;
+  next_micro_action: string;
+  confidence: TrainerConfidenceLevel;
+  provenance: string;
+  ai_disclosure: string;
+};
+
 /** The single daily prescription. Per-user, never shared-cached. */
 export async function getTrainerPrescription(token: string): Promise<TrainerPrescription> {
   return api<TrainerPrescription>("/api/trainer/prescription/today", {
     headers: authHeader(token),
     cache: "no-store",
+  });
+}
+
+export async function getTrainerReviewQueue(
+  token: string,
+  limit = 8,
+): Promise<TrainerReviewQueue> {
+  return api<TrainerReviewQueue>(`/api/trainer/review-queue?limit=${Math.max(1, Math.min(8, limit))}`, {
+    headers: authHeader(token),
+    cache: "no-store",
+  });
+}
+
+export async function createTrainerDebrief(
+  token: string,
+  runId: string,
+  questionId: string,
+): Promise<TrainerDebrief> {
+  return api<TrainerDebrief>(`/api/trainer/runs/${encodeURIComponent(runId)}/debrief`, {
+    method: "POST",
+    headers: authHeader(token),
+    body: JSON.stringify({ question_id: questionId }),
   });
 }
 

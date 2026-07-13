@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   compactQuestionBankAdminImport,
-  getQuestionBankAdminAiPreview,
+  getQuestionBankAdminAiBatches,
+  getQuestionBankAdminPipelineJob,
   getQuestionBankAdminStorageSummary,
-  runQuestionBankAdminAi,
-  type QuestionBankAiPreview,
+  previewQuestionBankAdminAiEnrichment,
+  runQuestionBankAdminAiEnrichment,
+  type QuestionBankAiBatch,
+  type QuestionBankAiEnrichmentResult,
   type QuestionBankAdminCompactionResult,
   type QuestionBankAdminPipelineSnapshot,
   type QuestionBankAdminPipelineStatus,
@@ -28,6 +31,22 @@ function formatBytes(value?: number | null): string {
   const digits = idx <= 1 ? 0 : 1;
   return `${scaled.toFixed(digits)} ${units[idx]}`;
 }
+
+const _brlFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 4,
+});
+
+function formatBRL(value?: number | null): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return _brlFormatter.format(value);
+}
+
+const TERMINAL_JOB_STATUSES = new Set(["done", "failed", "succeeded", "completed", "cancelled"]);
+
+type TrackedJob = { id: string; status: string };
 
 type Props = {
   pipelineStatus: QuestionBankAdminPipelineStatus | null;
@@ -68,24 +87,80 @@ export default function PipelineDiagnosticsPanel({
 }: Props) {
   const stages = selectedPipeline?.stage_stats || pipelineStatus?.stage_stats || [];
 
-  // IA dirigida: prévia de custo + execução com teto de chamadas, no escopo atual.
-  const [aiMaxCalls, setAiMaxCalls] = useState(100);
-  const [aiIncludeStrong, setAiIncludeStrong] = useState(true);
-  const [aiBatch, setAiBatch] = useState(true);
+  // IA dirigida: prévia de custo (dry-run) + execução com teto de questões, sobre as
+  // melhores questões sem enriquecimento (seleção global). Estado local sobrevive ao
+  // refresh do dashboard (o painel permanece montado); a prévia é reatualizada após rodar.
+  const [aiMaxNewJobs, setAiMaxNewJobs] = useState(25);
+  const [aiBatch, setAiBatch] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [aiPreview, setAiPreview] = useState<QuestionBankAiPreview | null>(null);
-  const [aiResult, setAiResult] = useState<Awaited<ReturnType<typeof runQuestionBankAdminAi>> | null>(null);
+  const [aiPreview, setAiPreview] = useState<QuestionBankAiEnrichmentResult | null>(null);
+  const [aiResult, setAiResult] = useState<QuestionBankAiEnrichmentResult | null>(null);
+  const [aiJobs, setAiJobs] = useState<TrackedJob[]>([]);
   const [storageBusy, setStorageBusy] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
   const [storageSummary, setStorageSummary] = useState<QuestionBankAdminStorageSummary | null>(null);
   const [compactDryRun, setCompactDryRun] = useState<QuestionBankAdminCompactionResult | null>(null);
 
+  // Poll enqueued enrichment jobs until they reach a terminal state (live "acompanhar").
+  const aiJobsRef = useRef<TrackedJob[]>([]);
+  aiJobsRef.current = aiJobs;
+  useEffect(() => {
+    const pending = aiJobs.filter((job) => !TERMINAL_JOB_STATUSES.has(job.status));
+    if (pending.length === 0) return;
+    let cancelled = false;
+    const timer = setInterval(async () => {
+      const current = aiJobsRef.current.filter((job) => !TERMINAL_JOB_STATUSES.has(job.status));
+      if (current.length === 0) return;
+      const updates = await Promise.all(
+        current.map(async (job) => {
+          try {
+            const fresh = await getQuestionBankAdminPipelineJob(job.id);
+            return { id: job.id, status: fresh.status };
+          } catch {
+            return job;
+          }
+        }),
+      );
+      if (cancelled) return;
+      setAiJobs((prev) =>
+        prev.map((job) => updates.find((upd) => upd.id === job.id) ?? job),
+      );
+    }, 4000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [aiJobs]);
+
+  const aiJobsDone = aiJobs.filter((job) => TERMINAL_JOB_STATUSES.has(job.status)).length;
+  const aiJobsFailed = aiJobs.filter((job) => job.status === "failed").length;
+
+  // Recent async enrichment batches (Workstream C): load on mount, poll while any is running.
+  const [aiBatches, setAiBatches] = useState<QuestionBankAiBatch[]>([]);
+  const refreshBatches = useCallback(async () => {
+    try {
+      const res = await getQuestionBankAdminAiBatches(8);
+      setAiBatches(res.batches || []);
+    } catch {
+      /* batches list is best-effort */
+    }
+  }, []);
+  useEffect(() => {
+    void refreshBatches();
+  }, [refreshBatches]);
+  useEffect(() => {
+    const hasPending = aiBatches.some((batch) => !TERMINAL_JOB_STATUSES.has(batch.status));
+    if (!hasPending) return;
+    const timer = setInterval(() => void refreshBatches(), 6000);
+    return () => clearInterval(timer);
+  }, [aiBatches, refreshBatches]);
+
   async function previewAi() {
     setAiBusy(true);
     setAiError(null);
     try {
-      setAiPreview(await getQuestionBankAdminAiPreview(selectedImportId || undefined));
+      setAiPreview(await previewQuestionBankAdminAiEnrichment({ selectionLimit: aiMaxNewJobs }));
     } catch (err) {
       setAiError(err instanceof Error ? err.message : "Falha ao prever custo da IA.");
     } finally {
@@ -97,13 +172,19 @@ export default function PipelineDiagnosticsPanel({
     setAiBusy(true);
     setAiError(null);
     try {
-      const result = await runQuestionBankAdminAi({
-        maxLlmCalls: aiMaxCalls,
-        includeStrong: aiIncludeStrong,
-        importedFileId: selectedImportId || undefined,
+      const result = await runQuestionBankAdminAiEnrichment({
+        maxNewJobs: aiMaxNewJobs,
+        selectionLimit: aiMaxNewJobs,
         batch: aiBatch,
       });
       setAiResult(result);
+      const tracked: TrackedJob[] = (result.results || [])
+        .filter((item) => typeof item.job_id === "string" && item.job_id)
+        .map((item) => ({ id: item.job_id as string, status: String(item.status ?? "pending") }));
+      setAiJobs(tracked);
+      if (result.batch_id) void refreshBatches();
+      // Re-run the dry-run so the pending/cost figures reflect what is left after enqueue.
+      void previewAi();
       onRefresh();
     } catch (err) {
       setAiError(err instanceof Error ? err.message : "Falha ao rodar IA dirigida.");
@@ -217,13 +298,14 @@ export default function PipelineDiagnosticsPanel({
           </button>
         </div>
 
-        {/* IA dirigida: escopo + teto de custo + prévia */}
+        {/* IA dirigida: seleção econômica de enriquecimento + custo em R$ + acompanhamento */}
         <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50/40 p-4 dark:border-amber-900/40 dark:bg-amber-950/10">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">IA dirigida (com teto de custo)</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">IA dirigida (enriquecimento econômico)</h3>
               <p className="text-xs text-gray-600 dark:text-gray-300">
-                Roda só as etapas de IA no escopo {selectedImportId ? "do import selecionado" : "global"}, limitado a um teto de chamadas.
+                Roda a IA nas melhores questões publicadas sem enriquecimento (microcompetência, perfil,
+                diagnóstico de distratores). Prévia é um <em>dry-run</em>; a execução enfileira até o limite.
               </p>
             </div>
             <button
@@ -237,23 +319,15 @@ export default function PipelineDiagnosticsPanel({
           </div>
           <div className="mt-3 flex flex-wrap items-end gap-3">
             <label className="grid gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
-              Teto de chamadas
+              Máx. de questões
               <input
                 type="number"
                 min={1}
-                max={5000}
-                value={aiMaxCalls}
-                onChange={(event) => setAiMaxCalls(Number(event.target.value))}
+                max={100}
+                value={aiMaxNewJobs}
+                onChange={(event) => setAiMaxNewJobs(Number(event.target.value))}
                 className="w-32 rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
               />
-            </label>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-              <input
-                type="checkbox"
-                checked={aiIncludeStrong}
-                onChange={(event) => setAiIncludeStrong(event.target.checked)}
-              />
-              Incluir IA forte
             </label>
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
               <input
@@ -261,7 +335,7 @@ export default function PipelineDiagnosticsPanel({
                 checked={aiBatch}
                 onChange={(event) => setAiBatch(event.target.checked)}
               />
-              Lote por chamada (econômico)
+              Modo lote assíncrono (~50% mais barato)
             </label>
             <button
               type="button"
@@ -269,22 +343,87 @@ export default function PipelineDiagnosticsPanel({
               disabled={aiBusy}
               className="rounded-lg bg-amber-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-amber-500 disabled:opacity-50"
             >
-              {aiBusy ? "Processando…" : "Rodar IA (com teto)"}
+              {aiBusy ? "Processando…" : "Rodar IA"}
             </button>
           </div>
           {aiError ? <p className="mt-2 text-sm text-red-600 dark:text-red-400">{aiError}</p> : null}
-          {aiPreview ? (
-            <p className="mt-3 text-sm text-gray-700 dark:text-gray-200">
-              Pendentes — barata: <span className="font-semibold">{aiPreview.pending_by_stage["cheap_ai_classify_question"] ?? 0}</span>
-              {" · "}forte: <span className="font-semibold">{aiPreview.pending_by_stage["strong_ai_classify_question"] ?? 0}</span>
-              {" · "}roteio: <span className="font-semibold">{aiPreview.pending_by_stage["route_question_analysis"] ?? 0}</span>
-              {" — estimativa de chamadas: "}<span className="font-semibold">{aiPreview.estimated_llm_calls}</span>
-            </p>
+          {aiPreview?.cost_estimate ? (
+            <div className="mt-3 rounded-lg border border-amber-200/70 bg-white/60 p-3 text-sm dark:border-amber-900/40 dark:bg-gray-950/40">
+              <p className="text-gray-700 dark:text-gray-200">
+                Selecionadas: <span className="font-semibold">{aiPreview.cost_estimate.selected}</span>
+                {" · "}chamadas estimadas: <span className="font-semibold">{aiPreview.cost_estimate.estimated_llm_calls}</span>
+                {" ("}
+                {aiPreview.cost_estimate.estimated_cheap_calls} barata + {aiPreview.cost_estimate.estimated_strong_calls} forte)
+              </p>
+              <p className="mt-1 text-gray-900 dark:text-gray-100">
+                Custo estimado:{" "}
+                <span className="font-semibold text-amber-700 dark:text-amber-300">
+                  {formatBRL(aiPreview.cost_estimate.estimated_cost_brl)}
+                </span>{" "}
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  (US$ {aiPreview.cost_estimate.estimated_cost_usd.toFixed(4)} · câmbio {aiPreview.cost_estimate.usd_brl_rate})
+                </span>
+              </p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Tokens médios/questão — barata: {aiPreview.cost_estimate.avg_tokens_by_stage.cheap.prompt_tokens}↑/
+                {aiPreview.cost_estimate.avg_tokens_by_stage.cheap.completion_tokens}↓
+                {aiPreview.cost_estimate.avg_tokens_by_stage.cheap.sampled === 0 ? " (estimado)" : ""}
+              </p>
+            </div>
           ) : null}
           {aiResult ? (
             <p className="mt-2 text-sm text-emerald-700 dark:text-emerald-300">
-              Rodou {aiResult.llm_calls_used} de {aiResult.max_llm_calls} chamada(s); restante {aiResult.remaining_budget}.
+              Enfileiradas {aiResult.enqueued} de {aiResult.selected} selecionada(s)
+              {aiResult.cost_estimate
+                ? ` · custo estimado ${formatBRL(aiResult.cost_estimate.estimated_cost_brl)}`
+                : ""}
+              .
             </p>
+          ) : null}
+          {aiJobs.length > 0 ? (
+            <div className="mt-2 text-sm text-gray-700 dark:text-gray-200">
+              Acompanhamento: <span className="font-semibold">{aiJobsDone}</span>/{aiJobs.length} concluído(s)
+              {aiJobsFailed > 0 ? (
+                <span className="text-red-600 dark:text-red-400"> · {aiJobsFailed} com falha</span>
+              ) : null}
+              {aiJobsDone < aiJobs.length ? (
+                <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">(atualizando…)</span>
+              ) : null}
+            </div>
+          ) : null}
+          {aiBatches.length > 0 ? (
+            <div className="mt-3 border-t border-amber-200/60 pt-3 dark:border-amber-900/40">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Lotes assíncronos recentes
+              </p>
+              <ul className="mt-2 space-y-1">
+                {aiBatches.map((batch) => (
+                  <li key={batch.id} className="flex flex-wrap items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                    <span
+                      className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
+                        batch.status === "completed"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                          : batch.status === "failed"
+                            ? "bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-300"
+                            : "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                      }`}
+                    >
+                      {batch.status}
+                    </span>
+                    <span>
+                      {batch.completed_count}/{batch.request_count} ok
+                      {batch.failed_count > 0 ? ` · ${batch.failed_count} falha` : ""}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {batch.total_tokens} tokens · {formatBRL(batch.cost_brl)}
+                    </span>
+                    {!TERMINAL_JOB_STATUSES.has(batch.status) ? (
+                      <span className="text-xs text-gray-400 dark:text-gray-500">(atualizando…)</span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
           ) : null}
         </div>
 

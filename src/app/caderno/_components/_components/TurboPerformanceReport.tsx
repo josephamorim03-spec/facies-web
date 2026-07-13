@@ -35,6 +35,7 @@ export type TurboPerformanceReportProps = {
   isActionLocked: boolean;
   onStartRepeatAction: () => void | Promise<void>;
   handleCloseClick: () => void;
+  onContinueReviewAction?: () => void;
 };
 
 export function TurboPerformanceReport({
@@ -52,6 +53,7 @@ export function TurboPerformanceReport({
   isActionLocked,
   onStartRepeatAction,
   handleCloseClick,
+  onContinueReviewAction,
 }: TurboPerformanceReportProps) {
   const avgTime = cardTimings.length > 0 ? cardTimings.reduce((a, b) => a + b, 0) / cardTimings.length : 0;
   const fastestTime = cardTimings.length > 0 ? Math.min(...cardTimings) : 0;
@@ -168,6 +170,15 @@ export function TurboPerformanceReport({
       )}
 
       <div className="flex flex-wrap gap-2">
+        {onContinueReviewAction && (
+          <button
+            type="button"
+            onClick={onContinueReviewAction}
+            className="rounded-xl border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk hover:brightness-105"
+          >
+            Continuar minha revisão
+          </button>
+        )}
         {canRepeatSession && (
           <button
             type="button"
@@ -183,7 +194,7 @@ export function TurboPerformanceReport({
           onClick={handleCloseClick}
           className="rounded-xl border border-ink bg-ink px-3 py-2 text-xs text-paper hover:opacity-90"
         >
-          Voltar ao caderno
+          {onContinueReviewAction ? "Voltar aos cards" : "Voltar ao caderno"}
         </button>
       </div>
     </div>

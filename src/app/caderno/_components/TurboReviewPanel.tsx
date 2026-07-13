@@ -39,6 +39,7 @@ type TurboReviewPanelProps = {
   canSwipeNext: boolean;
   cardTimings: number[];
   onCloseAction: () => void;
+  onContinueReviewAction?: () => void;
   onRevealAction: () => void;
   onStartAction: (count: number) => void | Promise<void>;
   onStartRepeatAction: () => void | Promise<void>;
@@ -74,6 +75,7 @@ export function TurboReviewPanel({
   canSwipeNext,
   cardTimings,
   onCloseAction,
+  onContinueReviewAction,
   onRevealAction,
   onStartAction,
   onStartRepeatAction,
@@ -260,6 +262,7 @@ export function TurboReviewPanel({
             isActionLocked={isActionLocked}
             onStartRepeatAction={onStartRepeatAction}
             handleCloseClick={sessionGuard.handleCloseClick}
+            onContinueReviewAction={onContinueReviewAction}
           />
         )}
       </div>

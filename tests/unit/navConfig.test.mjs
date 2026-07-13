@@ -10,44 +10,36 @@ function findItem(href) {
   return null;
 }
 
-test("primary nav keeps the four action hubs", () => {
-  const hrefs = NAV_GROUPS_CONFIG[0].items.map((item) => item.href);
-  assert.deepEqual(hrefs, ["/hoje", "/banco-de-questoes", "/cards-adaptativos", "/estatisticas"]);
-  assert.ok(!hrefs.includes("/provas"));
-
-  const cardsItem = findItem("/cards-adaptativos");
-  assert.ok(cardsItem, "item /cards-adaptativos must exist");
-  assert.equal(cardsItem.label, "CARDS");
-  assert.equal(cardsItem.shortLabel, "Cards");
+test("navigation exposes the five student intentions", () => {
+  const hrefs = NAV_GROUPS_CONFIG.flatMap((group) => group.items.map((item) => item.href));
+  assert.deepEqual(hrefs, ["/hoje", "/praticar", "/revisar", "/acompanhar", "/planejar"]);
 });
 
-test("secondary nav keeps Plano and Historico without Cronograma or Caderno", () => {
-  const secondaryHrefs = NAV_GROUPS_CONFIG[1].items.map((item) => item.href);
-  assert.deepEqual(secondaryHrefs, ["/desempenho", "/revisoes"]);
-
-  const historicoItem = findItem("/revisoes");
-  assert.ok(historicoItem, "item /revisoes must exist");
-  assert.equal(historicoItem.label, "HISTÓRICO");
-  assert.equal(historicoItem.shortLabel, "Histórico");
+test("legacy module routes activate their owning intention", () => {
+  assert.equal(isNavItemActive("/banco-de-questoes", findItem("/praticar")), true);
+  assert.equal(isNavItemActive("/caderno", findItem("/revisar")), true);
+  assert.equal(isNavItemActive("/estatisticas", findItem("/acompanhar")), true);
+  assert.equal(isNavItemActive("/cronograma", findItem("/planejar")), true);
 });
 
-test("Historico active state covers /revisoes with query, not /provas", () => {
-  const item = findItem("/revisoes");
+test("Acompanhar owns history and exam aliases", () => {
+  const item = findItem("/acompanhar");
   assert.ok(item);
   assert.equal(isNavItemActive("/revisoes", item), true);
   assert.equal(isNavItemActive("/revisoes?tipo=provas", item), true);
-  assert.equal(isNavItemActive("/provas", item), false);
+  assert.equal(isNavItemActive("/provas", item), true);
   assert.equal(isNavItemActive("/banco-de-questoes", item), false);
 });
 
-test("Cards stays active inside /caderno", () => {
-  const item = findItem("/cards-adaptativos");
+test("Revisar owns cards and caderno", () => {
+  const item = findItem("/revisar");
   assert.ok(item);
+  assert.equal(isNavItemActive("/cards-adaptativos", item), true);
   assert.equal(isNavItemActive("/caderno", item), true);
 });
 
-test("Hoje stays active inside calendar views", () => {
-  const item = findItem("/hoje");
+test("Planejar owns calendar views", () => {
+  const item = findItem("/planejar");
   assert.ok(item);
   assert.equal(isNavItemActive("/calendario", item), true);
   assert.equal(isNavItemActive("/agenda-operacional", item), true);

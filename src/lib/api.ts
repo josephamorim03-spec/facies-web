@@ -321,6 +321,8 @@ export type {
 
 // Trainer domain (single daily prescription)
 export {
+  createTrainerDebrief,
+  getTrainerReviewQueue,
   getTrainerPrescription,
   recordTrainerRecommendationEvent,
 } from "./api/domains/trainer";
@@ -335,6 +337,11 @@ export type {
   TrainerClosedLoop,
   TrainerDailyLoad,
   TrainerWhyFactor,
+  TrainerReviewQueue,
+  TrainerReviewQueueItem,
+  TrainerPedagogicalConfidence,
+  TrainerEditorialQuality,
+  TrainerDebrief,
 } from "./api/domains/trainer";
 
 // Integration domain

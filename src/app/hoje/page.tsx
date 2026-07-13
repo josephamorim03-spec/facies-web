@@ -47,11 +47,13 @@ import { buildWeeklyOpsMetrics } from "@/app/cronograma/_lib/weeklyOpsMetrics";
 import { WeeklyOpsFullCardsSkeleton } from "@/app/cronograma/_components/WeeklyOpsCards";
 import { writeCronogramaViewModeSession } from "@/app/cronograma/_lib/viewModeSession";
 import BancoSidebarCard from "./_components/BancoSidebarCard";
+import { TrainerActionCTA } from "@/components/trainer/TrainerActionCTA";
 
 type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
 
 // CTA label for the trainer prescription's primary action, by action kind.
 const PRIMARY_ACTION_CTA: Record<string, string> = {
+  resume_session: "Continuar sessão",
   question_block: "Começar treino",
   scheduled_review: "Revisar agora",
   guided_correction: "Corrigir raciocínio",
@@ -685,7 +687,10 @@ export default function TodayPage() {
                   <AreaIcon area={heroAction.area} size={44} colored />
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col gap-2.5 px-5 py-5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Sua próxima ação</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+                    Sua próxima ação
+                    {prescription ? ` · ${prescription.plan_progress.completed_actions}/${prescription.plan_progress.total_actions} etapas` : ""}
+                  </p>
                   <h2 className="font-serif text-2xl font-semibold leading-tight text-ink md:text-3xl">{heroAction.title}</h2>
                   <GuidanceNote area={heroAction.area} eyebrow="Motivo" tone={heroAction.tone}>
                     {heroAction.reason}
@@ -740,13 +745,15 @@ export default function TodayPage() {
                   </div>
                 </div>
                 <div className="flex items-center px-5 pb-5 sm:pb-0 sm:pr-5">
-                  <Link
-                    href={heroAction.href}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 sm:w-auto"
-                  >
-                    {heroAction.ctaLabel}
-                    <IconArrowRight className="h-4 w-4" />
-                  </Link>
+                  {primaryAction && prescription ? (
+                    <TrainerActionCTA
+                      action={primaryAction}
+                      recommendationId={prescription.recommendation_id}
+                      sourcePage="/hoje"
+                      label={heroAction.ctaLabel}
+                      className="w-full px-5 py-3 sm:w-auto"
+                    />
+                  ) : null}
                 </div>
               </div>
             ) : (
@@ -768,6 +775,57 @@ export default function TodayPage() {
               </div>
             )}
           </section>
+
+          {prescription?.previous_outcome && (
+            <section className="rounded-2xl border border-edge bg-surface p-5" aria-label="Resultado da última ação">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="max-w-2xl">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-success">Ciclo concluído</p>
+                  <h2 className="mt-1 font-serif text-xl font-semibold text-ink">O que mudou com sua última ação</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{prescription.previous_outcome.narrative}</p>
+                </div>
+                <div className="flex flex-wrap gap-2 sm:max-w-sm sm:justify-end">
+                  {prescription.previous_outcome.evidence.map((item) => (
+                    <div key={item.key} className="rounded-xl border border-edge bg-paper px-3 py-2">
+                      <p className="text-sm font-semibold text-ink">
+                        {item.value}{item.unit ? `${item.unit === "%" ? "" : " "}${item.unit}` : ""}
+                      </p>
+                      <p className="text-xs text-muted">{item.label}</p>
+                      <p className="mt-0.5 text-[10px] uppercase tracking-wide text-muted/70">
+                        {item.kind === "observed" ? "observado" : "estimativa"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {prescription && prescription.secondary_actions.length > 0 && (
+            <section className="space-y-3" aria-label="Outras ações adequadas">
+              <div>
+                <h2 className="font-serif text-xl font-semibold text-ink">Outras ações adequadas</h2>
+                <p className="text-sm text-muted">Se a prioridade não cabe agora, escolha uma alternativa com propósito claro.</p>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {prescription.secondary_actions.map((action) => (
+                  <article key={action.action_id ?? action.kind} className="flex flex-col gap-3 rounded-xl border border-edge bg-paper p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="font-semibold text-ink">{action.title}</h3>
+                      <p className="mt-1 text-xs leading-relaxed text-muted">{action.rationale}</p>
+                    </div>
+                    <TrainerActionCTA
+                      action={action}
+                      recommendationId={prescription.recommendation_id}
+                      sourcePage="/hoje"
+                      label="Escolher"
+                      className="shrink-0"
+                    />
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
 
           {activeSession &&
             (!heroAction || !heroAction.href.includes(activeSession.session_id)) && (
