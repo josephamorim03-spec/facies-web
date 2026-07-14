@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import type { QuestionBankReportType } from "@/lib/api";
 import { ProgressRing } from "@/components/ui/ProgressRing";
+import { QuestionFullContext } from "@/app/banco-de-questoes/_components/QuestionFullContext";
 import { cognitivePatternSummary } from "@/lib/guidanceCopy";
 import ErrorFlashcardsPanel from "./ErrorFlashcardsPanel";
 import AttemptHistoryModal from "../../../_components/AttemptHistoryModal";
@@ -492,29 +493,23 @@ export default function PostExamReview({
 
                 return (
                   <article key={item.question_id} className="rounded-lg border border-edge bg-surface p-4 shadow-[var(--soft-shadow)]">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Questão {item.position}</p>
-                        <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-ink">{item.stem}</p>
-                        {microNodes(item).length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {microNodes(item).slice(0, 4).map((node) => (
-                              <span key={node.knowledge_node_id} className="rounded-full border border-primary/30 bg-paper px-2 py-0.5 text-[10px] font-semibold text-primary">
-                                {node.node_name || "Microcompetencia"}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      {item.correct_answer && (
-                        <span className={cx(
-                          "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                          item.is_correct ? "bg-success text-white" : "bg-danger text-white",
-                        )}>
-                          Gabarito {item.correct_answer}
-                        </span>
-                      )}
-                      {activeReview && (
+                    <QuestionFullContext
+                      eyebrow={`Questao ${item.position}`}
+                      stem={item.stem}
+                      alternatives={item.alternatives}
+                      imageRefs={item.image_refs}
+                      tableRefs={item.table_refs}
+                      source={item.source}
+                      knowledgeNodes={microNodes(item)}
+                      selectedOption={item.selected_option}
+                      correctAnswer={item.correct_answer}
+                      isCorrect={item.is_correct}
+                      showCorrectAnswer
+                      className="rounded-lg border border-edge bg-paper p-3"
+                    />
+
+                    {activeReview && (
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
                         <button
                           type="button"
                           onClick={() =>
@@ -526,20 +521,20 @@ export default function PostExamReview({
                         >
                           {item.reported_problem ? "Editar denuncia" : "Denunciar questao"}
                         </button>
-                      )}
-                      {activeReview && item.reported_problem && (
-                        <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink">
-                          <input
-                            type="checkbox"
-                            checked={item.excluded_from_scoring}
-                            disabled={isWorking}
-                            onChange={() => void toggleExclusion(item)}
-                            className="h-4 w-4 accent-[var(--color-primary)]"
-                          />
-                          Nao contabilizar
-                        </label>
-                      )}
-                    </div>
+                        {item.reported_problem && (
+                          <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink">
+                            <input
+                              type="checkbox"
+                              checked={item.excluded_from_scoring}
+                              disabled={isWorking}
+                              onChange={() => void toggleExclusion(item)}
+                              className="h-4 w-4 accent-[var(--color-primary)]"
+                            />
+                            Nao contabilizar
+                          </label>
+                        )}
+                      </div>
+                    )}
 
                     {activeReview && reportingPosition === item.position && (
                       <div className="mt-3 rounded-lg border border-edge bg-paper p-3">

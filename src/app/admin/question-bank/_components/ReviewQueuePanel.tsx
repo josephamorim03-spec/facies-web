@@ -5,8 +5,7 @@ import {
   type QuestionBankReviewResolutionAction,
   type QuestionBankReviewResolutionOptions,
 } from "@/lib/api/domains/question-bank-admin";
-
-import { truncateText } from "./adminQuestionBankUtils";
+import { QuestionFullContext } from "@/app/banco-de-questoes/_components/QuestionFullContext";
 
 const ANSWER_OPTIONS = ["A", "B", "C", "D", "E"] as const;
 const LANE_LABELS: Record<string, string> = {
@@ -175,31 +174,14 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
                   </div>
                 ) : null}
 
-                <p className="mt-3 whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-100">
-                  {truncateText(item.stem, 360) || "Sem enunciado"}
-                </p>
-
-                {Object.keys(alternatives).length > 0 ? (
-                  <div className="mt-3 grid gap-1.5">
-                    {Object.entries(alternatives).map(([letter, text]) => {
-                      const isCorrect = String(item.answer || "").toUpperCase() === letter.toUpperCase();
-                      return (
-                        <div
-                          key={`${item.question_id}-${letter}`}
-                          className={`flex gap-2 rounded-md px-2 py-1 text-xs ${
-                            isCorrect
-                              ? "bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-200"
-                              : "text-gray-700 dark:text-gray-200"
-                          }`}
-                        >
-                          <span className="w-5 font-semibold">{letter}</span>
-                          <span className="min-w-0 flex-1">{truncateText(String(text), 180)}</span>
-                          {isCorrect ? <span className="font-semibold">gabarito</span> : null}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : null}
+                <QuestionFullContext
+                  eyebrow="Questao em revisao"
+                  stem={item.stem}
+                  alternatives={alternatives}
+                  correctAnswer={item.answer}
+                  showCorrectAnswer
+                  className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-950"
+                />
 
                 {hasIssues ? (
                   <details className="mt-3 text-xs text-gray-500 dark:text-gray-400">

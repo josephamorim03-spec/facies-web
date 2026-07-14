@@ -21,6 +21,7 @@ import {
   type QuestionBankReport,
 } from "@/lib/api/domains/question-bank-admin";
 import { QuestionImageRefs } from "@/app/banco-de-questoes/_components/QuestionImageRefs";
+import { QuestionFullContext } from "@/app/banco-de-questoes/_components/QuestionFullContext";
 
 const STATUS_OPTIONS = [
   ["published", "Publicadas"],
@@ -124,6 +125,9 @@ export default function QuestionsManager() {
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
   const [reportActionBusy, setReportActionBusy] = useState<string | null>(null);
+  const [expandedReportIds, setExpandedReportIds] = useState<Set<string>>(() => new Set());
+  const [reportDetailsByQuestionId, setReportDetailsByQuestionId] = useState<Record<string, QuestionBankAdminQuestionDetail>>({});
+  const [reportDetailBusyId, setReportDetailBusyId] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -204,6 +208,33 @@ export default function QuestionsManager() {
       }
     } finally {
       setReportsLoading(false);
+    }
+  }
+
+  async function toggleReportQuestion(report: QuestionBankReport) {
+    const willOpen = !expandedReportIds.has(report.id);
+    setExpandedReportIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(report.id)) next.delete(report.id);
+      else next.add(report.id);
+      return next;
+    });
+    if (!willOpen || reportDetailsByQuestionId[report.question_id]) return;
+
+    setReportDetailBusyId(report.id);
+    setError(null);
+    try {
+      const detail = await getQuestionBankAdminQuestion(report.question_id);
+      setReportDetailsByQuestionId((prev) => ({ ...prev, [report.question_id]: detail }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao carregar a questao completa.");
+      setExpandedReportIds((prev) => {
+        const next = new Set(prev);
+        next.delete(report.id);
+        return next;
+      });
+    } finally {
+      setReportDetailBusyId(null);
     }
   }
 
@@ -611,6 +642,9 @@ export default function QuestionsManager() {
               const diagnosis = reportDiagnosisSummary(report);
               const recommendedAction = reportRecommendedAction(report);
               const isReportBusy = reportActionBusy === report.id;
+              const isQuestionExpanded = expandedReportIds.has(report.id);
+              const reportDetail = reportDetailsByQuestionId[report.question_id];
+              const isQuestionLoading = reportDetailBusyId === report.id;
               return (
                 <div key={report.id} className="rounded-lg border border-amber-200 bg-white p-3 dark:border-amber-900/40 dark:bg-gray-900">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -643,6 +677,33 @@ export default function QuestionsManager() {
                             <p className="mt-1">Patch: {patchFields.slice(0, 5).join(", ")}</p>
                           ) : null}
                         </div>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => void toggleReportQuestion(report)}
+                        disabled={isQuestionLoading}
+                        className="mt-2 rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:text-amber-200 dark:hover:bg-amber-950/40"
+                      >
+                        {isQuestionLoading ? "Carregando questao..." : isQuestionExpanded ? "Ocultar questao completa" : "Ver questao completa"}
+                      </button>
+                      {isQuestionExpanded ? (
+                        reportDetail ? (
+                          <QuestionFullContext
+                            eyebrow="Questao denunciada"
+                            stem={reportDetail.stem}
+                            alternatives={reportDetail.alternatives}
+                            imageRefs={reportDetail.image_refs}
+                            source={reportDetail.source}
+                            knowledgeNodes={reportDetail.nodes}
+                            correctAnswer={reportDetail.answer}
+                            showCorrectAnswer
+                            className="mt-3 rounded-lg border border-amber-200 bg-amber-50/30 p-3 dark:border-amber-900/40 dark:bg-amber-950/10"
+                          />
+                        ) : (
+                          <div className="mt-3 rounded-lg border border-dashed border-amber-300 px-3 py-2 text-xs text-amber-800 dark:border-amber-800 dark:text-amber-200">
+                            Carregando questao completa...
+                          </div>
+                        )
                       ) : null}
                       <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-gray-500 dark:text-gray-400">
                         {report.candidate_id ? <span>candidate {report.candidate_id.slice(0, 8)}</span> : null}

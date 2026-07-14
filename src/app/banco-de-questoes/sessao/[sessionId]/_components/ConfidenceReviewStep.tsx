@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { postConfidenceReview, type QuestionBankSession } from "@/lib/api";
+import { QuestionFullContext } from "@/app/banco-de-questoes/_components/QuestionFullContext";
 import { getAuthToken } from "@/lib/auth";
 import { useToast } from "@/lib/useToast";
 
@@ -106,15 +107,18 @@ export function ConfidenceReviewStep({
         <ul className="space-y-2">
           {items.map((it) => (
             <li key={it.position} className="rounded-xl border border-edge bg-surface p-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-muted">
-                    Q{it.position} · você marcou {it.selected_option ?? "—"}
-                    {it.doubtful ? " · marcada" : ""}
-                  </p>
-                  <p className="mt-0.5 line-clamp-2 text-sm text-ink">{it.stem}</p>
-                </div>
-              </div>
+              <QuestionFullContext
+                eyebrow={`Q${it.position}${it.doubtful ? " - marcada" : ""}`}
+                stem={it.stem}
+                alternatives={it.alternatives}
+                imageRefs={it.image_refs}
+                tableRefs={it.table_refs}
+                source={it.source}
+                knowledgeNodes={it.knowledge_nodes}
+                selectedOption={it.selected_option}
+                showCorrectAnswer={false}
+                className="rounded-lg border border-edge bg-paper p-3"
+              />
               <div className="mt-2 flex gap-1.5">
                 {LEVELS.map((lvl) => {
                   const active = ratings[it.position] === lvl.value;

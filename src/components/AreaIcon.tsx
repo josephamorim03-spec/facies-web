@@ -6,6 +6,7 @@
  */
 
 import React from "react";
+import { resolveDisplayArea } from "@/lib/areaDisplay";
 
 const VIEWBOX = "0 0 24 24";
 const STROKE_PROPS = {
@@ -167,8 +168,9 @@ export function AreaIcon({
   colored?: boolean;
   className?: string;
 }) {
-  const Icon = ICON_MAP[area] ?? IconOU;
-  const color = colored ? (AREA_COLORS[area] ?? AREA_COLORS.OU) : "currentColor";
+  const displayArea = resolveDisplayArea(area);
+  const Icon = ICON_MAP[displayArea] ?? IconOU;
+  const color = colored ? (AREA_COLORS[displayArea] ?? AREA_COLORS.OU) : "currentColor";
   return (
     <Icon
       className={className || "shrink-0"}

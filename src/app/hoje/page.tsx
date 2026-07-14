@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { Alert } from "@/components/ui/Alert";
 import { areaHex } from "@/lib/areaColors";
+import { displayAreaLabel, resolveDisplayArea, type DisplayArea } from "@/lib/areaDisplay";
 import { getAuthToken } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/error-utils";
 import { useAuthToken } from "@/lib/useAuthToken";
@@ -51,7 +52,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { OutcomeCard } from "@/components/ui/OutcomeCard";
 import { StudyActionCard } from "@/components/ui/StudyActionCard";
 
-type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
+type Area = DisplayArea;
 
 // CTA label for the trainer prescription's primary action, by action kind.
 const PRIMARY_ACTION_CTA: Record<string, string> = {
@@ -236,10 +237,11 @@ function formatStudyDate(value: string): string {
 }
 
 function reviewTaskHref(task: ReviewTask): string {
+  const displayArea = resolveDisplayArea(task.area, task.theme, task.subtheme);
   const params = new URLSearchParams({
     review_task_id: task.task_id,
     date: task.due_date,
-    area: task.area,
+    area: displayArea,
     theme: task.theme,
     expected_questions: String(Math.max(1, Number(task.expected_questions ?? 10))),
   });
@@ -583,7 +585,7 @@ export default function TodayPage() {
   // um segundo cérebro. "tone" só pinta o eyebrow da nota.
   const heroAction = primaryAction
     ? {
-        area: ((primaryAction.start_payload?.area ?? "OU") || "OU") as Area,
+        area: resolveDisplayArea(primaryAction.start_payload?.area, primaryAction.title, primaryAction.rationale),
         title: primaryAction.title,
         reason: primaryAction.rationale,
         tone: primaryAction.signals.some((s) => s.severity === "critical")
@@ -597,7 +599,7 @@ export default function TodayPage() {
     : null;
 
   function TaskRow({ task, overdue }: { task: ReviewTask; overdue?: boolean }) {
-    const area = task.area as Area;
+    const area = resolveDisplayArea(task.area, task.theme, task.subtheme);
     const days = overdue ? getOverdueDays(task.due_date, today) : 0;
     const urgent = days >= 7;
     const accentColor = areaHex(area);
@@ -753,7 +755,7 @@ export default function TodayPage() {
             (!heroAction || !heroAction.href.includes(activeSession.session_id)) && (
               <section
                 className="flex flex-col gap-3 rounded-lg border border-edge bg-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
-                style={{ boxShadow: `inset 3px 0 0 ${areaHex((activeSession.area as Area) ?? "OU")}` }}
+                style={{ boxShadow: `inset 3px 0 0 ${areaHex(resolveDisplayArea(activeSession.area, activeSession.theme, activeSession.full_exam_name))}` }}
                 aria-label="Sessão em andamento"
               >
                 <div className="min-w-0">
@@ -808,7 +810,7 @@ export default function TodayPage() {
                       <span className={`font-serif text-lg leading-none ${isToday && !isSelected ? "text-primary" : ""}`}>{dayNum}</span>
                       <span className="flex min-h-[8px] items-center justify-center gap-0.5">
                         {dayTasks.slice(0, 3).map((task) => (
-                          <AreaDot key={task.task_id} area={task.area as Area} />
+                          <AreaDot key={task.task_id} area={resolveDisplayArea(task.area, task.theme, task.subtheme)} />
                         ))}
                       </span>
                     </button>
@@ -819,19 +821,20 @@ export default function TodayPage() {
               <div className="space-y-3">
                 {selectedDayTasks.length > 0 ? (
                   selectedDayTasks.map((task) => {
-                    const accentColor = areaHex(task.area);
+                    const displayArea = resolveDisplayArea(task.area, task.theme, task.subtheme);
+                    const accentColor = areaHex(displayArea);
                     return (
                       <article key={task.task_id} className="overflow-hidden rounded-lg border border-edge bg-surface shadow-sm">
                         <div className="p-4">
                           <div className="flex items-start gap-3">
                             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-edge bg-paper sm:h-14 sm:w-14">
-                              <AreaIcon area={task.area} size={30} colored />
+                              <AreaIcon area={displayArea} size={30} colored />
                             </div>
                             <div className="min-w-0 flex-1">
                               <h3 className="font-serif text-base font-semibold leading-snug text-ink sm:text-lg">{task.theme}</h3>
                               <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                                 <span className="rounded-full px-2 py-0.5 text-xs font-semibold" style={{ color: accentColor, backgroundColor: `color-mix(in srgb, ${accentColor} 14%, transparent)` }}>
-                                  {AREA_FULL[task.area] ?? task.area}
+                                  {displayAreaLabel(displayArea)}
                                 </span>
                                 <span className="text-xs text-muted">{task.expected_questions} questões</span>
                                 {task.is_critical && <span className="text-xs font-semibold text-warning">prioritária</span>}
@@ -975,11 +978,12 @@ export default function TodayPage() {
                     <div className="mt-3 space-y-3">
                       {topAreaSummaries.map((areaSummary) => {
                         const pct = Math.round(areaSummary.area_accuracy_pct ?? 0);
-                        const color = areaHex(areaSummary.area);
+                        const resolvedArea = resolveDisplayArea(areaSummary.area);
+                        const color = areaHex(resolvedArea);
                         return (
                           <div key={areaSummary.area} className="space-y-1">
                             <div className="flex items-center justify-between gap-3 text-sm">
-                              <span className="min-w-0 truncate text-ink">{AREA_FULL[areaSummary.area] ?? areaSummary.area}</span>
+                              <span className="min-w-0 truncate text-ink">{AREA_FULL[resolvedArea] ?? displayAreaLabel(resolvedArea)}</span>
                               <span className="font-semibold tabular-nums" style={{ color }}>{pct}%</span>
                             </div>
                             <ScoreBar pct={pct} color={color} />
