@@ -5,12 +5,14 @@ import type { QuestionBankSourceOption } from "@/lib/api";
 
 type SourceSelection = {
   boardCodes: string[];
+  examCodes: string[];
   institutions: string[];
 };
 
 type BancaPickerProps = {
   sources: QuestionBankSourceOption[];
   selectedBoardCodes: string[];
+  selectedExamCodes: string[];
   selectedInstitutions: string[];
   onChange: (selection: SourceSelection) => void;
   loading?: boolean;
@@ -27,9 +29,8 @@ function normalizeKey(value: string): string {
 }
 
 /**
- * Replica kbank_source_token_norm do Postgres: upper, remove acentos,
- * colapsa não-alfanuméricos para "-", trim de hífens nas bordas.
- * Usado para deduplicar instituições variantes (ex: "USP-SP" vs "USP SP").
+ * Mirrors kbank_source_token_norm: uppercase, strip accents, collapse
+ * non-alphanumeric chars to "-", and trim edge dashes.
  */
 function sourceTokenNorm(value: string): string {
   return value
@@ -51,12 +52,15 @@ function optionId(option: QuestionBankSourceOption): string {
 }
 
 function sourceKindLabel(kind: QuestionBankSourceOption["option_kind"]): string {
-  return kind === "board" ? "Prova" : "Instituição";
+  if (kind === "exam") return "Prova";
+  if (kind === "board") return "Banca";
+  return "Instituição";
 }
 
 export default function BancaPicker({
   sources,
   selectedBoardCodes,
+  selectedExamCodes,
   selectedInstitutions,
   onChange,
   loading = false,
@@ -69,11 +73,15 @@ export default function BancaPicker({
     () => new Set(selectedBoardCodes.map(normalizeKey).filter(Boolean)),
     [selectedBoardCodes],
   );
+  const selectedExamSet = useMemo(
+    () => new Set(selectedExamCodes.map(normalizeKey).filter(Boolean)),
+    [selectedExamCodes],
+  );
   const selectedInstitutionSet = useMemo(
     () => new Set(selectedInstitutions.map(normalizeKey).filter(Boolean)),
     [selectedInstitutions],
   );
-  const selectedCount = selectedBoardSet.size + selectedInstitutionSet.size;
+  const selectedCount = selectedBoardSet.size + selectedExamSet.size + selectedInstitutionSet.size;
 
   const sourceById = useMemo(
     () => new Map(sources.map((source) => [optionId(source), source])),
@@ -85,8 +93,11 @@ export default function BancaPicker({
     const seen = new Set<string>();
     for (const source of sources) {
       const key = normalizeKey(source.option_key);
-      const selected =
-        source.option_kind === "board" ? selectedBoardSet.has(key) : selectedInstitutionSet.has(key);
+      const selected = source.option_kind === "board"
+        ? selectedBoardSet.has(key)
+        : source.option_kind === "exam"
+          ? selectedExamSet.has(key)
+          : selectedInstitutionSet.has(key);
       if (!selected) continue;
       const id = optionId(source);
       seen.add(id);
@@ -96,40 +107,39 @@ export default function BancaPicker({
       const id = `board:${key}`;
       if (!seen.has(id)) chips.push({ id, label: key, key, kind: "board" });
     }
+    for (const key of selectedExamSet) {
+      const id = `exam:${key}`;
+      if (!seen.has(id)) chips.push({ id, label: key, key, kind: "exam" });
+    }
     for (const key of selectedInstitutionSet) {
       const id = `institution:${key}`;
       if (!seen.has(id)) chips.push({ id, label: key, key, kind: "institution" });
     }
     return chips;
-  }, [selectedBoardSet, selectedInstitutionSet, sources]);
+  }, [selectedBoardSet, selectedExamSet, selectedInstitutionSet, sources]);
 
-  // Deduplica fontes que compartilham a mesma chave normalizada
-  // (kbank_source_token_norm). A API já agrupa, mas variantes sem alias
-  // podem chegar duplicadas (ex: "USP-SP" vs "USP SP"). Mantém o label com
-  // maior question_count como representante e soma as contagens.
   const dedupedSources = useMemo(() => {
     const byKey = new Map<string, QuestionBankSourceOption>();
     for (const source of sources) {
       const norm = sourceTokenNorm(source.option_key);
       if (!norm) continue;
-      const existing = byKey.get(norm);
+      const existing = byKey.get(`${source.option_kind}:${norm}`);
       if (!existing) {
-        byKey.set(norm, { ...source, option_key: norm });
+        byKey.set(`${source.option_kind}:${norm}`, { ...source, option_key: norm });
         continue;
       }
-      // Soma contagens e mantém o label com mais questões.
       const merged: QuestionBankSourceOption = {
         ...existing,
         question_count: existing.question_count + source.question_count,
         first_year: [existing.first_year, source.first_year]
-          .filter((y): y is number => y != null)
-          .reduce<number | undefined>((min, y) => (min === undefined ? y : Math.min(min, y)), undefined),
+          .filter((year): year is number => year != null)
+          .reduce<number | undefined>((min, year) => (min === undefined ? year : Math.min(min, year)), undefined),
         last_year: [existing.last_year, source.last_year]
-          .filter((y): y is number => y != null)
-          .reduce<number | undefined>((max, y) => (max === undefined ? y : Math.max(max, y)), undefined),
+          .filter((year): year is number => year != null)
+          .reduce<number | undefined>((max, year) => (max === undefined ? year : Math.max(max, year)), undefined),
         label: source.question_count > existing.question_count ? source.label : existing.label,
       };
-      byKey.set(norm, merged);
+      byKey.set(`${source.option_kind}:${norm}`, merged);
     }
     return Array.from(byKey.values());
   }, [sources]);
@@ -137,35 +147,51 @@ export default function BancaPicker({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return dedupedSources;
-    return dedupedSources.filter((source) => {
-      return (
-        source.label.toLowerCase().includes(q) ||
-        source.option_key.toLowerCase().includes(q) ||
-        sourceKindLabel(source.option_kind).toLowerCase().includes(q)
-      );
-    });
+    return dedupedSources.filter((source) => (
+      source.label.toLowerCase().includes(q)
+      || source.option_key.toLowerCase().includes(q)
+      || sourceKindLabel(source.option_kind).toLowerCase().includes(q)
+    ));
   }, [dedupedSources, query]);
 
   function isSelected(source: QuestionBankSourceOption): boolean {
     const key = normalizeKey(source.option_key);
-    return source.option_kind === "board" ? selectedBoardSet.has(key) : selectedInstitutionSet.has(key);
+    if (source.option_kind === "board") return selectedBoardSet.has(key);
+    if (source.option_kind === "exam") return selectedExamSet.has(key);
+    return selectedInstitutionSet.has(key);
   }
 
   function toggle(source: QuestionBankSourceOption) {
     const key = normalizeKey(source.option_key);
     if (!key) return;
     if (source.option_kind === "board") {
-      onChange({ boardCodes: toggleKey(selectedBoardCodes, key), institutions: selectedInstitutions });
+      onChange({ boardCodes: toggleKey(selectedBoardCodes, key), examCodes: selectedExamCodes, institutions: selectedInstitutions });
+    } else if (source.option_kind === "exam") {
+      onChange({ boardCodes: selectedBoardCodes, examCodes: toggleKey(selectedExamCodes, key), institutions: selectedInstitutions });
     } else {
-      onChange({ boardCodes: selectedBoardCodes, institutions: toggleKey(selectedInstitutions, key) });
+      onChange({ boardCodes: selectedBoardCodes, examCodes: selectedExamCodes, institutions: toggleKey(selectedInstitutions, key) });
     }
   }
 
   function removeChip(chip: { key: string; kind: QuestionBankSourceOption["option_kind"] }) {
     if (chip.kind === "board") {
-      onChange({ boardCodes: selectedBoardCodes.filter((value) => normalizeKey(value) !== chip.key), institutions: selectedInstitutions });
+      onChange({
+        boardCodes: selectedBoardCodes.filter((value) => normalizeKey(value) !== chip.key),
+        examCodes: selectedExamCodes,
+        institutions: selectedInstitutions,
+      });
+    } else if (chip.kind === "exam") {
+      onChange({
+        boardCodes: selectedBoardCodes,
+        examCodes: selectedExamCodes.filter((value) => normalizeKey(value) !== chip.key),
+        institutions: selectedInstitutions,
+      });
     } else {
-      onChange({ boardCodes: selectedBoardCodes, institutions: selectedInstitutions.filter((value) => normalizeKey(value) !== chip.key) });
+      onChange({
+        boardCodes: selectedBoardCodes,
+        examCodes: selectedExamCodes,
+        institutions: selectedInstitutions.filter((value) => normalizeKey(value) !== chip.key),
+      });
     }
   }
 
@@ -173,12 +199,12 @@ export default function BancaPicker({
     <div className="space-y-3 rounded-xl border border-edge bg-surface p-3">
       <div className="flex items-center justify-between gap-2">
         <label htmlFor="source-search" className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
-          Prova / Instituição
+          Prova / Banca / Instituição
         </label>
         {selectedCount > 0 && (
           <button
             type="button"
-            onClick={() => onChange({ boardCodes: [], institutions: [] })}
+            onClick={() => onChange({ boardCodes: [], examCodes: [], institutions: [] })}
             className="text-xs font-semibold text-muted underline underline-offset-2 hover:text-ink"
           >
             Limpar ({selectedCount})
@@ -210,7 +236,7 @@ export default function BancaPicker({
         type="search"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Buscar prova ou instituição"
+        placeholder="Buscar prova, banca ou instituição"
         className="w-full"
         autoComplete="off"
       />
@@ -249,13 +275,10 @@ export default function BancaPicker({
               Nenhuma fonte corresponde a &ldquo;{query.trim()}&rdquo;.
             </li>
           ) : (
-            // Seções separadas: Provas (bancas reais, atribuição precisa) e
-            // Instituições. A banca é um eixo independente do ano — a contagem
-            // à direita já reflete o recorte de ano/tema atual (cross-filter),
-            // então não exibimos faixa de anos presa à banca.
             [
-              { heading: "Provas", items: filtered.filter((s) => s.option_kind === "board") },
-              { heading: "Instituições", items: filtered.filter((s) => s.option_kind !== "board") },
+              { heading: "Provas", items: filtered.filter((source) => source.option_kind === "exam") },
+              { heading: "Bancas", items: filtered.filter((source) => source.option_kind === "board") },
+              { heading: "Instituições", items: filtered.filter((source) => source.option_kind === "institution") },
             ]
               .filter((section) => section.items.length > 0)
               .map((section, _idx, sections) => (
@@ -288,7 +311,7 @@ export default function BancaPicker({
                             />
                             <span className="min-w-0 flex-1">
                               <span className="block truncate font-medium text-ink">{source.label}</span>
-                              {source.option_kind === "board" && source.label.toUpperCase() !== key ? (
+                              {source.option_kind !== "institution" && source.label.toUpperCase() !== key ? (
                                 <span className="block truncate text-xs text-muted">{key}</span>
                               ) : null}
                             </span>

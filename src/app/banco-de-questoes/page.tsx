@@ -368,6 +368,7 @@ function BancoDeQuestoesContent() {
   const [searchDraft, setSearchDraft] = useState(() => initialContext.theme ?? "");
   const [committedSearch, setCommittedSearch] = useState(() => (initialContext.theme ?? "").trim());
   const [boardCodes, setBoardCodes] = useState<string[]>([]);
+  const [examCodes, setExamCodes] = useState<string[]>([]);
   const [institutions, setInstitutions] = useState<string[]>([]);
   const [sources, setSources] = useState<QuestionBankSourceOption[]>([]);
   const [sourcesLoading, setSourcesLoading] = useState(true);
@@ -434,7 +435,7 @@ function BancoDeQuestoesContent() {
 
   const appliedFilterCount = [
     area,
-    boardCodes.length + institutions.length > 0 ? "sources" : "",
+    boardCodes.length + examCodes.length + institutions.length > 0 ? "sources" : "",
     selectedYears.length > 0 ? "years" : "",
     answerStatus !== "unanswered" ? answerStatus : "",
     correctionStatus !== "all" ? correctionStatus : "",
@@ -534,6 +535,7 @@ function BancoDeQuestoesContent() {
     knowledge_node_ids: selectedTopics.length > 0 ? selectedTopics.map((t) => t.knowledge_node_id) : undefined,
     area: area || undefined,
     board_codes: boardCodes.length > 0 ? boardCodes : undefined,
+    exam_codes: examCodes.length > 0 ? examCodes : undefined,
     institutions: institutions.length > 0 ? institutions : undefined,
     years: selectedYears.length > 0 ? selectedYears : undefined,
     include_no_year: includeNoYear || undefined,
@@ -542,7 +544,7 @@ function BancoDeQuestoesContent() {
     only_unanswered: answerStatus === "unanswered",
     correction_status: correctionStatus,
     limit: overrides?.limit,
-  }), [answerStatus, area, boardCodes, correctionStatus, includeNoYear, institutions, normalizedSearch, selectedTopics, selectedYears]);
+  }), [answerStatus, area, boardCodes, correctionStatus, examCodes, includeNoYear, institutions, normalizedSearch, selectedTopics, selectedYears]);
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -595,6 +597,7 @@ function BancoDeQuestoesContent() {
     try {
       const common = {
         board_codes: boardCodes.length > 0 ? boardCodes : undefined,
+        exam_codes: examCodes.length > 0 ? examCodes : undefined,
         institutions: institutions.length > 0 ? institutions : undefined,
         years: selectedYears.length > 0 ? selectedYears : undefined,
         include_empty: false,
@@ -627,7 +630,7 @@ function BancoDeQuestoesContent() {
       }
       setTopicsLoading(false);
     }
-  }, [boardCodes, institutions, selectedYears, showToast, token]);
+  }, [boardCodes, examCodes, institutions, selectedYears, showToast, token]);
 
   const loadSourceOptions = useCallback(async () => {
     setSourcesLoading(true);
@@ -672,6 +675,7 @@ function BancoDeQuestoesContent() {
       area: area || undefined,
       search: normalizedSearch || undefined,
       board_codes: boardCodes.length > 0 ? boardCodes : undefined,
+      exam_codes: examCodes.length > 0 ? examCodes : undefined,
       institutions: institutions.length > 0 ? institutions : undefined,
       years: selectedYears.length > 0 ? selectedYears : undefined,
       correction_status: correctionStatus,
@@ -692,6 +696,7 @@ function BancoDeQuestoesContent() {
           area: area || undefined,
           search: normalizedSearch || undefined,
           board_codes: boardCodes.length > 0 ? boardCodes : undefined,
+          exam_codes: examCodes.length > 0 ? examCodes : undefined,
           institutions: institutions.length > 0 ? institutions : undefined,
           years: selectedYears.length > 0 ? selectedYears : undefined,
           correction_status: correctionStatus,
@@ -700,7 +705,7 @@ function BancoDeQuestoesContent() {
       );
       if (facetsRequestSeq.current !== seq) return;
       setYearStats(facets.years);
-      setSources([...facets.boards, ...facets.institutions]);
+      setSources([...facets.exams, ...facets.boards, ...facets.institutions]);
     } catch (err) {
       if (controller.signal.aborted || isAbortError(err)) return;
       // Keep the last good options on a transient facet error.
@@ -708,7 +713,7 @@ function BancoDeQuestoesContent() {
       if (facetsAbortRef.current === controller) facetsAbortRef.current = null;
       if (facetsInFlightRef.current?.key === requestKey) facetsInFlightRef.current = null;
     }
-  }, [area, boardCodes, correctionStatus, institutions, normalizedSearch, selectedTopics, selectedYears, token]);
+  }, [area, boardCodes, correctionStatus, examCodes, institutions, normalizedSearch, selectedTopics, selectedYears, token]);
 
   useEffect(() => {
     if (!tokenResolved) return;
@@ -761,8 +766,9 @@ function BancoDeQuestoesContent() {
     clearSelection();
   }
 
-  function handleSourceSelectionChange(next: { boardCodes: string[]; institutions: string[] }) {
+  function handleSourceSelectionChange(next: { boardCodes: string[]; examCodes: string[]; institutions: string[] }) {
     setBoardCodes(next.boardCodes);
+    setExamCodes(next.examCodes);
     setInstitutions(next.institutions);
     clearSelection();
   }
@@ -1077,6 +1083,7 @@ function BancoDeQuestoesContent() {
                   selectedTopics={selectedTopics}
                   onToggleTopic={toggleTopic}
                   boardCodes={boardCodes}
+                  examCodes={examCodes}
                   institutions={institutions}
                   sources={sources}
                   sourcesLoading={sourcesLoading}

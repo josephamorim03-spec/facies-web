@@ -12,11 +12,12 @@ import type {
 
 export async function browseQuestionBankQuestions(
   token: string,
-  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; institutions?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_no_year?: boolean; limit?: number; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus } = {},
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; institutions?: string[]; board_codes?: string[]; exam_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_no_year?: boolean; limit?: number; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus } = {},
 ): Promise<QuestionBankQuestion[]> {
   const q = new URLSearchParams();
   appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
   appendArrayParams(q, "board_codes", params.board_codes);
+  appendArrayParams(q, "exam_codes", params.exam_codes);
   appendArrayParams(q, "institutions", params.institutions);
   appendArrayParams(q, "years", params.years?.map(String));
   if (params.area?.trim()) q.set("area", params.area.trim());

@@ -36,7 +36,7 @@ export type QuestionBankBoard = {
 export type QuestionBankSourceOption = {
   option_key: string;
   label: string;
-  option_kind: "board" | "institution";
+  option_kind: "board" | "exam" | "institution";
   question_count: number;
   first_year?: number | null;
   last_year?: number | null;
@@ -52,6 +52,7 @@ export type QuestionBankYearStat = {
 export type QuestionBankFacets = {
   years: QuestionBankYearStat[];
   boards: QuestionBankSourceOption[];
+  exams: QuestionBankSourceOption[];
   institutions: QuestionBankSourceOption[];
 };
 
@@ -689,6 +690,7 @@ export type QuestionBankSessionCreatePayload = {
   institution?: string;
   institutions?: string[];
   board_codes?: string[];
+  exam_codes?: string[];
   year_from?: number;
   year_to?: number;
   years?: number[];

@@ -90,11 +90,12 @@ export type FiltersBarProps = {
   selectedTopics: QuestionBankTopic[];
   onToggleTopic: (topic: QuestionBankTopic) => void;
   boardCodes: string[];
+  examCodes: string[];
   institutions: string[];
   sources: QuestionBankSourceOption[];
   sourcesLoading?: boolean;
   sourcesError?: boolean;
-  onSourceSelectionChange: (selection: { boardCodes: string[]; institutions: string[] }) => void;
+  onSourceSelectionChange: (selection: { boardCodes: string[]; examCodes: string[]; institutions: string[] }) => void;
   onSourcesRetry?: () => void;
   yearStats: QuestionBankYearStat[];
   yearsLoading?: boolean;
@@ -148,7 +149,7 @@ export default function FiltersBar(props: FiltersBarProps) {
   const {
     area, onAreaChange, search, onSearchChange, topics, topicSuggestions, selectedTopics, onToggleTopic,
     topicsLoading = false, topicsError = false, onTopicsRetry,
-    boardCodes, institutions, sources, sourcesLoading, sourcesError, onSourceSelectionChange, onSourcesRetry,
+    boardCodes, examCodes, institutions, sources, sourcesLoading, sourcesError, onSourceSelectionChange, onSourcesRetry,
     yearStats, yearsLoading, yearsError, onYearsRetry,
     selectedYears, onSelectedYearsChange, includeNoYear, onIncludeNoYearChange,
     answerStatus, onAnswerStatusChange,
@@ -190,7 +191,7 @@ export default function FiltersBar(props: FiltersBarProps) {
 
   const modeLabel = studyKind === "full_exam" ? "Prova" : resolutionMode === "simulation" ? "Simulado" : "Treino";
   const statusLabel = deriveRealizacaoLabel(realizacaoState);
-  const selectedSourceCount = boardCodes.length + institutions.length;
+  const selectedSourceCount = boardCodes.length + examCodes.length + institutions.length;
   const sourceDetail = selectedSourceCount > 0
     ? `${selectedSourceCount} fonte${selectedSourceCount > 1 ? "s" : ""}`
     : "todas as fontes";
@@ -319,6 +320,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         <BancaPicker
           sources={sources}
           selectedBoardCodes={boardCodes}
+          selectedExamCodes={examCodes}
           selectedInstitutions={institutions}
           onChange={onSourceSelectionChange}
           loading={sourcesLoading}

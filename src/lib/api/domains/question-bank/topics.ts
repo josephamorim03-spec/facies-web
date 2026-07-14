@@ -10,7 +10,7 @@ import type {
 
 export async function browseQuestionBankTopics(
   token: string,
-  params: { area?: string; search?: string; institution?: string; institutions?: string[]; node_type?: string; node_types?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_empty?: boolean; limit?: number } = {},
+  params: { area?: string; search?: string; institution?: string; institutions?: string[]; node_type?: string; node_types?: string[]; board_codes?: string[]; exam_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_empty?: boolean; limit?: number } = {},
   init?: Pick<RequestInit, "signal">,
 ): Promise<QuestionBankTopic[]> {
   const q = new URLSearchParams();
@@ -25,6 +25,7 @@ export async function browseQuestionBankTopics(
   if (params.limit) q.set("limit", String(params.limit));
   appendArrayParams(q, "node_types", params.node_types);
   appendArrayParams(q, "board_codes", params.board_codes);
+  appendArrayParams(q, "exam_codes", params.exam_codes);
   appendArrayParams(q, "years", params.years?.map(String));
   // Usa a política de cache do client (TTL+SWR, tags question-bank-topics):
   // catálogo é referência quase-estática e mutações em /api/question-bank
@@ -37,12 +38,13 @@ export async function browseQuestionBankTopics(
 
 export async function previewQuestionBankAvailability(
   token: string,
-  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; institutions?: string[]; board_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_no_year?: boolean; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus; mode?: QuestionBankMode } = {},
+  params: { knowledge_node_ids?: string[]; area?: string; search?: string; institution?: string; institutions?: string[]; board_codes?: string[]; exam_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_no_year?: boolean; answer_status?: QuestionBankAnswerStatus; only_unanswered?: boolean; correction_status?: QuestionBankCorrectionStatus; mode?: QuestionBankMode } = {},
   init?: Pick<RequestInit, "signal">,
 ): Promise<QuestionBankAvailability> {
   const q = new URLSearchParams();
   appendArrayParams(q, "knowledge_node_ids", params.knowledge_node_ids);
   appendArrayParams(q, "board_codes", params.board_codes);
+  appendArrayParams(q, "exam_codes", params.exam_codes);
   appendArrayParams(q, "institutions", params.institutions);
   appendArrayParams(q, "years", params.years?.map(String));
   if (params.area?.trim()) q.set("area", params.area.trim());
