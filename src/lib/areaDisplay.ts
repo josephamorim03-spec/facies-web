@@ -12,6 +12,54 @@ export const DISPLAY_AREA_FULL_LABELS: Record<DisplayArea, string> = {
 
 const VALID_AREAS = new Set<DisplayArea>(["GO", "OB", "PD", "MP", "CG", "CM", "OU"]);
 
+const AREA_TEXT_PATTERNS: Array<[DisplayArea, RegExp[]]> = [
+  [
+    "CG",
+    [
+      /\b(cg|cirurgia|cirurgic|trauma|ortopedia|urologia|anestesiologia|anestesia)\b/,
+      /\b(pre|pos|intra|peri)[- ]?operatori[ao]s?\b/,
+      /\boperatori[ao]s?\b/,
+      /\bavaliacao pre[- ]?operatoria\b/,
+      /\b(laparotomia|laparoscopia|abdome agudo|apendicite|colecistite|hernia|obstrucao intestinal)\b/,
+    ],
+  ],
+  [
+    "CM",
+    [
+      /\b(cm|clinica medica|medicina interna|clinico)\b/,
+      /\b(cardiologia|pneumologia|gastro|nefro|endocrino|reumato|infecto|hematologia|neurologia|dermato)\b/,
+      /\b(hipertensao|diabetes|insuficiencia cardiaca|pneumonia|sepse|fibrilacao atrial|infarto)\b/,
+    ],
+  ],
+  [
+    "PD",
+    [
+      /\b(pd|pediatria|pediatrico|lactente|neonato|neonatal|recem[- ]?nascido|crianca|adolescente|puericultura)\b/,
+      /\b(imunizacao infantil|crescimento e desenvolvimento)\b/,
+    ],
+  ],
+  [
+    "MP",
+    [
+      /\b(mp|preventiva|saude coletiva|saude publica|epidemiologia|bioestatistica|sus|medicina de familia|mfc)\b/,
+      /\b(vigilancia sanitaria|vigilancia epidemiologica|notificacao compulsoria|inquerito epidemiologico)\b/,
+    ],
+  ],
+  [
+    "GO",
+    [
+      /\b(go|ginecologia|ginecologic|ciclo menstrual|amenorreia|endometriose|sangramento uterino)\b/,
+    ],
+  ],
+  [
+    "OB",
+    [
+      /\b(ob|obstetricia|obstetra|gestante|gestacao|gravidez|pre[- ]?natal|parto|puerperio|puerpera)\b/,
+      /\b(eclampsia|pre[- ]?eclampsia|placenta)\b/,
+    ],
+  ],
+];
+
 function normalizeText(value: string | null | undefined): string {
   return String(value ?? "")
     .normalize("NFD")
@@ -28,12 +76,13 @@ export function inferAreaFromText(...values: Array<string | null | undefined>): 
   const text = normalizeText(values.filter(Boolean).join(" "));
   if (!text) return null;
 
-  if (/\b(cg|cirurgia|cirurgic|trauma|ortopedia|urologia|anestesiologia|anestesia)\b/.test(text)) return "CG";
-  if (/\b(cm|clinica medica|clinico|cardiologia|pneumologia|gastro|nefro|endocrino|reumato|infecto|hematologia|neurologia|dermato)\b/.test(text)) return "CM";
-  if (/\b(pd|pediatria|pediatrico|neonato|neonatal|crianca|adolescente|puericultura)\b/.test(text)) return "PD";
-  if (/\b(mp|preventiva|saude coletiva|saude publica|epidemiologia|bioestatistica|sus|medicina de familia|mfc)\b/.test(text)) return "MP";
-  if (/\b(go|ginecologia|ginecologic)\b/.test(text)) return "GO";
-  if (/\b(ob|obstetricia|obstetra|gestante|gravidez|pre[- ]?natal|parto|puerperio)\b/.test(text)) return "OB";
+  const matches = AREA_TEXT_PATTERNS
+    .filter(([, patterns]) => patterns.some((pattern) => pattern.test(text)))
+    .map(([area]) => area);
+  if (matches.length === 1) return matches[0] ?? null;
+  if (matches.includes("GO") && matches.includes("OB") && matches.every((area) => area === "GO" || area === "OB")) {
+    return "GO";
+  }
 
   return null;
 }

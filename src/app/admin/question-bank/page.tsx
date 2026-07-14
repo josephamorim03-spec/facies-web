@@ -41,6 +41,8 @@ import {
   type QuestionBankReviewResolutionOptions,
 } from "@/lib/api/domains/question-bank-admin";
 
+const ACTIVE_PIPELINE_POLL_MS = 30_000;
+
 export default function QuestionBankAdminPage() {
   const [imports, setImports] = useState<QuestionBankAdminImportItem[]>([]);
   const [selectedImportId, setSelectedImportId] = useState("");
@@ -255,8 +257,9 @@ export default function QuestionBankAdminPage() {
       (pipelineStatus?.summary.processing_jobs ?? 0) > 0;
     if (!hasActiveJobs) return;
     const interval = setInterval(() => {
+      if (document.visibilityState !== "visible") return;
       if (!busy) void loadDashboard(selectedImportId || undefined);
-    }, 10_000);
+    }, ACTIVE_PIPELINE_POLL_MS);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pipelineStatus?.summary.pending_jobs, pipelineStatus?.summary.processing_jobs, busy, selectedImportId]);

@@ -118,6 +118,30 @@ function safeOrigin(value: string): string {
   }
 }
 
+function sanitizeUpstreamErrorBody(text: string): Record<string, string> {
+  const sanitized: Record<string, string> = {};
+  const assign = (key: string, value: unknown) => {
+    const clean = String(value ?? "").replace(/\s+/g, " ").trim();
+    if (clean) sanitized[key] = clean.slice(0, 300);
+  };
+
+  try {
+    const parsed = JSON.parse(text) as unknown;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      const data = parsed as Record<string, unknown>;
+      assign("upstream_code", data.code);
+      assign("upstream_message", data.message);
+      if (typeof data.detail === "string") assign("upstream_detail", data.detail);
+      return sanitized;
+    }
+  } catch {
+    /* fall through to generic text snippet */
+  }
+
+  assign("upstream_message", text);
+  return sanitized;
+}
+
 type AdminAuthorization = { actor: string } | { error: NextResponse };
 
 async function authorizeAdmin(request: NextRequest, requestId: string): Promise<AdminAuthorization> {
@@ -277,6 +301,7 @@ export async function proxyQuestionBankAdmin(
       path: questionBankPath,
       upstream_status: upstream.status,
       target_origin: safeOrigin(target),
+      ...sanitizeUpstreamErrorBody(text),
     });
   }
   const responseHeaders = sanitizeUpstreamHeaders(upstream.headers);
