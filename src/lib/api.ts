@@ -182,6 +182,7 @@ export type {
 export {
   browseQuestionBankTopics,
   browseQuestionBankQuestions,
+  getQuestionBankBootstrap,
   listQuestionBankBoards,
   listQuestionBankSources,
   listQuestionBankYears,
@@ -227,6 +228,8 @@ export type {
   QuestionBankSourceOption,
   QuestionBankYearStat,
   QuestionBankFacets,
+  QuestionBankBootstrap,
+  QuestionBankReadModel,
   QuestionBankAvailability,
   QuestionBankQuestion,
   QuestionBankSessionItem,

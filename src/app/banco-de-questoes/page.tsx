@@ -6,16 +6,16 @@ import {
   browseQuestionBankQuestions,
   browseQuestionBankTopics,
   createQuestionBankSession,
+  getQuestionBankBootstrap,
   getReviewAgenda,
   getQuestionBankNextAction,
   getQuestionBankPerformance,
   listQuestionBankFacets,
-  listQuestionBankSources,
-  listQuestionBankYears,
   previewQuestionBankAvailability,
   type QuestionBankAnswerStatus,
   type QuestionBankCorrectionStatus,
   type QuestionBankAvailability,
+  type QuestionBankBootstrap,
   type QuestionBankNextAction,
   type QuestionBankPerformance,
   type QuestionBankQuestion,
@@ -52,6 +52,15 @@ function clampQuestionLimit(value: number | null | undefined, fallback = 10) {
 
 function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === "AbortError";
+}
+
+const TAXONOMY_NODE_TYPES = new Set(["specialty", "theme", "subtheme"]);
+
+function splitBootstrapTopics(topics: QuestionBankTopic[]) {
+  return {
+    taxonomy: topics.filter((topic) => TAXONOMY_NODE_TYPES.has(topic.node_type ?? "")),
+    micros: topics.filter((topic) => topic.node_type === "microcompetency"),
+  };
 }
 
 function IconBookOpen({ className }: { className?: string }) {
@@ -395,6 +404,7 @@ function BancoDeQuestoesContent() {
   // abrir como "nenhum assunto" enquanto ainda nem buscou.
   const [topicsLoading, setTopicsLoading] = useState(true);
   const [topicsError, setTopicsError] = useState(false);
+  const [bootstrapReady, setBootstrapReady] = useState(false);
 
   // Preview state
   const [availability, setAvailability] = useState<QuestionBankAvailability | null>(null);
@@ -413,6 +423,7 @@ function BancoDeQuestoesContent() {
   const facetsRequestSeq = useRef(0);
   const facetsAbortRef = useRef<AbortController | null>(null);
   const facetsInFlightRef = useRef<{ key: string; promise: Promise<void> } | null>(null);
+  const bootstrapRef = useRef<QuestionBankBootstrap | null>(null);
 
   // Derived
   const requestedLimit = clampQuestionLimit(limit);
@@ -485,8 +496,12 @@ function BancoDeQuestoesContent() {
     setLimit(clampQuestionLimit(context.expectedQuestions ?? 10));
     setStudyKind("topic");
     setSelectedTopics([]);
-    setTaxonomyTopics([]);
-    setMicroTopics([]);
+    const bootstrap = bootstrapRef.current;
+    if (bootstrap) {
+      const split = splitBootstrapTopics(bootstrap.topics);
+      setTaxonomyTopics(split.taxonomy);
+      setMicroTopics(split.micros);
+    }
     setQuestions([]);
   }, [routeSearchKey]);
 
@@ -632,37 +647,45 @@ function BancoDeQuestoesContent() {
     }
   }, [boardCodes, examCodes, institutions, selectedYears, showToast, token]);
 
-  const loadSourceOptions = useCallback(async () => {
+  const loadBootstrap = useCallback(async () => {
     setSourcesLoading(true);
+    setYearsLoading(true);
+    setTopicsLoading(true);
     setSourcesError(false);
+    setYearsError(false);
+    setTopicsError(false);
     try {
-      setSources(await listQuestionBankSources(token));
-    } catch {
+      const bootstrap = await getQuestionBankBootstrap(token);
+      bootstrapRef.current = bootstrap;
+      const split = splitBootstrapTopics(bootstrap.topics);
+      setSources(bootstrap.sources);
+      setYearStats(bootstrap.years);
+      setTaxonomyTopics(split.taxonomy);
+      setMicroTopics(split.micros);
+      setBootstrapReady(true);
+    } catch (err) {
+      bootstrapRef.current = null;
+      setBootstrapReady(false);
       setSources([]);
+      setYearStats([]);
+      setTaxonomyTopics([]);
+      setMicroTopics([]);
       setSourcesError(true);
+      setYearsError(true);
+      setTopicsError(true);
+      const message = err instanceof Error ? err.message : "NÃ£o foi possÃ­vel carregar o banco de questÃµes.";
+      setError(message);
     } finally {
       setSourcesLoading(false);
-    }
-  }, [token]);
-
-  const loadYears = useCallback(async () => {
-    setYearsLoading(true);
-    setYearsError(false);
-    try {
-      setYearStats(await listQuestionBankYears(token));
-    } catch {
-      setYearStats([]);
-      setYearsError(true);
-    } finally {
       setYearsLoading(false);
+      setTopicsLoading(false);
     }
   }, [token]);
 
   useEffect(() => {
     if (!tokenResolved) return;
-    void loadSourceOptions();
-    void loadYears();
-  }, [loadSourceOptions, loadYears, tokenResolved]);
+    void loadBootstrap();
+  }, [loadBootstrap, tokenResolved]);
 
   // Cross-filtered facets (Estratégia-style): one call whose year counts react to
   // the selected banca and whose banca counts react to the selected years. It
@@ -716,28 +739,53 @@ function BancoDeQuestoesContent() {
   }, [area, boardCodes, correctionStatus, examCodes, institutions, normalizedSearch, selectedTopics, selectedYears, token]);
 
   useEffect(() => {
-    if (!tokenResolved) return;
+    if (!tokenResolved || !bootstrapReady) return;
+    const hasFacetFilters = Boolean(
+      area || normalizedSearch || selectedTopics.length || boardCodes.length || examCodes.length ||
+      institutions.length || selectedYears.length || correctionStatus !== "all"
+    );
+    if (!hasFacetFilters) {
+      const bootstrap = bootstrapRef.current;
+      if (bootstrap) {
+        setSources(bootstrap.sources);
+        setYearStats(bootstrap.years);
+      }
+      return;
+    }
     const timer = window.setTimeout(() => {
       void refreshFacets();
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [refreshFacets, tokenResolved]);
+  }, [area, boardCodes.length, bootstrapReady, correctionStatus, examCodes.length, institutions.length, normalizedSearch, refreshFacets, selectedTopics.length, selectedYears.length, tokenResolved]);
 
   useEffect(() => {
-    if (!tokenResolved) return;
+    if (!tokenResolved || !bootstrapReady) return;
     const timer = window.setTimeout(() => {
       void refreshAvailability();
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [refreshAvailability, tokenResolved]);
+  }, [bootstrapReady, refreshAvailability, tokenResolved]);
 
   useEffect(() => {
-    if (!tokenResolved) return;
+    if (!tokenResolved || !bootstrapReady) return;
+    const hasStructuralTopicFilters = Boolean(
+      boardCodes.length || examCodes.length || institutions.length || selectedYears.length
+    );
+    if (!hasStructuralTopicFilters) {
+      const bootstrap = bootstrapRef.current;
+      if (bootstrap) {
+        const split = splitBootstrapTopics(bootstrap.topics);
+        setTaxonomyTopics(split.taxonomy);
+        setMicroTopics(split.micros);
+        setTopicsError(false);
+      }
+      return;
+    }
     const timer = window.setTimeout(() => {
       void refreshTopics();
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [refreshTopics, tokenResolved]);
+  }, [boardCodes.length, bootstrapReady, examCodes.length, institutions.length, refreshTopics, selectedYears.length, tokenResolved]);
 
   // ─── Handlers ────────────────────────────────────────────────────────────
 
@@ -1079,7 +1127,7 @@ function BancoDeQuestoesContent() {
                   topicSuggestions={topicSuggestions}
                   topicsLoading={topicsLoading}
                   topicsError={topicsError}
-                  onTopicsRetry={() => void refreshTopics()}
+                  onTopicsRetry={() => void loadBootstrap()}
                   selectedTopics={selectedTopics}
                   onToggleTopic={toggleTopic}
                   boardCodes={boardCodes}
@@ -1089,11 +1137,11 @@ function BancoDeQuestoesContent() {
                   sourcesLoading={sourcesLoading}
                   sourcesError={sourcesError}
                   onSourceSelectionChange={handleSourceSelectionChange}
-                  onSourcesRetry={() => void loadSourceOptions()}
+                  onSourcesRetry={() => void loadBootstrap()}
                   yearStats={yearStats}
                   yearsLoading={yearsLoading}
                   yearsError={yearsError}
-                  onYearsRetry={() => void loadYears()}
+                  onYearsRetry={() => void loadBootstrap()}
                   selectedYears={selectedYears}
                   onSelectedYearsChange={handleSelectedYearsChange}
                   includeNoYear={includeNoYear}

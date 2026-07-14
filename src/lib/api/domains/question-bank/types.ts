@@ -56,6 +56,14 @@ export type QuestionBankFacets = {
   institutions: QuestionBankSourceOption[];
 };
 
+export type QuestionBankReadModel = {
+  generation: number;
+  projected_at: string | null;
+  lag_seconds: number | null;
+  status: "legacy" | "ready" | "stale";
+  projected_count: number | null;
+};
+
 export type QuestionBankTopic = {
   knowledge_node_id: string;
   parent_knowledge_node_id: string | null;
@@ -84,6 +92,14 @@ export type QuestionBankTopic = {
   adaptive_weight: number;
   adaptive_weight_score: number;
   adaptive_weight_factors: Record<string, number>;
+};
+
+export type QuestionBankBootstrap = {
+  topics: QuestionBankTopic[];
+  sources: QuestionBankSourceOption[];
+  years: QuestionBankYearStat[];
+  total_global: number;
+  read_model: QuestionBankReadModel;
 };
 
 export type QuestionBankAvailability = {

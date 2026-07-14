@@ -2,10 +2,17 @@ import { api, authHeader } from "../../shared/http";
 import { appendArrayParams } from "./params";
 import type {
   QuestionBankCorrectionStatus,
+  QuestionBankBootstrap,
   QuestionBankFacets,
   QuestionBankSourceOption,
   QuestionBankYearStat,
 } from "./types";
+
+export async function getQuestionBankBootstrap(token: string): Promise<QuestionBankBootstrap> {
+  return api<QuestionBankBootstrap>("/api/question-bank/bootstrap", {
+    headers: authHeader(token),
+  });
+}
 
 export async function listQuestionBankSources(token: string): Promise<QuestionBankSourceOption[]> {
   return api<QuestionBankSourceOption[]>("/api/question-bank/sources", {
