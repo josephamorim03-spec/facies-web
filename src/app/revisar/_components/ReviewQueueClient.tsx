@@ -8,6 +8,12 @@ import { Skeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { OutcomeCard as PaperOutcomeCard } from "@/components/ui/OutcomeCard";
 import { StudyActionCard } from "@/components/ui/StudyActionCard";
+import {
+  DataFreshness,
+  LearningStatus,
+  StudentPage,
+  StudentPageHeader,
+} from "@/components/student/StudentExperienceUI";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import {
   getTrainerReviewQueue,
@@ -19,6 +25,7 @@ import {
 import { getAuthToken } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/error-utils";
 import { useAuthToken } from "@/lib/useAuthToken";
+import { useStudentExperience } from "@/lib/StudentExperienceContext";
 
 type QueueFilter = "all" | "questions" | "corrections" | "cards";
 
@@ -147,6 +154,7 @@ function QueueRow({
 
 export function ReviewQueueClient() {
   const { tokenResolved } = useAuthToken();
+  const { enabled: experienceEnabled, experience } = useStudentExperience();
   const [queue, setQueue] = useState<TrainerReviewQueue | null>(null);
   const [filter, setFilter] = useState<QueueFilter>("all");
   const [loading, setLoading] = useState(true);
@@ -196,14 +204,21 @@ export function ReviewQueueClient() {
   }, [filter, queue]);
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Revisar</p>
-        <h1 className="font-serif text-3xl font-semibold text-ink">Proteja o que você já aprendeu</h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-muted">
-          Questões, correções e cards entram na mesma prioridade, respeitando sua carga disponível.
-        </p>
-      </header>
+    <StudentPage>
+      <StudentPageHeader
+        eyebrow="Revisar"
+        title="Proteja o que você já aprendeu"
+        description="Questões, correções e cards são priorizados sem misturar suas unidades."
+        actions={experienceEnabled && experience ? (
+          <DataFreshness
+            status={experience.status}
+            generatedAt={experience.generated_at}
+            missingSources={experience.missing_sources}
+          />
+        ) : undefined}
+      />
+
+      {experienceEnabled && experience ? <LearningStatus load={experience.review_load} /> : null}
 
       {loading ? (
         <QueueSkeleton />
@@ -271,6 +286,6 @@ export function ReviewQueueClient() {
           </Link>
         </>
       ) : null}
-    </div>
+    </StudentPage>
   );
 }

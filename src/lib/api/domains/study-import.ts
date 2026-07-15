@@ -1,4 +1,5 @@
 import { api, authHeader } from "../shared/http";
+import { invalidateStudentExperienceCache } from "./student-experience";
 import type { FsrsReviewRating, StudyKind, FullExamType } from "../types";
 
 // ── Study Import Types ───────────────────────────────────────────
@@ -232,11 +233,13 @@ export async function updateProfile(
     reschedule_mode?: string;
   }
 ): Promise<UserProfile> {
-  return api<UserProfile>("/api/profile", {
+  const profile = await api<UserProfile>("/api/profile", {
     method: "PATCH",
     headers: authHeader(token),
     body: JSON.stringify(payload),
   });
+  invalidateStudentExperienceCache();
+  return profile;
 }
 
 // ── Directed Study ───────────────────────────────────────────────
@@ -260,11 +263,13 @@ export async function createDirectedStudy(
     };
   }
 ): Promise<DirectedStudyOut> {
-  return api<DirectedStudyOut>("/api/studies/directed", {
+  const study = await api<DirectedStudyOut>("/api/studies/directed", {
     method: "POST",
     headers: authHeader(token),
     body: JSON.stringify(payload),
   });
+  invalidateStudentExperienceCache();
+  return study;
 }
 
 export async function listDirectedStudies(token: string): Promise<DirectedStudyListItem[]> {
@@ -276,11 +281,13 @@ export async function updateDirectedStudy(
   studyId: string,
   payload: { total_questions?: number; correct_questions?: number; confirm_impact?: boolean }
 ): Promise<DirectedStudyListItem> {
-  return api<DirectedStudyListItem>(`/api/studies/directed/${studyId}`, {
+  const study = await api<DirectedStudyListItem>(`/api/studies/directed/${studyId}`, {
     method: "PATCH",
     headers: authHeader(token),
     body: JSON.stringify(payload),
   });
+  invalidateStudentExperienceCache();
+  return study;
 }
 
 export async function deleteDirectedStudy(token: string, studyId: string): Promise<void> {
@@ -288,6 +295,7 @@ export async function deleteDirectedStudy(token: string, studyId: string): Promi
     method: "DELETE",
     headers: authHeader(token),
   });
+  invalidateStudentExperienceCache();
 }
 
 // ── Study Import Session ─────────────────────────────────────────

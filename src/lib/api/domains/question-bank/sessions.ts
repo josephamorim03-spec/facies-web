@@ -5,6 +5,7 @@ import type {
   QuestionBankSessionCreatePayload,
   QuestionBankSessionStatus,
 } from "./types";
+import { invalidateStudentExperienceCache } from "../student-experience";
 
 export async function createQuestionBankSession(token: string, payload: QuestionBankSessionCreatePayload): Promise<QuestionBankSession> {
   return api<QuestionBankSession>("/api/question-bank/sessions", { method: "POST", headers: authHeader(token), body: JSON.stringify(payload) });
@@ -64,5 +65,7 @@ export async function finalizeQuestionBankSession(
     confirm_unanswered: options?.confirm_unanswered ? "true" : "false",
     confirm_reported_items: options?.confirm_reported_items ? "true" : "false",
   });
-  return api<QuestionBankFinalizeResult>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/finalize?${q.toString()}`, { method: "POST", headers: authHeader(token) });
+  const result = await api<QuestionBankFinalizeResult>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/finalize?${q.toString()}`, { method: "POST", headers: authHeader(token) });
+  invalidateStudentExperienceCache();
+  return result;
 }

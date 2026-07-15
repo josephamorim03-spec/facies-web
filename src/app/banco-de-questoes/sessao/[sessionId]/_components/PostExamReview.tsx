@@ -92,7 +92,7 @@ export default function PostExamReview({
     wrongItems.length > 0
       ? `${wrongItems.length} erro${wrongItems.length === 1 ? "" : "s"} virou${wrongItems.length === 1 ? "" : "aram"} material de estudo`
       : correctItems.length === scoredItems.length
-        ? "Sessão limpa: você confirmou domínio"
+        ? "Sessão limpa: bom desempenho observado"
         : "Sessão concluída com mapa mais claro";
   const gainDetail =
     wrongItems.length > 0

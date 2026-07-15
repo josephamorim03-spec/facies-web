@@ -189,7 +189,7 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
       {weakNodes.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-            Tópicos com domínio abaixo de 60%
+            Tópicos com estimativa de domínio abaixo de 60%
           </p>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {weakNodes.map((node) => {

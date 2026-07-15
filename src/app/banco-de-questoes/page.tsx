@@ -32,6 +32,8 @@ import { buildSessionCreateFromTrainerPayload } from "@/lib/trainer/session";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useToast } from "@/lib/useToast";
 import { GuidanceNote } from "@/components/GuidanceNote";
+import { DataFreshness, StudentPageHeader } from "@/components/student/StudentExperienceUI";
+import { useStudentExperience } from "@/lib/StudentExperienceContext";
 import type { GuidanceTone } from "@/lib/guidanceCopy";
 import FiltersBar from "./_components/FiltersBar";
 import QuestionList from "./_components/QuestionList";
@@ -365,6 +367,7 @@ function BancoDeQuestoesContent() {
   const { setActions } = useNavbar();
   const { token, tokenResolved } = useAuthToken();
   const { showToast } = useToast();
+  const { enabled: experienceEnabled, experience } = useStudentExperience();
   const routeSearchParams = useSearchParams();
   const routeSearchKey = routeSearchParams.toString();
   const initialContext = useMemo(() => parseEntryContext(new URLSearchParams(routeSearchKey)), [routeSearchKey]);
@@ -673,7 +676,7 @@ function BancoDeQuestoesContent() {
       setSourcesError(true);
       setYearsError(true);
       setTopicsError(true);
-      const message = err instanceof Error ? err.message : "NÃ£o foi possÃ­vel carregar o banco de questÃµes.";
+        const message = err instanceof Error ? err.message : "Não foi possível carregar o banco de questões.";
       setError(message);
     } finally {
       setSourcesLoading(false);
@@ -993,22 +996,21 @@ function BancoDeQuestoesContent() {
   return (
     <div className="min-h-screen bg-paper text-ink">
       <div className="mx-auto max-w-7xl space-y-5">
-        <header className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Banco de questões</p>
-            <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight md:text-4xl">Questões com raciocínio clínico</h1>
-            <p className="mt-2 max-w-2xl text-sm text-muted">
-              Monte um bloco com foco, recorte e modo claros. A recomendação continua disponível como atalho.
-            </p>
-          </div>
-          {entryContext.reviewTaskId && (
+        <StudentPageHeader
+          eyebrow="Praticar"
+          title="Questões com raciocínio clínico"
+          description="Monte um bloco com foco, recorte e modo claros. A recomendação continua disponível como atalho."
+          breadcrumb={["Praticar", "Banco de questões"]}
+          actions={entryContext.reviewTaskId ? (
             <span className="rounded-lg border border-edge bg-[var(--amber-tint)] px-3 py-2 text-xs text-muted">
               <strong className="font-semibold text-ink">{(entryContext.theme ?? searchDraft) || "Revisão"}</strong>
               {" · "}{(entryContext.area ?? area) || "Área"}
               {" · "}{entryContext.dateISO ?? "data do calendário"}
             </span>
-          )}
-        </header>
+          ) : experienceEnabled && experience ? (
+            <DataFreshness status={experience.status} generatedAt={experience.generated_at} missingSources={experience.missing_sources} />
+          ) : null}
+        />
 
         <section className="rounded-xl border border-edge bg-surface px-4 py-3" aria-label="Sessão recomendada" aria-busy={nextActionLoading}>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

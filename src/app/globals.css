@@ -26,7 +26,10 @@
   --range-thumb: var(--color-primary);
   --radius-control: 0.5rem;
   --radius-surface: 0.75rem;
+  --radius-hero: 1rem;
   --reading-measure: 68ch;
+  --content-wide: 72rem;
+  --space-page: clamp(1rem, 2vw, 1.5rem);
   --motion-fast: 120ms;
   --motion-base: 180ms;
   --motion-slow: 240ms;
@@ -180,6 +183,20 @@
     @apply bg-surfaceMuted;
     animation: paper-skeleton-enter var(--motion-slow) var(--ease-paper) both;
   }
+
+  .student-page {
+    width: 100%;
+    animation: student-page-enter var(--motion-base) var(--ease-paper) both;
+  }
+
+  .student-page-header {
+    min-height: 5.5rem;
+  }
+}
+
+@keyframes student-page-enter {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes paper-skeleton-enter {

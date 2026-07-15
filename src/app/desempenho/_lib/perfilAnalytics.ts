@@ -1,16 +1,10 @@
 import { ReviewTask } from "@/lib/api";
 import { AREA_HEX, AREA_FULL_EXAM_HEX } from "@/lib/areaColors";
+import { AREA_FULL_LABELS } from "@/lib/areaIdentity";
 import { Area, Period, ThemeListSort } from "./perfilShared";
 
 export const AREAS: Area[] = ["GO", "PD", "MP", "CG", "CM", "OU"];
-export const AREA_LABELS: Record<Area, string> = {
-  GO: "Ginecologia e Obstetrícia",
-  PD: "Pediatria",
-  MP: "Medicina Preventiva",
-  CG: "Cirurgia Geral",
-  CM: "Clínica Médica",
-  OU: "Outras",
-};
+export const AREA_LABELS: Record<Area, string> = AREA_FULL_LABELS;
 // Single source of truth — re-exported from the canonical area palette in lib/areaColors.
 export const AREA_COLORS: Record<Area, string> = AREA_HEX;
 export const FULL_EXAM_COLOR = AREA_FULL_EXAM_HEX;

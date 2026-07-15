@@ -13,11 +13,12 @@ import {
   getTurboAreaStats,
   listDirectedStudies,
   listEvents,
-  listQuestionBankSessions,
   listReviewTasks,
   listScheduleSuggestions,
   previewQuestionBankAvailability,
+  getStudentExperience,
 } from "@/lib/api";
+import { getStudentWarmupIntent } from "@/lib/navConfig";
 
 type RoutePrefetcher = {
   prefetch: (href: string) => void;
@@ -81,8 +82,10 @@ export function warmRouteData(href: string, token: string | null | undefined): v
   warmedDataAt.set(cacheKey, now);
 
   const requests: Array<Promise<unknown>> = [getProfile(token)];
+  requests.push(getStudentExperience(token, "week"));
+  const intent = getStudentWarmupIntent(pathname);
 
-  if (pathname === "/hoje") {
+  if (intent === "today") {
     requests.push(
       getReviewAgenda(token),
       listReviewTasks(token, { status: "pending" }),
@@ -92,28 +95,20 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       getOperationalStreak(token),
       getStudyPerformanceSummary(token),
     );
-  } else if (pathname === "/banco-de-questoes") {
+  } else if (intent === "practice") {
     requests.push(
       browseQuestionBankTopics(token, { limit: 40, include_empty: false }),
       previewQuestionBankAvailability(token),
       getQuestionBankReviewQueue(token),
       getQuestionBankPerformance(token),
     );
-  } else if (pathname === "/cards-adaptativos" || pathname === "/revisao-turbo" || pathname === "/caderno") {
+  } else if (intent === "review") {
     requests.push(
       getOperationalTurboOverview(token, { previewLimit: 4 }),
       getOperationalStreak(token),
       getTurboAreaStats(token),
     );
-  } else if (pathname === "/revisoes") {
-    // Histórico é um log: só as sessões (análise pedagógica vive em /estatisticas).
-    requests.push(listQuestionBankSessions(token, { limit: 30 }));
-  } else if (
-    pathname === "/dados-e-relatorios" ||
-    pathname === "/estatisticas" ||
-    pathname === "/dados-e-relatorios/relatorio" ||
-    pathname === "/estatisticas/relatorio"
-  ) {
+  } else if (intent === "track") {
     requests.push(
       listDirectedStudies(token),
       listReviewTasks(token, { status: "pending" }),
@@ -122,13 +117,7 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       getQuestionBankLongitudinalDiagnosis(token),
       getTurboAreaStats(token),
     );
-  } else if (
-    pathname === "/rotina-e-metas" ||
-    pathname === "/desempenho" ||
-    pathname === "/cronograma" ||
-    pathname === "/agenda-operacional" ||
-    pathname === "/calendario"
-  ) {
+  } else if (intent === "plan") {
     requests.push(
       getReviewAgenda(token),
       listReviewTasks(token, { status: "pending" }),

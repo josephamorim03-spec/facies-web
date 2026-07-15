@@ -94,8 +94,8 @@ export function MetacognitionInsights({
       {masteryNodes.length > 0 && (
         <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm lg:col-span-2">
           <div>
-            <h2 className="font-serif text-2xl font-semibold">Domínio por tópico</h2>
-            <p className="mt-1 text-sm text-muted">Banco de questões · ordenado por domínio</p>
+            <h2 className="font-serif text-2xl font-semibold">Estimativa por tópico</h2>
+            <p className="mt-1 text-sm text-muted">Banco de questões · estimativa longitudinal com base no histórico</p>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {masteryNodes.map((node) => {

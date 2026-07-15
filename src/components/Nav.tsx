@@ -110,27 +110,19 @@ function KrosmedIcon({ className }: { className?: string }) {
 type IconComponent = (props: { className?: string }) => React.JSX.Element;
 
 const ICON_MAP: Record<string, IconComponent> = {
-  "/hoje": IconToday,
-  "/praticar": IconNotebook,
-  "/revisar": IconCards,
-  "/acompanhar": IconChart,
-  "/planejar": IconCalendar,
-  "/agenda-operacional": IconCalendar,
-  "/cronograma": IconCalendar,
-  "/banco-de-questoes": IconNotebook,
-  "/cards-adaptativos": IconCards,
-  "/revisoes": IconHistory,
-  "/caderno": IconNotebook,
-  "/estatisticas": IconChart,
-  "/dados-e-relatorios": IconChart,
-  "/desempenho": IconSliders,
-  "/rotina-e-metas": IconSliders,
+  today: IconToday,
+  practice: IconNotebook,
+  review: IconCards,
+  track: IconChart,
+  plan: IconCalendar,
+  history: IconHistory,
+  settings: IconSliders,
 };
 
 const NAV_GROUPS = NAV_GROUPS_CONFIG.map((group) => ({
   items: group.items.map((item) => ({
     ...item,
-    Icon: ICON_MAP[item.href] ?? IconNotebook,
+    Icon: ICON_MAP[item.icon] ?? IconNotebook,
   })),
 }));
 

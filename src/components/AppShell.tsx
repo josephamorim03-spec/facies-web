@@ -15,6 +15,7 @@ import { getBlockedRedirectSessionKey } from "@/lib/storage-keys";
 import { ACTIVATE_ROUTE, INITIAL_GOAL_SETUP_ROUTE } from "@/lib/initialGoalSetup";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { NavbarProvider, NavbarContext } from "@/lib/NavbarContext";
+import { StudentExperienceProvider } from "@/lib/StudentExperienceContext";
 import { warmRoute, warmRouteData } from "@/lib/navigationWarmup";
 import {
   acknowledgeSessionExpired,
@@ -23,6 +24,7 @@ import {
   startSessionExpiredRedirect,
   subscribeSessionExpired,
 } from "@/lib/sessionExpiration";
+import { getStudentPageTitle } from "@/lib/navConfig";
 
 type BuildVersionPayload = {
   commit_sha: string;
@@ -31,7 +33,7 @@ type BuildVersionPayload = {
 };
 
 const SHOW_BUILD_BADGE = process.env.NEXT_PUBLIC_SHOW_BUILD_BADGE === "1";
-const PRIMARY_NAV_ROUTES = ["/hoje", "/banco-de-questoes", "/cards-adaptativos", "/estatisticas"];
+const PRIMARY_NAV_ROUTES = ["/hoje", "/praticar", "/revisar", "/acompanhar", "/planejar"];
 
 type IdleCallbackHandle = number;
 type WindowWithIdleCallback = Window & {
@@ -63,35 +65,9 @@ function shouldHideNavigationChrome(pathname: string): boolean {
   );
 }
 
-const PAGE_TITLES: Record<string, string> = {
-  "/banco-de-questoes": "Questões",
-  "/cards-adaptativos": "Cards",
-  "/revisao-turbo": "Cards",
-  "/revisoes": "Histórico",
-  "/cronograma": "Hoje",
-  "/dados-e-relatorios": "Desempenho",
-  "/dados-e-relatorios/graficos": "Gráficos",
-  "/dados-e-relatorios/relatorio": "Relatórios",
-  "/estatisticas": "Desempenho",
-  "/estatisticas/graficos": "Gráficos",
-  "/estatisticas/relatorio": "Relatórios",
-  "/desempenho": "Plano",
-  "/rotina-e-metas": "Plano",
-  "/perfil": "Perfil",
-  "/caderno": "Caderno",
-  "/agenda-operacional": "Hoje",
-  "/calendario": "Hoje",
-  "/dashboard": "Dashboard",
-  "/admin": "Admin",
-  "/hoje": "Hoje",
-};
-
 function fallbackTitle(pathname: string): string {
-  const titleEntries = Object.entries(PAGE_TITLES).sort(([a], [b]) => b.length - a.length);
-  for (const [prefix, label] of titleEntries) {
-    if (pathname === prefix || pathname.startsWith(prefix + "/")) return label;
-  }
-  return "";
+  if (pathname.startsWith("/admin")) return "Admin";
+  return getStudentPageTitle(pathname);
 }
 
 function shouldShowMobileTopBar(pathname: string, hideChrome: boolean): boolean {
@@ -313,7 +289,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <ToastProvider>
       <NavbarProvider>
-        <AppShellInner>{children}</AppShellInner>
+        <StudentExperienceProvider>
+          <AppShellInner>{children}</AppShellInner>
+        </StudentExperienceProvider>
       </NavbarProvider>
     </ToastProvider>
   );

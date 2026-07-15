@@ -329,6 +329,16 @@ export {
   getTrainerPrescription,
   recordTrainerRecommendationEvent,
 } from "./api/domains/trainer";
+
+// Canonical student experience snapshot
+export {
+  getStudentExperience,
+  invalidateStudentExperienceCache,
+} from "./api/domains/student-experience";
+export type {
+  StudentExperience,
+  StudentMetric,
+} from "./api/domains/student-experience";
 export type {
   TrainerPrescription,
   TrainerAction,
@@ -339,6 +349,7 @@ export type {
   TrainerEventType,
   TrainerClosedLoop,
   TrainerDailyLoad,
+  TrainerReviewLoad,
   TrainerWhyFactor,
   TrainerReviewQueue,
   TrainerReviewQueueItem,

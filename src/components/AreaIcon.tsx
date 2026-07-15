@@ -7,6 +7,7 @@
 
 import React from "react";
 import { resolveDisplayArea } from "@/lib/areaDisplay";
+import { AREA_FULL_LABELS, AREA_HEX, AREA_SHORT_LABELS } from "@/lib/areaIdentity";
 
 const VIEWBOX = "0 0 24 24";
 const STROKE_PROPS = {
@@ -19,29 +20,10 @@ const STROKE_PROPS = {
 
 type IconProps = { className?: string; style?: React.CSSProperties };
 
-export const AREA_COLORS: Record<string, string> = {
-  GO: "#B65AA0",
-  OB: "#8B6FB6",
-  PD: "#2E79A8",
-  CG: "#B44A4F",
-  CM: "#2D8B62",
-  MP: "#A97816",
-  OU: "#8C928E",
-};
-
-export const AREA_FULL_LABELS: Record<string, string> = {
-  GO: "Ginecologia e Obstetrícia",
-  OB: "Obstetrícia",
-  PD: "Pediatria",
-  CG: "Cirurgia Geral",
-  CM: "Clínica Médica",
-  MP: "Medicina Preventiva",
-  OU: "Outras",
-};
-
-export const AREA_SHORT_LABELS: Record<string, string> = {
-  GO: "GO", OB: "OB", PD: "PD", CG: "CG", CM: "CM", MP: "MP", OU: "OU",
-};
+// Compatibility alias for legacy callers that still receive an unvalidated
+// string. New code should resolve the area before indexing the canonical map.
+export const AREA_COLORS: Record<string, string> = AREA_HEX;
+export { AREA_FULL_LABELS, AREA_SHORT_LABELS };
 
 // ── Individual area icons ──────────────────────────────────────────────────
 

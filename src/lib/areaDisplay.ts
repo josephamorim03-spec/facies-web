@@ -1,14 +1,7 @@
-export type DisplayArea = "GO" | "OB" | "PD" | "MP" | "CG" | "CM" | "OU";
+import { AREA_FULL_LABELS, type DisplayArea } from "./areaIdentity.ts";
+export type { DisplayArea } from "@/lib/areaIdentity";
 
-export const DISPLAY_AREA_FULL_LABELS: Record<DisplayArea, string> = {
-  GO: "Ginecologia e Obstetrícia",
-  OB: "Obstetrícia",
-  PD: "Pediatria",
-  CG: "Cirurgia Geral",
-  CM: "Clínica Médica",
-  MP: "Medicina Preventiva",
-  OU: "Outras",
-};
+export const DISPLAY_AREA_FULL_LABELS = AREA_FULL_LABELS;
 
 const VALID_AREAS = new Set<DisplayArea>(["GO", "OB", "PD", "MP", "CG", "CM", "OU"]);
 

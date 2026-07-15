@@ -123,7 +123,7 @@ export default function CreateSessionPanel({
   const modeLabel = resolutionMode === "simulation" ? "Correção ao final" : "Correção item a item";
   const displayModeLabel = studyKind === "full_exam" ? "Registro em Provas" : modeLabel;
   const distribution = availability
-    ? `${availability.unanswered_count} novas · ${availability.answered_count} vistas`
+    ? `${availability.unanswered_count} novas · ${availability.answered_count} respondidas`
     : "Aguardando filtros";
 
   return (

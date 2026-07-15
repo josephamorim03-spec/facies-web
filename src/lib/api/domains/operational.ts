@@ -1,4 +1,5 @@
 import { api, authHeader, fetchBlob, fetchRaw, toAPIError } from "../shared/http";
+import { invalidateStudentExperienceCache } from "./student-experience";
 
 // Operational notes (CNO)
 export type OperationalSourceType = "question" | "reading";
@@ -353,11 +354,13 @@ export async function submitOperationalTurboSessionAction(
   sessionId: string,
   payload: { result: OperationalTurboResult }
 ): Promise<OperationalTurboSessionSnapshot> {
-  return api<OperationalTurboSessionSnapshot>(`/api/notes/operational/turbo/session/${sessionId}/action`, {
+  const result = await api<OperationalTurboSessionSnapshot>(`/api/notes/operational/turbo/session/${sessionId}/action`, {
     method: "POST",
     headers: authHeader(token),
     body: JSON.stringify(payload),
   });
+  invalidateStudentExperienceCache();
+  return result;
 }
 
 export async function navigateOperationalTurboSession(

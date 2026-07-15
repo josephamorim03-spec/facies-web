@@ -80,6 +80,16 @@ export type TrainerDailyLoad = {
   pending_reviews: number;
   recommended_limit_minutes: number;
   overload_alert: boolean;
+  review_load?: TrainerReviewLoad | null;
+};
+
+export type TrainerReviewLoad = {
+  topic_tasks_due: number;
+  questions_due: number;
+  cards_due: number;
+  overdue_topic_tasks: number;
+  overdue_cards: number;
+  estimated_minutes: number;
 };
 
 export type TrainerStateSummary = { headline: string; detail: string | null };
@@ -201,12 +211,29 @@ export async function recordTrainerRecommendationEvent(
   recommendationId: string,
   event: { event_type: TrainerEventType; event_id?: string; payload?: Record<string, unknown> },
 ): Promise<TrainerRecommendationEvent> {
+  const occurredAt = new Date();
+  const sourceModule = String(event.payload?.surface ?? event.payload?.source_module ?? "student");
+  const enrichedEvent = {
+    ...event,
+    payload: {
+      contract_version: "student-experience-v1",
+      source_module: sourceModule,
+      source_ref: recommendationId,
+      occurred_at: occurredAt.toISOString(),
+      local_day: [
+        occurredAt.getFullYear(),
+        String(occurredAt.getMonth() + 1).padStart(2, "0"),
+        String(occurredAt.getDate()).padStart(2, "0"),
+      ].join("-"),
+      ...event.payload,
+    },
+  };
   return api<TrainerRecommendationEvent>(
     `/api/trainer/recommendations/${encodeURIComponent(recommendationId)}/events`,
     {
       method: "POST",
       headers: authHeader(token),
-      body: JSON.stringify(event),
+      body: JSON.stringify(enrichedEvent),
     },
   );
 }

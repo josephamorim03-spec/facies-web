@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { NAV_GROUPS_CONFIG, isNavItemActive } from "../../src/lib/navConfig.ts";
+import {
+  NAV_GROUPS_CONFIG,
+  getStudentPageTitle,
+  getStudentRoute,
+  isNavItemActive,
+} from "../../src/lib/navConfig.ts";
 
 function findItem(href) {
   for (const group of NAV_GROUPS_CONFIG) {
@@ -43,4 +48,18 @@ test("Planejar owns calendar views", () => {
   assert.ok(item);
   assert.equal(isNavItemActive("/calendario", item), true);
   assert.equal(isNavItemActive("/agenda-operacional", item), true);
+});
+
+test("planning children keep their own title and breadcrumb", () => {
+  assert.equal(getStudentPageTitle("/cronograma"), "Cronograma");
+  assert.equal(getStudentPageTitle("/calendario"), "Calendário");
+  assert.equal(getStudentPageTitle("/agenda-operacional"), "Agenda");
+  assert.deepEqual(getStudentRoute("/calendario")?.breadcrumb, ["Planejar", "Calendário"]);
+});
+
+test("the route registry owns icon and warmup intent", () => {
+  const route = getStudentRoute("/banco-de-questoes/sessao/abc");
+  assert.equal(route?.intent, "practice");
+  assert.equal(route?.icon, "practice");
+  assert.equal(route?.warmup, "practice");
 });

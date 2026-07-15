@@ -471,7 +471,7 @@ export default function StudyQuestion({
   })();
 
   const learningMomentCopy = item.is_correct
-    ? "Você confirmou o caminho. Para transformar acerto em domínio, diga para si qual dado do enunciado tornou as outras alternativas menos prováveis."
+    ? "Você confirmou o caminho. Para consolidar o acerto, diga para si qual dado do enunciado tornou as outras alternativas menos prováveis."
     : selectedDiagnosis
       ? "O ganho está em reconhecer a sedução da alternativa escolhida. Compare a armadilha abaixo com o dado que fechava o gabarito."
       : "O ganho está em reconstruir o primeiro desvio do raciocínio. Escreva uma correção curta antes de avançar.";
@@ -753,7 +753,7 @@ export default function StudyQuestion({
                       Momento de aprendizagem
                     </p>
                     <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight text-ink">
-                      {item.is_correct ? "Acerto que vira domínio" : "Erro que vira mapa"}
+                      {item.is_correct ? "Acerto que consolida raciocínio" : "Erro que vira mapa"}
                     </h2>
                     <p className="mt-2 max-w-[68ch] text-sm leading-relaxed text-muted">{learningMomentCopy}</p>
                   </div>

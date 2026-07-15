@@ -8,6 +8,13 @@ import { RotinaTab } from "./_components/RotinaTab";
 import { TrainerContextStrip } from "@/components/trainer/TrainerContextStrip";
 import { usePerfilPageState } from "./_hooks/usePerfilPageState";
 import { isInternalSkipRoutineEvent } from "./_lib/perfilShared";
+import {
+  DataFreshness,
+  LearningStatus,
+  StudentPage,
+  StudentPageHeader,
+} from "@/components/student/StudentExperienceUI";
+import { useStudentExperience } from "@/lib/StudentExperienceContext";
 
 function SkRow({ w }: { w: string }) {
   return <div className={`h-3 ${w} bg-edge rounded-sm`} />;
@@ -78,6 +85,7 @@ function PerfilPageSkeleton() {
 }
 
 export default function PerfilPage() {
+  const { enabled: experienceEnabled, experience } = useStudentExperience();
   const {
     loading,
     error,
@@ -155,7 +163,20 @@ export default function PerfilPage() {
   const maxAdaptiveLoad = Math.max(1, ...workload.map((d) => adaptiveQuestionsByDate.get(d.date) ?? d.load));
 
   return (
-    <div className="space-y-6">
+    <StudentPage>
+      <StudentPageHeader
+        eyebrow="Planejar"
+        title="Organize uma rotina sustentável"
+        description="Metas, capacidade e compromissos formam um único plano de estudo."
+        actions={experienceEnabled && experience ? (
+          <DataFreshness
+            status={experience.status}
+            generatedAt={experience.generated_at}
+            missingSources={experience.missing_sources}
+          />
+        ) : undefined}
+      />
+      {experienceEnabled && experience ? <LearningStatus load={experience.review_load} /> : null}
       <TrainerContextStrip key={savedMsg || "trainer-plan"} sourcePage="/planejar" />
       <RotinaTab
         token={token}
@@ -208,6 +229,6 @@ export default function PerfilPage() {
         rescheduleMode={rescheduleMode}
         setRescheduleMode={setRescheduleMode}
       />
-    </div>
+    </StudentPage>
   );
 }

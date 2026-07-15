@@ -51,6 +51,8 @@ import { TrainerActionCTA } from "@/components/trainer/TrainerActionCTA";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { OutcomeCard } from "@/components/ui/OutcomeCard";
 import { StudyActionCard } from "@/components/ui/StudyActionCard";
+import { DataFreshness, LearningStatus } from "@/components/student/StudentExperienceUI";
+import { useStudentExperience } from "@/lib/StudentExperienceContext";
 
 type Area = DisplayArea;
 
@@ -362,6 +364,7 @@ export default function TodayPage() {
   const { tokenResolved } = useAuthToken();
   const { setTitle, setActions } = useNavbar();
   const { showToast } = useToast();
+  const { enabled: experienceEnabled, experience } = useStudentExperience();
   const [tasks, setTasks] = useState<ReviewTask[]>([]);
   const [doneTasks, setDoneTasks] = useState<ReviewTask[]>([]);
   const [studies, setStudies] = useState<DirectedStudyListItem[]>([]);
@@ -553,11 +556,28 @@ export default function TodayPage() {
 
   const studentFirstName = firstName(displayName);
   const greeting = getGreeting(studentFirstName);
-  const totalDoneQuestions = studies.reduce((sum, study) => sum + Math.max(0, Number(study.total_questions ?? 0)), 0);
-  const totalCorrectQuestions = studies.reduce((sum, study) => sum + Math.max(0, Number(study.correct_questions ?? 0)), 0);
+  const legacyTotalDoneQuestions = studies.reduce((sum, study) => sum + Math.max(0, Number(study.total_questions ?? 0)), 0);
+  const legacyTotalCorrectQuestions = studies.reduce((sum, study) => sum + Math.max(0, Number(study.correct_questions ?? 0)), 0);
+  const hasCanonicalExperience = experienceEnabled && experience !== null;
+  const totalDoneQuestions = hasCanonicalExperience
+    ? Number(experience.activity.questions_answered.value ?? 0)
+    : legacyTotalDoneQuestions;
+  const totalCorrectQuestions = hasCanonicalExperience
+    ? Number(experience.activity.questions_correct.value ?? 0)
+    : legacyTotalCorrectQuestions;
   const globalAccuracy = formatRatioPercent(totalCorrectQuestions, totalDoneQuestions);
   const totalWrongQuestions = Math.max(0, totalDoneQuestions - totalCorrectQuestions);
-  const weeklyGoalPct = weeklyGoal > 0 ? Math.min(100, Math.round((weeklyOpsMetrics.doneQuestionsWeek / weeklyGoal) * 100)) : 0;
+  const canonicalWeeklyGoal = hasCanonicalExperience
+    ? Number(experience.activity.weekly_goal_questions.value ?? 0)
+    : weeklyGoal;
+  const canonicalWeeklyDone = hasCanonicalExperience
+    ? Number(experience.activity.questions_answered.value ?? 0)
+    : weeklyOpsMetrics.doneQuestionsWeek;
+  const weeklyGoalPct = hasCanonicalExperience
+    ? Number(experience.activity.weekly_progress_pct.value ?? 0)
+    : weeklyGoal > 0
+      ? Math.min(100, Math.round((weeklyOpsMetrics.doneQuestionsWeek / weeklyGoal) * 100))
+      : 0;
   const topAreaSummaries = (performanceSummary?.area_summaries ?? [])
     .filter((item) => item.total_questions > 0)
     .sort((a, b) => b.total_questions - a.total_questions)
@@ -896,7 +916,16 @@ export default function TodayPage() {
             {/* Progresso — uma leitura calma (acerto + meta), não cinco cards concorrentes */}
             <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
               <div className="flex items-start justify-between gap-3">
-                <h2 className="font-serif text-2xl font-semibold">Progresso</h2>
+                <div>
+                  <h2 className="font-serif text-2xl font-semibold">Progresso desta semana</h2>
+                  {hasCanonicalExperience ? (
+                    <DataFreshness
+                      status={experience.status}
+                      generatedAt={experience.generated_at}
+                      missingSources={experience.missing_sources}
+                    />
+                  ) : null}
+                </div>
                 <Link href="/dados-e-relatorios" className="text-xs font-semibold text-primary hover:underline">Ver detalhes</Link>
               </div>
               <div className="mt-5 flex items-center gap-5">
@@ -911,8 +940,8 @@ export default function TodayPage() {
                     <span className="text-xl font-semibold tabular-nums text-danger">{totalWrongQuestions}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm text-ink">Pendentes</span>
-                    <span className="text-xl font-semibold tabular-nums text-muted">{tasks.length}</span>
+                    <span className="text-sm text-ink">Respondidas</span>
+                    <span className="text-xl font-semibold tabular-nums text-muted">{totalDoneQuestions}</span>
                   </div>
                 </div>
               </div>
@@ -923,13 +952,15 @@ export default function TodayPage() {
                 </div>
                 <div className="mt-2 flex items-center gap-3">
                   <ScoreBar pct={weeklyGoalPct} color="var(--color-success)" />
-                  <span className="w-16 shrink-0 text-right text-sm tabular-nums text-ink">{weeklyOpsMetrics.doneQuestionsWeek}/{weeklyGoal}</span>
+                  <span className="w-16 shrink-0 text-right text-sm tabular-nums text-ink">{canonicalWeeklyDone}/{canonicalWeeklyGoal}</span>
                 </div>
                 <p className="mt-2 text-xs text-muted">
-                  {weeklyOpsMetrics.daysRemainingInWeek} dia{weeklyOpsMetrics.daysRemainingInWeek === 1 ? "" : "s"} restante{weeklyOpsMetrics.daysRemainingInWeek === 1 ? "" : "s"} · meta de {weeklyGoal} questões
+                  {weeklyOpsMetrics.daysRemainingInWeek} dia{weeklyOpsMetrics.daysRemainingInWeek === 1 ? "" : "s"} restante{weeklyOpsMetrics.daysRemainingInWeek === 1 ? "" : "s"} · meta de {canonicalWeeklyGoal} questões
                 </p>
               </div>
             </section>
+
+            {hasCanonicalExperience ? <LearningStatus load={experience.review_load} /> : null}
 
             {turboOverview && turboOverview.due_count > 0 && (
               <section
@@ -944,7 +975,7 @@ export default function TodayPage() {
                     <IconCards className="h-8 w-8" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h2 className="font-serif text-2xl font-semibold">Flashcards vencidos</h2>
+                    <h2 className="font-serif text-2xl font-semibold">Cards no ponto</h2>
                     <p className="text-sm text-muted">
                       {turboOverview.due_count} cards{turboOverview.estimated_minutes ? ` · ~${turboOverview.estimated_minutes} min` : ""}
                     </p>

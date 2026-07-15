@@ -18,6 +18,13 @@ import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { TrainerContextStrip } from "@/components/trainer/TrainerContextStrip";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
+import {
+  DataFreshness,
+  MetricStrip,
+  StudentPage,
+  StudentPageHeader,
+} from "@/components/student/StudentExperienceUI";
+import { useStudentExperience } from "@/lib/StudentExperienceContext";
 
 type FullExamType = "acesso_direto" | "r_plus";
 
@@ -84,6 +91,7 @@ function EstatisticasPageSkeleton() {
 export default function EstatisticasClientPage() {
   const isDesktopNavigation = useDesktopNavigationMode();
   const { setActions } = useNavbar();
+  const { enabled: experienceEnabled, experience } = useStudentExperience();
   const {
     pending,
     done,
@@ -301,6 +309,17 @@ export default function EstatisticasClientPage() {
     };
   }, [currentSnapshot, performanceSummary, period, weeklyGoal]);
 
+  const useCanonicalWeek = experienceEnabled && experience !== null && period === "semanal";
+  const displayedTotalDoneQuestions = useCanonicalWeek
+    ? Number(experience.activity.questions_answered.value ?? 0)
+    : totalDoneQuestions;
+  const displayedGoal = useCanonicalWeek
+    ? Number(experience.activity.weekly_goal_questions.value ?? 0)
+    : goal;
+  const displayedPct = useCanonicalWeek
+    ? Number(experience.activity.weekly_progress_pct.value ?? 0)
+    : pct;
+
   if (loading) {
     return <EstatisticasPageSkeleton />;
   }
@@ -309,18 +328,40 @@ export default function EstatisticasClientPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <StudentPage>
+      <StudentPageHeader
+        eyebrow="Acompanhar"
+        title="Entenda sua evolução"
+        description="Atividade, acertos e progresso sempre identificam o período e o universo medido."
+        actions={experienceEnabled && experience ? (
+          <DataFreshness
+            status={experience.status}
+            generatedAt={experience.generated_at}
+            missingSources={experience.missing_sources}
+          />
+        ) : undefined}
+      />
+      {experienceEnabled && experience ? (
+        <MetricStrip
+          metrics={[
+            experience.activity.questions_answered,
+            experience.activity.questions_correct,
+            experience.activity.accuracy_pct,
+            experience.activity.weekly_progress_pct,
+          ]}
+        />
+      ) : null}
       <TrainerContextStrip sourcePage="/acompanhar" />
       <DesempenhoTab
         loading={false}
         error=""
         period={period}
         changePeriod={changePeriod}
-        totalDoneQuestions={totalDoneQuestions}
+        totalDoneQuestions={displayedTotalDoneQuestions}
         totalTopicQuestions={totalTopicQuestions}
         totalFullExamQuestions={totalFullExamQuestions}
-        goal={goal}
-        pct={pct}
+        goal={displayedGoal}
+        pct={displayedPct}
         byArea={byArea}
         studyAcc={studyAcc}
         areaThemeSummaries={areaThemeSummaries}
@@ -343,6 +384,6 @@ export default function EstatisticasClientPage() {
       />
       <MetacognitionInsights longitudinal={longitudinal} performanceSummary={performanceSummary} />
       <GraficosSection />
-    </div>
+    </StudentPage>
   );
 }

@@ -83,7 +83,7 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
           })}
         </div>
       ) : (
-        <p className="text-xs text-muted">Todos os tópicos com domínio acima de 65%. Bom trabalho!</p>
+        <p className="text-xs text-muted">Todos os tópicos com estimativa longitudinal acima de 65%. Bom trabalho!</p>
       )}
 
       <Link

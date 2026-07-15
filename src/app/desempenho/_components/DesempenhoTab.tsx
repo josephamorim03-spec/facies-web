@@ -210,7 +210,7 @@ export function DesempenhoTab({
               changePeriod={changePeriod}
             />
             <div className="mt-2.5 flex justify-between text-xs text-muted">
-              <span>{totalDoneQuestions} questões feitas</span>
+              <span>{totalDoneQuestions} questões respondidas</span>
               <div className="flex items-center gap-3">
                 {healthScore !== null && healthScore !== undefined && (() => {
                   const h = healthStatement(healthScore);
