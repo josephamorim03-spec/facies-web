@@ -19,6 +19,7 @@ export type TurboLobbyProps = {
   availableCount: number;
   isTurboMode: boolean;
   lobbyAccentColor?: string;
+  minCards?: number;
   onStartAction: (count: number) => void | Promise<void>;
 };
 
@@ -27,10 +28,11 @@ export function TurboLobby({
   availableCount,
   isTurboMode,
   lobbyAccentColor,
+  minCards = 20,
   onStartAction,
 }: TurboLobbyProps) {
   const effectiveAvailableCount = turboOverview?.due_count ?? availableCount;
-  const sliderMin = Math.max(1, Math.min(20, effectiveAvailableCount));
+  const sliderMin = Math.max(1, Math.min(minCards, effectiveAvailableCount));
   const sliderMax = Math.max(sliderMin, Math.min(100, effectiveAvailableCount));
   const defaultCount = Math.max(
     sliderMin,

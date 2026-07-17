@@ -4,6 +4,7 @@ import React, { useEffect, useMemo } from "react";
 import type { OperationalSourceType } from "@/lib/api";
 import type { Area } from "./_lib/cadernoShared";
 import { useNavbar } from "@/lib/NavbarContext";
+import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
@@ -28,7 +29,7 @@ export default function CadernoClientPage() {
   const { setActions } = useNavbar();
   const cardsReturnAction = useMemo(
     () => (
-      <TopBarActionLink href="/cards-adaptativos" label="Cards" title="Cards">
+      <TopBarActionLink href={REVIEW_ROUTES.adaptiveCards} label="Cards" title="Cards">
         <CardsIcon className="h-5 w-5" />
       </TopBarActionLink>
     ),
@@ -127,6 +128,10 @@ export default function CadernoClientPage() {
     canRepeatSession,
     canNavigatePrev,
     canNavigateNext,
+    isStandbyRound,
+    currentCardContext,
+    lastReviewChange,
+    reviewChanges,
     isActionLocked,
     cardTimings,
     areaStats,
@@ -149,10 +154,13 @@ export default function CadernoClientPage() {
         sessionIncorrect={sessionIncorrect}
         sessionDone={sessionDone}
         canRepeatSession={canRepeatSession}
-        isStandbyRound={false}
+        isStandbyRound={isStandbyRound}
         isActionLocked={isActionLocked}
         isTurboMode={false}
         availableCount={pendingTurboDeck.length}
+        currentCardContext={currentCardContext}
+        lastReviewChange={lastReviewChange}
+        reviewChanges={reviewChanges}
         deckSize={deckSize}
         cardTimings={cardTimings}
         canSwipePrev={canNavigatePrev}
@@ -223,8 +231,8 @@ export default function CadernoClientPage() {
       {/* PESQUISAR */}
       {tab === "pesquisar" && !loading && (
         <CadernoPesquisarPanel
-          filterAreas={filterAreas as unknown as Set<string>}
-          onFilterAreasChange={(updater) => setFilterAreas(updater as unknown as (prev: Set<Area>) => Set<Area>)}
+          filterAreas={filterAreas}
+          onFilterAreasChange={setFilterAreas}
           filterTheme={filterTheme}
           onFilterThemeChange={setFilterTheme}
           sortTime={sortTime}

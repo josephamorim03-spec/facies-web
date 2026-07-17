@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import type { QuestionBankLongitudinalDiagnosis, StudyPerformanceSummary } from "@/lib/api";
+import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
 
 // Sinais de metacognição do banco (pegadinha, confiança, impulsividade, domínio
 // por tópico). Antes viviam no Histórico; a análise pertence ao Desempenho.
@@ -157,7 +158,7 @@ export function MetacognitionInsights({
             </div>
             <IconArrowRight className="h-4 w-4 text-muted" />
           </Link>
-          <Link href="/cards-adaptativos" className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-paper p-4 hover:border-primary">
+          <Link href={REVIEW_ROUTES.adaptiveCards} className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-paper p-4 hover:border-primary">
             <div>
               <p className="text-sm font-semibold text-primary">Reforçar flashcards</p>
               <p className="mt-1 text-xs text-muted">Feche lacunas com repetição espaçada.</p>

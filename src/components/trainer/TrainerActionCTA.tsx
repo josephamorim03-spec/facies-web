@@ -7,14 +7,15 @@ import { getAuthToken } from "@/lib/auth";
 import { useToast } from "@/lib/useToast";
 import { getAPIErrorCode } from "@/lib/api/shared/http";
 import { recordTrainerRecommendationEvent, startTrainerAction, type TrainerAction } from "@/lib/api";
+import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
 import { startTrainerQuestionSession, withTrainerHandoff } from "@/lib/trainer/session";
 
 // Kinds whose "start" means creating a question-bank session right here.
 const SESSION_KINDS = new Set(["question_block", "scheduled_review"]);
 
 const FALLBACK_HREF: Record<string, string> = {
-  flashcard_review: "/cards-adaptativos",
-  manual_study: "/caderno",
+  flashcard_review: REVIEW_ROUTES.adaptiveCards,
+  manual_study: REVIEW_ROUTES.notebook,
   // Iniciar um simulado vive em Questões (intenção "Simular prova"); /provas é
   // só o histórico filtrado (medição), não a criação.
   simulation: "/banco-de-questoes",

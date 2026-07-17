@@ -13,6 +13,7 @@ export const AREA_COLORS: Record<Area, string> = AREA_HEX;
 
 export const MAX_FILE_MB = 10;
 export const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
+export const MANUAL_TURBO_MIN_CARDS = 10;
 
 export function normalizeThemeKey(value: string): string {
   return value

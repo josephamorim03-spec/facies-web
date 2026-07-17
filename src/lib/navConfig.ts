@@ -1,3 +1,5 @@
+import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
+
 export type StudentIntent = "today" | "practice" | "review" | "track" | "plan";
 export type StudentNavIcon = "today" | "practice" | "review" | "track" | "plan";
 
@@ -25,7 +27,7 @@ export type NavGroupConfig = { items: NavItemConfig[] };
 const INTENTS: Record<StudentIntent, { path: string; label: string; title: string; icon: StudentNavIcon }> = {
   today: { path: "/hoje", label: "Hoje", title: "Hoje", icon: "today" },
   practice: { path: "/praticar", label: "Praticar", title: "Praticar", icon: "practice" },
-  review: { path: "/revisar", label: "Revisar", title: "Revisar", icon: "review" },
+  review: { path: REVIEW_ROUTES.activeReview, label: "Revisar", title: "Revisar", icon: "review" },
   track: { path: "/acompanhar", label: "Acompanhar", title: "Acompanhar", icon: "track" },
   plan: { path: "/planejar", label: "Planejar", title: "Planejar", icon: "plan" },
 };
@@ -48,14 +50,13 @@ export const STUDENT_ROUTES: StudentRouteConfig[] = [
   route("/hoje", "Hoje", "today"),
   route("/praticar", "Praticar", "practice"),
   route("/banco-de-questoes", "Banco de questões", "practice"),
-  route("/revisar", "Revisar", "review"),
-  route("/cards-adaptativos", "Cards adaptativos", "review"),
-  route("/revisao-turbo", "Revisão de cards", "review"),
-  route("/caderno", "Caderno", "review"),
+  route(REVIEW_ROUTES.activeReview, "Revisar", "review"),
+  route(REVIEW_ROUTES.adaptiveCards, "Cards adaptativos", "review"),
+  route(REVIEW_ROUTES.notebook, "Caderno", "review"),
   route("/acompanhar", "Acompanhar", "track"),
   route("/estatisticas", "Desempenho", "track"),
   route("/dados-e-relatorios", "Dados e relatórios", "track"),
-  route("/revisoes", "Histórico de sessões", "track"),
+  route(REVIEW_ROUTES.sessionHistory, "Histórico de sessões", "track"),
   route("/provas", "Provas", "track"),
   route("/planejar", "Planejar", "plan"),
   route("/desempenho", "Plano de estudo", "plan"),

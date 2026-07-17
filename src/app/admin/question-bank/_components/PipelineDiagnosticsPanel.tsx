@@ -135,6 +135,16 @@ export default function PipelineDiagnosticsPanel({
 
   const aiJobsDone = aiJobs.filter((job) => TERMINAL_JOB_STATUSES.has(job.status)).length;
   const aiJobsFailed = aiJobs.filter((job) => job.status === "failed").length;
+  const storageGate = storageSummary?.storage_gate;
+  const storageGateTone =
+    storageGate?.state === "green"
+      ? "text-emerald-700 dark:text-emerald-300"
+      : storageGate?.state === "yellow"
+        ? "text-amber-700 dark:text-amber-300"
+        : storageGate
+          ? "text-red-700 dark:text-red-300"
+          : "text-gray-500 dark:text-gray-400";
+  const pilot500Forecast = storageSummary?.ai_backfill_forecast?.pilot_500;
 
   // Recent async enrichment batches (Workstream C): load on mount, poll while any is running.
   const [aiBatches, setAiBatches] = useState<QuestionBankAiBatch[]>([]);
@@ -546,11 +556,25 @@ export default function PipelineDiagnosticsPanel({
             <div>
               <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Storage</div>
               <div className="mt-2 grid gap-2 text-sm text-gray-700 dark:text-gray-200 sm:grid-cols-2 lg:grid-cols-4">
-                <div>DB: <span className="font-semibold">{formatBytes(storageSummary?.pg_database_size)}</span></div>
-                <div>Folga: <span className="font-semibold">{formatBytes(storageSummary?.headroom_bytes)}</span></div>
+                <div>DB logico: <span className="font-semibold">{formatBytes(storageSummary?.pg_database_size)}</span></div>
+                <div>WAL: <span className="font-semibold">{formatBytes(storageSummary?.pg_wal_size)}</span></div>
+                <div>Uso efetivo: <span className="font-semibold">{formatBytes(storageSummary?.effective_used_bytes)}</span></div>
+                <div>Capacidade: <span className="font-semibold">{formatBytes(storageSummary?.volume_capacity_bytes)}</span></div>
+                <div>Folga fisica: <span className="font-semibold">{formatBytes(storageSummary?.headroom_bytes)}</span></div>
                 <div>Imagens: <span className="font-semibold">{storageSummary?.image_storage.backend || "-"}</span></div>
                 <div>Duravel: <span className="font-semibold">{storageSummary?.image_storage.durable ? "sim" : storageSummary ? "nao" : "-"}</span></div>
+                <div>Gate: <span className={`font-semibold ${storageGateTone}`}>{storageGate?.state || "-"}</span></div>
+                <div>IA lote: <span className="font-semibold">{storageSummary?.safe_ai_batch_available ? "liberada" : storageSummary ? "bloqueada" : "-"}</span></div>
+                <div>Limpeza: <span className="font-semibold">{formatBytes(storageGate?.cleanup.estimated_reclaimable_bytes)}</span></div>
+                <div>Piloto 500: <span className="font-semibold">{formatBytes(pilot500Forecast?.estimated_bytes)}</span></div>
               </div>
+              {storageGate ? (
+                <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">
+                  Recomendacao: <span className="font-semibold">{storageGate.recommendation}</span>.
+                  {" "}Pos-limpeza: {formatBytes(storageGate.cleanup.estimated_size_after_cleanup_bytes)}
+                  {" "}({formatBytes(storageGate.cleanup.estimated_headroom_after_cleanup_bytes)} de folga).
+                </p>
+              ) : null}
               {compactDryRun ? (
                 <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">
                   Dry-run: {Object.entries(compactDryRun.counts || {}).map(([key, value]) => `${key} ${value}`).join(" / ") || "sem itens"}.

@@ -9,6 +9,7 @@ import { CadernoSearchResultsSkeleton } from "./CadernoSkeletons";
 import {
   AREA_COLORS,
   Area,
+  MANUAL_TURBO_MIN_CARDS,
   displayDateTime,
   weightBadgeColor,
 } from "../_lib/cadernoShared";
@@ -57,7 +58,7 @@ export function CadernoNoteList({
     <div ref={searchResultsRef} className="space-y-2">
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs text-muted">{notes.length} nota{notes.length !== 1 ? "s" : ""}</p>
-        {flashcardReviewCount >= 15 && (
+        {flashcardReviewCount >= MANUAL_TURBO_MIN_CARDS && (
           <Button variant="secondary" size="xs" onClick={() => onOpenReviewMode(flashcardReviewNoteIds)} className="shrink-0">
             Revisar {flashcardReviewCount} cards
           </Button>

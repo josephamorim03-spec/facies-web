@@ -1,4 +1,5 @@
 import { api, authHeader } from "../shared/http";
+import type { OperationalTurboOverview } from "./operational";
 
 export type TrainerActionKind =
   | "resume_session"
@@ -159,6 +160,7 @@ export type TrainerReviewQueue = {
   items: TrainerReviewQueueItem[];
   counts: { total: number; questions: number; corrections: number; cards: number };
   daily_load: TrainerDailyLoad;
+  flashcards_overview?: OperationalTurboOverview | null;
   previous_outcome: TrainerOutcome | null;
   missing_sources: string[];
 };

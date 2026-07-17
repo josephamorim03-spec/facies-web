@@ -15,11 +15,12 @@ import {
 import { getAuthToken } from "@/lib/auth";
 import { setReviewSessionActive } from "@/lib/studyImportRuntime";
 
-import { useDeckSession } from "./useDeckSession";
+import { useTurboSession } from "./useTurboSession";
 import {
   Area,
   MAX_FILE_BYTES,
   MAX_FILE_MB,
+  MANUAL_TURBO_MIN_CARDS,
   normalizeThemeKey,
   SortTime,
   SortWeight,
@@ -336,27 +337,30 @@ export function useCadernoPageState() {
     setTurboRevealed,
     sessionCorrect,
     sessionIncorrect,
+    sessionTotal,
     sessionDone,
     canRepeatSession,
     canNavigatePrev,
     canNavigateNext,
+    isStandbyRound,
+    currentCardContext,
+    lastReviewChange,
+    reviewChanges,
     isActionLocked,
     cardTimings,
     areaStats,
-    deckSize,
-    loadDeck,
-    navigatePrev,
-    navigateNext,
-    rateCard,
-    repeatSession,
+    startSession,
+    submitAction,
+    navigateSession,
+    startRepeat,
     resetSession,
-  } = useDeckSession({
+  } = useTurboSession({
     token,
-    onPostRate: syncAfterTurboAction,
+    onPostActionSync: syncAfterTurboAction,
   });
 
   function openReviewMode(noteIds: string[]) {
-    if (noteIds.length < 15) return;
+    if (noteIds.length < MANUAL_TURBO_MIN_CARDS) return;
     setError("");
     const idSet = new Set(noteIds);
     setPendingTurboDeck(notes.filter((n) => idSet.has(n.note_id)));
@@ -370,11 +374,15 @@ export function useCadernoPageState() {
     resetSession();
   }
 
-  function handleTurboStart(count: number) {
-    const deck = pendingTurboDeck.slice(0, count);
+  async function handleTurboStart(count: number) {
+    const noteIds = pendingTurboDeck.slice(0, count).map((note) => note.note_id);
+    if (noteIds.length < MANUAL_TURBO_MIN_CARDS) {
+      setError(`Selecione pelo menos ${MANUAL_TURBO_MIN_CARDS} cards para iniciar a revisao.`);
+      return;
+    }
     setPendingTurboDeck([]);
     setTurboSessionStarted(true);
-    loadDeck(deck);
+    await startSession(noteIds);
   }
 
   return {
@@ -464,13 +472,17 @@ export function useCadernoPageState() {
     canRepeatSession,
     canNavigatePrev,
     canNavigateNext,
+    isStandbyRound,
+    currentCardContext,
+    lastReviewChange,
+    reviewChanges,
     isActionLocked,
     cardTimings,
     areaStats,
-    deckSize,
-    navigatePrev,
-    navigateNext,
-    rateCard,
-    repeatSession,
+    deckSize: sessionTotal,
+    navigatePrev: () => void navigateSession("prev"),
+    navigateNext: () => void navigateSession("next"),
+    rateCard: submitAction,
+    repeatSession: startRepeat,
   };
 }

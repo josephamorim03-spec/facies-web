@@ -24,6 +24,7 @@ import {
 } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/error-utils";
+import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentExperience } from "@/lib/StudentExperienceContext";
 
@@ -56,6 +57,18 @@ function confidenceTone(level?: "low" | "medium" | "high") {
   return "border-edge bg-surfaceMuted text-muted";
 }
 
+function compactCount(value: number): string {
+  if (value >= 1000) return "999+";
+  return String(Math.max(0, value));
+}
+
+function filterCount(queue: TrainerReviewQueue, filter: QueueFilter): number {
+  if (filter === "all") return queue.counts.total;
+  if (filter === "questions") return queue.counts.questions;
+  if (filter === "corrections") return queue.counts.corrections;
+  return queue.flashcards_overview?.due_count ?? queue.counts.cards;
+}
+
 function QueueSkeleton() {
   return (
     <div className="space-y-5" aria-label="Carregando fila de revisão">
@@ -73,6 +86,114 @@ function OutcomeCard({ queue }: { queue: TrainerReviewQueue }) {
   if (!outcome) return null;
   return (
     <PaperOutcomeCard narrative={outcome.narrative} evidence={outcome.evidence} />
+  );
+}
+
+function ReviewSourceSummary({ queue }: { queue: TrainerReviewQueue }) {
+  const load = queue.daily_load.review_load;
+  const cards = queue.flashcards_overview;
+  const items = [
+    {
+      label: "Cronograma",
+      value: load?.topic_tasks_due ?? 0,
+      detail: load?.overdue_topic_tasks ? `${load.overdue_topic_tasks} atrasada(s)` : "tarefas no ponto",
+    },
+    {
+      label: "Questoes",
+      value: load?.questions_due ?? 0,
+      detail: "fila de erro/revisao",
+    },
+    {
+      label: "Cards",
+      value: cards?.due_count ?? load?.cards_due ?? 0,
+      detail: cards ? `${cards.total_eligible} elegivel(is)` : "turbo indisponivel",
+    },
+  ];
+  return (
+    <section className="grid gap-3 sm:grid-cols-3" aria-label="Fontes de revisao">
+      {items.map((item) => (
+        <div key={item.label} className="rounded-xl border border-edge bg-surface px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{item.label}</p>
+          <div className="mt-2 flex items-end justify-between gap-3">
+            <span className="font-serif text-3xl font-semibold leading-none text-ink">{item.value}</span>
+            <span className="pb-0.5 text-right text-xs text-muted">{item.detail}</span>
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function FlashcardsOverviewPanel({
+  queue,
+  actionItem,
+  onStale,
+}: {
+  queue: TrainerReviewQueue;
+  actionItem?: TrainerReviewQueueItem;
+  onStale: () => void;
+}) {
+  const overview = queue.flashcards_overview;
+  if (!overview) return null;
+
+  const hasDue = overview.due_count > 0;
+  const preview = overview.priority_preview.slice(0, 3);
+  return (
+    <section className="rounded-2xl border border-edge bg-surface p-4 sm:p-5" aria-labelledby="flashcards-review-title">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+            <span>{overview.total_eligible} card{overview.total_eligible === 1 ? "" : "s"} elegivel{overview.total_eligible === 1 ? "" : "is"}</span>
+            <span aria-hidden>|</span>
+            <span>{overview.due_count} no ponto</span>
+            {overview.overdue_count > 0 && (
+              <>
+                <span aria-hidden>|</span>
+                <span className="font-semibold text-warning">{overview.overdue_count} atrasado{overview.overdue_count === 1 ? "" : "s"}</span>
+              </>
+            )}
+          </div>
+          <h2 id="flashcards-review-title" className="mt-1.5 font-serif text-xl font-semibold text-ink">
+            {hasDue ? "Flashcards para recuperar agora" : "Flashcards no caderno"}
+          </h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted">
+            {hasDue
+              ? `${overview.due_count} card${overview.due_count === 1 ? "" : "s"} chegou${overview.due_count === 1 ? "" : "ram"} ao ponto de revisao.`
+              : "Nenhum card venceu agora; eles continuam visiveis aqui para manutencao opcional."}
+          </p>
+        </div>
+        <div className="flex w-full flex-col gap-2 sm:w-auto">
+          {actionItem ? (
+            <TrainerActionCTA
+              action={actionItem.action}
+              recommendationId={queue.recommendation_id}
+              sourcePage="/revisar"
+              label="Revisar cards"
+              className="w-full shrink-0 sm:w-auto"
+              onStale={onStale}
+            />
+          ) : (
+            <Link href={REVIEW_ROUTES.adaptiveCards} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary hover:bg-surfaceMuted">
+              Abrir cards
+            </Link>
+          )}
+          <Link href={REVIEW_ROUTES.notebook} className="text-center text-xs font-semibold text-muted hover:text-ink">
+            Ver caderno
+          </Link>
+        </div>
+      </div>
+      {preview.length > 0 && (
+        <div className="mt-4 grid gap-2 md:grid-cols-3">
+          {preview.map((item) => (
+            <div key={item.note_id} className="rounded-xl border border-edge bg-paper px-3 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">{item.area} | {item.context.label}</p>
+              <p className="mt-1 line-clamp-2 text-sm font-semibold text-ink">{item.insight_question}</p>
+              <p className="mt-1 truncate text-xs text-muted">{item.theme}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -203,6 +324,14 @@ export function ReviewQueueClient() {
     );
   }, [filter, queue]);
 
+  const flashcardsActionItem = useMemo(() => {
+    return queue?.items.find((item) => item.action.kind === "flashcard_review");
+  }, [queue]);
+
+  const showFlashcardsPanel = Boolean(
+    queue?.flashcards_overview && (filter === "all" || filter === "cards"),
+  );
+
   return (
     <StudentPage>
       <StudentPageHeader
@@ -237,6 +366,7 @@ export function ReviewQueueClient() {
               Priorização parcial: alguns sinais não estavam disponíveis. As ações restantes continuam válidas.
             </p>
           )}
+          <ReviewSourceSummary queue={queue} />
           {queue.primary_item ? (
             <PrimaryReviewCard queue={queue} onStale={() => void load()} />
           ) : (
@@ -249,7 +379,15 @@ export function ReviewQueueClient() {
             />
           )}
 
-          {queue.items.length > 1 && (
+          {showFlashcardsPanel && (
+            <FlashcardsOverviewPanel
+              queue={queue}
+              actionItem={flashcardsActionItem}
+              onStale={() => void load()}
+            />
+          )}
+
+          {(queue.items.length > 1 || queue.flashcards_overview) && (
             <section className="space-y-4" aria-labelledby="review-queue-title">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -263,7 +401,10 @@ export function ReviewQueueClient() {
                       key={item.key}
                       value={item.key}
                     >
-                      {item.label}
+                      <span>{item.label}</span>
+                      <span className="ml-1 rounded-full bg-surfaceMuted px-1.5 py-0.5 text-[10px] tabular-nums text-muted">
+                        {compactCount(filterCount(queue, item.key))}
+                      </span>
                     </TabsTrigger>
                     ))}
                   </TabsList>
@@ -275,13 +416,15 @@ export function ReviewQueueClient() {
                 ))}
                 {remaining.length === 0 && (
                   <p className="rounded-xl border border-dashed border-edge px-4 py-6 text-center text-sm text-muted">
-                    Nenhuma outra ação deste tipo na fila atual.
+                    {filter === "cards" && queue.flashcards_overview
+                      ? "Nenhuma acao urgente de cards agora. O resumo acima mostra o que ja existe no caderno."
+                      : "Nenhuma outra ação deste tipo na fila atual."}
                   </p>
                 )}
               </div>
             </section>
           )}
-          <Link href="/revisoes" className="inline-flex text-sm font-medium text-muted hover:text-ink">
+          <Link href={REVIEW_ROUTES.sessionHistory} className="inline-flex text-sm font-medium text-muted hover:text-ink">
             Consultar histórico de sessões
           </Link>
         </>

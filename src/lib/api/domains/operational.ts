@@ -210,7 +210,7 @@ export async function createOperationalNote(
   options?: { idempotencyKey?: string | null },
 ): Promise<OperationalNoteItem> {
   const idempotencyKey = options?.idempotencyKey?.trim() ?? "";
-  return api<OperationalNoteItem>("/api/notes/operational", {
+  const result = await api<OperationalNoteItem>("/api/notes/operational", {
     method: "POST",
     headers: {
       ...authHeader(token),
@@ -224,6 +224,8 @@ export async function createOperationalNote(
       attachment_refs: payload.attachment_refs ?? [],
     }),
   });
+  invalidateStudentExperienceCache();
+  return result;
 }
 
 export async function listOperationalNotes(

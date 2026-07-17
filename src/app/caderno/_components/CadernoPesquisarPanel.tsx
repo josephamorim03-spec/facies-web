@@ -5,6 +5,7 @@ import { CadernoPesquisarSkeleton } from "./CadernoSkeletons";
 import {
   AREA_COLORS,
   AREAS,
+  type Area,
   rangeStyle,
   weightBadgeColor,
 } from "../_lib/cadernoShared";
@@ -14,8 +15,8 @@ const MOBILE_PRIMARY_CTA_CLASS =
   "sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.45rem)] z-40 block w-full rounded-xl border border-ink bg-paper py-2 text-sm font-semibold text-ink shadow-sm transition-colors hover:bg-ink hover:text-paper disabled:opacity-50 md:static md:w-full md:bg-transparent md:shadow-none";
 
 interface CadernoPesquisarPanelProps {
-  filterAreas: Set<string>;
-  onFilterAreasChange: (updater: (prev: Set<string>) => Set<string>) => void;
+  filterAreas: Set<Area>;
+  onFilterAreasChange: (updater: (prev: Set<Area>) => Set<Area>) => void;
   filterTheme: string;
   onFilterThemeChange: (value: string) => void;
   sortTime: SortTime;

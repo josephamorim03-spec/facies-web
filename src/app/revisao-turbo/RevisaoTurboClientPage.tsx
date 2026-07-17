@@ -8,6 +8,7 @@ import {
   type OperationalTurboOverview,
 } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
+import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
 import { setReviewSessionActive } from "@/lib/studyImportRuntime";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { useNavbar } from "@/lib/NavbarContext";
@@ -350,7 +351,7 @@ export default function RevisaoTurboClientPage() {
     const rec = params.get("rec");
     if (!rec || trainerStartedRef.current === rec) return;
     trainerStartedRef.current = rec;
-    const src = params.get("src") ?? "/cards-adaptativos";
+    const src = params.get("src") ?? REVIEW_ROUTES.adaptiveCards;
     void recordTrainerRecommendationEvent(getAuthToken(), rec, {
       event_type: "started",
       event_id: `started:${rec}:${src}:turbo`,

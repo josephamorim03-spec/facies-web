@@ -297,9 +297,50 @@ export type QuestionBankAdminReadiness = {
 
 export type QuestionBankAdminStorageSummary = {
   pg_database_size: number;
+  pg_wal_size?: number;
+  effective_used_bytes?: number;
+  volume_capacity_bytes?: number;
+  observed_volume_used_bytes?: number | null;
   headroom_bytes: number | null;
+  total_questions?: number;
+  recommended_action?: string;
+  safe_ai_batch_available?: boolean;
+  safe_ai_pilot_available?: boolean;
+  green_bytes?: number;
   warn_bytes?: number;
   pause_bytes?: number;
+  critical_bytes?: number;
+  storage_gate?: {
+    state: "green" | "yellow" | "red" | "critical" | "unknown" | string;
+    recommendation: string;
+    pg_database_size: number;
+    pg_wal_size?: number;
+    storage_overhead_bytes?: number;
+    calculated_volume_used_bytes?: number;
+    observed_volume_used_bytes?: number | null;
+    effective_used_bytes?: number;
+    volume_limit_bytes: number;
+    headroom_bytes: number | null;
+    thresholds: Record<string, number>;
+    cleanup: {
+      estimated_reclaimable_bytes: number;
+      estimated_database_size_after_cleanup_bytes?: number;
+      estimated_size_after_cleanup_bytes: number;
+      estimated_headroom_after_cleanup_bytes: number | null;
+    };
+    ai_growth_forecast: Record<string, {
+      question_count: number;
+      estimated_bytes: number;
+      estimated_headroom_after_run_bytes: number | null;
+    }>;
+    allows: Record<string, boolean>;
+    policy?: Record<string, string>;
+  };
+  ai_backfill_forecast?: Record<string, {
+    question_count: number;
+    estimated_bytes: number;
+    estimated_headroom_after_run_bytes: number | null;
+  }>;
   top_relations: Array<{
     schema: string | null;
     name: string | null;

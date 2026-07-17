@@ -209,6 +209,7 @@ export function TurboReviewPanel({
             availableCount={availableCount}
             isTurboMode={isTurboMode}
             lobbyAccentColor={lobbyAccentColor}
+            minCards={isTurboMode ? undefined : 10}
             onStartAction={onStartAction}
           />
         )}

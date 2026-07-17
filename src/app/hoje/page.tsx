@@ -47,6 +47,7 @@ import { buildWeeklyOpsMetrics } from "@/app/cronograma/_lib/weeklyOpsMetrics";
 import { WeeklyOpsFullCardsSkeleton } from "@/app/cronograma/_components/WeeklyOpsCards";
 import { writeCronogramaViewModeSession } from "@/app/cronograma/_lib/viewModeSession";
 import BancoSidebarCard from "./_components/BancoSidebarCard";
+import { CardsDuePanel } from "./_components/CardsDuePanel";
 import { TrainerActionCTA } from "@/components/trainer/TrainerActionCTA";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { OutcomeCard } from "@/components/ui/OutcomeCard";
@@ -256,15 +257,6 @@ function IconShield({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <path d="M12 3 5 6v5c0 4.5 2.8 8.2 7 10 4.2-1.8 7-5.5 7-10V6l-7-3Z" />
       <path d="m9 12 2 2 4-5" />
-    </svg>
-  );
-}
-
-function IconCards({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <rect x="4" y="7" width="12" height="12" rx="1.5" />
-      <rect x="8" y="5" width="12" height="12" rx="1.5" />
     </svg>
   );
 }
@@ -962,33 +954,7 @@ export default function TodayPage() {
 
             {hasCanonicalExperience ? <LearningStatus load={experience.review_load} /> : null}
 
-            {turboOverview && turboOverview.due_count > 0 && (
-              <section
-                className="rounded-lg border bg-surface p-5 shadow-sm"
-                style={{ borderColor: "color-mix(in srgb, var(--color-accent) 28%, var(--color-edge))" }}
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-accent"
-                    style={{ backgroundColor: "color-mix(in srgb, var(--color-accent) 12%, transparent)" }}
-                  >
-                    <IconCards className="h-8 w-8" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="font-serif text-2xl font-semibold">Cards no ponto</h2>
-                    <p className="text-sm text-muted">
-                      {turboOverview.due_count} cards{turboOverview.estimated_minutes ? ` · ~${turboOverview.estimated_minutes} min` : ""}
-                    </p>
-                  </div>
-                  <Link
-                    href="/cards-adaptativos"
-                    className="rounded-lg border border-accent px-3 py-2 text-xs font-semibold text-accent transition-colors hover:bg-accent hover:text-accentInk"
-                  >
-                    Revisar
-                  </Link>
-                </div>
-              </section>
-            )}
+            <CardsDuePanel overview={turboOverview} />
 
             {/* Aprofundamento opt-in — fica fora do caminho até o aluno pedir */}
             <details className="group rounded-lg border border-edge bg-surface">
