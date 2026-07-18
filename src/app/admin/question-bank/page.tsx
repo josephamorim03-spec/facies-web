@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 
 import AdminOverview, { AdminViewSwitcher, type AdminQuestionBankView } from "./_components/AdminOverview";
 import AiReviewPanel from "./_components/AiReviewPanel";
+import AiResolutionPanel from "./_components/AiResolutionPanel";
 import CandidatesPanel from "./_components/CandidatesPanel";
 import ImportWorkspace from "./_components/ImportWorkspace";
 import PipelineDiagnosticsPanel from "./_components/PipelineDiagnosticsPanel";
@@ -83,7 +84,7 @@ export default function QuestionBankAdminPage() {
 
   useEffect(() => {
     const requestedView = new URLSearchParams(window.location.search).get("view");
-    if (requestedView === "ingestao" || requestedView === "curadoria" || requestedView === "questoes") {
+    if (requestedView === "ingestao" || requestedView === "curadoria" || requestedView === "resolucao-ia" || requestedView === "questoes") {
       setView(requestedView);
     }
     setViewReady(true);
@@ -351,6 +352,15 @@ export default function QuestionBankAdminPage() {
       <div className="space-y-6">
         {viewSwitcher}
         <QuestionsManager />
+      </div>
+    );
+  }
+
+  if (view === "resolucao-ia") {
+    return (
+      <div className="space-y-6">
+        {viewSwitcher}
+        <AiResolutionPanel />
       </div>
     );
   }

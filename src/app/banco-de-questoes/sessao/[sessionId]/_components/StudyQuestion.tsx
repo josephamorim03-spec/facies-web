@@ -317,7 +317,7 @@ function aiStatusLabel(status: string | undefined): string {
     case "queued":
       return "Analise enfileirada";
     default:
-      return "IA editorial";
+      return "Resolucao por IA";
   }
 }
 
@@ -334,7 +334,7 @@ function aiStatusMessage(status: string | undefined): string {
     case "queued":
       return "A solicitacao foi aceita e deve rodar assim que houver capacidade.";
     default:
-      return "A IA primeiro valida integridade, depois extrai DNA, microcompetencias e riscos editoriais.";
+      return "A IA prepara uma resolucao pedagogica e valida integridade antes de qualquer uso editorial.";
   }
 }
 
@@ -861,7 +861,14 @@ export default function StudyQuestion({
                       <button
                         type="button"
                         onClick={onRequestAiCorrection}
-                        disabled={aiCorrectionRequesting || aiStatus === "blocked_by_quality" || aiStatus === "completed" || aiStatus === "cached"}
+                        disabled={
+                          aiCorrectionRequesting ||
+                          aiStatus === "blocked_by_quality" ||
+                          aiStatus === "completed" ||
+                          aiStatus === "cached" ||
+                          aiStatus === "queued" ||
+                          aiStatus === "running"
+                        }
                         className="rounded-lg border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {aiCorrectionRequesting
@@ -872,9 +879,13 @@ export default function StudyQuestion({
                               ? "Analise em cache"
                               : aiStatus === "completed"
                                 ? "Analise concluida"
+                                : aiStatus === "running"
+                                  ? "IA em andamento"
+                                  : aiStatus === "queued"
+                                    ? "Solicitacao enviada"
                                 : aiCorrectionRequested
                                   ? "Solicitacao enviada"
-                                  : "Solicitar IA editorial"}
+                                  : "Solicitar resolucao por IA"}
                       </button>
                     </div>
                   </div>

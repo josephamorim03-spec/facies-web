@@ -14,6 +14,7 @@ import { Area, Period } from "../desempenho/_lib/perfilShared";
 import { useEstatisticasPageState } from "./_hooks/useEstatisticasPageState";
 import { BancoDeQuestoesInsights } from "./_components/BancoDeQuestoesInsights";
 import { MetacognitionInsights } from "./_components/MetacognitionInsights";
+import { MeuModelo } from "./_components/MeuModelo";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { TrainerContextStrip } from "@/components/trainer/TrainerContextStrip";
 import { useNavbar } from "@/lib/NavbarContext";
@@ -383,6 +384,7 @@ export default function EstatisticasClientPage() {
         loading={backgroundLoading.longitudinal}
       />
       <MetacognitionInsights longitudinal={longitudinal} performanceSummary={performanceSummary} />
+      <MeuModelo />
       <GraficosSection />
     </StudentPage>
   );

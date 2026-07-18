@@ -739,6 +739,56 @@ export type QuestionBankAiEnrichmentResult = {
   }>;
 };
 
+export type QuestionBankAiResolutionSource = "student_requested" | "admin_batch" | "bank_gap";
+
+export type QuestionBankAiResolutionDemandItem = {
+  question_id: string;
+  stem_preview?: string | null;
+  request_count: number;
+  unique_users: number;
+  latest_status: string;
+  latest_requested_at?: string | null;
+  has_canonical_correction: boolean;
+  ai_request_status: string;
+  quality_blockers: string[];
+  can_student_request: boolean;
+  can_admin_batch: boolean;
+  source: QuestionBankAiResolutionSource;
+  has_open_reports: boolean;
+  open_reports: number;
+  recommended_action: "send_to_ai" | "send_to_human_review" | "already_processed" | "wait" | string;
+};
+
+export type QuestionBankAiResolutionDemand = {
+  items: QuestionBankAiResolutionDemandItem[];
+  total: number;
+  limit: number;
+  offset: number;
+  filter: string;
+  missing_question_ids: string[];
+  summary: Record<string, number>;
+};
+
+export async function getQuestionBankAiResolutionRequests(options?: {
+  filter?: "student_requested" | "without_correction" | "queued" | "completed" | "blocked" | "has_reports" | "all";
+  questionIds?: string[];
+  limit?: number;
+  offset?: number;
+}): Promise<QuestionBankAiResolutionDemand> {
+  const params = new URLSearchParams();
+  if (options?.filter) params.set("filter", options.filter);
+  if (options?.limit) params.set("limit", String(options.limit));
+  if (options?.offset) params.set("offset", String(options.offset));
+  for (const questionId of options?.questionIds ?? []) {
+    const clean = String(questionId || "").trim();
+    if (clean) params.append("question_ids", clean);
+  }
+  const qs = params.toString();
+  return api<QuestionBankAiResolutionDemand>(
+    `/api/admin/question-bank/ai-resolution-requests${qs ? `?${qs}` : ""}`,
+  );
+}
+
 // Preview the economical AI enrichment (dry-run) against the real production endpoint.
 // Selection is global — the best N published questions still missing enrichment.
 export async function previewQuestionBankAdminAiEnrichment(options?: {

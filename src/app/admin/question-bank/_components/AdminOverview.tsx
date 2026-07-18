@@ -2,7 +2,7 @@ import { type QuestionBankAdminPipelineStatus } from "@/lib/api/domains/question
 
 import { StatCard } from "./AdminShared";
 
-export type AdminQuestionBankView = "ingestao" | "curadoria" | "questoes";
+export type AdminQuestionBankView = "ingestao" | "curadoria" | "resolucao-ia" | "questoes";
 
 export function AdminViewSwitcher({
   view,
@@ -26,6 +26,16 @@ export function AdminViewSwitcher({
           {label}
         </button>
       ))}
+      <button
+        onClick={() => onViewChange("resolucao-ia")}
+        className={`rounded-md px-4 py-1.5 font-semibold transition ${
+          view === "resolucao-ia"
+            ? "bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-100"
+            : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+        }`}
+      >
+        Resolucao IA
+      </button>
     </div>
   );
 }
