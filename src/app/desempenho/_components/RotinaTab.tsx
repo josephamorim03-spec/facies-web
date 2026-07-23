@@ -414,7 +414,7 @@ export function RotinaTab({
                       width: `${helpPosition?.width ?? 280}px`,
                     }}
                   >
-                    Informe quantas questões em média você estima fazer durante trabalho/plantão de 12h. O sistema vai usar isso como base para calcular quanto você tolera fazer de questões nos demais compromissos
+                    Questões que você faz, em média, num plantão de 12h. Base para estimar sua carga nos outros compromissos.
                   </div>
                 )}
               </div>
@@ -455,7 +455,7 @@ export function RotinaTab({
                         width: `${retentionHelpPosition?.width ?? 280}px`,
                       }}
                     >
-                      Define o quão rígido será o algoritmo de revisão espaçada. Intensidade alta irá cobrar um percentual alto de acertos para espaçar mais as revisões, baixa ele irá ficar satisfeito com um percentual menor. Não recomendamos mudar o que vem por padrão, apenas em caso de insatisfação com o espaçamento das revisões.
+                      Rigidez da revisão espaçada. Mais alta exige mais acertos para espaçar as revisões. Mude só se o espaçamento não te agradar.
                     </div>
                   )}
                 </div>

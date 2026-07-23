@@ -29,17 +29,17 @@ export type GuidanceLabel = {
 const READINESS: Record<ReadinessLevel, GuidanceLabel> = {
   consolidando: {
     label: "Firme",
-    phrase: "Você está consolidando esta área.",
+    phrase: "Consolidando esta área.",
     tone: "positive",
   },
   atencao: {
     label: "Pede atenção",
-    phrase: "Esta área começou a escapar — vale revisitar antes que afrouxe.",
+    phrase: "Começando a escapar — revisite.",
     tone: "attention",
   },
   critico: {
     label: "Frágil",
-    phrase: "Esta área está frágil e é onde seu esforço rende mais agora.",
+    phrase: "Área frágil — foco rende mais aqui.",
     tone: "critical",
   },
 };
@@ -137,20 +137,20 @@ export function healthStatement(pct: number | null | undefined): GuidanceLabel {
   if (pct >= 75) {
     return {
       label: "Consistente",
-      phrase: "Seu estudo está consistente — siga mantendo o ritmo.",
+      phrase: "Estudo consistente.",
       tone: "positive",
     };
   }
   if (pct >= 50) {
     return {
       label: "No ritmo",
-      phrase: "Seu ritmo está bom, com alguns pontos a reforçar.",
+      phrase: "Bom ritmo, com pontos a reforçar.",
       tone: "attention",
     };
   }
   return {
     label: "Irregular",
-    phrase: "Seu estudo anda irregular — vale firmar a rotina antes de avançar.",
+    phrase: "Estudo irregular — firme a rotina.",
     tone: "critical",
   };
 }
@@ -167,20 +167,20 @@ export function memoryPhrase(retention: number | null | undefined): GuidanceLabe
   if (retention < 0.4) {
     return {
       label: "Memória caiu",
-      phrase: "Sua memória deste tema caiu — revisar agora evita reaprender do zero.",
+      phrase: "Memória caiu — revise agora.",
       tone: "critical",
     };
   }
   if (retention < 0.65) {
     return {
       label: "Começando a esquecer",
-      phrase: "Você está começando a esquecer este tema.",
+      phrase: "Começando a esquecer.",
       tone: "attention",
     };
   }
   return {
     label: "Memória firme",
-    phrase: "Sua memória deste tema está firme.",
+    phrase: "Memória firme.",
     tone: "positive",
   };
 }

@@ -411,17 +411,17 @@ export default function Nav({ displayName, photoUrl }: { displayName?: string | 
 
       <ConfirmDialog
         open={exitConfirmOpen}
-        title="Confirmar saída"
-        message="Deseja sair da sessão? O progresso será perdido."
+        title="Sair da sessão?"
+        message="O progresso será perdido."
         cancelLabel="Continuar"
-        confirmLabel="Sair"
+        confirmLabel="Sair da sessão"
         onCancel={cancelExit}
         onConfirm={confirmExit}
       />
       <ConfirmDialog
         open={logoutConfirmOpen}
-        title="Sair da conta"
-        message="Deseja encerrar sua sessão neste dispositivo?"
+        title="Sair da conta?"
+        message="Encerrar a sessão neste dispositivo?"
         cancelLabel="Cancelar"
         confirmLabel="Sair"
         onCancel={cancelLogout}
@@ -566,17 +566,17 @@ export function SidebarNav({
 
       <ConfirmDialog
         open={exitConfirmOpen}
-        title="Confirmar saída da sessão"
-        message="Deseja abandonar a sessão? O progresso será perdido."
-        cancelLabel="Continuar revisão"
+        title="Sair da sessão?"
+        message="O progresso será perdido."
+        cancelLabel="Continuar"
         confirmLabel="Sair da sessão"
         onCancel={cancelExit}
         onConfirm={confirmExit}
       />
       <ConfirmDialog
         open={logoutConfirmOpen}
-        title="Sair da conta"
-        message="Deseja encerrar sua sessão neste dispositivo?"
+        title="Sair da conta?"
+        message="Encerrar a sessão neste dispositivo?"
         cancelLabel="Cancelar"
         confirmLabel="Sair"
         onCancel={cancelLogout}
@@ -634,9 +634,9 @@ export function MobileBottomNav({
       </nav>
       <ConfirmDialog
         open={exitConfirmOpen}
-        title="Confirmar saída da sessão"
-        message="Deseja abandonar a sessão? O progresso será perdido."
-        cancelLabel="Continuar revisão"
+        title="Sair da sessão?"
+        message="O progresso será perdido."
+        cancelLabel="Continuar"
         confirmLabel="Sair da sessão"
         onCancel={cancelExit}
         onConfirm={confirmExit}

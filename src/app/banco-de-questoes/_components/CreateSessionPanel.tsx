@@ -45,15 +45,6 @@ function IconChart({ className }: { className?: string }) {
   );
 }
 
-function IconShield({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M12 3 5 6v5c0 4.5 2.8 8.2 7 10 4.2-1.8 7-5.5 7-10V6l-7-3Z" />
-      <path d="m9 12 2 2 4-5" />
-    </svg>
-  );
-}
-
 function IconArrowRight({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
@@ -184,11 +175,6 @@ export default function CreateSessionPanel({
         <Button type="button" variant="secondary" size="md" onClick={onPreviewQuestions} disabled={busy || !canStart} className="w-full">
           Ver prévia
         </Button>
-      </div>
-
-      <div className="mt-4 flex items-center gap-2 text-xs text-muted">
-        <IconShield className="h-5 w-5 shrink-0 text-success" />
-        <span>Sua sessão será salva automaticamente ao finalizar.</span>
       </div>
     </aside>
   );

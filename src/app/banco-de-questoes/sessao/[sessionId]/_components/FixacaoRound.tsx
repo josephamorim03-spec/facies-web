@@ -64,7 +64,7 @@ export default function FixacaoRound({ items, onExit }: FixacaoRoundProps) {
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Rodada de fixação</p>
               <h1 className="mt-0.5 font-serif text-xl font-semibold leading-tight text-ink">Recupere antes de finalizar</h1>
-              <p className="mt-1 text-xs text-muted">Sem nota. A meta é puxar o raciocínio de novo e deixar menos escorregadio.</p>
+              <p className="mt-1 text-xs text-muted">Sem nota.</p>
             </div>
             <div className="flex items-center gap-2">
               <span className="rounded-lg border border-edge bg-paper px-3 py-2 text-xs font-semibold tabular-nums text-muted">
@@ -144,12 +144,7 @@ export default function FixacaoRound({ items, onExit }: FixacaoRoundProps) {
             )}
           >
             <p className={cx("font-serif text-xl font-semibold leading-tight", pickedCorrect ? "text-success" : "text-danger")}>
-              {pickedCorrect ? "Recuperou. Esse erro perdeu força." : `Ainda escapa. Gabarito ${correct ?? "-"}`}
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-muted">
-              {pickedCorrect
-                ? "Você não só viu a resposta: conseguiu puxá-la de novo. Esse é o ganho que fixa."
-                : "Releia a alternativa correta e compare com a armadilha. Se ainda doer, transforme em flashcard."}
+              {pickedCorrect ? "Recuperou." : `Errou. Gabarito ${correct ?? "-"}`}
             </p>
           </section>
         )}

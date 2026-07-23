@@ -101,18 +101,12 @@ function LoginPageContent() {
                 KROSMED
               </h1>
             </div>
-
-            <p
-              className={`${styles.pitch} mx-auto mt-3 max-w-[23rem] text-sm leading-6 text-muted [text-wrap:balance]`}
-            >
-              Preparação médica com precisão, ritmo e inteligência.
-            </p>
           </div>
 
           <div className={styles.accessPanel}>
-            <p className={styles.accessLine}>
-              {isDevMode ? "Ambiente de desenvolvimento" : "Entre com sua conta Google para continuar."}
-            </p>
+            {isDevMode ? (
+              <p className={styles.accessLine}>Ambiente de desenvolvimento</p>
+            ) : null}
 
             <div className="mt-4 space-y-4">
               {sessionExpired && (
@@ -120,7 +114,7 @@ function LoginPageContent() {
                   role="alert"
                   className="rounded-lg bg-[var(--amber-tint)] px-4 py-3 text-center text-sm text-ink shadow-sm"
                 >
-                  Sua sessão expirou por segurança. Entre novamente para continuar.
+                  Sessão expirada. Entre novamente.
                 </div>
               )}
 

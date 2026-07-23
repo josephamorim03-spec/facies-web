@@ -15,7 +15,7 @@ export function StudentPageHeader({
   breadcrumb,
   actions,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: string;
   breadcrumb?: string[];
@@ -29,7 +29,7 @@ export function StudentPageHeader({
             {breadcrumb.join(" / ")}
           </p>
         ) : null}
-        <p className="paper-eyebrow">{eyebrow}</p>
+        {eyebrow ? <p className="paper-eyebrow">{eyebrow}</p> : null}
         <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight text-ink md:text-4xl">{title}</h1>
         {description ? <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{description}</p> : null}
       </div>

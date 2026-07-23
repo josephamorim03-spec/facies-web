@@ -273,8 +273,8 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       <BuildVersionBadge />
       <ConfirmDialog
         open={sessionExpiredOpen && !isSessionExpirationSuppressedPath(pathname) && pathname !== ACTIVATE_ROUTE}
-        title="Sua sessão foi encerrada"
-        message="Por segurança, sua sessão expirou. Entre novamente para continuar usando a KrosMed."
+        title="Sessão expirada"
+        message="Entre novamente para continuar."
         cancelLabel="Fechar"
         confirmLabel="Entrar novamente"
         onCancel={redirectToExpiredLogin}
