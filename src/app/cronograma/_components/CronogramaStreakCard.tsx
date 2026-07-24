@@ -263,7 +263,7 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
             >
               <p className="text-xs font-medium text-red-600">Streak em risco</p>
               <p className="text-xs text-ink">
-                Sem registro de atividade hoje. Faca ao menos um estudo e mantenha a sequencia.
+                Sem atividade hoje. Faça um estudo para manter a sequência.
               </p>
             </div>
           </>
@@ -278,7 +278,7 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
         <div className="flex items-center gap-2 min-w-0">
           <span className="font-bold uppercase text-ink shrink-0">STREAK:</span>
           {hasNoActiveStreak ? (
-            <span className="shrink-0">Nenhuma ativa, faca um estudo para comecar</span>
+            <span className="shrink-0">Nenhuma ativa — faça um estudo.</span>
           ) : (
             <>
               <span
@@ -326,7 +326,7 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
                 >
                   <p className="text-xs font-medium text-red-600">Streak em risco</p>
                   <p className="text-xs text-ink">
-                    Sem registro de atividade hoje. Faca ao menos um estudo e mantenha a sequencia.
+                    Sem atividade hoje. Faça um estudo para manter a sequência.
                   </p>
                 </div>
               </>

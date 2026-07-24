@@ -90,7 +90,7 @@ export function ConfidenceReviewStep({
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Antes de corrigir</p>
           <h1 className="font-serif text-2xl font-semibold text-ink">Quão confiante você estava?</h1>
           <p className="mt-1 text-sm text-muted">
-            Marque sua confiança em cada questão — sem ver o gabarito. Isso mede sua calibração e não altera suas respostas.
+            Marque sua confiança em cada questão — sem ver o gabarito.
           </p>
         </header>
 

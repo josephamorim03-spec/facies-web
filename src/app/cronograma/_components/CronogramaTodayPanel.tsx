@@ -106,7 +106,7 @@ export function CronogramaTodayPanel({
         <div className="overflow-hidden">
           <div className="min-w-0 space-y-1.5 pt-2">
             {!hasContent ? (
-              <p className="text-xs text-muted">Nenhuma revisao para hoje</p>
+              <p className="text-xs text-muted">Nenhuma revisão para hoje</p>
             ) : (
               <>
                 {visible.map((item) => {

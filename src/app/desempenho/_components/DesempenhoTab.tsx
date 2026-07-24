@@ -378,11 +378,6 @@ export function DesempenhoTab({
                           ))}
                         </ul>
 
-                        {showThemeSorter && (
-                          <p className="text-xs text-muted">
-                            Exibindo {visibleThemes.length} de {themeCount} temas.
-                          </p>
-                        )}
                       </div>
                     )}
                   </div>

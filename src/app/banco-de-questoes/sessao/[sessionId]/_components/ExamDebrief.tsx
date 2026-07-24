@@ -91,7 +91,6 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
       {/* First fold */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Debrief do simulado</p>
           <h2 className="font-serif text-2xl font-semibold text-ink">
             {summary.correct}/{summary.answered} · {Math.round(summary.accuracy * 100)}% de acerto
           </h2>
@@ -194,7 +193,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
               </>
             ) : (
               <p className="text-muted">
-                Você não registrou confiança neste simulado. Marque a confiança antes do gabarito para calibrar.
+                Sem confiança registrada neste simulado.
               </p>
             )}
           </div>

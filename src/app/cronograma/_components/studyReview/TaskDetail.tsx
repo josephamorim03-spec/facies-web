@@ -98,7 +98,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
       const updated = await autoRescheduleReviewTask(token, task.task_id);
       if (updated.due_date === task.due_date) {
         setRescheduleMode("manual");
-        setRescheduleInfo("Sistema não encontrou data melhor. Escolha manualmente.");
+        setRescheduleInfo("Sem data melhor. Escolha manualmente.");
         return;
       }
       onRefresh();
@@ -120,7 +120,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
       const preview = await previewAutoRescheduleReviewTask(token, task.task_id);
       if (preview.due_date === task.due_date) {
         setRescheduleMode("manual");
-        setRescheduleInfo("Sistema não encontrou data melhor. Escolha manualmente.");
+        setRescheduleInfo("Sem data melhor. Escolha manualmente.");
         return;
       }
       setAutoSuggestedDueDate(preview.due_date);
@@ -176,7 +176,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
     return (
       <div className="space-y-2">
         <p className="text-xs text-muted italic">Revisão #{revision} · {task.area} / {displayLabel}</p>
-        <p className="text-xs text-muted">Cancelar esta revisão irá devolvê-la para a fila de pendentes.</p>
+        <p className="text-xs text-muted">Volta para a fila de pendentes.</p>
         {editableStudy?.import_session_id && (
           <p className="text-xs text-warning">Atenção: esta revisão possui uma correção salva que será perdida ao cancelar.</p>
         )}

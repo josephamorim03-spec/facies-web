@@ -245,7 +245,6 @@ export function WeeklyOpsFullCards({ metrics, className }: Props) {
             <ArcGaugeFull
               pct={metrics.progressPct}
             />
-            <p data-weekly-goal-status="true" className="text-[10px] leading-none text-muted">Em acompanhamento</p>
           </div>
         )}
 
