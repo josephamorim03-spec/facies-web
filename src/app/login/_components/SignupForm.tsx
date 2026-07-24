@@ -106,7 +106,7 @@ export function SignupForm({
       <input
         type="password"
         className={inputCls}
-        placeholder="Digite novamente a senha"
+        placeholder="Confirmar senha"
         autoComplete="new-password"
         value={signupConfirmPassword}
         onChange={(event) => setSignupConfirmPassword(event.target.value)}
@@ -143,9 +143,6 @@ export function SignupForm({
             onTokenChange={setSignupCaptchaToken}
             resetCounter={signupCaptchaResetCounter}
           />
-          <p className="text-xs text-muted text-center">
-            Em alguns casos, o Google pode pedir verificação adicional.
-          </p>
         </div>
       ) : (
         <p className="text-sm text-red-600">Cadastro indisponível no momento.</p>

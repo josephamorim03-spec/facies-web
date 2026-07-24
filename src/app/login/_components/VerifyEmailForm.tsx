@@ -28,8 +28,7 @@ export function VerifyEmailForm({
   return (
     <div className="space-y-4">
       <p className="text-sm text-ink leading-relaxed text-center">
-        Conta criada com sucesso. Enviamos um e-mail para verificação da sua conta. Abra o link
-        recebido e depois faça login.
+        Conta criada. Enviamos um link de verificação por e-mail — abra-o e faça login.
       </p>
       <input
         type="email"

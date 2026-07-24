@@ -121,7 +121,7 @@ export function TurboPerformanceReport({
         <div className="space-y-3 rounded-lg border border-edge bg-surface p-4 shadow-sm">
           <p className="text-xs text-muted uppercase tracking-widest">O que mudou</p>
           <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
-            <span className="text-muted">Sairam da fila de agora</span>
+            <span className="text-muted">Saíram da fila</span>
             <span className="text-emerald-700 font-semibold">{movedOutNow} cards</span>
             <span className="text-muted">Voltam em breve</span>
             <span className={backSoon > 0 ? "text-amber-600" : "text-muted"}>{backSoon} cards</span>
@@ -176,7 +176,7 @@ export function TurboPerformanceReport({
             onClick={onContinueReviewAction}
             className="rounded-xl border border-primary bg-primary px-3 py-2 text-xs font-semibold text-primaryInk hover:brightness-105"
           >
-            Continuar minha revisão
+            Continuar revisão
           </button>
         )}
         {canRepeatSession && (

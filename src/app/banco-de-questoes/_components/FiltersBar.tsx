@@ -133,14 +133,14 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-function SectionHeader({ step, title, detail }: { step: string; title: string; detail: string }) {
+function SectionHeader({ step, title, detail }: { step: string; title: string; detail?: string }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-2">
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{step}</p>
         <h3 className="mt-0.5 font-serif text-xl font-semibold leading-tight text-ink">{title}</h3>
       </div>
-      <p className="max-w-md text-sm text-muted">{detail}</p>
+      {detail ? <p className="max-w-md text-sm text-muted">{detail}</p> : null}
     </div>
   );
 }
@@ -202,7 +202,6 @@ export default function FiltersBar(props: FiltersBarProps) {
         <SectionHeader
           step="1. Foco clínico"
           title="Escolha a área e os temas"
-          detail="Use a busca para chegar no subtema certo ou navegue pela árvore de conhecimento."
         />
 
         <div className="flex flex-wrap gap-2">
@@ -300,7 +299,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                 ))}
               </div>
             ) : (
-              <p className="mt-1 text-sm text-muted">Sem tema selecionado, a sessão usa todos os assuntos que combinam com os filtros.</p>
+              <p className="mt-1 text-sm text-muted">Sem tema, usa todos os assuntos dos filtros.</p>
             )}
           </div>
         </div>
@@ -412,7 +411,6 @@ export default function FiltersBar(props: FiltersBarProps) {
         <SectionHeader
           step="3. Modo e carga"
           title={`${modeLabel}, ${clampedLimit} questões`}
-          detail="Defina se quer feedback item a item, simulado ou prova completa."
         />
 
         <div className="grid gap-3 md:grid-cols-3">
@@ -490,7 +488,6 @@ export default function FiltersBar(props: FiltersBarProps) {
               />
               <span>
                 <span className="block text-sm font-semibold text-ink">Gerar trilha de revisão</span>
-                <span className="mt-0.5 block text-xs text-muted">Ligado por padrão em foco único; desligado em listas mistas.</span>
               </span>
             </label>
           )
@@ -517,7 +514,7 @@ export default function FiltersBar(props: FiltersBarProps) {
               style={{ "--track-bg": `linear-gradient(to right, var(--range-fill) 0%, var(--range-fill) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) 100%)` } as CSSProperties}
               aria-label="Quantidade de questões"
             />
-            <p className="text-xs text-muted">Máximo selecionável com os filtros atuais: {maxSelectable}</p>
+            <p className="text-xs text-muted">Máx. {maxSelectable}</p>
           </div>
         </div>
       </section>

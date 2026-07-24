@@ -39,7 +39,7 @@ export default function AtivarAcessoPage() {
     setBusy(true);
     try {
       await redeemKey("", code);
-      showToast("Acesso ativado com sucesso!", "success");
+      showToast("Acesso ativado.", "success");
       const route = await resolveAuthenticatedLandingRoute("");
       router.replace(route);
     } catch (err: unknown) {
@@ -89,7 +89,7 @@ export default function AtivarAcessoPage() {
 
         <h1 className="text-xl font-semibold text-ink text-center mb-1">Ativar Acesso</h1>
         <p className="text-sm text-muted text-center mb-6">
-          Digite a chave de acesso que recebeu do seu mentor
+          Chave recebida do seu mentor
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">

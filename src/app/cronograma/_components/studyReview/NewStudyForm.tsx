@@ -90,9 +90,6 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
 
       {mode === "question_bank" ? (
         <div className="rounded-2xl border border-edge bg-paper p-4 text-center">
-          <p className="text-sm text-ink">
-            Novos estudos agora nascem de temas reais do KrosBank. O assunto e a prioridade adaptativa sao inferidos pelo banco.
-          </p>
           <button
             type="button"
             onClick={() => router.push("/banco-de-questoes")}

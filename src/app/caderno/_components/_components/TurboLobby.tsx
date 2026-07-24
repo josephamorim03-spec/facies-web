@@ -59,9 +59,6 @@ export function TurboLobby({
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-widest text-muted">Tudo em dia</p>
               <p className="text-2xl font-serif text-ink">Nenhum card para revisar agora.</p>
-              <p className="mx-auto max-w-sm text-sm text-muted">
-                A fila adaptativa não encontrou cards vencidos ou novos elegíveis neste momento.
-              </p>
             </div>
             {turboOverview?.total_eligible ? (
               <p className="mt-3 text-xs text-muted">

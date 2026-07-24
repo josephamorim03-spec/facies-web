@@ -448,9 +448,6 @@ export function RelatorioBody({
 
         {diagnosis.ready && (
           <div className="space-y-3">
-            <RelatorioParagraph>
-              Diagnóstico ativo com filtro de robustez por tema.
-            </RelatorioParagraph>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2 rounded-sm border border-emerald-700/40 bg-emerald-50/50 p-3 dark:border-emerald-600/40 dark:bg-emerald-950/20">
                 <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">Pontos fortes</p>
@@ -537,7 +534,6 @@ export function RelatorioBody({
       </SectionCard>
 
       <SectionCard title="Retenção" noBreak testId="relatorio-section-retencao">
-        <p className="text-xs text-muted">Mede quanto você lembra nas revisões.</p>
         <div className="flex items-baseline gap-3">
           <span className="text-2xl font-semibold tabular-nums">
             {retentionRecent === null ? "—" : `${retentionRecent}%`}
@@ -626,9 +622,6 @@ export function RelatorioBody({
             <span className="text-muted">{trendLabel(consistencyTrend)}</span>
           </p>
         </div>
-        <RelatorioParagraph>
-          Regularidade mede em quantos dias você distribuiu o estudo recentemente.
-        </RelatorioParagraph>
         <RelatorioParagraph>{trendText}</RelatorioParagraph>
       </SectionCard>
 

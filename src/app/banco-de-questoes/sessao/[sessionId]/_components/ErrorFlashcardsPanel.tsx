@@ -160,7 +160,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">De erro para revisão ativa</p>
           <h3 className="mt-1 font-serif text-xl font-semibold leading-tight">Flashcards dos seus erros</h3>
-          <p className="mt-1 text-sm leading-relaxed text-muted">A IA transforma os erros em perguntas de recall. Você escolhe o que realmente merece voltar no caderno.</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted">A IA transforma seus erros em perguntas de recall.</p>
         </div>
         {!response && (
           <button
@@ -190,7 +190,6 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
             <p className="text-xs font-semibold text-ink">
               {selectedCount === 0 ? "Selecione os cards que valem revisar." : `${selectedCount} card${selectedCount === 1 ? "" : "s"} selecionado${selectedCount === 1 ? "" : "s"}.`}
             </p>
-            <p className="text-xs text-muted">Salve só o que fecha uma lacuna real.</p>
           </div>
           {resultsWithDrafts.map((result) => {
             const position = positionByQuestionId.get(result.question_id);

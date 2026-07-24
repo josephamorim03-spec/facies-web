@@ -322,7 +322,6 @@ export function WeeklyOpsFullCards({ metrics, className }: Props) {
               <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
                 {showSevereGoalDelayWarning ? "Meta semanal em atraso" : "Meta semanal abaixo do ritmo"}
               </p>
-              <p className="text-xs text-ink">Você precisa subir o ritmo.</p>
               <p className="text-xs text-ink">
                 Progresso atual: {metrics.progressPct}% · esperado: ~{metrics.expectedProgressPctThisWeek}%.
               </p>
