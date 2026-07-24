@@ -146,7 +146,7 @@ export function useBatchAnalysis(params: UseBatchAnalysisParams): UseBatchAnalys
 
         let status: AnalysisSelectionItem["status"] = "idle";
         let statusLabel = "";
-        let helperText = "Pronta para entrar no proximo lote.";
+        let helperText = "Pronta para entrar no próximo lote.";
 
         if (!eligible) {
           status = "ineligible";

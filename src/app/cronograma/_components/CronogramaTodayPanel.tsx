@@ -46,9 +46,9 @@ export function CronogramaTodayPanel({
   const visible = items.slice(0, MAX_VISIBLE);
   const overflow = items.length - MAX_VISIBLE;
   const taskLabel = todayTasks.length === 1 ? "1 tarefa" : `${todayTasks.length} tarefas`;
-  const questionLabel = dueQuestionTotal === 1 ? "1 questao" : `${dueQuestionTotal} questoes`;
+  const questionLabel = dueQuestionTotal === 1 ? "1 questão" : `${dueQuestionTotal} questões`;
   const queueDetail = [
-    questionReviewQueue.due_count > 0 ? `${questionReviewQueue.due_count} no ponto de revisao` : "",
+    questionReviewQueue.due_count > 0 ? `${questionReviewQueue.due_count} no ponto de revisão` : "",
     questionReviewQueue.struggling_count > 0
       ? `${questionReviewQueue.struggling_count} tambem em baixo desempenho`
       : "",
@@ -80,7 +80,7 @@ export function CronogramaTodayPanel({
             type="button"
             onClick={() => setPinned((value) => !value)}
             aria-expanded={open}
-            aria-label={open ? "Recolher revisoes de hoje" : "Expandir revisoes de hoje"}
+            aria-label={open ? "Recolher revisões de hoje" : "Expandir revisões de hoje"}
             className="mt-0.5 shrink-0 rounded-md p-1 text-muted transition-colors hover:text-ink"
           >
             <svg

@@ -30,7 +30,7 @@ export function RescheduleSuggestionDialog({
   title = "Reagendamento sugerido",
   loading = false,
   error = null,
-  emptyMessage = "Nenhuma sugestao pendente.",
+  emptyMessage = "Nenhuma sugestão pendente.",
   acceptItemLabel = "Aceitar",
   acceptAllLabel = "Aceitar todas",
   rejectLabel = "Ignorar",
@@ -55,7 +55,7 @@ export function RescheduleSuggestionDialog({
         </div>
 
         {loading ? (
-          <p className="text-sm text-muted">Buscando sugestoes de reagendamento...</p>
+          <p className="text-sm text-muted">Buscando sugestões de reagendamento…</p>
         ) : error ? (
           <p className="text-sm text-red-600">{error}</p>
         ) : suggestions.length === 0 ? (

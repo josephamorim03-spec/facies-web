@@ -29,11 +29,11 @@ function memoryShort(tone: GuidanceTone): string {
 }
 
 function pluralizeDueQuestion(count: number): string {
-  return count === 1 ? "1 q vencida do tópico" : `${count} q vencidas do tópico`;
+  return count === 1 ? "1 q vencida" : `${count} q vencidas`;
 }
 
 function pluralizeStrugglingQuestion(count: number): string {
-  return count === 1 ? "1 ponto fraco no tópico" : `${count} pontos fracos no tópico`;
+  return count === 1 ? "1 ponto fraco" : `${count} pontos fracos`;
 }
 
 export function hasReviewSignals(task: ReviewTask): boolean {
@@ -88,7 +88,7 @@ export function ReviewSignalChips({
       {task.at_risk && !memory && (
         <span
           className={`${baseClass} border-warning bg-[var(--amber-tint)] text-ink`}
-          title="O sistema adiantou esta revisão porque seu desempenho recente indica que você está começando a esquecer."
+          title="Antecipada: você está começando a esquecer."
         >
           {compact ? "Revisar já" : "Revisar antes de esquecer"}
         </span>

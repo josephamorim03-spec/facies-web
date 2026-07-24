@@ -279,7 +279,7 @@ export function WeeklyOpsFullCards({ metrics, className }: Props) {
             </div>
             <div className="h-px bg-edge w-full" />
             <div className="flex items-center justify-between w-full">
-              <span className="text-xs text-muted">Ritmo necessario</span>
+              <span className="text-xs text-muted">Ritmo necessário</span>
               <span className="text-xs font-medium">
                 {metrics.dailyRequiredQuestions > 0 ? `${metrics.dailyRequiredQuestions}q/dia` : "Em dia"}
               </span>

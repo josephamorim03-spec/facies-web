@@ -123,7 +123,7 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
           <div className="border border-edge p-2 space-y-1 bg-amber-50">
             <p className="text-xs font-medium">Confirmar edição</p>
             <p className="text-xs text-muted">
-              Acuracia: {impactPreview.accuracy_before_pct.toFixed(1)}% -&gt; {impactPreview.accuracy_after_pct.toFixed(1)}%
+              Acurácia: {impactPreview.accuracy_before_pct.toFixed(1)}% -&gt; {impactPreview.accuracy_after_pct.toFixed(1)}%
             </p>
             {impactPreview.next_due_before && impactPreview.next_due_after && (
               <p className="text-xs text-muted">

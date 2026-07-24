@@ -138,20 +138,20 @@ function studyDisplayLabel(study: DirectedStudyListItem): string {
 
 function studySecondaryText(study: DirectedStudyListItem): string {
   if (isFullExamStudy(study)) {
-    const examType = study.full_exam_type ? FULL_EXAM_TYPE_LABELS[study.full_exam_type] : "Prova na integra";
+    const examType = study.full_exam_type ? FULL_EXAM_TYPE_LABELS[study.full_exam_type] : "Prova na íntegra";
     return [study.area, examType, study.full_exam_year ? String(study.full_exam_year) : ""]
       .filter(Boolean)
       .join(" · ");
   }
   const parentThemeLabel = topicSecondaryLabel(study);
-  return [study.area, parentThemeLabel, study.is_review ? "Revisao concluida" : "Estudo inicial"]
+  return [study.area, parentThemeLabel, study.is_review ? "Revisão concluída" : "Estudo inicial"]
     .filter(Boolean)
     .join(" · ");
 }
 
 function studyRecordType(study: DirectedStudyListItem): string {
-  if (isFullExamStudy(study)) return "Prova na integra";
-  return study.is_review ? "Revisao concluida" : "Estudo inicial";
+  if (isFullExamStudy(study)) return "Prova na íntegra";
+  return study.is_review ? "Revisão concluída" : "Estudo inicial";
 }
 
 function resolveCompletedReviewStudy(
@@ -190,13 +190,13 @@ function ReadonlyStudyPopupContent({
           <p className="mt-1 text-sm font-bold text-ink">{recordType}</p>
         </div>
         <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
-          <p className="text-[11px] text-muted leading-none">Questoes</p>
+          <p className="text-[11px] text-muted leading-none">Questões</p>
           <p className="mt-1 text-sm font-bold text-ink">
             {study.correct_questions}/{study.total_questions}
           </p>
         </div>
         <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
-          <p className="text-[11px] text-muted leading-none">Acuracia</p>
+          <p className="text-[11px] text-muted leading-none">Acurácia</p>
           <p className="mt-1 text-sm font-bold text-ink">{study.accuracy.toFixed(0)}%</p>
         </div>
       </div>
@@ -235,7 +235,7 @@ export function CalendarEntryPopup({
       expected_questions: String(task.expected_questions),
     });
     const bancoUrl = `/banco-de-questoes?${bancoParams.toString()}`;
-    const sessionTitle = `Revisao #${revision} - ${displayLabel}`;
+    const sessionTitle = `Revisão #${revision} - ${displayLabel}`;
 
     content = (
       <>
@@ -243,14 +243,14 @@ export function CalendarEntryPopup({
           <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">{task.area}</p>
           <p className="mt-0.5 text-sm font-semibold text-ink leading-snug">{displayLabel}</p>
           <p className="mt-1 text-xs text-muted">
-            {parentThemeLabel ? `${parentThemeLabel} · ` : ""}Revisao pendente
+            {parentThemeLabel ? `${parentThemeLabel} · ` : ""}Revisão pendente
           </p>
           <ReviewSignalChips task={task} compact className="mt-2" />
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
-            <p className="text-[11px] text-muted leading-none">Revisao</p>
+            <p className="text-[11px] text-muted leading-none">Revisão</p>
             <p className="mt-1 text-lg font-bold text-ink">#{revision}</p>
           </div>
           <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
@@ -271,7 +271,7 @@ export function CalendarEntryPopup({
           aria-label={sessionTitle}
           className="flex w-full items-center justify-center rounded-xl border border-primary bg-primary py-2.5 text-xs font-semibold text-primaryInk transition-all hover:brightness-105"
         >
-          Abrir revisao no banco
+          Abrir revisão no banco
         </Link>
       </>
     );
@@ -285,10 +285,10 @@ export function CalendarEntryPopup({
     content = (
       <>
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Revisao concluida</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Revisão concluída</p>
           <p className="mt-0.5 text-sm font-semibold text-ink leading-snug">{displayLabel}</p>
           <p className="mt-1 text-xs text-muted">
-            {[task.area, parentThemeLabel, `Revisao #${revision}`].filter(Boolean).join(" · ")}
+            {[task.area, parentThemeLabel, `Revisão #${revision}`].filter(Boolean).join(" · ")}
           </p>
           <ReviewSignalChips task={task} compact className="mt-2" />
         </div>
@@ -296,16 +296,16 @@ export function CalendarEntryPopup({
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-[11px] text-muted leading-none">Registro</p>
-            <p className="mt-1 text-sm font-bold text-ink">Revisao</p>
+            <p className="mt-1 text-sm font-bold text-ink">Revisão</p>
           </div>
           <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
-            <p className="text-[11px] text-muted leading-none">Questoes</p>
+            <p className="text-[11px] text-muted leading-none">Questões</p>
             <p className="mt-1 text-sm font-bold text-ink">
               {resolvedStudy ? `${resolvedStudy.correct_questions}/${resolvedStudy.total_questions}` : "—"}
             </p>
           </div>
           <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
-            <p className="text-[11px] text-muted leading-none">Acuracia</p>
+            <p className="text-[11px] text-muted leading-none">Acurácia</p>
             <p className="mt-1 text-sm font-bold text-ink">
               {resolvedStudy ? `${resolvedStudy.accuracy.toFixed(0)}%` : "—"}
             </p>
