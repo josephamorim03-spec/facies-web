@@ -32,6 +32,17 @@ export function isProtectedApiPath(path: string): boolean {
   }
 }
 
+export function isSessionExpiredApiResponse(
+  path: string,
+  res: { status: number; headers: Pick<Headers, "get"> },
+): boolean {
+  return (
+    res.status === 401 &&
+    res.headers.get(SESSION_EXPIRED_HEADER) === "1" &&
+    isProtectedApiPath(path)
+  );
+}
+
 export function dispatchSessionExpired(detail: SessionExpiredEventDetail = {}): boolean {
   if (!canUseBrowser()) return false;
   if (sessionExpiredPending || sessionExpiredRedirecting) return false;

@@ -1,16 +1,21 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject, type Dispatch, type SetStateAction, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject, type Dispatch, type SetStateAction, type ReactNode } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import {
   getWeeklyTimeline,
   getTurboAreaStats,
+  getProfile,
+  getStudyPerformanceSummary,
+  browseQuestionBankTopics,
   type WeeklyTimeline,
   type OperationalTurboAreaStats,
+  type QuestionBankTopic,
 } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
-import { AREA_COLORS } from "@/app/desempenho/_lib/perfilAnalytics";
 import type { Area as AreaKey } from "@/app/desempenho/_lib/perfilShared";
+import { getChartAreaColor, buildAreaInsightRows, type AreaInsightRow } from "../_lib/chartInsights";
+import { buildPriorityMatrixRows, rawAreaIncidence, type PriorityMatrixRow } from "../_lib/matrixInsights";
 import {
   AREA_SEGMENT_ORDER,
   CHART_MUTED,
@@ -46,6 +51,7 @@ export type GraficosState = {
   turboAreaStats: OperationalTurboAreaStats | null;
   turboAreaLoading: boolean;
   isTouchInteractionMode: boolean;
+  prefersReducedMotion: boolean;
   accuracyLockedWeekIndex: number | null;
   accuracyHoverWeekIndex: number | null;
   volumeLockedWeekIndex: number | null;
@@ -75,6 +81,11 @@ export type GraficosState = {
   cardAnalysisRows: Array<{ area: AreaKey; volumePct: number; accuracyPct: number | null; reviewsTotal: number }>;
   activeAccuracyOverlayLabel: { key: string; text: string; placement: HtmlLabelPlacement } | null;
   lockedAreaOverlayLabels: LockedAreaOverlayLabel[];
+  weeklyGoal: number | null;
+  areaInsightRows: AreaInsightRow[];
+  priorityMatrixRows: PriorityMatrixRow[] | null;
+  priorityMatrixLoading: boolean;
+  priorityMatrixError: string | null;
 };
 
 export type GraficosRefs = {
@@ -95,6 +106,7 @@ export type GraficosActions = {
   setLockedAreaLine: Dispatch<SetStateAction<AreaKey | null>>;
   setLockedSlopeArea: Dispatch<SetStateAction<AreaKey | null>>;
   setVolumeSegmentLabelPositions: Dispatch<SetStateAction<Array<{ area: AreaKey; midY: number; count: number }>>>;
+  loadPriorityMatrix: () => void;
   handleAccuracyPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => void;
   handleAccuracyPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => void;
   handleAccuracyPointerUp: (e: ReactPointerEvent<HTMLDivElement>) => void;
@@ -113,6 +125,12 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
   const [turboAreaStats, setTurboAreaStats] = useState<OperationalTurboAreaStats | null>(null);
   const [turboAreaLoading, setTurboAreaLoading] = useState(true);
   const [isTouchInteractionMode, setIsTouchInteractionMode] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [weeklyGoal, setWeeklyGoal] = useState<number | null>(null);
+  const [priorityMatrixRows, setPriorityMatrixRows] = useState<PriorityMatrixRow[] | null>(null);
+  const [priorityMatrixLoading, setPriorityMatrixLoading] = useState(false);
+  const [priorityMatrixError, setPriorityMatrixError] = useState<string | null>(null);
+  const priorityMatrixRequestedRef = useRef(false);
 
   const [accuracyLockedWeekIndex, setAccuracyLockedWeekIndex] = useState<number | null>(null);
   const [accuracyHoverWeekIndex, setAccuracyHoverWeekIndex] = useState<number | null>(null);
@@ -174,6 +192,17 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
       .finally(() => setTurboAreaLoading(false));
   }, []);
 
+  // Meta semanal real (weekly_goal_questions) para a linha de meta no volume.
+  useEffect(() => {
+    const token = getAuthToken();
+    getProfile(token)
+      .then((profile) => {
+        const goal = Number(profile.weekly_goal_questions ?? 0);
+        setWeeklyGoal(Number.isFinite(goal) && goal > 0 ? goal : null);
+      })
+      .catch(() => setWeeklyGoal(null));
+  }, []);
+
   useEffect(() => {
     const mediaQuery = window.matchMedia(TOUCH_INTERACTION_QUERY);
     const update = () => setIsTouchInteractionMode(detectTouchInteractionMode());
@@ -193,6 +222,26 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
         mediaQuery.removeListener(update);
       }
       window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setPrefersReducedMotion(mediaQuery.matches);
+    update();
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", update);
+    } else {
+      mediaQuery.addListener(update);
+    }
+
+    return () => {
+      if (typeof mediaQuery.removeEventListener === "function") {
+        mediaQuery.removeEventListener("change", update);
+      } else {
+        mediaQuery.removeListener(update);
+      }
     };
   }, []);
 
@@ -299,6 +348,58 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
       });
   }, [turboAreaStats]);
 
+  const areaInsightRows = useMemo(
+    () =>
+      buildAreaInsightRows({
+        weeks,
+        deltaByArea: timeline?.delta_by_area ?? {},
+        areas: activeAreaLines,
+      }),
+    [weeks, timeline, activeAreaLines],
+  );
+
+  // Matriz prioridade × desempenho — carregada só quando a seção abre (lazy):
+  // junta acerto/volume por área (performance-summary) com a incidência editorial
+  // agregada do catálogo (6 chamadas de tópicos em paralelo).
+  const loadPriorityMatrix = useCallback(() => {
+    if (priorityMatrixRequestedRef.current) return;
+    priorityMatrixRequestedRef.current = true;
+    setPriorityMatrixLoading(true);
+    setPriorityMatrixError(null);
+    const token = getAuthToken();
+    Promise.all([
+      getStudyPerformanceSummary(token),
+      Promise.all(
+        AREA_SEGMENT_ORDER.map((area) =>
+          browseQuestionBankTopics(token, { area, limit: 250 }).catch(
+            () => [] as QuestionBankTopic[],
+          ),
+        ),
+      ),
+    ])
+      .then(([summary, topicLists]) => {
+        const rawIncidenceByArea: Partial<Record<AreaKey, number>> = {};
+        AREA_SEGMENT_ORDER.forEach((area, index) => {
+          rawIncidenceByArea[area] = rawAreaIncidence(topicLists[index]);
+        });
+        const areaSummaries = (summary.area_summaries ?? [])
+          .filter((entry) => AREA_SEGMENT_ORDER.includes(entry.area as AreaKey))
+          .map((entry) => ({
+            area: entry.area as AreaKey,
+            accuracyPct: entry.area_accuracy_pct,
+            volume: entry.total_questions,
+          }));
+        setPriorityMatrixRows(buildPriorityMatrixRows({ areaSummaries, rawIncidenceByArea }));
+      })
+      .catch((e: unknown) => {
+        priorityMatrixRequestedRef.current = false; // permite tentar de novo
+        setPriorityMatrixError(
+          e instanceof Error ? e.message : "Não foi possível montar a matriz.",
+        );
+      })
+      .finally(() => setPriorityMatrixLoading(false));
+  }, []);
+
   const activeAccuracyOverlayLabel = useMemo(() => {
     if (!activeAccuracyWeekWithData || accuracyActiveWeekIndex === null) return null;
     if (accuracyFrame.width <= 0 || accuracyFrame.height <= 0) return null;
@@ -325,7 +426,7 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
         return {
           key: `${lockedAreaLine}-${index}`,
           text: `${Math.round(value)}%`,
-          color: AREA_COLORS[lockedAreaLine],
+          color: getChartAreaColor(lockedAreaLine),
           point,
           weekIndex: index,
         };
@@ -497,7 +598,7 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
     const isActive = index === volumeActiveWeekIndex;
     const hasBreakdown = payload.hasAreaBreakdown && payload.total > 0;
 
-    if (!isActive || !hasBreakdown) {
+    if (!hasBreakdown) {
       return <rect x={x} y={y} width={width} height={height} rx={2} fill={CHART_INK} fillOpacity={isActive ? 0.75 : 0.58} />;
     }
 
@@ -510,11 +611,13 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
       cursorY -= segmentHeight;
       return { area, segY: cursorY, segHeight: segmentHeight };
     });
-    volumeSegmentPositionsRef.current = segments.map(({ area, segY, segHeight }) => ({
-      area,
-      midY: segY + segHeight / 2,
-      count: payload.areaTotals[area],
-    }));
+    if (isActive) {
+      volumeSegmentPositionsRef.current = segments.map(({ area, segY, segHeight }) => ({
+        area,
+        midY: segY + segHeight / 2,
+        count: payload.areaTotals[area],
+      }));
+    }
 
     return (
       <g>
@@ -526,21 +629,25 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
             y={segY}
             width={width}
             height={segHeight}
-            fill={AREA_COLORS[area]}
-            fillOpacity={0.95}
+            fill={getChartAreaColor(area)}
+            fillOpacity={isActive ? 0.95 : 0.68}
+            stroke="var(--color-paper)"
+            strokeWidth={0.75}
           />
         ))}
-        <rect
-          x={x}
-          y={y}
-          width={width}
-          height={height}
-          rx={2}
-          fill="none"
-          stroke={VOLUME_ACTIVE_OUTLINE}
-          strokeWidth={1.5}
-          style={{ filter: `drop-shadow(0 0 7px ${toRgba(VOLUME_ACTIVE_OUTLINE, 0.45)})` }}
-        />
+        {isActive ? (
+          <rect
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            rx={2}
+            fill="none"
+            stroke={VOLUME_ACTIVE_OUTLINE}
+            strokeWidth={1.5}
+            style={{ filter: `drop-shadow(0 0 7px ${toRgba(VOLUME_ACTIVE_OUTLINE, 0.45)})` }}
+          />
+        ) : null}
       </g>
     );
   };
@@ -554,6 +661,7 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
     turboAreaStats,
     turboAreaLoading,
     isTouchInteractionMode,
+    prefersReducedMotion,
     accuracyLockedWeekIndex,
     accuracyHoverWeekIndex,
     volumeLockedWeekIndex,
@@ -583,6 +691,11 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
     cardAnalysisRows,
     activeAccuracyOverlayLabel,
     lockedAreaOverlayLabels,
+    weeklyGoal,
+    areaInsightRows,
+    priorityMatrixRows,
+    priorityMatrixLoading,
+    priorityMatrixError,
   };
 
   const refs: GraficosRefs = {
@@ -603,6 +716,7 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
     setLockedAreaLine,
     setLockedSlopeArea,
     setVolumeSegmentLabelPositions,
+    loadPriorityMatrix,
     handleAccuracyPointerDown,
     handleAccuracyPointerMove,
     handleAccuracyPointerUp,

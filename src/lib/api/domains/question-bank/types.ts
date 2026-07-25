@@ -8,6 +8,24 @@ export type QuestionBankSessionStatus = "active" | "finalized" | "invalidated";
 export type QuestionBankScoringMode = "immediate" | "deferred_until_finalize";
 export type QuestionBankAnswerStatus = "unanswered" | "answered" | "correct" | "wrong" | "all" | "unanswered_or_wrong" | "needs_review" | "near_miss";
 export type QuestionBankCorrectionStatus = "all" | "with_correction" | "without_correction";
+export type QuestionTextHighlightKind = "ponto_chave" | "pegadinha";
+export type QuestionTextHighlightTarget = "stem" | "alternative";
+export type QuestionPostAnswerReflection = "correct_guess" | "correct_secure" | "wrong_distraction" | "wrong_concept";
+
+export type QuestionTextHighlight = {
+  highlight_id: string;
+  question_id: string;
+  session_id: string | null;
+  target: QuestionTextHighlightTarget;
+  option: QuestionBankOption | null;
+  kind: QuestionTextHighlightKind;
+  selected_text: string;
+  prefix: string;
+  suffix: string;
+  occurrence_index: number;
+  created_at: string;
+  updated_at: string;
+};
 
 export type QuestionBankNode = {
   knowledge_node_id: string;
@@ -396,6 +414,7 @@ export type QuestionBankQuestion = {
   source: Record<string, unknown>;
   knowledge_nodes: QuestionBankNode[];
   attempt_stats?: QuestionBankAttemptStats | null;
+  bookmarked?: boolean;
 };
 
 export type QuestionBankReportType =
@@ -422,6 +441,7 @@ export type QuestionBankSessionItem = {
   source: Record<string, unknown>;
   selected_option: QuestionBankOption | null;
   doubtful: boolean;
+  bookmarked?: boolean;
   confidence_self_rating: number | null;
   answered: boolean;
   needs_correction: boolean;
@@ -452,6 +472,8 @@ export type QuestionBankSessionItem = {
   exclusion_note: string | null;
   excluded_at: string | null;
   attempt_stats?: QuestionBankAttemptStats | null;
+  text_highlights?: QuestionTextHighlight[];
+  post_answer_reflection?: QuestionPostAnswerReflection | null;
 };
 
 export type QuestionBankSession = {

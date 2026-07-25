@@ -1,7 +1,7 @@
 "use client";
 
-import { AREA_COLORS } from "@/app/desempenho/_lib/perfilAnalytics";
 import type { GraficosState, GraficosActions } from "../_hooks/useGraficosData";
+import { getChartAreaColor } from "../_lib/chartInsights";
 
 type Props = {
   state: GraficosState;
@@ -15,10 +15,8 @@ export function SlopeComparison({ state, actions }: Props) {
 
   return (
     <section data-testid="chart-area-slope" className="space-y-3 pt-4 border-t border-edge">
-      <h2 className="text-sm font-medium">Comparativo de Evolução por Área</h2>
-      <p className="text-xs text-muted">
-        Acerto acumulado em duas metades das semanas registradas
-      </p>
+      <h2 className="text-sm font-medium">Evolução por área</h2>
+      <p className="text-xs text-muted">Acerto por metade do período</p>
       <div className="flex items-center gap-2 text-[10px] text-muted">
         <span className="w-8 shrink-0" />
         <span className="w-10 text-right shrink-0 tabular-nums">{slopePeriodLabels.before}</span>
@@ -30,7 +28,7 @@ export function SlopeComparison({ state, actions }: Props) {
         {slopeData.map(({ area, first, second, delta }) => {
           const isLocked = lockedSlopeArea === area;
           const isOtherLocked = lockedSlopeArea !== null && !isLocked;
-          const color = AREA_COLORS[area];
+          const color = getChartAreaColor(area);
           const deltaClass = delta !== null && delta > 0 ? "text-emerald-600" : delta !== null && delta < 0 ? "text-red-500" : "text-muted";
           return (
             <div

@@ -3,13 +3,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import type { QuestionBankReportType } from "@/lib/api";
+import type {
+  OperationalQuestionOutcome,
+  QuestionBankOption,
+  QuestionBankReportType,
+  QuestionTextHighlight,
+} from "@/lib/api";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { QuestionFullContext } from "@/app/banco-de-questoes/_components/QuestionFullContext";
 import { cognitivePatternSummary } from "@/lib/guidanceCopy";
 import ErrorFlashcardsPanel from "./ErrorFlashcardsPanel";
+import QuickNoteModal from "./QuickNoteModal";
 import AttemptHistoryModal from "../../../_components/AttemptHistoryModal";
 import { PostExamTabs } from "./_postExamReview/PostExamTabs";
+import { PostExamItemActions } from "./_postExamReview/PostExamItemActions";
 import { ReportedItemsPanel } from "./_postExamReview/ReportedItemsPanel";
 import { usePostExamReviewData } from "./_postExamReview/usePostExamReviewData";
 import type { PostExamReviewProps, PostExamReviewTab } from "./_postExamReview/types";
@@ -31,6 +38,18 @@ const REPORT_OPTIONS: Array<{ type: QuestionBankReportType; label: string }> = [
   { type: "other", label: "Outro" },
 ];
 
+type QuickNoteIntent = "rule" | "card";
+
+type QuickNoteTarget = {
+  questionId: string;
+  noteIntent: QuickNoteIntent;
+  questionOutcome: OperationalQuestionOutcome | null;
+  selectedOption: QuestionBankOption | null;
+  correctAnswer: QuestionBankOption | null;
+  errorHypothesis: string | null;
+  highlightContext: QuestionTextHighlight[];
+};
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -46,6 +65,7 @@ export default function PostExamReview({
   const [activeTab, setActiveTab] = useState<PostExamReviewTab>("resumo");
   const [dismissedInsights, setDismissedInsights] = useState(false);
   const [dismissedDiagnosisError, setDismissedDiagnosisError] = useState(false);
+  const [quickNoteTarget, setQuickNoteTarget] = useState<QuickNoteTarget | null>(null);
   const items = session.items;
   const activeReview = session.status === "active" && Boolean(session.results_revealed_at);
   const {
@@ -436,10 +456,10 @@ export default function PostExamReview({
                 </div>
                 <div className="mt-2 space-y-1 text-xs text-muted">
                   {diagnosis.impulsive_count >= 2 && (
-                    <p>• {diagnosis.impulsive_count} questão(ões) respondida(s) muito rapidamente e errada(s) — releia o enunciado antes de marcar.</p>
+                    <p>• {diagnosis.impulsive_count} questão(ões) rápidas e erradas.</p>
                   )}
                   {diagnosis.overconfident_count >= 2 && (
-                    <p>• Em {diagnosis.overconfident_count} questão(ões) você estava confiante mas errou — desconfie das opções que parecem óbvias.</p>
+                    <p>• {diagnosis.overconfident_count} questão(ões) com excesso de confiança.</p>
                   )}
                 </div>
               </div>
@@ -461,7 +481,7 @@ export default function PostExamReview({
           if (displayItems.length === 0) {
             const emptyMessage =
               activeTab === "erros"
-                ? "Nenhum erro nesta sessão. Excelente trabalho!"
+                ? "Nenhum erro nesta sessão."
                 : activeTab === "acertos"
                   ? "Nenhum acerto registrado nesta sessão."
                   : "Você não marcou nenhuma questão.";
@@ -478,23 +498,12 @@ export default function PostExamReview({
                 const selectedDiagnosis = item.selected_option ? item.distractor_diagnosis?.[item.selected_option] : null;
                 const correction = correctionByQuestionId.get(item.question_id);
                 const isExpanded = expandedCorrections.has(item.question_id);
-                const actionCopy =
-                  activeTab === "descartadas"
-                    ? "Esta questao ficou fora do seu resultado e da adaptabilidade."
-                    : activeTab === "erros"
-                    ? correction
-                      ? "Reparo salvo: revise esta regra antes de refazer."
-                      : selectedDiagnosis
-                        ? "Leia a armadilha e transforme em uma regra curta."
-                        : "Reescreva o raciocínio correto antes de refazer."
-                    : activeTab === "acertos"
-                      ? "Nomeie o dado que confirmou o acerto e siga."
-                      : "Vale segunda leitura: era dúvida real ou excesso de cautela?";
+                const trapId = `post-exam-trap-${item.position}`;
 
                 return (
                   <article key={item.question_id} className="rounded-lg border border-edge bg-surface p-4 shadow-[var(--soft-shadow)]">
                     <QuestionFullContext
-                      eyebrow={`Questao ${item.position}`}
+                      eyebrow={`Questão ${item.position}`}
                       stem={item.stem}
                       alternatives={item.alternatives}
                       imageRefs={item.image_refs}
@@ -536,7 +545,7 @@ export default function PostExamReview({
                       </div>
                     )}
 
-                    {activeReview && reportingPosition === item.position && (
+                    {reportingPosition === item.position && (
                       <div className="mt-3 rounded-lg border border-edge bg-paper p-3">
                         <div className="flex flex-wrap gap-2">
                           {REPORT_OPTIONS.map(({ type, label }) => (
@@ -609,19 +618,47 @@ export default function PostExamReview({
                       )}
                     </div>
 
-                    <div className="mt-3 rounded-lg border border-edge bg-paper px-3 py-2">
-                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Próximo uso deste item</p>
-                      <p className="mt-1 text-sm leading-relaxed text-ink">{actionCopy}</p>
-                    </div>
-
                     {activeTab === "erros" && selectedDiagnosis && (
-                      <div className="mt-3 rounded-lg border border-warning/50 bg-[var(--amber-tint)] p-3">
+                      <div id={trapId} className="mt-3 rounded-lg border border-warning/50 bg-[var(--amber-tint)] p-3">
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Hipótese do erro</p>
                         <p className="mt-1 text-sm leading-relaxed text-ink">{selectedDiagnosis}</p>
                       </div>
                     )}
 
                     <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <PostExamItemActions
+                        activeTab={activeTab}
+                        activeReview={activeReview}
+                        selectedDiagnosis={selectedDiagnosis ?? null}
+                        onSaveRule={() =>
+                          setQuickNoteTarget({
+                            questionId: item.question_id,
+                            noteIntent: "rule",
+                            questionOutcome: "incorrect",
+                            selectedOption: item.selected_option,
+                            correctAnswer: item.correct_answer,
+                            errorHypothesis: selectedDiagnosis ?? null,
+                            highlightContext: item.text_highlights ?? [],
+                          })
+                        }
+                        onCreateCard={() =>
+                          setQuickNoteTarget({
+                            questionId: item.question_id,
+                            noteIntent: "card",
+                            questionOutcome: "incorrect",
+                            selectedOption: item.selected_option,
+                            correctAnswer: item.correct_answer,
+                            errorHypothesis: selectedDiagnosis ?? null,
+                            highlightContext: item.text_highlights ?? [],
+                          })
+                        }
+                        onReviewTrap={() => document.getElementById(trapId)?.scrollIntoView({ block: "center", behavior: "smooth" })}
+                        onReport={() =>
+                          setReportingPosition((prev) =>
+                            prev === item.position ? null : item.position,
+                          )
+                        }
+                      />
                       {item.attempt_stats && item.attempt_stats.attempt_count > 0 && (
                         <button
                           type="button"
@@ -672,6 +709,21 @@ export default function PostExamReview({
           key={historyQuestionId}
           questionId={historyQuestionId}
           onClose={() => setHistoryQuestionId(null)}
+        />
+      )}
+      {quickNoteTarget && (
+        <QuickNoteModal
+          key={`${quickNoteTarget.questionId}-${quickNoteTarget.noteIntent}`}
+          questionId={quickNoteTarget.questionId}
+          defaultArea={session.area}
+          defaultTheme={session.subtheme ?? session.theme ?? sessionDisplayLabel}
+          questionOutcome={quickNoteTarget.questionOutcome}
+          noteIntent={quickNoteTarget.noteIntent}
+          selectedOption={quickNoteTarget.selectedOption}
+          correctAnswer={quickNoteTarget.correctAnswer}
+          errorHypothesis={quickNoteTarget.errorHypothesis}
+          highlightContext={quickNoteTarget.highlightContext}
+          onClose={() => setQuickNoteTarget(null)}
         />
       )}
     </main>

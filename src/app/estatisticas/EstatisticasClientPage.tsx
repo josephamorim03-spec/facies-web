@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import type { StudyPerformanceSummary } from "@/lib/api";
+import { getStudentTrack, type StudentSurfaceHome } from "@/lib/api";
 import { DesempenhoTab } from "../desempenho/_components/DesempenhoTab";
 import {
   AREAS,
@@ -17,6 +18,7 @@ import { MetacognitionInsights } from "./_components/MetacognitionInsights";
 import { MeuModelo } from "./_components/MeuModelo";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { TrainerContextStrip } from "@/components/trainer/TrainerContextStrip";
+import { getAuthToken } from "@/lib/auth";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import {
@@ -26,6 +28,14 @@ import {
   StudentPageHeader,
 } from "@/components/student/StudentExperienceUI";
 import { useStudentExperience } from "@/lib/StudentExperienceContext";
+import {
+  StudentBackupActions,
+  StudentDeepLinks,
+  StudentDetailsDisclosure,
+  StudentPrimaryAction,
+  StudentSurfaceInsight,
+  StudentSurfaceSnapshot,
+} from "@/components/student/StudentActionSurface";
 
 type FullExamType = "acesso_direto" | "r_plus";
 
@@ -93,6 +103,7 @@ export default function EstatisticasClientPage() {
   const isDesktopNavigation = useDesktopNavigationMode();
   const { setActions } = useNavbar();
   const { enabled: experienceEnabled, experience } = useStudentExperience();
+  const [trackHome, setTrackHome] = useState<StudentSurfaceHome | null>(null);
   const {
     pending,
     done,
@@ -127,6 +138,20 @@ export default function EstatisticasClientPage() {
     );
     return () => { setActions(null); };
   }, [isDesktopNavigation, setActions]);
+
+  useEffect(() => {
+    let active = true;
+    getStudentTrack(getAuthToken())
+      .then((home) => {
+        if (active) setTrackHome(home);
+      })
+      .catch(() => {
+        if (active) setTrackHome(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function buildSnapshot(targetPeriod: Period) {
     const doneTasks = filterTasks(done, targetPeriod);
@@ -331,9 +356,7 @@ export default function EstatisticasClientPage() {
   return (
     <StudentPage>
       <StudentPageHeader
-        eyebrow="Acompanhar"
-        title="Entenda sua evolução"
-        description="Atividade, acertos e progresso sempre identificam o período e o universo medido."
+        title="Evolução"
         actions={experienceEnabled && experience ? (
           <DataFreshness
             status={experience.status}
@@ -342,7 +365,26 @@ export default function EstatisticasClientPage() {
           />
         ) : undefined}
       />
-      {experienceEnabled && experience ? (
+      {trackHome ? (
+        <>
+          <StudentSurfaceInsight surface={trackHome} />
+          <StudentPrimaryAction action={trackHome.primary_action} />
+          <StudentDetailsDisclosure
+            title="Métricas e gráficos"
+            status={trackHome.status}
+            missingSources={trackHome.missing_sources}
+          >
+            <StudentDeepLinks links={trackHome.deep_links} />
+            <StudentSurfaceSnapshot
+              items={[
+                { label: "Questões na semana", value: String(trackHome.details.questions_done_week ?? "-") },
+                { label: "Precisão", value: trackHome.details.accuracy_pct === null || trackHome.details.accuracy_pct === undefined ? "-" : `${Math.round(Number(trackHome.details.accuracy_pct))}%` },
+                { label: "Relatório", value: "abrir", href: "/dados-e-relatorios/relatorio" },
+              ]}
+            />
+          </StudentDetailsDisclosure>
+        </>
+      ) : experienceEnabled && experience ? (
         <MetricStrip
           metrics={[
             experience.activity.questions_answered,

@@ -23,6 +23,7 @@ import {
   getOperationalTurboOverview,
   getProfile,
   getQuestionBankLongitudinalDiagnosis,
+  getStudentToday,
   listScheduleSuggestions,
   getStudyPerformanceSummary,
   getTrainerPrescription,
@@ -37,6 +38,7 @@ import {
   type QuestionBankLongitudinalDiagnosis,
   ReviewTask,
   type StudyPerformanceSummary,
+  type StudentToday,
   type TrainerPrescription,
   triggerScheduleSuggestion,
 } from "@/lib/api";
@@ -48,6 +50,12 @@ import { WeeklyOpsFullCardsSkeleton } from "@/app/cronograma/_components/WeeklyO
 import { writeCronogramaViewModeSession } from "@/app/cronograma/_lib/viewModeSession";
 import BancoSidebarCard from "./_components/BancoSidebarCard";
 import { CardsDuePanel } from "./_components/CardsDuePanel";
+import { TodayBackupActions } from "./_components/TodayBackupActions";
+import { TodayDetails } from "./_components/TodayDetails";
+import { TodayEmptyState } from "./_components/TodayEmptyState";
+import { TodayLoadNote } from "./_components/TodayLoadNote";
+import { TodayPrimaryAction } from "./_components/TodayPrimaryAction";
+import { TodaySchedulePreview } from "./_components/TodaySchedulePreview";
 import { TrainerActionCTA } from "@/components/trainer/TrainerActionCTA";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { OutcomeCard } from "@/components/ui/OutcomeCard";
@@ -364,6 +372,8 @@ export default function TodayPage() {
   const [performanceSummary, setPerformanceSummary] = useState<StudyPerformanceSummary | null>(null);
   const [longitudinal, setLongitudinal] = useState<QuestionBankLongitudinalDiagnosis | null>(null);
   const [activeSession, setActiveSession] = useState<QuestionBankSession | null>(null);
+  const [studentToday, setStudentToday] = useState<StudentToday | null>(null);
+  const [studentTodayFailed, setStudentTodayFailed] = useState(false);
   const [prescription, setPrescription] = useState<TrainerPrescription | null>(null);
   const shownRecommendationRef = useRef<string | null>(null);
   const [weeklyGoal, setWeeklyGoal] = useState(200);
@@ -382,13 +392,16 @@ export default function TodayPage() {
 
   async function fetchTasks(showLoadingState: boolean = false) {
     const token = getAuthToken();
+    const studentTodayRequest = getStudentToday(token).catch(() => null);
     const longitudinalRequest = getQuestionBankLongitudinalDiagnosis(token).catch(() => null);
     const prescriptionRequest = getTrainerPrescription(token).catch(() => null);
 
     if (showLoadingState) setLoading(true);
     try {
-      const data = await loadTodayPageData(token);
+      const [data, todayData] = await Promise.all([loadTodayPageData(token), studentTodayRequest]);
       setError("");
+      setStudentToday(todayData);
+      setStudentTodayFailed(todayData === null);
       setTasks(data.pendingData);
       setDoneTasks(data.doneData);
       setStudies(data.studyData);
@@ -398,6 +411,8 @@ export default function TodayPage() {
       setWeeklyGoal(data.weeklyGoal);
       setDisplayName(data.displayName);
     } catch (e: unknown) {
+      setStudentToday(null);
+      setStudentTodayFailed(true);
       setError(getErrorMessage(e, "Erro ao carregar revisões."));
     } finally {
       if (showLoadingState) setLoading(false);
@@ -670,16 +685,61 @@ export default function TodayPage() {
 
   if (loading) return <TodaySkeleton />;
 
+  if (!error && studentToday) {
+    const isRestState = studentToday.primary_action.kind === "rest_or_short_block";
+    return (
+      <div className="space-y-5 md:space-y-6">
+        <header className="space-y-1">
+          <h1 className="font-serif text-3xl font-semibold leading-tight text-ink md:text-4xl">{greeting}</h1>
+        </header>
+
+        {isRestState ? <TodayEmptyState /> : <TodayPrimaryAction action={studentToday.primary_action} />}
+
+        <TodayLoadNote load={studentToday.today_load} />
+
+        <TodayBackupActions actions={studentToday.backup_actions} />
+
+        <TodaySchedulePreview
+          preview={studentToday.schedule_preview}
+          loading={bulkSuggestionLoading}
+          disabled={bulkSuggestionActionKey !== null}
+          onPrepareReschedule={() => void handlePrepareBulkReschedule()}
+        />
+
+        <TodayDetails today={studentToday}>
+          <CardsDuePanel overview={turboOverview} />
+          <BancoSidebarCard longitudinal={longitudinal} />
+        </TodayDetails>
+
+        <RescheduleSuggestionDialog
+          open={bulkSuggestionDialogOpen}
+          suggestions={bulkSuggestions}
+          actionKey={bulkSuggestionActionKey}
+          title="Reagendar atrasadas"
+          loading={bulkSuggestionLoading}
+          error={bulkSuggestionError}
+          emptyMessage="Nenhuma sugestao nova de reagendamento foi gerada."
+          onClose={() => setBulkSuggestionDialogOpen(false)}
+          onAcceptItem={handleAcceptSuggestionItem}
+          onAcceptAll={handleAcceptAllSuggestions}
+          onReject={handleRejectSuggestions}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5 md:space-y-8">
       <header>
         <div className="min-w-0">
           <h1 className="font-serif text-4xl font-semibold leading-tight md:text-5xl">{greeting}</h1>
-          <p className="mt-2 text-base text-muted">Preparação inteligente para a residência.</p>
         </div>
       </header>
 
       {error && <Alert variant="danger">{error}</Alert>}
+      {!error && studentTodayFailed && (
+        <Alert variant="warning">Mostrando dados anteriores.</Alert>
+      )}
 
       {!error && (
         <>
@@ -719,7 +779,7 @@ export default function TodayPage() {
             ) : (
               <EmptyState
                 title="Suficiente por hoje"
-                description="A carga adequada foi concluída. Você pode encerrar sem perder o ritmo; uma manutenção leve continua disponível se fizer sentido agora."
+                description="Carga do dia concluída."
                 icon={<IconShield className="h-6 w-6 text-success" />}
                 action={<Link href="/banco-de-questoes" className="paper-control inline-flex min-h-11 items-center gap-2 border border-edge px-4 text-sm font-semibold text-ink">Manutenção opcional <IconArrowRight className="h-4 w-4" /></Link>}
               />
@@ -741,7 +801,6 @@ export default function TodayPage() {
             <section className="space-y-3" aria-label="Outras ações adequadas">
               <div>
                 <h2 className="font-serif text-xl font-semibold text-ink">Outras ações adequadas</h2>
-                <p className="text-sm text-muted">Se a prioridade não cabe agora, escolha uma alternativa com propósito claro.</p>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 {prescription.secondary_actions.map((action) => (

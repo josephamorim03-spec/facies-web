@@ -1,4 +1,4 @@
-import type { CSSProperties, Dispatch, SetStateAction } from "react";
+import type { CSSProperties, Dispatch, ReactNode, SetStateAction } from "react";
 import { useState, useEffect, useCallback } from "react";
 import type { CalendarEventOut, WorkloadDay } from "@/lib/api";
 import {
@@ -15,6 +15,30 @@ function rangeStyle(value: number, min: number, max: number): CSSProperties {
   return {
     "--track-bg": `linear-gradient(to right, var(--range-fill, #1A1A1A) 0%, var(--range-fill, #1A1A1A) ${pct}%, var(--range-rest, #E2E2DC) ${pct}%, var(--range-rest, #E2E2DC) 100%)`,
   } as CSSProperties;
+}
+
+function RoutineGroup({
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <details className="group rounded-lg border border-edge bg-paper" open={defaultOpen}>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wide text-ink">
+        <span>{title}</span>
+        <span className="text-muted transition group-open:rotate-90" aria-hidden="true">
+          &gt;
+        </span>
+      </summary>
+      <div className="space-y-4 border-t border-edge p-4">
+        {children}
+      </div>
+    </details>
+  );
 }
 import { IconGear, IconTrash } from "./PerfilIcons";
 import {
@@ -377,7 +401,7 @@ export function RotinaTab({
 
       <hr className="border-edge" />
 
-      <div>
+      <RoutineGroup title="Eventos e capacidade">
         <div className="relative mb-4 flex items-center justify-center md:justify-start">
           <p className="text-xs text-ink uppercase tracking-wide font-bold text-center md:text-left">Eventos</p>
           <button onClick={() => setShowSettings((v) => !v)} className="text-muted hover:text-ink absolute right-0 top-1/2 -translate-y-1/2" title="Configurações de tolerância">
@@ -642,10 +666,11 @@ export function RotinaTab({
             </ul>
           )}
         </section>
-      </div>
+      </RoutineGroup>
 
       <hr className="border-edge" />
 
+      <RoutineGroup title="Reagendamento automatico">
       <section className="space-y-3">
         <p className="text-xs text-ink uppercase tracking-wide font-bold text-center md:text-left">Reagendamento automático</p>
         <div className="flex gap-2 justify-center md:justify-start">
@@ -667,6 +692,7 @@ export function RotinaTab({
           {profileError && <span className="text-sm text-danger">{profileError}</span>}
         </div>
       </section>
+      </RoutineGroup>
     </div>
   );
 }

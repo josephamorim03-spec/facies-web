@@ -4,17 +4,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   finalizeQuestionBankSession,
+  createQuestionTextHighlight,
+  deleteQuestionTextHighlight,
   getQuestionBankAiRequestPreview,
   getQuestionBankAiRequestStatus,
   getQuestionBankGuidedReview,
   getQuestionBankSession,
   recordQuestionBankAttempt,
+  recordQuestionBankPostAnswerReflection,
   recordQuestionBankCorrection,
   recordQuestionBankEvents,
   revealQuestionBankSessionResults,
   reportQuestionBankSessionItem,
   requestQuestionBankAICorrection,
   submitQuestionBankGuidedReview,
+  setQuestionBankBookmark,
   type OperationalQuestionOutcome,
   type QuestionBankFinalizeResult,
   type QuestionBankAiRequestPreview,
@@ -23,18 +27,21 @@ import {
   type QuestionBankGuidedReview,
   type QuestionBankGuidedReviewValue,
   type QuestionBankOption,
+  type QuestionPostAnswerReflection,
   type QuestionBankReportType,
   type QuestionBankSession,
+  type QuestionTextHighlight,
+  type QuestionTextHighlightKind,
+  type QuestionTextHighlightTarget,
   type QuestionBankStudentEventPayload,
   type QuestionBankStudentEventType,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { Alert } from "@/components/ui/Alert";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import StudyQuestion from "./_components/StudyQuestion";
 import FixacaoRound from "./_components/FixacaoRound";
 import QuickNoteModal from "./_components/QuickNoteModal";
-import ExamQuestion from "./_components/ExamQuestion";
+import FocusedQuestion from "./_components/FocusedQuestion";
 import ExamMap from "./_components/ExamMap";
 import PostExamReview from "./_components/PostExamReview";
 import { ConfidenceReviewStep } from "./_components/ConfidenceReviewStep";
@@ -48,6 +55,7 @@ type QuickNoteTarget = {
   selectedOption: QuestionBankOption | null;
   correctAnswer: QuestionBankOption | null;
   errorHypothesis: string | null;
+  highlightContext: QuestionTextHighlight[];
 };
 
 type CorrectionConfidenceLevel = "low" | "medium" | "high";
@@ -163,6 +171,7 @@ export default function SessionPage() {
   const [aiRequestStatusByQuestion, setAiRequestStatusByQuestion] = useState<Record<string, QuestionBankAiRequestResult | QuestionBankAiRequestStatusResult | null>>({});
   const [quickNoteTarget, setQuickNoteTarget] = useState<QuickNoteTarget | null>(null);
   const [historyQuestionId, setHistoryQuestionId] = useState<string | null>(null);
+  const [reflectionBusyByPosition, setReflectionBusyByPosition] = useState<Record<number, boolean>>({});
 
   // Track per-question start time so we can send time_ms to the backend
   const questionStartTimeRef = useRef<number>(Date.now());
@@ -466,6 +475,110 @@ export default function SessionPage() {
     }
   }
 
+  async function bookmarkQuestion(questionId: string, bookmarked: boolean, position: number) {
+    if (!session) return;
+    const previous = session;
+    setSession({
+      ...session,
+      items: session.items.map((item) =>
+        item.question_id === questionId ? { ...item, bookmarked } : item,
+      ),
+    });
+    try {
+      const out = await setQuestionBankBookmark(token, questionId, {
+        bookmarked,
+        session_id: session.session_id,
+        position,
+      });
+      setSession((current) =>
+        current
+          ? {
+              ...current,
+              items: current.items.map((item) =>
+                item.question_id === out.question_id
+                  ? { ...item, bookmarked: out.bookmarked }
+                  : item,
+              ),
+            }
+          : current,
+      );
+    } catch (err) {
+      setSession(previous);
+      setError(err instanceof Error ? err.message : "Nao foi possivel salvar favorito.");
+      throw err;
+    }
+  }
+
+  function patchQuestionHighlights(questionId: string, updater: (highlights: QuestionTextHighlight[]) => QuestionTextHighlight[]) {
+    setSession((current) =>
+      current
+        ? {
+            ...current,
+            items: current.items.map((item) =>
+              item.question_id === questionId
+                ? { ...item, text_highlights: updater(item.text_highlights ?? []) }
+                : item,
+            ),
+          }
+        : current,
+    );
+  }
+
+  async function addTextHighlight(
+    questionId: string,
+    input: {
+      target: QuestionTextHighlightTarget;
+      option?: QuestionBankOption | null;
+      kind: QuestionTextHighlightKind;
+      selected_text: string;
+      prefix: string;
+      suffix: string;
+      occurrence_index: number;
+    },
+  ) {
+    if (!session) return;
+    try {
+      const highlight = await createQuestionTextHighlight(token, questionId, {
+        ...input,
+        session_id: session.session_id,
+      });
+      patchQuestionHighlights(questionId, (highlights) => [...highlights, highlight]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nao foi possivel salvar o grifo.");
+      throw err;
+    }
+  }
+
+  async function removeTextHighlight(questionId: string, highlightId: string) {
+    try {
+      await deleteQuestionTextHighlight(token, questionId, highlightId);
+      patchQuestionHighlights(questionId, (highlights) =>
+        highlights.filter((highlight) => highlight.highlight_id !== highlightId),
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nao foi possivel limpar o grifo.");
+      throw err;
+    }
+  }
+
+  async function reflectPostAnswer(position: number, reflection: QuestionPostAnswerReflection) {
+    if (!session) return;
+    setReflectionBusyByPosition((prev) => ({ ...prev, [position]: true }));
+    setError(null);
+    try {
+      const updated = await recordQuestionBankPostAnswerReflection(token, session.session_id, position, reflection);
+      setSession(updated);
+      enqueueStudentEvent(position, "confidence_marked", {
+        phase: "post_answer",
+        post_answer_reflection: reflection,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nao foi possivel salvar a reflexao.");
+    } finally {
+      setReflectionBusyByPosition((prev) => ({ ...prev, [position]: false }));
+    }
+  }
+
   async function submitCorrection(position: number) {
     if (!session) return;
     const response = correctionDrafts[position]?.trim();
@@ -759,25 +872,25 @@ export default function SessionPage() {
     return (
       <>
         {errorToast}
-        <StudyQuestion
-          onExit={() => router.push("/banco-de-questoes")}
-          fixacaoCount={fixacaoItems.length}
-          onFixar={() => setShowFixacao(true)}
+        <FocusedQuestion
           item={currentItem}
-          position={displayPosition}
+          displayPosition={displayPosition}
           total={total}
           sessionStatus={session.status}
+          sessionStartedAt={session.created_at}
+          sessionLabel={sessionDisplayLabel}
+          sessionKindLabel="Treino"
+          flowKind="training"
+          defaultPresentationMode="learning"
+          canUseLearningFeedback
+          canChangeAnswer={false}
           revealed={Boolean(revealedPositions[currentPosition])}
           correctionDraft={correctionDrafts[currentPosition] ?? ""}
           guidedReview={guidedReviews[currentPosition] ?? null}
           guidedReviewError={Boolean(guidedReviewErrors[currentPosition])}
-          onRetryGuidedReview={() => void loadGuidedReview(currentPosition)}
           guidedResponses={guidedResponses[currentPosition] ?? {}}
-          confidenceRating={confidenceRatings[currentPosition] ?? currentItem.confidence_self_rating ?? null}
-          doubtfulDraft={preAnswerDoubtful[currentPosition] ?? currentItem.doubtful}
           correctionConfidenceLevel={correctionConfidence[currentPosition] ?? "medium"}
           eliminated={eliminatedOptions[currentPosition] ?? []}
-          onToggleEliminate={(opt) => toggleEliminate(currentPosition, opt)}
           busy={busy}
           reportOpen={reportingQuestionId === currentItem.question_id}
           reportType={reportType}
@@ -795,10 +908,10 @@ export default function SessionPage() {
               },
             }))
           }
-          onConfidenceRatingChange={(v) => changeConfidenceRating(currentPosition, v)}
-          onToggleDoubtful={() => void toggleDoubtful(currentPosition)}
           onCorrectionConfidenceChange={(v) => setCorrectionConfidence((prev) => ({ ...prev, [currentPosition]: v }))}
           onSubmitCorrection={() => void submitCorrection(currentPosition)}
+          onToggleEliminate={(opt) => toggleEliminate(currentPosition, opt)}
+          onToggleDoubtful={() => void toggleDoubtful(currentPosition)}
           onToggleReport={() =>
             setReportingQuestionId((prev) =>
               prev === currentItem.question_id ? null : currentItem.question_id,
@@ -808,9 +921,24 @@ export default function SessionPage() {
           onReportReasonChange={setReportReason}
           onSubmitReport={() => void submitReport(currentItem.question_id)}
           onCancelReport={() => setReportingQuestionId(null)}
+          onOpenMap={() => setShowMap(true)}
+          canPrev={currentIndex > 0}
+          canNext={currentIndex >= 0 && currentIndex < session.items.length - 1}
           onPrev={() => goToPrevAdaptive()}
           onNext={() => goToNextAdaptive()}
           onFinalize={() => void finalize()}
+          onExit={() => router.push("/banco-de-questoes")}
+          bookmarked={Boolean(currentItem.bookmarked)}
+          onBookmarkChange={(bookmarked) =>
+            bookmarkQuestion(currentItem.question_id, bookmarked, currentPosition)
+          }
+          onCreateHighlight={(input) => addTextHighlight(currentItem.question_id, input)}
+          onDeleteHighlight={(highlightId) => removeTextHighlight(currentItem.question_id, highlightId)}
+          onReflect={(reflection) => void reflectPostAnswer(currentPosition, reflection)}
+          reflectionBusy={Boolean(reflectionBusyByPosition[currentPosition])}
+          finalizeLabel="Finalizar"
+          fixacaoCount={fixacaoItems.length}
+          onFixar={() => setShowFixacao(true)}
           onQuickNote={
             currentItem.question_id
               ? () => {
@@ -827,6 +955,7 @@ export default function SessionPage() {
                     selectedOption: selected,
                     correctAnswer: currentItem.correct_answer,
                     errorHypothesis,
+                    highlightContext: currentItem.text_highlights ?? [],
                   });
                 }
               : undefined
@@ -841,10 +970,6 @@ export default function SessionPage() {
               ? () => void requestAiCorrection(currentItem.question_id)
               : undefined
           }
-          aiRequestPreview={currentItem.question_id ? aiRequestPreviewByQuestion[currentItem.question_id] ?? null : null}
-          aiRequestStatus={currentItem.question_id ? aiRequestStatusByQuestion[currentItem.question_id] ?? null : null}
-          aiCorrectionRequesting={Boolean(aiCorrectionRequesting[currentItem.question_id])}
-          aiCorrectionRequested={Boolean(aiCorrectionRequested[currentItem.question_id])}
         />
         {quickNoteTarget && (
           <QuickNoteModal
@@ -856,6 +981,7 @@ export default function SessionPage() {
             selectedOption={quickNoteTarget.selectedOption}
             correctAnswer={quickNoteTarget.correctAnswer}
             errorHypothesis={quickNoteTarget.errorHypothesis}
+            highlightContext={quickNoteTarget.highlightContext}
             onClose={() => setQuickNoteTarget(null)}
           />
         )}
@@ -865,6 +991,22 @@ export default function SessionPage() {
             questionId={historyQuestionId}
             onClose={() => setHistoryQuestionId(null)}
           />
+        )}
+        {showMap && (
+          <>
+            <div
+              className="fixed inset-0 z-20 bg-ink/20"
+              onClick={() => setShowMap(false)}
+              aria-hidden="true"
+            />
+            <ExamMap
+              items={session.items}
+              sessionKindLabel="Treino"
+              currentPosition={currentPosition}
+              onNavigateTo={navigateTo}
+              onClose={() => setShowMap(false)}
+            />
+          </>
         )}
       </>
     );
@@ -881,27 +1023,55 @@ export default function SessionPage() {
           onProceed={() => void proceedReveal()}
         />
       )}
-      <ExamQuestion
+      <FocusedQuestion
         item={currentItem}
-        position={currentPosition}
+        displayPosition={currentPosition}
         total={total}
         sessionStatus={session.status}
         sessionStartedAt={session.created_at}
-        examLabel={examLabel}
+        sessionLabel={examLabel}
         sessionKindLabel={sessionKindLabel}
-        answeredCount={session.answered_count}
-        doubtfulCount={session.doubtful_count}
-        unansweredCount={session.unanswered_count}
+        flowKind="simulation"
+        defaultPresentationMode="exam"
+        canUseLearningFeedback={false}
+        canChangeAnswer
+        revealed={false}
+        correctionDraft=""
+        guidedReview={null}
+        guidedResponses={{}}
+        correctionConfidenceLevel="medium"
         busy={busy}
+        reportOpen={false}
+        reportType={reportType}
+        reportReason={reportReason}
+        reportDone={false}
         eliminated={eliminatedOptions[currentPosition] ?? []}
-        onToggleEliminate={(opt) => toggleEliminate(currentPosition, opt)}
         onAnswer={(opt) => void answer(currentPosition, opt)}
+        onReveal={() => undefined}
+        onCorrectionChange={() => undefined}
+        onGuidedResponseChange={() => undefined}
+        onCorrectionConfidenceChange={() => undefined}
+        onSubmitCorrection={() => undefined}
+        onToggleEliminate={(opt) => toggleEliminate(currentPosition, opt)}
         onToggleDoubtful={() => void toggleDoubtful(currentPosition)}
+        onToggleReport={() => undefined}
+        onReportTypeChange={setReportType}
+        onReportReasonChange={setReportReason}
+        onSubmitReport={() => undefined}
+        onCancelReport={() => undefined}
+        onOpenMap={() => setShowMap(true)}
+        canPrev={currentPosition > 1}
+        canNext={currentPosition < total}
         onPrev={() => navigateTo(currentPosition - 1)}
         onNext={() => navigateTo(currentPosition + 1)}
-        onOpenMap={() => setShowMap(true)}
         onFinalize={() => void finalize()}
         onExit={() => setSimExitConfirmOpen(true)}
+        bookmarked={Boolean(currentItem.bookmarked)}
+        onBookmarkChange={(bookmarked) =>
+          bookmarkQuestion(currentItem.question_id, bookmarked, currentPosition)
+        }
+        onCreateHighlight={(input) => addTextHighlight(currentItem.question_id, input)}
+        onDeleteHighlight={(highlightId) => removeTextHighlight(currentItem.question_id, highlightId)}
         finalizeLabel={`Corrigir ${sessionKindLabel.toLowerCase()}`}
       />
       <ConfirmDialog

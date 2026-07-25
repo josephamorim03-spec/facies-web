@@ -9,7 +9,7 @@ import {
   CartesianGrid,
   LabelList,
 } from "recharts";
-import { AREA_COLORS } from "@/app/desempenho/_lib/perfilAnalytics";
+import { SelectedWeekBreakdown } from "./ChartNarrative";
 import {
   CHART_INK,
   CHART_EDGE,
@@ -23,6 +23,8 @@ import {
   type WeekTickProps,
 } from "../_lib/chartGeometry";
 import type { GraficosState, GraficosRefs, GraficosActions } from "../_hooks/useGraficosData";
+import { getChartAreaColor } from "../_lib/chartInsights";
+import { renderTargetReferenceLine } from "./TargetReferenceLine";
 
 type Props = {
   state: GraficosState;
@@ -37,11 +39,15 @@ export function VolumeChart({ state, refs, actions }: Props) {
     volumeXAxisTicks,
     weekIndexByLabel,
     volumeActiveWeekIndex,
+    activeVolumeWeek,
     activeVolumeSegments,
     volumeSegmentLabelPositions,
+    prefersReducedMotion,
+    weeklyGoal,
   } = state;
 
   const hasActiveSegments = volumeSegmentLabelPositions.length > 0;
+  const showMetaLine = weeklyGoal !== null && weeklyGoal > 0;
 
   return (
     <section
@@ -49,8 +55,13 @@ export function VolumeChart({ state, refs, actions }: Props) {
       data-testid="chart-weekly-volume"
       className="space-y-2 pt-4 border-t border-edge"
     >
-      <div className="flex items-center gap-2">
-        <h2 className="text-sm font-medium">Volume de Estudo</h2>
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <h2 className="text-sm font-medium">Volume</h2>
+        {showMetaLine ? (
+          <span className="text-[11px] text-muted tabular-nums" data-testid="volume-meta-caption">
+            meta semanal: {weeklyGoal} q
+          </span>
+        ) : null}
       </div>
       <div className="relative overflow-visible">
         <ResponsiveContainer width="100%" height={180}>
@@ -82,7 +93,13 @@ export function VolumeChart({ state, refs, actions }: Props) {
               allowDecimals={false}
               width={CHART_Y_AXIS_WIDTH}
             />
-            <Bar dataKey="total" shape={actions.renderVolumeBar as any} isAnimationActive={false}>
+            <Bar
+              dataKey="total"
+              shape={actions.renderVolumeBar as any}
+              isAnimationActive={!prefersReducedMotion}
+              animationDuration={200}
+              animationEasing="ease-out"
+            >
               <LabelList
                 dataKey="total"
                 content={(props: any) => {
@@ -107,6 +124,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
                 }}
               />
             </Bar>
+            {showMetaLine ? renderTargetReferenceLine(weeklyGoal) : null}
           </BarChart>
         </ResponsiveContainer>
         <div ref={volumeOverlayRef}
@@ -132,7 +150,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
                 style={{
                   top: clamp(midY - 5, 0, 170),
                   left: VOLUME_SEGMENT_LABEL_LEFT_PX,
-                  color: AREA_COLORS[area],
+                  color: getChartAreaColor(area),
                 }}
               >
                 <span className="opacity-80">{area}</span>
@@ -142,6 +160,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
           </div>
         )}
       </div>
+      <SelectedWeekBreakdown week={activeVolumeWeek} />
       {/* Em telas estreitas os rótulos por segmento (posicionados em px na coluna
           de 40px) sobrepõem/cortam. Abaixo de sm eles saem de cima do gráfico e
           viram uma legenda legível. */}
@@ -151,7 +170,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
             <li key={area} className="flex items-center gap-1 text-[11px] font-medium leading-none tabular-nums">
               <span
                 className="inline-block h-2 w-2 shrink-0 rounded-full"
-                style={{ backgroundColor: AREA_COLORS[area] }}
+                style={{ backgroundColor: getChartAreaColor(area) }}
               />
               <span className="opacity-80">{area}</span>
               <span className="font-semibold">{count}</span>

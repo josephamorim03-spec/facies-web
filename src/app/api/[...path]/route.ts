@@ -331,9 +331,6 @@ async function proxyHandler(
   responseHeaders.delete("content-encoding");
   responseHeaders.delete("content-length");
   responseHeaders.set("X-Request-Id", responseHeaders.get("X-Request-Id") || requestId);
-  if (upstreamResponse.status === 401 && isProtectedProxyPath(pathKey)) {
-    responseHeaders.set(SESSION_EXPIRED_HEADER, "1");
-  }
 
   const contentType = upstreamResponse.headers.get("content-type")?.toLowerCase() ?? "";
   const shouldInspectAuthPayload =
@@ -369,9 +366,6 @@ async function proxyHandler(
     statusText: upstreamResponse.statusText,
     headers: responseHeaders,
   });
-  if (upstreamResponse.status === 401 && isProtectedProxyPath(pathKey)) {
-    expireSessionCookie(response, isSecureRequest(request));
-  }
 
   return response;
 }

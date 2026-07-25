@@ -1,6 +1,7 @@
 import { api, authHeader } from "../../shared/http";
 import type {
   QuestionBankFinalizeResult,
+  QuestionPostAnswerReflection,
   QuestionBankSession,
   QuestionBankSessionCreatePayload,
   QuestionBankSessionStatus,
@@ -53,6 +54,24 @@ export async function postConfidenceReview(
   return api<QuestionBankSession>(
     `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/confidence-review`,
     { method: "POST", headers: authHeader(token), body: JSON.stringify(body) },
+  );
+}
+
+export async function recordQuestionBankPostAnswerReflection(
+  token: string,
+  sessionId: string,
+  position: number,
+  reflection: QuestionPostAnswerReflection,
+): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${encodeURIComponent(String(position))}/reflection`,
+    {
+      method: "POST",
+      headers: authHeader(token),
+      body: JSON.stringify({ reflection }),
+      cache: "no-store",
+      clientCache: false,
+    },
   );
 }
 

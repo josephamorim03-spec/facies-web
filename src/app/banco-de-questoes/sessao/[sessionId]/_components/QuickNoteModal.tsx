@@ -6,6 +6,7 @@ import {
   type OperationalAreaCode,
   type OperationalQuestionOutcome,
   type QuestionBankOption,
+  type QuestionTextHighlight,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
 
@@ -15,14 +16,21 @@ function normalizeArea(value: string | null | undefined): OperationalAreaCode {
   return AREAS.includes(value as OperationalAreaCode) ? (value as OperationalAreaCode) : "OU";
 }
 
+function compactText(value: string | null | undefined, max = 120): string {
+  const cleaned = (value ?? "").replace(/\s+/g, " ").trim();
+  return cleaned.length > max ? `${cleaned.slice(0, max - 1).trim()}...` : cleaned;
+}
+
 type QuickNoteModalProps = {
   questionId: string;
   defaultArea: string | null | undefined;
   defaultTheme: string | null | undefined;
   questionOutcome: OperationalQuestionOutcome | null;
+  noteIntent?: "rule" | "card";
   selectedOption?: QuestionBankOption | null;
   correctAnswer?: QuestionBankOption | null;
   errorHypothesis?: string | null;
+  highlightContext?: QuestionTextHighlight[];
   onClose: () => void;
 };
 
@@ -31,30 +39,53 @@ export default function QuickNoteModal({
   defaultArea,
   defaultTheme,
   questionOutcome,
+  noteIntent,
   selectedOption,
   correctAnswer,
   errorHypothesis,
+  highlightContext = [],
   onClose,
 }: QuickNoteModalProps) {
   const { token } = useAuthToken();
   const trimmedHypothesis = (errorHypothesis ?? "").trim();
-  const theme = (defaultTheme ?? "").trim().slice(0, 120) || "Questão do banco";
+  const theme = (defaultTheme ?? "").trim().slice(0, 120) || "Questao do banco";
   const isError = questionOutcome === "incorrect";
+  const isCardIntent = noteIntent === "card" || (!isError && noteIntent !== "rule");
+  const primaryLabel = isCardIntent ? "Criar card" : "Salvar regra";
+  const insightLabel = isCardIntent ? "Pergunta curta para revisar depois" : "Regra curta para nao errar de novo";
+  const trapHighlight = highlightContext.find((highlight) => highlight.kind === "pegadinha");
+  const keyHighlight = highlightContext.find((highlight) => highlight.kind === "ponto_chave");
+  const trapText = compactText(trapHighlight?.selected_text);
+  const keyText = compactText(keyHighlight?.selected_text);
+  const defaultInsight = isCardIntent
+    ? keyText
+      ? `Qual regra explica este ponto-chave: ${keyText}?`
+      : `Qual o ponto-chave de ${theme} que define a resposta correta?`
+    : isError
+    ? trapText
+      ? `Evitar a pegadinha: ${trapText}`
+      : selectedOption
+        ? `Em ${theme}, qual regra evita cair na alternativa ${selectedOption}?`
+        : `Qual regra evita errar ${theme}?`
+    : `Qual regra vale salvar sobre ${theme}?`;
 
-  // Pre-draft a retrieval-style card from the question's own signals (no LLM): the
-  // front is an active-recall cue; the back seeds the answer + the trap to refute.
   const [area, setArea] = useState<OperationalAreaCode>(() => normalizeArea(defaultArea));
-  const [insight, setInsight] = useState(() =>
-    isError && selectedOption
-      ? `Em ${theme}, por que a alternativa ${selectedOption} engana e qual é a conduta correta?`
-      : `Qual o ponto-chave de ${theme} que define a resposta correta?`,
-  );
+  const [insight, setInsight] = useState(defaultInsight);
   const [body, setBody] = useState(() => {
     const answerLine = correctAnswer ? `Resposta correta: ${correctAnswer}.` : "Resposta correta: revisar.";
-    return trimmedHypothesis && selectedOption
-      ? `${answerLine}\nArmadilha em ${selectedOption}: ${trimmedHypothesis}\n\nRaciocínio correto: `
-      : `${answerLine}\n\nRaciocínio correto: `;
+    const highlightLine = trapText
+      ? `Pegadinha grifada: ${trapText}`
+      : keyText
+        ? `Ponto-chave grifado: ${keyText}`
+        : "";
+    const contextLines = [
+      answerLine,
+      trimmedHypothesis && selectedOption ? `Armadilha em ${selectedOption}: ${trimmedHypothesis}` : "",
+      highlightLine,
+    ].filter(Boolean);
+    return `${contextLines.join("\n")}\n\n${isCardIntent ? "Ponto-chave" : "Regra curta"}: `;
   });
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -64,10 +95,15 @@ export default function QuickNoteModal({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!token) {
-      setError("Faça login para salvar a nota.");
+      setError("Faca login para salvar a nota.");
       return;
     }
-    if (insight.trim().length < 6 || !body.trim()) return;
+    const trimmedInsight = insight.trim();
+    const trimmedBody = body.trim();
+    if (trimmedInsight.length < 6 || !trimmedBody) return;
+    const bodyWithInsight = trimmedBody.includes(trimmedInsight)
+      ? trimmedBody
+      : `${trimmedBody}\n${isCardIntent ? "Ponto-chave" : "Regra curta"}: ${trimmedInsight}`;
 
     setBusy(true);
     setError(null);
@@ -77,9 +113,9 @@ export default function QuickNoteModal({
         theme,
         source_type: "question",
         question_outcome: questionOutcome,
-        insight_question: insight.trim(),
-        body: body.trim(),
-        weight: isError ? 8 : 7,
+        insight_question: trimmedInsight,
+        body: bodyWithInsight,
+        weight: isError ? 9 : 7,
         question_id: questionId,
       });
       setDone(true);
@@ -99,7 +135,9 @@ export default function QuickNoteModal({
           className="w-full max-w-sm rounded-lg border border-edge bg-paper p-6 text-center shadow-lg"
           onClick={(event) => event.stopPropagation()}
         >
-          <p className="text-sm font-semibold text-ink">Flashcard salvo no caderno.</p>
+          <p className="text-sm font-semibold text-ink">
+            {isCardIntent ? "Flashcard salvo no caderno." : "Regra salva no caderno."}
+          </p>
           <button
             type="button"
             onClick={onClose}
@@ -117,14 +155,14 @@ export default function QuickNoteModal({
       <form
         role="dialog"
         aria-modal="true"
-        aria-label="Novo flashcard"
+        aria-label={primaryLabel}
         onSubmit={(event) => void handleSubmit(event)}
         onClick={(event) => event.stopPropagation()}
         className="w-full max-w-md rounded-lg border border-edge bg-paper p-5 shadow-lg"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-ink">Novo flashcard</p>
+            <p className="text-sm font-semibold text-ink">{primaryLabel}</p>
             <p className="mt-1 text-xs text-muted">{theme}</p>
           </div>
           <button
@@ -133,29 +171,14 @@ export default function QuickNoteModal({
             className="rounded-lg border border-edge px-2 py-1 text-xs text-muted hover:border-primary hover:text-ink"
             aria-label="Fechar"
           >
-            ×
+            x
           </button>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {AREAS.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setArea(item)}
-              className={`rounded-lg border px-2.5 py-1 text-xs font-semibold ${
-                area === item ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary hover:text-ink"
-              }`}
-            >
-              {item}
-            </button>
-          ))}
         </div>
 
         {trimmedHypothesis && (
           <div className="mt-4 rounded-lg border border-warning bg-[var(--amber-tint)] p-3">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-warning">
-              Hipótese do distrator
+              Hipotese do distrator
             </p>
             <p className="mt-1 text-sm leading-relaxed text-ink">
               {selectedOption ? `Sua escolha (${selectedOption}): ` : ""}
@@ -168,7 +191,7 @@ export default function QuickNoteModal({
         )}
 
         <label className="mt-4 block text-xs font-semibold text-muted" htmlFor="quick-note-insight">
-          Frente · pergunta de recall
+          {insightLabel}
         </label>
         <input
           id="quick-note-insight"
@@ -182,17 +205,44 @@ export default function QuickNoteModal({
           className="mt-1 w-full rounded-lg border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"
         />
 
-        <label className="mt-4 block text-xs font-semibold text-muted" htmlFor="quick-note-body">
-          Verso · resposta
-        </label>
-        <textarea
-          id="quick-note-body"
-          value={body}
-          onChange={(event) => setBody(event.target.value)}
-          required
-          placeholder="Escreva o conceito ou raciocínio correto"
-          className="mt-1 min-h-24 w-full resize-y rounded-lg border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"
-        />
+        <button
+          type="button"
+          onClick={() => setAdvancedOpen((open) => !open)}
+          className="mt-4 rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
+        >
+          {advancedOpen ? "Ocultar detalhes" : "Editar card"}
+        </button>
+
+        {advancedOpen && (
+          <div className="mt-3 rounded-lg border border-edge bg-surface p-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Area</p>
+            <div className="mb-3 flex flex-wrap gap-1.5">
+              {AREAS.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => setArea(item)}
+                  className={`rounded-lg border px-2.5 py-1 text-xs font-semibold ${
+                    area === item ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary hover:text-ink"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+            <label className="block text-xs font-semibold text-muted" htmlFor="quick-note-body">
+              Verso / resposta
+            </label>
+            <textarea
+              id="quick-note-body"
+              value={body}
+              onChange={(event) => setBody(event.target.value)}
+              required
+              placeholder="Escreva o conceito ou raciocinio correto"
+              className="mt-1 min-h-24 w-full resize-y rounded-lg border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </div>
+        )}
 
         {error && <p className="mt-3 text-xs text-danger">{error}</p>}
 
@@ -201,7 +251,7 @@ export default function QuickNoteModal({
           disabled={!canSubmit}
           className="mt-4 w-full rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk disabled:opacity-50"
         >
-          {busy ? "Salvando..." : "Salvar flashcard"}
+          {busy ? "Salvando..." : primaryLabel}
         </button>
       </form>
     </div>

@@ -62,7 +62,7 @@ export function usePostExamReviewData({
   );
 
   async function submitSessionReport(item: QuestionBankSessionItem) {
-    if (!token || !activeReview) return;
+    if (!token) return;
     setLocalBusy(true);
     setActionError(null);
     try {
@@ -73,7 +73,8 @@ export function usePostExamReviewData({
           surface: "web_post_exam_review",
           session_id: session.session_id,
           position: item.position,
-          reported_after_reveal: true,
+          active_review: activeReview,
+          reported_after_reveal: Boolean(session.results_revealed_at),
           resolution_mode: session.resolution_mode,
           study_kind: session.study_kind,
           session_status: session.status,

@@ -181,7 +181,13 @@ export type {
 // Question Bank domain
 export {
   browseQuestionBankTopics,
+  getQuestionBankPracticeHome,
   browseQuestionBankQuestions,
+  listQuestionBankBookmarks,
+  setQuestionBankBookmark,
+  listQuestionTextHighlights,
+  createQuestionTextHighlight,
+  deleteQuestionTextHighlight,
   getQuestionBankBootstrap,
   listQuestionBankBoards,
   listQuestionBankSources,
@@ -213,6 +219,7 @@ export {
   getQuestionBankPerformance,
   getQuestionBankExamDebrief,
   postConfidenceReview,
+  recordQuestionBankPostAnswerReflection,
 } from "./api/domains/question-bank";
 export type {
   QuestionBankOption,
@@ -222,6 +229,10 @@ export type {
   QuestionBankScoringMode,
   QuestionBankAnswerStatus,
   QuestionBankCorrectionStatus,
+  QuestionTextHighlightKind,
+  QuestionTextHighlightTarget,
+  QuestionPostAnswerReflection,
+  QuestionTextHighlight,
   QuestionBankNode,
   QuestionBankTopic,
   QuestionBankBoard,
@@ -333,11 +344,18 @@ export {
 // Canonical student experience snapshot
 export {
   getStudentExperience,
+  getStudentPlan,
+  getStudentReviewHome,
+  getStudentTrack,
+  getStudentToday,
   invalidateStudentExperienceCache,
 } from "./api/domains/student-experience";
 export type {
   StudentExperience,
   StudentMetric,
+  StudentSurfaceHome,
+  StudentToday,
+  StudentTodayAction,
 } from "./api/domains/student-experience";
 export type {
   TrainerPrescription,

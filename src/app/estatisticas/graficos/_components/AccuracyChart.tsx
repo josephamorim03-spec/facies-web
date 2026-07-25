@@ -35,6 +35,7 @@ export function AccuracyChart({ state, refs, actions }: Props) {
     accuracyActiveWeekIndex,
     activeAccuracyWeekWithData,
     activeAccuracyOverlayLabel,
+    prefersReducedMotion,
   } = state;
 
   return (
@@ -44,7 +45,7 @@ export function AccuracyChart({ state, refs, actions }: Props) {
       className="space-y-2 pb-4"
     >
       <div className="flex items-center gap-2">
-        <h2 className="text-sm font-medium">Evolução de Acerto Geral</h2>
+        <h2 className="text-sm font-medium">Acerto geral</h2>
       </div>
       {/* eslint-disable-next-line react-hooks/refs */}
       <div ref={refs.accuracyFrameRef} className="relative overflow-visible">
@@ -89,6 +90,9 @@ export function AccuracyChart({ state, refs, actions }: Props) {
                   </g>
                 );
               }}
+              isAnimationActive={!prefersReducedMotion}
+              animationDuration={200}
+              animationEasing="ease-out"
             />
           </AreaChart>
         </ResponsiveContainer>

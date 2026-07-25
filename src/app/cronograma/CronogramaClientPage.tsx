@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import AreaDot from "@/components/AreaDot";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { Button } from "@/components/ui/Button";
 import { IconSearch, IconX } from "./_components/CronogramaIcons";
@@ -22,11 +21,19 @@ import {
 } from "@/lib/studyImportRuntime";
 import { writeCronogramaViewModeSession } from "./_lib/viewModeSession";
 import { CronogramaCalendarView } from "./_components/CronogramaCalendarView";
+import { RescheduleSuggestionDialog } from "./_components/RescheduleSuggestionDialog";
 import { CronogramaStreakCard } from "@/app/cronograma/_components/CronogramaStreakCard";
 import { CronogramaTodayPanel } from "./_components/CronogramaTodayPanel";
 import { WeeklyOpsCompactSummary, WeeklyOpsCompactSummarySkeleton } from "./_components/WeeklyOpsCards";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { buildWeeklyOpsMetrics } from "./_lib/weeklyOpsMetrics";
+import { getAuthToken } from "@/lib/auth";
+import { getStudentPlan, type StudentSurfaceHome } from "@/lib/api";
+import {
+  StudentBackupActions,
+  StudentLoadNote,
+  StudentPrimaryAction,
+} from "@/components/student/StudentActionSurface";
 
 function detectMobilePortraitMode(isDesktopNavigation: boolean): boolean {
   if (typeof window === "undefined") return false;
@@ -81,9 +88,24 @@ export default function CronogramaPage() {
     handleAcceptSuggestionAll,
     handleRejectSuggestion,
   } = useCronogramaPageState();
+  const [planHome, setPlanHome] = useState<StudentSurfaceHome | null>(null);
 
   useEffect(() => {
     writeCronogramaViewModeSession("month");
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getStudentPlan(getAuthToken())
+      .then((home) => {
+        if (active) setPlanHome(home);
+      })
+      .catch(() => {
+        if (active) setPlanHome(null);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -363,6 +385,14 @@ export default function CronogramaPage() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
+      {planHome && !searchOpen ? (
+        <div className="space-y-3">
+          <StudentPrimaryAction action={planHome.primary_action} />
+          <StudentLoadNote load={planHome.load_note} />
+          <StudentBackupActions actions={planHome.backup_actions} />
+        </div>
+      ) : null}
+
       <CronogramaStreakCard streak={streak} loading={streakLoading} />
 
       {!loading && (
@@ -419,76 +449,15 @@ export default function CronogramaPage() {
         </div>
       )}
 
-      {showEventSuggestionModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 overflow-y-auto flex p-4 modal-backdrop" onClick={closeEventSuggestionModal}>
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Reagendamento sugerido"
-            className="bg-paper border border-edge rounded-2xl w-full max-w-xl m-auto p-4 space-y-3 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="font-serif text-base">Reagendamento sugerido</h3>
-            </div>
-            {eventModalSuggestions.length === 0 ? (
-              <p className="text-sm text-muted">Nenhuma sugestão pendente.</p>
-            ) : (
-              <div className="space-y-3">
-                {eventModalSuggestions.map((sg) => (
-                  <div key={`modal:${sg.suggestion_id}`} className="space-y-2">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="xs"
-                        loading={suggestionActionKey === `all:${sg.suggestion_id}`}
-                        disabled={suggestionActionKey !== null}
-                        onClick={() => handleAcceptSuggestionAll(sg.suggestion_id)}
-                      >
-                        Aceitar todas
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="xs"
-                        loading={suggestionActionKey === `reject:${sg.suggestion_id}`}
-                        disabled={suggestionActionKey !== null}
-                        onClick={() => handleRejectSuggestion(sg.suggestion_id)}
-                      >
-                        Ignorar
-                      </Button>
-                    </div>
-                    <ul className="space-y-1">
-                      {sg.items.map((item) => (
-                        <li key={`modal:${sg.suggestion_id}:${item.task_id}`} className="rounded-xl border border-edge px-3 py-2">
-                          <div className="flex items-center gap-2">
-                            <AreaDot area={item.area as Area} size="sm" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm leading-tight truncate">{item.theme}</p>
-                              <p className="text-xs text-muted">
-                                {displayDate(item.current_due_date)} {"->"} {displayDate(item.suggested_due_date)}
-                              </p>
-                            </div>
-                            <Button
-                              variant="secondary"
-                              size="xs"
-                              loading={suggestionActionKey === `item:${sg.suggestion_id}:${item.task_id}`}
-                              disabled={suggestionActionKey !== null || item.applied}
-                              onClick={() => handleAcceptSuggestionItem(sg.suggestion_id, item.task_id)}
-                              className="shrink-0"
-                            >
-                              {item.applied ? "Aceito" : "Aceitar"}
-                            </Button>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <RescheduleSuggestionDialog
+        open={showEventSuggestionModal}
+        suggestions={eventModalSuggestions}
+        actionKey={suggestionActionKey}
+        onClose={closeEventSuggestionModal}
+        onAcceptItem={handleAcceptSuggestionItem}
+        onAcceptAll={handleAcceptSuggestionAll}
+        onReject={handleRejectSuggestion}
+      />
     </div>
   );
 }

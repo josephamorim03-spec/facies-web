@@ -7,6 +7,7 @@ import {
   browseQuestionBankTopics,
   createQuestionBankSession,
   getQuestionBankBootstrap,
+  getQuestionBankPracticeHome,
   getReviewAgenda,
   getQuestionBankNextAction,
   getQuestionBankPerformance,
@@ -26,6 +27,7 @@ import {
   type QuestionBankYearStat,
   type FullExamType,
   type StudyKind,
+  type StudentSurfaceHome,
 } from "@/lib/api";
 import { useNavbar } from "@/lib/NavbarContext";
 import { buildSessionCreateFromTrainerPayload } from "@/lib/trainer/session";
@@ -33,6 +35,10 @@ import { useAuthToken } from "@/lib/useAuthToken";
 import { useToast } from "@/lib/useToast";
 import { GuidanceNote } from "@/components/GuidanceNote";
 import { DataFreshness, StudentPageHeader } from "@/components/student/StudentExperienceUI";
+import {
+  StudentBackupActions,
+  StudentPrimaryAction,
+} from "@/components/student/StudentActionSurface";
 import { useStudentExperience } from "@/lib/StudentExperienceContext";
 import type { GuidanceTone } from "@/lib/guidanceCopy";
 import FiltersBar from "./_components/FiltersBar";
@@ -283,7 +289,7 @@ const FALLBACK_NEXT_ACTION: QuestionBankNextAction = {
   subtitle: "Um bloco adaptativo curto mantém o ritmo e cobre novas microcompetências.",
   meta: "~20 min · treino com correção item a item",
   cta_label: "Começar treino",
-  rationale: "Sem revisões pendentes — um bloco curto de questões novas mantém o ritmo e mostra onde você ainda não foi testado.",
+  rationale: "Bloco curto de questões novas.",
   area: null,
   area_label: null,
   signals: [],
@@ -415,6 +421,7 @@ function BancoDeQuestoesContent() {
   const [busy, setBusy] = useState(false);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [practiceHome, setPracticeHome] = useState<StudentSurfaceHome | null>(null);
   const [nextAction, setNextAction] = useState<QuestionBankNextAction | null>(null);
   const [nextActionLoading, setNextActionLoading] = useState(true);
   const [performance, setPerformance] = useState<QuestionBankPerformance | null>(null);
@@ -914,6 +921,13 @@ function BancoDeQuestoesContent() {
       .finally(() => {
         if (active) setNextActionLoading(false);
       });
+    getQuestionBankPracticeHome(token)
+      .then((home) => {
+        if (active) setPracticeHome(home);
+      })
+      .catch(() => {
+        if (active) setPracticeHome(null);
+      });
     getQuestionBankPerformance(token)
       .then((p) => {
         if (active) setPerformance(p);
@@ -999,7 +1013,6 @@ function BancoDeQuestoesContent() {
         <StudentPageHeader
           eyebrow="Praticar"
           title="Questões com raciocínio clínico"
-          description="Monte um bloco com foco, recorte e modo claros. A recomendação continua disponível como atalho."
           breadcrumb={["Praticar", "Banco de questões"]}
           actions={entryContext.reviewTaskId ? (
             <span className="rounded-lg border border-edge bg-[var(--amber-tint)] px-3 py-2 text-xs text-muted">
@@ -1011,6 +1024,13 @@ function BancoDeQuestoesContent() {
             <DataFreshness status={experience.status} generatedAt={experience.generated_at} missingSources={experience.missing_sources} />
           ) : null}
         />
+
+        {practiceHome ? (
+          <>
+            <StudentPrimaryAction action={practiceHome.primary_action} eyebrow="Resolver agora" />
+            <StudentBackupActions actions={practiceHome.backup_actions} />
+          </>
+        ) : null}
 
         <section className="rounded-xl border border-edge bg-surface px-4 py-3" aria-label="Sessão recomendada" aria-busy={nextActionLoading}>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -1077,7 +1097,6 @@ function BancoDeQuestoesContent() {
             <span className="min-w-0">
               <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-primary">Montagem manual</span>
               <span className="mt-1 block font-serif text-xl font-semibold leading-tight text-ink">Montar sessão</span>
-              <span className="mt-1 block text-sm text-muted">Intenção, assunto, recorte e quantidade em um fluxo único.</span>
             </span>
             <span className="flex shrink-0 items-center gap-3">
               <span className="rounded-full bg-surfaceMuted px-3 py-1 text-xs font-semibold text-muted">
@@ -1090,7 +1109,7 @@ function BancoDeQuestoesContent() {
             <SessionIntentCard
               eyebrow="01 · construir"
               title="Aprender um tema"
-              description="Feedback próximo e reconstrução do raciocínio item a item."
+              description="Correção item a item."
               active={activeIntent === "learning"}
               Icon={IconBookOpen}
               onClick={() => {

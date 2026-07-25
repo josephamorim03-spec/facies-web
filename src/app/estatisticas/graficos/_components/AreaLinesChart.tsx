@@ -8,8 +8,7 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import { AREA_COLORS } from "@/app/desempenho/_lib/perfilAnalytics";
-import type { Area as AreaKey } from "@/app/desempenho/_lib/perfilShared";
+import { ChartLegend } from "./ChartNarrative";
 import {
   CHART_EDGE,
   CHART_MUTED,
@@ -20,6 +19,7 @@ import {
   type WeekTickProps,
 } from "../_lib/chartGeometry";
 import type { GraficosState, GraficosRefs, GraficosActions } from "../_hooks/useGraficosData";
+import { getChartAreaColor } from "../_lib/chartInsights";
 
 type Props = {
   state: GraficosState;
@@ -35,40 +35,19 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
     weekIndexByLabel,
     lockedAreaLine,
     lockedAreaOverlayLabels,
+    prefersReducedMotion,
   } = state;
 
   if (activeAreaLines.length === 0) return null;
 
   return (
     <section data-testid="chart-area-lines" className="space-y-2 pt-4 border-t border-edge">
-      <h2 className="text-sm font-medium">Evolução de Acerto por Área</h2>
-      <div className="flex flex-wrap gap-x-3 gap-y-1 items-center">
-        {activeAreaLines.map((area) => {
-          const isLocked = lockedAreaLine === area;
-          const isOtherLocked = lockedAreaLine !== null && !isLocked;
-          return (
-            <button
-              key={area}
-              type="button"
-              onClick={(e) => { e.stopPropagation(); actions.setLockedAreaLine(lockedAreaLine === area ? null : area); }}
-              className="flex items-center gap-1 text-[11px] font-medium transition-opacity"
-              style={{ color: isOtherLocked ? CHART_MUTED : AREA_COLORS[area], opacity: isOtherLocked ? 0.4 : 1 }}
-            >
-              <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: AREA_COLORS[area] }} />
-              {area}
-            </button>
-          );
-        })}
-        {lockedAreaLine !== null && (
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); actions.setLockedAreaLine(null); }}
-            className="ml-auto text-[11px] text-muted hover:text-ink transition-colors"
-          >
-            × limpar
-          </button>
-        )}
-      </div>
+      <h2 className="text-sm font-medium">Acerto por área</h2>
+      <ChartLegend
+        areas={activeAreaLines}
+        selectedArea={lockedAreaLine}
+        onSelectArea={actions.setLockedAreaLine}
+      />
       {/* eslint-disable-next-line react-hooks/refs */}
       <div ref={refs.areaLinesFrameRef} className="relative overflow-visible">
         <ResponsiveContainer width="100%" height={200}>
@@ -89,34 +68,35 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
             <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: CHART_MUTED }} unit="%" width={CHART_Y_AXIS_WIDTH} />
             {activeAreaLines.map((area) => {
               const isLocked = lockedAreaLine === area;
-              const isOtherLocked = lockedAreaLine !== null && !isLocked;
-              const opacity = lockedAreaLine === null ? 0.55 : isLocked ? 1 : 0.15;
+              const color = getChartAreaColor(area);
+              const opacity = lockedAreaLine === null ? 0.68 : isLocked ? 1 : 0.2;
               return (
                 <Line
                   key={area}
                   dataKey={area}
                   type="monotone"
-                  stroke={AREA_COLORS[area]}
-                  strokeWidth={isLocked ? 2.2 : 1.2}
+                  stroke={color}
+                  strokeWidth={isLocked ? 2.3 : 1.35}
                   strokeOpacity={opacity}
                   dot={(props: any) => {
                     const val = props?.payload?.[area];
                     if (val === null || val === undefined) return <g key={`dot-${area}-${props.index}`} />;
                     if (!isLocked) {
                       return (
-                        <circle key={`dot-${area}-${props.index}`} cx={props.cx} cy={props.cy} r={2} fill={AREA_COLORS[area]} fillOpacity={opacity} stroke="none" />
+                        <circle key={`dot-${area}-${props.index}`} cx={props.cx} cy={props.cy} r={2} fill={color} fillOpacity={opacity} stroke="none" />
                       );
                     }
                     return (
                       <g key={`dot-${area}-${props.index}`}>
-                        <circle cx={props.cx} cy={props.cy} r={3.5} fill={AREA_COLORS[area]} stroke="none" />
+                        <circle cx={props.cx} cy={props.cy} r={3.5} fill={color} stroke="none" />
                       </g>
                     );
                   }}
                   activeDot={false}
                   connectNulls={false}
-                  isAnimationActive={isLocked}
-                  animationDuration={300}
+                  isAnimationActive={isLocked && !prefersReducedMotion}
+                  animationDuration={200}
+                  animationEasing="ease-out"
                 />
               );
             })}

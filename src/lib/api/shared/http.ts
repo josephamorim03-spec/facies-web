@@ -1,9 +1,8 @@
 import { clearAuthToken } from "../../auth";
 import {
   dispatchSessionExpired,
-  isProtectedApiPath,
+  isSessionExpiredApiResponse,
   isSessionExpirationSuppressedPath,
-  SESSION_EXPIRED_HEADER,
   SESSION_EXPIRED_MESSAGE,
 } from "../../sessionExpiration";
 import { repairMojibake, repairMojibakeDeep } from "../../textEncoding";
@@ -563,7 +562,7 @@ function buildSessionExpiredError(details?: unknown): APIError {
 }
 
 function shouldHandleSessionExpired(path: string, res: Response): boolean {
-  return res.status === 401 && isProtectedApiPath(path);
+  return isSessionExpiredApiResponse(path, res);
 }
 
 function handleSessionExpiredResponse(path: string, res: Response): void {
@@ -572,7 +571,7 @@ function handleSessionExpiredResponse(path: string, res: Response): void {
     invalidateClientCache();
     clearAuthToken();
     dispatchSessionExpired({
-      reason: res.headers.get(SESSION_EXPIRED_HEADER) === "1" ? "expired" : "unauthorized",
+      reason: "expired",
     });
   }
 }

@@ -13,7 +13,7 @@ export function CardsAnalysis({ state }: Props) {
 
   return (
     <section data-testid="chart-cards-analysis" className="space-y-3 pt-4 border-t border-edge">
-      <h2 className="text-sm font-medium">Análise de cards</h2>
+      <h2 className="text-sm font-medium">Cards</h2>
       {turboAreaLoading ? (
         <div className="space-y-2 animate-pulse">
           <div className="h-3 w-44 rounded-sm bg-edge" />
@@ -38,7 +38,6 @@ export function CardsAnalysis({ state }: Props) {
               <p className="text-[10px] text-muted">acerto</p>
             </div>
           </div>
-          <p className="text-[10px] text-muted">Barra: volume · Rótulo: acerto</p>
           <div className="space-y-2">
             {cardAnalysisRows.map((item) => (
               <Meter
