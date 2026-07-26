@@ -19,7 +19,7 @@ function parseEnvPositiveInt(name: string, fallback: number, minValue: number = 
 
 const SESSION_MAX_AGE_SECONDS = parseEnvPositiveInt(
   "NEXT_SESSION_MAX_AGE_SECONDS",
-  24 * 60 * 60,
+  7 * 24 * 60 * 60,
   300,
 );
 

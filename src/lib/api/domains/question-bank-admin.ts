@@ -1089,6 +1089,41 @@ export async function updateQuestionBankQuestionStatus(
   );
 }
 
+export type QuestionBankStemIncompleteReclassification = {
+  schema_version: string;
+  applied: boolean;
+  checked_at: string;
+  limit: number;
+  scope_id: string | null;
+  matched: number;
+  published: number;
+  kept_review: number;
+  skipped: Record<string, number>;
+  before_blockers: Record<string, number>;
+  after_blockers: Record<string, number>;
+  checksum: string;
+  sample: Record<string, Array<Record<string, unknown>>>;
+  errors: Array<Record<string, unknown>>;
+};
+
+export async function dryRunStemIncompleteReclassification(
+  options?: { limit?: number; scopeId?: string; sampleSize?: number },
+): Promise<QuestionBankStemIncompleteReclassification> {
+  return api<QuestionBankStemIncompleteReclassification>(
+    "/api/admin/question-bank/data-quality/reclassify-stem-incomplete",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        dry_run: true,
+        limit: options?.limit ?? 1000,
+        scope_id: options?.scopeId,
+        sample_size: options?.sampleSize ?? 10,
+      }),
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+    },
+  );
+}
+
 export async function enqueueQuestionBankQuestionAnalysis(
   questionId: string,
 ): Promise<{ question_id: string; candidate_id: string; job_id: string; status: string }> {

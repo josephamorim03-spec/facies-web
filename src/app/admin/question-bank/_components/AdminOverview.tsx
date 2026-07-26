@@ -1,4 +1,7 @@
-import { type QuestionBankAdminPipelineStatus } from "@/lib/api/domains/question-bank-admin";
+import {
+  type QuestionBankAdminPipelineStatus,
+  type QuestionBankStemIncompleteReclassification,
+} from "@/lib/api/domains/question-bank-admin";
 
 import { StatCard } from "./AdminShared";
 
@@ -47,6 +50,8 @@ export default function AdminOverview({
   busy,
   onRefresh,
   onRunAll,
+  stemReclassResult,
+  onPreviewStemReclassification,
 }: {
   pipelineStatus: QuestionBankAdminPipelineStatus | null;
   lastRefreshedLabel: string;
@@ -54,6 +59,8 @@ export default function AdminOverview({
   busy: string;
   onRefresh: () => void;
   onRunAll: () => void;
+  stemReclassResult: QuestionBankStemIncompleteReclassification | null;
+  onPreviewStemReclassification: () => void;
 }) {
   const editorialHealth = pipelineStatus?.editorial_health;
   const summary = pipelineStatus?.summary;
@@ -127,6 +134,51 @@ export default function AdminOverview({
               <StatCard label="Sem specialty" value={summary?.published_without_specialty ?? 0} helper="gaveta incompleta" tone={summary?.published_without_specialty ? "danger" : "default"} />
               <StatCard label="Rehomes" value={summary?.folder_taxonomy_rehomes ?? 0} helper="pasta venceu" tone={summary?.folder_taxonomy_rehomes ? "accent" : "default"} />
             </div>
+          </div>
+
+          <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <div className="text-xs font-semibold uppercase text-amber-700 dark:text-amber-300">Re-lint auditado</div>
+                <p className="mt-1 text-sm text-amber-800 dark:text-amber-100">
+                  Simula a liberação de questões bloqueadas por <code>stem_incomplete</code> usando o lint revisado.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onPreviewStemReclassification}
+                disabled={Boolean(busy)}
+                className="rounded-lg border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 disabled:opacity-50 dark:border-amber-700/60 dark:bg-gray-950 dark:text-amber-200"
+              >
+                Simular re-lint
+              </button>
+            </div>
+            {stemReclassResult ? (
+              <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+                <div className="rounded-lg bg-white/80 p-3 dark:bg-black/20">
+                  <div className="text-xs font-semibold uppercase opacity-70">Liberariam</div>
+                  <div className="mt-1 text-2xl font-semibold">{stemReclassResult.published}</div>
+                </div>
+                <div className="rounded-lg bg-white/80 p-3 dark:bg-black/20">
+                  <div className="text-xs font-semibold uppercase opacity-70">Continuam revisão</div>
+                  <div className="mt-1 text-2xl font-semibold">{stemReclassResult.kept_review}</div>
+                </div>
+                <div className="rounded-lg bg-white/80 p-3 dark:bg-black/20">
+                  <div className="text-xs font-semibold uppercase opacity-70">Checksum</div>
+                  <div className="mt-2 truncate font-mono text-xs">{stemReclassResult.checksum}</div>
+                </div>
+                <div className="rounded-lg bg-white/80 p-3 sm:col-span-3 dark:bg-black/20">
+                  <div className="text-xs font-semibold uppercase opacity-70">Bloqueios restantes</div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {Object.entries(stemReclassResult.after_blockers).length ? Object.entries(stemReclassResult.after_blockers).map(([code, count]) => (
+                      <span key={code} className="rounded-md bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-100">
+                        {code}: {count}
+                      </span>
+                    )) : <span className="text-xs opacity-70">Nenhum blocker restante no lote simulado.</span>}
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-4">

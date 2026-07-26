@@ -25,21 +25,18 @@ import {
   getQuestionBankAdminImport,
   getQuestionBankAdminPipelineStatus,
   getQuestionBankAdminReadiness,
-  getQuestionBankReviewQueue,
+  dryRunStemIncompleteReclassification,
   importQuestionBankAdminFile,
   listQuestionBankAdminImports,
   previewQuestionBankAdminImport,
   processQuestionBankAdminBatch,
-  resolveQuestionBankReviewQuestion,
   runQuestionBankAdminAll,
   type QuestionBankAdminCandidate,
   type QuestionBankAdminImportItem,
   type QuestionBankAdminPipelineStatus,
   type QuestionBankAdminPreview,
   type QuestionBankAdminReadiness,
-  type QuestionBankReviewQueueItem,
-  type QuestionBankReviewResolutionAction,
-  type QuestionBankReviewResolutionOptions,
+  type QuestionBankStemIncompleteReclassification,
 } from "@/lib/api/domains/question-bank-admin";
 
 const ACTIVE_PIPELINE_POLL_MS = 30_000;
@@ -66,9 +63,7 @@ export default function QuestionBankAdminPage() {
   const [showArtifacts, setShowArtifacts] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [expandedError, setExpandedError] = useState<string | null>(null);
-  const [reviewItems, setReviewItems] = useState<QuestionBankReviewQueueItem[]>([]);
-  const [showReviewQueue, setShowReviewQueue] = useState(false);
-  const [reviewTotal, setReviewTotal] = useState(0);
+  const [stemReclassResult, setStemReclassResult] = useState<QuestionBankStemIncompleteReclassification | null>(null);
   const [view, setView] = useState<AdminQuestionBankView>("ingestao");
   const [viewReady, setViewReady] = useState(false);
 
@@ -292,42 +287,18 @@ export default function QuestionBankAdminPage() {
     });
   }
 
-  async function refreshReviewQueue() {
-    const res = await getQuestionBankReviewQueue({ limit: 20 });
-    setReviewItems(res.items);
-    setReviewTotal(res.total);
-  }
-
-  function loadReviewQueue() {
-    void runSafely("Carregando review", async () => {
-      await refreshReviewQueue();
-      setShowReviewQueue(true);
-    });
-  }
-
-  async function resolveReviewQuestion(
-    questionId: string,
-    action: QuestionBankReviewResolutionAction,
-    options?: QuestionBankReviewResolutionOptions,
-  ) {
-    setBusy(`Review ${action}`);
-    setError("");
-    try {
-      await resolveQuestionBankReviewQuestion(questionId, action, options);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message);
-      throw err;
-    } finally {
-      setBusy("");
-    }
-  }
-
   function changeView(nextView: AdminQuestionBankView) {
     setView(nextView);
     const url = new URL(window.location.href);
     url.searchParams.set("view", nextView);
     window.history.replaceState({}, "", url);
+  }
+
+  function previewStemReclassification() {
+    void runSafely("Auditando stem_incomplete", async () => {
+      const result = await dryRunStemIncompleteReclassification({ limit: 1000, sampleSize: 8 });
+      setStemReclassResult(result);
+    });
   }
 
   const viewSwitcher = <AdminViewSwitcher view={view} onViewChange={changeView} />;
@@ -385,6 +356,8 @@ export default function QuestionBankAdminPage() {
             await loadDashboard(selectedImportId);
           });
         }}
+        stemReclassResult={stemReclassResult}
+        onPreviewStemReclassification={previewStemReclassification}
       />
 
       <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
@@ -455,14 +428,8 @@ export default function QuestionBankAdminPage() {
       <CandidatesPanel
         candidates={candidates}
         candidateStatus={candidateStatus}
-        reviewItems={reviewItems}
-        reviewTotal={reviewTotal}
-        showReviewQueue={showReviewQueue}
         onCandidateStatusChange={setCandidateStatus}
-        onOpenReviewQueue={loadReviewQueue}
-        onCloseReviewQueue={() => setShowReviewQueue(false)}
-        onRefreshReviewQueue={refreshReviewQueue}
-        onResolveReview={resolveReviewQuestion}
+        onOpenCuradoria={() => changeView("curadoria")}
       />
     </div>
   );

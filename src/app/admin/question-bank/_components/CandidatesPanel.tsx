@@ -1,41 +1,21 @@
 import {
   type QuestionBankAdminCandidate,
-  type QuestionBankReviewQueueItem,
-  type QuestionBankReviewResolutionAction,
-  type QuestionBankReviewResolutionOptions,
 } from "@/lib/api/domains/question-bank-admin";
 
 import { CandidateRow } from "./AdminShared";
-import ReviewQueuePanel from "./ReviewQueuePanel";
 
 type Props = {
   candidates: QuestionBankAdminCandidate[];
   candidateStatus: string;
-  reviewItems: QuestionBankReviewQueueItem[];
-  reviewTotal: number;
-  showReviewQueue: boolean;
   onCandidateStatusChange: (value: string) => void;
-  onOpenReviewQueue: () => void;
-  onCloseReviewQueue: () => void;
-  onRefreshReviewQueue: () => Promise<void>;
-  onResolveReview: (
-    questionId: string,
-    action: QuestionBankReviewResolutionAction,
-    options?: QuestionBankReviewResolutionOptions,
-  ) => Promise<void>;
+  onOpenCuradoria: () => void;
 };
 
 export default function CandidatesPanel({
   candidates,
   candidateStatus,
-  reviewItems,
-  reviewTotal,
-  showReviewQueue,
   onCandidateStatusChange,
-  onOpenReviewQueue,
-  onCloseReviewQueue,
-  onRefreshReviewQueue,
-  onResolveReview,
+  onOpenCuradoria,
 }: Props) {
   return (
     <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
@@ -46,10 +26,10 @@ export default function CandidatesPanel({
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <button
-            onClick={onOpenReviewQueue}
+            onClick={onOpenCuradoria}
             className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-300"
           >
-            Revisao {reviewTotal > 0 && <span className="ml-1 rounded-md bg-amber-200 px-1.5 py-0.5 text-xs dark:bg-amber-800">{reviewTotal}</span>}
+            Abrir curadoria
           </button>
           <label className="grid gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
             Status
@@ -70,16 +50,6 @@ export default function CandidatesPanel({
           </label>
         </div>
       </div>
-
-      {showReviewQueue ? (
-        <ReviewQueuePanel
-          items={reviewItems}
-          total={reviewTotal}
-          onClose={onCloseReviewQueue}
-          onRefresh={onRefreshReviewQueue}
-          onResolve={onResolveReview}
-        />
-      ) : null}
 
       <div className="mt-4 overflow-auto rounded-lg border border-gray-200 dark:border-gray-800">
         <table className="w-full min-w-[900px] text-left text-sm">

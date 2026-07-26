@@ -36,7 +36,7 @@ function parseEnvPositiveInt(name: string, fallback: number, minValue: number = 
 const DEFAULT_PROXY_TIMEOUT_MS = parseEnvPositiveInt("NEXT_API_PROXY_TIMEOUT_MS", 25000, 1000);
 const SESSION_MAX_AGE_SECONDS = parseEnvPositiveInt(
   "NEXT_SESSION_MAX_AGE_SECONDS",
-  24 * 60 * 60,
+  7 * 24 * 60 * 60,
   300,
 );
 const STREAM_PROXY_TIMEOUT_MS = parseEnvPositiveInt(
