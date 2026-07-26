@@ -35,7 +35,6 @@ export function AccuracyChart({ state, refs, actions }: Props) {
     accuracyActiveWeekIndex,
     activeAccuracyWeekWithData,
     activeAccuracyOverlayLabel,
-    prefersReducedMotion,
   } = state;
 
   return (
@@ -45,12 +44,18 @@ export function AccuracyChart({ state, refs, actions }: Props) {
       className="space-y-2 pb-4"
     >
       <div className="flex items-center gap-2">
-        <h2 className="text-sm font-medium">Acerto geral</h2>
+        <h2 className="text-sm font-medium">Evolução de Acerto Geral</h2>
       </div>
       {/* eslint-disable-next-line react-hooks/refs */}
       <div ref={refs.accuracyFrameRef} className="relative overflow-visible">
-        <ResponsiveContainer width="100%" height={180}>
+        <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={weeks} margin={WEEKLY_CHART_MARGIN}>
+            <defs>
+              <linearGradient id="accuracyFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={CHART_INK} stopOpacity={0.24} />
+                <stop offset="100%" stopColor={CHART_INK} stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={CHART_EDGE} />
             <XAxis
               dataKey="week_label"
@@ -72,9 +77,8 @@ export function AccuracyChart({ state, refs, actions }: Props) {
               type="monotone"
               dataKey="accuracy_pct"
               stroke={CHART_INK}
-              strokeWidth={1.5}
-              fill={CHART_INK}
-              fillOpacity={0.06}
+              strokeWidth={2}
+              fill="url(#accuracyFill)"
               connectNulls={false}
               dot={(props: any) => {
                 const payload = props?.payload;
@@ -90,9 +94,6 @@ export function AccuracyChart({ state, refs, actions }: Props) {
                   </g>
                 );
               }}
-              isAnimationActive={!prefersReducedMotion}
-              animationDuration={200}
-              animationEasing="ease-out"
             />
           </AreaChart>
         </ResponsiveContainer>

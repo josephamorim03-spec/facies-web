@@ -1277,7 +1277,7 @@ function BancoDeQuestoesContent() {
 
         <div
           className="fixed inset-x-0 z-20 border-t border-edge bg-paper px-4 py-3 md:hidden"
-          style={{ bottom: "calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px))" }}
+          style={{ bottom: "env(safe-area-inset-bottom, 0px)" }}
         >
           {error && (
             <div className="mb-2 rounded-lg border border-danger bg-surface px-3 py-2 text-xs text-danger">

@@ -30,7 +30,7 @@ export function Toast() {
         : "border border-edge text-ink bg-paper";
 
   return (
-    <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+var(--mobile-nav-height)+0.75rem)] left-1/2 z-[90] w-[min(92vw,34rem)] -translate-x-1/2 md:bottom-5">
+    <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] left-1/2 z-[90] w-[min(92vw,34rem)] -translate-x-1/2 md:bottom-5">
       <div
         key={id}
         role="status"
