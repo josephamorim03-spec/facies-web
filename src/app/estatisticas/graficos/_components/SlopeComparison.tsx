@@ -31,7 +31,7 @@ export function SlopeComparison({ state, actions }: Props) {
           const isLocked = lockedSlopeArea === area;
           const isOtherLocked = lockedSlopeArea !== null && !isLocked;
           const color = AREA_COLORS[area];
-          const deltaClass = delta !== null && delta > 0 ? "text-emerald-600" : delta !== null && delta < 0 ? "text-red-500" : "text-muted";
+          const deltaClass = delta !== null && delta > 0 ? "text-success" : delta !== null && delta < 0 ? "text-danger" : "text-muted";
           return (
             <div
               key={area}

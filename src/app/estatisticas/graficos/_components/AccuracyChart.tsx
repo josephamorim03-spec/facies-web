@@ -7,6 +7,7 @@ import {
   XAxis,
   YAxis,
   ReferenceLine,
+  ReferenceArea,
   CartesianGrid,
 } from "recharts";
 import {
@@ -37,6 +38,13 @@ export function AccuracyChart({ state, refs, actions }: Props) {
     activeAccuracyOverlayLabel,
   } = state;
 
+  const accSeries = weeks
+    .map((w) => (typeof w.accuracy_pct === "number" && Number.isFinite(w.accuracy_pct) ? w.accuracy_pct : null))
+    .filter((v): v is number => v !== null);
+  const delta = accSeries.length >= 2 ? Math.round(accSeries[accSeries.length - 1] - accSeries[0]) : null;
+  const deltaTone = delta === null || Math.abs(delta) < 1 ? "text-muted" : delta > 0 ? "text-success" : "text-danger";
+  const deltaArrow = delta === null || Math.abs(delta) < 1 ? "→" : delta > 0 ? "↑" : "↓";
+
   return (
     // eslint-disable-next-line react-hooks/refs
     <section ref={refs.accuracySectionRef}
@@ -48,6 +56,14 @@ export function AccuracyChart({ state, refs, actions }: Props) {
       </div>
       {/* eslint-disable-next-line react-hooks/refs */}
       <div ref={refs.accuracyFrameRef} className="relative overflow-visible">
+        {delta !== null && (
+          <span
+            className={`pointer-events-none absolute z-20 text-[11px] font-semibold tabular-nums ${deltaTone}`}
+            style={{ left: CHART_Y_AXIS_WIDTH + 6, top: 2 }}
+          >
+            {deltaArrow} {delta > 0 ? "+" : ""}{delta} pp
+          </span>
+        )}
         <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={weeks} margin={WEEKLY_CHART_MARGIN}>
             <defs>
@@ -70,6 +86,14 @@ export function AccuracyChart({ state, refs, actions }: Props) {
               }
             />
             <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: CHART_MUTED }} unit="%" width={CHART_Y_AXIS_WIDTH} />
+            <ReferenceArea
+              y1={60}
+              y2={75}
+              fill="var(--color-primary)"
+              fillOpacity={0.06}
+              stroke="none"
+              label={{ value: "referência", position: "insideLeft", fontSize: 9, fill: CHART_MUTED }}
+            />
             {activeAccuracyWeekWithData && (
               <ReferenceLine x={activeAccuracyWeekWithData.week_label} stroke={CHART_INK} strokeOpacity={0.28} />
             )}

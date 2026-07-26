@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   LineChart,
   Line,
@@ -20,6 +21,8 @@ import {
   type WeekTickProps,
 } from "../_lib/chartGeometry";
 import type { GraficosState, GraficosRefs, GraficosActions } from "../_hooks/useGraficosData";
+import { ChartViewToggle } from "./ChartViewToggle";
+import { AreaSmallMultiples } from "./AreaSmallMultiples";
 
 type Props = {
   state: GraficosState;
@@ -36,12 +39,29 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
     lockedAreaLine,
     lockedAreaOverlayLabels,
   } = state;
+  const [view, setView] = useState<"grid" | "lines">("grid");
 
   if (activeAreaLines.length === 0) return null;
 
   return (
     <section data-testid="chart-area-lines" className="space-y-2 pt-4 border-t border-edge">
-      <h2 className="text-sm font-medium">Evolução de Acerto por Área</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-medium">Evolução de Acerto por Área</h2>
+        <ChartViewToggle
+          value={view}
+          onChange={setView}
+          ariaLabel="Visão do acerto por área"
+          options={[
+            { value: "grid", label: "Por área" },
+            { value: "lines", label: "Linhas" },
+          ]}
+        />
+      </div>
+
+      {view === "grid" ? (
+        <AreaSmallMultiples activeAreaLines={activeAreaLines} areaLineData={areaLineData} />
+      ) : (
+      <>
       <div className="flex flex-wrap gap-x-3 gap-y-1 items-center">
         {activeAreaLines.map((area) => {
           const isLocked = lockedAreaLine === area;
@@ -142,6 +162,8 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
         ))}
         <div className="absolute inset-0 z-10" style={{ touchAction: "auto" }} onClick={() => actions.setLockedAreaLine(null)} />
       </div>
+      </>
+      )}
     </section>
   );
 }
