@@ -911,7 +911,7 @@ export default function FocusedQuestion({
             <button
               type="button"
               onClick={onReveal}
-              className="rounded-lg border border-ink bg-ink px-5 py-2.5 text-sm font-semibold text-paper"
+              className="rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               Ver gabarito
             </button>
@@ -969,7 +969,7 @@ export default function FocusedQuestion({
                   type="button"
                   onClick={onQuickNote}
                   disabled={!onQuickNote}
-                  className="rounded-lg border border-ink bg-ink px-4 py-2 text-sm font-semibold text-paper disabled:opacity-50"
+                  className="rounded-control border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   {quickNoteActionLabel}
                 </button>
@@ -977,7 +977,7 @@ export default function FocusedQuestion({
                 <button
                   type="button"
                   onClick={(event) => openWhy(event.currentTarget)}
-                  className="rounded-lg border border-ink bg-ink px-4 py-2 text-sm font-semibold text-paper"
+                  className="rounded-control border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   Rever armadilha
                 </button>
@@ -1125,7 +1125,7 @@ export default function FocusedQuestion({
                     type="button"
                     onClick={onSubmitCorrection}
                     disabled={busy || (!correctionDraft.trim() && !hasGuidedResponses)}
-                    className="rounded-lg border border-ink bg-ink px-4 py-2 text-sm font-semibold text-paper disabled:opacity-50"
+                    className="rounded-control border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
                     Salvar regra
                   </button>
@@ -1157,7 +1157,7 @@ export default function FocusedQuestion({
               className="min-h-16 w-full resize-none"
             />
             <div className="mt-3 flex gap-2">
-              <button type="button" onClick={onSubmitReport} className="rounded-lg border border-ink bg-ink px-3 py-1.5 text-xs font-semibold text-paper">
+              <button type="button" onClick={onSubmitReport} className="rounded-control border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                 Enviar
               </button>
               <button type="button" onClick={onCancelReport} className="rounded-lg border border-edge px-3 py-1.5 text-xs text-muted hover:text-ink">
@@ -1196,7 +1196,7 @@ export default function FocusedQuestion({
                 type="button"
                 disabled={!canNext}
                 onClick={onNext}
-                className="rounded-lg border border-ink bg-ink px-4 py-2 text-sm font-semibold text-paper disabled:opacity-40"
+                className="rounded-control border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 Proxima
               </button>
