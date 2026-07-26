@@ -633,7 +633,7 @@ export default function TodayPage() {
 
     return (
       <li
-        className="rounded-xl border border-edge bg-paper p-3 shadow-sm"
+        className="rounded-surface border border-edge bg-paper p-3 shadow-soft"
         style={{ boxShadow: `inset 3px 0 0 ${accentColor}` }}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -825,7 +825,7 @@ export default function TodayPage() {
           {activeSession &&
             (!heroAction || !heroAction.href.includes(activeSession.session_id)) && (
               <section
-                className="flex flex-col gap-3 rounded-lg border border-edge bg-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 rounded-surface border border-edge bg-surface p-4 shadow-soft sm:flex-row sm:items-center sm:justify-between"
                 style={{ boxShadow: `inset 3px 0 0 ${areaHex(resolveDisplayArea(activeSession.area, activeSession.theme, activeSession.full_exam_name))}` }}
                 aria-label="Sessão em andamento"
               >
@@ -895,7 +895,7 @@ export default function TodayPage() {
                     const displayArea = resolveDisplayArea(task.area, task.theme, task.subtheme);
                     const accentColor = areaHex(displayArea);
                     return (
-                      <article key={task.task_id} className="overflow-hidden rounded-lg border border-edge bg-surface shadow-sm">
+                      <article key={task.task_id} className="overflow-hidden rounded-surface border border-edge bg-surface shadow-soft">
                         <div className="p-4">
                           <div className="flex items-start gap-3">
                             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-edge bg-paper sm:h-14 sm:w-14">
@@ -913,7 +913,7 @@ export default function TodayPage() {
                             </div>
                           </div>
                           <div className="mt-3 flex items-center gap-2">
-                            <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105">
+                            <Link href={reviewTaskHref(task)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                               Estudar
                             </Link>
                           </div>
@@ -935,7 +935,7 @@ export default function TodayPage() {
             </section>
 
             {overdueTasks.length > 0 && (
-              <section className="rounded-2xl border border-edge bg-surface p-4 shadow-sm">
+              <section className="rounded-surface border border-edge bg-surface p-4 shadow-soft">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h2 className="font-serif text-2xl font-semibold">Atrasadas — {overdueTasks.length}</h2>
@@ -965,7 +965,7 @@ export default function TodayPage() {
 
           <aside className="space-y-5">
             {/* Progresso — uma leitura calma (acerto + meta), não cinco cards concorrentes */}
-            <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+            <section className="rounded-surface border border-edge bg-surface p-5 shadow-soft">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="font-serif text-2xl font-semibold">Progresso desta semana</h2>

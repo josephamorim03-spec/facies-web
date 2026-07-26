@@ -19,7 +19,7 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
   return (
     <section
       aria-label="Proxima acao"
-      className="rounded-lg border border-edge bg-paper px-4 py-5 shadow-sm sm:px-6 sm:py-6"
+      className="rounded-surface border border-edge bg-paper px-4 py-5 shadow-soft sm:px-6 sm:py-6"
     >
       <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0 space-y-3">
@@ -45,7 +45,7 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
         </div>
         <Link
           href={action.href}
-          className="inline-flex min-h-12 w-full items-center justify-center rounded-lg border border-ink bg-ink px-5 text-sm font-semibold text-paper transition hover:opacity-90 md:w-auto"
+          className="inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:w-auto"
         >
           {action.cta_label}
         </Link>

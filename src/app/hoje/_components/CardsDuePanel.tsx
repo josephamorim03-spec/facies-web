@@ -17,7 +17,7 @@ export function CardsDuePanel({ overview }: { overview: OperationalTurboOverview
 
   return (
     <section
-      className="rounded-lg border bg-surface p-5 shadow-sm"
+      className="rounded-surface border bg-surface p-5 shadow-soft"
       style={{ borderColor: "color-mix(in srgb, var(--color-accent) 28%, var(--color-edge))" }}
     >
       <div className="flex items-center gap-4">

@@ -2,6 +2,9 @@
 
 import { useEffect } from "react";
 import { useToast } from "@/lib/useToast";
+import { TONE_ALERT, type Tone } from "@/lib/toneClasses";
+
+const TOAST_TONE: Record<string, Tone> = { success: "positive", error: "critical", info: "info" };
 
 export function Toast() {
   const { messages, dismissToast } = useToast();
@@ -21,13 +24,7 @@ export function Toast() {
   if (!latestMessage) return null;
 
   const { message, type, id } = latestMessage;
-
-  const typeClass =
-    type === "success"
-      ? "bg-ink text-paper border border-ink"
-      : type === "error"
-        ? "border border-danger text-danger bg-surface"
-        : "border border-edge text-ink bg-paper";
+  const tone = TOAST_TONE[type] ?? "neutral";
 
   return (
     <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] left-1/2 z-[90] w-[min(92vw,34rem)] -translate-x-1/2 md:bottom-5">
@@ -35,9 +32,9 @@ export function Toast() {
         key={id}
         role="status"
         aria-live="polite"
-        className={`paper-overlay relative rounded-lg px-5 py-4 text-sm toast-enter ${typeClass}`}
+        className={`paper-overlay relative rounded-surface border bg-surface px-5 py-4 text-sm toast-enter ${TONE_ALERT[tone]}`}
       >
-        <p className="pr-8 text-center leading-relaxed">{message}</p>
+        <p className="pr-8 text-center leading-relaxed text-ink">{message}</p>
         <button
           type="button"
           onClick={dismissToast}

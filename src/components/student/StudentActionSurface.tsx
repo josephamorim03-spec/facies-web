@@ -26,7 +26,7 @@ export function StudentPrimaryAction({
   eyebrow?: string;
 }) {
   return (
-    <section className="rounded-lg border border-edge bg-paper px-4 py-5 shadow-sm sm:px-6">
+    <section className="rounded-surface border border-edge bg-paper px-4 py-5 shadow-soft sm:px-6">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0 space-y-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
@@ -42,7 +42,7 @@ export function StudentPrimaryAction({
         </div>
         <Link
           href={action.href}
-          className="inline-flex min-h-12 w-full items-center justify-center rounded-lg border border-ink bg-ink px-5 text-sm font-semibold text-paper transition hover:opacity-90 lg:w-auto"
+          className="inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:w-auto"
         >
           {action.cta_label}
         </Link>
@@ -76,7 +76,7 @@ export function StudentBackupActions({ actions }: { actions: StudentTodayAction[
           <Link
             key={`${action.kind}:${action.href}`}
             href={action.href}
-            className="rounded-lg border border-edge bg-surface px-4 py-3 transition hover:border-ink"
+            className="rounded-surface border border-edge bg-surface px-4 py-3 transition hover:border-primary"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -134,7 +134,7 @@ export function StudentDeepLinks({ links }: { links: StudentSurfaceHome["deep_li
         <Link
           key={`${link.label}:${link.href}`}
           href={link.href}
-          className="rounded-lg border border-edge bg-surface px-4 py-3 transition hover:border-ink"
+          className="rounded-lg border border-edge bg-surface px-4 py-3 transition hover:border-primary"
         >
           <p className="text-sm font-semibold text-ink">{link.label}</p>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{link.reason}</p>
@@ -186,7 +186,7 @@ export function StudentSurfaceSnapshot({ items }: { items: Array<{ label: string
           </>
         );
         return item.href ? (
-          <Link key={item.label} href={item.href} className="rounded-lg border border-edge bg-paper p-3 hover:border-ink">
+          <Link key={item.label} href={item.href} className="rounded-surface border border-edge bg-paper p-3 hover:border-primary">
             {content}
           </Link>
         ) : (

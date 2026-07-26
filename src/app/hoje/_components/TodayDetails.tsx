@@ -61,7 +61,7 @@ export function TodayDetails({
         {today.details.active_session ? (
           <Link
             href={today.details.active_session.href}
-            className="block rounded-lg border border-edge bg-paper p-3 hover:border-ink"
+            className="block rounded-surface border border-edge bg-paper p-3 hover:border-primary"
           >
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Sessao aberta</p>
             <p className="mt-1 truncate font-semibold text-ink">{today.details.active_session.title}</p>

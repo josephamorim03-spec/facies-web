@@ -16,7 +16,7 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
 
   if (longitudinal.total_nodes_studied === 0) {
     return (
-      <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
+      <section className="rounded-surface border border-edge bg-surface p-5 shadow-soft">
         <h2 className="text-sm font-semibold text-ink">Banco de questões</h2>
         <p className="mt-2 text-xs leading-relaxed text-muted">
           Responda questões no banco para ver seu progresso aqui.
@@ -36,7 +36,7 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
   const atRiskCount = longitudinal.at_risk_node_ids.length;
 
   return (
-    <section className="space-y-3 rounded-lg border border-edge bg-surface p-5 shadow-sm">
+    <section className="space-y-3 rounded-surface border border-edge bg-surface p-5 shadow-soft">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-ink">Banco de questões</h2>
         <Link href="/revisoes" className="text-xs text-muted hover:text-primary">

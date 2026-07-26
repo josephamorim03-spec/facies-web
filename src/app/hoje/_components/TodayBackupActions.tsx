@@ -14,7 +14,7 @@ export function TodayBackupActions({ actions }: { actions: StudentTodayAction[] 
           <Link
             key={`${action.kind}:${action.href}`}
             href={action.href}
-            className="group rounded-lg border border-edge bg-surface px-4 py-3 transition hover:border-ink"
+            className="group rounded-surface border border-edge bg-surface px-4 py-3 transition hover:border-primary"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
