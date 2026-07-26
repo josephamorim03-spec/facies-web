@@ -1,6 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 
-export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
+export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger" | "success";
 export type ButtonSize = "xs" | "sm" | "md";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
@@ -8,7 +8,8 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   secondary: "border border-edge bg-surface text-muted hover:border-primary hover:text-ink hover:bg-surfaceMuted",
   outline: "border border-primary text-primary hover:bg-primary hover:text-primaryInk",
   ghost: "text-muted hover:bg-surfaceMuted hover:text-ink",
-  danger: "border border-danger text-danger hover:bg-surfaceMuted",
+  danger: "border border-danger bg-danger text-primaryInk hover:brightness-[1.04]",
+  success: "border border-success bg-success text-primaryInk hover:brightness-[1.04]",
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
@@ -19,7 +20,8 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
 
 const BASE =
   "paper-control inline-flex items-center justify-center gap-1.5 font-sans font-medium leading-none " +
-  "disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none";
+  "disabled:cursor-not-allowed disabled:opacity-50 " +
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;

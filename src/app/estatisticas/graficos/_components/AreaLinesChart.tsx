@@ -21,7 +21,7 @@ import {
   type WeekTickProps,
 } from "../_lib/chartGeometry";
 import type { GraficosState, GraficosRefs, GraficosActions } from "../_hooks/useGraficosData";
-import { ChartViewToggle } from "./ChartViewToggle";
+import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
 import { AreaSmallMultiples } from "./AreaSmallMultiples";
 
 type Props = {
@@ -47,7 +47,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
     <section data-testid="chart-area-lines" className="space-y-2 pt-4 border-t border-edge">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-medium">Evolução de Acerto por Área</h2>
-        <ChartViewToggle
+        <SegmentedToggle
           value={view}
           onChange={setView}
           ariaLabel="Visão do acerto por área"

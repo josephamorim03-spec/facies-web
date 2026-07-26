@@ -26,7 +26,7 @@ import {
   type WeekTickProps,
 } from "../_lib/chartGeometry";
 import type { GraficosState, GraficosRefs, GraficosActions } from "../_hooks/useGraficosData";
-import { ChartViewToggle } from "./ChartViewToggle";
+import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
 
 type Props = {
   state: GraficosState;
@@ -71,7 +71,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
     >
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-medium">Volume de Estudo</h2>
-        <ChartViewToggle
+        <SegmentedToggle
           value={mode}
           onChange={setMode}
           ariaLabel="Visão do volume"

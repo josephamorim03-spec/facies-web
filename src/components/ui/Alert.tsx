@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
+import { TONE_ALERT, type Tone } from "@/lib/toneClasses";
 
 export type AlertVariant = "danger" | "warning" | "success" | "info";
 
-const VARIANT_CLASSES: Record<AlertVariant, string> = {
-  danger: "border-danger text-danger",
-  warning: "border-warning text-warning",
-  success: "border-success text-success",
-  info: "border-info text-info",
+// Nomes legados do Alert → tom canônico (fonte única em lib/toneClasses).
+const VARIANT_TONE: Record<AlertVariant, Tone> = {
+  danger: "critical",
+  warning: "attention",
+  success: "positive",
+  info: "info",
 };
 
 type AlertProps = {
@@ -29,7 +31,7 @@ export function Alert({ variant = "info", icon, action, onDismiss, children, cla
   return (
     <div
       role="alert"
-      className={`flex items-start gap-3 rounded-xl border bg-surface px-4 py-3 text-sm ${VARIANT_CLASSES[variant]} ${className}`}
+      className={`flex items-start gap-3 rounded-surface border bg-surface px-4 py-3 text-sm ${TONE_ALERT[VARIANT_TONE[variant]]} ${className}`}
     >
       {icon && <span className="mt-0.5 shrink-0">{icon}</span>}
       <div className="min-w-0 flex-1 text-ink">{children}</div>

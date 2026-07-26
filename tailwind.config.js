@@ -40,6 +40,18 @@ module.exports = {
         ],
         serif: ["var(--font-serif)", "Georgia", "serif"],
       },
+      // Escala de raio e elevação ligada aos tokens (globals.css) — use estas
+      // (rounded-control/surface/hero, shadow-soft/overlay) em vez de rounded-sm/md
+      // e shadow-sm/md avulsos, para manter a identidade única.
+      borderRadius: {
+        control: "var(--radius-control)",
+        surface: "var(--radius-surface)",
+        hero: "var(--radius-hero)",
+      },
+      boxShadow: {
+        soft: "var(--soft-shadow)",
+        overlay: "var(--overlay-shadow)",
+      },
     },
   },
   plugins: [],
