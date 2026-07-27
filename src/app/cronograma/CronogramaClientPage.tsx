@@ -27,13 +27,6 @@ import { CronogramaTodayPanel } from "./_components/CronogramaTodayPanel";
 import { WeeklyOpsCompactSummary, WeeklyOpsCompactSummarySkeleton } from "./_components/WeeklyOpsCards";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { buildWeeklyOpsMetrics } from "./_lib/weeklyOpsMetrics";
-import { getAuthToken } from "@/lib/auth";
-import { getStudentPlan, type StudentSurfaceHome } from "@/lib/api";
-import {
-  StudentBackupActions,
-  StudentLoadNote,
-  StudentPrimaryAction,
-} from "@/components/student/StudentActionSurface";
 
 function detectMobilePortraitMode(isDesktopNavigation: boolean): boolean {
   if (typeof window === "undefined") return false;
@@ -88,24 +81,9 @@ export default function CronogramaPage() {
     handleAcceptSuggestionAll,
     handleRejectSuggestion,
   } = useCronogramaPageState();
-  const [planHome, setPlanHome] = useState<StudentSurfaceHome | null>(null);
 
   useEffect(() => {
     writeCronogramaViewModeSession("month");
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    getStudentPlan(getAuthToken())
-      .then((home) => {
-        if (active) setPlanHome(home);
-      })
-      .catch(() => {
-        if (active) setPlanHome(null);
-      });
-    return () => {
-      active = false;
-    };
   }, []);
 
   useEffect(() => {
@@ -409,14 +387,6 @@ export default function CronogramaPage() {
           }}
         />
       </div>
-
-      {planHome && !searchOpen ? (
-        <div className="space-y-3">
-          <StudentPrimaryAction action={planHome.primary_action} />
-          <StudentLoadNote load={planHome.load_note} />
-          <StudentBackupActions actions={planHome.backup_actions} />
-        </div>
-      ) : null}
 
       <CronogramaStreakCard streak={streak} loading={streakLoading} />
 
