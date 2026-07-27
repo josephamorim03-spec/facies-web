@@ -79,44 +79,17 @@ test.describe("Cronograma mobile portrait UX", () => {
     await addHttpOnlySessionForPage(page);
   });
 
-  test("streak compacta no vertical abre e fecha na mesma linha", async ({ page }) => {
+  test("streak aparece como anel discreto no vertical", async ({ page }) => {
     await mockCronogramaApi(page);
     await page.goto("/cronograma");
 
-    const compactTrigger = page.getByTestId("streak-compact-trigger");
-    const inlineExpanded = page.getByTestId("streak-inline-expanded");
-
-    await expect(compactTrigger).toBeVisible();
-    await expect(page.getByTestId("streak-compact-days")).toContainText(/dias/i);
-    await expect(inlineExpanded).toHaveAttribute("aria-hidden", "true");
-
-    await compactTrigger.click();
-    await expect(inlineExpanded).toHaveAttribute("aria-hidden", "false");
-    await expect(inlineExpanded).toContainText(/recorde:/i);
-    await expect(inlineExpanded).toContainText(/revis/i);
-    await expect(inlineExpanded).toContainText(/cards/i);
-
-    await compactTrigger.click();
-    await expect(inlineExpanded).toHaveAttribute("aria-hidden", "true");
-  });
-
-  test("streak compacta fecha por interacao externa e por timeout", async ({ page }) => {
-    await mockCronogramaApi(page);
-    await page.goto("/cronograma");
-
-    const compactTrigger = page.getByTestId("streak-compact-trigger");
-    const inlineExpanded = page.getByTestId("streak-inline-expanded");
-
-    await compactTrigger.click();
-    await expect(inlineExpanded).toHaveAttribute("aria-hidden", "false");
-
-    await page.mouse.click(5, 5);
-    await expect(inlineExpanded).toHaveAttribute("aria-hidden", "true");
-
-    await compactTrigger.click();
-    await expect(inlineExpanded).toHaveAttribute("aria-hidden", "false");
-    await page.waitForTimeout(6200);
-    await expect(inlineExpanded).toHaveAttribute("aria-hidden", "true");
+    const streak = page.locator("[data-streak-mode='ring']");
+    await expect(streak).toBeVisible();
+    await expect(streak).toContainText(/12\s+dias seguidos/i);
+    // Detalhes (recorde/revisões/cards) ficam na dica do anel, sem competir com o mês.
+    await expect(page.locator("[data-streak-days]")).toHaveAttribute("title", /recorde/i);
+    // Sem expandir/recolher: o anel é sempre a mesma marca discreta.
+    await expect(page.getByTestId("streak-compact-trigger")).toHaveCount(0);
   });
 
   test("header vertical mantem mes na mesma linha e desce ao abrir busca", async ({ page }) => {
@@ -348,7 +321,7 @@ test.describe("Cronograma mobile portrait UX", () => {
     const { db } = await mockCronogramaApi(page);
     db.streak.streak_at_risk = true;
     await page.goto("/cronograma");
-    await expect(page.getByTestId("streak-risk-indicator")).toHaveCount(0);
+    await expect(page.locator("[data-streak-at-risk='true']")).toHaveCount(0);
   });
 
   test("streak em risco sinaliza apos 20h", async ({ page }) => {
@@ -356,7 +329,8 @@ test.describe("Cronograma mobile portrait UX", () => {
     const { db } = await mockCronogramaApi(page);
     db.streak.streak_at_risk = true;
     await page.goto("/cronograma");
-    await expect(page.getByTestId("streak-risk-indicator")).toBeVisible();
+    await expect(page.locator("[data-streak-at-risk='true']")).toBeVisible();
+    await expect(page.locator("[data-streak-mode='ring']")).toContainText(/em risco/i);
   });
 
   test("acoes olho/+ e fluxo de compromisso no +", async ({ page }) => {
@@ -447,13 +421,14 @@ test.describe("Cronograma mobile landscape UX", () => {
     await addHttpOnlySessionForPage(page);
   });
 
-  test("streak permanece completa no horizontal", async ({ page }) => {
+  test("streak permanece como anel discreto no horizontal", async ({ page }) => {
     await page.goto("/cronograma");
 
-    await expect(page.locator("[data-streak-mode='full']")).toBeVisible();
-    await expect(page.getByText(/recorde:/i)).toBeVisible();
-    await expect(page.getByText(/revis/i)).toBeVisible();
-    await expect(page.locator("[data-streak-mode='full']")).toContainText(/cards/i);
+    const streak = page.locator("[data-streak-mode='ring']");
+    await expect(streak).toBeVisible();
+    await expect(streak).toContainText(/dias seguidos/i);
+    // Recorde/revisões/cards seguem disponíveis na dica do anel.
+    await expect(page.locator("[data-streak-days]")).toHaveAttribute("title", /cards/i);
     await expect(page.getByTestId("streak-compact-trigger")).toHaveCount(0);
   });
 });
