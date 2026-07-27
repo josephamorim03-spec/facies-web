@@ -237,6 +237,7 @@ export type {
   QuestionBankTopic,
   QuestionBankBoard,
   QuestionBankSourceOption,
+  QuestionBankStateOption,
   QuestionBankYearStat,
   QuestionBankFacets,
   QuestionBankBootstrap,

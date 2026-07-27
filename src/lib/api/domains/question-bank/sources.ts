@@ -34,6 +34,7 @@ export type QuestionBankFacetParams = {
   institutions?: string[];
   board_codes?: string[];
   exam_codes?: string[];
+  state_codes?: string[];
   year_from?: number;
   year_to?: number;
   years?: number[];
@@ -52,6 +53,7 @@ export async function listQuestionBankFacets(
   appendArrayParams(q, "board_codes", params.board_codes);
   appendArrayParams(q, "exam_codes", params.exam_codes);
   appendArrayParams(q, "institutions", params.institutions);
+  appendArrayParams(q, "state_codes", params.state_codes);
   appendArrayParams(q, "years", params.years?.map(String));
   if (params.area?.trim()) q.set("area", params.area.trim());
   if (params.search?.trim()) q.set("search", params.search.trim());

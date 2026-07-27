@@ -60,6 +60,14 @@ export type QuestionBankSourceOption = {
   last_year?: number | null;
 };
 
+export type QuestionBankStateOption = {
+  state_code: string;
+  label: string;
+  question_count: number;
+  first_year?: number | null;
+  last_year?: number | null;
+};
+
 export type QuestionBankYearStat = {
   // year=null is the "sem ano informado" bucket from the cross-filtered facets;
   // the global /years endpoint never returns null.
@@ -72,6 +80,7 @@ export type QuestionBankFacets = {
   boards: QuestionBankSourceOption[];
   exams: QuestionBankSourceOption[];
   institutions: QuestionBankSourceOption[];
+  states: QuestionBankStateOption[];
 };
 
 export type QuestionBankReadModel = {
@@ -115,6 +124,7 @@ export type QuestionBankTopic = {
 export type QuestionBankBootstrap = {
   topics: QuestionBankTopic[];
   sources: QuestionBankSourceOption[];
+  states: QuestionBankStateOption[];
   years: QuestionBankYearStat[];
   total_global: number;
   read_model: QuestionBankReadModel;
@@ -729,6 +739,7 @@ export type QuestionBankSessionCreatePayload = {
   institutions?: string[];
   board_codes?: string[];
   exam_codes?: string[];
+  state_codes?: string[];
   year_from?: number;
   year_to?: number;
   years?: number[];

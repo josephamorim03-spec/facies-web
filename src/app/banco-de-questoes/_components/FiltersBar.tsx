@@ -7,6 +7,7 @@ import type {
   QuestionBankCorrectionStatus,
   QuestionBankResolutionMode,
   QuestionBankSourceOption,
+  QuestionBankStateOption,
   QuestionBankTopic,
   QuestionBankYearStat,
   StudyKind,
@@ -92,10 +93,13 @@ export type FiltersBarProps = {
   boardCodes: string[];
   examCodes: string[];
   institutions: string[];
+  stateCodes: string[];
   sources: QuestionBankSourceOption[];
+  states: QuestionBankStateOption[];
   sourcesLoading?: boolean;
   sourcesError?: boolean;
   onSourceSelectionChange: (selection: { boardCodes: string[]; examCodes: string[]; institutions: string[] }) => void;
+  onStateCodesChange: (stateCodes: string[]) => void;
   onSourcesRetry?: () => void;
   yearStats: QuestionBankYearStat[];
   yearsLoading?: boolean;
@@ -145,11 +149,90 @@ function SectionHeader({ step, title, detail }: { step: string; title: string; d
   );
 }
 
+function toggleCode(values: string[], code: string): string[] {
+  const normalized = values.map((value) => value.trim().toUpperCase()).filter(Boolean);
+  return normalized.includes(code) ? normalized.filter((value) => value !== code) : [...normalized, code];
+}
+
+function StatePicker({
+  states,
+  selected,
+  onChange,
+}: {
+  states: QuestionBankStateOption[];
+  selected: string[];
+  onChange: (stateCodes: string[]) => void;
+}) {
+  const selectedSet = useMemo(
+    () => new Set(selected.map((value) => value.trim().toUpperCase()).filter(Boolean)),
+    [selected],
+  );
+  const options = useMemo(() => {
+    const byCode = new Map<string, QuestionBankStateOption>();
+    for (const state of states) {
+      const code = String(state.state_code || state.label || "").trim().toUpperCase();
+      if (!code) continue;
+      const current = byCode.get(code);
+      if (!current || state.question_count > current.question_count) {
+        byCode.set(code, { ...state, state_code: code, label: state.label || code });
+      }
+    }
+    for (const code of selectedSet) {
+      if (!byCode.has(code)) byCode.set(code, { state_code: code, label: code, question_count: 0 });
+    }
+    return Array.from(byCode.values()).sort((a, b) => b.question_count - a.question_count || a.state_code.localeCompare(b.state_code));
+  }, [selectedSet, states]);
+
+  return (
+    <div className="space-y-3 rounded-xl border border-edge bg-surface p-3">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Estado da prova</p>
+          <p className="mt-0.5 text-xs text-muted">UF catalogada na prova, banca ou instituição.</p>
+        </div>
+        {selectedSet.size > 0 && (
+          <button
+            type="button"
+            onClick={() => onChange([])}
+            className="text-xs font-semibold text-muted underline underline-offset-2 hover:text-ink"
+          >
+            Limpar
+          </button>
+        )}
+      </div>
+      {options.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-edge px-3 py-4 text-center text-xs text-muted">
+          Nenhuma UF catalogada neste recorte.
+        </p>
+      ) : (
+        <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto pr-1">
+          {options.map((state) => {
+            const code = state.state_code.trim().toUpperCase();
+            const active = selectedSet.has(code);
+            return (
+              <button
+                key={code}
+                type="button"
+                onClick={() => onChange(toggleCode(selected, code))}
+                className={cx("km-chip", active && "km-chip-active")}
+                aria-pressed={active}
+              >
+                <span>{code}</span>
+                <span className="text-[10px] tabular-nums text-muted">{state.question_count}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function FiltersBar(props: FiltersBarProps) {
   const {
     area, onAreaChange, search, onSearchChange, topics, topicSuggestions, selectedTopics, onToggleTopic,
     topicsLoading = false, topicsError = false, onTopicsRetry,
-    boardCodes, examCodes, institutions, sources, sourcesLoading, sourcesError, onSourceSelectionChange, onSourcesRetry,
+    boardCodes, examCodes, institutions, stateCodes, sources, states, sourcesLoading, sourcesError, onSourceSelectionChange, onStateCodesChange, onSourcesRetry,
     yearStats, yearsLoading, yearsError, onYearsRetry,
     selectedYears, onSelectedYearsChange, includeNoYear, onIncludeNoYearChange,
     answerStatus, onAnswerStatusChange,
@@ -192,9 +275,11 @@ export default function FiltersBar(props: FiltersBarProps) {
   const modeLabel = studyKind === "full_exam" ? "Prova" : resolutionMode === "simulation" ? "Simulado" : "Treino";
   const statusLabel = deriveRealizacaoLabel(realizacaoState);
   const selectedSourceCount = boardCodes.length + examCodes.length + institutions.length;
+  const selectedStateCount = stateCodes.length;
   const sourceDetail = selectedSourceCount > 0
     ? `${selectedSourceCount} fonte${selectedSourceCount > 1 ? "s" : ""}`
     : "todas as fontes";
+  const stateDetail = selectedStateCount > 0 ? `${selectedStateCount} UF` : "todas as UFs";
 
   return (
     <div className="divide-y divide-edge">
@@ -311,7 +396,7 @@ export default function FiltersBar(props: FiltersBarProps) {
             <span className="paper-eyebrow text-primary">Ajustar sessão</span>
             <span className="mt-0.5 block font-serif text-lg font-semibold text-ink">Banca, ano e histórico</span>
           </span>
-          <span className="text-right text-xs text-muted">{statusLabel} · {sourceDetail}<span className="ml-2 inline-block transition-transform group-open:rotate-180" aria-hidden="true">⌄</span></span>
+          <span className="text-right text-xs text-muted">{statusLabel} · {sourceDetail} · {stateDetail}<span className="ml-2 inline-block transition-transform group-open:rotate-180" aria-hidden="true">⌄</span></span>
         </summary>
 
         <div className="mt-4 space-y-4">
@@ -325,6 +410,12 @@ export default function FiltersBar(props: FiltersBarProps) {
           loading={sourcesLoading}
           error={sourcesError}
           onRetry={onSourcesRetry}
+        />
+
+        <StatePicker
+          states={states}
+          selected={stateCodes}
+          onChange={onStateCodesChange}
         />
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">

@@ -10,16 +10,13 @@ import { OutcomeCard as PaperOutcomeCard } from "@/components/ui/OutcomeCard";
 import { StudyActionCard } from "@/components/ui/StudyActionCard";
 import {
   DataFreshness,
-  LearningStatus,
   StudentPage,
   StudentPageHeader,
 } from "@/components/student/StudentExperienceUI";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import {
-  getStudentReviewHome,
   getTrainerReviewQueue,
   recordTrainerRecommendationEvent,
-  type StudentSurfaceHome,
   type TrainerActionKind,
   type TrainerReviewQueue,
   type TrainerReviewQueueItem,
@@ -29,12 +26,6 @@ import { getErrorMessage } from "@/lib/error-utils";
 import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentExperience } from "@/lib/StudentExperienceContext";
-import {
-  StudentBackupActions,
-  StudentLoadNote,
-  StudentPrimaryAction,
-  StudentSurfaceSnapshot,
-} from "@/components/student/StudentActionSurface";
 
 type QueueFilter = "all" | "questions" | "corrections" | "cards";
 
@@ -294,7 +285,6 @@ export function ReviewQueueClient() {
   const { tokenResolved } = useAuthToken();
   const { enabled: experienceEnabled, experience } = useStudentExperience();
   const [queue, setQueue] = useState<TrainerReviewQueue | null>(null);
-  const [reviewHome, setReviewHome] = useState<StudentSurfaceHome | null>(null);
   const [filter, setFilter] = useState<QueueFilter>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -305,12 +295,8 @@ export function ReviewQueueClient() {
     setError(null);
     try {
       const token = getAuthToken();
-      const [nextQueue, nextHome] = await Promise.all([
-        getTrainerReviewQueue(token),
-        getStudentReviewHome(token).catch(() => null),
-      ]);
+      const nextQueue = await getTrainerReviewQueue(token);
       setQueue(nextQueue);
-      setReviewHome(nextHome);
       if (shownRef.current !== nextQueue.recommendation_id) {
         shownRef.current = nextQueue.recommendation_id;
         void recordTrainerRecommendationEvent(token, nextQueue.recommendation_id, {
@@ -367,14 +353,6 @@ export function ReviewQueueClient() {
         ) : undefined}
       />
 
-      {reviewHome ? (
-        <>
-          <StudentPrimaryAction action={reviewHome.primary_action} eyebrow="Revisão essencial" />
-          <StudentLoadNote load={reviewHome.load_note} />
-          <StudentBackupActions actions={reviewHome.backup_actions} />
-        </>
-      ) : experienceEnabled && experience ? <LearningStatus load={experience.review_load} /> : null}
-
       {loading ? (
         <QueueSkeleton />
       ) : error ? (
@@ -387,16 +365,8 @@ export function ReviewQueueClient() {
       ) : queue ? (
         <>
           <OutcomeCard queue={queue} />
-          {reviewHome ? (
-            <StudentSurfaceSnapshot
-              items={[
-                { label: "Questões", value: compactCount(queue.counts.questions) },
-                { label: "Correções", value: compactCount(queue.counts.corrections) },
-                { label: "Cards", value: compactCount(queue.flashcards_overview?.due_count ?? queue.counts.cards) },
-              ]}
-            />
-          ) : <ReviewSourceSummary queue={queue} />}
-          {!reviewHome && queue.primary_item ? (
+          <ReviewSourceSummary queue={queue} />
+          {queue.primary_item ? (
             <PrimaryReviewCard queue={queue} onStale={() => void load()} />
           ) : (
             <EmptyState
@@ -412,7 +382,7 @@ export function ReviewQueueClient() {
             <FlashcardsOverviewPanel
               queue={queue}
               actionItem={flashcardsActionItem}
-              surfaceHomeVisible={Boolean(reviewHome)}
+              surfaceHomeVisible={false}
               onStale={() => void load()}
             />
           )}

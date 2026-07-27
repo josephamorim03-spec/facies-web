@@ -15,13 +15,13 @@ export const AREA_SHORT_LABELS: Record<DisplayArea, string> = {
 };
 
 export const AREA_HEX: Record<DisplayArea, string> = {
-  GO: "#B65AA0",
-  OB: "#8B6FB6",
-  PD: "#2E79A8",
-  MP: "#A97816",
-  CG: "#B44A4F",
-  CM: "#2D8B62",
-  OU: "#8C928E",
+  GO: "#8F3F7D",
+  OB: "#6F5797",
+  PD: "#1F6388",
+  MP: "#7A560E",
+  CG: "#963B40",
+  CM: "#1F6B4C",
+  OU: "#5F6762",
 };
 
 export const AREA_BG_CLASS: Record<DisplayArea, string> = {
@@ -40,4 +40,3 @@ export const AREA_BORDER_CLASS: Record<DisplayArea, string> = {
 };
 
 export const AREA_FULL_EXAM_HEX = "#0F4C5C";
-

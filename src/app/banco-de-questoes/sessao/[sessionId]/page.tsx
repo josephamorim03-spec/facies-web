@@ -6,6 +6,7 @@ import {
   finalizeQuestionBankSession,
   createQuestionTextHighlight,
   deleteQuestionTextHighlight,
+  getAPIErrorDetail,
   getQuestionBankAiRequestPreview,
   getQuestionBankAiRequestStatus,
   getQuestionBankGuidedReview,
@@ -65,6 +66,27 @@ const CORRECTION_CONFIDENCE_DELTA: Record<CorrectionConfidenceLevel, number> = {
   medium: 0.35,
   high: 0.6,
 };
+
+function safeAttemptErrorMessage(err: unknown): string {
+  const detail = getAPIErrorDetail(err);
+  const code = typeof detail?.code === "string" ? detail.code : null;
+  const message = typeof detail?.message === "string" ? detail.message : null;
+  const requestId = typeof detail?.request_id === "string" ? detail.request_id : null;
+  const missingColumns = Array.isArray(detail?.missing_columns)
+    ? detail.missing_columns.filter((item): item is string => typeof item === "string")
+    : [];
+
+  if (message) return requestId ? `${message} (req ${requestId})` : message;
+  if (code === "question_bank_schema_drift" || code === "schema_contract_invalid") {
+    const columns = missingColumns.length > 0 ? ` Colunas ausentes: ${missingColumns.join(", ")}.` : "";
+    return `O banco transacional esta com schema incompativel para registrar respostas.${columns}${requestId ? ` Req ${requestId}.` : ""}`;
+  }
+  if (code) return `Nao foi possivel registrar a resposta (${code}).${requestId ? ` Req ${requestId}.` : ""}`;
+  if (err instanceof Error && err.message && !/traceback|stack trace|undefinedcolumn/i.test(err.message)) {
+    return err.message;
+  }
+  return "Nao foi possivel registrar a resposta. Tente novamente em instantes.";
+}
 
 export default function SessionPage() {
   const params = useParams<{ sessionId: string }>();
@@ -441,7 +463,7 @@ export default function SessionPage() {
       enqueueStudentEvent(position, eventType, eventPayload);
       setSession(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível registrar a resposta.");
+      setError(safeAttemptErrorMessage(err));
     } finally {
       setBusy(false);
     }

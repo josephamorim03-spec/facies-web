@@ -165,9 +165,9 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
           <div className="space-y-4 border border-edge p-4">
             <p className="text-sm font-semibold">Padrão comportamental</p>
             {[
-              { label: "Sensibilidade a pegadinhas", value: longitudinal.trap_sensitivity ?? 0, color: "text-amber-700" },
-              { label: "Excesso de confiança", value: longitudinal.overconfidence_score ?? 0, color: "text-red-600" },
-              { label: "Taxa impulsiva", value: longitudinal.impulsive_rate ?? 0, color: "text-orange-600" },
+              { label: "Sensibilidade a pegadinhas", value: longitudinal.trap_sensitivity ?? 0, color: "text-warning" },
+              { label: "Excesso de confiança", value: longitudinal.overconfidence_score ?? 0, color: "text-danger" },
+              { label: "Taxa impulsiva", value: longitudinal.impulsive_rate ?? 0, color: "text-warning" },
             ].map(({ label, value, color }) => (
               <div key={label}>
                 <div className="mb-1 flex justify-between gap-3 text-xs">

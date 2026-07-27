@@ -333,14 +333,135 @@ function calendarData() {
 }
 
 function performanceSummary() {
+  const weakTheme = {
+    key: "GO:Pre-eclampsia",
+    area: "GO",
+    theme: "Pre-eclampsia",
+    total_questions: 18,
+    correct_questions: 10,
+    accuracy_pct: 55,
+    review_count: 3,
+    stable_review_ratio_pct: 42,
+    consistency_score: 0.48,
+    days_since_last_study: 2,
+    retention_pct: 58,
+    consistency_pct: 42,
+    system_confidence_pct: 82,
+    impact_score_pct: 76,
+    regression_risk_pct: 68,
+    trend: "down",
+    dominant_signal: "queda recente",
+    action_hint: "Refazer erros e comparar condutas.",
+    strong_score: 24,
+    weak_score: 76,
+  };
   return {
     area_summaries: [
-      { area: "GO", total_questions: 72, correct_questions: 46, accuracy: 63.9, accuracy_pct: 63.9, weak_themes: [{ theme: "Pre-eclampsia", total_questions: 18, accuracy: 55, accuracy_pct: 55 }] },
-      { area: "CM", total_questions: 84, correct_questions: 64, accuracy: 76.2, accuracy_pct: 76.2, weak_themes: [] },
-      { area: "PD", total_questions: 48, correct_questions: 34, accuracy: 70.8, accuracy_pct: 70.8, weak_themes: [] },
+      { area: "GO", area_accuracy_pct: 63.9, total_questions: 72, themes: [weakTheme], trend: "down" },
+      {
+        area: "CM",
+        area_accuracy_pct: 76.2,
+        total_questions: 84,
+        themes: [{
+          key: "CM:Pneumonia",
+          area: "CM",
+          theme: "Pneumonia",
+          total_questions: 24,
+          correct_questions: 19,
+          accuracy_pct: 79,
+          review_count: 2,
+          stable_review_ratio_pct: 70,
+          consistency_score: 0.74,
+          days_since_last_study: 3,
+        }],
+        trend: "up",
+      },
+      { area: "PD", area_accuracy_pct: 70.8, total_questions: 48, themes: [], trend: "flat" },
     ],
-    diagnosis: { ready: true, weaknesses: [{ area: "GO", theme: "Pre-eclampsia", accuracy_pct: 55, total_questions: 18 }] },
+    diagnosis: {
+      ready: true,
+      reason: null,
+      total_questions: 204,
+      min_theme_questions: 10,
+      strengths: [],
+      weaknesses: [weakTheme],
+    },
     health_score_pct: 72,
+  };
+}
+
+function qbankTopic(overrides = {}) {
+  return {
+    knowledge_node_id: "go-node",
+    parent_knowledge_node_id: "go-root",
+    node_code: "QB-GO-PREECLAMPSIA",
+    node_name: "Pre-eclampsia grave",
+    node_type: "microcompetency",
+    node_path: ["Ginecologia e Obstetricia", "Hipertensao na gestacao"],
+    path_label: "GO > Hipertensao na gestacao > Pre-eclampsia grave",
+    depth: 3,
+    display_order: 1,
+    description: "Conduta, sulfato de magnesio e criterio de interrupcao.",
+    question_count: 42,
+    primary_question_count: 34,
+    board_count: 8,
+    avg_link_weight: 0.9,
+    avg_confidence: 0.92,
+    difficulty_mean: 0.58,
+    classification_confidence_mean: 0.94,
+    first_seen_year: 2018,
+    last_seen_year: 2026,
+    recurrence_score: 0.81,
+    bank_demand_score: 0.88,
+    board_frequency: { "USP-SP": 8, "ENARE": 6 },
+    charge_patterns: {},
+    answer_types: {},
+    adaptive_weight: 0.86,
+    adaptive_weight_score: 86,
+    adaptive_weight_factors: { student_error_need: 0.9, bank_demand: 0.8 },
+    ...overrides,
+  };
+}
+
+function questionBankBootstrap() {
+  const topics = [
+    qbankTopic({ knowledge_node_id: "go-root", parent_knowledge_node_id: null, node_name: "Ginecologia e Obstetricia", node_type: "specialty", depth: 1, question_count: 180, adaptive_weight_score: 72 }),
+    qbankTopic({ knowledge_node_id: "go-hipertensao", parent_knowledge_node_id: "go-root", node_name: "Hipertensao na gestacao", node_type: "theme", depth: 2, question_count: 74, adaptive_weight_score: 80 }),
+    qbankTopic(),
+  ];
+  return {
+    topics,
+    sources: [
+      { option_key: "USP-SP", label: "USP-SP", option_kind: "board", question_count: 18, first_year: 2019, last_year: 2026 },
+      { option_key: "ENARE", label: "ENARE", option_kind: "exam", question_count: 34, first_year: 2021, last_year: 2026 },
+      { option_key: "USP", label: "USP", option_kind: "institution", question_count: 18, first_year: 2019, last_year: 2026 },
+    ],
+    states: [
+      { state_code: "SP", label: "SP", question_count: 18, first_year: 2019, last_year: 2026 },
+      { state_code: "PE", label: "PE", question_count: 7, first_year: 2020, last_year: 2025 },
+      { state_code: "MG", label: "MG", question_count: 6, first_year: 2018, last_year: 2024 },
+      { state_code: "SC", label: "SC", question_count: 4, first_year: 2021, last_year: 2025 },
+    ],
+    years: [
+      { year: 2026, question_count: 12 },
+      { year: 2025, question_count: 18 },
+      { year: 2024, question_count: 20 },
+      { year: null, question_count: 2 },
+    ],
+    total_global: 1240,
+    read_model: { generation: 42, projected_at: NOW, lag_seconds: 0, status: "ready", projected_count: 1240 },
+  };
+}
+
+function questionBankAvailability() {
+  return {
+    total_count: 42,
+    answered_count: 12,
+    unanswered_count: 30,
+    available_count: 30,
+    max_selectable: 30,
+    answer_status: "unanswered",
+    correction_status: "all",
   };
 }
 
@@ -506,6 +627,48 @@ async function mockApi(page) {
     if (method === "GET" && path === "/api/question-bank/learner-model") {
       return fulfillJson(route, { user_id: "design-user", generated_at: NOW, competencies: [], metacognition: {}, adaptive_summary: {} });
     }
+    if (method === "GET" && path === "/api/question-bank/next-action") {
+      return fulfillJson(route, {
+        kind: "weak_area",
+        title: "Bloco curto de pre-eclampsia",
+        subtitle: "Use se quiser acelerar este recorte; a montagem manual continua como foco da pagina.",
+        meta: "12 questoes · ~25 min",
+        cta_label: "Usar sugestao",
+        rationale: "Erro recente e alta cobranca em banca paulista.",
+        area: "GO",
+        area_label: "GO",
+        signals: [{ key: "weak_area", label: "queda recente", severity: "warning" }],
+        start_payload: { mode: "adaptive", resolution_mode: "training", area: "GO", answer_status: "needs_review", only_unanswered: false, limit: 12, knowledge_node_ids: ["go-node"] },
+        generated_at: NOW,
+      });
+    }
+    if (method === "GET" && path === "/api/question-bank/performance") {
+      return fulfillJson(route, { areas: [{ area: "GO", label: "GO", questions_seen: 72, accuracy: 0.64, wrong_count: 26, due_count: 8, readiness: 0.58, level: "atencao", next_action: "Treinar pre-eclampsia" }], exam: { simulation_count: 2, accuracy: 0.71, avg_time_ms: 94000, slow_rate: 0.18 }, generated_at: NOW });
+    }
+    if (method === "GET" && path === "/api/question-bank/bootstrap") return fulfillJson(route, questionBankBootstrap());
+    if (method === "GET" && path === "/api/question-bank/facets") {
+      const bootstrap = questionBankBootstrap();
+      return fulfillJson(route, { years: bootstrap.years, boards: bootstrap.sources.filter((item) => item.option_kind === "board"), exams: bootstrap.sources.filter((item) => item.option_kind === "exam"), institutions: bootstrap.sources.filter((item) => item.option_kind === "institution"), states: bootstrap.states });
+    }
+    if (method === "GET" && path === "/api/question-bank/topics") return fulfillJson(route, questionBankBootstrap().topics);
+    if (method === "GET" && path === "/api/question-bank/availability") return fulfillJson(route, questionBankAvailability());
+    if (method === "GET" && path === "/api/question-bank/questions") {
+      return fulfillJson(route, [
+        {
+          id: "q-preview-1",
+          stem: "Gestante com PA 170/110, cefaleia e proteinuria. Qual a conduta?",
+          alternatives: { A: "Sulfato de magnesio e interrupcao planejada", B: "Alta com retorno", C: "Tocolise ate termo" },
+          answer: null,
+          difficulty_estimate: 0.58,
+          classification_confidence: 0.94,
+          content_grade: "reviewed",
+          knowledge_nodes: [qbankTopic()],
+          primary_microcompetency_label: "Pre-eclampsia grave",
+          source: { institution: "USP", board_code: "USP-SP", year: 2025 },
+          metadata: { state_code: "SP" },
+        },
+      ]);
+    }
     if (method === "GET" && path === "/api/question-bank/sessions") return fulfillJson(route, []);
     if (method === "GET" && path === "/api/question-bank/sessions/design_session") return fulfillJson(route, sessionPayload(false));
     if (method === "PUT" && path === "/api/question-bank/sessions/design_session/items/1/attempt") return fulfillJson(route, sessionPayload(true));
@@ -549,6 +712,11 @@ async function axe(page) {
     impact: violation.impact,
     description: violation.description,
     nodes: violation.nodes.length,
+    targets: violation.nodes.slice(0, 8).map((node) => ({
+      target: node.target,
+      html: node.html,
+      summary: node.failureSummary,
+    })),
   }));
 }
 
@@ -572,7 +740,15 @@ async function runViewport(browser, viewport) {
 
   async function visit(path, name, assertion, runAxe = false) {
     await page.goto(path, { waitUntil: "domcontentloaded" });
-    await assertion();
+    try {
+      await assertion();
+    } catch (error) {
+      const debugBase = `${viewport.name}-${name}-debug`;
+      await page.screenshot({ path: resolve(OUT_DIR, `${debugBase}.png`), fullPage: true, animations: "disabled" }).catch(() => null);
+      writeFileSync(resolve(OUT_DIR, `${debugBase}.txt`), await page.locator("body").innerText().catch(() => ""));
+      writeFileSync(resolve(OUT_DIR, `${debugBase}.html`), await page.content().catch(() => ""));
+      throw error;
+    }
     await assertNoOverflow(page);
     report.screenshots.push(await capture(page, `${viewport.name}-${name}`));
     if (runAxe) report.axeViolations[name] = await axe(page);
@@ -592,7 +768,14 @@ async function runViewport(browser, viewport) {
   }, !viewport.mobile);
 
   await visit("/estatisticas", "acompanhar", async () => {
-    await page.getByText(/Dados das .*ltimas 12 semanas/).waitFor({ state: "visible", timeout: 30_000 });
+    await page.locator("svg.recharts-surface").first().waitFor({ state: "visible", timeout: 30_000 });
+  }, !viewport.mobile);
+
+  await visit("/banco-de-questoes", "praticar", async () => {
+    await page.getByText("Montar sessão").waitFor({ state: "visible", timeout: 30_000 });
+    await page.getByText("Banca, ano e histórico").click();
+    await page.getByText("Estado da prova").waitFor({ state: "visible", timeout: 30_000 });
+    await page.getByText("SP").first().waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
   await visit("/banco-de-questoes/sessao/design_session", "questao-resolver", async () => {

@@ -22,9 +22,9 @@ const RISK_LABELS: Record<WeeklyOpsRiskLevel, string> = {
 };
 
 const RISK_TEXT: Record<WeeklyOpsRiskLevel, string> = {
-  low: "text-emerald-600",
-  medium: "text-amber-700",
-  high: "text-red-600",
+  low: "text-success",
+  medium: "text-warning",
+  high: "text-danger",
 };
 
 type PopupPosition = {

@@ -17,7 +17,6 @@ import { BancoDeQuestoesInsights } from "./_components/BancoDeQuestoesInsights";
 import { MetacognitionInsights } from "./_components/MetacognitionInsights";
 import { MeuModelo } from "./_components/MeuModelo";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
-import { TrainerContextStrip } from "@/components/trainer/TrainerContextStrip";
 import { getAuthToken } from "@/lib/auth";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
@@ -29,10 +28,8 @@ import {
 } from "@/components/student/StudentExperienceUI";
 import { useStudentExperience } from "@/lib/StudentExperienceContext";
 import {
-  StudentBackupActions,
   StudentDeepLinks,
   StudentDetailsDisclosure,
-  StudentPrimaryAction,
   StudentSurfaceInsight,
   StudentSurfaceSnapshot,
 } from "@/components/student/StudentActionSurface";
@@ -369,7 +366,6 @@ export default function EstatisticasClientPage() {
       {trackHome ? (
         <>
           <StudentSurfaceInsight surface={trackHome} />
-          <StudentPrimaryAction action={trackHome.primary_action} />
           <StudentDetailsDisclosure
             title="Métricas e gráficos"
             status={trackHome.status}
@@ -395,7 +391,6 @@ export default function EstatisticasClientPage() {
           ]}
         />
       ) : null}
-      <TrainerContextStrip sourcePage="/acompanhar" />
       <DesempenhoTab
         loading={false}
         error=""

@@ -449,6 +449,8 @@ export default function FocusedQuestion({
   const hasRuleComposerContent = Boolean(correctionDraft.trim()) || hasGuidedResponses;
   const overlayOpen = settingsOpen || whyOpen || highlightSelection !== null;
   const focusActive = focusMode || browserFullscreen;
+  const useWideReadingLayout = flowKind === "simulation" || presentationMode === "exam";
+  const showStemMeta = prefs.sourceVisible;
 
   const closeSettings = useCallback(() => {
     setSettingsOpen(false);
@@ -799,7 +801,14 @@ export default function FocusedQuestion({
       </header>
 
       <main
-        className={cx("mx-auto w-full flex-1 px-4 md:px-6", focusActive ? "max-w-6xl py-3 md:py-4" : "max-w-4xl py-5 md:py-7")}
+        className={cx(
+          "mx-auto w-full flex-1 px-4 md:px-6",
+          focusActive
+            ? "max-w-6xl py-3 md:py-4"
+            : useWideReadingLayout
+              ? "max-w-5xl py-4 md:py-5"
+              : "max-w-4xl py-5 md:py-7",
+        )}
         onMouseUp={() => {
           window.setTimeout(captureTextSelection, 0);
         }}
@@ -808,18 +817,23 @@ export default function FocusedQuestion({
         }}
       >
         <section className={cx("rounded-lg bg-surface p-4 md:p-5", focusActive ? "border border-transparent" : "border border-edge")}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {prefs.sourceVisible ? <p className="text-xs text-muted">{formatSourceLabel(item.source)}</p> : <span />}
-            <div className="flex items-center gap-1.5">
+          {showStemMeta && (
+            <div className={cx("flex flex-wrap items-center gap-3", prefs.sourceVisible ? "justify-between" : "justify-end")}>
+              {prefs.sourceVisible && <p className="text-xs text-muted">{formatSourceLabel(item.source)}</p>}
               {item.selected_option && (
                 <span className="rounded-full border border-edge bg-paper px-2.5 py-1 text-xs font-semibold text-muted">
                   Resposta {item.selected_option}
                 </span>
               )}
             </div>
-          </div>
+          )}
           <p
-            className={cx("paper-reading mt-5 whitespace-pre-wrap text-ink", fontScale.stemClass)}
+            className={cx(
+              "paper-reading whitespace-pre-wrap text-ink",
+              showStemMeta ? "mt-5" : "mt-0",
+              fontScale.stemClass,
+              useWideReadingLayout && "max-w-none [text-align:justify]",
+            )}
             data-highlight-target="stem"
           >
             {renderHighlightedText(item.stem, highlightsForTarget(item, "stem"), openHighlightToolbar)}
@@ -867,7 +881,10 @@ export default function FocusedQuestion({
                     {option}
                   </span>
                   <span
-                    className={cx("min-w-0 flex-1 leading-relaxed", isEliminated && !selected && "text-muted line-through")}
+                    className={cx(
+                      "min-w-0 flex-1 leading-relaxed",
+                      isEliminated && !selected && "text-muted line-through",
+                    )}
                     data-highlight-target="alternative"
                     data-highlight-option={option}
                   >
@@ -1170,7 +1187,12 @@ export default function FocusedQuestion({
 
       {!canUsePostAnswerActions && (
         <footer className={cx("sticky bottom-0 z-10 bg-paper/95 px-4 backdrop-blur", focusActive ? "border-t border-transparent py-2" : "border-t border-edge py-3")}>
-          <div className={cx("mx-auto flex flex-wrap items-center justify-between gap-3", focusActive ? "max-w-6xl" : "max-w-4xl")}>
+          <div
+            className={cx(
+              "mx-auto flex flex-wrap items-center justify-between gap-3",
+              focusActive ? "max-w-6xl" : useWideReadingLayout ? "max-w-5xl" : "max-w-4xl",
+            )}
+          >
             <button
               type="button"
               onClick={onToggleDoubtful}

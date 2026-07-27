@@ -7,7 +7,6 @@ import {
   browseQuestionBankTopics,
   createQuestionBankSession,
   getQuestionBankBootstrap,
-  getQuestionBankPracticeHome,
   getReviewAgenda,
   getQuestionBankNextAction,
   getQuestionBankPerformance,
@@ -23,11 +22,11 @@ import {
   type QuestionBankResolutionMode,
   type QuestionBankSessionCreatePayload,
   type QuestionBankSourceOption,
+  type QuestionBankStateOption,
   type QuestionBankTopic,
   type QuestionBankYearStat,
   type FullExamType,
   type StudyKind,
-  type StudentSurfaceHome,
 } from "@/lib/api";
 import { useNavbar } from "@/lib/NavbarContext";
 import { buildSessionCreateFromTrainerPayload } from "@/lib/trainer/session";
@@ -35,10 +34,6 @@ import { useAuthToken } from "@/lib/useAuthToken";
 import { useToast } from "@/lib/useToast";
 import { GuidanceNote } from "@/components/GuidanceNote";
 import { DataFreshness, StudentPageHeader } from "@/components/student/StudentExperienceUI";
-import {
-  StudentBackupActions,
-  StudentPrimaryAction,
-} from "@/components/student/StudentActionSurface";
 import { useStudentExperience } from "@/lib/StudentExperienceContext";
 import type { GuidanceTone } from "@/lib/guidanceCopy";
 import FiltersBar from "./_components/FiltersBar";
@@ -388,7 +383,9 @@ function BancoDeQuestoesContent() {
   const [boardCodes, setBoardCodes] = useState<string[]>([]);
   const [examCodes, setExamCodes] = useState<string[]>([]);
   const [institutions, setInstitutions] = useState<string[]>([]);
+  const [stateCodes, setStateCodes] = useState<string[]>([]);
   const [sources, setSources] = useState<QuestionBankSourceOption[]>([]);
+  const [states, setStates] = useState<QuestionBankStateOption[]>([]);
   const [sourcesLoading, setSourcesLoading] = useState(true);
   const [sourcesError, setSourcesError] = useState(false);
   const [yearStats, setYearStats] = useState<QuestionBankYearStat[]>([]);
@@ -421,7 +418,6 @@ function BancoDeQuestoesContent() {
   const [busy, setBusy] = useState(false);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [practiceHome, setPracticeHome] = useState<StudentSurfaceHome | null>(null);
   const [nextAction, setNextAction] = useState<QuestionBankNextAction | null>(null);
   const [nextActionLoading, setNextActionLoading] = useState(true);
   const [performance, setPerformance] = useState<QuestionBankPerformance | null>(null);
@@ -457,6 +453,7 @@ function BancoDeQuestoesContent() {
   const appliedFilterCount = [
     area,
     boardCodes.length + examCodes.length + institutions.length > 0 ? "sources" : "",
+    stateCodes.length > 0 ? "states" : "",
     selectedYears.length > 0 ? "years" : "",
     answerStatus !== "unanswered" ? answerStatus : "",
     correctionStatus !== "all" ? correctionStatus : "",
@@ -505,6 +502,7 @@ function BancoDeQuestoesContent() {
     setCorrectionStatus("all");
     setLimit(clampQuestionLimit(context.expectedQuestions ?? 10));
     setStudyKind("topic");
+    setStateCodes([]);
     setSelectedTopics([]);
     const bootstrap = bootstrapRef.current;
     if (bootstrap) {
@@ -562,6 +560,7 @@ function BancoDeQuestoesContent() {
     board_codes: boardCodes.length > 0 ? boardCodes : undefined,
     exam_codes: examCodes.length > 0 ? examCodes : undefined,
     institutions: institutions.length > 0 ? institutions : undefined,
+    state_codes: stateCodes.length > 0 ? stateCodes : undefined,
     years: selectedYears.length > 0 ? selectedYears : undefined,
     include_no_year: includeNoYear || undefined,
     search: normalizedSearch || undefined,
@@ -569,7 +568,7 @@ function BancoDeQuestoesContent() {
     only_unanswered: answerStatus === "unanswered",
     correction_status: correctionStatus,
     limit: overrides?.limit,
-  }), [answerStatus, area, boardCodes, correctionStatus, examCodes, includeNoYear, institutions, normalizedSearch, selectedTopics, selectedYears]);
+  }), [answerStatus, area, boardCodes, correctionStatus, examCodes, includeNoYear, institutions, normalizedSearch, selectedTopics, selectedYears, stateCodes]);
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -624,6 +623,7 @@ function BancoDeQuestoesContent() {
         board_codes: boardCodes.length > 0 ? boardCodes : undefined,
         exam_codes: examCodes.length > 0 ? examCodes : undefined,
         institutions: institutions.length > 0 ? institutions : undefined,
+        state_codes: stateCodes.length > 0 ? stateCodes : undefined,
         years: selectedYears.length > 0 ? selectedYears : undefined,
         include_empty: false,
         limit: 1000,
@@ -655,7 +655,7 @@ function BancoDeQuestoesContent() {
       }
       setTopicsLoading(false);
     }
-  }, [boardCodes, examCodes, institutions, selectedYears, showToast, token]);
+  }, [boardCodes, examCodes, institutions, selectedYears, showToast, stateCodes, token]);
 
   const loadBootstrap = useCallback(async () => {
     setSourcesLoading(true);
@@ -669,6 +669,7 @@ function BancoDeQuestoesContent() {
       bootstrapRef.current = bootstrap;
       const split = splitBootstrapTopics(bootstrap.topics);
       setSources(bootstrap.sources);
+      setStates(bootstrap.states ?? []);
       setYearStats(bootstrap.years);
       setTaxonomyTopics(split.taxonomy);
       setMicroTopics(split.micros);
@@ -677,6 +678,7 @@ function BancoDeQuestoesContent() {
       bootstrapRef.current = null;
       setBootstrapReady(false);
       setSources([]);
+      setStates([]);
       setYearStats([]);
       setTaxonomyTopics([]);
       setMicroTopics([]);
@@ -710,6 +712,7 @@ function BancoDeQuestoesContent() {
       board_codes: boardCodes.length > 0 ? boardCodes : undefined,
       exam_codes: examCodes.length > 0 ? examCodes : undefined,
       institutions: institutions.length > 0 ? institutions : undefined,
+      state_codes: stateCodes.length > 0 ? stateCodes : undefined,
       years: selectedYears.length > 0 ? selectedYears : undefined,
       correction_status: correctionStatus,
     });
@@ -731,6 +734,7 @@ function BancoDeQuestoesContent() {
           board_codes: boardCodes.length > 0 ? boardCodes : undefined,
           exam_codes: examCodes.length > 0 ? examCodes : undefined,
           institutions: institutions.length > 0 ? institutions : undefined,
+          state_codes: stateCodes.length > 0 ? stateCodes : undefined,
           years: selectedYears.length > 0 ? selectedYears : undefined,
           correction_status: correctionStatus,
         },
@@ -739,6 +743,7 @@ function BancoDeQuestoesContent() {
       if (facetsRequestSeq.current !== seq) return;
       setYearStats(facets.years);
       setSources([...facets.exams, ...facets.boards, ...facets.institutions]);
+      setStates(facets.states ?? []);
     } catch (err) {
       if (controller.signal.aborted || isAbortError(err)) return;
       // Keep the last good options on a transient facet error.
@@ -746,18 +751,19 @@ function BancoDeQuestoesContent() {
       if (facetsAbortRef.current === controller) facetsAbortRef.current = null;
       if (facetsInFlightRef.current?.key === requestKey) facetsInFlightRef.current = null;
     }
-  }, [area, boardCodes, correctionStatus, examCodes, institutions, normalizedSearch, selectedTopics, selectedYears, token]);
+  }, [area, boardCodes, correctionStatus, examCodes, institutions, normalizedSearch, selectedTopics, selectedYears, stateCodes, token]);
 
   useEffect(() => {
     if (!tokenResolved || !bootstrapReady) return;
     const hasFacetFilters = Boolean(
       area || normalizedSearch || selectedTopics.length || boardCodes.length || examCodes.length ||
-      institutions.length || selectedYears.length || correctionStatus !== "all"
+      institutions.length || stateCodes.length || selectedYears.length || correctionStatus !== "all"
     );
     if (!hasFacetFilters) {
       const bootstrap = bootstrapRef.current;
       if (bootstrap) {
         setSources(bootstrap.sources);
+        setStates(bootstrap.states ?? []);
         setYearStats(bootstrap.years);
       }
       return;
@@ -766,7 +772,7 @@ function BancoDeQuestoesContent() {
       void refreshFacets();
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [area, boardCodes.length, bootstrapReady, correctionStatus, examCodes.length, institutions.length, normalizedSearch, refreshFacets, selectedTopics.length, selectedYears.length, tokenResolved]);
+  }, [area, boardCodes.length, bootstrapReady, correctionStatus, examCodes.length, institutions.length, normalizedSearch, refreshFacets, selectedTopics.length, selectedYears.length, stateCodes.length, tokenResolved]);
 
   useEffect(() => {
     if (!tokenResolved || !bootstrapReady) return;
@@ -779,7 +785,7 @@ function BancoDeQuestoesContent() {
   useEffect(() => {
     if (!tokenResolved || !bootstrapReady) return;
     const hasStructuralTopicFilters = Boolean(
-      boardCodes.length || examCodes.length || institutions.length || selectedYears.length
+      boardCodes.length || examCodes.length || institutions.length || stateCodes.length || selectedYears.length
     );
     if (!hasStructuralTopicFilters) {
       const bootstrap = bootstrapRef.current;
@@ -795,7 +801,7 @@ function BancoDeQuestoesContent() {
       void refreshTopics();
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [boardCodes.length, bootstrapReady, examCodes.length, institutions.length, refreshTopics, selectedYears.length, tokenResolved]);
+  }, [boardCodes.length, bootstrapReady, examCodes.length, institutions.length, refreshTopics, selectedYears.length, stateCodes.length, tokenResolved]);
 
   // ─── Handlers ────────────────────────────────────────────────────────────
 
@@ -828,6 +834,11 @@ function BancoDeQuestoesContent() {
     setBoardCodes(next.boardCodes);
     setExamCodes(next.examCodes);
     setInstitutions(next.institutions);
+    clearSelection();
+  }
+
+  function handleStateCodesChange(next: string[]) {
+    setStateCodes(next.map((value) => value.trim().toUpperCase()).filter(Boolean));
     clearSelection();
   }
 
@@ -920,13 +931,6 @@ function BancoDeQuestoesContent() {
       })
       .finally(() => {
         if (active) setNextActionLoading(false);
-      });
-    getQuestionBankPracticeHome(token)
-      .then((home) => {
-        if (active) setPracticeHome(home);
-      })
-      .catch(() => {
-        if (active) setPracticeHome(null);
       });
     getQuestionBankPerformance(token)
       .then((p) => {
@@ -1025,17 +1029,10 @@ function BancoDeQuestoesContent() {
           ) : null}
         />
 
-        {practiceHome ? (
-          <>
-            <StudentPrimaryAction action={practiceHome.primary_action} eyebrow="Resolver agora" />
-            <StudentBackupActions actions={practiceHome.backup_actions} />
-          </>
-        ) : null}
-
-        <section className="rounded-xl border border-edge bg-surface px-4 py-3" aria-label="Sessão recomendada" aria-busy={nextActionLoading}>
+        <section className="rounded-lg border border-edge bg-surface px-4 py-3" aria-label="Sugestão adaptativa discreta" aria-busy={nextActionLoading}>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Atalho adaptativo</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Sugestão opcional</p>
               {nextActionLoading ? (
                 <div className="mt-2 flex animate-pulse flex-col gap-2" aria-hidden="true">
                   <div className="h-5 w-56 max-w-full rounded bg-surfaceMuted" />
@@ -1072,9 +1069,9 @@ function BancoDeQuestoesContent() {
               type="button"
               onClick={() => void startRecommendedSession()}
               disabled={busy || nextActionLoading}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 disabled:opacity-50"
+              className="paper-control inline-flex shrink-0 items-center justify-center gap-2 border border-edge bg-paper px-4 py-2 text-sm font-semibold text-ink transition hover:border-primary disabled:opacity-50"
             >
-              {busy ? "Preparando..." : nextActionLoading ? "Carregando..." : recommended.cta_label}
+              {busy ? "Preparando..." : nextActionLoading ? "Carregando..." : "Usar sugestão"}
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
                 <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
               </svg>
@@ -1154,10 +1151,13 @@ function BancoDeQuestoesContent() {
                   boardCodes={boardCodes}
                   examCodes={examCodes}
                   institutions={institutions}
+                  stateCodes={stateCodes}
                   sources={sources}
+                  states={states}
                   sourcesLoading={sourcesLoading}
                   sourcesError={sourcesError}
                   onSourceSelectionChange={handleSourceSelectionChange}
+                  onStateCodesChange={handleStateCodesChange}
                   onSourcesRetry={() => void loadBootstrap()}
                   yearStats={yearStats}
                   yearsLoading={yearsLoading}

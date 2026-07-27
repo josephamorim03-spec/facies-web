@@ -37,12 +37,12 @@
   --mobile-nav-height: 4rem;
 
   /* Area palette — matches tailwind.config.js area.* tokens */
-  --area-go:  #B65AA0;
-  --area-ped: #2E79A8;
-  --area-mp:  #A97816;
-  --area-cg:  #B44A4F;
-  --area-cm:  #2D8B62;
-  --area-ou:  #8C928E;
+  --area-go:  #8F3F7D;
+  --area-ped: #1F6388;
+  --area-mp:  #7A560E;
+  --area-cg:  #963B40;
+  --area-cm:  #1F6B4C;
+  --area-ou:  #5F6762;
   --area-full-exam: #0F4C5C;
 }
 

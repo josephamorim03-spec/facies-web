@@ -1,10 +1,6 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import type { QuestionBankLongitudinalDiagnosis, StudyPerformanceSummary } from "@/lib/api";
-import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
-
-// Sinais de metacognição do banco (pegadinha, confiança, impulsividade, domínio
-// por tópico). Antes viviam no Histórico; a análise pertence ao Desempenho.
 
 function formatPct(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
@@ -16,15 +12,6 @@ function pctNumber(value: number | null | undefined): number {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return 0;
   const normalized = Math.abs(Number(value)) <= 1 ? Number(value) * 100 : Number(value);
   return Math.max(0, Math.min(100, Math.round(normalized)));
-}
-
-function IconArrowRight({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M4 10h12" />
-      <path d="m11 5 5 5-5 5" />
-    </svg>
-  );
 }
 
 export function MetacognitionInsights({
@@ -71,7 +58,9 @@ export function MetacognitionInsights({
       <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-serif text-2xl font-semibold">Temas para revisar</h2>
-          <Link href="/dados-e-relatorios/relatorio" className="text-xs font-semibold text-primary hover:underline">Ver todos</Link>
+          <Link href="/dados-e-relatorios/relatorio" className="text-xs font-semibold text-primary hover:underline">
+            Ver todos
+          </Link>
         </div>
         <div className="mt-4 space-y-3">
           {weakThemes.slice(0, 5).length > 0 ? weakThemes.slice(0, 5).map((theme) => (
@@ -140,33 +129,6 @@ export function MetacognitionInsights({
           </div>
         </section>
       )}
-
-      <section className="rounded-lg border border-edge bg-surface p-5 shadow-sm lg:col-span-2">
-        <h2 className="font-serif text-2xl font-semibold">Ações recomendadas</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <Link href="/banco-de-questoes?answer_status=wrong" className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-paper p-4 hover:border-primary">
-            <div>
-              <p className="text-sm font-semibold text-primary">Revisar só erros</p>
-              <p className="mt-1 text-xs text-muted">Foque nas questões erradas no banco.</p>
-            </div>
-            <IconArrowRight className="h-4 w-4 text-muted" />
-          </Link>
-          <Link href="/hoje" className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-paper p-4 hover:border-primary">
-            <div>
-              <p className="text-sm font-semibold text-primary">Executar pendências</p>
-              <p className="mt-1 text-xs text-muted">Voltar ao plano do dia.</p>
-            </div>
-            <IconArrowRight className="h-4 w-4 text-muted" />
-          </Link>
-          <Link href={REVIEW_ROUTES.adaptiveCards} className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-paper p-4 hover:border-primary">
-            <div>
-              <p className="text-sm font-semibold text-primary">Reforçar flashcards</p>
-              <p className="mt-1 text-xs text-muted">Feche lacunas com repetição espaçada.</p>
-            </div>
-            <IconArrowRight className="h-4 w-4 text-muted" />
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }
