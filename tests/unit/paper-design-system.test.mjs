@@ -11,7 +11,7 @@ test("Paper exposes the reading and motion contracts", () => {
     "--motion-base: 180ms",
     "--motion-slow: 240ms",
     "--radius-control: 0.5rem",
-    "--radius-surface: 0.75rem",
+    "--radius-surface: 0.5rem",
   ]) {
     assert.match(css, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }

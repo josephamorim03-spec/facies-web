@@ -25,8 +25,8 @@
   --range-rest: #D4CEC1;
   --range-thumb: var(--color-primary);
   --radius-control: 0.5rem;
-  --radius-surface: 0.75rem;
-  --radius-hero: 1rem;
+  --radius-surface: 0.5rem;
+  --radius-hero: 0.5rem;
   --reading-measure: 68ch;
   --content-wide: 72rem;
   --space-page: clamp(1rem, 2vw, 1.5rem);

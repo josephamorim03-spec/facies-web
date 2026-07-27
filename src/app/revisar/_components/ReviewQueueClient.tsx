@@ -80,10 +80,10 @@ function filterCount(queue: TrainerReviewQueue, filter: QueueFilter): number {
 function QueueSkeleton() {
   return (
     <div className="space-y-5" aria-label="Carregando fila de revisão">
-      <Skeleton className="h-44 w-full rounded-2xl" />
+      <Skeleton className="h-44 w-full rounded-surface" />
       <div className="grid gap-3 md:grid-cols-2">
-        <Skeleton className="h-32 w-full rounded-2xl" />
-        <Skeleton className="h-32 w-full rounded-2xl" />
+        <Skeleton className="h-32 w-full rounded-surface" />
+        <Skeleton className="h-32 w-full rounded-surface" />
       </div>
     </div>
   );
@@ -100,6 +100,7 @@ function OutcomeCard({ queue }: { queue: TrainerReviewQueue }) {
 function ReviewSourceSummary({ queue }: { queue: TrainerReviewQueue }) {
   const load = queue.daily_load.review_load;
   const cards = queue.flashcards_overview;
+  const estimatedMinutes = load?.estimated_minutes ?? queue.daily_load.prescribed_minutes;
   const items = [
     {
       label: "Cronograma",
@@ -118,16 +119,22 @@ function ReviewSourceSummary({ queue }: { queue: TrainerReviewQueue }) {
     },
   ];
   return (
-    <section className="grid gap-3 sm:grid-cols-3" aria-label="Fontes de revisao">
-      {items.map((item) => (
-        <div key={item.label} className="rounded-xl border border-edge bg-surface px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{item.label}</p>
-          <div className="mt-2 flex items-end justify-between gap-3">
-            <span className="font-serif text-3xl font-semibold leading-none text-ink">{item.value}</span>
-            <span className="pb-0.5 text-right text-xs text-muted">{item.detail}</span>
+    <section className="rounded-surface border border-edge bg-surface px-4 py-4 sm:px-5" aria-label="Carga de revisao">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+        <h2 className="font-serif text-xl font-semibold text-ink">Carga de revisão</h2>
+        <p className="text-sm tabular-nums text-muted">≈ {estimatedMinutes} min hoje</p>
+      </div>
+      <dl className="mt-4 divide-y divide-edge">
+        {items.map((item) => (
+          <div key={item.label} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-2.5">
+            <dt className="min-w-0">
+              <span className="block text-sm font-medium text-ink">{item.label}</span>
+              <span className="block text-xs leading-5 text-muted">{item.detail}</span>
+            </dt>
+            <dd className="font-serif text-2xl font-semibold tabular-nums leading-none text-ink">{item.value}</dd>
           </div>
-        </div>
-      ))}
+        ))}
+      </dl>
     </section>
   );
 }
@@ -149,7 +156,7 @@ function FlashcardsOverviewPanel({
   const hasDue = overview.due_count > 0;
   const preview = overview.priority_preview.slice(0, 3);
   return (
-    <section className="rounded-2xl border border-edge bg-surface p-4 sm:p-5" aria-labelledby="flashcards-review-title">
+    <section className="rounded-surface border border-edge bg-surface p-4 sm:p-5" aria-labelledby="flashcards-review-title">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
@@ -183,7 +190,7 @@ function FlashcardsOverviewPanel({
               onStale={onStale}
             />
           ) : !surfaceHomeVisible ? (
-            <Link href={REVIEW_ROUTES.adaptiveCards} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary hover:bg-surfaceMuted">
+            <Link href={REVIEW_ROUTES.adaptiveCards} className="paper-control inline-flex min-h-11 items-center justify-center border border-primary px-4 py-2.5 text-sm font-semibold text-primary hover:bg-surfaceMuted">
               Abrir cards
             </Link>
           ) : null}
@@ -195,7 +202,7 @@ function FlashcardsOverviewPanel({
       {preview.length > 0 && (
         <div className="mt-4 grid gap-2 md:grid-cols-3">
           {preview.map((item) => (
-            <div key={item.note_id} className="rounded-xl border border-edge bg-paper px-3 py-3">
+            <div key={item.note_id} className="rounded-surface border border-edge bg-paper px-3 py-3">
               <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">{item.area} | {item.context.label}</p>
               <p className="mt-1 line-clamp-2 text-sm font-semibold text-ink">{item.insight_question}</p>
               <p className="mt-1 truncate text-xs text-muted">{item.theme}</p>
@@ -256,7 +263,7 @@ function QueueRow({
   onStale: () => void;
 }) {
   return (
-    <article className="rounded-2xl border border-edge bg-surface p-4 sm:p-5">
+    <article className="rounded-surface border border-edge bg-surface p-4 sm:p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
@@ -371,7 +378,7 @@ export function ReviewQueueClient() {
       {loading ? (
         <QueueSkeleton />
       ) : error ? (
-        <section className="rounded-2xl border border-danger/30 bg-surface p-5">
+        <section className="rounded-surface border border-danger/30 bg-surface p-5">
           <p className="text-sm text-danger">{error}</p>
           <button type="button" onClick={() => void load()} className="mt-4 text-sm font-semibold text-primary hover:underline">
             Tentar novamente
@@ -438,7 +445,7 @@ export function ReviewQueueClient() {
                   <QueueRow key={item.action.action_id ?? `${item.rank}-${item.action.kind}`} queue={queue} item={item} onStale={() => void load()} />
                 ))}
                 {remaining.length === 0 && (
-                  <p className="rounded-xl border border-dashed border-edge px-4 py-6 text-center text-sm text-muted">
+                  <p className="rounded-surface border border-dashed border-edge px-4 py-6 text-center text-sm text-muted">
                     {filter === "cards" && queue.flashcards_overview
                       ? "Nenhuma acao urgente de cards agora. O resumo acima mostra o que ja existe no caderno."
                       : "Nenhuma outra ação deste tipo na fila atual."}

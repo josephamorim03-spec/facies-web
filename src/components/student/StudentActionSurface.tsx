@@ -26,7 +26,7 @@ export function StudentPrimaryAction({
   eyebrow?: string;
 }) {
   return (
-    <section className="rounded-surface border border-edge bg-paper px-4 py-5 shadow-soft sm:px-6">
+    <section className="rounded-surface border border-edge bg-paper px-4 py-5 sm:px-6">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0 space-y-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">

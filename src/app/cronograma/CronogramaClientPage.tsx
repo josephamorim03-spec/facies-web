@@ -383,27 +383,9 @@ export default function CronogramaPage() {
         </div>
       ) : null}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
-      {planHome && !searchOpen ? (
-        <div className="space-y-3">
-          <StudentPrimaryAction action={planHome.primary_action} />
-          <StudentLoadNote load={planHome.load_note} />
-          <StudentBackupActions actions={planHome.backup_actions} />
-        </div>
-      ) : null}
-
-      <CronogramaStreakCard streak={streak} loading={streakLoading} />
-
-      {!loading && (
-        <CronogramaTodayPanel
-          todayTasks={todayReviewTasks}
-          todayStudies={todayStudies}
-          questionReviewQueue={questionReviewQueue}
-        />
-      )}
-
-      <div data-calendar-summary-stack="true" className="-mx-4 md:-mx-6">
+      <div data-calendar-summary-stack="true" aria-label="Calendário mensal" className="-mx-4 md:-mx-6">
         <CronogramaCalendarView
           tasks={filteredTasksForDisplay}
           doneTasks={doneTasks}
@@ -427,6 +409,24 @@ export default function CronogramaPage() {
           }}
         />
       </div>
+
+      {planHome && !searchOpen ? (
+        <div className="space-y-3">
+          <StudentPrimaryAction action={planHome.primary_action} />
+          <StudentLoadNote load={planHome.load_note} />
+          <StudentBackupActions actions={planHome.backup_actions} />
+        </div>
+      ) : null}
+
+      <CronogramaStreakCard streak={streak} loading={streakLoading} />
+
+      {!loading && (
+        <CronogramaTodayPanel
+          todayTasks={todayReviewTasks}
+          todayStudies={todayStudies}
+          questionReviewQueue={questionReviewQueue}
+        />
+      )}
 
       {/* Revisões atrasadas — discreto, embaixo do calendário */}
       {new Date().getHours() >= 20 && tasks.filter((t) => t.is_overdue).length > 0 && (

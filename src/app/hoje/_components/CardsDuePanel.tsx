@@ -17,12 +17,12 @@ export function CardsDuePanel({ overview }: { overview: OperationalTurboOverview
 
   return (
     <section
-      className="rounded-surface border bg-surface p-5 shadow-soft"
+      className="rounded-surface border bg-surface p-5"
       style={{ borderColor: "color-mix(in srgb, var(--color-accent) 28%, var(--color-edge))" }}
     >
       <div className="flex items-center gap-4">
         <div
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-accent"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-surface text-accent"
           style={{ backgroundColor: "color-mix(in srgb, var(--color-accent) 12%, transparent)" }}
         >
           <IconCards className="h-8 w-8" />
@@ -43,4 +43,3 @@ export function CardsDuePanel({ overview }: { overview: OperationalTurboOverview
     </section>
   );
 }
-

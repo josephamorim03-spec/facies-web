@@ -1,4 +1,4 @@
-import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
+import { REVIEW_ROUTES } from "./reviewRoutes.ts";
 
 export type StudentIntent = "today" | "practice" | "review" | "track" | "plan";
 export type StudentNavIcon = "today" | "practice" | "review" | "track" | "plan";

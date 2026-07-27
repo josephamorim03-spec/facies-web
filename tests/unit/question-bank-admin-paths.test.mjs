@@ -43,3 +43,20 @@ test("question-bank proxy exposes only the consolidated editorial contract", () 
   assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/pedagogical-drafts"), false);
   assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/questions/q-1/anomaly-check"), false);
 });
+
+test("question-bank proxy allows governed AI operations without broad admin access", () => {
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/ai-enrichment/preflight"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/ai-enrichment/costs?days=30"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/ai-enrichment/drafts?status=pending_review"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/ai-enrichment/rollouts"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/ai-enrichment/rollouts/rollout-1/revert"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/ai-enrichment/request-batch"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/editorial-intelligence/coverage"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/editorial-intelligence/evidence-revalidation"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/editorial-memory/metrics"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/editorial-memory/register"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/taxonomy/suggestion-clusters"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("POST", "/v1/admin/taxonomy/suggestion-clusters/cluster-1/decision"), true);
+  assert.equal(isAllowedQuestionBankAdminPath("DELETE", "/v1/admin/ai-enrichment/rollouts/rollout-1"), false);
+  assert.equal(isAllowedQuestionBankAdminPath("GET", "/v1/admin/editorial-memory/items"), false);
+});

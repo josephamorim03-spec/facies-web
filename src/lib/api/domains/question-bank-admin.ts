@@ -724,12 +724,16 @@ export type QuestionBankAiCostEstimate = {
 
 export type QuestionBankAiEnrichmentResult = {
   dry_run: boolean;
+  rollout_id?: string | null;
+  visibility_policy?: string;
+  source_mode?: string;
   selected: number;
   enqueued: number;
   batch_mode?: boolean;
   batch_id?: string | null;
   counts: Record<string, number>;
   cost_estimate: QuestionBankAiCostEstimate;
+  rollout_cost_state?: Record<string, unknown> | null;
   results: Array<{
     status?: string;
     action?: string;
@@ -794,6 +798,9 @@ export async function getQuestionBankAiResolutionRequests(options?: {
 export async function previewQuestionBankAdminAiEnrichment(options?: {
   selectionLimit?: number;
   questionIds?: string[];
+  rolloutId?: string;
+  costCapBrl?: number;
+  requestedCapabilities?: string[];
 }): Promise<QuestionBankAiEnrichmentResult> {
   return api<QuestionBankAiEnrichmentResult>(
     "/api/admin/question-bank/ai-enrichment/request-batch",
@@ -804,6 +811,11 @@ export async function previewQuestionBankAdminAiEnrichment(options?: {
         dry_run: true,
         selection_limit: options?.selectionLimit,
         question_ids: options?.questionIds,
+        rollout_id: options?.rolloutId,
+        cost_cap_brl: options?.costCapBrl,
+        requested_capabilities: options?.requestedCapabilities,
+        visibility_policy: "approved_only",
+        source_mode: "canonical_adapter",
       }),
     },
   );
@@ -814,6 +826,10 @@ export async function runQuestionBankAdminAiEnrichment(options: {
   selectionLimit?: number;
   questionIds?: string[];
   batch?: boolean;
+  rolloutId?: string;
+  costCapBrl?: number;
+  actor?: string;
+  requestedCapabilities?: string[];
 }): Promise<QuestionBankAiEnrichmentResult> {
   return api<QuestionBankAiEnrichmentResult>(
     "/api/admin/question-bank/ai-enrichment/request-batch",
@@ -825,7 +841,295 @@ export async function runQuestionBankAdminAiEnrichment(options: {
         max_new_jobs: options.maxNewJobs,
         selection_limit: options.selectionLimit,
         question_ids: options.questionIds,
+        rollout_id: options.rolloutId,
+        cost_cap_brl: options.costCapBrl,
+        actor: options.actor,
+        requested_capabilities: options.requestedCapabilities,
+        visibility_policy: "approved_only",
+        source_mode: "canonical_adapter",
         batch_mode: options.batch === true ? true : undefined,
+      }),
+    },
+  );
+}
+
+export type QuestionBankAiPreflight = {
+  status: "ready" | "attention_required" | string;
+  counts: Record<string, number>;
+  adapter: Record<string, unknown>;
+  pipeline: Record<string, unknown>;
+  read_projection: Record<string, unknown>;
+  analysis_archive: {
+    ready: boolean;
+    archive_on_write: boolean;
+    bucket_configured: boolean;
+    credentials_configured: boolean;
+    schema_ready: boolean;
+  };
+  storage: {
+    state?: string | null;
+    recommendation?: string | null;
+    headroom_bytes?: number | null;
+    allows: Record<string, boolean>;
+    ai_growth_forecast: Record<string, unknown>;
+    observed_bytes_per_item?: number | null;
+  };
+  recomputed_lint: {
+    sample_size: number;
+    blockers: Record<string, number>;
+    sample: Array<Record<string, unknown>>;
+  };
+};
+
+export async function getQuestionBankAdminAiPreflight(sampleSize = 100): Promise<QuestionBankAiPreflight> {
+  const params = new URLSearchParams({ sample_size: String(Math.max(1, Math.min(1000, sampleSize))) });
+  return api<QuestionBankAiPreflight>(
+    `/api/admin/question-bank/ai-enrichment/preflight?${params.toString()}`,
+  );
+}
+
+export async function createQuestionBankAiRollout(options?: {
+  actor?: string;
+  scope?: string;
+  costCapBrl?: number;
+  hardStopFraction?: number;
+  visibilityPolicy?: "approved_only" | string;
+  metadata?: Record<string, unknown>;
+}): Promise<{
+  rollout_id: string;
+  status: string;
+  cost_cap_brl?: number | null;
+  hard_stop_fraction?: number;
+}> {
+  return api<{
+    rollout_id: string;
+    status: string;
+    cost_cap_brl?: number | null;
+    hard_stop_fraction?: number;
+  }>(
+    "/api/admin/question-bank/ai-enrichment/rollouts",
+    {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+    body: JSON.stringify({
+      actor: options?.actor,
+      scope: options?.scope ?? "baseline_2016_2026",
+      cost_cap_brl: options?.costCapBrl ?? 25,
+      hard_stop_fraction: options?.hardStopFraction ?? 0.8,
+      visibility_policy: options?.visibilityPolicy ?? "approved_only",
+      metadata: options?.metadata,
+    }),
+    },
+  );
+}
+
+export type QuestionBankAiCostSummary = {
+  schema_version: string;
+  days: number;
+  ledger: Array<Record<string, unknown>>;
+  batches: Array<Record<string, unknown>>;
+  rollouts?: Array<{
+    id: string;
+    status?: string | null;
+    scope?: string | null;
+    actor?: string | null;
+    cost_cap_brl?: number | string | null;
+    visibility_policy?: string | null;
+    created_at?: string | null;
+    cost_state?: {
+      allowed?: boolean;
+      actual_brl?: number | string | null;
+      reserved_brl?: number | string | null;
+      committed_brl?: number | string | null;
+      cap_brl?: number | string | null;
+      stop_brl?: number | string | null;
+      reason?: string | null;
+    };
+    artifact_summary?: Record<string, unknown>;
+  }>;
+  rollouts_error?: string;
+};
+
+export async function getQuestionBankAdminAiCosts(days = 30): Promise<QuestionBankAiCostSummary> {
+  const params = new URLSearchParams({ days: String(Math.max(1, Math.min(365, days))) });
+  return api<QuestionBankAiCostSummary>(
+    `/api/admin/question-bank/ai-enrichment/costs?${params.toString()}`,
+  );
+}
+
+export type QuestionBankEditorialIntelligenceCoverage = {
+  schema: string;
+  questions: {
+    published: number;
+    with_question_dna: number;
+    with_microcompetency: number;
+  };
+  drafts: Array<{
+    capability: string;
+    status: string;
+    count: number;
+    hot_payload_bytes: number;
+  }>;
+  validation: {
+    valid?: number;
+    blocked?: number;
+    unvalidated?: number;
+    revalidation_pending?: number;
+    superseded?: number;
+  };
+  memory: { approved?: number; inactive?: number };
+  drafts_error?: string;
+  memory_error?: string;
+};
+
+export type QuestionBankAiDraft = {
+  rollout_id: string;
+  question_id: string;
+  draft_kind: string;
+  status: string;
+  payload: Record<string, unknown>;
+  validation_report: {
+    valid?: boolean;
+    decision?: string;
+    errors?: string[];
+    warnings?: string[];
+    uncertain_fields?: string[];
+  };
+  question_version: number;
+  evidence_corpus_version: string;
+  stem_preview: string;
+  updated_at?: string | null;
+};
+
+export async function getQuestionBankEditorialIntelligenceCoverage(): Promise<QuestionBankEditorialIntelligenceCoverage> {
+  return api<QuestionBankEditorialIntelligenceCoverage>(
+    "/api/admin/question-bank/editorial-intelligence/coverage",
+  );
+}
+
+export async function getQuestionBankAiDrafts(options?: {
+  draftKind?: string;
+  status?: string;
+  limit?: number;
+}): Promise<{ drafts: QuestionBankAiDraft[] }> {
+  const params = new URLSearchParams();
+  if (options?.draftKind) params.set("draft_kind", options.draftKind);
+  params.set("status", options?.status ?? "pending_review");
+  params.set("limit", String(Math.max(1, Math.min(200, options?.limit ?? 20))));
+  return api<{ drafts: QuestionBankAiDraft[] }>(
+    `/api/admin/question-bank/ai-enrichment/drafts?${params.toString()}`,
+  );
+}
+
+export async function decideQuestionBankAiDraft(
+  questionId: string,
+  draftKind: string,
+  options: {
+    action: "approve" | "reject" | "request_changes";
+    actor?: string;
+    note?: string;
+    evidenceCorpusVersion?: string;
+  },
+): Promise<Record<string, unknown>> {
+  return api<Record<string, unknown>>(
+    `/api/admin/question-bank/questions/${encodeURIComponent(questionId)}/ai-enrichment-drafts/${encodeURIComponent(draftKind)}/decision`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+      body: JSON.stringify({
+        action: options.action,
+        actor: options.actor,
+        note: options.note,
+        evidence_corpus_version: options.evidenceCorpusVersion ?? "none",
+      }),
+    },
+  );
+}
+
+export async function markQuestionBankEvidenceRevalidation(options: {
+  evidenceCorpusVersion: string;
+  capabilities?: Array<"clinical_resolution" | "flashcard_template">;
+  actor?: string;
+}): Promise<Record<string, unknown>> {
+  return api<Record<string, unknown>>(
+    "/api/admin/question-bank/editorial-intelligence/evidence-revalidation",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+      body: JSON.stringify({
+        evidence_corpus_version: options.evidenceCorpusVersion,
+        capabilities: options.capabilities,
+        actor: options.actor,
+      }),
+    },
+  );
+}
+
+export async function revertQuestionBankAiRollout(
+  rolloutId: string,
+  options?: { actor?: string },
+): Promise<Record<string, unknown>> {
+  return api<Record<string, unknown>>(
+    `/api/admin/question-bank/ai-enrichment/rollouts/${encodeURIComponent(rolloutId)}/revert`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+      body: JSON.stringify({ actor: options?.actor }),
+    },
+  );
+}
+
+export type QuestionBankTaxonomySuggestionCluster = {
+  cluster_id: string;
+  parent_node_id?: string | null;
+  normalized_name: string;
+  suggested_type: string;
+  count: number;
+  avg_confidence: number;
+  representative_name: string;
+  name_variants: Array<{ name: string; count: number }>;
+  suggestion_ids: string[];
+  source_question_ids: string[];
+};
+
+export async function getQuestionBankTaxonomySuggestionClusters(limit = 100): Promise<{
+  clusters: QuestionBankTaxonomySuggestionCluster[];
+  total_clusters: number;
+}> {
+  const params = new URLSearchParams({ limit: String(Math.max(1, Math.min(500, limit))) });
+  return api<{
+    clusters: QuestionBankTaxonomySuggestionCluster[];
+    total_clusters: number;
+  }>(`/api/admin/question-bank/taxonomy/suggestion-clusters?${params.toString()}`);
+}
+
+export async function decideQuestionBankTaxonomySuggestionCluster(
+  clusterId: string,
+  options: {
+    action: "approve_new" | "approve_merge" | "reject";
+    reviewer?: string;
+    reviewNote?: string;
+    targetNodeId?: string;
+    name?: string;
+    code?: string;
+    limit?: number;
+    suggestionIds?: string[];
+  },
+): Promise<Record<string, unknown>> {
+  return api<Record<string, unknown>>(
+    `/api/admin/question-bank/taxonomy/suggestion-clusters/${encodeURIComponent(clusterId)}/decision`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
+      body: JSON.stringify({
+        action: options.action,
+        reviewer: options.reviewer,
+        review_note: options.reviewNote,
+        target_node_id: options.targetNodeId,
+        name: options.name,
+        code: options.code,
+        limit: options.limit,
+        suggestion_ids: options.suggestionIds,
       }),
     },
   );

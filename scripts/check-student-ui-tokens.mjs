@@ -17,7 +17,18 @@ const PAPER_SURFACES = [
   "src/components/ui/Tabs.tsx",
   "src/components/ui/Tooltip.tsx",
   "src/components/AppShell.tsx",
+  "src/components/student/StudentActionSurface.tsx",
+  "src/components/student/StudentExperienceUI.tsx",
+  "src/app/hoje/_components/BancoSidebarCard.tsx",
+  "src/app/hoje/_components/CardsDuePanel.tsx",
+  "src/app/hoje/_components/TodayBackupActions.tsx",
+  "src/app/hoje/_components/TodayDetails.tsx",
+  "src/app/hoje/_components/TodayEmptyState.tsx",
+  "src/app/hoje/_components/TodayLoadNote.tsx",
+  "src/app/hoje/_components/TodayPrimaryAction.tsx",
+  "src/app/hoje/_components/TodaySchedulePreview.tsx",
   "src/app/revisar/_components/ReviewQueueClient.tsx",
+  "src/app/admin/question-bank/_components/AiReviewPanel.tsx",
 ];
 
 const rules = [

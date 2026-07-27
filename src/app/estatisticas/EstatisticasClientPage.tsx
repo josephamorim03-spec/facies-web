@@ -350,7 +350,7 @@ export default function EstatisticasClientPage() {
     return <EstatisticasPageSkeleton />;
   }
   if (error) {
-    return <p className="text-sm text-red-600">{error}</p>;
+    return <p className="text-sm text-danger">{error}</p>;
   }
 
   return (
@@ -365,6 +365,7 @@ export default function EstatisticasClientPage() {
           />
         ) : undefined}
       />
+      <GraficosSection />
       {trackHome ? (
         <>
           <StudentSurfaceInsight surface={trackHome} />
@@ -427,7 +428,6 @@ export default function EstatisticasClientPage() {
       />
       <MetacognitionInsights longitudinal={longitudinal} performanceSummary={performanceSummary} />
       <MeuModelo />
-      <GraficosSection />
     </StudentPage>
   );
 }

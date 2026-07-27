@@ -19,7 +19,7 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
   return (
     <section
       aria-label="Proxima acao"
-      className="rounded-surface border border-edge bg-paper px-4 py-5 shadow-soft sm:px-6 sm:py-6"
+      className="rounded-surface border border-edge bg-paper px-4 py-5 sm:px-6 sm:py-6"
     >
       <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0 space-y-3">

@@ -79,7 +79,7 @@ export function ContextNotice({
 }) {
   const toneClass = tone === "attention" ? "border-warning/40" : tone === "info" ? "border-info/40" : "border-edge";
   return (
-    <aside className={`rounded-xl border bg-surface px-4 py-3 ${toneClass}`}>
+    <aside className={`rounded-surface border bg-surface px-4 py-3 ${toneClass}`}>
       <p className="text-sm font-semibold text-ink">{title}</p>
       <div className="mt-1 text-xs leading-relaxed text-muted">{children}</div>
     </aside>
@@ -156,4 +156,3 @@ export function DataFreshness({
     </p>
   );
 }
-
