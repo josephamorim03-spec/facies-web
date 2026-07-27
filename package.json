@@ -19,6 +19,8 @@
     "lint:ui": "node scripts/check-student-ui-tokens.mjs && node scripts/check-student-vocabulary.mjs",
     "test:unit": "node --test --experimental-strip-types tests/unit/*.test.mjs",
     "test:e2e": "playwright test",
+    "precapture:design": "npm run build",
+    "capture:design": "node scripts/capture-design-redesign.mjs",
     "test:e2e:smoke": "node scripts/run-smoke-e2e.mjs",
     "test:e2e:ui": "playwright test --ui"
   },
