@@ -24,6 +24,47 @@ export type NavItemConfig = {
 
 export type NavGroupConfig = { items: NavItemConfig[] };
 
+/**
+ * Subnavegação: os destinos reais de cada intenção. Sem isto o menu expõe só
+ * os 5 verbos e páginas como Sessões, Cards, Caderno, Gráficos, Relatórios e
+ * Metas ficam inalcançáveis — foi o que levou cada tela a improvisar a própria
+ * barra de abas. `matches` cobre os apelidos da mesma página.
+ */
+export type NavChildConfig = {
+  href: string;
+  label: string;
+  matches: string[];
+};
+
+function child(href: string, label: string, ...aliases: string[]): NavChildConfig {
+  return { href, label, matches: [href, ...aliases] };
+}
+
+const INTENT_CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
+  // Hoje é tela única: a próxima ação não tem irmãs.
+  today: [],
+  practice: [
+    child("/praticar", "Banco", "/banco-de-questoes"),
+    // Simulados é um filtro daqui (ver provas/page.tsx), não um destino irmão.
+    child(REVIEW_ROUTES.sessionHistory, "Sessões", "/provas"),
+  ],
+  review: [
+    child(REVIEW_ROUTES.activeReview, "Fila"),
+    child(REVIEW_ROUTES.adaptiveCards, "Cards", REVIEW_ROUTES.turboCompatibility),
+    child(REVIEW_ROUTES.notebook, "Caderno"),
+  ],
+  track: [
+    child("/acompanhar", "Desempenho", "/estatisticas"),
+    child("/estatisticas/graficos", "Gráficos", "/dados-e-relatorios/graficos"),
+    child("/estatisticas/relatorio", "Relatórios", "/dados-e-relatorios/relatorio", "/dados-e-relatorios"),
+  ],
+  plan: [
+    child("/cronograma", "Calendário", "/calendario", "/agenda-operacional"),
+    child("/rotina-e-metas", "Metas"),
+    child("/planejar", "Plano", "/desempenho"),
+  ],
+};
+
 const INTENTS: Record<StudentIntent, { path: string; label: string; title: string; icon: StudentNavIcon }> = {
   today: { path: "/hoje", label: "Hoje", title: "Hoje", icon: "today" },
   practice: { path: "/praticar", label: "Praticar", title: "Praticar", icon: "practice" },
@@ -52,12 +93,16 @@ export const STUDENT_ROUTES: StudentRouteConfig[] = [
   route("/banco-de-questoes", "Banco de questões", "practice"),
   route(REVIEW_ROUTES.activeReview, "Revisar", "review"),
   route(REVIEW_ROUTES.adaptiveCards, "Cards adaptativos", "review"),
+  // Apelido histórico da mesma tela de cards; sem registro, o menu não
+  // destacava nada quando o aluno caía aqui.
+  route(REVIEW_ROUTES.turboCompatibility, "Cards adaptativos", "review"),
   route(REVIEW_ROUTES.notebook, "Caderno", "review"),
   route("/acompanhar", "Acompanhar", "track"),
   route("/estatisticas", "Desempenho", "track"),
-  route("/dados-e-relatorios", "Dados e relatórios", "track"),
-  route(REVIEW_ROUTES.sessionHistory, "Histórico de sessões", "track"),
-  route("/provas", "Provas", "track"),
+  route("/dados-e-relatorios", "Relatórios", "track"),
+  // Sessões vive em Praticar: é onde se retoma uma sessão inacabada.
+  route(REVIEW_ROUTES.sessionHistory, "Sessões", "practice"),
+  route("/provas", "Simulados", "practice"),
   route("/planejar", "Planejar", "plan"),
   route("/desempenho", "Plano de estudo", "plan"),
   route("/rotina-e-metas", "Rotina e metas", "plan"),
@@ -88,6 +133,27 @@ export function getStudentPageTitle(pathname: string): string {
 
 export function getStudentWarmupIntent(pathname: string): StudentIntent | null {
   return getStudentRoute(pathname)?.warmup ?? null;
+}
+
+/** Sub-abas da intenção a que o caminho pertence (vazio quando é tela única). */
+export function getIntentChildren(pathname: string): NavChildConfig[] {
+  const current = getStudentRoute(pathname);
+  if (!current) return [];
+  return INTENT_CHILDREN[current.intent] ?? [];
+}
+
+export function isNavChildActive(pathname: string, item: NavChildConfig): boolean {
+  const normalized = normalizePathname(pathname);
+  return item.matches.some((candidate) => {
+    const target = normalizePathname(candidate);
+    return normalized === target || normalized.startsWith(`${target}/`);
+  });
+}
+
+/** Rótulo da sub-aba ativa — usado como subtítulo/breadcrumb. */
+export function getActiveChildLabel(pathname: string): string | null {
+  const found = getIntentChildren(pathname).find((item) => isNavChildActive(pathname, item));
+  return found?.label ?? null;
 }
 
 export function isNavItemActive(pathname: string, item: NavItemConfig): boolean {

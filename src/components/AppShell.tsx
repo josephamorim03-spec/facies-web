@@ -4,6 +4,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import Nav, { SidebarNav, NAV_OPEN_EVENT } from "@/components/Nav";
+import { IntentSubNav } from "@/components/student/IntentSubNav";
 import PwaRegister from "@/components/PwaRegister";
 import { ToastProvider } from "@/lib/useToast";
 import { Toast } from "@/components/Toast";
@@ -265,6 +266,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       <div className={hideNavigationChrome || !isDesktopNavigation ? "" : "ml-14"}>
         <main className={mainClassName}>
           <Nav displayName={userDisplayName} photoUrl={userPhotoUrl} />
+          {!hideNavigationChrome && <IntentSubNav />}
           {children}
         </main>
       </div>

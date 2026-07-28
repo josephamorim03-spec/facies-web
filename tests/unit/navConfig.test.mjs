@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   NAV_GROUPS_CONFIG,
+  getActiveChildLabel,
+  getIntentChildren,
   getStudentPageTitle,
   getStudentRoute,
   isNavItemActive,
@@ -27,13 +29,16 @@ test("legacy module routes activate their owning intention", () => {
   assert.equal(isNavItemActive("/cronograma", findItem("/planejar")), true);
 });
 
-test("Acompanhar owns history and exam aliases", () => {
-  const item = findItem("/acompanhar");
+// Sessões é onde se retoma uma sessão inacabada, então pertence a Praticar.
+// Simulados continua sendo um filtro de Sessões (ver provas/page.tsx), não um
+// destino irmão.
+test("Praticar owns sessions and exam aliases", () => {
+  const item = findItem("/praticar");
   assert.ok(item);
   assert.equal(isNavItemActive("/revisoes", item), true);
   assert.equal(isNavItemActive("/revisoes?tipo=provas", item), true);
   assert.equal(isNavItemActive("/provas", item), true);
-  assert.equal(isNavItemActive("/banco-de-questoes", item), false);
+  assert.equal(isNavItemActive("/estatisticas", item), false);
 });
 
 test("Revisar owns cards and caderno", () => {
@@ -55,6 +60,28 @@ test("planning children keep their own title and breadcrumb", () => {
   assert.equal(getStudentPageTitle("/calendario"), "Calendário");
   assert.equal(getStudentPageTitle("/agenda-operacional"), "Agenda");
   assert.deepEqual(getStudentRoute("/calendario")?.breadcrumb, ["Planejar", "Calendário"]);
+});
+
+// Subnavegação: sem ela, estes destinos reais ficam inalcançáveis pelo menu,
+// que expõe apenas os 5 verbos.
+test("every multi-destination intention exposes its sections", () => {
+  const labels = (path) => getIntentChildren(path).map((item) => item.label);
+  assert.deepEqual(labels("/praticar"), ["Banco", "Sessões"]);
+  assert.deepEqual(labels("/revisar"), ["Fila", "Cards", "Caderno"]);
+  assert.deepEqual(labels("/acompanhar"), ["Desempenho", "Gráficos", "Relatórios"]);
+  assert.deepEqual(labels("/cronograma"), ["Calendário", "Metas", "Plano"]);
+  // Hoje é tela única.
+  assert.deepEqual(labels("/hoje"), []);
+});
+
+test("aliases highlight the section they belong to", () => {
+  assert.equal(getActiveChildLabel("/banco-de-questoes"), "Banco");
+  assert.equal(getActiveChildLabel("/estatisticas"), "Desempenho");
+  assert.equal(getActiveChildLabel("/calendario"), "Calendário");
+  assert.equal(getActiveChildLabel("/agenda-operacional"), "Calendário");
+  assert.equal(getActiveChildLabel("/cards-adaptativos"), "Cards");
+  assert.equal(getActiveChildLabel("/revisao-turbo"), "Cards");
+  assert.equal(getActiveChildLabel("/provas"), "Sessões");
 });
 
 test("the route registry owns icon and warmup intent", () => {
