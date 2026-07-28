@@ -106,7 +106,7 @@ function ReviewSourceSummary({ queue }: { queue: TrainerReviewQueue }) {
     {
       label: "Cards",
       value: cards?.due_count ?? load?.cards_due ?? 0,
-      detail: cards ? `${cards.total_eligible} elegivel(is)` : "turbo indisponivel",
+      detail: cards ? `${cards.total_eligible} elegivel(is)` : "cards indisponiveis",
     },
   ];
   return (

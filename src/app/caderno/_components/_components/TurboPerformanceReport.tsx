@@ -76,7 +76,7 @@ export function TurboPerformanceReport({
   if (totalCards === 0) {
     return (
       <div className="flex items-center justify-center" style={{ minHeight: "calc(100svh - 3rem)" }}>
-        <p className="rounded-lg border border-edge bg-surface p-4 text-center text-sm text-muted shadow-sm">Nenhum card disponível para revisão turbo neste momento</p>
+        <p className="rounded-lg border border-edge bg-surface p-4 text-center text-sm text-muted shadow-sm">Nenhum card no ponto de revisão neste momento</p>
       </div>
     );
   }

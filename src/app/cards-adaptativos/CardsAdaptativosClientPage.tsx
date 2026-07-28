@@ -227,7 +227,7 @@ function CardsAreaHeader({ selectedArea, onSelect, interactive = true, showLink 
   );
 }
 
-export default function RevisaoTurboClientPage() {
+export default function CardsAdaptativosClientPage() {
   const router = useRouter();
   const isDesktopNavigation = useDesktopNavigationMode();
   const { setTitle, setActions } = useNavbar();
