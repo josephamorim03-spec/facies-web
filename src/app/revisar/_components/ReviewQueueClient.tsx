@@ -400,11 +400,9 @@ export function ReviewQueueClient() {
                     <TabsTrigger
                       key={item.key}
                       value={item.key}
+                      count={compactCount(filterCount(queue, item.key))}
                     >
-                      <span>{item.label}</span>
-                      <span className="ml-1 rounded-full bg-surfaceMuted px-1.5 py-0.5 text-[10px] tabular-nums text-muted">
-                        {compactCount(filterCount(queue, item.key))}
-                      </span>
+                      {item.label}
                     </TabsTrigger>
                     ))}
                   </TabsList>
