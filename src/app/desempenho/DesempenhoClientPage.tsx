@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import {
   filterEffectivePunctualEvents,
   filterEffectiveRoutineEvents,
@@ -12,22 +10,10 @@ import { usePerfilPageState } from "./_hooks/usePerfilPageState";
 import { isInternalSkipRoutineEvent } from "./_lib/perfilShared";
 import {
   DataFreshness,
-  LearningStatus,
   StudentPage,
   StudentPageHeader,
 } from "@/components/student/StudentExperienceUI";
 import { useStudentExperience } from "@/lib/StudentExperienceContext";
-import { getAuthToken } from "@/lib/auth";
-import { getStudentPlan, type StudentSurfaceHome } from "@/lib/api";
-import {
-  StudentBackupActions,
-  StudentDeepLinks,
-  StudentDetailsDisclosure,
-  StudentLoadNote,
-  StudentPrimaryAction,
-  StudentSurfaceInsight,
-  StudentSurfaceSnapshot,
-} from "@/components/student/StudentActionSurface";
 
 function SkRow({ w }: { w: string }) {
   return <div className={`h-3 ${w} bg-edge rounded-sm`} />;
@@ -97,13 +83,9 @@ function PerfilPageSkeleton() {
   );
 }
 
-type DesempenhoClientPageProps = {
-  variant?: "overview" | "settings";
-};
-
-export default function PerfilPage({ variant = "overview" }: DesempenhoClientPageProps) {
+/** Metas e rotina: o editor real do plano (Planejar › Metas). */
+export default function PerfilPage() {
   const { enabled: experienceEnabled, experience } = useStudentExperience();
-  const [planHome, setPlanHome] = useState<StudentSurfaceHome | null>(null);
   const {
     loading,
     error,
@@ -156,20 +138,6 @@ export default function PerfilPage({ variant = "overview" }: DesempenhoClientPag
     token,
   } = usePerfilPageState();
 
-  useEffect(() => {
-    let active = true;
-    getStudentPlan(getAuthToken())
-      .then((home) => {
-        if (active) setPlanHome(home);
-      })
-      .catch(() => {
-        if (active) setPlanHome(null);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
   if (loading) {
     return <PerfilPageSkeleton />;
   }
@@ -198,8 +166,7 @@ export default function PerfilPage({ variant = "overview" }: DesempenhoClientPag
     <StudentPage>
       <StudentPageHeader
         eyebrow="Planejar"
-        title="Organize uma rotina sustentável"
-        description="Metas, capacidade e compromissos formam um único plano de estudo."
+        title="Metas e rotina"
         actions={experienceEnabled && experience ? (
           <DataFreshness
             status={experience.status}
@@ -208,29 +175,7 @@ export default function PerfilPage({ variant = "overview" }: DesempenhoClientPag
           />
         ) : undefined}
       />
-      {variant === "overview" && planHome ? (
-        <>
-          <StudentSurfaceInsight surface={planHome} />
-          <StudentPrimaryAction action={planHome.primary_action} eyebrow="Ajuste de rotina" />
-          <StudentLoadNote load={planHome.load_note} />
-          <StudentDetailsDisclosure
-            title="Carga e rotina"
-            status={planHome.status}
-            missingSources={planHome.missing_sources}
-          >
-            <StudentDeepLinks links={planHome.deep_links} />
-            <StudentSurfaceSnapshot
-              items={[
-                { label: "Meta semanal", value: String(planHome.goal_status?.weekly_goal ?? planHome.details.weekly_goal_questions ?? "-") },
-                { label: "Progresso", value: planHome.goal_status?.weekly_progress_pct === null || planHome.goal_status?.weekly_progress_pct === undefined ? "-" : `${Math.round(Number(planHome.goal_status.weekly_progress_pct))}%` },
-                { label: "Calendario", value: "abrir", href: "/calendario" },
-              ]}
-            />
-          </StudentDetailsDisclosure>
-        </>
-      ) : variant === "overview" && experienceEnabled && experience ? <LearningStatus load={experience.review_load} /> : null}
       <TrainerContextStrip key={savedMsg || "trainer-plan"} sourcePage="/planejar" />
-      {variant === "settings" ? (
       <RotinaTab
         token={token}
         displayName={displayName}
@@ -282,7 +227,6 @@ export default function PerfilPage({ variant = "overview" }: DesempenhoClientPag
         rescheduleMode={rescheduleMode}
         setRescheduleMode={setRescheduleMode}
       />
-      ) : null}
     </StudentPage>
   );
 }

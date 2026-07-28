@@ -60,8 +60,7 @@ const INTENT_CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
   ],
   plan: [
     child("/cronograma", "Calendário", "/calendario", "/agenda-operacional"),
-    child("/rotina-e-metas", "Metas"),
-    child("/planejar", "Plano", "/desempenho"),
+    child("/rotina-e-metas", "Metas", "/perfil"),
   ],
 };
 

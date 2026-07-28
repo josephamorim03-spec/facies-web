@@ -69,7 +69,7 @@ test("every multi-destination intention exposes its sections", () => {
   assert.deepEqual(labels("/praticar"), ["Banco", "Sessões"]);
   assert.deepEqual(labels("/revisar"), ["Fila", "Cards", "Caderno"]);
   assert.deepEqual(labels("/acompanhar"), ["Desempenho", "Gráficos", "Relatórios"]);
-  assert.deepEqual(labels("/cronograma"), ["Calendário", "Metas", "Plano"]);
+  assert.deepEqual(labels("/cronograma"), ["Calendário", "Metas"]);
   // Hoje é tela única.
   assert.deepEqual(labels("/hoje"), []);
 });
