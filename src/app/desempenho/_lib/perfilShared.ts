@@ -21,7 +21,6 @@ export const RETENTION_MIN = 65;
 export const RETENTION_DEFAULT = 75;
 export const RETENTION_MAX = 85;
 
-export const TAB_KEY = "perfil_tab";
 export const PERIOD_SESSION_KEY = "perfil_desempenho_period";
 export const WORK_EVENT_PREFIX = "__WORK__:";
 export const OTHER_EVENT_PREFIX = "__OTHER__:";

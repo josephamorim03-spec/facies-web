@@ -46,7 +46,6 @@ import {
   RETENTION_DEFAULT,
   RETENTION_MAX,
   RETENTION_MIN,
-  TAB_KEY,
   ThemeListSort,
   toDisplayDate,
   WEEKDAYS,
@@ -55,25 +54,6 @@ import {
 export function usePerfilPageState() {
   const { showToast } = useToast();
   const welcomeToastShownRef = useRef(false);
-  const [tab, setTab] = useState<"desempenho" | "rotina">("desempenho");
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(TAB_KEY) as "desempenho" | "rotina" | null;
-      if (stored) setTab(stored);
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  function changeTab(nextTab: "desempenho" | "rotina") {
-    setTab(nextTab);
-    try {
-      localStorage.setItem(TAB_KEY, nextTab);
-    } catch {
-      // ignore
-    }
-  }
-
   const [token, setToken] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [hasCompletedInitialGoalSetup, setHasCompletedInitialGoalSetup] = useState(true);
@@ -442,8 +422,6 @@ export function usePerfilPageState() {
   }
 
   return {
-    tab,
-    changeTab,
     token,
     displayName,
     hasCompletedInitialGoalSetup,
