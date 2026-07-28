@@ -24,6 +24,7 @@ import { CronogramaCalendarView } from "./_components/CronogramaCalendarView";
 import { RescheduleSuggestionDialog } from "./_components/RescheduleSuggestionDialog";
 import { CronogramaStreakCard } from "@/app/cronograma/_components/CronogramaStreakCard";
 import { CronogramaTodayPanel } from "./_components/CronogramaTodayPanel";
+import { WeeklyGoalControl } from "./_components/WeeklyGoalControl";
 import { WeeklyOpsCompactSummary, WeeklyOpsCompactSummarySkeleton } from "./_components/WeeklyOpsCards";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { buildWeeklyOpsMetrics } from "./_lib/weeklyOpsMetrics";
@@ -387,6 +388,16 @@ export default function CronogramaPage() {
           }}
         />
       </div>
+
+      {!loading && (
+        <WeeklyGoalControl
+          token={token ?? ""}
+          weeklyGoal={weeklyOpsMetrics.weeklyGoal}
+          progressPct={weeklyOpsMetrics.progressPct}
+          remainingQuestions={weeklyOpsMetrics.weeklyGoalRemainingQuestions}
+          onSaved={fetchAll}
+        />
+      )}
 
       <CronogramaStreakCard streak={streak} loading={streakLoading} />
 
