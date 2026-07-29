@@ -398,6 +398,49 @@ export function useEventDragAndMutation({
     }
   }
 
+  async function rescheduleEventToDate(
+    ev: CalendarEventOut,
+    sourceISO: string,
+    iconType: "work" | "other",
+    toISO: string,
+  ) {
+    if (sourceISO === toISO) return;
+    if (eventMoveInFlight.current) return;
+    eventMoveInFlight.current = true;
+    try {
+      hideEventMoveError();
+      await moveEventToDate({
+        eventId: ev.event_id,
+        sourceISO,
+        eventType: ev.event_type === "event" ? "event" : "routine",
+        weekday: ev.weekday ?? null,
+        eventDate: ev.event_date ?? null,
+        durationHours: ev.duration_hours,
+        label: ev.label,
+        iconType,
+      }, toISO);
+      if (onEventMutated) {
+        await Promise.resolve(onEventMutated());
+      } else {
+        await Promise.resolve(onRefresh());
+      }
+    } catch (error: any) {
+      showEventMoveError(error?.message ?? "Nao foi possivel reagendar o compromisso.");
+      throw error;
+    } finally {
+      eventMoveInFlight.current = false;
+      clearEventDragState();
+    }
+  }
+
+  function requestEventDelete(ev: CalendarEventOut, sourceISO: string) {
+    setEventDeleteConfirm({
+      eventId: ev.event_id,
+      eventType: ev.event_type === "event" ? "event" : "routine",
+      sourceISO,
+    });
+  }
+
   async function confirmDeleteDraggedEvent() {
     const pendingDelete = eventDeleteConfirm;
     if (!pendingDelete) return;
@@ -437,7 +480,6 @@ export function useEventDragAndMutation({
     if (sourceISO < todayISO()) return;
     const touch = e.touches[0];
     if (!touch) return;
-    e.preventDefault();
     e.stopPropagation();
     setTouchDraggingEventId(ev.event_id);
     beginEventDrag(ev, sourceISO, iconType, {
@@ -677,5 +719,7 @@ export function useEventDragAndMutation({
     handleEventDeleteDrop,
     handleEventDragEnd,
     confirmDeleteDraggedEvent,
+    requestEventDelete,
+    rescheduleEventToDate,
   };
 }

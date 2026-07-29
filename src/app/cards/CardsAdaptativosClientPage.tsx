@@ -105,14 +105,14 @@ function CardsAreaFilterControl({
   interactive = true,
 }: CardsAreaFilterControlProps) {
   return (
-    <TabsScrollArea className="w-full">
+    <TabsScrollArea className="w-full justify-center">
       {({ ref, onScroll }) => (
         <div
           ref={ref}
           onScroll={onScroll}
           role="group"
           aria-label="Filtrar cards por área"
-          className="flex max-w-full items-center gap-1 overflow-x-auto rounded-control border border-edge bg-surface p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="mx-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-control border border-edge bg-surface p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {AREA_FILTER_OPTIONS.map((option) => {
             const active = selectedArea === option;
@@ -145,7 +145,7 @@ function CardsAreaFilterControl({
 
 function CardsAreaHeader({ selectedArea, onSelect, interactive = true }: CardsAreaHeaderProps) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 text-center">
       <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">Filtrar por área</p>
       <CardsAreaFilterControl
         selectedArea={selectedArea}

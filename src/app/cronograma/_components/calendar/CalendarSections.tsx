@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarEventOut, DirectedStudyListItem, ReviewTask, updateReviewTask } from "@/lib/api";
+import { CalendarEventOut, deleteDirectedStudy, DirectedStudyListItem, ReviewTask, updateReviewTask } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { IconPlus } from "../CronogramaIcons";
 import { NewStudyForm } from "../CronogramaStudyReviewComponents";
@@ -13,6 +13,7 @@ import {
   sameTopicIdentity,
   SHORT_MONTH_LABELS,
   displayDate,
+  parseEventLabelCategory,
   topicPrimaryLabel,
   topicSecondaryLabel,
 } from "../../_lib/cronogramaShared";
@@ -171,8 +172,10 @@ function resolveCompletedReviewStudy(
 
 function ReadonlyStudyPopupContent({
   study,
+  onDeleteRequest,
 }: {
   study: DirectedStudyListItem;
+  onDeleteRequest?: (study: DirectedStudyListItem) => void;
 }) {
   const displayLabel = studyDisplayLabel(study);
   const secondary = studySecondaryText(study);
@@ -201,6 +204,70 @@ function ReadonlyStudyPopupContent({
           <p className="mt-1 text-sm font-bold text-ink">{study.accuracy.toFixed(0)}%</p>
         </div>
       </div>
+
+      {!study.is_review ? (
+        <button
+          type="button"
+          onClick={() => onDeleteRequest?.(study)}
+          className="flex w-full items-center justify-center rounded-xl border border-danger/50 bg-paper py-2.5 text-xs font-semibold text-danger transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+        >
+          Apagar registro
+        </button>
+      ) : null}
+    </>
+  );
+}
+
+function EventPopupContent({
+  event,
+  sourceISO,
+  iconType,
+  completed,
+  onDeleteRequest,
+  onRescheduleRequest,
+}: {
+  event: CalendarEventOut;
+  sourceISO: string;
+  iconType: "work" | "other";
+  completed: boolean;
+  onDeleteRequest?: (event: CalendarEventOut, sourceISO: string) => void;
+  onRescheduleRequest?: (event: CalendarEventOut, sourceISO: string, iconType: "work" | "other") => void;
+}) {
+  const parsed = parseEventLabelCategory(event.label, event.event_type === "routine" ? "routine" : "event");
+  const title = parsed.label || (iconType === "work" ? "Trabalho" : "Compromisso");
+  const kindLabel = event.event_type === "routine" ? "Rotina semanal" : "Compromisso";
+  const canMutate = !completed;
+
+  return (
+    <>
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">{kindLabel}</p>
+        <p className="mt-0.5 text-sm font-semibold leading-snug text-ink">{title}</p>
+        <p className="mt-1 text-xs text-muted">
+          {displayDate(sourceISO)} - {event.duration_hours}h{completed ? " - concluido" : ""}
+        </p>
+      </div>
+
+      {canMutate ? (
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => onRescheduleRequest?.(event, sourceISO, iconType)}
+            className="flex w-full items-center justify-center rounded-xl border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Reagendar
+          </button>
+          <button
+            type="button"
+            onClick={() => onDeleteRequest?.(event, sourceISO)}
+            className="flex w-full items-center justify-center rounded-xl border border-danger/50 bg-paper py-2.5 text-xs font-semibold text-danger transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          >
+            Apagar
+          </button>
+        </div>
+      ) : (
+        <p className="text-xs text-muted">Compromissos passados ficam somente como historico.</p>
+      )}
     </>
   );
 }
@@ -212,6 +279,9 @@ export function CalendarEntryPopup({
   studyMap,
   onClose,
   onRescheduleRequest,
+  onDeleteStudyRequest,
+  onDeleteEventRequest,
+  onRescheduleEventRequest,
 }: {
   target: CalendarPopupTarget;
   anchorRect: DOMRect;
@@ -219,6 +289,9 @@ export function CalendarEntryPopup({
   studyMap: Map<string, DirectedStudyListItem>;
   onClose: () => void;
   onRescheduleRequest?: (task: ReviewTask) => void;
+  onDeleteStudyRequest?: (study: DirectedStudyListItem) => void;
+  onDeleteEventRequest?: (event: CalendarEventOut, sourceISO: string) => void;
+  onRescheduleEventRequest?: (event: CalendarEventOut, sourceISO: string, iconType: "work" | "other") => void;
 }) {
   const { top: popupTop, left: popupLeft } = popupPosition(anchorRect);
 
@@ -330,8 +403,33 @@ export function CalendarEntryPopup({
         </div>
       </>
     );
+  } else if (target.kind === "event") {
+    content = (
+      <EventPopupContent
+        event={target.event}
+        sourceISO={target.sourceISO}
+        iconType={target.iconType}
+        completed={target.completed}
+        onDeleteRequest={(event, sourceISO) => {
+          onClose();
+          onDeleteEventRequest?.(event, sourceISO);
+        }}
+        onRescheduleRequest={(event, sourceISO, iconType) => {
+          onClose();
+          onRescheduleEventRequest?.(event, sourceISO, iconType);
+        }}
+      />
+    );
   } else {
-    content = <ReadonlyStudyPopupContent study={target.study} />;
+    content = (
+      <ReadonlyStudyPopupContent
+        study={target.study}
+        onDeleteRequest={(study) => {
+          onClose();
+          onDeleteStudyRequest?.(study);
+        }}
+      />
+    );
   }
 
   return (
@@ -345,6 +443,145 @@ export function CalendarEntryPopup({
         {content}
       </div>
     </>
+  );
+}
+
+export function CalendarStudyDeleteConfirmModal({
+  study,
+  token,
+  onDeleted,
+  onCancel,
+}: {
+  study: DirectedStudyListItem | null;
+  token: string;
+  onDeleted: () => void;
+  onCancel: () => void;
+}) {
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
+
+  if (!study) return null;
+  const selectedStudy = study;
+
+  async function confirmDelete() {
+    if (deleting) return;
+    setDeleting(true);
+    setError("");
+    try {
+      await deleteDirectedStudy(token, selectedStudy.study_id);
+      onDeleted();
+    } catch {
+      setError("Nao foi possivel apagar o registro.");
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[75] flex items-end bg-black/30 p-4 md:items-center md:justify-center" onClick={onCancel}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Apagar estudo"
+        className="w-full max-w-sm space-y-3 rounded-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <h3 className="font-serif text-base">Apagar estudo</h3>
+        <p className="text-sm text-muted">Este registro sera removido do calendario.</p>
+        {error ? <p className="text-xs text-danger" role="alert">{error}</p> : null}
+        <div className="flex flex-col gap-2">
+          <Button type="button" variant="danger" size="md" onClick={confirmDelete} disabled={deleting}>
+            {deleting ? "Apagando..." : "Apagar"}
+          </Button>
+          <Button type="button" variant="ghost" size="md" onClick={onCancel}>
+            Cancelar
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function CalendarEventRescheduleSheet({
+  event,
+  sourceISO,
+  iconType,
+  onClose,
+  onReschedule,
+}: {
+  event: CalendarEventOut | null;
+  sourceISO: string | null;
+  iconType: "work" | "other" | null;
+  onClose: () => void;
+  onReschedule: (event: CalendarEventOut, sourceISO: string, iconType: "work" | "other", toISO: string) => Promise<void>;
+}) {
+  const [date, setDate] = useState(sourceISO ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  if (!event || !sourceISO || !iconType) return null;
+  const selectedEvent = event;
+  const selectedSourceISO = sourceISO;
+  const selectedIconType = iconType;
+
+  const sameDate = date === selectedSourceISO;
+  const invalid = !/^\d{4}-\d{2}-\d{2}$/.test(date);
+  const parsed = parseEventLabelCategory(selectedEvent.label, selectedEvent.event_type === "routine" ? "routine" : "event");
+  const title = parsed.label || (selectedIconType === "work" ? "Trabalho" : "Compromisso");
+
+  async function save() {
+    if (saving || invalid) return;
+    if (sameDate) {
+      onClose();
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await onReschedule(selectedEvent, selectedSourceISO, selectedIconType, date);
+      onClose();
+    } catch {
+      setError("Nao foi possivel reagendar. Tente novamente.");
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[75] flex items-end bg-black/30 md:items-center md:justify-center" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Reagendar compromisso"
+        className="w-full rounded-t-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-sm md:rounded-2xl"
+        onClick={(eventClick) => eventClick.stopPropagation()}
+      >
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">Compromisso</p>
+          <h3 className="mt-1 text-base font-semibold leading-snug text-ink">{title}</h3>
+          <p className="mt-1 text-xs text-muted">Data atual: {displayDate(selectedSourceISO)}</p>
+        </div>
+
+        <label className="mt-4 block">
+          <span className="text-sm font-semibold text-ink">Nova data</span>
+          <input
+            type="date"
+            value={date}
+            onChange={(eventChange) => setDate(eventChange.target.value)}
+            className="mt-2 min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          />
+        </label>
+
+        {error ? <p className="mt-3 text-xs text-danger" role="alert">{error}</p> : null}
+
+        <div className="mt-4 flex flex-col gap-2">
+          <Button type="button" variant="primary" size="md" onClick={save} disabled={saving || invalid}>
+            {saving ? "Salvando..." : sameDate ? "Manter data" : "Confirmar reagendamento"}
+          </Button>
+          <Button type="button" variant="ghost" size="md" onClick={onClose}>
+            Cancelar
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 

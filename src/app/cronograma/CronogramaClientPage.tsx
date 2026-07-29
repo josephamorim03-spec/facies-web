@@ -22,7 +22,6 @@ import { CronogramaCalendarView } from "./_components/CronogramaCalendarView";
 import { IconSearch, IconX } from "./_components/CronogramaIcons";
 import { CronogramaStreakCard } from "./_components/CronogramaStreakCard";
 import { RescheduleSuggestionDialog } from "./_components/RescheduleSuggestionDialog";
-import { WeeklyGoalControl } from "./_components/WeeklyGoalControl";
 import { useCronogramaPageState } from "./_hooks/useCronogramaPageState";
 import { useCronogramaSearchFilters } from "./_hooks/useCronogramaSearchFilters";
 import {
@@ -30,7 +29,6 @@ import {
   buildStudyMap,
   SHORT_MONTH_LABELS,
 } from "./_lib/cronogramaShared";
-import { buildWeeklyOpsMetrics } from "./_lib/weeklyOpsMetrics";
 import { writeCronogramaViewModeSession } from "./_lib/viewModeSession";
 
 function detectMobilePortraitMode(isDesktopNavigation: boolean): boolean {
@@ -45,23 +43,25 @@ function detectMobilePortraitMode(isDesktopNavigation: boolean): boolean {
   return isNarrowViewport && isPortrait;
 }
 
-type CalendarCoachStep = "month" | "reschedule";
+type CalendarCoachStep = "month" | "manage" | "reschedule";
 
 type CalendarCoachState = {
   month: boolean;
+  manage: boolean;
   reschedule: boolean;
 };
 
 function readCalendarCoachState(storageKey: string): CalendarCoachState {
-  if (typeof window === "undefined") return { month: false, reschedule: false };
+  if (typeof window === "undefined") return { month: false, manage: false, reschedule: false };
   try {
     const parsed = JSON.parse(window.localStorage.getItem(storageKey) ?? "{}") as Partial<CalendarCoachState>;
     return {
       month: Boolean(parsed.month),
+      manage: Boolean(parsed.manage),
       reschedule: Boolean(parsed.reschedule),
     };
   } catch {
-    return { month: false, reschedule: false };
+    return { month: false, manage: false, reschedule: false };
   }
 }
 
@@ -76,8 +76,19 @@ function writeCalendarCoachState(storageKey: string, state: CalendarCoachState) 
 
 function nextCoachStep(state: CalendarCoachState): CalendarCoachStep | null {
   if (!state.month) return "month";
+  if (!state.manage) return "manage";
   if (!state.reschedule) return "reschedule";
   return null;
+}
+
+function calendarCoachCopy(step: CalendarCoachStep): string {
+  if (step === "month") {
+    return "Use as setas ou toque no mes para navegar. Em celulares e tablets, voce tambem pode deslizar o calendario.";
+  }
+  if (step === "manage") {
+    return "Selecione um dia e use Adicionar para criar estudo ou compromisso. Toque em um estudo ou compromisso no calendario para ver opcoes como Apagar e Reagendar.";
+  }
+  return "Arrastar e soltar e um atalho para dispositivos touchscreen: toque e segure uma revisao ou compromisso e leve para outro dia. No desktop, use o botao Reagendar.";
 }
 
 function CalendarCoachmark({
@@ -87,15 +98,10 @@ function CalendarCoachmark({
   step: CalendarCoachStep;
   onDismiss: () => void;
 }) {
-  const copy =
-    step === "month"
-      ? "Deslize o calendário ou use as setas para navegar entre os meses."
-      : "Toque e segure uma atividade para arrastá-la para outro dia. Você também pode tocar nela e escolher \"Reagendar\".";
-
   return (
     <div className="flex items-start gap-2 rounded-md border border-edge bg-surfaceMuted px-3 py-2 text-xs text-muted">
       <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-      <p className="min-w-0 flex-1">{copy}</p>
+      <p className="min-w-0 flex-1">{calendarCoachCopy(step)}</p>
       <button
         type="button"
         onClick={onDismiss}
@@ -183,7 +189,6 @@ export default function CronogramaPage({
     suggestionActionKey,
     showEventSuggestionModal,
     token,
-    weeklyGoal,
     calendarRecommendationsEnabled,
     eventModalSuggestions,
     fetchAll,
@@ -207,10 +212,6 @@ export default function CronogramaPage({
 
   const studyMap = buildStudyMap(studies);
   const studiesByDate = buildStudiesByDate(studies);
-  const todayISO = (() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  })();
 
   const {
     searchInput,
@@ -242,20 +243,11 @@ export default function CronogramaPage({
   const [calendarYear, setCalendarYear] = useState(currentRealYear);
   const [monthPickerOpen, setMonthPickerOpen] = useState(false);
   const [monthPickerYear, setMonthPickerYear] = useState(currentRealYear);
-  const coachStorageKey = useMemo(() => "cronograma_calendar_coach_v1", []);
-  const [coachStep, setCoachStep] = useState<CalendarCoachStep | null>(null);
-
-  const weeklyOpsMetrics = useMemo(
-    () =>
-      buildWeeklyOpsMetrics({
-        weeklyGoal,
-        pendingTasks: tasks,
-        doneTasks,
-        studies,
-        todayIso: todayISO,
-      }),
-    [doneTasks, studies, tasks, todayISO, weeklyGoal],
+  const coachStorageKey = useMemo(() => "cronograma_calendar_coach_v2", []);
+  const [coachState, setCoachState] = useState<CalendarCoachState>(() =>
+    readCalendarCoachState("cronograma_calendar_coach_v2"),
   );
+  const coachStep = nextCoachStep(coachState);
 
   useEffect(() => {
     function updateMobilePortraitMode() {
@@ -272,13 +264,18 @@ export default function CronogramaPage({
 
   const completeCoachStep = useCallback(
     (step: CalendarCoachStep) => {
-      const state = readCalendarCoachState(coachStorageKey);
-      const next = { ...state, [step]: true };
+      const next = { ...coachState, [step]: true };
       writeCalendarCoachState(coachStorageKey, next);
-      setCoachStep(nextCoachStep(next));
+      setCoachState(next);
     },
-    [coachStorageKey],
+    [coachState, coachStorageKey],
   );
+
+  const restartCalendarCoach = useCallback(() => {
+    const next = { month: false, manage: false, reschedule: false };
+    writeCalendarCoachState(coachStorageKey, next);
+    setCoachState(next);
+  }, [coachStorageKey]);
 
   const openMonthPicker = useCallback(() => {
     setMonthPickerYear(calendarYear);
@@ -331,7 +328,7 @@ export default function CronogramaPage({
         </button>
         <button
           type="button"
-          onClick={() => setCoachStep("month")}
+          onClick={restartCalendarCoach}
           className="flex h-7 w-7 shrink-0 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="Mostrar dica do calendário"
         >
@@ -346,7 +343,7 @@ export default function CronogramaPage({
       setTitle(null);
       setActions(null);
     };
-  }, [isDesktopNavigation, renderMonthControl, searchOpen, setActions, setTitle]);
+  }, [isDesktopNavigation, renderMonthControl, restartCalendarCoach, searchOpen, setActions, setTitle]);
 
   function closeSearch() {
     setSearchOpen(false);
@@ -368,13 +365,6 @@ export default function CronogramaPage({
       className="flex flex-col gap-4"
       style={{ minHeight: "calc(100svh - max(1.5rem, env(safe-area-inset-top, 0px)) - 4.5rem - env(safe-area-inset-bottom, 0px))" }}
     >
-      {isDesktopNavigation && !searchOpen ? (
-        <header className="border-b border-edge pb-4">
-          <p className="text-xs font-semibold uppercase text-muted">Planejamento</p>
-          <h1 className="mt-1 font-serif text-3xl font-semibold text-ink">Ajuste a rotina</h1>
-        </header>
-      ) : null}
-
       {searchOpen ? (
         <div className="space-y-1.5" data-crono-search-mode="true">
           <div className="flex items-center gap-2" data-crono-search-row="true">
@@ -449,7 +439,7 @@ export default function CronogramaPage({
             </button>
             <button
               type="button"
-              onClick={() => setCoachStep("month")}
+              onClick={restartCalendarCoach}
               className="flex h-8 w-8 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               aria-label="Mostrar dica do calendário"
             >
@@ -507,17 +497,6 @@ export default function CronogramaPage({
 
       {coachStep === "reschedule" ? (
         <CalendarCoachmark step="reschedule" onDismiss={() => completeCoachStep("reschedule")} />
-      ) : null}
-
-      {!loading ? (
-        <WeeklyGoalControl
-          token={token ?? ""}
-          weeklyGoal={weeklyOpsMetrics.weeklyGoal}
-          completedQuestions={weeklyOpsMetrics.doneQuestionsWeek}
-          progressPct={weeklyOpsMetrics.progressPct}
-          remainingQuestions={weeklyOpsMetrics.weeklyGoalRemainingQuestions}
-          onSaved={fetchAll}
-        />
       ) : null}
 
       {!loading && calendarRecommendationsEnabled ? (

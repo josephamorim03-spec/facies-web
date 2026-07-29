@@ -240,6 +240,18 @@ export function CalendarGrid({
         const isOtherCompleted = Boolean(otherEvent) && isPastDay;
         const canDragWorkEvent = !showDayDetail && Boolean(workEvent) && !isWorkCompleted;
         const canDragOtherEvent = !showDayDetail && Boolean(otherEvent) && !isOtherCompleted;
+        const openEventPopup = (
+          e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
+          ev: CalendarEventOut,
+          iconType: "work" | "other",
+          completed: boolean,
+        ) => {
+          e.stopPropagation();
+          onBarClick?.(
+            { kind: "event", event: ev, sourceISO: iso, iconType, completed },
+            (e.currentTarget as HTMLElement).getBoundingClientRect(),
+          );
+        };
 
         const pendingTasks = dayTasks.filter((task) => task.status === "pending");
         const doneTasks = dayTasks.filter((task) => task.status === "done");
@@ -339,7 +351,15 @@ export function CalendarGrid({
                     data-testid="calendar-event-work-icon"
                     data-cell-iso={iso}
                     data-event-status={isWorkCompleted ? "completed" : "active"}
+                    role="button"
+                    tabIndex={interactive ? 0 : -1}
                     draggable={interactive && canDragWorkEvent}
+                    onClick={interactive && workEvent ? (e) => openEventPopup(e, workEvent, "work", isWorkCompleted) : undefined}
+                    onKeyDown={interactive && workEvent ? (e) => {
+                      if (e.key !== "Enter" && e.key !== " ") return;
+                      e.preventDefault();
+                      openEventPopup(e, workEvent, "work", isWorkCompleted);
+                    } : undefined}
                     onTouchStart={interactive && canDragWorkEvent && workEvent ? (e) => startTouchEventDrag(e, workEvent, iso, "work") : undefined}
                     onDragStart={interactive && canDragWorkEvent && workEvent ? (e) => {
                       e.stopPropagation();
@@ -367,7 +387,15 @@ export function CalendarGrid({
                     data-testid="calendar-event-other-icon"
                     data-cell-iso={iso}
                     data-event-status={isOtherCompleted ? "completed" : "active"}
+                    role="button"
+                    tabIndex={interactive ? 0 : -1}
                     draggable={interactive && canDragOtherEvent}
+                    onClick={interactive && otherEvent ? (e) => openEventPopup(e, otherEvent, "other", isOtherCompleted) : undefined}
+                    onKeyDown={interactive && otherEvent ? (e) => {
+                      if (e.key !== "Enter" && e.key !== " ") return;
+                      e.preventDefault();
+                      openEventPopup(e, otherEvent, "other", isOtherCompleted);
+                    } : undefined}
                     onTouchStart={interactive && canDragOtherEvent && otherEvent ? (e) => startTouchEventDrag(e, otherEvent, iso, "other") : undefined}
                     onDragStart={interactive && canDragOtherEvent && otherEvent ? (e) => {
                       e.stopPropagation();

@@ -3,10 +3,12 @@
 import type { ReactNode } from "react";
 import { useGraficosData } from "./_hooks/useGraficosData";
 import { AccuracyChart } from "./_components/AccuracyChart";
+import { AreaAccuracySnapshot } from "./_components/AreaAccuracySnapshot";
 import { AreaLinesChart } from "./_components/AreaLinesChart";
 import { VolumeChart } from "./_components/VolumeChart";
 import { SlopeComparison } from "./_components/SlopeComparison";
 import { CardsAnalysis } from "./_components/CardsAnalysis";
+import type { QuestionBankPerformance } from "@/lib/api";
 
 function ChartCard({
   children,
@@ -22,7 +24,7 @@ function ChartCard({
   );
 }
 
-export function GraficosSection() {
+export function GraficosSection({ performance = null }: { performance?: QuestionBankPerformance | null } = {}) {
   const [state, refs, actions] = useGraficosData();
 
   if (state.loading) {
@@ -78,15 +80,24 @@ export function GraficosSection() {
           <AccuracyChart state={state} refs={refs} actions={actions} />
         </ChartCard>
       </div>
-      <ChartCard>
-        <AreaLinesChart state={state} refs={refs} actions={actions} />
-      </ChartCard>
+      {performance ? (
+        <ChartCard>
+          <AreaAccuracySnapshot performance={performance} />
+        </ChartCard>
+      ) : null}
+      {state.activeAreaLines.length > 0 ? (
+        <ChartCard>
+          <AreaLinesChart state={state} refs={refs} actions={actions} />
+        </ChartCard>
+      ) : null}
       <ChartCard>
         <VolumeChart state={state} refs={refs} actions={actions} />
       </ChartCard>
-      <ChartCard>
-        <SlopeComparison state={state} actions={actions} />
-      </ChartCard>
+      {state.slopeData.length > 0 ? (
+        <ChartCard>
+          <SlopeComparison state={state} actions={actions} />
+        </ChartCard>
+      ) : null}
       <ChartCard>
         <CardsAnalysis state={state} />
       </ChartCard>

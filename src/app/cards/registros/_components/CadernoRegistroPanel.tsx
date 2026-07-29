@@ -4,6 +4,7 @@ import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { OperationalSourceType } from "@/lib/api";
 import { Field } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
+import { BottomActionBar } from "@/components/ui/BottomActionBar";
 import {
   AREA_COLORS,
   AREAS,
@@ -12,9 +13,6 @@ import {
   weightBadgeColor,
 } from "../_lib/cadernoShared";
 import { CadernoRegistroSkeleton } from "./CadernoSkeletons";
-
-const MOBILE_PRIMARY_CTA_CLASS =
-  "sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.45rem)] z-40 w-full shadow-sm md:static md:shadow-none";
 
 interface CadernoRegistroPanelProps {
   area: string;
@@ -92,7 +90,7 @@ export function CadernoRegistroPanel({
         className="w-full space-y-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.9rem)] md:pb-0"
       >
         {/* Area */}
-        <div data-caderno-registro-area-picker="true" className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:justify-center">
+        <div data-caderno-registro-area-picker="true" className="flex flex-wrap justify-center gap-1.5">
           {AREAS.map((a) => {
             const selected = area === a;
             const hasSelection = !!area;
@@ -113,7 +111,7 @@ export function CadernoRegistroPanel({
                   color: selected ? "white" : (hasSelection ? "var(--color-muted)" : areaColor),
                   opacity: hasSelection && !selected ? 0.66 : 1,
                 }}
-                className="min-h-[2.25rem] w-full rounded-xl border px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[background-color,border-color,color,opacity] duration-150 hover:opacity-100 sm:w-auto sm:min-w-14"
+                className="min-h-[2.25rem] min-w-14 rounded-xl border px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[background-color,border-color,color,opacity] duration-150 hover:opacity-100"
               >
                 {a}
               </button>
@@ -282,17 +280,19 @@ export function CadernoRegistroPanel({
           </div>
         )}
 
-        <Button
-          type="button"
-          variant="primary"
-          size="md"
-          onClick={onCreateNote}
-          disabled={!canSave}
-          loading={saving}
-          className={MOBILE_PRIMARY_CTA_CLASS}
-        >
-          Salvar
-        </Button>
+        <BottomActionBar className="md:mt-2">
+          <Button
+            type="button"
+            variant="primary"
+            size="md"
+            onClick={onCreateNote}
+            disabled={!canSave}
+            loading={saving}
+            className="w-full sm:w-auto"
+          >
+            Salvar
+          </Button>
+        </BottomActionBar>
       </section>
     </div>
   );

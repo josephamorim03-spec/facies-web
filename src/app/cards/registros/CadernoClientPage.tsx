@@ -11,6 +11,7 @@ import { CadernoRegistroPanel, CadernoRegistroSkeletonPanel } from "./_component
 import { CadernoPesquisarPanel, CadernoPesquisarSkeletonPanel } from "./_components/CadernoPesquisarPanel";
 import { CadernoNoteList } from "./_components/CadernoNoteList";
 import { CardsSectionTabs } from "../CardsSectionTabs";
+import { BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
 
 export default function CadernoClientPage() {
   const {
@@ -152,11 +153,7 @@ export default function CadernoClientPage() {
 
   // Main notebook
   return (
-    <div className="space-y-5">
-      <header className="border-b border-edge pb-5">
-        <p className="text-xs font-semibold uppercase text-muted">Cards</p>
-        <h1 className="mt-1 font-serif text-3xl font-semibold text-ink">Revisão dinâmica</h1>
-      </header>
+    <div className={`space-y-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
       <CardsSectionTabs active="records" />
       <CadernoHeader
         tab={tab}

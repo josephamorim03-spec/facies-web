@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { ToggleGroup } from "./ToggleGroup";
 import { CadernoPesquisarSkeleton } from "./CadernoSkeletons";
 import { Button } from "@/components/ui/Button";
+import { BottomActionBar } from "@/components/ui/BottomActionBar";
 import {
   AREA_COLORS,
   AREAS,
@@ -13,9 +14,6 @@ import {
   weightBadgeColor,
 } from "../_lib/cadernoShared";
 import type { SortTime, SortWeight } from "../_lib/cadernoShared";
-
-const MOBILE_PRIMARY_CTA_CLASS =
-  "sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.45rem)] z-40 w-full shadow-sm md:static md:shadow-none";
 
 interface CadernoPesquisarPanelProps {
   filterAreas: Set<Area>;
@@ -81,7 +79,7 @@ export function CadernoPesquisarPanel({
           className="space-y-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.9rem)] md:pb-0"
         >
           {/* Área - colored pills matching registro style, multi-select */}
-          <div data-caderno-pesquisar-area-picker="true" className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:justify-center">
+          <div data-caderno-pesquisar-area-picker="true" className="flex flex-wrap justify-center gap-1.5">
             {AREAS.map((a) => {
               const selected = filterAreas.has(a);
               const hasSelection = filterAreas.size > 0;
@@ -107,7 +105,7 @@ export function CadernoPesquisarPanel({
                     color: selected ? "white" : (hasSelection ? "var(--color-muted)" : areaColor),
                     opacity: hasSelection && !selected ? 0.66 : 1,
                   }}
-                  className="min-h-[2.25rem] w-full rounded-xl border px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[background-color,border-color,color,opacity] duration-150 hover:opacity-100 sm:w-auto sm:min-w-14"
+                  className="min-h-[2.25rem] min-w-14 rounded-xl border px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[background-color,border-color,color,opacity] duration-150 hover:opacity-100"
                 >
                   {a}
                 </button>
@@ -246,16 +244,18 @@ export function CadernoPesquisarPanel({
             </div>
           </div>
 
-          <Button
-            type="button"
-            variant="primary"
-            size="md"
-            onClick={onSearch}
-            loading={searchLoading}
-            className={MOBILE_PRIMARY_CTA_CLASS}
-          >
-            Pesquisar
-          </Button>
+          <BottomActionBar className="md:mt-2">
+            <Button
+              type="button"
+              variant="primary"
+              size="md"
+              onClick={onSearch}
+              loading={searchLoading}
+              className="w-full sm:w-auto"
+            >
+              Pesquisar
+            </Button>
+          </BottomActionBar>
         </section>
 
         {children}

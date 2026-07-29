@@ -18,12 +18,12 @@ import { getAuthToken } from "@/lib/auth";
 import { warmRoute, warmRouteData } from "@/lib/navigationWarmup";
 import {
   CalendarDays,
+  BrainCircuit,
   ChartNoAxesCombined,
   House,
   Layers3,
   LibraryBig,
   Settings,
-  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
@@ -42,7 +42,7 @@ function KrosmedIcon({ className }: { className?: string }) {
 
 const ICON_MAP: Record<string, LucideIcon> = {
   today: House,
-  kros: Sparkles,
+  kros: BrainCircuit,
   bank: LibraryBig,
   cards: Layers3,
   evolution: ChartNoAxesCombined,

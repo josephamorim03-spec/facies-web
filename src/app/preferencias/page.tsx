@@ -1,32 +1,55 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   ArrowDown,
   ArrowUp,
   Bell,
   CalendarClock,
+  CalendarPlus,
   Check,
   Layers3,
   Save,
   SlidersHorizontal,
   Target,
+  Trash2,
   X,
 } from "lucide-react";
 
 import {
+  createEvent,
+  deleteEvent,
   getFsrsConfig,
   getProfile,
+  listEvents,
   listQuestionBankBoards,
   putFsrsConfig,
   updateProfile,
+  type CalendarEventOut,
   type QuestionBankBoard,
   type UserProfile,
 } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
+import {
+  filterEffectivePunctualEvents,
+  filterEffectiveRoutineEvents,
+  getEffectivePunctualHoursForDate,
+  getEffectiveRoutineHoursForWeekday,
+} from "@/lib/calendarEventVisibility";
+import { getErrorMessage } from "@/lib/error-utils";
 import { BottomActionBar, BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
 import { Button } from "@/components/ui/Button";
+import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
+import {
+  displayEventLabel,
+  DURATIONS,
+  encodeEventLabel,
+  type EventCategory,
+  isInternalSkipRoutineEvent,
+  RESCHEDULE_MODES,
+  toDisplayDate,
+  WEEKDAYS,
+} from "@/app/desempenho/_lib/perfilShared";
 
 type ToggleProps = {
   checked: boolean;
@@ -34,6 +57,16 @@ type ToggleProps = {
   description: string;
   onChange: (checked: boolean) => void;
 };
+
+function todayISO(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
+function parsePositiveInt(value: string): number | null {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
 
 function PreferenceToggle({
   checked,
@@ -89,6 +122,17 @@ export default function PreferenciasPage() {
   const token = getAuthToken();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [boards, setBoards] = useState<QuestionBankBoard[]>([]);
+  const [events, setEvents] = useState<CalendarEventOut[]>([]);
+  const [weeklyGoalInput, setWeeklyGoalInput] = useState("200");
+  const [shift12hInput, setShift12hInput] = useState("");
+  const [eventCadence, setEventCadence] = useState<"routine" | "event">("routine");
+  const [eventWeekday, setEventWeekday] = useState(0);
+  const [eventDate, setEventDate] = useState("");
+  const [eventCategory, setEventCategory] = useState<EventCategory>("work");
+  const [eventLabel, setEventLabel] = useState("");
+  const [eventDuration, setEventDuration] = useState(8);
+  const [eventError, setEventError] = useState<string | null>(null);
+  const [eventSaving, setEventSaving] = useState(false);
   const [retention, setRetention] = useState(0.9);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -99,11 +143,15 @@ export default function PreferenciasPage() {
     Promise.all([
       getProfile(token),
       listQuestionBankBoards(token).catch(() => []),
+      listEvents(token).catch(() => []),
       getFsrsConfig(token),
     ])
-      .then(([nextProfile, nextBoards, fsrs]) => {
+      .then(([nextProfile, nextBoards, nextEvents, fsrs]) => {
         setProfile(nextProfile);
         setBoards(nextBoards);
+        setEvents(nextEvents);
+        setWeeklyGoalInput(String(nextProfile.weekly_goal_questions));
+        setShift12hInput(nextProfile.shift_12h_capacity == null ? "" : String(nextProfile.shift_12h_capacity));
         setRetention(fsrs.desired_retention);
       })
       .catch((cause) => {
@@ -121,9 +169,54 @@ export default function PreferenciasPage() {
     return boards.filter((board) => !selected.has(board.board_code));
   }, [boards, profile?.priority_boards]);
 
+  const currentTodayISO = useMemo(() => todayISO(), []);
+
+  const routineEvents = useMemo(
+    () =>
+      filterEffectiveRoutineEvents(
+        events.filter((event) => event.event_type === "routine" && !isInternalSkipRoutineEvent(event.label)),
+        currentTodayISO,
+      ).sort((a, b) => (a.weekday ?? 99) - (b.weekday ?? 99)),
+    [currentTodayISO, events],
+  );
+
+  const upcomingPunctualEvents = useMemo(
+    () =>
+      filterEffectivePunctualEvents(
+        events.filter((event) => event.event_type === "event" && !isInternalSkipRoutineEvent(event.label)),
+      )
+        .filter((event) => !!event.event_date && event.event_date >= currentTodayISO)
+        .sort((a, b) => (a.event_date ?? "").localeCompare(b.event_date ?? "")),
+    [currentTodayISO, events],
+  );
+
   function patchLocal(patch: Partial<UserProfile>) {
     setProfile((current) => (current ? { ...current, ...patch } : current));
     setSaved(false);
+  }
+
+  function updateWeeklyGoal(rawValue: string) {
+    const digitsOnly = rawValue.replace(/\D/g, "");
+    setWeeklyGoalInput(digitsOnly);
+    const parsed = parsePositiveInt(digitsOnly);
+    if (parsed) patchLocal({ weekly_goal_questions: parsed });
+  }
+
+  function normalizeWeeklyGoal() {
+    if (!profile) return;
+    const parsed = parsePositiveInt(weeklyGoalInput);
+    if (!parsed) {
+      setWeeklyGoalInput(String(profile.weekly_goal_questions));
+      return;
+    }
+    setWeeklyGoalInput(String(parsed));
+    patchLocal({ weekly_goal_questions: parsed });
+  }
+
+  function updateShift12h(rawValue: string) {
+    const digitsOnly = rawValue.replace(/\D/g, "");
+    setShift12hInput(digitsOnly);
+    patchLocal({ shift_12h_capacity: digitsOnly ? Number.parseInt(digitsOnly, 10) : null });
   }
 
   function addBoard(code: string) {
@@ -147,6 +240,62 @@ export default function PreferenciasPage() {
     patchLocal({ priority_boards: next });
   }
 
+  async function addEvent() {
+    if (!token || eventSaving) return;
+    const label = eventLabel.trim();
+    setEventError(null);
+    if (!label) {
+      setEventError("Informe o nome do compromisso.");
+      return;
+    }
+    if (eventCadence === "event" && !eventDate) {
+      setEventError("Selecione a data.");
+      return;
+    }
+    if (eventCadence === "routine") {
+      const used = getEffectiveRoutineHoursForWeekday(events, eventWeekday, currentTodayISO);
+      if (used + eventDuration > 24) {
+        setEventError(`${WEEKDAYS[eventWeekday]} ja tem ${used}h de compromissos. Ajuste a duracao ou remova um compromisso existente.`);
+        return;
+      }
+    } else {
+      const used = getEffectivePunctualHoursForDate(events, eventDate);
+      if (used + eventDuration > 24) {
+        setEventError(`${toDisplayDate(eventDate)} ja tem ${used}h de compromissos. Ajuste a duracao ou remova um compromisso existente.`);
+        return;
+      }
+    }
+
+    setEventSaving(true);
+    try {
+      await createEvent(token, {
+        label: encodeEventLabel(label, eventCategory),
+        event_type: eventCadence,
+        weekday: eventCadence === "routine" ? eventWeekday : null,
+        event_date: eventCadence === "event" ? eventDate : null,
+        duration_hours: eventDuration,
+      });
+      setEventLabel("");
+      if (eventCadence === "event") setEventDate("");
+      setEvents(await listEvents(token));
+    } catch (cause) {
+      setEventError(getErrorMessage(cause, "Nao foi possivel adicionar o compromisso."));
+    } finally {
+      setEventSaving(false);
+    }
+  }
+
+  async function removeEvent(id: string) {
+    if (!token) return;
+    setEventError(null);
+    try {
+      await deleteEvent(token, id, { scope: "future", effective_from: currentTodayISO });
+      setEvents(await listEvents(token));
+    } catch (cause) {
+      setEventError(getErrorMessage(cause, "Nao foi possivel remover o compromisso."));
+    }
+  }
+
   async function save() {
     if (!token || !profile || saving) return;
     setSaving(true);
@@ -154,6 +303,9 @@ export default function PreferenciasPage() {
     setError(null);
     try {
       const next = await updateProfile(token, {
+        weekly_goal_questions: profile.weekly_goal_questions,
+        shift_12h_capacity: profile.shift_12h_capacity,
+        reschedule_mode: profile.reschedule_mode,
         priority_boards: profile.priority_boards,
         weekly_goal_notifications_enabled:
           profile.weekly_goal_notifications_enabled,
@@ -197,39 +349,214 @@ export default function PreferenciasPage() {
   }
 
   return (
-    <div className={`mx-auto max-w-4xl pt-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
-      <header className="border-b border-edge pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-          Sua conta
-        </p>
-        <h1 className="mt-2 font-serif text-3xl font-semibold text-ink">
-          Preferências
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-          Ajustes que mudam como a plataforma recomenda, alerta e corrige.
-        </p>
-      </header>
-
+    <div className={`mx-auto max-w-4xl ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
       <div className="divide-y divide-edge">
         <section className="py-7">
           <SectionTitle
             icon={Target}
             title="Rotina"
-            description="A meta serve como referência semanal para o progresso e os alertas."
+            description="Meta, capacidade e compromissos que bloqueiam ou reduzem a carga de estudo."
           />
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-edge py-4">
-            <div>
-              <p className="text-sm font-semibold text-ink">Questões por semana</p>
-              <p className="mt-1 text-xs text-muted">
-                Atual: {profile.weekly_goal_questions}. Edite diretamente na aba Planejar.
-              </p>
+          <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+            <div className="space-y-5">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-semibold text-ink">Questões por semana</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={weeklyGoalInput}
+                    onChange={(event) => updateWeeklyGoal(event.target.value)}
+                    onBlur={normalizeWeeklyGoal}
+                    className="paper-control mt-2 min-h-11 w-full border border-edge bg-surface px-3 text-sm text-ink"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold text-ink">Trabalho 12h</span>
+                  <div className="mt-2 flex min-h-11 items-center rounded-control border border-edge bg-surface px-3">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={shift12hInput}
+                      onChange={(event) => updateShift12h(event.target.value)}
+                      placeholder="?"
+                      className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none"
+                    />
+                    <span className="text-xs text-muted">questoes</span>
+                  </div>
+                </label>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-ink">Reagendamento</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {RESCHEDULE_MODES.map((mode) => (
+                    <button
+                      key={mode.value}
+                      type="button"
+                      onClick={() => patchLocal({ reschedule_mode: mode.value })}
+                      className={`paper-control min-h-9 border px-3 text-xs font-semibold transition-colors ${
+                        profile.reschedule_mode === mode.value
+                          ? "border-primary bg-primary text-primaryInk"
+                          : "border-edge text-muted hover:border-primary hover:text-ink"
+                      }`}
+                    >
+                      {mode.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-            <Link
-              href="/cronograma"
-              className="inline-flex min-h-10 items-center rounded-control border border-edge px-3 text-sm font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              Ir para Planejar
-            </Link>
+
+            <div className="space-y-4 rounded-lg border border-edge bg-surface p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-ink">Adicionar compromisso</p>
+                  <p className="mt-1 text-xs text-muted">Filtra a rotina entre trabalho e outros bloqueios.</p>
+                </div>
+                <SegmentedToggle
+                  value={eventCadence}
+                  onChange={setEventCadence}
+                  ariaLabel="Tipo de compromisso"
+                  options={[
+                    { value: "routine", label: "Recorrente" },
+                    { value: "event", label: "Pontual" },
+                  ]}
+                />
+              </div>
+
+              {eventCadence === "routine" ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {WEEKDAYS.map((day, index) => (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => setEventWeekday(index)}
+                      className={`paper-control min-h-8 border px-2.5 text-xs font-semibold ${
+                        eventWeekday === index
+                          ? "border-primary bg-primary text-primaryInk"
+                          : "border-edge text-muted hover:text-ink"
+                      }`}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <input
+                  type="date"
+                  value={eventDate}
+                  onChange={(event) => setEventDate(event.target.value)}
+                  className="paper-control min-h-10 w-full border border-edge bg-paper px-3 text-sm text-ink sm:max-w-56"
+                  title={eventDate ? toDisplayDate(eventDate) : undefined}
+                />
+              )}
+
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { value: "work" as const, label: "Trabalho" },
+                  { value: "other" as const, label: "Outros" },
+                ].map((category) => (
+                  <button
+                    key={category.value}
+                    type="button"
+                    onClick={() => setEventCategory(category.value)}
+                    className={`paper-control min-h-9 border px-3 text-xs font-semibold ${
+                      eventCategory === category.value
+                        ? "border-primary bg-primary text-primaryInk"
+                        : "border-edge text-muted hover:text-ink"
+                    }`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_6rem_auto]">
+                <input
+                  type="text"
+                  placeholder={eventCategory === "work" ? "Ex. Plantao/UBS" : "Ex. Viagem"}
+                  value={eventLabel}
+                  onChange={(event) => setEventLabel(event.target.value)}
+                  className="paper-control min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink"
+                />
+                <select
+                  value={eventDuration}
+                  onChange={(event) => setEventDuration(Number(event.target.value))}
+                  className="paper-control min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink"
+                >
+                  {DURATIONS.map((duration) => (
+                    <option key={duration} value={duration}>
+                      {duration}h
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="md"
+                  onClick={addEvent}
+                  loading={eventSaving}
+                  leftIcon={<CalendarPlus className="h-4 w-4" aria-hidden="true" />}
+                >
+                  Adicionar
+                </Button>
+              </div>
+
+              {eventError ? <p className="text-xs text-danger" role="alert">{eventError}</p> : null}
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Recorrentes</p>
+                  {routineEvents.length ? (
+                    <ul className="mt-2 divide-y divide-edge">
+                      {routineEvents.map((event) => (
+                        <li key={event.event_id} className="flex min-h-10 items-center gap-2 py-2 text-sm">
+                          <span className="min-w-0 flex-1 truncate text-ink">
+                            {event.weekday !== null ? WEEKDAYS[event.weekday] : "?"} - {displayEventLabel(event.label, "work")} ({event.duration_hours}h)
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeEvent(event.event_id)}
+                            className="p-1.5 text-muted hover:text-danger"
+                            title="Remover compromisso"
+                          >
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2 text-xs text-muted">Nenhum compromisso fixo.</p>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Pontuais</p>
+                  {upcomingPunctualEvents.length ? (
+                    <ul className="mt-2 divide-y divide-edge">
+                      {upcomingPunctualEvents.map((event) => (
+                        <li key={event.event_id} className="flex min-h-10 items-center gap-2 py-2 text-sm">
+                          <span className="min-w-0 flex-1 truncate text-ink">
+                            {toDisplayDate(event.event_date ?? "")} - {displayEventLabel(event.label, "other")} ({event.duration_hours}h)
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeEvent(event.event_id)}
+                            className="p-1.5 text-muted hover:text-danger"
+                            title="Remover compromisso"
+                          >
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2 text-xs text-muted">Nenhum compromisso pontual futuro.</p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 

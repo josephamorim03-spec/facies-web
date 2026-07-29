@@ -48,7 +48,7 @@ test("legacy topic fallback accepts only an unambiguous exact name", () => {
   );
 });
 
-test("filter count excludes default choices and quantity is clamped at commit boundaries", () => {
+test("filter count includes the default access-direct choice and quantity is clamped at commit boundaries", () => {
   assert.equal(clampQuestionLimit(-10), 1);
   assert.equal(clampQuestionLimit(400), 120);
   assert.deepEqual(getActiveFilters({
@@ -64,6 +64,6 @@ test("filter count excludes default choices and quantity is clamped at commit bo
     selectedTopics: [puericultura],
     search: "",
     defaultExamCodes: ["ACESSO-DIRETO"],
-  }).map((filter) => filter.label), ["Puericultura"]);
+  }).map((filter) => filter.label), ["Puericultura", "Acesso Direto"]);
   assert.equal(questionBankCtaLabel(10, "simulation", "topic"), "Começar 10 questões · pós-resultado");
 });

@@ -8,9 +8,9 @@ export function CadernoRegistroSkeleton() {
       data-caderno-registro-panel="true"
       className="w-full space-y-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.9rem)] md:pb-0"
     >
-      <div data-caderno-registro-area-picker="true" className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:justify-center">
+      <div data-caderno-registro-area-picker="true" className="flex flex-wrap justify-center gap-1.5">
         {AREAS.map((areaName) => (
-          <Skeleton key={`registro-skeleton-area-${areaName}`} className="h-8 w-full sm:w-24 rounded-sm" />
+          <Skeleton key={`registro-skeleton-area-${areaName}`} className="h-8 w-16 rounded-sm" />
         ))}
       </div>
       <Skeleton className="h-9 w-full rounded-sm" />
@@ -36,9 +36,9 @@ export function CadernoPesquisarSkeleton() {
       data-caderno-pesquisar-panel="true"
       className="space-y-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.9rem)] md:pb-0"
     >
-      <div data-caderno-pesquisar-area-picker="true" className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:justify-center">
+      <div data-caderno-pesquisar-area-picker="true" className="flex flex-wrap justify-center gap-1.5">
         {AREAS.map((areaName) => (
-          <Skeleton key={`pesquisar-skeleton-area-${areaName}`} className="h-8 w-full sm:w-24 rounded-sm" />
+          <Skeleton key={`pesquisar-skeleton-area-${areaName}`} className="h-8 w-16 rounded-sm" />
         ))}
       </div>
       <Skeleton className="h-9 w-full rounded-sm" />

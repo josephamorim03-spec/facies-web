@@ -16,10 +16,12 @@ import {
   CalendarActionButtons,
   CalendarCreateStudyModal,
   CalendarEventDeleteConfirmModal,
+  CalendarEventRescheduleSheet,
   CalendarEventMoveErrorToast,
   CalendarNoDisturbNotice,
   CalendarRescheduleWarningModal,
   CalendarEntryPopup,
+  CalendarStudyDeleteConfirmModal,
   CalendarTaskRescheduleSheet,
   CalendarUndoRescheduleToast,
 } from "./CalendarSections";
@@ -77,6 +79,9 @@ function isSamePopupTarget(left: CalendarPopupTarget, right: CalendarPopupTarget
   if (left.kind !== right.kind) return false;
   if ("task" in left && "task" in right) return left.task.task_id === right.task.task_id;
   if ("study" in left && "study" in right) return left.study.study_id === right.study.study_id;
+  if (left.kind === "event" && right.kind === "event") {
+    return left.event.event_id === right.event.event_id && left.sourceISO === right.sourceISO;
+  }
   return false;
 }
 
@@ -159,6 +164,12 @@ export function CronogramaCalendarView({
   const [modal, setModal] = useState<"create" | null>(null);
   const [barPopup, setBarPopup] = useState<{ target: CalendarPopupTarget; rect: DOMRect } | null>(null);
   const [rescheduleTask, setRescheduleTask] = useState<ReviewTask | null>(null);
+  const [deleteStudy, setDeleteStudy] = useState<DirectedStudyListItem | null>(null);
+  const [rescheduleEvent, setRescheduleEvent] = useState<{
+    event: CalendarEventOut;
+    sourceISO: string;
+    iconType: "work" | "other";
+  } | null>(null);
   const [taskMoveError, setTaskMoveError] = useState("");
   const [undoReschedule, setUndoReschedule] = useState<{
     task: ReviewTask;
@@ -284,6 +295,8 @@ export function CronogramaCalendarView({
     handleEventDeleteDrop,
     handleEventDragEnd,
     confirmDeleteDraggedEvent,
+    requestEventDelete,
+    rescheduleEventToDate,
   } = useEventDragAndMutation({
     token,
     events,
@@ -684,6 +697,9 @@ export function CronogramaCalendarView({
           studies={studies}
           studyMap={studyMap}
           onRescheduleRequest={setRescheduleTask}
+          onDeleteStudyRequest={setDeleteStudy}
+          onDeleteEventRequest={requestEventDelete}
+          onRescheduleEventRequest={(event, sourceISO, iconType) => setRescheduleEvent({ event, sourceISO, iconType })}
           onClose={() => setBarPopup(null)}
         />
       )}
@@ -693,6 +709,26 @@ export function CronogramaCalendarView({
         token={token}
         onClose={() => setRescheduleTask(null)}
         onRescheduled={handleTaskRescheduled}
+      />
+
+      <CalendarEventRescheduleSheet
+        key={rescheduleEvent ? `${rescheduleEvent.event.event_id}:${rescheduleEvent.sourceISO}` : "no-event-reschedule"}
+        event={rescheduleEvent?.event ?? null}
+        sourceISO={rescheduleEvent?.sourceISO ?? null}
+        iconType={rescheduleEvent?.iconType ?? null}
+        onClose={() => setRescheduleEvent(null)}
+        onReschedule={rescheduleEventToDate}
+      />
+
+      <CalendarStudyDeleteConfirmModal
+        key={deleteStudy?.study_id ?? "no-study-delete"}
+        study={deleteStudy}
+        token={token}
+        onCancel={() => setDeleteStudy(null)}
+        onDeleted={() => {
+          setDeleteStudy(null);
+          void onRefresh();
+        }}
       />
 
       {undoReschedule ? (

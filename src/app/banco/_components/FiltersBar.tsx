@@ -607,7 +607,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         ) : null}
 
         <div className="mx-auto grid w-full max-w-md gap-3 border-t border-edge pt-5 text-center">
-          <label className="space-y-2">
+          <label className="flex flex-col items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Questões</span>
             <input
               type="number"
@@ -628,7 +628,7 @@ export default function FiltersBar(props: FiltersBarProps) {
               onKeyDown={(event) => {
                 if (event.key === "Enter") event.currentTarget.blur();
               }}
-              className="mx-auto w-24 text-center"
+              className="mx-auto w-28 text-center"
             />
           </label>
           <div className="space-y-3">
@@ -642,6 +642,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                 setLimitDraft(String(next));
                 onLimitChange(next);
               }}
+              className="w-full"
               style={{ "--track-bg": `linear-gradient(to right, var(--range-fill) 0%, var(--range-fill) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) 100%)` } as CSSProperties}
               aria-label="Quantidade de questões"
             />

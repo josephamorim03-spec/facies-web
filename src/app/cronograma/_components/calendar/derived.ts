@@ -1,4 +1,4 @@
-import { DirectedStudyListItem, ReviewTask } from "@/lib/api";
+import { CalendarEventOut, DirectedStudyListItem, ReviewTask } from "@/lib/api";
 import {
   AREA_COLORS,
   FULL_EXAM_COLOR,
@@ -13,7 +13,8 @@ export type CalendarPopupTarget =
   | { kind: "pending"; task: ReviewTask }
   | { kind: "done"; task: ReviewTask }
   | { kind: "initial"; study: DirectedStudyListItem }
-  | { kind: "full_exam"; study: DirectedStudyListItem };
+  | { kind: "full_exam"; study: DirectedStudyListItem }
+  | { kind: "event"; event: CalendarEventOut; sourceISO: string; iconType: "work" | "other"; completed: boolean };
 
 export type CalendarDotEntry = {
   key: string;

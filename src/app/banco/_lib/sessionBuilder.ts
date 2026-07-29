@@ -77,6 +77,14 @@ export function resolveEntryTopic(
 
 export type ActiveFilter = { id: string; label: string; topicId?: string };
 
+function examFilterLabel(code: string): string {
+  const normalized = String(code || "").trim().toUpperCase();
+  if (normalized === "ACESSO-DIRETO") return "Acesso Direto";
+  if (normalized === "RPLUS") return "Residência R+";
+  if (normalized === "REVALIDA") return "Revalida";
+  return normalized;
+}
+
 export function getActiveFilters(params: {
   area: string;
   boardCodes: string[];
@@ -95,7 +103,9 @@ export function getActiveFilters(params: {
   if (params.area) filters.push({ id: "area", label: params.area });
   for (const topic of params.selectedTopics) filters.push({ id: `topic:${topic.knowledge_node_id}`, label: topic.node_name, topicId: topic.knowledge_node_id });
   for (const code of params.boardCodes) filters.push({ id: `board:${code}`, label: code });
-  for (const code of params.examCodes.filter((code) => !params.defaultExamCodes.includes(code))) filters.push({ id: `exam:${code}`, label: code });
+  for (const code of params.examCodes) {
+    filters.push({ id: `exam:${code}`, label: examFilterLabel(code) });
+  }
   for (const institution of params.institutions) filters.push({ id: `institution:${institution}`, label: institution });
   for (const state of params.stateCodes) filters.push({ id: `state:${state}`, label: state });
   for (const year of params.selectedYears) filters.push({ id: `year:${year}`, label: String(year) });

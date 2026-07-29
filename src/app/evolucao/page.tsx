@@ -4,7 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, FileText, HelpCircle, History, Sparkles } from "lucide-react";
+import { BarChart3, FileText, HelpCircle, History } from "lucide-react";
 import { Popover } from "radix-ui";
 
 import {
@@ -152,14 +152,16 @@ export default function EvolucaoPage() {
   return (
     <div className="mx-auto max-w-6xl pb-12">
       <Tabs value={tab} onValueChange={(value) => setTab(value as EvolutionTab)}>
-        <TabsList aria-label="Visões de evolução">
-          {tabs.map(({ id, label, icon: Icon }) => (
-            <TabsTrigger key={id} value={id}>
-              <Icon className="h-4 w-4" aria-hidden="true" />
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="flex justify-center">
+          <TabsList aria-label="Visões de evolução">
+            {tabs.map(({ id, label, icon: Icon }) => (
+              <TabsTrigger key={id} value={id}>
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         {loading && (
           <div className="space-y-4 py-8" aria-busy="true">
@@ -178,8 +180,7 @@ export default function EvolucaoPage() {
           <>
             <TabsContent value="charts" className="space-y-6 pt-5">
               <section aria-labelledby="evolution-summary-title">
-                <div className="mb-3 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+                <div className="mb-3">
                   <h2 id="evolution-summary-title" className="text-sm font-semibold text-ink">Resumo do desempenho</h2>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -216,7 +217,7 @@ export default function EvolucaoPage() {
                   <h2 id="evolution-charts-title" className="text-lg font-semibold text-ink">Leitura ao longo do tempo</h2>
                   <p className="mt-1 text-sm text-muted">Toque, clique ou use o teclado nas séries para comparar períodos e áreas.</p>
                 </div>
-                <GraficosSection />
+                <GraficosSection performance={performance} />
               </section>
             </TabsContent>
 

@@ -8,11 +8,11 @@ import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, TabsScrollArea } from "@/components/
 export function CardsSectionTabs({ active }: { active: "review" | "records" }) {
   const items = [
     { id: "review" as const, label: "Revisar", href: "/cards", Icon: Layers3 },
-    { id: "records" as const, label: "Registros", href: "/cards/registros", Icon: NotebookPen },
+    { id: "records" as const, label: "Registrar", href: "/cards/registros", Icon: NotebookPen },
   ];
 
   return (
-    <TabsScrollArea>
+    <TabsScrollArea className="w-full justify-center">
       {({ ref, onScroll }) => (
         <nav ref={ref} onScroll={onScroll} className={TAB_LIST_CLASS} aria-label="Seções de Cards">
           {items.map(({ id, label, href, Icon }) => (
