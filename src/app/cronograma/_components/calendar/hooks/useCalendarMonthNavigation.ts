@@ -42,8 +42,9 @@ function getTrackedTouch(list: TouchList, touchId: number | null): Touch | null 
 
 function shouldIgnoreMonthSwipeStart(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false;
+  if (target.closest("[data-calendar-swipe-ignore='true']")) return true;
   return Boolean(
-    target.closest("button, a, input, textarea, select, [role='button'], [draggable='true']"),
+    target.closest("button, a, input, textarea, select, [contenteditable='true'], [draggable='true']"),
   );
 }
 
@@ -191,6 +192,17 @@ export function useCalendarMonthNavigation() {
     clearMonthSwipeState();
   }
 
+  function goToMonth(nextYear: number, nextMonth: number) {
+    if (!Number.isFinite(nextYear) || !Number.isFinite(nextMonth)) return;
+    const normalized = shiftMonth(Math.trunc(nextYear), Math.trunc(nextMonth), 0);
+    clearFinalizeTimer();
+    setTransition(idleTransition());
+    setYear(normalized.year);
+    setMonth(normalized.month);
+    clearMonthSwipeState();
+    monthSwipeSuppressTapUntil.current = Date.now() + MONTH_SWIPE_SUPPRESS_TAP_MS;
+  }
+
   function handleMonthGridTouchStart(e: React.TouchEvent<HTMLDivElement>) {
     if (transitionRef.current.phase === "animating") {
       clearMonthSwipeState();
@@ -240,6 +252,7 @@ export function useCalendarMonthNavigation() {
 
     if (monthSwipeAxisLock.current !== "x") return;
     if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
 
     const viewportWidth = resolveViewportWidth(e.currentTarget.getBoundingClientRect().width);
     const maxOffset = Math.max(MONTH_SWIPE_COMMIT_MIN_PX, viewportWidth || 0);
@@ -313,6 +326,7 @@ export function useCalendarMonthNavigation() {
     prevMonth,
     nextMonth,
     goToToday,
+    goToMonth,
     handleMonthGridTouchStart,
     handleMonthGridTouchMove,
     handleMonthGridTouchEnd,

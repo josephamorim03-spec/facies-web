@@ -50,7 +50,7 @@ export function TurboLobby({
   const accentColor = lobbyAccentColor ?? "var(--color-primary)";
 
   return (
-    <div className="flex flex-col font-sans" style={{ minHeight: TURBO_VIEWPORT_MIN_HEIGHT }}>
+    <div className="flex flex-col pb-[calc(env(safe-area-inset-bottom,0px)+5rem)] font-sans" style={{ minHeight: TURBO_VIEWPORT_MIN_HEIGHT }}>
 
       {/* Button — absolutely centered in the full container */}
       <div className="flex flex-1 flex-col justify-center gap-5 py-6">
@@ -137,15 +137,6 @@ export function TurboLobby({
                 </div>
               </div>
             )}
-            <button
-              type="button"
-              data-testid="turbo-start"
-              onClick={() => void onStartAction(questionCount)}
-              className="inline-flex h-11 w-full items-center justify-center rounded-lg border font-semibold text-sm tracking-wide text-paper shadow-sm transition-opacity hover:opacity-90"
-              style={{ backgroundColor: accentColor, borderColor: accentColor }}
-            >
-              Iniciar
-            </button>
           </>
         )}
       </div>
@@ -169,6 +160,21 @@ export function TurboLobby({
             style={rangeStyle(questionCount, sliderMin, sliderMax)}
             className="w-full"
           />
+        </div>
+      )}
+
+      {effectiveAvailableCount > 0 && (
+        <div className="sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.6rem)] z-40 -mx-1 rounded-control border border-edge bg-paper/95 p-2 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-paper/85">
+          <button
+            type="button"
+            data-testid="turbo-start"
+            onClick={() => void onStartAction(questionCount)}
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-control border text-sm font-semibold tracking-wide text-primaryInk shadow-sm transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            style={{ backgroundColor: accentColor, borderColor: accentColor }}
+          >
+            Iniciar revisão · {questionCount} cards
+            {isTurboMode ? ` · ~${fmtTime(questionCount * ESTIMATED_MS_PER_CARD)}` : ""}
+          </button>
         </div>
       )}
     </div>

@@ -91,6 +91,7 @@ type DbState = {
   autoReschedule: {
     noBetterDateTaskIds: string[];
   };
+  weeklyGoal: number;
   apiHits: {
     listReviewTasks: number;
     autoReschedulePreview: number;
@@ -316,6 +317,7 @@ function createDb(): DbState {
     autoReschedule: {
       noBetterDateTaskIds: [],
     },
+    weeklyGoal: 300,
     apiHits: {
       listReviewTasks: 0,
       autoReschedulePreview: 0,
@@ -362,7 +364,7 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
     if (method === "GET" && path === "/api/profile") {
       return json(route, {
         user_id: "user_e2e",
-        weekly_goal_questions: 300,
+        weekly_goal_questions: db.weeklyGoal,
         timezone: "America/Fortaleza",
         reschedule_mode: "suggest",
         shift_12h_capacity: 40,
@@ -370,6 +372,29 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
         display_name: "E2E User",
         access_status: "active",
         has_completed_initial_goal_setup: true,
+      });
+    }
+    if (method === "PATCH" && path === "/api/profile") {
+      const payload = request.postDataJSON() as { weekly_goal_questions?: number };
+      if (typeof payload.weekly_goal_questions === "number") {
+        db.weeklyGoal = payload.weekly_goal_questions;
+      }
+      return json(route, {
+        user_id: "user_e2e",
+        weekly_goal_questions: db.weeklyGoal,
+        timezone: "America/Fortaleza",
+        reschedule_mode: "suggest",
+        shift_12h_capacity: 40,
+        shift_24h_capacity: 20,
+        display_name: "E2E User",
+        access_status: "active",
+        has_completed_initial_goal_setup: true,
+        priority_boards: [],
+        weekly_goal_notifications_enabled: true,
+        calendar_change_alerts_enabled: true,
+        calendar_recommendations_enabled: true,
+        default_feedback_timing: "post_result",
+        has_chosen_feedback_default: true,
       });
     }
     if (method === "GET" && path === "/api/notes/operational/streak") {

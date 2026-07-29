@@ -1,19 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, FileText, HelpCircle, History } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ResponsiveContainer,
-  Tooltip as RechartsTooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { BarChart3, FileText, HelpCircle, History, Sparkles } from "lucide-react";
+import { Popover } from "radix-ui";
 
 import {
   getQuestionBankPerformance,
@@ -24,11 +16,19 @@ import { useAuthToken } from "@/lib/useAuthToken";
 import { queryKeys } from "@/lib/queryKeys";
 import { Alert } from "@/components/ui/Alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { Tooltip } from "@/components/ui/Tooltip";
-import {
-  studyChartTooltipContentStyle,
-  studyChartTooltipCursor,
-} from "@/components/charts/studyChartTooltip";
+
+const GraficosSection = dynamic(
+  () => import("@/app/estatisticas/graficos/GraficosSection").then((mod) => mod.GraficosSection),
+  {
+    loading: () => (
+      <div className="grid gap-4 md:grid-cols-2" aria-busy="true">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="h-72 animate-pulse rounded-xl border border-edge bg-surface" />
+        ))}
+      </div>
+    ),
+  },
+);
 
 type EvolutionTab = "charts" | "reports" | "history";
 
@@ -59,11 +59,61 @@ function sessionScore(session: QuestionBankSession): {
 
 function MetricHelp({ text }: { text: string }) {
   return (
-    <Tooltip label={text}>
-      <button type="button" aria-label={text} className="p-1 text-muted hover:text-ink">
-        <HelpCircle className="h-4 w-4" aria-hidden="true" />
-      </button>
-    </Tooltip>
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <button
+          type="button"
+          aria-label="Entenda esta métrica"
+          className="rounded-md p-1 text-muted transition hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <HelpCircle className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          aria-label="Explicação da métrica"
+          side="bottom"
+          align="start"
+          sideOffset={8}
+          className="paper-overlay z-[100] max-w-72 rounded-lg border border-edge bg-ink px-3 py-2 text-xs leading-5 text-paper shadow-lg"
+        >
+          {text}
+          <Popover.Arrow className="fill-ink" />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
+function SummaryMetric({
+  label,
+  value,
+  detail,
+  help,
+  tone = "primary",
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  help?: string;
+  tone?: "primary" | "accent" | "success" | "neutral";
+}) {
+  const toneClass = {
+    primary: "border-primary/30 bg-primary/5",
+    accent: "border-accent/35 bg-accent/10",
+    success: "border-success/30 bg-success/10",
+    neutral: "border-edge bg-surface",
+  }[tone];
+
+  return (
+    <article className={`min-w-0 rounded-xl border p-4 ${toneClass}`}>
+      <div className="flex items-center gap-1">
+        <p className="text-xs font-medium text-muted">{label}</p>
+        {help ? <MetricHelp text={help} /> : null}
+      </div>
+      <p className="mt-2 text-2xl font-semibold tabular-nums text-ink sm:text-3xl">{value}</p>
+      <p className="mt-1 truncate text-xs text-muted" title={detail}>{detail}</p>
+    </article>
   );
 }
 
@@ -86,25 +136,12 @@ export default function EvolucaoPage() {
   const loading = !tokenResolved || performanceQuery.isPending || sessionsQuery.isPending;
   const loadFailed = performanceQuery.isError || sessionsQuery.isError;
 
-  const areaData = useMemo(
-    () =>
-      (performance?.areas ?? [])
-        .filter((area) => area.questions_seen > 0)
-        .map((area) => ({
-          area: area.label,
-          primeiraTentativa: Math.round((area.accuracy ?? 0) * 100),
-          questoes: area.questions_seen,
-        })),
-    [performance],
-  );
-
-  const comparisonData = useMemo(
-    () => [
-      { label: "Primeira tentativa", acerto: Math.round((performance?.first_attempt_accuracy ?? 0) * 100) },
-      { label: "Repetições", acerto: Math.round((performance?.repeat_accuracy ?? 0) * 100) },
-    ],
-    [performance],
-  );
+  const areaSummary = useMemo(() => {
+    const areas = (performance?.areas ?? []).filter((area) => area.questions_seen > 0 && area.accuracy !== null);
+    if (!areas.length) return { strongest: null, attention: null };
+    const sorted = [...areas].sort((a, b) => (b.accuracy ?? 0) - (a.accuracy ?? 0));
+    return { strongest: sorted[0], attention: sorted[sorted.length - 1] };
+  }, [performance]);
 
   const tabs: Array<{ id: EvolutionTab; label: string; icon: typeof BarChart3 }> = [
     { id: "charts", label: "Gráficos", icon: BarChart3 },
@@ -113,15 +150,8 @@ export default function EvolucaoPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-5xl pb-12 pt-5">
-      <header className="border-b border-edge pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Evolução</p>
-        <h1 className="mt-2 font-serif text-3xl font-semibold text-ink sm:text-4xl">
-          Analise sua trajetória
-        </h1>
-      </header>
-
-      <Tabs value={tab} onValueChange={(value) => setTab(value as EvolutionTab)} className="mt-5">
+    <div className="mx-auto max-w-6xl pb-12">
+      <Tabs value={tab} onValueChange={(value) => setTab(value as EvolutionTab)}>
         <TabsList aria-label="Visões de evolução">
           {tabs.map(({ id, label, icon: Icon }) => (
             <TabsTrigger key={id} value={id}>
@@ -146,77 +176,47 @@ export default function EvolucaoPage() {
 
         {!loading && (
           <>
-            <TabsContent value="charts" className="divide-y divide-edge">
-              <section className="grid gap-px bg-edge sm:grid-cols-3">
-                <div className="bg-paper py-6 pr-5">
-                  <div className="flex items-center gap-1">
-                    <p className="text-xs text-muted">Primeira tentativa</p>
-                    <MetricHelp text="Usa somente a primeira resposta a cada questão, evitando que repetições inflem o percentual." />
-                  </div>
-                  <p className="mt-2 text-3xl font-semibold text-ink">{accuracy(performance?.first_attempt_accuracy)}</p>
-                  <p className="mt-1 text-xs text-muted">{performance?.first_attempt_correct ?? 0} acertos diagnósticos</p>
+            <TabsContent value="charts" className="space-y-6 pt-5">
+              <section aria-labelledby="evolution-summary-title">
+                <div className="mb-3 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <h2 id="evolution-summary-title" className="text-sm font-semibold text-ink">Resumo do desempenho</h2>
                 </div>
-                <div className="bg-paper px-5 py-6">
-                  <div className="flex items-center gap-1">
-                    <p className="text-xs text-muted">Repetições</p>
-                    <MetricHelp text="Mostra respostas dadas a questões já vistas. Esta taxa não altera a métrica diagnóstica." />
-                  </div>
-                  <p className="mt-2 text-3xl font-semibold text-ink">{accuracy(performance?.repeat_accuracy)}</p>
-                  <p className="mt-1 text-xs text-muted">{performance?.repeat_attempts ?? 0} respostas repetidas</p>
-                </div>
-                <div className="bg-paper py-6 pl-5">
-                  <p className="text-xs text-muted">Estado de prova</p>
-                  <p className="mt-2 text-3xl font-semibold text-ink">{accuracy(performance?.exam.accuracy)}</p>
-                  <p className="mt-1 text-xs text-muted">{performance?.exam.simulation_count ?? 0} provas concluídas</p>
-                </div>
-              </section>
-
-              <section className="py-7">
-                <div className="flex items-center gap-1">
-                  <h2 className="text-base font-semibold text-ink">Diagnóstico e repetição</h2>
-                  <MetricHelp text="As barras ficam separadas para que ganho por exposição não seja confundido com domínio inicial." />
-                </div>
-                <div className="mt-5 h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={comparisonData} margin={{ left: 0, right: 12 }}>
-                      <CartesianGrid vertical={false} stroke="var(--color-edge)" />
-                      <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                      <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
-                      <RechartsTooltip
-                        formatter={(value) => [`${value}%`, "Acerto"]}
-                        cursor={studyChartTooltipCursor}
-                        contentStyle={studyChartTooltipContentStyle}
-                      />
-                      <Bar dataKey="acerto" radius={[4, 4, 0, 0]} maxBarSize={90}>
-                        {comparisonData.map((entry) => (
-                          <Cell
-                            key={entry.label}
-                            fill={entry.label === "Primeira tentativa" ? "var(--color-primary)" : "var(--color-accent)"}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <SummaryMetric
+                    label="Primeira tentativa"
+                    value={accuracy(performance?.first_attempt_accuracy)}
+                    detail={`${performance?.first_attempt_correct ?? 0} acertos em ${performance?.unique_questions ?? 0} questões únicas`}
+                    help="Usa somente a primeira resposta a cada questão, evitando que repetições inflem o percentual."
+                  />
+                  <SummaryMetric
+                    label="Após revisões"
+                    value={accuracy(performance?.repeat_accuracy)}
+                    detail={`${performance?.repeat_correct ?? 0} acertos em ${performance?.repeat_attempts ?? 0} respostas repetidas`}
+                    help="Mostra respostas dadas a questões já vistas. Esta taxa não altera a métrica diagnóstica."
+                    tone="accent"
+                  />
+                  <SummaryMetric
+                    label="Melhor área"
+                    value={areaSummary.strongest ? accuracy(areaSummary.strongest.accuracy) : "Sem base"}
+                    detail={areaSummary.strongest ? `${areaSummary.strongest.label} · ${areaSummary.strongest.questions_seen} questões` : "Responda questões para formar sua leitura"}
+                    tone="success"
+                  />
+                  <SummaryMetric
+                    label="Área a observar"
+                    value={areaSummary.attention ? accuracy(areaSummary.attention.accuracy) : "Sem base"}
+                    detail={areaSummary.attention ? `${areaSummary.attention.label} · ${areaSummary.attention.questions_seen} questões` : "A amostra ainda não permite comparação"}
+                    tone="neutral"
+                  />
                 </div>
               </section>
 
-              <section className="py-7">
-                <h2 className="text-base font-semibold text-ink">Primeira tentativa por área</h2>
-                {areaData.length ? (
-                  <div className="mt-5 h-72 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={areaData} layout="vertical" margin={{ left: 24 }}>
-                        <CartesianGrid horizontal={false} stroke="var(--color-edge)" />
-                        <XAxis type="number" domain={[0, 100]} tickLine={false} axisLine={false} />
-                        <YAxis type="category" dataKey="area" width={110} tickLine={false} axisLine={false} />
-                        <RechartsTooltip formatter={(value) => [`${value}%`, "Acerto"]} contentStyle={studyChartTooltipContentStyle} />
-                        <Bar dataKey="primeiraTentativa" fill="var(--color-primary)" radius={[0, 4, 4, 0]} maxBarSize={24} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : (
-                  <p className="mt-4 text-sm text-muted">As áreas aparecem após as primeiras questões concluídas.</p>
-                )}
+              <section aria-labelledby="evolution-charts-title">
+                <div className="mb-3">
+                  <h2 id="evolution-charts-title" className="text-lg font-semibold text-ink">Leitura ao longo do tempo</h2>
+                  <p className="mt-1 text-sm text-muted">Toque, clique ou use o teclado nas séries para comparar períodos e áreas.</p>
+                </div>
+                <GraficosSection />
               </section>
             </TabsContent>
 

@@ -3,10 +3,12 @@ import {
   CalendarEventOut,
   DirectedStudyListItem,
   ReviewTask,
+  updateReviewTask,
 } from "@/lib/api";
 import { IconStethoscope } from "../CronogramaIcons";
 import { IconTrash } from "@/app/desempenho/_components/PerfilIcons";
 import {
+  displayDate,
   getRevisionNumber,
   todayISO,
 } from "../../_lib/cronogramaShared";
@@ -18,6 +20,8 @@ import {
   CalendarNoDisturbNotice,
   CalendarRescheduleWarningModal,
   CalendarEntryPopup,
+  CalendarTaskRescheduleSheet,
+  CalendarUndoRescheduleToast,
 } from "./CalendarSections";
 import {
   buildCalendarCells,
@@ -116,7 +120,9 @@ export function CronogramaCalendarView({
   token,
   onRefresh,
   onEventMutated,
+  onTaskRescheduled,
   searchQuery,
+  initialSelectedDay = null,
   onMonthYearChange,
   viewSwitchSlot,
   isMobilePortrait = false,
@@ -131,7 +137,9 @@ export function CronogramaCalendarView({
   token: string;
   onRefresh: () => void;
   onEventMutated?: () => Promise<void> | void;
+  onTaskRescheduled?: () => void;
   searchQuery?: string;
+  initialSelectedDay?: string | null;
   onMonthYearChange?: (
     month: number,
     year: number,
@@ -139,16 +147,28 @@ export function CronogramaCalendarView({
     goToToday: () => void,
     prevMonth: () => void,
     nextMonth: () => void,
+    goToMonth: (year: number, month: number) => void,
   ) => void;
   viewSwitchSlot?: React.ReactNode;
   isMobilePortrait?: boolean;
 }) {
   const today = todayISO();
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState<string | null>(initialSelectedDay);
   const showDayDetail = false;
 
   const [modal, setModal] = useState<"create" | null>(null);
   const [barPopup, setBarPopup] = useState<{ target: CalendarPopupTarget; rect: DOMRect } | null>(null);
+  const [rescheduleTask, setRescheduleTask] = useState<ReviewTask | null>(null);
+  const [taskMoveError, setTaskMoveError] = useState("");
+  const [undoReschedule, setUndoReschedule] = useState<{
+    task: ReviewTask;
+    fromISO: string;
+    toISO: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (initialSelectedDay) setSelectedDay(initialSelectedDay);
+  }, [initialSelectedDay]);
 
   function handleDaySelect(iso: string | null) {
     setSelectedDay(iso);
@@ -157,6 +177,29 @@ export function CronogramaCalendarView({
 
   function handleBarClick(target: CalendarPopupTarget, rect: DOMRect) {
     setBarPopup((prev) => (prev && isSamePopupTarget(prev.target, target) ? null : { target, rect }));
+  }
+
+  function handleTaskRescheduled(task: ReviewTask, fromISO: string, toISO: string) {
+    setTaskMoveError("");
+    setUndoReschedule({ task, fromISO, toISO });
+    void onRefresh();
+    onTaskRescheduled?.();
+  }
+
+  function handleTaskRescheduleError(_task: ReviewTask, _fromISO: string, toISO: string) {
+    setTaskMoveError(`Não foi possível reagendar para ${displayDate(toISO)}.`);
+  }
+
+  async function undoLastTaskReschedule() {
+    if (!undoReschedule) return;
+    const { task, fromISO } = undoReschedule;
+    setUndoReschedule(null);
+    try {
+      await updateReviewTask(token, task.task_id, { due_date: fromISO });
+      await onRefresh();
+    } catch {
+      setTaskMoveError("Não foi possível desfazer o reagendamento.");
+    }
   }
 
   const taskRevisionMap = useMemo(() => {
@@ -181,6 +224,7 @@ export function CronogramaCalendarView({
     prevMonth,
     nextMonth,
     goToToday,
+    goToMonth,
     handleMonthGridTouchStart: rawHandleMonthGridTouchStart,
     handleMonthGridTouchMove: rawHandleMonthGridTouchMove,
     handleMonthGridTouchEnd: rawHandleMonthGridTouchEnd,
@@ -215,6 +259,8 @@ export function CronogramaCalendarView({
     onRefresh,
     prevMonth,
     nextMonth,
+    onRescheduleSuccess: handleTaskRescheduled,
+    onRescheduleError: handleTaskRescheduleError,
   });
 
   const {
@@ -254,7 +300,7 @@ export function CronogramaCalendarView({
 
   useEffect(() => {
     const rowCount = buildMonthSnapshot(year, month).rowCount;
-    onMonthYearChange?.(month, year, rowCount, goToToday, prevMonth, nextMonth);
+    onMonthYearChange?.(month, year, rowCount, goToToday, prevMonth, nextMonth, goToMonth);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month, year]);
 
@@ -446,13 +492,18 @@ export function CronogramaCalendarView({
     >
       {touchDragGhost && (
         <div
-          className="pointer-events-none fixed z-[70]"
+          className="pointer-events-none fixed z-[70] max-w-[14rem]"
           style={{ left: touchDragGhost.x, top: touchDragGhost.y, transform: "translate(-50%, -50%)" }}
         >
-          <div
-            className="w-5 h-5 rounded-full border border-ink/50 shadow-sm"
-            style={{ backgroundColor: touchDragGhost.color, opacity: 0.92 }}
-          />
+          <div className="flex items-center gap-2 rounded-control border border-edge bg-paper/95 px-2 py-1.5 shadow-sm">
+            <span
+              className="h-3 w-3 shrink-0 rounded-full border border-ink/35"
+              style={{ backgroundColor: touchDragGhost.color, opacity: 0.92 }}
+            />
+            <span className="min-w-0 truncate text-[11px] font-semibold text-ink">
+              {touchDragGhost.label}
+            </span>
+          </div>
         </div>
       )}
 
@@ -472,6 +523,7 @@ export function CronogramaCalendarView({
       )}
 
       <CalendarEventMoveErrorToast message={eventMoveError} onClose={hideEventMoveError} />
+      <CalendarEventMoveErrorToast message={taskMoveError} onClose={() => setTaskMoveError("")} />
 
       <div className="overflow-visible">
         <div className="grid grid-cols-7 text-center mb-1">
@@ -631,9 +683,25 @@ export function CronogramaCalendarView({
           anchorRect={barPopup.rect}
           studies={studies}
           studyMap={studyMap}
+          onRescheduleRequest={setRescheduleTask}
           onClose={() => setBarPopup(null)}
         />
       )}
+
+      <CalendarTaskRescheduleSheet
+        task={rescheduleTask}
+        token={token}
+        onClose={() => setRescheduleTask(null)}
+        onRescheduled={handleTaskRescheduled}
+      />
+
+      {undoReschedule ? (
+        <CalendarUndoRescheduleToast
+          message={`Atividade reagendada para ${displayDate(undoReschedule.toISO)}.`}
+          onUndo={undoLastTaskReschedule}
+          onClose={() => setUndoReschedule(null)}
+        />
+      ) : null}
 
       <CalendarNoDisturbNotice
         noDisturb={noDisturb}

@@ -35,6 +35,8 @@
   --motion-slow: 240ms;
   --ease-paper: cubic-bezier(0.2, 0, 0, 1);
   --mobile-nav-height: 4rem;
+  --bottom-action-bar-min-height: 5.25rem;
+  --bottom-action-bar-space: calc(var(--bottom-action-bar-min-height) + env(safe-area-inset-bottom, 0px));
 
   /* Area palette — matches tailwind.config.js area.* tokens */
   --area-go:  #8F3F7D;

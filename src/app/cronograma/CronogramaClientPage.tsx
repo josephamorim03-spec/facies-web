@@ -1,31 +1,37 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CalendarCheck2, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarCheck2,
+  ChevronLeft,
+  ChevronRight,
+  HelpCircle,
+  House,
+} from "lucide-react";
+
 import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { Button } from "@/components/ui/Button";
-import { IconSearch, IconX } from "./_components/CronogramaIcons";
 import { useNavbar } from "@/lib/NavbarContext";
+import { buildStudyImportRuntimePath, readActiveStudyImportSessionId } from "@/lib/studyImportRuntime";
+import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
+
+import { CronogramaCalendarView } from "./_components/CronogramaCalendarView";
+import { IconSearch, IconX } from "./_components/CronogramaIcons";
+import { CronogramaStreakCard } from "./_components/CronogramaStreakCard";
+import { RescheduleSuggestionDialog } from "./_components/RescheduleSuggestionDialog";
+import { WeeklyGoalControl } from "./_components/WeeklyGoalControl";
 import { useCronogramaPageState } from "./_hooks/useCronogramaPageState";
 import { useCronogramaSearchFilters } from "./_hooks/useCronogramaSearchFilters";
 import {
-  type Area,
   buildStudiesByDate,
   buildStudyMap,
-  displayDate,
   SHORT_MONTH_LABELS,
 } from "./_lib/cronogramaShared";
-import {
-  buildStudyImportRuntimePath,
-  readActiveStudyImportSessionId,
-} from "@/lib/studyImportRuntime";
-import { writeCronogramaViewModeSession } from "./_lib/viewModeSession";
-import { CronogramaCalendarView } from "./_components/CronogramaCalendarView";
-import { RescheduleSuggestionDialog } from "./_components/RescheduleSuggestionDialog";
-import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { buildWeeklyOpsMetrics } from "./_lib/weeklyOpsMetrics";
+import { writeCronogramaViewModeSession } from "./_lib/viewModeSession";
 
 function detectMobilePortraitMode(isDesktopNavigation: boolean): boolean {
   if (typeof window === "undefined") return false;
@@ -39,19 +45,127 @@ function detectMobilePortraitMode(isDesktopNavigation: boolean): boolean {
   return isNarrowViewport && isPortrait;
 }
 
-function TodayIcon({ className }: { className?: string }) {
+type CalendarCoachStep = "month" | "reschedule";
+
+type CalendarCoachState = {
+  month: boolean;
+  reschedule: boolean;
+};
+
+function readCalendarCoachState(storageKey: string): CalendarCoachState {
+  if (typeof window === "undefined") return { month: false, reschedule: false };
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(storageKey) ?? "{}") as Partial<CalendarCoachState>;
+    return {
+      month: Boolean(parsed.month),
+      reschedule: Boolean(parsed.reschedule),
+    };
+  } catch {
+    return { month: false, reschedule: false };
+  }
+}
+
+function writeCalendarCoachState(storageKey: string, state: CalendarCoachState) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(state));
+  } catch {
+    // Storage can be unavailable in private contexts.
+  }
+}
+
+function nextCoachStep(state: CalendarCoachState): CalendarCoachStep | null {
+  if (!state.month) return "month";
+  if (!state.reschedule) return "reschedule";
+  return null;
+}
+
+function CalendarCoachmark({
+  step,
+  onDismiss,
+}: {
+  step: CalendarCoachStep;
+  onDismiss: () => void;
+}) {
+  const copy =
+    step === "month"
+      ? "Deslize o calendário ou use as setas para navegar entre os meses."
+      : "Toque e segure uma atividade para arrastá-la para outro dia. Você também pode tocar nela e escolher \"Reagendar\".";
+
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-      <circle cx="12" cy="16" r="3" fill="currentColor" stroke="none" />
-    </svg>
+    <div className="flex items-start gap-2 rounded-md border border-edge bg-surfaceMuted px-3 py-2 text-xs text-muted">
+      <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+      <p className="min-w-0 flex-1">{copy}</p>
+      <button
+        type="button"
+        onClick={onDismiss}
+        className="-mr-1 shrink-0 px-1 font-semibold text-ink hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        aria-label="Dispensar dica"
+      >
+        OK
+      </button>
+    </div>
   );
 }
 
-export default function CronogramaPage() {
+function MonthControl({
+  month,
+  year,
+  currentRealYear,
+  onPrevious,
+  onNext,
+  onOpenPicker,
+  className = "",
+}: {
+  month: number;
+  year: number;
+  currentRealYear: number;
+  onPrevious: () => void;
+  onNext: () => void;
+  onOpenPicker: () => void;
+  className?: string;
+}) {
+  const label = `${SHORT_MONTH_LABELS[month]}${year !== currentRealYear ? ` ${year}` : ""}`;
+
+  return (
+    <div
+      data-month-nav="true"
+      className={`grid min-w-0 grid-cols-[44px_minmax(0,1fr)_44px] items-center ${className}`.trim()}
+    >
+      <button
+        type="button"
+        onClick={onPrevious}
+        className="flex h-11 w-11 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        aria-label="Mês anterior"
+      >
+        <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        onClick={onOpenPicker}
+        className="min-w-0 px-2 text-center font-serif text-[17px] font-bold tracking-normal text-ink transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        aria-label={`Selecionar mês e ano. Atual: ${label}`}
+        data-month-title="true"
+      >
+        <span className="block truncate">{label}</span>
+      </button>
+      <button
+        type="button"
+        onClick={onNext}
+        className="flex h-11 w-11 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        aria-label="Próximo mês"
+      >
+        <ChevronRight className="h-5 w-5" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+export default function CronogramaPage({
+  initialSelectedDay = null,
+}: {
+  initialSelectedDay?: string | null;
+}) {
   const router = useRouter();
   const isDesktopNavigation = useDesktopNavigationMode();
   const { setTitle, setActions } = useNavbar();
@@ -61,6 +175,8 @@ export default function CronogramaPage() {
     studies,
     turboCardsByDate,
     events,
+    streak,
+    streakLoading,
     loading,
     error,
     suggesting,
@@ -91,7 +207,6 @@ export default function CronogramaPage() {
 
   const studyMap = buildStudyMap(studies);
   const studiesByDate = buildStudiesByDate(studies);
-
   const todayISO = (() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -112,16 +227,24 @@ export default function CronogramaPage() {
   });
 
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [isMobilePortrait, setIsMobilePortrait] = useState(false);
-  const nowRef = new Date();
-  const [calendarMonth, setCalendarMonth] = useState(nowRef.getMonth());
-  const [calendarYear, setCalendarYear] = useState(nowRef.getFullYear());
   const goToTodayRef = useRef<(() => void) | null>(null);
   const prevMonthRef = useRef<(() => void) | null>(null);
   const nextMonthRef = useRef<(() => void) | null>(null);
-  const currentRealYear = new Date().getFullYear();
-  const todayDayNumber = new Date().getDate();
+  const goToMonthRef = useRef<((year: number, month: number) => void) | null>(null);
+  const monthChangeSeenRef = useRef(false);
+
+  const nowRef = new Date();
+  const currentRealYear = nowRef.getFullYear();
+  const currentRealMonth = nowRef.getMonth();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [isMobilePortrait, setIsMobilePortrait] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(currentRealMonth);
+  const [calendarYear, setCalendarYear] = useState(currentRealYear);
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false);
+  const [monthPickerYear, setMonthPickerYear] = useState(currentRealYear);
+  const coachStorageKey = useMemo(() => "cronograma_calendar_coach_v1", []);
+  const [coachStep, setCoachStep] = useState<CalendarCoachStep | null>(null);
+
   const weeklyOpsMetrics = useMemo(
     () =>
       buildWeeklyOpsMetrics({
@@ -133,8 +256,7 @@ export default function CronogramaPage() {
       }),
     [doneTasks, studies, tasks, todayISO, weeklyGoal],
   );
-  // "Para revisar hoje" = só o que vence hoje. As atrasadas têm o banner próprio
-  // (e aparecem nas suas datas passadas no calendário); não devem reaparecer aqui.
+
   useEffect(() => {
     function updateMobilePortraitMode() {
       setIsMobilePortrait(detectMobilePortraitMode(isDesktopNavigation));
@@ -148,45 +270,98 @@ export default function CronogramaPage() {
     };
   }, [isDesktopNavigation]);
 
+  const completeCoachStep = useCallback(
+    (step: CalendarCoachStep) => {
+      const state = readCalendarCoachState(coachStorageKey);
+      const next = { ...state, [step]: true };
+      writeCalendarCoachState(coachStorageKey, next);
+      setCoachStep(nextCoachStep(next));
+    },
+    [coachStorageKey],
+  );
+
+  const openMonthPicker = useCallback(() => {
+    setMonthPickerYear(calendarYear);
+    setMonthPickerOpen(true);
+    completeCoachStep("month");
+  }, [calendarYear, completeCoachStep]);
+
+  const renderMonthControl = useCallback(
+    (className = "") => (
+      <MonthControl
+        month={calendarMonth}
+        year={calendarYear}
+        currentRealYear={currentRealYear}
+        onPrevious={() => {
+          prevMonthRef.current?.();
+          completeCoachStep("month");
+        }}
+        onNext={() => {
+          nextMonthRef.current?.();
+          completeCoachStep("month");
+        }}
+        onOpenPicker={openMonthPicker}
+        className={className}
+      />
+    ),
+    [calendarMonth, calendarYear, completeCoachStep, currentRealYear, openMonthPicker],
+  );
+
   useEffect(() => {
     if (isDesktopNavigation) return;
     if (searchOpen) {
       setTitle("");
       setActions(null);
-      return () => { setTitle(null); setActions(null); };
+      return () => {
+        setTitle(null);
+        setActions(null);
+      };
     }
-    setTitle(
-      <span className="font-serif text-sm font-semibold tracking-wide text-ink">
-        {SHORT_MONTH_LABELS[calendarMonth]}{calendarYear !== currentRealYear ? ` ${calendarYear}` : ""}
-      </span>,
-    );
+
+    setTitle(renderMonthControl("w-full max-w-[17rem]"));
     setActions(
       <>
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
-          className="p-1.5 text-muted hover:text-ink"
+          className="flex h-7 w-7 shrink-0 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="Buscar tema"
         >
           <IconSearch className="h-5 w-5" />
         </button>
         <button
           type="button"
-          onClick={() => goToTodayRef.current?.()}
-          className="p-1.5 text-muted hover:text-ink"
-          aria-label="Ir para hoje"
+          onClick={() => setCoachStep("month")}
+          className="flex h-7 w-7 shrink-0 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-label="Mostrar dica do calendário"
         >
-          <span className="flex h-5 w-5 items-center justify-center rounded-[3px] border border-current text-[10px] font-semibold leading-none" aria-hidden="true">
-            {todayDayNumber}
-          </span>
+          <HelpCircle className="h-5 w-5" aria-hidden="true" />
         </button>
-        <TopBarActionLink href="/hoje" label="Hoje" title="Hoje">
-          <TodayIcon className="h-5 w-5" />
+        <TopBarActionLink href="/hoje" label="Ir para Hoje" title="Ir para Hoje">
+          <House className="h-5 w-5" aria-hidden="true" />
         </TopBarActionLink>
       </>,
     );
-    return () => { setTitle(null); setActions(null); };
-  }, [isDesktopNavigation, searchOpen, calendarMonth, calendarYear, currentRealYear, todayDayNumber, setTitle, setActions]);
+    return () => {
+      setTitle(null);
+      setActions(null);
+    };
+  }, [isDesktopNavigation, renderMonthControl, searchOpen, setActions, setTitle]);
+
+  function closeSearch() {
+    setSearchOpen(false);
+    clearSearch();
+  }
+
+  function selectMonth(year: number, month: number) {
+    goToMonthRef.current?.(year, month);
+    setCalendarYear(year);
+    setCalendarMonth(month);
+    setMonthPickerOpen(false);
+    completeCoachStep("month");
+  }
+
+  const overdueTasks = tasks.filter((task) => task.is_overdue);
 
   return (
     <div
@@ -200,7 +375,6 @@ export default function CronogramaPage() {
         </header>
       ) : null}
 
-      {/* Top bar: Google Calendar style */}
       {searchOpen ? (
         <div className="space-y-1.5" data-crono-search-mode="true">
           <div className="flex items-center gap-2" data-crono-search-row="true">
@@ -209,18 +383,18 @@ export default function CronogramaPage() {
                 ref={searchInputRef}
                 type="text"
                 value={searchInput}
-                onChange={(e) => handleSearchInputChange(e.target.value)}
+                onChange={(event) => handleSearchInputChange(event.target.value)}
                 placeholder="Buscar tema..."
-                className="w-full text-sm bg-transparent border-b border-ink outline-none py-1.5"
+                className="w-full border-b border-ink bg-transparent py-1.5 text-sm outline-none"
                 autoFocus
               />
-              {searchSuggestions.length > 0 && !searchQuery && (
-                <ul className="absolute left-0 right-0 z-30 bg-paper border border-edge border-t-0 max-h-48 overflow-y-auto rounded-b-md shadow-sm">
+              {searchSuggestions.length > 0 && !searchQuery ? (
+                <ul className="absolute left-0 right-0 z-30 max-h-48 overflow-y-auto rounded-b-md border border-t-0 border-edge bg-paper shadow-sm">
                   {searchSuggestions.map((theme) => (
                     <li key={theme}>
                       <button
                         type="button"
-                        className="w-full text-left text-sm px-3 py-2 hover:bg-[var(--amber-tint)] transition-colors"
+                        className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-[var(--amber-tint)]"
                         onClick={() => {
                           selectSearchSuggestion(theme);
                           searchInputRef.current?.blur();
@@ -231,7 +405,7 @@ export default function CronogramaPage() {
                     </li>
                   ))}
                 </ul>
-              )}
+              ) : null}
             </div>
             <button
               type="button"
@@ -240,121 +414,65 @@ export default function CronogramaPage() {
                   clearSearch();
                   return;
                 }
-                setSearchOpen(false);
-                clearSearch();
+                closeSearch();
               }}
-              className="p-1.5 text-muted hover:text-ink shrink-0"
+              className="shrink-0 p-1.5 text-muted hover:text-ink"
               aria-label={searchInput ? "Limpar busca" : "Fechar busca"}
               data-testid="cronograma-search-action"
               data-search-action={searchInput ? "clear" : "back"}
             >
               {searchInput ? (
-                <IconX className="w-5 h-5" />
+                <IconX className="h-5 w-5" />
               ) : (
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
-                  <path d="M13 4L5 10l8 6" />
-                </svg>
+                <ChevronLeft className="h-5 w-5" aria-hidden="true" />
               )}
             </button>
           </div>
           <div
             data-crono-search-month-row="true"
             data-crono-mobile-month-row={isMobilePortrait ? "true" : undefined}
-            data-month-nav="true"
-            className={
-              isMobilePortrait
-                ? "flex items-center justify-center"
-                : `grid grid-cols-[2rem_1fr_2rem] items-center${isDesktopNavigation ? " mx-auto w-full max-w-md" : ""}`
-            }
           >
-            {!isMobilePortrait && (
-              <button
-                type="button"
-                onClick={() => prevMonthRef.current?.()}
-                className="p-1.5 text-muted hover:text-ink shrink-0"
-                aria-label="Mês anterior"
-              >
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
-                  <path d="M13 4L7 10l6 6" />
-                </svg>
-              </button>
-            )}
-            <span data-month-title="true" className="text-center text-[17px] font-serif font-bold tracking-wide">
-              {SHORT_MONTH_LABELS[calendarMonth]}{calendarYear !== currentRealYear ? ` ${calendarYear}` : ""}
-            </span>
-            {!isMobilePortrait && (
-              <button
-                type="button"
-                onClick={() => nextMonthRef.current?.()}
-                className="justify-self-end p-1.5 text-muted hover:text-ink shrink-0"
-                aria-label="Próximo mês"
-              >
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
-                  <path d="M7 4l6 6-6 6" />
-                </svg>
-              </button>
-            )}
+            {renderMonthControl(isDesktopNavigation ? "mx-auto w-full max-w-md" : "w-full")}
           </div>
         </div>
       ) : isDesktopNavigation ? (
-        <div
-          data-month-nav="true"
-          data-crono-mobile-top-row={isMobilePortrait ? "true" : undefined}
-          className={`flex items-center gap-1${!isDesktopNavigation ? " relative" : ""}`}
-        >
-          {isDesktopNavigation ? (
+        <div className="grid grid-cols-[1fr_auto] items-center gap-2">
+          {renderMonthControl("w-full max-w-md")}
+          <div className="flex items-center gap-1">
             <button
-              onClick={() => prevMonthRef.current?.()}
-              className="p-1.5 -ml-1.5 text-muted hover:text-ink shrink-0"
-              aria-label="Mês anterior"
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="flex h-8 w-8 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Buscar tema"
             >
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
-                <path d="M13 4L7 10l6 6" />
-              </svg>
+              <IconSearch className="h-5 w-5" />
             </button>
-          ) : null}
-          <span
-            data-month-title="true"
-            className={`${!isDesktopNavigation ? "flex-1 text-center" : "flex-1 text-center"} text-[17px] font-serif font-bold tracking-wide`}
-          >
-            {SHORT_MONTH_LABELS[calendarMonth]}{calendarYear !== currentRealYear ? ` ${calendarYear}` : ""}
-          </span>
-          {isDesktopNavigation && (
-            <>
-              <button
-                onClick={() => nextMonthRef.current?.()}
-                className="p-1.5 text-muted hover:text-ink shrink-0"
-                aria-label="Próximo mês"
-              >
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
-                  <path d="M7 4l6 6-6 6" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="p-1.5 ml-auto text-muted hover:text-ink shrink-0"
-                aria-label="Buscar tema"
-              >
-                <IconSearch className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => goToTodayRef.current?.()}
-                className="p-1.5 text-muted hover:text-ink shrink-0 transition-colors"
-                aria-label="Ir para hoje"
-              >
-                <span className="flex items-center justify-center w-5 h-5 border border-current rounded-[3px] text-[10px] font-semibold leading-none" aria-hidden="true">
-                  {todayDayNumber}
-                </span>
-              </button>
-              <TopBarActionLink href="/hoje" label="Hoje" title="Hoje" className="-mr-1">
-                <TodayIcon className="block h-5 w-5" />
-              </TopBarActionLink>
-            </>
-          )}
+            <button
+              type="button"
+              onClick={() => setCoachStep("month")}
+              className="flex h-8 w-8 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Mostrar dica do calendário"
+            >
+              <HelpCircle className="h-5 w-5" aria-hidden="true" />
+            </button>
+            <TopBarActionLink href="/hoje" label="Ir para Hoje" title="Ir para Hoje">
+              <House className="h-5 w-5" aria-hidden="true" />
+            </TopBarActionLink>
+          </div>
         </div>
       ) : null}
 
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {!searchOpen ? (
+        <div className="-mt-1">
+          <CronogramaStreakCard streak={streak} loading={streakLoading} />
+        </div>
+      ) : null}
+
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+
+      {coachStep === "month" ? (
+        <CalendarCoachmark step="month" onDismiss={() => completeCoachStep("month")} />
+      ) : null}
 
       <div data-calendar-summary-stack="true" aria-label="Calendário mensal" className="-mx-4 md:-mx-6">
         <CronogramaCalendarView
@@ -368,43 +486,45 @@ export default function CronogramaPage() {
           token={token ?? ""}
           onRefresh={fetchAll}
           onEventMutated={handleEventMutationRefresh}
+          onTaskRescheduled={() => completeCoachStep("reschedule")}
           searchQuery={searchQuery}
+          initialSelectedDay={initialSelectedDay}
           isMobilePortrait={isMobilePortrait}
-          onMonthYearChange={(m, y, _rowCount, gtt, prev, next) => {
+          onMonthYearChange={(m, y, _rowCount, goToToday, prevMonth, nextMonth, goToMonth) => {
             setCalendarMonth(m);
             setCalendarYear(y);
-            goToTodayRef.current = gtt;
-            prevMonthRef.current = prev;
-            nextMonthRef.current = next;
+            goToTodayRef.current = goToToday;
+            prevMonthRef.current = prevMonth;
+            nextMonthRef.current = nextMonth;
+            goToMonthRef.current = goToMonth;
+            if (monthChangeSeenRef.current) {
+              completeCoachStep("month");
+            }
+            monthChangeSeenRef.current = true;
           }}
         />
       </div>
 
-      {!loading && (
-        <section className="border-y border-edge py-4" aria-label="Progresso da meta semanal">
-          <div className="flex items-baseline justify-between gap-4 text-sm">
-            <p className="font-semibold text-ink">Meta semanal</p>
-            <p className="text-muted">
-              {weeklyOpsMetrics.doneQuestionsWeek} de {weeklyOpsMetrics.weeklyGoal} questões
-            </p>
-          </div>
-          <div className="mt-3 h-1.5 overflow-hidden bg-surfaceMuted">
-            <div
-              className="h-full bg-primary transition-[width]"
-              style={{ width: `${weeklyOpsMetrics.progressPct}%` }}
-            />
-          </div>
-        </section>
-      )}
+      {coachStep === "reschedule" ? (
+        <CalendarCoachmark step="reschedule" onDismiss={() => completeCoachStep("reschedule")} />
+      ) : null}
+
+      {!loading ? (
+        <WeeklyGoalControl
+          token={token ?? ""}
+          weeklyGoal={weeklyOpsMetrics.weeklyGoal}
+          completedQuestions={weeklyOpsMetrics.doneQuestionsWeek}
+          progressPct={weeklyOpsMetrics.progressPct}
+          remainingQuestions={weeklyOpsMetrics.weeklyGoalRemainingQuestions}
+          onSaved={fetchAll}
+        />
+      ) : null}
 
       {!loading && calendarRecommendationsEnabled ? (
         <section aria-labelledby="routine-suggestions-title">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
-            <h2 id="routine-suggestions-title" className="text-sm font-semibold text-ink">
-              Sugestões para a rotina
-            </h2>
-          </div>
+          <h2 id="routine-suggestions-title" className="text-sm font-semibold text-ink">
+            Sugestões para a rotina
+          </h2>
           <div className="mt-2 divide-y divide-edge border-y border-edge">
             <Link href="/kros" className="group flex min-h-14 items-center gap-3 py-3 text-sm">
               <CalendarCheck2 className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
@@ -426,17 +546,85 @@ export default function CronogramaPage() {
         </section>
       ) : null}
 
-      {/* Revisões atrasadas — discreto, embaixo do calendário */}
-      {new Date().getHours() >= 20 && tasks.filter((t) => t.is_overdue).length > 0 && (
+      {new Date().getHours() >= 20 && overdueTasks.length > 0 ? (
         <div className="flex items-center justify-center gap-2 text-xs text-muted">
           <span>
-            {tasks.filter((t) => t.is_overdue).length} tarefa{tasks.filter((t) => t.is_overdue).length > 1 ? "s" : ""} atrasada{tasks.filter((t) => t.is_overdue).length > 1 ? "s" : ""}
+            {overdueTasks.length} tarefa{overdueTasks.length > 1 ? "s" : ""} atrasada{overdueTasks.length > 1 ? "s" : ""}
           </span>
           <Button variant="outline" size="xs" loading={suggesting} onClick={handleAutoReschedule} className="shrink-0">
             Reagendar
           </Button>
         </div>
-      )}
+      ) : null}
+
+      {monthPickerOpen ? (
+        <div
+          className="fixed inset-0 z-[70] flex items-end bg-black/30 md:items-center md:justify-center"
+          onClick={() => setMonthPickerOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Selecionar mês e ano"
+            className="w-full rounded-t-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-md md:rounded-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-base font-semibold text-ink">Selecionar mês</h3>
+              <button
+                type="button"
+                onClick={() => setMonthPickerOpen(false)}
+                className="flex h-8 w-8 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label="Fechar seletor"
+              >
+                <IconX className="h-5 w-5" />
+              </button>
+            </div>
+            <label className="mt-4 block">
+              <span className="text-sm font-semibold text-ink">Ano</span>
+              <select
+                value={monthPickerYear}
+                onChange={(event) => setMonthPickerYear(Number(event.target.value))}
+                className="mt-2 min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {Array.from({ length: 11 }, (_, index) => currentRealYear - 5 + index).map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {SHORT_MONTH_LABELS.map((label, index) => {
+                const selected = calendarMonth === index && calendarYear === monthPickerYear;
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => selectMonth(monthPickerYear, index)}
+                    className={`min-h-11 border px-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      selected
+                        ? "border-primary bg-primary text-white"
+                        : "border-edge bg-paper text-ink hover:bg-surfaceMuted"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={() => selectMonth(currentRealYear, currentRealMonth)}
+              className="mt-4 w-full"
+            >
+              Mês atual
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       <RescheduleSuggestionDialog
         open={showEventSuggestionModal}
@@ -450,4 +638,3 @@ export default function CronogramaPage() {
     </div>
   );
 }
-

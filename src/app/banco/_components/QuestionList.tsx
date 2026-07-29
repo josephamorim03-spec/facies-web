@@ -1,6 +1,6 @@
 "use client";
 
-import type { QuestionBankAvailability, QuestionBankQuestion, QuestionBankResolutionMode, StudyKind } from "@/lib/api";
+import type { QuestionBankQuestion } from "@/lib/api";
 import { formatSourceLabel } from "@/lib/formatSource";
 
 function accuracyChipClass(ratio: number): string {
@@ -12,26 +12,13 @@ function accuracyChipClass(ratio: number): string {
 type QuestionListProps = {
   questions: QuestionBankQuestion[];
   selectedTopicSummary: string;
-  resolutionMode: QuestionBankResolutionMode;
-  studyKind: StudyKind;
-  busy: boolean;
-  availability: QuestionBankAvailability | null;
-  onStartSession: () => void;
 };
 
 export default function QuestionList({
   questions,
   selectedTopicSummary,
-  resolutionMode,
-  studyKind,
-  busy,
-  availability,
-  onStartSession,
 }: QuestionListProps) {
   if (questions.length === 0) return null;
-
-  const startLabel = studyKind === "full_exam" ? "Iniciar prova" : "Iniciar sessão";
-  const canStart = !busy && !!availability && availability.available_count > 0;
 
   return (
     <section className="km-card p-4 md:p-5">
@@ -41,14 +28,6 @@ export default function QuestionList({
           <h2 className="mt-1 font-serif text-2xl font-semibold">Questões encontradas</h2>
           <p className="mt-1 text-sm text-muted">{selectedTopicSummary}</p>
         </div>
-        <button
-          type="button"
-          onClick={onStartSession}
-          disabled={!canStart}
-          className="rounded-xl border border-primary bg-primary px-5 py-2 text-sm font-semibold text-primaryInk shadow-sm disabled:opacity-50"
-        >
-          {startLabel}
-        </button>
       </div>
       <div className="mt-4 grid gap-3">
         {questions.map((question) => {

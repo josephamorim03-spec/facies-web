@@ -92,24 +92,24 @@ test.describe("Cronograma mobile portrait UX", () => {
     await expect(page.getByTestId("streak-compact-trigger")).toHaveCount(0);
   });
 
-  test("header vertical mantem mes na mesma linha e desce ao abrir busca", async ({ page }) => {
+  test("header vertical integra setas ao mes, remove botao numerico e abre seletor", async ({ page }) => {
     await mockCronogramaApi(page);
     await page.goto("/cronograma");
 
-    const topRow = page.locator("[data-crono-mobile-top-row='true']");
     const monthTitle = page.locator("[data-month-title='true']").first();
-    await expect(topRow).toBeVisible();
     await expect(monthTitle).toBeVisible();
+    await expect(page.getByLabel(/M.s anterior/i).first()).toBeVisible();
+    await expect(page.getByLabel(/Pr.ximo m.s/i).first()).toBeVisible();
+    await expect(page.getByLabel("Ir para Hoje")).toBeVisible();
+    await expect(page.getByRole("button", { name: /^\d{1,2}$/ })).toHaveCount(0);
 
-    const topRowBox = await topRow.boundingBox();
     const monthTitleBox = await monthTitle.boundingBox();
-    expect(topRowBox).not.toBeNull();
     expect(monthTitleBox).not.toBeNull();
-    if (topRowBox && monthTitleBox) {
-      const monthCenterY = monthTitleBox.y + monthTitleBox.height / 2;
-      expect(monthCenterY).toBeGreaterThanOrEqual(topRowBox.y - 1);
-      expect(monthCenterY).toBeLessThanOrEqual(topRowBox.y + topRowBox.height + 1);
-    }
+
+    await monthTitle.click();
+    await expect(page.getByRole("dialog", { name: /Selecionar m.s e ano/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Mês atual" })).toBeVisible();
+    await page.getByLabel(/Fechar seletor/i).click({ force: true });
 
     await page.getByLabel("Buscar tema").click();
 
@@ -121,8 +121,8 @@ test.describe("Cronograma mobile portrait UX", () => {
     await expect(searchMonthRow).toBeVisible();
     await expect(actionButton).toHaveCount(1);
     await expect(actionButton).toHaveAttribute("data-search-action", "back");
-    await expect(page.getByLabel(/M.s anterior/i)).toHaveCount(0);
-    await expect(page.getByLabel(/Pr.ximo m.s/i)).toHaveCount(0);
+    await expect(page.getByLabel(/M.s anterior/i).first()).toBeVisible();
+    await expect(page.getByLabel(/Pr.ximo m.s/i).first()).toBeVisible();
 
     const [searchRowBox, searchMonthRowBox] = await Promise.all([
       searchRow.boundingBox(),
@@ -198,6 +198,24 @@ test.describe("Cronograma mobile portrait UX", () => {
 
     await page.mouse.click(5, 5);
     await expect(tooltip).toHaveClass(/opacity-0/);
+  });
+
+  test("meta semanal mostra percentual e permite edicao direta", async ({ page }) => {
+    const { db } = await mockCronogramaApi(page);
+    await page.goto("/cronograma");
+
+    const weeklyGoal = page.getByLabel("Progresso da meta semanal");
+    await expect(weeklyGoal).toContainText(/150 de 300 quest/i);
+    await expect(weeklyGoal).toContainText("50%");
+
+    await weeklyGoal.getByRole("button", { name: /Editar meta semanal/i }).click();
+    const dialog = page.getByRole("dialog", { name: "Editar meta semanal" });
+    await expect(dialog).toBeVisible();
+    await dialog.locator("input[type='number']").fill("550");
+    await dialog.getByRole("button", { name: "Salvar" }).click();
+
+    await expect.poll(() => db.weeklyGoal).toBe(550);
+    await expect(weeklyGoal).toContainText(/150 de 550 quest/i);
   });
 
   test("card para revisar hoje explicita a fila global do banco", async ({ page }) => {
@@ -432,4 +450,3 @@ test.describe("Cronograma mobile landscape UX", () => {
     await expect(page.getByTestId("streak-compact-trigger")).toHaveCount(0);
   });
 });
-

@@ -90,6 +90,7 @@ export type GraficosRefs = {
 };
 
 export type GraficosActions = {
+  retryCharts: () => void;
   setAccuracyLockedWeekIndex: Dispatch<SetStateAction<number | null>>;
   setVolumeLockedWeekIndex: Dispatch<SetStateAction<number | null>>;
   setLockedAreaLine: Dispatch<SetStateAction<AreaKey | null>>;
@@ -110,6 +111,7 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
   const [timeline, setTimeline] = useState<WeeklyTimeline | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reloadVersion, setReloadVersion] = useState(0);
   const [turboAreaStats, setTurboAreaStats] = useState<OperationalTurboAreaStats | null>(null);
   const [turboAreaLoading, setTurboAreaLoading] = useState(true);
   const [isTouchInteractionMode, setIsTouchInteractionMode] = useState(false);
@@ -164,7 +166,7 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
         setError(msg);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [reloadVersion]);
 
   useEffect(() => {
     const token = getAuthToken();
@@ -172,7 +174,7 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
       .then(setTurboAreaStats)
       .catch(() => setTurboAreaStats(null))
       .finally(() => setTurboAreaLoading(false));
-  }, []);
+  }, [reloadVersion]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(TOUCH_INTERACTION_QUERY);
@@ -598,6 +600,12 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
   };
 
   const actions: GraficosActions = {
+    retryCharts: () => {
+      setLoading(true);
+      setError("");
+      setTurboAreaLoading(true);
+      setReloadVersion((version) => version + 1);
+    },
     setAccuracyLockedWeekIndex,
     setVolumeLockedWeekIndex,
     setLockedAreaLine,

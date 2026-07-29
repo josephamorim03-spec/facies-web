@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { ReviewTask, updateReviewTask } from "@/lib/api";
 import { AREA_COLORS, diffDays } from "../../../_lib/cronogramaShared";
 import {
+  TOUCH_DRAG_LONG_PRESS_CANCEL_PX,
+  TOUCH_DRAG_LONG_PRESS_MS,
   TOUCH_DRAG_START_PX,
   TOUCH_EDGE_HOLD_MS,
   TOUCH_EDGE_ZONE_PX,
@@ -12,25 +14,29 @@ import {
 const RESCHEDULE_NO_DISTURB_KEY = "cronograma_reschedule_no_disturb";
 const RESCHEDULE_WARN_COUNT_KEY = "cronograma_reschedule_warn_count";
 
-export type CalendarWarnTask = { taskId: string; to: string; days: number } | null;
+export type CalendarWarnTask = { task: ReviewTask; from: string; to: string; days: number } | null;
 
 export function useTaskDragReschedule({
   token,
   onRefresh,
   prevMonth,
   nextMonth,
+  onRescheduleSuccess,
+  onRescheduleError,
 }: {
   token: string;
   onRefresh: () => void;
   prevMonth: () => void;
   nextMonth: () => void;
+  onRescheduleSuccess?: (task: ReviewTask, fromISO: string, toISO: string) => void;
+  onRescheduleError?: (task: ReviewTask, fromISO: string, toISO: string) => void;
 }) {
   const [dragTaskId, setDragTaskId] = useState<string | null>(null);
   const [dragFromISO, setDragFromISO] = useState<string | null>(null);
   const [dragIdealISO, setDragIdealISO] = useState<string | null>(null);
   const [taskInitialDates, setTaskInitialDates] = useState<Record<string, string>>({});
   const [touchDraggingTaskId, setTouchDraggingTaskId] = useState<string | null>(null);
-  const [touchDragGhost, setTouchDragGhost] = useState<{ x: number; y: number; color: string } | null>(null);
+  const [touchDragGhost, setTouchDragGhost] = useState<{ x: number; y: number; color: string; label: string } | null>(null);
   const [isTouchDevice] = useState(() => (
     typeof window === "undefined" ? true : (navigator.maxTouchPoints ?? 0) > 0
   ));
@@ -46,6 +52,7 @@ export function useTaskDragReschedule({
 
   const monthGridRef = useRef<HTMLDivElement | null>(null);
   const taskDragOrigin = useRef<"touch" | "mouse" | null>(null);
+  const dragTaskRef = useRef<ReviewTask | null>(null);
   const touchDragTouchId = useRef<number | null>(null);
   const touchDragStart = useRef<{ x: number; y: number } | null>(null);
   const touchDragMoved = useRef(false);
@@ -55,6 +62,7 @@ export function useTaskDragReschedule({
   const touchLastCellISO = useRef<string | null>(null);
   const touchMarginHold = useRef<{ side: "left" | "right" | "top" | "bottom"; targetISO: string; sinceMs: number } | null>(null);
   const touchDragHandlersRef = useRef<(() => void) | null>(null);
+  const touchLongPressCleanupRef = useRef<(() => void) | null>(null);
 
   function nowMs(): number {
     return new Date().getTime();
@@ -74,15 +82,21 @@ export function useTaskDragReschedule({
         touchDragHandlersRef.current();
         touchDragHandlersRef.current = null;
       }
+      if (touchLongPressCleanupRef.current) {
+        touchLongPressCleanupRef.current();
+        touchLongPressCleanupRef.current = null;
+      }
     };
   }, []);
 
-  async function doReschedule(taskId: string, toDate: string) {
+  async function doReschedule(task: ReviewTask, fromISO: string, toDate: string) {
     try {
-      await updateReviewTask(token, taskId, { due_date: toDate });
-      onRefresh();
+      await updateReviewTask(token, task.task_id, { due_date: toDate });
+      onRescheduleSuccess?.(task, fromISO, toDate);
+      return true;
     } catch {
-      // ignore
+      onRescheduleError?.(task, fromISO, toDate);
+      return false;
     }
   }
 
@@ -134,7 +148,12 @@ export function useTaskDragReschedule({
       touchDragHandlersRef.current();
       touchDragHandlersRef.current = null;
     }
+    if (touchLongPressCleanupRef.current) {
+      touchLongPressCleanupRef.current();
+      touchLongPressCleanupRef.current = null;
+    }
     taskDragOrigin.current = null;
+    dragTaskRef.current = null;
     setDragTaskId(null);
     setDragFromISO(null);
     setDragIdealISO(null);
@@ -301,6 +320,7 @@ export function useTaskDragReschedule({
     }
     clearTouchEdgeTurnTimer();
     taskDragOrigin.current = touchMeta ? "touch" : "mouse";
+    dragTaskRef.current = task;
     setDragTaskId(task.task_id);
     setDragFromISO(fromISO);
     setDragIdealISO(task.ideal_due_date);
@@ -323,6 +343,7 @@ export function useTaskDragReschedule({
         x: touchMeta.clientX,
         y: touchMeta.clientY,
         color: touchMeta.color ?? AREA_COLORS[task.area] ?? "#888",
+        label: task.subtheme || task.theme || "Revisao",
       });
       if (typeof document !== "undefined") {
         document.body.classList.add("touch-drag-lock");
@@ -377,9 +398,9 @@ export function useTaskDragReschedule({
           const baseline = taskInitialDates[task.task_id] ?? task.ideal_due_date ?? fromISO;
           const totalDrift = Math.abs(diffDays(baseline, toISO));
           if (!noDisturb && totalDrift >= 3) {
-            setWarnTask({ taskId: task.task_id, to: toISO, days: totalDrift });
+            setWarnTask({ task, from: fromISO, to: toISO, days: totalDrift });
           } else {
-            doReschedule(task.task_id, toISO);
+            void doReschedule(task, fromISO, toISO);
           }
           clearDragState();
         }, 180);
@@ -486,6 +507,11 @@ export function useTaskDragReschedule({
 
   function handleDrop(iso: string) {
     if (!dragTaskId || !dragFromISO) return;
+    const task = dragTaskRef.current;
+    if (!task) {
+      clearDragState();
+      return;
+    }
     if (iso === dragFromISO) {
       clearDragState();
       return;
@@ -493,11 +519,27 @@ export function useTaskDragReschedule({
     const baseline = (dragTaskId && taskInitialDates[dragTaskId]) ?? dragIdealISO ?? dragFromISO;
     const totalDrift = Math.abs(diffDays(baseline, iso));
     if (!noDisturb && totalDrift >= 3) {
-      setWarnTask({ taskId: dragTaskId, to: iso, days: totalDrift });
+      setWarnTask({ task, from: dragFromISO, to: iso, days: totalDrift });
     } else {
-      doReschedule(dragTaskId, iso);
+      void doReschedule(task, dragFromISO, iso);
     }
     clearDragState();
+  }
+
+  function vibrateLongPress() {
+    if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
+    try {
+      navigator.vibrate(12);
+    } catch {
+      // ignore
+    }
+  }
+
+  function cancelTouchLongPress() {
+    if (touchLongPressCleanupRef.current) {
+      touchLongPressCleanupRef.current();
+      touchLongPressCleanupRef.current = null;
+    }
   }
 
   function startTouchDrag(
@@ -511,17 +553,48 @@ export function useTaskDragReschedule({
     }
     const touch = e.touches[0];
     if (!touch) return;
-    if (e.cancelable) e.preventDefault();
-    e.stopPropagation();
+    cancelTouchLongPress();
+    const start = { x: touch.clientX, y: touch.clientY };
+    let started = false;
+    const timer = window.setTimeout(() => {
+      started = true;
+      setTouchDraggingTaskId(task.task_id);
+      vibrateLongPress();
+      beginTaskDrag(task, fromISO, {
+        touchId: touch.identifier,
+        clientX: start.x,
+        clientY: start.y,
+        color,
+        transport: "touch",
+      });
+    }, TOUCH_DRAG_LONG_PRESS_MS);
 
-    setTouchDraggingTaskId(task.task_id);
-    beginTaskDrag(task, fromISO, {
-      touchId: touch.identifier,
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-      color,
-      transport: "touch",
-    });
+    function cleanup() {
+      window.clearTimeout(timer);
+      window.removeEventListener("touchmove", onMove, true);
+      window.removeEventListener("touchend", onFinish, true);
+      window.removeEventListener("touchcancel", onFinish, true);
+    }
+    function onMove(event: TouchEvent) {
+      const active = getTrackedTouch(event.touches, touch.identifier);
+      if (!active) return;
+      const dx = Math.abs(active.clientX - start.x);
+      const dy = Math.abs(active.clientY - start.y);
+      if (!started && Math.max(dx, dy) > TOUCH_DRAG_LONG_PRESS_CANCEL_PX) {
+        cleanup();
+        touchLongPressCleanupRef.current = null;
+      }
+    }
+    function onFinish() {
+      if (!started) {
+        cleanup();
+        touchLongPressCleanupRef.current = null;
+      }
+    }
+    window.addEventListener("touchmove", onMove, { capture: true, passive: true });
+    window.addEventListener("touchend", onFinish, true);
+    window.addEventListener("touchcancel", onFinish, true);
+    touchLongPressCleanupRef.current = cleanup;
   }
 
   function startPointerTouchDrag(
@@ -531,30 +604,63 @@ export function useTaskDragReschedule({
     color: string,
   ) {
     if (e.pointerType !== "touch") return;
-    if (e.cancelable) e.preventDefault();
-    e.stopPropagation();
-    setTouchDraggingTaskId(task.task_id);
-    beginTaskDrag(task, fromISO, {
-      touchId: e.pointerId,
-      clientX: e.clientX,
-      clientY: e.clientY,
-      color,
-      transport: "pointer",
-    });
+    cancelTouchLongPress();
+    const pointerId = e.pointerId;
+    const start = { x: e.clientX, y: e.clientY };
+    let started = false;
+    const timer = window.setTimeout(() => {
+      started = true;
+      setTouchDraggingTaskId(task.task_id);
+      vibrateLongPress();
+      beginTaskDrag(task, fromISO, {
+        touchId: pointerId,
+        clientX: start.x,
+        clientY: start.y,
+        color,
+        transport: "pointer",
+      });
+    }, TOUCH_DRAG_LONG_PRESS_MS);
+
+    function cleanup() {
+      window.clearTimeout(timer);
+      window.removeEventListener("pointermove", onMove, true);
+      window.removeEventListener("pointerup", onFinish, true);
+      window.removeEventListener("pointercancel", onFinish, true);
+    }
+    function onMove(event: PointerEvent) {
+      if (event.pointerId !== pointerId) return;
+      const dx = Math.abs(event.clientX - start.x);
+      const dy = Math.abs(event.clientY - start.y);
+      if (!started && Math.max(dx, dy) > TOUCH_DRAG_LONG_PRESS_CANCEL_PX) {
+        cleanup();
+        touchLongPressCleanupRef.current = null;
+      }
+    }
+    function onFinish(event: PointerEvent) {
+      if (event.pointerId !== pointerId) return;
+      if (!started) {
+        cleanup();
+        touchLongPressCleanupRef.current = null;
+      }
+    }
+    window.addEventListener("pointermove", onMove, true);
+    window.addEventListener("pointerup", onFinish, true);
+    window.addEventListener("pointercancel", onFinish, true);
+    touchLongPressCleanupRef.current = cleanup;
   }
 
   function handleWarnAccept() {
     if (!warnTask) return;
     const count = parseInt(localStorage.getItem(RESCHEDULE_WARN_COUNT_KEY) ?? "0", 10) + 1;
     localStorage.setItem(RESCHEDULE_WARN_COUNT_KEY, String(count));
-    doReschedule(warnTask.taskId, warnTask.to);
+    void doReschedule(warnTask.task, warnTask.from, warnTask.to);
     setWarnTask(null);
   }
 
   function handleNoDisturb() {
     localStorage.setItem(RESCHEDULE_NO_DISTURB_KEY, "1");
     setNoDisturb(true);
-    if (warnTask) doReschedule(warnTask.taskId, warnTask.to);
+    if (warnTask) void doReschedule(warnTask.task, warnTask.from, warnTask.to);
     setWarnTask(null);
   }
 

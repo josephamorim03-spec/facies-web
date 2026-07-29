@@ -1,13 +1,9 @@
 ﻿"use client";
 
-import React, { useEffect, useMemo } from "react";
+import React from "react";
 import type { OperationalSourceType } from "@/lib/api";
 import type { Area } from "./_lib/cadernoShared";
-import { useNavbar } from "@/lib/NavbarContext";
-import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
-import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { useCadernoPageState } from "./_hooks/useCadernoPageState";
 import { TurboReviewPanel } from "./_components/TurboReviewPanel";
 import { CadernoHeader } from "./_components/CadernoHeader";
@@ -16,33 +12,7 @@ import { CadernoPesquisarPanel, CadernoPesquisarSkeletonPanel } from "./_compone
 import { CadernoNoteList } from "./_components/CadernoNoteList";
 import { CardsSectionTabs } from "../CardsSectionTabs";
 
-function CardsIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <rect x="4" y="7" width="12" height="12" rx="1.5" />
-      <rect x="8" y="5" width="12" height="12" rx="1.5" />
-    </svg>
-  );
-}
-
 export default function CadernoClientPage() {
-  const isDesktopNavigation = useDesktopNavigationMode();
-  const { setActions } = useNavbar();
-  const cardsReturnAction = useMemo(
-    () => (
-      <TopBarActionLink href={REVIEW_ROUTES.adaptiveCards} label="Cards" title="Cards">
-        <CardsIcon className="h-5 w-5" />
-      </TopBarActionLink>
-    ),
-    [],
-  );
-
-  useEffect(() => {
-    if (isDesktopNavigation) return;
-    setActions(cardsReturnAction);
-    return () => { setActions(null); };
-  }, [cardsReturnAction, isDesktopNavigation, setActions]);
-
   const {
     tab,
     setTabWithSession,
@@ -190,8 +160,8 @@ export default function CadernoClientPage() {
       <CardsSectionTabs active="records" />
       <CadernoHeader
         tab={tab}
-        onToggleTab={() => setTabWithSession(tab === "registro" ? "pesquisar" : "registro")}
-        rightAction={isDesktopNavigation ? cardsReturnAction : undefined}
+        onEnterSearch={() => setTabWithSession("pesquisar")}
+        onExitSearch={() => setTabWithSession("registro")}
       />
 
       {error && <p className="text-sm text-ink">{error}</p>}

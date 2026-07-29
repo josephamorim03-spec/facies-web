@@ -128,6 +128,8 @@ export type FiltersBarProps = {
   maxSelectable: number;
   limitMax: number;
   onLimitChange: (v: number) => void;
+  focusTopicId?: string | null;
+  onQuantityEditingChange?: (editing: boolean) => void;
 };
 
 function cx(...classes: Array<string | false | null | undefined>) {
@@ -237,14 +239,16 @@ export default function FiltersBar(props: FiltersBarProps) {
     resolutionMode, onResolutionModeChange, studyKind, onStudyKindChange,
     fullExamName, onFullExamNameChange, fullExamYear, onFullExamYearChange,
     fullExamType, onFullExamTypeChange,
-    limit, clampedLimit, maxSelectable, limitMax, onLimitChange,
+    limit, clampedLimit, maxSelectable, limitMax, onLimitChange, focusTopicId, onQuantityEditingChange,
   } = props;
 
   const [suggestionsFocused, setSuggestionsFocused] = useState(false);
   const [realizacaoState, setRealizacaoState] = useState<RealizacaoState>(() => initRealizacaoState(answerStatus));
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
+  const [limitDraft, setLimitDraft] = useState(String(limit));
 
   useEffect(() => { setRealizacaoState(initRealizacaoState(answerStatus)); }, [answerStatus]);
+  useEffect(() => { setLimitDraft(String(limit)); }, [limit]);
 
   function toggleTopicExpanded(topicId: string) {
     setExpandedIds((prev) => {
@@ -269,6 +273,36 @@ export default function FiltersBar(props: FiltersBarProps) {
     return next;
   }, [expandedIds, flatTopics, search, syntheticGroupIds]);
 
+  useEffect(() => {
+    if (!focusTopicId) return;
+    const topicById = new Map(flatTopics.map((topic) => [topic.knowledge_node_id, topic]));
+    const expanded = new Set<string>();
+    let current = topicById.get(focusTopicId);
+    while (current?.parent_knowledge_node_id) {
+      expanded.add(current.parent_knowledge_node_id);
+      current = topicById.get(current.parent_knowledge_node_id);
+    }
+    const syntheticParent = flatTopics.find((topic) => topic.children.some((child) => child.knowledge_node_id === focusTopicId));
+    if (syntheticParent) expanded.add(syntheticParent.knowledge_node_id);
+    setExpandedIds((previous) => new Set([...previous, ...expanded]));
+    const timer = window.setTimeout(() => {
+      const target = document.getElementById(`topic-node-${focusTopicId}`);
+      target?.scrollIntoView({
+        block: "center",
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
+      target?.querySelector("input")?.focus({ preventScroll: true });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [flatTopics, focusTopicId]);
+
+  function commitLimitDraft() {
+    const parsed = Number(limitDraft);
+    const next = Number.isInteger(parsed) ? Math.max(1, Math.min(limitMax, parsed)) : clampedLimit;
+    onLimitChange(next);
+    setLimitDraft(String(next));
+  }
+
   const modeLabel = studyKind === "full_exam"
     ? "Prova institucional"
     : resolutionMode === "simulation"
@@ -284,7 +318,7 @@ export default function FiltersBar(props: FiltersBarProps) {
 
   return (
     <div className="divide-y divide-edge">
-      <section className="space-y-4 p-4 md:p-5">
+      <section id="question-bank-topic-filters" className="space-y-4 p-4 md:p-5">
         <SectionHeader
           step="1. Foco clínico"
           title="Escolha a área e os temas"
@@ -358,7 +392,8 @@ export default function FiltersBar(props: FiltersBarProps) {
               onToggleExpand={toggleTopicExpanded}
               loading={topicsLoading}
               error={topicsError}
-              onRetry={onTopicsRetry}
+            onRetry={onTopicsRetry}
+            highlightedId={focusTopicId}
             />
           </div>
 
@@ -391,7 +426,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         </div>
       </section>
 
-      <details className="group p-4 md:p-5">
+      <details id="question-bank-adjustments" className="group p-4 md:p-5">
         <summary className="paper-control flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 border border-edge bg-paper px-4 py-3 marker:hidden">
           <span>
             <span className="paper-eyebrow text-primary">Ajustar sessão</span>
@@ -499,7 +534,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         </div>
       </details>
 
-      <section className="space-y-4 p-4 md:p-5">
+      <section id="question-bank-session-settings" className="space-y-4 p-4 md:p-5">
         <SectionHeader
           step="3. Modo e carga"
           title={`${modeLabel}, ${clampedLimit} questões`}
@@ -571,24 +606,42 @@ export default function FiltersBar(props: FiltersBarProps) {
           </div>
         ) : null}
 
-        <div className="grid gap-4 border-t border-edge pt-4 md:grid-cols-[10rem_1fr] md:items-end">
-          <label className="space-y-1.5">
+        <div className="mx-auto grid w-full max-w-md gap-3 border-t border-edge pt-5 text-center">
+          <label className="space-y-2">
             <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Questões</span>
             <input
               type="number"
               min={1}
               max={limitMax}
-              value={limit}
-              onChange={(e) => onLimitChange(Math.max(1, Math.min(limitMax, Number(e.target.value) || 1)))}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={limitDraft}
+              onFocus={() => onQuantityEditingChange?.(true)}
+              onChange={(e) => {
+                const next = e.target.value;
+                if (/^\d*$/.test(next)) setLimitDraft(next);
+              }}
+              onBlur={() => {
+                commitLimitDraft();
+                onQuantityEditingChange?.(false);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") event.currentTarget.blur();
+              }}
+              className="mx-auto w-24 text-center"
             />
           </label>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <input
               type="range"
               min={1}
               max={limitMax}
               value={clampedLimit}
-              onChange={(e) => onLimitChange(Number(e.target.value))}
+              onChange={(e) => {
+                const next = Number(e.target.value);
+                setLimitDraft(String(next));
+                onLimitChange(next);
+              }}
               style={{ "--track-bg": `linear-gradient(to right, var(--range-fill) 0%, var(--range-fill) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) 100%)` } as CSSProperties}
               aria-label="Quantidade de questões"
             />

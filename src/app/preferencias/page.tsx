@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   ArrowDown,
   ArrowUp,
@@ -24,6 +25,8 @@ import {
   type UserProfile,
 } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
+import { BottomActionBar, BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
+import { Button } from "@/components/ui/Button";
 
 type ToggleProps = {
   checked: boolean;
@@ -151,7 +154,6 @@ export default function PreferenciasPage() {
     setError(null);
     try {
       const next = await updateProfile(token, {
-        weekly_goal_questions: profile.weekly_goal_questions,
         priority_boards: profile.priority_boards,
         weekly_goal_notifications_enabled:
           profile.weekly_goal_notifications_enabled,
@@ -195,7 +197,7 @@ export default function PreferenciasPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl pb-12 pt-5">
+    <div className={`mx-auto max-w-4xl pt-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
       <header className="border-b border-edge pb-6">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
           Sua conta
@@ -215,25 +217,20 @@ export default function PreferenciasPage() {
             title="Rotina"
             description="A meta serve como referência semanal para o progresso e os alertas."
           />
-          <label className="mt-5 block max-w-xs">
-            <span className="text-sm font-semibold text-ink">Questões por semana</span>
-            <input
-              type="number"
-              min={0}
-              max={2000}
-              step={10}
-              value={profile.weekly_goal_questions}
-              onChange={(event) =>
-                patchLocal({
-                  weekly_goal_questions: Math.max(
-                    0,
-                    Math.min(2000, Number(event.target.value) || 0),
-                  ),
-                })
-              }
-              className="mt-2 min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink"
-            />
-          </label>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-y border-edge py-4">
+            <div>
+              <p className="text-sm font-semibold text-ink">Questões por semana</p>
+              <p className="mt-1 text-xs text-muted">
+                Atual: {profile.weekly_goal_questions}. Edite diretamente na aba Planejar.
+              </p>
+            </div>
+            <Link
+              href="/cronograma"
+              className="inline-flex min-h-10 items-center rounded-control border border-edge px-3 text-sm font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Ir para Planejar
+            </Link>
+          </div>
         </section>
 
         <section className="py-7">
@@ -291,7 +288,7 @@ export default function PreferenciasPage() {
               <select
                 value=""
                 onChange={(event) => addBoard(event.target.value)}
-                className="min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink"
+                className="paper-control min-h-11 w-full border border-edge bg-surface px-3 text-sm text-ink"
               >
                 <option value="">Adicionar instituição ou banca</option>
                 {availableBoards.map((board) => (
@@ -350,7 +347,7 @@ export default function PreferenciasPage() {
             <legend className="text-sm font-semibold text-ink">
               Correção padrão no Banco
             </legend>
-            <div className="mt-3 grid grid-cols-2 border border-edge bg-surface p-1">
+            <div className="mt-3 grid grid-cols-2 gap-1 rounded-control border border-edge bg-paper p-1">
               {(
                 [
                   ["post_result", "Após o resultado"],
@@ -359,9 +356,9 @@ export default function PreferenciasPage() {
               ).map(([value, label]) => (
                 <label
                   key={value}
-                  className={`cursor-pointer px-3 py-3 text-center text-sm font-semibold ${
+                  className={`paper-control cursor-pointer px-3 py-3 text-center text-sm font-semibold transition-colors ${
                     profile.default_feedback_timing === value
-                      ? "bg-ink text-paper"
+                      ? "bg-primary text-primaryInk"
                       : "text-muted hover:bg-surfaceMuted hover:text-ink"
                   }`}
                 >
@@ -403,7 +400,7 @@ export default function PreferenciasPage() {
                 setRetention(Number(event.target.value));
                 setSaved(false);
               }}
-              className="mt-4 w-full accent-[var(--primary)]"
+              className="mt-4 w-full accent-[var(--color-primary)]"
             />
             <span className="mt-2 block text-xs leading-5 text-muted">
               Valores maiores aumentam a frequência das revisões de Cards.
@@ -412,8 +409,11 @@ export default function PreferenciasPage() {
         </section>
       </div>
 
-      <footer className="sticky bottom-3 mt-4 flex items-center justify-between gap-4 border border-edge bg-paper px-4 py-3 shadow-[var(--soft-shadow)]">
-        <div className="min-w-0 text-sm">
+      <BottomActionBar
+        maxWidthClassName="max-w-4xl"
+        className="mt-4"
+        status={
+          <>
           {error ? (
             <span className="text-danger" role="alert">
               {error}
@@ -426,17 +426,22 @@ export default function PreferenciasPage() {
           ) : (
             <span className="text-muted">Revise os ajustes antes de salvar.</span>
           )}
-        </div>
-        <button
+          </>
+        }
+      >
+        <Button
           type="button"
+          variant="primary"
+          size="md"
           onClick={save}
           disabled={saving}
-          className="inline-flex min-h-11 shrink-0 items-center gap-2 bg-primary px-4 text-sm font-semibold text-primaryInk disabled:opacity-60"
+          loading={saving}
+          leftIcon={<Save className="h-4 w-4" aria-hidden="true" />}
+          className="w-full sm:w-auto"
         >
-          <Save className="h-4 w-4" aria-hidden="true" />
           {saving ? "Salvando..." : "Salvar"}
-        </button>
-      </footer>
+        </Button>
+      </BottomActionBar>
     </div>
   );
 }

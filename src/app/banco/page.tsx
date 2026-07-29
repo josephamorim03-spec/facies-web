@@ -30,26 +30,28 @@ import { useNavbar } from "@/lib/NavbarContext";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { invalidateLearningQueries } from "@/lib/queryKeys";
 import { useToast } from "@/lib/useToast";
-import { DataFreshness, StudentPageHeader } from "@/components/student/StudentExperienceUI";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { useStudentExperience } from "@/lib/StudentExperienceContext";
+import { BottomActionBar, BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
+import { Button } from "@/components/ui/Button";
 import FiltersBar from "./_components/FiltersBar";
 import QuestionList from "./_components/QuestionList";
 import CreateSessionPanel from "./_components/CreateSessionPanel";
 import { filterTopicsLocally } from "./_components/topicTree";
+import {
+  QUESTION_BANK_LIMIT_CAP,
+  clampQuestionLimit,
+  getActiveFilters,
+  parseQuestionBankEntryContext,
+  questionBankCtaLabel,
+  resolveEntryTopic,
+  type QuestionBankEntryContext,
+} from "./_lib/sessionBuilder";
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-const QUESTION_BANK_LIMIT_CAP = 120;
 const DEFAULT_EXAM_CODES = ["ACESSO-DIRETO"];
-
-function clampQuestionLimit(value: number | null | undefined, fallback = 10) {
-  const numericValue = Number(value ?? fallback);
-  if (!Number.isFinite(numericValue)) return fallback;
-  return Math.max(1, Math.min(QUESTION_BANK_LIMIT_CAP, Math.trunc(numericValue)));
-}
 
 function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === "AbortError";
@@ -236,21 +238,7 @@ function RecommendedTopicsPanel({
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type EntryContext = {
-  reviewTaskId: string | null;
-  dateISO: string | null;
-  area: string | null;
-  theme: string | null;
-  expectedQuestions: number | null;
-};
-
-type SearchParamReader = { get(name: string): string | null };
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function emptyEntryContext(): EntryContext {
-  return { reviewTaskId: null, dateISO: null, area: null, theme: null, expectedQuestions: null };
-}
 
 function todayAtLocalNoonISO(): string {
   const now = new Date();
@@ -266,23 +254,6 @@ function localNoonISO(dateISO: string | null): string {
   const trimmed = (dateISO ?? "").trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return todayAtLocalNoonISO();
   return new Date(`${trimmed}T12:00:00`).toISOString();
-}
-
-function parsePositiveInt(value: string | null): number | null {
-  if (!value) return null;
-  const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
-}
-
-function parseEntryContext(params: SearchParamReader | null): EntryContext {
-  if (!params) return emptyEntryContext();
-  return {
-    reviewTaskId: params.get("review_task_id")?.trim() || null,
-    dateISO: params.get("date")?.trim() || null,
-    area: params.get("area")?.trim().toUpperCase() || null,
-    theme: params.get("theme")?.trim() || null,
-    expectedQuestions: parsePositiveInt(params.get("expected_questions")),
-  };
 }
 
 // ─── Page shell ──────────────────────────────────────────────────────────────
@@ -301,18 +272,17 @@ function BancoDeQuestoesContent() {
   const { setActions } = useNavbar();
   const { token, tokenResolved } = useAuthToken();
   const { showToast } = useToast();
-  const { enabled: experienceEnabled, experience } = useStudentExperience();
   const routeSearchParams = useSearchParams();
   const routeSearchKey = routeSearchParams.toString();
-  const initialContext = useMemo(() => parseEntryContext(new URLSearchParams(routeSearchKey)), [routeSearchKey]);
+  const initialContext = useMemo(() => parseQuestionBankEntryContext(new URLSearchParams(routeSearchKey)), [routeSearchKey]);
 
   // Entry context (from URL)
-  const [entryContext, setEntryContext] = useState<EntryContext>(() => initialContext);
+  const [entryContext, setEntryContext] = useState<QuestionBankEntryContext>(() => initialContext);
 
   // Filter state
   const [area, setArea] = useState(() => initialContext.area ?? "");
-  const [searchDraft, setSearchDraft] = useState(() => initialContext.theme ?? "");
-  const [committedSearch, setCommittedSearch] = useState(() => (initialContext.theme ?? "").trim());
+  const [searchDraft, setSearchDraft] = useState(() => initialContext.source ? "" : initialContext.theme ?? "");
+  const [committedSearch, setCommittedSearch] = useState(() => initialContext.source ? "" : (initialContext.theme ?? "").trim());
   const [boardCodes, setBoardCodes] = useState<string[]>([]);
   const [examCodes, setExamCodes] = useState<string[]>(() => [...DEFAULT_EXAM_CODES]);
   const [institutions, setInstitutions] = useState<string[]>([]);
@@ -348,6 +318,10 @@ function BancoDeQuestoesContent() {
   const [topicsLoading, setTopicsLoading] = useState(true);
   const [topicsError, setTopicsError] = useState(false);
   const [bootstrapReady, setBootstrapReady] = useState(false);
+  const [calendarContextResolved, setCalendarContextResolved] = useState(() => !initialContext.source);
+  const [focusTopicId, setFocusTopicId] = useState<string | null>(null);
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+  const [quantityEditing, setQuantityEditing] = useState(false);
 
   // Preview state
   const [availability, setAvailability] = useState<QuestionBankAvailability | null>(null);
@@ -378,16 +352,11 @@ function BancoDeQuestoesContent() {
     ? selectedTopics.map((t) => t.node_name).join(", ")
     : area || "Filtro atual";
 
-  const appliedFilterCount = [
-    area,
-    boardCodes.length + examCodes.length + institutions.length > 0 ? "sources" : "",
-    stateCodes.length > 0 ? "states" : "",
-    selectedYears.length > 0 ? "years" : "",
-    answerStatus !== "unanswered" ? answerStatus : "",
-    correctionStatus !== "all" ? correctionStatus : "",
-    selectedTopics.length > 0 ? "topics" : "",
-    normalizedSearch ? "search" : "",
-  ].filter(Boolean).length;
+  const activeFilters = useMemo(() => getActiveFilters({
+    area, boardCodes, examCodes, institutions, stateCodes, selectedYears, includeNoYear,
+    answerStatus, correctionStatus, selectedTopics, search: normalizedSearch,
+    defaultExamCodes: DEFAULT_EXAM_CODES,
+  }), [answerStatus, area, boardCodes, correctionStatus, examCodes, includeNoYear, institutions, normalizedSearch, selectedTopics, selectedYears, stateCodes]);
 
   const activeIntent =
     answerStatus === "near_miss"
@@ -423,18 +392,20 @@ function BancoDeQuestoesContent() {
   // Reset on URL change
   useEffect(() => {
     const routeParams = new URLSearchParams(routeSearchKey);
-    const context = parseEntryContext(routeParams);
+    const context = parseQuestionBankEntryContext(routeParams);
     const opensInstitutionalExam = routeParams.get("tipo") === "prova";
     setEntryContext(context);
     setArea(context.area ?? "");
-    setSearchDraft(context.theme ?? "");
-    setCommittedSearch((context.theme ?? "").trim());
+    setSearchDraft(context.source ? "" : context.theme ?? "");
+    setCommittedSearch(context.source ? "" : (context.theme ?? "").trim());
     setCorrectionStatus("all");
     setLimit(clampQuestionLimit(context.expectedQuestions ?? 10));
     setResolutionMode(context.reviewTaskId ? "training" : "simulation");
     setStudyKind(opensInstitutionalExam ? "full_exam" : "topic");
     setStateCodes([]);
     setSelectedTopics([]);
+    setFocusTopicId(null);
+    setCalendarContextResolved(!context.source);
     const bootstrap = bootstrapRef.current;
     if (bootstrap) {
       const split = splitBootstrapTopics(bootstrap.topics);
@@ -644,6 +615,22 @@ function BancoDeQuestoesContent() {
     void loadBootstrap();
   }, [loadBootstrap, tokenResolved]);
 
+  // Calendar reviews are rendered only after their normalized taxonomy context is
+  // resolved. This prevents a useful screen from flashing with stale local filters.
+  useEffect(() => {
+    if (!bootstrapReady || !entryContext.source || calendarContextResolved) return;
+    const entryTopic = resolveEntryTopic([...taxonomyTopics, ...microTopics], entryContext);
+    if (entryTopic) {
+      setArea(entryContext.area ?? "");
+      setSelectedTopics([entryTopic]);
+      setFocusTopicId(entryTopic.knowledge_node_id);
+      setError(null);
+    } else if (entryContext.knowledgeNodeId || entryContext.theme) {
+      setError("O tema desta atividade não está mais disponível no Banco. Nenhum filtro foi aplicado.");
+    }
+    setCalendarContextResolved(true);
+  }, [bootstrapReady, calendarContextResolved, entryContext, microTopics, taxonomyTopics]);
+
   // Cross-filtered facets (Estratégia-style): one call whose year counts react to
   // the selected banca and whose banca counts react to the selected years. It
   // overwrites the global catalogs above with the recorte-aware options. Silent
@@ -805,6 +792,17 @@ function BancoDeQuestoesContent() {
     setQuestions([]);
   }
 
+  function locateActiveFilter(filter: { id: string; topicId?: string }) {
+    setFocusTopicId(filter.topicId ?? null);
+    const topicFilter = Boolean(filter.topicId) || filter.id === "area" || filter.id === "search";
+    const target = document.getElementById(topicFilter ? "question-bank-topic-filters" : "question-bank-adjustments");
+    if (target instanceof HTMLDetailsElement) target.open = true;
+    target?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      block: "start",
+    });
+  }
+
   async function previewQuestions() {
     if (!tokenResolved) return;
     setBusy(true);
@@ -902,41 +900,61 @@ function BancoDeQuestoesContent() {
   }
 
   if (!tokenResolved) return <div className="p-6 text-sm text-muted">Carregando...</div>;
+  if (entryContext.source && !calendarContextResolved) {
+    return <div className="p-6 text-sm text-muted" aria-live="polite">Configurando a revisão do calendário...</div>;
+  }
 
   const canStartConfigured = !busy && (studyKind !== "full_exam" || fullExamReady) && !!availability && availability.available_count > 0;
-  const configuredStartLabel = studyKind === "full_exam"
-    ? `Começar prova · ${clampedLimit} questões`
-    : `Começar ${clampedLimit} questões · ${resolutionMode === "training" ? "correção imediata" : "pós-resultado"}`;
+  const configuredStartLabel = questionBankCtaLabel(clampedLimit, resolutionMode, studyKind);
 
   return (
     <div className="min-h-screen bg-paper text-ink">
-      <div className="mx-auto max-w-7xl space-y-5">
-        <StudentPageHeader
-          eyebrow="Banco"
-          title="Monte sua sessão de questões"
-          breadcrumb={["Banco"]}
-          actions={entryContext.reviewTaskId ? (
-            <span className="rounded-lg border border-edge bg-[var(--amber-tint)] px-3 py-2 text-xs text-muted">
-              <strong className="font-semibold text-ink">{(entryContext.theme ?? searchDraft) || "Revisão"}</strong>
-              {" · "}{(entryContext.area ?? area) || "Área"}
-              {" · "}{entryContext.dateISO ?? "data do calendário"}
-            </span>
-          ) : experienceEnabled && experience ? (
-            <DataFreshness status={experience.status} generatedAt={experience.generated_at} missingSources={experience.missing_sources} />
-          ) : null}
-        />
-
+      <div className={`mx-auto max-w-7xl space-y-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
         <section className="space-y-4" aria-label="Montador de sessão">
           <div className="flex w-full flex-wrap items-center justify-between gap-3 border-b border-edge pb-4">
             <span className="min-w-0">
               <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-primary">Montagem manual</span>
               <span className="mt-1 block font-serif text-xl font-semibold leading-tight text-ink">Montar sessão</span>
             </span>
-            <span className="flex shrink-0 items-center gap-3">
-              <span className="rounded-full bg-surfaceMuted px-3 py-1 text-xs font-semibold text-muted">
-                {appliedFilterCount} filtro{appliedFilterCount === 1 ? "" : "s"}
-              </span>
-            </span>
+            {activeFilters.length > 0 && (
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  aria-expanded={filterMenuOpen}
+                  aria-controls="question-bank-active-filters"
+                  aria-label={activeFilters.length === 1
+                    ? "1 filtro ativo: " + activeFilters[0].label + ". Toque para localizar."
+                    : activeFilters.length + " filtros ativos. Toque para visualizar."}
+                  onClick={() => {
+                    if (activeFilters.length === 1) {
+                      locateActiveFilter(activeFilters[0]);
+                      return;
+                    }
+                    setFilterMenuOpen((open) => !open);
+                  }}
+                  className="min-h-11 rounded-full bg-surfaceMuted px-3 text-xs font-semibold text-muted transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                >
+                  {activeFilters.length === 1 ? activeFilters[0].label : activeFilters.length + " filtros"}
+                </button>
+                {filterMenuOpen && activeFilters.length > 1 && (
+                  <div id="question-bank-active-filters" role="dialog" aria-label="Filtros ativos" className="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-edge bg-surface p-2 shadow-[var(--soft-shadow)]">
+                    {activeFilters.map((filter) => (
+                      <button
+                        key={filter.id}
+                        type="button"
+                        onClick={() => {
+                          setFilterMenuOpen(false);
+                          locateActiveFilter(filter);
+                        }}
+                        className="flex min-h-11 w-full items-center rounded-lg px-3 text-left text-sm font-medium text-ink hover:bg-surfaceMuted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                      >
+                        {filter.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <section
@@ -996,6 +1014,8 @@ function BancoDeQuestoesContent() {
                   maxSelectable={maxSelectable}
                   limitMax={limitMax}
                   onLimitChange={setLimit}
+                  focusTopicId={focusTopicId}
+                  onQuantityEditingChange={setQuantityEditing}
                 />
               </div>
             </div>
@@ -1011,7 +1031,6 @@ function BancoDeQuestoesContent() {
               error={error}
               onRefreshAvailability={() => void refreshAvailability()}
               onPreviewQuestions={() => void previewQuestions()}
-              onStartSession={() => void startSession()}
               onRetry={() => {
                 if (availability) void startSession();
                 else void refreshAvailability();
@@ -1022,36 +1041,28 @@ function BancoDeQuestoesContent() {
           <QuestionList
             questions={questions}
             selectedTopicSummary={selectedTopicSummary}
-            resolutionMode={resolutionMode}
-            studyKind={studyKind}
-            busy={busy}
-            availability={availability}
-            onStartSession={() => void startSession()}
           />
         </section>
 
-        <div
-          className="fixed inset-x-0 z-20 border-t border-edge bg-paper px-4 py-3 md:hidden"
-          style={{ bottom: "env(safe-area-inset-bottom, 0px)" }}
+        <BottomActionBar
+          maxWidthClassName="max-w-7xl"
+          hiddenOnMobile={quantityEditing}
+          status={error ? <span className="text-danger" role="alert">{error}</span> : null}
         >
-          {error && (
-            <div className="mb-2 rounded-lg border border-danger bg-surface px-3 py-2 text-xs text-danger">
-              {error}
-            </div>
-          )}
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="md"
             onClick={() => void startSession()}
             disabled={!canStartConfigured}
-            className="paper-control flex min-h-11 w-full items-center justify-center gap-2 border border-primary bg-primary py-3 text-sm font-semibold text-primaryInk transition disabled:opacity-40"
+            className="w-full"
           >
             {busy ? "Preparando..." : configuredStartLabel}
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
               <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
             </svg>
-          </button>
-        </div>
-        <div className="h-24 md:hidden" aria-hidden="true" />
+          </Button>
+        </BottomActionBar>
       </div>
       <ConfirmDialog
         open={feedbackDefaultPromptOpen}

@@ -52,12 +52,34 @@ test.describe("Cronograma reschedule suggestions", () => {
 
     await page.goto("/cronograma");
 
-    await page.getByRole("button", { name: "Reagendar atrasadas" }).click();
+    await page.getByRole("button", { name: "Reagendar" }).click();
 
     const dialog = page.getByRole("dialog", { name: "Reagendamento sugerido" });
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText(/Pneumonia/i);
     await expect(dialog.getByRole("button", { name: "Aceitar todas" })).toBeVisible();
     await expect(dialog.getByRole("button", { name: "Aceitar", exact: true })).toBeVisible();
+  });
+
+  test("reagenda atividade por seletor de data e permite desfazer", async ({ page }) => {
+    const { db } = await mockCronogramaApi(page);
+    const today = currentTodayISO();
+    const targetDate = plusDays(today, 2);
+
+    await page.goto("/cronograma");
+
+    await page.locator("[data-dot-kind='pending']").first().click();
+    await page.getByRole("button", { name: "Reagendar" }).click();
+
+    const dialog = page.getByRole("dialog", { name: "Reagendar atividade" });
+    await expect(dialog).toBeVisible();
+    await dialog.locator("input[type='date']").fill(targetDate);
+    await dialog.getByRole("button", { name: "Confirmar reagendamento" }).click();
+
+    await expect.poll(() => db.pendingTasks.find((task) => task.task_id === "task_pending_1")?.due_date).toBe(targetDate);
+    await expect(page.getByText(/Atividade reagendada para/i)).toBeVisible();
+
+    await page.getByRole("button", { name: "Desfazer" }).click();
+    await expect.poll(() => db.pendingTasks.find((task) => task.task_id === "task_pending_1")?.due_date).toBe(today);
   });
 });

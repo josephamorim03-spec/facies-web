@@ -81,11 +81,14 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
   const studyReviewHref = (() => {
     const params = new URLSearchParams({
       review_task_id: task.task_id,
+      activity_id: task.task_id,
+      source: "calendar-review",
       date: logDateISO || task.due_date,
       area: task.area,
       theme: topicPrimaryLabel(task) || task.theme,
       expected_questions: String(Math.max(1, Number(task.expected_questions) || 1)),
     });
+    if (task.knowledge_node_id) params.set("knowledge_node_id", task.knowledge_node_id);
     return `/banco?${params.toString()}`;
   })();
 

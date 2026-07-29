@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarEventOut, DirectedStudyListItem, ReviewTask } from "@/lib/api";
+import { CalendarEventOut, DirectedStudyListItem, ReviewTask, updateReviewTask } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { IconPlus } from "../CronogramaIcons";
 import { NewStudyForm } from "../CronogramaStudyReviewComponents";
@@ -12,6 +12,7 @@ import {
   isTopicStudy,
   sameTopicIdentity,
   SHORT_MONTH_LABELS,
+  displayDate,
   topicPrimaryLabel,
   topicSecondaryLabel,
 } from "../../_lib/cronogramaShared";
@@ -210,12 +211,14 @@ export function CalendarEntryPopup({
   studies,
   studyMap,
   onClose,
+  onRescheduleRequest,
 }: {
   target: CalendarPopupTarget;
   anchorRect: DOMRect;
   studies: DirectedStudyListItem[];
   studyMap: Map<string, DirectedStudyListItem>;
   onClose: () => void;
+  onRescheduleRequest?: (task: ReviewTask) => void;
 }) {
   const { top: popupTop, left: popupLeft } = popupPosition(anchorRect);
 
@@ -229,11 +232,14 @@ export function CalendarEntryPopup({
     const parentThemeLabel = topicSecondaryLabel(task);
     const bancoParams = new URLSearchParams({
       review_task_id: task.task_id,
+      activity_id: task.task_id,
+      source: "calendar-review",
       date: task.due_date,
       area: task.area,
       theme: displayLabel,
       expected_questions: String(task.expected_questions),
     });
+    if (task.knowledge_node_id) bancoParams.set("knowledge_node_id", task.knowledge_node_id);
     const bancoUrl = `/banco?${bancoParams.toString()}`;
     const sessionTitle = `Revisão #${revision} - ${displayLabel}`;
 
@@ -273,6 +279,17 @@ export function CalendarEntryPopup({
         >
           Abrir revisão no banco
         </Link>
+
+        <button
+          type="button"
+          onClick={() => {
+            onClose();
+            onRescheduleRequest?.(task);
+          }}
+          className="flex w-full items-center justify-center rounded-xl border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          Reagendar
+        </button>
       </>
     );
   } else if (target.kind === "done") {
@@ -328,6 +345,124 @@ export function CalendarEntryPopup({
         {content}
       </div>
     </>
+  );
+}
+
+export function CalendarTaskRescheduleSheet({
+  task,
+  token,
+  onClose,
+  onRescheduled,
+}: {
+  task: ReviewTask | null;
+  token: string;
+  onClose: () => void;
+  onRescheduled: (task: ReviewTask, fromISO: string, toISO: string) => void;
+}) {
+  const [date, setDate] = useState(task?.due_date ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    setDate(task?.due_date ?? "");
+    setError("");
+  }, [task]);
+
+  if (!task) return null;
+
+  const selectedTask = task;
+  const fromISO = selectedTask.due_date;
+  const sameDate = date === fromISO;
+  const invalid = !/^\d{4}-\d{2}-\d{2}$/.test(date);
+
+  async function save() {
+    if (saving || invalid) return;
+    if (sameDate) {
+      onClose();
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await updateReviewTask(token, selectedTask.task_id, { due_date: date });
+      onRescheduled(selectedTask, fromISO, date);
+      onClose();
+    } catch {
+      setError("Não foi possível reagendar. Tente novamente.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[75] flex items-end bg-black/30 md:items-center md:justify-center" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Reagendar atividade"
+        className="w-full rounded-t-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-sm md:rounded-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">{selectedTask.area}</p>
+          <h3 className="mt-1 text-base font-semibold leading-snug text-ink">{selectedTask.subtheme || selectedTask.theme}</h3>
+          <p className="mt-1 text-xs text-muted">Data atual: {displayDate(fromISO)}</p>
+        </div>
+
+        <label className="mt-4 block">
+          <span className="text-sm font-semibold text-ink">Nova data</span>
+          <input
+            type="date"
+            value={date}
+            onChange={(event) => setDate(event.target.value)}
+            className="mt-2 min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          />
+        </label>
+
+        {error ? <p className="mt-3 text-xs text-danger" role="alert">{error}</p> : null}
+
+        <div className="mt-4 flex flex-col gap-2">
+          <Button type="button" variant="primary" size="md" onClick={save} disabled={saving || invalid}>
+            {saving ? "Salvando..." : sameDate ? "Manter data" : "Confirmar reagendamento"}
+          </Button>
+          <Button type="button" variant="ghost" size="md" onClick={onClose}>
+            Cancelar
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function CalendarUndoRescheduleToast({
+  message,
+  undoLabel = "Desfazer",
+  onUndo,
+  onClose,
+}: {
+  message: string;
+  undoLabel?: string;
+  onUndo: () => void;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const timer = window.setTimeout(onClose, 6500);
+    return () => window.clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] z-[90] mx-auto max-w-md rounded-surface border border-edge bg-paper px-3 py-2.5 shadow-[var(--soft-shadow)]">
+      <div className="flex items-center gap-3">
+        <p className="min-w-0 flex-1 text-sm leading-snug text-ink">{message}</p>
+        <button
+          type="button"
+          onClick={onUndo}
+          className="min-h-10 shrink-0 rounded-control px-3 text-sm font-semibold text-primary hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          {undoLabel}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -421,7 +556,7 @@ export function CalendarEventDeleteConfirmModal({
   );
 }
 
-export type CalendarWarnTask = { taskId: string; to: string; days: number } | null;
+export type CalendarWarnTask = { task: ReviewTask; from: string; to: string; days: number } | null;
 
 export function CalendarRescheduleWarningModal({
   warnTask,

@@ -1,4 +1,6 @@
 export const TOUCH_DRAG_START_PX = 2;
+export const TOUCH_DRAG_LONG_PRESS_MS = 420;
+export const TOUCH_DRAG_LONG_PRESS_CANCEL_PX = 9;
 export const TOUCH_EDGE_HOLD_MS = 2000;
 export const TOUCH_EDGE_ZONE_PX = 32;
 export const TOUCH_GRID_TOLERANCE_PX = 10;

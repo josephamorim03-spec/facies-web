@@ -9,6 +9,7 @@ import {
   getQuestionBankPerformance,
   getReviewAgenda,
   getStudyPerformanceSummary,
+  getStudentToday,
   getTurboAreaStats,
   listDirectedStudies,
   listEvents,
@@ -30,6 +31,11 @@ type NetworkInformationLike = {
 
 const DATA_WARMUP_COOLDOWN_MS = 20_000;
 const warmedDataAt = new Map<string, number>();
+
+function todayISO(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 function normalizeRoute(href: string): string {
   try {
@@ -85,13 +91,14 @@ export function warmRouteData(href: string, token: string | null | undefined): v
   const intent = getStudentWarmupIntent(pathname);
 
   if (intent === "today") {
+    const today = todayISO();
     requests.push(
-      getReviewAgenda(token),
-      listReviewTasks(token, { status: "pending" }),
-      listReviewTasks(token, { status: "done" }),
+      getStudentToday(token),
+      listReviewTasks(token, { status: "pending", date: today }),
+      listReviewTasks(token, { status: "done", date: today }),
       listDirectedStudies(token),
+      listEvents(token),
       getOperationalTurboOverview(token, { previewLimit: 4 }),
-      getOperationalStreak(token),
       getStudyPerformanceSummary(token),
     );
   } else if (intent === "kros" || intent === "bank") {

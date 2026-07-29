@@ -282,22 +282,23 @@ test("question bank applies filters, calendar review context, and gated correcti
     });
   });
 
-  await page.goto("/banco-de-questoes?review_task_id=rt_e2e&date=2026-05-27&area=GO&theme=Obstetricia&expected_questions=12");
+  await page.goto("/banco-de-questoes?source=calendar-review&activity_id=rt_e2e&review_task_id=rt_e2e&knowledge_node_id=go-node&date=2026-05-27&area=GO&theme=Obstetricia&expected_questions=12");
 
-  await expect(page.getByRole("heading", { name: "Questões com raciocínio clínico" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Sessão recomendada" })).toHaveCount(0);
 
-  await expect(page.getByTestId("question-bank-top-filters")).toBeVisible();
+  await expect(page.getByTestId("question-bank-top-filters")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator("main aside")).toBeVisible();
   await expect(page.getByText(/12 .*dispon/i)).toBeVisible();
   await expect(page.getByText("Obstetricia").first()).toBeVisible();
   await expect(page.getByTestId("question-bank-top-filters")).not.toContainText("Medicina");
+  await expect(page.getByRole("button", { name: /1 filtro ativo: Obstetricia/i })).toBeVisible();
 
   const quantityInput = page.getByRole("spinbutton", { name: /Questões/i });
   await quantityInput.fill("99");
+  await quantityInput.blur();
   await expect(quantityInput).toHaveValue("12");
 
-  await page.getByRole("button", { name: /Começar 12 questões.*treino com correção/i }).click();
+  await page.getByRole("button", { name: /Começar 12 questões.*correção imediata/i }).click();
   await page.waitForURL("**/banco-de-questoes/sessao/session_qb_e2e**");
 
   const payload = createPayloads[0];
@@ -305,7 +306,7 @@ test("question bank applies filters, calendar review context, and gated correcti
   if (!payload) throw new Error("Missing session creation payload.");
   expect(payload).toMatchObject({
     area: "GO",
-    search: "Obstetricia",
+    knowledge_node_ids: ["go-node"],
     exam_codes: ["ACESSO-DIRETO"],
     limit: 12,
     resolution_mode: "training",

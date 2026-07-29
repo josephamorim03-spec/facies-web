@@ -111,6 +111,7 @@ export function CalendarGrid({
   taskRevisionMap?: Map<string, number>;
 }) {
   const [activeFlashcardsTooltipIso, setActiveFlashcardsTooltipIso] = useState<string | null>(null);
+  const [hoverDropISO, setHoverDropISO] = useState<string | null>(null);
   const flashcardsTooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -229,6 +230,9 @@ export function CalendarGrid({
         const isToday = iso === today;
         const isSelected = iso === selectedDay;
         const isSearchMatch = searchMatchDays.has(iso);
+        const isTaskDropActive = Boolean(dragTaskId && dragFromISO);
+        const isTaskDropTarget = isTaskDropActive && iso !== dragFromISO;
+        const isHoverDropTarget = isTaskDropTarget && hoverDropISO === iso;
         const { hasWork, hasOther, workLabels, otherLabels, workEvent, otherEvent } = eventFlags(iso, events);
         const cardsDone = Math.max(0, Number(turboCardsByDate[iso] ?? 0));
         const hasFlashcards = cardsDone > 0;
@@ -257,7 +261,9 @@ export function CalendarGrid({
             data-calendar-row-index={rowIndex}
             data-calendar-last-row={isLastRow ? "true" : undefined}
             data-calendar-last-cell={isLastCell ? "true" : undefined}
-            className={`relative ${dayCellMinHeight} p-0.5 bg-paper border-r border-b border-edge cursor-pointer overflow-visible`}
+            className={`relative ${dayCellMinHeight} p-0.5 bg-paper border-r border-b border-edge cursor-pointer overflow-visible ${
+              isTaskDropTarget ? "ring-1 ring-inset ring-primary/35" : ""
+            } ${isHoverDropTarget ? "bg-[var(--amber-tint)] ring-2 ring-inset ring-primary" : ""}`}
             style={
               isSelected && isSearchMatch
                 ? { backgroundColor: "var(--amber-tint)", boxShadow: "inset 0 0 0 2px #f59e0b" }
@@ -293,9 +299,19 @@ export function CalendarGrid({
               if (!isSelected) onDaySelect(iso);
               onDoubleClickEmpty?.();
             }}
-            onDragOver={(e) => e.preventDefault()}
+            onDragEnter={() => {
+              if (isTaskDropTarget) setHoverDropISO(iso);
+            }}
+            onDragLeave={() => {
+              setHoverDropISO((current) => (current === iso ? null : current));
+            }}
+            onDragOver={(e) => {
+              if (isTaskDropTarget) setHoverDropISO(iso);
+              e.preventDefault();
+            }}
             onDrop={() => {
               if (!interactive) return;
+              setHoverDropISO(null);
               if (dragEventMeta) handleEventDrop(iso);
               else handleDrop(iso);
             }}
@@ -475,6 +491,7 @@ export function CalendarGrid({
                       key={dot.key}
                       data-testid="calendar-day-dot"
                       data-dot-kind={dot.kind}
+                      data-calendar-task-item={dot.task ? "true" : undefined}
                       draggable={interactive && !showDayDetail && isPending && !!dot.task && !isTouchDevice}
                       title={dot.tooltip}
                       onClick={interactive && dot.popupTarget ? (e) => {
@@ -500,7 +517,7 @@ export function CalendarGrid({
                         if (taskDragOrigin.current === "touch" || touchDragTouchId.current !== null) return;
                         clearDragState();
                       } : undefined}
-                      className={`flex w-full items-center gap-1 rounded-md px-1 py-0.5 ${barH} overflow-hidden shadow-sm ${isPending && dot.task ? "select-none touch-none" : ""} ${
+                      className={`flex w-full items-center gap-1 rounded-md px-1 py-0.5 ${barH} overflow-hidden shadow-sm ${isPending && dot.task ? "select-none" : ""} ${
                         dot.task && touchDraggingTaskId === dot.task.task_id ? "ring-1 ring-white/60 scale-[1.02]" : ""
                       } ${dot.task && dragTaskId === dot.task.task_id ? "ring-1 ring-white/60" : ""}`}
                       style={{
@@ -510,7 +527,7 @@ export function CalendarGrid({
                         WebkitUserSelect: isPending && dot.task ? "none" : undefined,
                         userSelect: isPending && dot.task ? "none" : undefined,
                         WebkitTouchCallout: isPending && dot.task ? "none" : undefined,
-                        touchAction: isPending && dot.task ? "none" : undefined,
+                        touchAction: isPending && dot.task ? "pan-y" : undefined,
                         WebkitTapHighlightColor: dot.task ? "transparent" : undefined,
                       }}
                     >

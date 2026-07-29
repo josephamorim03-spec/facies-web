@@ -45,15 +45,6 @@ function IconChart({ className }: { className?: string }) {
   );
 }
 
-function IconArrowRight({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M4 10h12" />
-      <path d="m11 5 5 5-5 5" />
-    </svg>
-  );
-}
-
 function SummaryRow({
   icon,
   label,
@@ -90,7 +81,6 @@ type CreateSessionPanelProps = {
   error?: string | null;
   onRefreshAvailability: () => void;
   onPreviewQuestions: () => void;
-  onStartSession: () => void;
   onRetry?: () => void;
 };
 
@@ -105,10 +95,8 @@ export default function CreateSessionPanel({
   error,
   onRefreshAvailability,
   onPreviewQuestions,
-  onStartSession,
   onRetry,
 }: CreateSessionPanelProps) {
-  const startLabel = studyKind === "full_exam" ? "Iniciar prova" : "Iniciar sessão";
   const canStart = !busy && canStartSession && !!availability && availability.available_count > 0;
   const estimatedMinutes = Math.max(10, Math.ceil(clampedLimit * (resolutionMode === "simulation" || studyKind === "full_exam" ? 1.5 : 2)));
   const modeLabel = resolutionMode === "simulation" ? "Correção pós-resultado" : "Correção imediata";
@@ -123,7 +111,7 @@ export default function CreateSessionPanel({
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Sessão configurada</p>
           <h2 className="mt-1 font-serif text-xl font-semibold leading-tight">Resumo</h2>
-          <p className="mt-1 text-sm text-muted">{loadingPreview ? "Atualizando prévia..." : availabilityText(availability)}</p>
+          <p className="mt-1 text-sm text-muted" aria-live="polite">{loadingPreview ? "Atualizando prévia..." : availabilityText(availability)}</p>
         </div>
         <Button type="button" variant="secondary" size="xs" onClick={onRefreshAvailability} disabled={loadingPreview || busy}>
           Recalcular
@@ -167,11 +155,7 @@ export default function CreateSessionPanel({
         </Alert>
       )}
 
-      <div className="mt-4 grid gap-2">
-        <Button type="button" variant="primary" size="md" onClick={onStartSession} disabled={busy || !canStart} className="w-full py-3">
-          {busy ? "Preparando..." : startLabel}
-          <IconArrowRight className="h-4 w-4" />
-        </Button>
+      <div className="mt-4">
         <Button type="button" variant="secondary" size="md" onClick={onPreviewQuestions} disabled={busy || !canStart} className="w-full">
           Ver prévia
         </Button>

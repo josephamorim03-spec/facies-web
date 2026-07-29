@@ -19,15 +19,18 @@ import { useAuthToken } from "@/lib/useAuthToken";
 import { useToast } from "@/lib/useToast";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { Trash2 } from "lucide-react";
+import { CalendarDays, Trash2 } from "lucide-react";
 import {
   acceptScheduleSuggestionItem,
   acceptScheduleSuggestionAll,
+  CalendarEventOut,
   DirectedStudyListItem,
+  getOperationalTurboSessionDailyCompletedCards,
   getOperationalTurboOverview,
   getProfile,
   getQuestionBankLongitudinalDiagnosis,
   getStudentToday,
+  listEvents,
   listScheduleSuggestions,
   getStudyPerformanceSummary,
   getTrainerPrescription,
@@ -53,8 +56,10 @@ import { IconRefresh } from "@/app/cronograma/_components/CronogramaIcons";
 import { buildWeeklyOpsMetrics } from "@/app/cronograma/_lib/weeklyOpsMetrics";
 import { WeeklyOpsFullCardsSkeleton } from "@/app/cronograma/_components/WeeklyOpsCards";
 import { writeCronogramaViewModeSession } from "@/app/cronograma/_lib/viewModeSession";
+import { buildDayActivitySummary } from "@/app/cronograma/_lib/dayActivitySummary";
 import BancoSidebarCard from "./_components/BancoSidebarCard";
 import { CardsDuePanel } from "./_components/CardsDuePanel";
+import { TodayDaySummarySection, TodayDaySummarySkeleton } from "./_components/TodayDaySummary";
 import { TodayBackupActions } from "./_components/TodayBackupActions";
 import { TodayDetails } from "./_components/TodayDetails";
 import { TodayEmptyState } from "./_components/TodayEmptyState";
@@ -149,6 +154,7 @@ function TodaySkeleton() {
             ))}
           </div>
           <WeeklyOpsFullCardsSkeleton />
+          <TodayDaySummarySkeleton />
           <hr className="border-edge" />
           {/* task list */}
           <div className="space-y-2">
@@ -246,11 +252,14 @@ function reviewTaskHref(task: ReviewTask): string {
   const displayArea = resolveDisplayArea(task.area, task.theme, task.subtheme);
   const params = new URLSearchParams({
     review_task_id: task.task_id,
+    activity_id: task.task_id,
+    source: "calendar-review",
     date: task.due_date,
     area: displayArea,
     theme: task.theme,
     expected_questions: String(Math.max(1, Number(task.expected_questions ?? 10))),
   });
+  if (task.knowledge_node_id) params.set("knowledge_node_id", task.knowledge_node_id);
   return `/banco?${params.toString()}`;
 }
 
@@ -293,6 +302,8 @@ type TodayPageData = {
   pendingData: ReviewTask[];
   doneData: ReviewTask[];
   studyData: DirectedStudyListItem[];
+  eventData: CalendarEventOut[];
+  cardsDoneToday: number;
   cardsOverview: OperationalTurboOverview | null;
   performanceSummary: StudyPerformanceSummary | null;
   activeSessions: QuestionBankSession[];
@@ -312,17 +323,23 @@ function sortActiveSessions(sessions: QuestionBankSession[]): QuestionBankSessio
 }
 
 async function loadTodayPageData(token: string): Promise<TodayPageData> {
+  const today = todayISO();
   const turboOverviewRequest = getOperationalTurboOverview(token, { previewLimit: 3 }).catch(() => null);
   const performanceSummaryRequest = getStudyPerformanceSummary(token).catch(() => null);
   const activeSessionRequest = listQuestionBankSessions(token, { status: "active", limit: 10 }).catch(
     () => [] as QuestionBankSession[],
   );
-  const [pendingData, doneData, studyData, profile, cardsOverview, performanceSummary, recentSessions] =
+  const cardsDoneTodayRequest = getOperationalTurboSessionDailyCompletedCards(token, 1)
+    .then((data) => data.by_day.find((row) => row.day === today)?.cards_completed ?? 0)
+    .catch(() => 0);
+  const [pendingData, doneData, studyData, eventData, profile, cardsDoneToday, cardsOverview, performanceSummary, recentSessions] =
     await Promise.all([
-      listReviewTasks(token, { status: "pending" }),
-      listReviewTasks(token, { status: "done" }),
+      listReviewTasks(token, { status: "pending", date: today }),
+      listReviewTasks(token, { status: "done", date: today }),
       listDirectedStudies(token),
+      listEvents(token),
       getProfile(token),
+      cardsDoneTodayRequest,
       turboOverviewRequest,
       performanceSummaryRequest,
       activeSessionRequest,
@@ -331,6 +348,8 @@ async function loadTodayPageData(token: string): Promise<TodayPageData> {
     pendingData,
     doneData,
     studyData,
+    eventData,
+    cardsDoneToday: Math.max(0, Number(cardsDoneToday ?? 0)),
     cardsOverview,
     performanceSummary,
     activeSessions: sortActiveSessions(recentSessions),
@@ -363,6 +382,8 @@ export default function TodayPage() {
   const [tasks, setTasks] = useState<ReviewTask[]>([]);
   const [doneTasks, setDoneTasks] = useState<ReviewTask[]>([]);
   const [studies, setStudies] = useState<DirectedStudyListItem[]>([]);
+  const [events, setEvents] = useState<CalendarEventOut[]>([]);
+  const [cardsDoneToday, setCardsDoneToday] = useState(0);
   const [turboOverview, setTurboOverview] = useState<OperationalTurboOverview | null>(null);
   const [performanceSummary, setPerformanceSummary] = useState<StudyPerformanceSummary | null>(null);
   const [longitudinal, setLongitudinal] = useState<QuestionBankLongitudinalDiagnosis | null>(null);
@@ -375,6 +396,8 @@ export default function TodayPage() {
   const [weeklyGoal, setWeeklyGoal] = useState(200);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [secondaryLoading, setSecondaryLoading] = useState(false);
+  const [daySummaryError, setDaySummaryError] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [bulkSuggestionDialogOpen, setBulkSuggestionDialogOpen] = useState(false);
   const [bulkSuggestionLoading, setBulkSuggestionLoading] = useState(false);
@@ -385,31 +408,50 @@ export default function TodayPage() {
   const today = useMemo(() => todayISO(), []);
   const weekDays = useMemo(() => getWeekDays(), []);
   const [selectedDayIso, setSelectedDayIso] = useState(today);
+  const planningTodayHref = `/planejamento?day=${today}`;
 
   async function fetchTasks(showLoadingState: boolean = false) {
     const token = getAuthToken();
     const studentTodayRequest = getStudentToday(token).catch(() => null);
     const longitudinalRequest = getQuestionBankLongitudinalDiagnosis(token).catch(() => null);
     const prescriptionRequest = getTrainerPrescription(token).catch(() => null);
+    const pageDataRequest = loadTodayPageData(token);
 
-    if (showLoadingState) setLoading(true);
+    if (showLoadingState && !studentToday) setLoading(true);
+    setSecondaryLoading(true);
+    setDaySummaryError(null);
+
+    void pageDataRequest
+      .then((data) => {
+        setTasks(data.pendingData);
+        setDoneTasks(data.doneData);
+        setStudies(data.studyData);
+        setEvents(data.eventData);
+        setCardsDoneToday(data.cardsDoneToday);
+        setTurboOverview(data.cardsOverview);
+        setPerformanceSummary(data.performanceSummary);
+        setActiveSessions(data.activeSessions);
+        setWeeklyGoal(data.weeklyGoal);
+        setDisplayName(data.displayName);
+      })
+      .catch((cause: unknown) => {
+        const message = getErrorMessage(cause, "Erro ao carregar atividades de hoje.");
+        setDaySummaryError(message);
+        if (!studentToday) setError(message);
+      })
+      .finally(() => setSecondaryLoading(false));
+
     try {
-      const [data, todayData] = await Promise.all([loadTodayPageData(token), studentTodayRequest]);
+      const todayData = await studentTodayRequest;
       setError("");
       setStudentToday(todayData);
       setStudentTodayFailed(todayData === null);
-      setTasks(data.pendingData);
-      setDoneTasks(data.doneData);
-      setStudies(data.studyData);
-      setTurboOverview(data.cardsOverview);
-      setPerformanceSummary(data.performanceSummary);
-      setActiveSessions(data.activeSessions);
-      setWeeklyGoal(data.weeklyGoal);
-      setDisplayName(data.displayName);
     } catch (e: unknown) {
-      setStudentToday(null);
       setStudentTodayFailed(true);
-      setError(getErrorMessage(e, "Erro ao carregar revisões."));
+      if (!studentToday) {
+        setStudentToday(null);
+        setError(getErrorMessage(e, "Erro ao carregar revisoes."));
+      }
     } finally {
       if (showLoadingState) setLoading(false);
     }
@@ -459,6 +501,8 @@ export default function TodayPage() {
   useEffect(() => {
     if (!tokenResolved) return;
     void fetchTasks(true);
+    // fetchTasks intentionally reads the current cached state to avoid a full reload during background refresh.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenResolved]);
 
   async function handlePrepareBulkReschedule() {
@@ -642,6 +686,20 @@ export default function TodayPage() {
         ctaLabel: PRIMARY_ACTION_CTA[primaryAction.kind] ?? "Começar",
       }
     : null;
+  const todayActivitySummary = useMemo(
+    () =>
+      buildDayActivitySummary({
+        dateIso: today,
+        pendingTasks: tasks,
+        doneTasks,
+        studies,
+        events,
+        activeSessions,
+        cardsCompleted: cardsDoneToday,
+        primaryHref: studentToday?.primary_action.href ?? heroAction?.href ?? null,
+      }),
+    [activeSessions, cardsDoneToday, doneTasks, events, heroAction?.href, studentToday?.primary_action.href, studies, tasks, today],
+  );
 
   function TaskRow({ task, overdue }: { task: ReviewTask; overdue?: boolean }) {
     const area = resolveDisplayArea(task.area, task.theme, task.subtheme);
@@ -684,22 +742,12 @@ export default function TodayPage() {
   useEffect(() => {
     setTitle("Hoje");
     setActions(
-      <TopBarActionLink href="/calendario" label="Calendário" title="Calendário">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <circle cx="5" cy="5" r="1.5" fill="currentColor" stroke="none" />
-          <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none" />
-          <circle cx="19" cy="5" r="1.5" fill="currentColor" stroke="none" />
-          <circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none" />
-          <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-          <circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none" />
-          <circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none" />
-          <circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none" />
-          <circle cx="19" cy="19" r="1.5" fill="currentColor" stroke="none" />
-        </svg>
+      <TopBarActionLink href={planningTodayHref} label="Abrir planejamento de hoje" title="Abrir planejamento de hoje">
+        <CalendarDays className="h-5 w-5" aria-hidden="true" />
       </TopBarActionLink>,
     );
     return () => { setTitle(null); setActions(null); };
-  }, [setTitle, setActions]);
+  }, [planningTodayHref, setTitle, setActions]);
 
   if (loading) return <TodaySkeleton />;
 
@@ -712,6 +760,13 @@ export default function TodayPage() {
         </header>
 
         {isRestState ? <TodayEmptyState /> : <TodayPrimaryAction action={studentToday.primary_action} />}
+
+        <TodayDaySummarySection
+          summary={secondaryLoading && todayActivitySummary.total === 0 ? null : todayActivitySummary}
+          loading={secondaryLoading}
+          error={daySummaryError}
+          planningHref={planningTodayHref}
+        />
 
         {activeSessions.map((activeSession) => (
           <section
@@ -850,6 +905,13 @@ export default function TodayPage() {
               />
             )}
           </section>
+
+          <TodayDaySummarySection
+            summary={secondaryLoading && todayActivitySummary.total === 0 ? null : todayActivitySummary}
+            loading={secondaryLoading}
+            error={daySummaryError}
+            planningHref={planningTodayHref}
+          />
 
           {prescription?.previous_outcome && (
             <OutcomeCard

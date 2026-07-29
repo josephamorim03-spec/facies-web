@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { ToggleGroup } from "./ToggleGroup";
 import { CadernoPesquisarSkeleton } from "./CadernoSkeletons";
+import { Button } from "@/components/ui/Button";
 import {
   AREA_COLORS,
   AREAS,
@@ -12,7 +15,7 @@ import {
 import type { SortTime, SortWeight } from "../_lib/cadernoShared";
 
 const MOBILE_PRIMARY_CTA_CLASS =
-  "sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.45rem)] z-40 block w-full rounded-xl border border-ink bg-paper py-2 text-sm font-semibold text-ink shadow-sm transition-colors hover:bg-ink hover:text-paper disabled:opacity-50 md:static md:w-full md:bg-transparent md:shadow-none";
+  "sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.45rem)] z-40 w-full shadow-sm md:static md:shadow-none";
 
 interface CadernoPesquisarPanelProps {
   filterAreas: Set<Area>;
@@ -63,9 +66,15 @@ export function CadernoPesquisarPanel({
   onSearch,
   children,
 }: CadernoPesquisarPanelProps) {
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
   return (
     <div data-caderno-pesquisar-layout="true" className="w-full">
-      <div className="w-full space-y-4">
+      <div className="w-full space-y-4 transition-opacity duration-200">
         {/* Filtros sempre visíveis */}
         <section
           data-caderno-pesquisar-panel="true"
@@ -107,10 +116,13 @@ export function CadernoPesquisarPanel({
           </div>
 
           {/* Tema */}
+          <label className="sr-only" htmlFor="caderno-search-theme">Buscar por tema</label>
           <input
+            ref={searchInputRef}
+            id="caderno-search-theme"
             type="text"
             className="w-full rounded-xl border border-edge bg-paper px-3 py-2 text-sm"
-            placeholder="Tema"
+            placeholder="Buscar por tema"
             value={filterTheme}
             onChange={(e) => onFilterThemeChange(e.target.value)}
           />
@@ -234,14 +246,16 @@ export function CadernoPesquisarPanel({
             </div>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="md"
             onClick={onSearch}
-            disabled={searchLoading}
+            loading={searchLoading}
             className={MOBILE_PRIMARY_CTA_CLASS}
           >
-            {searchLoading ? "PESQUISANDO..." : "PESQUISAR"}
-          </button>
+            Pesquisar
+          </Button>
         </section>
 
         {children}

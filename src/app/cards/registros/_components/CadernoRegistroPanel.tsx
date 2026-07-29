@@ -14,7 +14,7 @@ import {
 import { CadernoRegistroSkeleton } from "./CadernoSkeletons";
 
 const MOBILE_PRIMARY_CTA_CLASS =
-  "sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.45rem)] w-full z-40 block text-sm rounded-xl border border-ink py-2 bg-paper text-ink hover:bg-ink hover:text-paper transition-colors disabled:opacity-50 md:static md:w-full md:bg-transparent";
+  "sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.45rem)] z-40 w-full shadow-sm md:static md:shadow-none";
 
 interface CadernoRegistroPanelProps {
   area: string;
@@ -83,6 +83,8 @@ export function CadernoRegistroPanel({
   saving,
   onCreateNote,
 }: CadernoRegistroPanelProps) {
+  const canSave = Boolean(area && theme.trim() && insightQuestion.trim() && body.trim());
+
   return (
     <div data-caderno-registro-layout="true" className="w-full">
       <section
@@ -280,13 +282,17 @@ export function CadernoRegistroPanel({
           </div>
         )}
 
-        <button
+        <Button
+          type="button"
+          variant="primary"
+          size="md"
           onClick={onCreateNote}
-          disabled={saving}
+          disabled={!canSave}
+          loading={saving}
           className={MOBILE_PRIMARY_CTA_CLASS}
         >
-          {saving ? "Salvando..." : "SALVAR"}
-        </button>
+          Salvar
+        </Button>
       </section>
     </div>
   );
