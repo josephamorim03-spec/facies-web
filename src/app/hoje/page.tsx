@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useNavbar } from "@/lib/NavbarContext";
 import AreaDot from "@/components/AreaDot";
@@ -12,10 +13,13 @@ import { Alert } from "@/components/ui/Alert";
 import { areaHex } from "@/lib/areaColors";
 import { displayAreaLabel, resolveDisplayArea, type DisplayArea } from "@/lib/areaDisplay";
 import { getAuthToken } from "@/lib/auth";
+import { invalidateLearningQueries } from "@/lib/queryKeys";
 import { getErrorMessage } from "@/lib/error-utils";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useToast } from "@/lib/useToast";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Trash2 } from "lucide-react";
 import {
   acceptScheduleSuggestionItem,
   acceptScheduleSuggestionAll,
@@ -30,6 +34,7 @@ import {
   recordTrainerRecommendationEvent,
   listDirectedStudies,
   listQuestionBankSessions,
+  deleteQuestionBankSession,
   listReviewTasks,
   rejectScheduleSuggestion,
   type QuestionBankSession,
@@ -68,9 +73,8 @@ type Area = DisplayArea;
 // CTA label for the trainer prescription's primary action, by action kind.
 const PRIMARY_ACTION_CTA: Record<string, string> = {
   resume_session: "Continuar sessão",
-  question_block: "Começar treino",
-  scheduled_review: "Revisar agora",
-  guided_correction: "Corrigir raciocínio",
+  targeted_practice: "Praticar questões",
+  scheduled_topic_practice: "Praticar tema",
   flashcard_review: "Revisar cards",
   simulation: "Iniciar simulado",
   manual_study: "Abrir caderno",
@@ -93,15 +97,6 @@ const TRAINER_OUTCOME_LABEL: Record<string, string> = {
   speed: "velocidade",
   calibration: "calibração",
 };
-// Croskerry remediation mode (por microcompetência) → rótulo curto para o aluno.
-const TRAINER_MODE_LABEL: Record<string, string> = {
-  contrastive: "contraste de armadilhas",
-  calibration: "calibrar confiança",
-  slow_down: "desacelerar e checar",
-  spaced_review: "revisão no ponto",
-  focused_practice: "prática focada",
-};
-
 function todayISO(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -256,7 +251,7 @@ function reviewTaskHref(task: ReviewTask): string {
     theme: task.theme,
     expected_questions: String(Math.max(1, Number(task.expected_questions ?? 10))),
   });
-  return `/banco-de-questoes?${params.toString()}`;
+  return `/banco?${params.toString()}`;
 }
 
 
@@ -300,27 +295,26 @@ type TodayPageData = {
   studyData: DirectedStudyListItem[];
   cardsOverview: OperationalTurboOverview | null;
   performanceSummary: StudyPerformanceSummary | null;
-  activeSession: QuestionBankSession | null;
+  activeSessions: QuestionBankSession[];
   weeklyGoal: number;
   displayName: string | null;
 };
 
 // Sessão em andamento mais recente para o card "Continue de onde parou".
-function pickMostRecentActive(sessions: QuestionBankSession[]): QuestionBankSession | null {
-  const active = sessions.filter((session) => session.status === "active");
-  if (active.length === 0) return null;
-  return active
+function sortActiveSessions(sessions: QuestionBankSession[]): QuestionBankSession[] {
+  return sessions
+    .filter((session) => session.status === "active")
     .slice()
     .sort(
       (a, b) =>
         Date.parse(b.updated_at ?? b.created_at) - Date.parse(a.updated_at ?? a.created_at),
-    )[0];
+    );
 }
 
 async function loadTodayPageData(token: string): Promise<TodayPageData> {
   const turboOverviewRequest = getOperationalTurboOverview(token, { previewLimit: 3 }).catch(() => null);
   const performanceSummaryRequest = getStudyPerformanceSummary(token).catch(() => null);
-  const activeSessionRequest = listQuestionBankSessions(token, { limit: 5 }).catch(
+  const activeSessionRequest = listQuestionBankSessions(token, { status: "active", limit: 10 }).catch(
     () => [] as QuestionBankSession[],
   );
   const [pendingData, doneData, studyData, profile, cardsOverview, performanceSummary, recentSessions] =
@@ -339,7 +333,7 @@ async function loadTodayPageData(token: string): Promise<TodayPageData> {
     studyData,
     cardsOverview,
     performanceSummary,
-    activeSession: pickMostRecentActive(recentSessions),
+    activeSessions: sortActiveSessions(recentSessions),
     weeklyGoal: Math.max(0, Number(profile.weekly_goal_questions ?? 0)),
     displayName: profile.display_name,
   };
@@ -361,6 +355,7 @@ function getOverdueDays(dueDate: string, today: string): number {
 }
 
 export default function TodayPage() {
+  const queryClient = useQueryClient();
   const { tokenResolved } = useAuthToken();
   const { setTitle, setActions } = useNavbar();
   const { showToast } = useToast();
@@ -371,7 +366,8 @@ export default function TodayPage() {
   const [turboOverview, setTurboOverview] = useState<OperationalTurboOverview | null>(null);
   const [performanceSummary, setPerformanceSummary] = useState<StudyPerformanceSummary | null>(null);
   const [longitudinal, setLongitudinal] = useState<QuestionBankLongitudinalDiagnosis | null>(null);
-  const [activeSession, setActiveSession] = useState<QuestionBankSession | null>(null);
+  const [activeSessions, setActiveSessions] = useState<QuestionBankSession[]>([]);
+  const [discardSession, setDiscardSession] = useState<QuestionBankSession | null>(null);
   const [studentToday, setStudentToday] = useState<StudentToday | null>(null);
   const [studentTodayFailed, setStudentTodayFailed] = useState(false);
   const [prescription, setPrescription] = useState<TrainerPrescription | null>(null);
@@ -407,7 +403,7 @@ export default function TodayPage() {
       setStudies(data.studyData);
       setTurboOverview(data.cardsOverview);
       setPerformanceSummary(data.performanceSummary);
-      setActiveSession(data.activeSession);
+      setActiveSessions(data.activeSessions);
       setWeeklyGoal(data.weeklyGoal);
       setDisplayName(data.displayName);
     } catch (e: unknown) {
@@ -432,6 +428,28 @@ export default function TodayPage() {
         }).catch(() => null);
       }
     });
+  }
+
+  async function discardActiveSession() {
+    if (!discardSession) return;
+    const token = getAuthToken();
+    try {
+      const result = await deleteQuestionBankSession(token, discardSession.session_id);
+      setActiveSessions((current) =>
+        current.filter((session) => session.session_id !== discardSession.session_id),
+      );
+      void invalidateLearningQueries(queryClient);
+      setDiscardSession(null);
+      showToast(
+        result.adaptive_evidence_retained
+          ? "Sessão removida. As respostas já corrigidas continuam ajustando suas recomendações."
+          : "Sessão descartada sem enviar respostas.",
+        "success",
+      );
+    } catch (cause) {
+      setDiscardSession(null);
+      showToast(getErrorMessage(cause), "error");
+    }
   }
 
   useEffect(() => {
@@ -620,7 +638,7 @@ export default function TodayPage() {
           : ("neutral" as const),
         minutes: primaryAction.estimated_minutes,
         metric: null as string | null,
-        href: primaryAction.href ?? "/banco-de-questoes",
+        href: primaryAction.href ?? "/banco",
         ctaLabel: PRIMARY_ACTION_CTA[primaryAction.kind] ?? "Começar",
       }
     : null;
@@ -695,6 +713,43 @@ export default function TodayPage() {
 
         {isRestState ? <TodayEmptyState /> : <TodayPrimaryAction action={studentToday.primary_action} />}
 
+        {activeSessions.map((activeSession) => (
+          <section
+            key={activeSession.session_id}
+            className="flex flex-col gap-3 border-y border-edge py-4 sm:flex-row sm:items-center sm:justify-between"
+            aria-label="Sessao em andamento"
+          >
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+                Continue de onde parou
+              </p>
+              <p className="mt-1 truncate font-serif text-lg font-semibold leading-tight text-ink">
+                {activeSession.theme ?? activeSession.full_exam_name ?? "Sessao do banco"}
+              </p>
+              <p className="mt-0.5 text-xs text-muted">
+                {activeSession.answered_count}/{activeSession.total_questions} respondidas
+              </p>
+            </div>
+            <div className="flex w-full shrink-0 gap-2 sm:w-auto">
+              <button
+                type="button"
+                onClick={() => setDiscardSession(activeSession)}
+                className="inline-flex min-h-11 items-center justify-center p-3 text-muted transition hover:text-danger"
+                title="Descartar sessao"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                <span className="sr-only">Descartar sessao</span>
+              </button>
+              <Link
+                href={`/banco/sessao/${activeSession.session_id}`}
+                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-control border border-primary px-5 text-sm font-semibold text-primary transition hover:bg-surfaceMuted sm:flex-none"
+              >
+                Continuar
+              </Link>
+            </div>
+          </section>
+        ))}
+
         <TodayLoadNote load={studentToday.today_load} />
 
         <TodayBackupActions actions={studentToday.backup_actions} />
@@ -710,6 +765,21 @@ export default function TodayPage() {
           <CardsDuePanel overview={turboOverview} />
           <BancoSidebarCard longitudinal={longitudinal} />
         </TodayDetails>
+
+        <ConfirmDialog
+          open={discardSession !== null}
+          title="Descartar sessao?"
+          message={
+            discardSession?.feedback_timing === "immediate" &&
+            discardSession.answered_count > 0
+              ? "A sessao sumira do historico. Como o gabarito ja foi exibido, as respostas dadas continuarao sendo contabilizadas somente para adaptar futuras recomendacoes."
+              : "A sessao e as respostas ainda nao enviadas serao apagadas. Ela nao aparecera no historico nem afetara seus resultados."
+          }
+          cancelLabel="Manter sessao"
+          confirmLabel="Descartar"
+          onCancel={() => setDiscardSession(null)}
+          onConfirm={() => void discardActiveSession()}
+        />
 
         <RescheduleSuggestionDialog
           open={bulkSuggestionDialogOpen}
@@ -756,11 +826,6 @@ export default function TodayPage() {
                 metadata={
                   <>
                     {primaryAction?.why_factors.slice(0, 3).map((wf) => TRAINER_FACTOR_LABEL[wf.factor] ?? wf.factor).join(" · ")}
-                    {primaryAction?.start_payload?.cognitive_mode ? (
-                      <span className="rounded-full border border-edge px-2 py-0.5 font-medium text-ink">
-                        {TRAINER_MODE_LABEL[primaryAction.start_payload.cognitive_mode] ?? primaryAction.start_payload.cognitive_mode}
-                      </span>
-                    ) : null}
                     {nextActionSignals.map((signal) => (
                       <span key={signal.key} className={`rounded-full border px-2 py-0.5 font-medium ${signal.className}`}>{signal.label}</span>
                     ))}
@@ -781,7 +846,7 @@ export default function TodayPage() {
                 title="Suficiente por hoje"
                 description="Carga do dia concluída."
                 icon={<IconShield className="h-6 w-6 text-success" />}
-                action={<Link href="/banco-de-questoes" className="paper-control inline-flex min-h-11 items-center gap-2 border border-edge px-4 text-sm font-semibold text-ink">Manutenção opcional <IconArrowRight className="h-4 w-4" /></Link>}
+                action={<Link href="/banco" className="paper-control inline-flex min-h-11 items-center gap-2 border border-edge px-4 text-sm font-semibold text-ink">Manutenção opcional <IconArrowRight className="h-4 w-4" /></Link>}
               />
             )}
           </section>
@@ -822,9 +887,11 @@ export default function TodayPage() {
             </section>
           )}
 
-          {activeSession &&
-            (!heroAction || !heroAction.href.includes(activeSession.session_id)) && (
+          {activeSessions
+            .filter((session) => !heroAction || !heroAction.href.includes(session.session_id))
+            .map((activeSession) => (
               <section
+                key={activeSession.session_id}
                 className="flex flex-col gap-3 rounded-surface border border-edge bg-surface p-4 shadow-soft sm:flex-row sm:items-center sm:justify-between"
                 style={{ boxShadow: `inset 3px 0 0 ${areaHex(resolveDisplayArea(activeSession.area, activeSession.theme, activeSession.full_exam_name))}` }}
                 aria-label="Sessão em andamento"
@@ -841,22 +908,33 @@ export default function TodayPage() {
                     {activeSession.resolution_mode === "simulation" ? " · simulado" : ""}
                   </p>
                 </div>
-                <Link
-                  href={`/banco-de-questoes/sessao/${activeSession.session_id}`}
-                  className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-primary px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-surfaceMuted sm:w-auto"
-                >
-                  Continuar
-                  <IconArrowRight className="h-4 w-4" />
-                </Link>
+                <div className="flex w-full shrink-0 gap-2 sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => setDiscardSession(activeSession)}
+                    className="inline-flex min-h-11 items-center justify-center p-3 text-muted transition hover:text-danger"
+                    title="Descartar sessão"
+                  >
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    <span className="sr-only">Descartar sessão</span>
+                  </button>
+                  <Link
+                    href={`/banco/sessao/${activeSession.session_id}`}
+                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-primary px-5 text-sm font-semibold text-primary transition hover:bg-surfaceMuted sm:flex-none"
+                  >
+                    Continuar
+                    <IconArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
               </section>
-            )}
+            ))}
 
           <div className="grid gap-4 md:gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="space-y-4 md:space-y-6">
             <section className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="font-serif text-2xl font-semibold">Plano de estudos de hoje</h2>
-                <Link href="/calendario" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                <Link href="/planejamento" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
                   Ver plano completo
                   <IconArrowRight className="h-4 w-4" />
                 </Link>
@@ -977,7 +1055,7 @@ export default function TodayPage() {
                     />
                   ) : null}
                 </div>
-                <Link href="/dados-e-relatorios" className="text-xs font-semibold text-primary hover:underline">Ver detalhes</Link>
+                <Link href="/evolucao" className="text-xs font-semibold text-primary hover:underline">Ver detalhes</Link>
               </div>
               <div className="mt-5 flex items-center gap-5">
                 <ProgressRing pct={globalAccuracy} label={`de ${totalDoneQuestions} questões`} />
@@ -999,7 +1077,7 @@ export default function TodayPage() {
               <div className="mt-5 border-t border-edge pt-4">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-medium text-ink">Meta semanal</span>
-                  <Link href="/rotina-e-metas" className="text-xs font-semibold text-primary hover:underline">Editar</Link>
+                  <Link href="/preferencias" className="text-xs font-semibold text-primary hover:underline">Editar</Link>
                 </div>
                 <div className="mt-2 flex items-center gap-3">
                   <ScoreBar pct={weeklyGoalPct} color="var(--color-success)" />
@@ -1026,7 +1104,7 @@ export default function TodayPage() {
                   <div>
                     <div className="flex items-start justify-between gap-3">
                       <h3 className="font-serif text-lg font-semibold">Resumo por área</h3>
-                      <Link href="/dados-e-relatorios/relatorio" className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+                      <Link href="/evolucao" className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
                         Relatório
                         <IconArrowRight className="h-3.5 w-3.5" />
                       </Link>
@@ -1059,7 +1137,7 @@ export default function TodayPage() {
                       {recentReviewStudies.map((study) => (
                         <Link
                           key={study.study_id}
-                          href={study.import_session_id ? `/cronograma/importar/${study.import_session_id}/resultados` : `/banco-de-questoes?area=${encodeURIComponent(study.area)}&theme=${encodeURIComponent(study.theme)}`}
+                          href={study.import_session_id ? `/cronograma/importar/${study.import_session_id}/resultados` : `/banco?area=${encodeURIComponent(study.area)}&theme=${encodeURIComponent(study.theme)}`}
                           className="block rounded-lg border border-edge bg-paper px-3 py-3 hover:border-primary"
                         >
                           <div className="flex items-center justify-between gap-3">
@@ -1095,6 +1173,20 @@ export default function TodayPage() {
         onAcceptItem={handleAcceptSuggestionItem}
         onAcceptAll={handleAcceptAllSuggestions}
         onReject={handleRejectSuggestions}
+      />
+      <ConfirmDialog
+        open={discardSession !== null}
+        title="Descartar sessão?"
+        message={
+          discardSession?.feedback_timing === "immediate" &&
+          discardSession.answered_count > 0
+            ? "A sessão sumirá do histórico. Como o gabarito já foi exibido, as respostas dadas continuarão sendo contabilizadas somente para adaptar futuras recomendações."
+            : "A sessão e as respostas ainda não enviadas serão apagadas. Ela não aparecerá no histórico nem afetará seus resultados."
+        }
+        cancelLabel="Manter sessão"
+        confirmLabel="Descartar"
+        onCancel={() => setDiscardSession(null)}
+        onConfirm={() => void discardActiveSession()}
       />
     </div>
   );

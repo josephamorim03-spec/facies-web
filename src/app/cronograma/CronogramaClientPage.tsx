@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowRight, CalendarCheck2, Sparkles } from "lucide-react";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { Button } from "@/components/ui/Button";
 import { IconSearch, IconX } from "./_components/CronogramaIcons";
@@ -22,10 +24,6 @@ import {
 import { writeCronogramaViewModeSession } from "./_lib/viewModeSession";
 import { CronogramaCalendarView } from "./_components/CronogramaCalendarView";
 import { RescheduleSuggestionDialog } from "./_components/RescheduleSuggestionDialog";
-import { CronogramaStreakCard } from "@/app/cronograma/_components/CronogramaStreakCard";
-import { CronogramaTodayPanel } from "./_components/CronogramaTodayPanel";
-import { WeeklyGoalControl } from "./_components/WeeklyGoalControl";
-import { WeeklyOpsCompactSummary, WeeklyOpsCompactSummarySkeleton } from "./_components/WeeklyOpsCards";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { buildWeeklyOpsMetrics } from "./_lib/weeklyOpsMetrics";
 
@@ -62,17 +60,15 @@ export default function CronogramaPage() {
     doneTasks,
     studies,
     turboCardsByDate,
-    questionReviewQueue,
     events,
     loading,
-    streakLoading,
     error,
     suggesting,
     suggestionActionKey,
     showEventSuggestionModal,
     token,
-    streak,
     weeklyGoal,
+    calendarRecommendationsEnabled,
     eventModalSuggestions,
     fetchAll,
     handleAutoReschedule,
@@ -121,16 +117,11 @@ export default function CronogramaPage() {
   const nowRef = new Date();
   const [calendarMonth, setCalendarMonth] = useState(nowRef.getMonth());
   const [calendarYear, setCalendarYear] = useState(nowRef.getFullYear());
-  const [calendarRowCount, setCalendarRowCount] = useState(6);
   const goToTodayRef = useRef<(() => void) | null>(null);
   const prevMonthRef = useRef<(() => void) | null>(null);
   const nextMonthRef = useRef<(() => void) | null>(null);
   const currentRealYear = new Date().getFullYear();
   const todayDayNumber = new Date().getDate();
-  const isFiveRowMonth = calendarRowCount === 5;
-  const summaryPositionClass = isMobilePortrait
-    ? (isFiveRowMonth ? "flex-1 flex items-center justify-center pt-10" : "pt-1")
-    : "flex-1 flex items-center justify-center";
   const weeklyOpsMetrics = useMemo(
     () =>
       buildWeeklyOpsMetrics({
@@ -144,12 +135,6 @@ export default function CronogramaPage() {
   );
   // "Para revisar hoje" = só o que vence hoje. As atrasadas têm o banner próprio
   // (e aparecem nas suas datas passadas no calendário); não devem reaparecer aqui.
-  const todayReviewTasks = useMemo(
-    () => tasks.filter((task) => task.status !== "done" && task.due_date === todayISO),
-    [tasks, todayISO],
-  );
-  const todayStudies = studiesByDate[todayISO] ?? [];
-
   useEffect(() => {
     function updateMobilePortraitMode() {
       setIsMobilePortrait(detectMobilePortraitMode(isDesktopNavigation));
@@ -208,6 +193,13 @@ export default function CronogramaPage() {
       className="flex flex-col gap-4"
       style={{ minHeight: "calc(100svh - max(1.5rem, env(safe-area-inset-top, 0px)) - 4.5rem - env(safe-area-inset-bottom, 0px))" }}
     >
+      {isDesktopNavigation && !searchOpen ? (
+        <header className="border-b border-edge pb-4">
+          <p className="text-xs font-semibold uppercase text-muted">Planejamento</p>
+          <h1 className="mt-1 font-serif text-3xl font-semibold text-ink">Ajuste a rotina</h1>
+        </header>
+      ) : null}
+
       {/* Top bar: Google Calendar style */}
       {searchOpen ? (
         <div className="space-y-1.5" data-crono-search-mode="true">
@@ -378,10 +370,9 @@ export default function CronogramaPage() {
           onEventMutated={handleEventMutationRefresh}
           searchQuery={searchQuery}
           isMobilePortrait={isMobilePortrait}
-          onMonthYearChange={(m, y, rowCount, gtt, prev, next) => {
+          onMonthYearChange={(m, y, _rowCount, gtt, prev, next) => {
             setCalendarMonth(m);
             setCalendarYear(y);
-            setCalendarRowCount(rowCount);
             goToTodayRef.current = gtt;
             prevMonthRef.current = prev;
             nextMonthRef.current = next;
@@ -390,24 +381,50 @@ export default function CronogramaPage() {
       </div>
 
       {!loading && (
-        <WeeklyGoalControl
-          token={token ?? ""}
-          weeklyGoal={weeklyOpsMetrics.weeklyGoal}
-          progressPct={weeklyOpsMetrics.progressPct}
-          remainingQuestions={weeklyOpsMetrics.weeklyGoalRemainingQuestions}
-          onSaved={fetchAll}
-        />
+        <section className="border-y border-edge py-4" aria-label="Progresso da meta semanal">
+          <div className="flex items-baseline justify-between gap-4 text-sm">
+            <p className="font-semibold text-ink">Meta semanal</p>
+            <p className="text-muted">
+              {weeklyOpsMetrics.doneQuestionsWeek} de {weeklyOpsMetrics.weeklyGoal} questões
+            </p>
+          </div>
+          <div className="mt-3 h-1.5 overflow-hidden bg-surfaceMuted">
+            <div
+              className="h-full bg-primary transition-[width]"
+              style={{ width: `${weeklyOpsMetrics.progressPct}%` }}
+            />
+          </div>
+        </section>
       )}
 
-      <CronogramaStreakCard streak={streak} loading={streakLoading} />
-
-      {!loading && (
-        <CronogramaTodayPanel
-          todayTasks={todayReviewTasks}
-          todayStudies={todayStudies}
-          questionReviewQueue={questionReviewQueue}
-        />
-      )}
+      {!loading && calendarRecommendationsEnabled ? (
+        <section aria-labelledby="routine-suggestions-title">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+            <h2 id="routine-suggestions-title" className="text-sm font-semibold text-ink">
+              Sugestões para a rotina
+            </h2>
+          </div>
+          <div className="mt-2 divide-y divide-edge border-y border-edge">
+            <Link href="/kros" className="group flex min-h-14 items-center gap-3 py-3 text-sm">
+              <CalendarCheck2 className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                <strong className="block font-semibold text-ink">Reserve um Kros de 50 questões</strong>
+                <span className="text-xs text-muted">Escolha o melhor dia antes de iniciar.</span>
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+            </Link>
+            <Link href="/banco?tipo=prova" className="group flex min-h-14 items-center gap-3 py-3 text-sm">
+              <CalendarCheck2 className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                <strong className="block font-semibold text-ink">Planeje uma prova institucional</strong>
+                <span className="text-xs text-muted">Defina instituição e ano no Banco.</span>
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       {/* Revisões atrasadas — discreto, embaixo do calendário */}
       {new Date().getHours() >= 20 && tasks.filter((t) => t.is_overdue).length > 0 && (
@@ -418,15 +435,6 @@ export default function CronogramaPage() {
           <Button variant="outline" size="xs" loading={suggesting} onClick={handleAutoReschedule} className="shrink-0">
             Reagendar
           </Button>
-        </div>
-      )}
-
-      {!error && (
-        <div className={summaryPositionClass}>
-          {loading
-            ? <WeeklyOpsCompactSummarySkeleton />
-            : <WeeklyOpsCompactSummary metrics={weeklyOpsMetrics} compact={false} />
-          }
         </div>
       )}
 

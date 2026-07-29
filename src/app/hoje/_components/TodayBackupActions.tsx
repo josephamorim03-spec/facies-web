@@ -9,12 +9,12 @@ export function TodayBackupActions({ actions }: { actions: StudentTodayAction[] 
   return (
     <section aria-label="Acoes secundarias" className="space-y-2">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Se nao couber agora</p>
-      <div className="grid gap-2 md:grid-cols-2">
+      <div className="divide-y divide-edge border-y border-edge md:grid md:grid-cols-2 md:divide-x md:divide-y-0">
         {actions.slice(0, 2).map((action) => (
           <Link
             key={`${action.kind}:${action.href}`}
             href={action.href}
-            className="group rounded-surface border border-edge bg-surface px-4 py-3 transition hover:border-primary"
+            className="group px-1 py-3 transition hover:bg-surfaceMuted md:px-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { getAuthToken } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/error-utils";
 import {
@@ -22,20 +23,17 @@ import {
   OperationalStreak,
   ScheduleSuggestion,
 } from "@/lib/api";
+import { queryKeys } from "@/lib/queryKeys";
 
 const STREAK_STALE_MS = 5 * 60 * 1000;
 
-export type QuestionReviewQueueSummary = {
-  due_count: number;
-  struggling_count: number;
-  total: number;
+export type QuestionPracticeSummary = {
+  count: number;
   generated_at: string | null;
 };
 
-const EMPTY_QUESTION_REVIEW_QUEUE: QuestionReviewQueueSummary = {
-  due_count: 0,
-  struggling_count: 0,
-  total: 0,
+const EMPTY_QUESTION_PRACTICE: QuestionPracticeSummary = {
+  count: 0,
   generated_at: null,
 };
 
@@ -57,18 +55,20 @@ function getStreakFetchErrorInfo(err: unknown): { status: number | null; message
 }
 
 export function useCronogramaPageState() {
+  const queryClient = useQueryClient();
   const [tasks, setTasks] = useState<ReviewTask[]>([]);
   const [doneTasks, setDoneTasks] = useState<ReviewTask[]>([]);
   const [studies, setStudies] = useState<DirectedStudyListItem[]>([]);
   const [events, setEvents] = useState<CalendarEventOut[]>([]);
   const [turboCardsByDate, setTurboCardsByDate] = useState<Record<string, number>>({});
-  const [questionReviewQueue, setQuestionReviewQueue] = useState<QuestionReviewQueueSummary>(
-    EMPTY_QUESTION_REVIEW_QUEUE,
+  const [questionPractice, setQuestionPractice] = useState<QuestionPracticeSummary>(
+    EMPTY_QUESTION_PRACTICE,
   );
   const [suggestions, setSuggestions] = useState<ScheduleSuggestion[]>([]);
   const [streak, setStreak] = useState<OperationalStreak | null>(null);
   const [streakLoading, setStreakLoading] = useState(true);
   const [weeklyGoal, setWeeklyGoal] = useState(200);
+  const [calendarRecommendationsEnabled, setCalendarRecommendationsEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [suggesting, setSuggesting] = useState(false);
@@ -142,19 +142,18 @@ export function useCronogramaPageState() {
       setStudies(studyData);
       setEvents(eventData);
       setTurboCardsByDate(nextTurboCardsByDate);
-      setQuestionReviewQueue({
-        due_count: Math.max(0, Number(agendaData.due_question_total ?? 0)),
-        struggling_count: Math.max(0, Number(agendaData.struggling_question_total ?? 0)),
-        total: Math.max(0, Number(agendaData.question_review_total ?? 0)),
+      setQuestionPractice({
+        count: Math.max(0, Number(agendaData.question_practice_total ?? 0)),
         generated_at: agendaData.generated_at ?? null,
       });
       setWeeklyGoal(Math.max(0, Number(profile.weekly_goal_questions ?? 0)));
+      setCalendarRecommendationsEnabled(profile.calendar_recommendations_enabled);
       const incomingSuggestionIds = new Set(suggestionData.map((sg) => sg.suggestion_id));
       if (awaitingEventSuggestionReviewRef.current) {
         const newSuggestions = suggestionData.filter(
           (sg) => !knownSuggestionIdsRef.current.has(sg.suggestion_id),
         );
-        if (newSuggestions.length > 0) {
+        if (newSuggestions.length > 0 && profile.calendar_change_alerts_enabled) {
           setEventSuggestionModalIds(newSuggestions.map((sg) => sg.suggestion_id));
           setShowEventSuggestionModal(true);
         }
@@ -227,6 +226,7 @@ export function useCronogramaPageState() {
     try {
       await triggerScheduleSuggestion(token);
       await fetchAll();
+      void queryClient.invalidateQueries({ queryKey: queryKeys.planning });
     } catch {
       awaitingEventSuggestionReviewRef.current = false;
     } finally {
@@ -237,7 +237,8 @@ export function useCronogramaPageState() {
   const handleEventMutationRefresh = useCallback(async () => {
     awaitingEventSuggestionReviewRef.current = true;
     await fetchAll();
-  }, [fetchAll]);
+    void queryClient.invalidateQueries({ queryKey: queryKeys.planning });
+  }, [fetchAll, queryClient]);
 
   function closeEventSuggestionModal() {
     setShowEventSuggestionModal(false);
@@ -277,6 +278,7 @@ export function useCronogramaPageState() {
     } finally {
       setSuggestionActionKey(null);
       fetchAll().catch(() => undefined);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.planning });
     }
   }
 
@@ -291,6 +293,7 @@ export function useCronogramaPageState() {
     } finally {
       setSuggestionActionKey(null);
       fetchAll().catch(() => undefined);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.planning });
     }
   }
 
@@ -306,6 +309,7 @@ export function useCronogramaPageState() {
       setSuggestionActionKey(null);
       // Sync state in background; ignore errors here.
       fetchAll().catch(() => undefined);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.planning });
     }
   }
 
@@ -314,13 +318,13 @@ export function useCronogramaPageState() {
     doneTasks,
     studies,
     turboCardsByDate,
-    questionReviewQueue,
-    question_review_queue: questionReviewQueue,
+    questionPractice,
     events,
     suggestions,
     streak,
     streakLoading,
     weeklyGoal,
+    calendarRecommendationsEnabled,
     loading,
     error,
     suggesting,

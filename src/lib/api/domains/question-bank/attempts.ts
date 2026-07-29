@@ -12,7 +12,8 @@ export async function recordQuestionBankAttempt(
   sessionId: string,
   position: number,
   payload: {
-    selected_option: QuestionBankOption;
+    selected_option: QuestionBankOption | null;
+    commit?: boolean | null;
     time_ms?: number | null;
     doubtful?: boolean;
     confidence_self_rating?: number | null;

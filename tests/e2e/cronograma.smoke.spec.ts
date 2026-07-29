@@ -152,7 +152,7 @@ test.describe("Cronograma smoke", () => {
     const addAction = page.getByTestId("calendar-action-plus");
     await expect(addAction).toBeVisible();
     await addAction.click();
-    await expect(page.getByRole("button", { name: "Resolver questoes do banco" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Resolver questões do banco/i })).toBeVisible();
   });
 
   test("abre agenda operacional pela rota dedicada", async ({ page }) => {

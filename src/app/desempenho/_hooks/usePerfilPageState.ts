@@ -11,10 +11,8 @@ import { useToast } from "@/lib/useToast";
 import { getBlockedRedirectSessionKey, getWelcomeToastSessionKey } from "@/lib/storage-keys";
 import { getErrorMessage } from "@/lib/error-utils";
 import {
-  AdaptiveSubjectRank,
   AdaptiveScheduleGenerate,
   getAdaptiveSchedule,
-  getSubjectsRank,
   getProfile,
   updateProfile,
   getWorkload,
@@ -147,7 +145,6 @@ export function usePerfilPageState() {
   const [savedRetention, setSavedRetention] = useState(String(RETENTION_DEFAULT));
   const [hasCustomParams, setHasCustomParams] = useState(false);
   const [adaptiveWeek, setAdaptiveWeek] = useState<AdaptiveScheduleGenerate[]>([]);
-  const [adaptiveRank, setAdaptiveRank] = useState<AdaptiveSubjectRank[]>([]);
 
 
   async function refreshWorkload(authToken: string) {
@@ -178,12 +175,11 @@ export function usePerfilPageState() {
       listReviewTasks(authToken, { status: "done" }),
       listDirectedStudies(authToken),
       getStudyPerformanceSummary(authToken),
-      getSubjectsRank(authToken, 10),
       getWorkload(authToken),
       listEvents(authToken),
       getFsrsConfig(authToken),
     ])
-      .then(([profile, pend, doneItems, directedStudies, performance, rank, work, calendarEvents, cfg]) => {
+      .then(([profile, pend, doneItems, directedStudies, performance, work, calendarEvents, cfg]) => {
         const normalizedRetention = String(clampRetentionPct(Math.round(cfg.desired_retention * 100)));
         setHasCompletedInitialGoalSetup(profile.has_completed_initial_goal_setup);
         setWeeklyGoal(profile.weekly_goal_questions);
@@ -195,7 +191,6 @@ export function usePerfilPageState() {
         setDone(doneItems);
         setStudies(directedStudies);
         setPerformanceSummary(performance);
-        setAdaptiveRank(rank);
         setWorkload(work);
         setEvents(calendarEvents);
         setRetention(normalizedRetention);
@@ -458,7 +453,6 @@ export function usePerfilPageState() {
     retention,
     hasCustomParams,
     adaptiveWeek,
-    adaptiveRank,
     setThemeSort,
     setThemeHelpArea,
     setRescheduleMode,
@@ -478,7 +472,6 @@ export function usePerfilPageState() {
     setRetentionHelpPosition,
     setRetention,
     setAdaptiveWeek,
-    setAdaptiveRank,
     changePeriod,
     handleWeeklyGoalInputChange,
     normalizeWeeklyGoalInputOnBlur,

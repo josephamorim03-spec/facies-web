@@ -4,7 +4,7 @@ import {
   readActiveStudyImportSessionId,
 } from "@/lib/studyImportRuntime";
 
-export const INITIAL_GOAL_SETUP_ROUTE = "/rotina-e-metas";
+export const INITIAL_GOAL_SETUP_ROUTE = "/preferencias";
 export const DEFAULT_AUTHENTICATED_ROUTE = "/hoje";
 export const ACTIVATE_ROUTE = "/ativar-acesso";
 

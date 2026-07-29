@@ -4,7 +4,7 @@ import test from "node:test";
 import {
   buildTextHighlightAnchor,
   resolveHighlightRanges,
-} from "../../src/app/banco-de-questoes/sessao/[sessionId]/_components/questionTextHighlights.ts";
+} from "../../src/app/banco/sessao/[sessionId]/_components/questionTextHighlights.ts";
 
 function highlight(overrides) {
   return {

@@ -1,7 +1,12 @@
-import { REVIEW_ROUTES } from "./reviewRoutes.ts";
+export type StudentIntent =
+  | "today"
+  | "kros"
+  | "bank"
+  | "cards"
+  | "evolution"
+  | "planning";
 
-export type StudentIntent = "today" | "practice" | "review" | "track" | "plan";
-export type StudentNavIcon = "today" | "practice" | "review" | "track" | "plan";
+export type StudentNavIcon = StudentIntent;
 
 export type StudentRouteConfig = {
   path: string;
@@ -23,53 +28,48 @@ export type NavItemConfig = {
 };
 
 export type NavGroupConfig = { items: NavItemConfig[] };
+export type NavChildConfig = { href: string; label: string; matches: string[] };
 
-/**
- * Subnavegação: os destinos reais de cada intenção. Sem isto o menu expõe só
- * os 5 verbos e páginas como Sessões, Cards, Caderno, Gráficos, Relatórios e
- * Metas ficam inalcançáveis — foi o que levou cada tela a improvisar a própria
- * barra de abas. `matches` cobre os apelidos da mesma página.
- */
-export type NavChildConfig = {
-  href: string;
-  label: string;
-  matches: string[];
-};
-
-function child(href: string, label: string, ...aliases: string[]): NavChildConfig {
-  return { href, label, matches: [href, ...aliases] };
-}
-
-const INTENT_CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
-  // Hoje é tela única: a próxima ação não tem irmãs.
-  today: [],
-  practice: [
-    child("/praticar", "Banco", "/banco-de-questoes"),
-    // Simulados é um filtro daqui (ver provas/page.tsx), não um destino irmão.
-    child(REVIEW_ROUTES.sessionHistory, "Sessões", "/provas"),
-  ],
-  review: [
-    child(REVIEW_ROUTES.activeReview, "Fila"),
-    child(REVIEW_ROUTES.adaptiveCards, "Cards", REVIEW_ROUTES.turboCompatibility),
-    child(REVIEW_ROUTES.notebook, "Caderno"),
-  ],
-  track: [
-    child("/acompanhar", "Desempenho", "/estatisticas"),
-    child("/estatisticas/graficos", "Gráficos", "/dados-e-relatorios/graficos"),
-    child("/estatisticas/relatorio", "Relatórios", "/dados-e-relatorios/relatorio", "/dados-e-relatorios"),
-  ],
-  plan: [
-    child("/cronograma", "Calendário", "/calendario", "/agenda-operacional"),
-    child("/rotina-e-metas", "Metas", "/perfil"),
-  ],
-};
-
-const INTENTS: Record<StudentIntent, { path: string; label: string; title: string; icon: StudentNavIcon }> = {
+const INTENTS: Record<
+  StudentIntent,
+  { path: string; label: string; title: string; icon: StudentNavIcon }
+> = {
   today: { path: "/hoje", label: "Hoje", title: "Hoje", icon: "today" },
-  practice: { path: "/praticar", label: "Praticar", title: "Praticar", icon: "practice" },
-  review: { path: REVIEW_ROUTES.activeReview, label: "Revisar", title: "Revisar", icon: "review" },
-  track: { path: "/acompanhar", label: "Acompanhar", title: "Acompanhar", icon: "track" },
-  plan: { path: "/planejar", label: "Planejar", title: "Planejar", icon: "plan" },
+  kros: { path: "/kros", label: "Kros", title: "Kros", icon: "kros" },
+  bank: { path: "/banco", label: "Banco", title: "Banco", icon: "bank" },
+  cards: { path: "/cards", label: "Cards", title: "Cards", icon: "cards" },
+  evolution: {
+    path: "/evolucao",
+    label: "Evolução",
+    title: "Evolução",
+    icon: "evolution",
+  },
+  planning: {
+    path: "/planejamento",
+    label: "Planejamento",
+    title: "Planejamento",
+    icon: "planning",
+  },
+};
+
+const LEGACY_PATHS: Record<StudentIntent, string[]> = {
+  today: ["/today", "/semana"],
+  kros: ["/provas"],
+  bank: ["/praticar", "/banco", "/banco-de-questoes", "/revisoes"],
+  cards: ["/revisar", "/cards", "/cards-adaptativos", "/revisao-turbo", "/caderno", "/cards/registros"],
+  evolution: [
+    "/acompanhar",
+    "/estatisticas",
+    "/dados-e-relatorios",
+  ],
+  planning: [
+    "/planejar",
+    "/cronograma",
+    "/calendario",
+    "/agenda-operacional",
+    "/rotina-e-metas",
+    "/desempenho",
+  ],
 };
 
 function route(path: string, title: string, intent: StudentIntent): StudentRouteConfig {
@@ -80,35 +80,20 @@ function route(path: string, title: string, intent: StudentIntent): StudentRoute
     shortLabel: title,
     intent,
     intentPath: parent.path,
-    breadcrumb: path === parent.path ? [parent.label] : [parent.label, title],
+    breadcrumb: [parent.label],
     warmup: intent,
     icon: parent.icon,
   };
 }
 
 export const STUDENT_ROUTES: StudentRouteConfig[] = [
-  route("/hoje", "Hoje", "today"),
-  route("/praticar", "Praticar", "practice"),
-  route("/banco-de-questoes", "Banco de questões", "practice"),
-  route(REVIEW_ROUTES.activeReview, "Revisar", "review"),
-  route(REVIEW_ROUTES.adaptiveCards, "Cards adaptativos", "review"),
-  // Apelido histórico da mesma tela de cards; sem registro, o menu não
-  // destacava nada quando o aluno caía aqui.
-  route(REVIEW_ROUTES.turboCompatibility, "Cards adaptativos", "review"),
-  route(REVIEW_ROUTES.notebook, "Caderno", "review"),
-  route("/acompanhar", "Acompanhar", "track"),
-  route("/estatisticas", "Desempenho", "track"),
-  route("/dados-e-relatorios", "Relatórios", "track"),
-  // Sessões vive em Praticar: é onde se retoma uma sessão inacabada.
-  route(REVIEW_ROUTES.sessionHistory, "Sessões", "practice"),
-  route("/provas", "Simulados", "practice"),
-  route("/planejar", "Planejar", "plan"),
-  route("/desempenho", "Plano de estudo", "plan"),
-  route("/rotina-e-metas", "Rotina e metas", "plan"),
-  route("/cronograma", "Cronograma", "plan"),
-  route("/calendario", "Calendário", "plan"),
-  route("/agenda-operacional", "Agenda", "plan"),
-  route("/perfil", "Perfil", "plan"),
+  ...Object.values(INTENTS).map((item) =>
+    route(item.path, item.title, item.icon),
+  ),
+  route("/preferencias", "Preferências", "planning"),
+  ...Object.entries(LEGACY_PATHS).flatMap(([intent, paths]) =>
+    paths.map((path) => route(path, INTENTS[intent as StudentIntent].title, intent as StudentIntent)),
+  ),
 ];
 
 function normalizePathname(pathname: string): string {
@@ -120,10 +105,14 @@ function normalizePathname(pathname: string): string {
 
 export function getStudentRoute(pathname: string): StudentRouteConfig | null {
   const normalized = normalizePathname(pathname);
-  return STUDENT_ROUTES
-    .slice()
-    .sort((a, b) => b.path.length - a.path.length)
-    .find((item) => normalized === item.path || normalized.startsWith(`${item.path}/`)) ?? null;
+  return (
+    STUDENT_ROUTES.slice()
+      .sort((a, b) => b.path.length - a.path.length)
+      .find(
+        (item) =>
+          normalized === item.path || normalized.startsWith(`${item.path}/`),
+      ) ?? null
+  );
 }
 
 export function getStudentPageTitle(pathname: string): string {
@@ -134,11 +123,10 @@ export function getStudentWarmupIntent(pathname: string): StudentIntent | null {
   return getStudentRoute(pathname)?.warmup ?? null;
 }
 
-/** Sub-abas da intenção a que o caminho pertence (vazio quando é tela única). */
-export function getIntentChildren(pathname: string): NavChildConfig[] {
-  const current = getStudentRoute(pathname);
-  if (!current) return [];
-  return INTENT_CHILDREN[current.intent] ?? [];
+// Content tabs belong to each destination. The global shell no longer creates
+// a second navigation hierarchy.
+export function getIntentChildren(_pathname: string): NavChildConfig[] {
+  return [];
 }
 
 export function isNavChildActive(pathname: string, item: NavChildConfig): boolean {
@@ -149,17 +137,15 @@ export function isNavChildActive(pathname: string, item: NavChildConfig): boolea
   });
 }
 
-/** Rótulo da sub-aba ativa — usado como subtítulo/breadcrumb. */
-export function getActiveChildLabel(pathname: string): string | null {
-  const found = getIntentChildren(pathname).find((item) => isNavChildActive(pathname, item));
-  return found?.label ?? null;
+export function getActiveChildLabel(_pathname: string): string | null {
+  return null;
 }
 
 export function isNavItemActive(pathname: string, item: NavItemConfig): boolean {
-  const normalizedPathname = normalizePathname(pathname);
+  const normalized = normalizePathname(pathname);
   return item.groupPaths.some((groupPath) => {
-    const normalizedGroupPath = normalizePathname(groupPath);
-    return normalizedPathname === normalizedGroupPath || normalizedPathname.startsWith(`${normalizedGroupPath}/`);
+    const target = normalizePathname(groupPath);
+    return normalized === target || normalized.startsWith(`${target}/`);
   });
 }
 
@@ -169,12 +155,21 @@ function navItem(intent: StudentIntent): NavItemConfig {
     href: config.path,
     label: config.label.toUpperCase(),
     shortLabel: config.label,
-    groupPaths: STUDENT_ROUTES.filter((item) => item.intent === intent).map((item) => item.path),
+    groupPaths: [config.path, ...LEGACY_PATHS[intent]],
     icon: config.icon,
   };
 }
 
 export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
-  { items: [navItem("today"), navItem("practice"), navItem("review")] },
-  { items: [navItem("track"), navItem("plan")] },
+  {
+    items: [
+      navItem("today"),
+      navItem("kros"),
+      navItem("bank"),
+      navItem("cards"),
+    ],
+  },
+  {
+    items: [navItem("evolution"), navItem("planning")],
+  },
 ];

@@ -14,8 +14,6 @@ import {
 import { Area, Period } from "../desempenho/_lib/perfilShared";
 import { useEstatisticasPageState } from "./_hooks/useEstatisticasPageState";
 import { BancoDeQuestoesInsights } from "./_components/BancoDeQuestoesInsights";
-import { MetacognitionInsights } from "./_components/MetacognitionInsights";
-import { MeuModelo } from "./_components/MeuModelo";
 import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { getAuthToken } from "@/lib/auth";
 import { useNavbar } from "@/lib/NavbarContext";
@@ -27,12 +25,10 @@ import {
   StudentPageHeader,
 } from "@/components/student/StudentExperienceUI";
 import { useStudentExperience } from "@/lib/StudentExperienceContext";
-import {
-  StudentDeepLinks,
-  StudentDetailsDisclosure,
-  StudentSurfaceInsight,
-  StudentSurfaceSnapshot,
-} from "@/components/student/StudentActionSurface";
+import { StudentSurfaceInsight } from "@/components/student/StudentActionSurface";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+
+type TrackSection = "evolucao" | "topicos";
 
 type FullExamType = "acesso_direto" | "r_plus";
 
@@ -101,6 +97,7 @@ export default function EstatisticasClientPage() {
   const { setActions } = useNavbar();
   const { enabled: experienceEnabled, experience } = useStudentExperience();
   const [trackHome, setTrackHome] = useState<StudentSurfaceHome | null>(null);
+  const [section, setSection] = useState<TrackSection>("evolucao");
   const {
     pending,
     done,
@@ -362,67 +359,62 @@ export default function EstatisticasClientPage() {
           />
         ) : undefined}
       />
-      <GraficosSection />
-      {trackHome ? (
-        <>
-          <StudentSurfaceInsight surface={trackHome} />
-          <StudentDetailsDisclosure
-            title="Métricas e gráficos"
-            status={trackHome.status}
-            missingSources={trackHome.missing_sources}
-          >
-            <StudentDeepLinks links={trackHome.deep_links} />
-            <StudentSurfaceSnapshot
-              items={[
-                { label: "Questões na semana", value: String(trackHome.details.questions_done_week ?? "-") },
-                { label: "Precisão", value: trackHome.details.accuracy_pct === null || trackHome.details.accuracy_pct === undefined ? "-" : `${Math.round(Number(trackHome.details.accuracy_pct))}%` },
-                { label: "Relatório", value: "abrir", href: "/dados-e-relatorios/relatorio" },
+      {/* Uma narrativa por vez: antes, oito blocos empilhados disputavam a
+          leitura. A evolução abre a tela; o detalhe por tópico fica a um toque,
+          sem competir. */}
+      <Tabs value={section} onValueChange={(value) => setSection(value as TrackSection)}>
+        <TabsList aria-label="Seções do desempenho">
+          <TabsTrigger value="evolucao">Evolução</TabsTrigger>
+          <TabsTrigger value="topicos">Por tópico</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="evolucao" className="mt-4 space-y-4">
+          <GraficosSection />
+          {trackHome ? (
+            <StudentSurfaceInsight surface={trackHome} />
+          ) : experienceEnabled && experience ? (
+            <MetricStrip
+              metrics={[
+                experience.activity.questions_answered,
+                experience.activity.questions_correct,
+                experience.activity.accuracy_pct,
+                experience.activity.weekly_progress_pct,
               ]}
             />
-          </StudentDetailsDisclosure>
-        </>
-      ) : experienceEnabled && experience ? (
-        <MetricStrip
-          metrics={[
-            experience.activity.questions_answered,
-            experience.activity.questions_correct,
-            experience.activity.accuracy_pct,
-            experience.activity.weekly_progress_pct,
-          ]}
-        />
-      ) : null}
-      <DesempenhoTab
-        loading={false}
-        error=""
-        period={period}
-        changePeriod={changePeriod}
-        totalDoneQuestions={displayedTotalDoneQuestions}
-        totalTopicQuestions={totalTopicQuestions}
-        totalFullExamQuestions={totalFullExamQuestions}
-        goal={displayedGoal}
-        pct={displayedPct}
-        byArea={byArea}
-        studyAcc={studyAcc}
-        areaThemeSummaries={areaThemeSummaries}
-        clickedAreas={clickedAreas}
-        themeSort={themeSort}
-        setThemeSort={setThemeSort}
-        themeHelpArea={themeHelpArea}
-        setThemeHelpArea={setThemeHelpArea}
-        handleBarClick={handleBarClick}
-        diagnosis={diagnosis}
-        fullExamBanks={fullExamBanks}
-        showDiagnosis={false}
-        healthScore={performanceSummary?.health_score_pct ?? null}
-      />
+          ) : null}
+          <DesempenhoTab
+            loading={false}
+            error=""
+            period={period}
+            changePeriod={changePeriod}
+            totalDoneQuestions={displayedTotalDoneQuestions}
+            totalTopicQuestions={totalTopicQuestions}
+            totalFullExamQuestions={totalFullExamQuestions}
+            goal={displayedGoal}
+            pct={displayedPct}
+            byArea={byArea}
+            studyAcc={studyAcc}
+            areaThemeSummaries={areaThemeSummaries}
+            clickedAreas={clickedAreas}
+            themeSort={themeSort}
+            setThemeSort={setThemeSort}
+            themeHelpArea={themeHelpArea}
+            setThemeHelpArea={setThemeHelpArea}
+            handleBarClick={handleBarClick}
+            diagnosis={diagnosis}
+            fullExamBanks={fullExamBanks}
+            showDiagnosis={false}
+            healthScore={performanceSummary?.health_score_pct ?? null}
+          />
+        </TabsContent>
 
-      <hr className="border-edge" />
-      <BancoDeQuestoesInsights
-        longitudinal={longitudinal}
-        loading={backgroundLoading.longitudinal}
-      />
-      <MetacognitionInsights longitudinal={longitudinal} performanceSummary={performanceSummary} />
-      <MeuModelo />
+        <TabsContent value="topicos" className="mt-4">
+          <BancoDeQuestoesInsights
+            longitudinal={longitudinal}
+            loading={backgroundLoading.longitudinal}
+          />
+        </TabsContent>
+      </Tabs>
     </StudentPage>
   );
 }

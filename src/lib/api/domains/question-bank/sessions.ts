@@ -4,6 +4,7 @@ import type {
   QuestionPostAnswerReflection,
   QuestionBankSession,
   QuestionBankSessionCreatePayload,
+  QuestionBankSessionDeleteResult,
   QuestionBankSessionStatus,
 } from "./types";
 import { invalidateStudentExperienceCache } from "../student-experience";
@@ -27,6 +28,18 @@ export async function listQuestionBankSessions(
 
 export async function getQuestionBankSession(token: string, sessionId: string): Promise<QuestionBankSession> {
   return api<QuestionBankSession>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}`, { headers: authHeader(token) });
+}
+
+export async function deleteQuestionBankSession(
+  token: string,
+  sessionId: string,
+): Promise<QuestionBankSessionDeleteResult> {
+  const result = await api<QuestionBankSessionDeleteResult>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}`,
+    { method: "DELETE", headers: authHeader(token) },
+  );
+  invalidateStudentExperienceCache();
+  return result;
 }
 
 export async function revealQuestionBankSessionResults(

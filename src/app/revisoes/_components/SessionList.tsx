@@ -98,7 +98,7 @@ function SessionRow({ session }: { session: QuestionBankSession }) {
   }
   return (
     <Link
-      href={`/banco-de-questoes/sessao/${session.session_id}`}
+      href={`/banco/sessao/${session.session_id}`}
       data-session-id={session.session_id}
       className={`${rowClassName} transition-colors hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
     >
@@ -113,7 +113,7 @@ export function SessionList({ sessions, tab }: { sessions: QuestionBankSession[]
       <div className="rounded-lg border border-dashed border-edge bg-paper p-8 text-center text-sm text-muted">
         <p>{EMPTY_COPY[tab]}</p>
         <Link
-          href="/banco-de-questoes"
+          href="/banco"
           className="mt-3 inline-block text-sm font-semibold text-primary hover:underline"
         >
           Ir para o banco de questões

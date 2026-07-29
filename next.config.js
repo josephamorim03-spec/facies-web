@@ -50,6 +50,31 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      { source: "/praticar", destination: "/banco", permanent: true },
+      { source: "/banco-de-questoes", destination: "/banco", permanent: true },
+      {
+        source: "/banco-de-questoes/sessao/:sessionId",
+        destination: "/banco/sessao/:sessionId",
+        permanent: true,
+      },
+      { source: "/revisar", destination: "/cards", permanent: true },
+      { source: "/cards-adaptativos", destination: "/cards", permanent: true },
+      { source: "/revisao-turbo", destination: "/cards", permanent: true },
+      { source: "/caderno", destination: "/cards/registros", permanent: true },
+      { source: "/acompanhar", destination: "/evolucao", permanent: true },
+      { source: "/estatisticas", destination: "/evolucao", permanent: true },
+      { source: "/dados-e-relatorios", destination: "/evolucao", permanent: true },
+      { source: "/dados-e-relatorios/:path*", destination: "/evolucao", permanent: true },
+      { source: "/revisoes", destination: "/evolucao", permanent: true },
+      { source: "/planejar", destination: "/planejamento", permanent: true },
+      { source: "/cronograma", destination: "/planejamento", permanent: true },
+      { source: "/calendario", destination: "/planejamento", permanent: true },
+      { source: "/rotina-e-metas", destination: "/preferencias", permanent: true },
+      { source: "/perfil", destination: "/preferencias", permanent: true },
+    ];
+  },
 };
 
 module.exports = nextConfig;

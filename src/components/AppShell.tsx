@@ -26,6 +26,8 @@ import {
   subscribeSessionExpired,
 } from "@/lib/sessionExpiration";
 import { getStudentPageTitle } from "@/lib/navConfig";
+import { QueryProvider } from "@/lib/QueryProvider";
+import { MotionConfig } from "motion/react";
 
 type BuildVersionPayload = {
   commit_sha: string;
@@ -34,7 +36,7 @@ type BuildVersionPayload = {
 };
 
 const SHOW_BUILD_BADGE = process.env.NEXT_PUBLIC_SHOW_BUILD_BADGE === "1";
-const PRIMARY_NAV_ROUTES = ["/hoje", "/praticar", "/revisar", "/acompanhar", "/planejar"];
+const PRIMARY_NAV_ROUTES = ["/hoje", "/kros", "/banco", "/cards", "/evolucao", "/planejamento"];
 
 type IdleCallbackHandle = number;
 type WindowWithIdleCallback = Window & {
@@ -61,7 +63,7 @@ function shouldHideNavigationChrome(pathname: string): boolean {
     pathname === ACTIVATE_ROUTE ||
     // Immersive question/simulado runner: hide the full chrome (desktop sidebar
     // included). The session page keeps its own visible "Sair" affordance.
-    pathname.startsWith("/banco-de-questoes/sessao") ||
+    pathname.startsWith("/banco/sessao") ||
     isStudyImportImmersivePath(pathname)
   );
 }
@@ -73,7 +75,7 @@ function fallbackTitle(pathname: string): string {
 
 function shouldShowMobileTopBar(pathname: string, hideChrome: boolean): boolean {
   if (hideChrome) return false;
-  if (pathname.startsWith("/banco-de-questoes/sessao")) return false;
+  if (pathname.startsWith("/banco/sessao")) return false;
   return true;
 }
 
@@ -248,7 +250,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   }, [pathname, router]);
 
   useEffect(() => {
-    if (hideNavigationChrome || pathname.startsWith("/banco-de-questoes/sessao")) return;
+    if (hideNavigationChrome || pathname.startsWith("/banco/sessao")) return;
     const token = getAuthToken();
     return scheduleIdleNavigationWarmup(() => {
       for (const href of PRIMARY_NAV_ROUTES) {
@@ -288,12 +290,16 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <ToastProvider>
-      <NavbarProvider>
-        <StudentExperienceProvider>
-          <AppShellInner>{children}</AppShellInner>
-        </StudentExperienceProvider>
-      </NavbarProvider>
-    </ToastProvider>
+    <MotionConfig reducedMotion="user">
+      <QueryProvider>
+        <ToastProvider>
+          <NavbarProvider>
+            <StudentExperienceProvider>
+              <AppShellInner>{children}</AppShellInner>
+            </StudentExperienceProvider>
+          </NavbarProvider>
+        </ToastProvider>
+      </QueryProvider>
+    </MotionConfig>
   );
 }

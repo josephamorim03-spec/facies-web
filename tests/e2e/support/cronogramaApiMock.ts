@@ -407,10 +407,26 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
         by_day: byDay,
       });
     }
+    if (method === "GET" && path === "/api/question-bank/sessions") {
+      return json(route, []);
+    }
+    if (
+      method === "GET" &&
+      (
+        path === "/api/student/today" ||
+        path === "/api/trainer/prescription/today" ||
+        path === "/api/question-bank/diagnosis/longitudinal"
+      )
+    ) {
+      return route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "not mocked in calendar flow" }),
+      });
+    }
 
     // Cronograma initial loads
     if (method === "GET" && path === "/api/reviews/agenda") {
-      const today = todayISO();
       return json(route, {
         tasks: db.pendingTasks.map((task, index) => ({
           ...task,
@@ -419,11 +435,9 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
           node_retention: index === 0 ? 0.58 : 0.34,
           node_volatility: index === 0 ? 0.18 : 0.42,
           at_risk: index !== 0,
-          due_question_count: task.due_date <= today ? 2 : 0,
+          question_practice_count: index === 0 ? 2 : 1,
         })),
-        due_question_total: 2,
-        struggling_question_total: 1,
-        question_review_total: 3,
+        question_practice_total: 3,
         generated_at: new Date().toISOString(),
       });
     }

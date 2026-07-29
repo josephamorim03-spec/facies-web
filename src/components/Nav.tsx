@@ -16,84 +16,17 @@ import { useSessionNavGuard } from "@/hooks/useSessionNavGuard";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { getAuthToken } from "@/lib/auth";
 import { warmRoute, warmRouteData } from "@/lib/navigationWarmup";
+import {
+  CalendarDays,
+  ChartNoAxesCombined,
+  House,
+  Layers3,
+  LibraryBig,
+  Settings,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
 
-
-function IconCalendar({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  );
-}
-
-function IconNotebook({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <rect x="4" y="3" width="16" height="18" rx="2" />
-      <line x1="8" y1="3" x2="8" y2="21" />
-      <line x1="12" y1="8" x2="16" y2="8" />
-      <line x1="12" y1="12" x2="16" y2="12" />
-      <line x1="12" y1="16" x2="16" y2="16" />
-    </svg>
-  );
-}
-
-function IconCards({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <rect x="4" y="7" width="12" height="12" rx="1.5" />
-      <rect x="8" y="5" width="12" height="12" rx="1.5" />
-    </svg>
-  );
-}
-
-function IconSliders({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="4" y1="12" x2="20" y2="12" />
-      <line x1="4" y1="18" x2="20" y2="18" />
-      <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none" />
-      <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none" />
-      <circle cx="9" cy="18" r="2" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function IconChart({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <line x1="18" y1="20" x2="18" y2="10" />
-      <line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" />
-    </svg>
-  );
-}
-
-function IconToday({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-      <circle cx="12" cy="16" r="3" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function IconHistory({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M3 12a9 9 0 1 0 3-6.7" />
-      <path d="M3 4v5h5" />
-      <path d="M12 7v5l3 2" />
-    </svg>
-  );
-}
 
 function KrosmedIcon({ className }: { className?: string }) {
   return (
@@ -107,22 +40,20 @@ function KrosmedIcon({ className }: { className?: string }) {
   );
 }
 
-type IconComponent = (props: { className?: string }) => React.JSX.Element;
-
-const ICON_MAP: Record<string, IconComponent> = {
-  today: IconToday,
-  practice: IconNotebook,
-  review: IconCards,
-  track: IconChart,
-  plan: IconCalendar,
-  history: IconHistory,
-  settings: IconSliders,
+const ICON_MAP: Record<string, LucideIcon> = {
+  today: House,
+  kros: Sparkles,
+  bank: LibraryBig,
+  cards: Layers3,
+  evolution: ChartNoAxesCombined,
+  planning: CalendarDays,
+  settings: Settings,
 };
 
 const NAV_GROUPS = NAV_GROUPS_CONFIG.map((group) => ({
   items: group.items.map((item) => ({
     ...item,
-    Icon: ICON_MAP[item.icon] ?? IconNotebook,
+    Icon: ICON_MAP[item.icon] ?? LibraryBig,
   })),
 }));
 
@@ -135,7 +66,7 @@ function useNavHideCompletely(pathname: string) {
     pathname.startsWith("/auth") ||
     pathname === ACTIVATE_ROUTE ||
     // Immersive question/simulado runner — the session page has its own exit.
-    pathname.startsWith("/banco-de-questoes/sessao") ||
+    pathname.startsWith("/banco/sessao") ||
     isStudyImportImmersivePath(pathname)
   );
 }
@@ -387,12 +318,18 @@ export default function Nav({ displayName, photoUrl }: { displayName?: string | 
             </div>
             <div className="mt-auto border-t border-edge">
               {(displayName || photoUrl) && (
-                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-edge">
+                <Link
+                  href="/preferencias"
+                  onClick={() => setDrawerOpen(false)}
+                  className="flex items-center gap-2.5 border-b border-edge px-4 py-3 transition-colors hover:bg-surfaceMuted"
+                >
                   <UserAvatar photoUrl={photoUrl} displayName={displayName} />
-                  <p className="text-sm font-medium text-ink truncate min-w-0">
+                  <p className="min-w-0 flex-1 truncate text-sm font-medium text-ink">
                     {displayName?.split(" ")[0] ?? ""}
                   </p>
-                </div>
+                  <Settings className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+                  <span className="sr-only">Preferências</span>
+                </Link>
               )}
               <div className="flex items-center justify-between px-2 py-2">
                 <button
@@ -536,7 +473,11 @@ export function SidebarNav({
         {/* User info + Logout + Theme */}
         <div className="border-t border-edge shrink-0">
           {(displayName || photoUrl) && (
-            <div className={`flex items-center border-b border-edge ${visible ? "gap-2.5 px-4 py-3" : "justify-center py-3"}`}>
+            <Link
+              href="/preferencias"
+              title="Preferências"
+              className={`flex items-center border-b border-edge transition-colors hover:bg-surfaceMuted ${visible ? "gap-2.5 px-4 py-3" : "justify-center py-3"}`}
+            >
               <UserAvatar photoUrl={photoUrl} displayName={displayName} size={visible ? "md" : "sm"} />
               {visible && (
                 <div className="min-w-0 flex-1">
@@ -546,7 +487,9 @@ export function SidebarNav({
                   )}
                 </div>
               )}
-            </div>
+              {visible && <Settings className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />}
+              <span className="sr-only">Preferências</span>
+            </Link>
           )}
           <div className={`flex items-center ${visible ? "justify-between px-3" : "justify-center"} py-2.5`}>
             {visible ? (
@@ -585,4 +528,3 @@ export function SidebarNav({
     </>
   );
 }
-

@@ -9,17 +9,15 @@ import { ReviewSignalChips } from "./ReviewSignalChips";
 interface Props {
   todayTasks: ReviewTask[];
   todayStudies: DirectedStudyListItem[];
-  questionReviewQueue: {
-    due_count: number;
-    struggling_count: number;
-    total: number;
+  questionPractice: {
+    count: number;
   };
 }
 
 export function CronogramaTodayPanel({
   todayTasks,
   todayStudies,
-  questionReviewQueue,
+  questionPractice,
 }: Props) {
   const MAX_VISIBLE = 4;
   const [pinned, setPinned] = useState(false);
@@ -41,18 +39,12 @@ export function CronogramaTodayPanel({
     })),
   ];
 
-  const dueQuestionTotal = Math.max(0, Number(questionReviewQueue.total ?? 0));
-  const hasContent = items.length > 0 || dueQuestionTotal > 0;
+  const practiceCount = Math.max(0, Number(questionPractice.count ?? 0));
+  const hasContent = items.length > 0 || practiceCount > 0;
   const visible = items.slice(0, MAX_VISIBLE);
   const overflow = items.length - MAX_VISIBLE;
   const taskLabel = todayTasks.length === 1 ? "1 tarefa" : `${todayTasks.length} tarefas`;
-  const questionLabel = dueQuestionTotal === 1 ? "1 questão" : `${dueQuestionTotal} questões`;
-  const queueDetail = [
-    questionReviewQueue.due_count > 0 ? `${questionReviewQueue.due_count} no ponto de revisão` : "",
-    questionReviewQueue.struggling_count > 0
-      ? `${questionReviewQueue.struggling_count} tambem em baixo desempenho`
-      : "",
-  ].filter(Boolean).join(" · ");
+  const questionLabel = practiceCount === 1 ? "1 questão" : `${practiceCount} questões`;
 
   return (
     <section
@@ -66,14 +58,14 @@ export function CronogramaTodayPanel({
           <h2 className="font-serif text-sm font-semibold leading-tight">Para revisar hoje</h2>
           <p className="mt-0.5 text-xs text-muted">
             {taskLabel}
-            {dueQuestionTotal > 0 ? ` · ${questionLabel} na fila global do banco` : ""}
+            {practiceCount > 0 ? ` · ${questionLabel} para prática direcionada` : ""}
           </p>
         </div>
         <div className="flex items-start gap-2">
-          {dueQuestionTotal > 0 && (
+          {practiceCount > 0 && (
             <div className="rounded-lg border border-primary bg-paper px-2.5 py-1 text-right">
-              <p className="text-sm font-semibold leading-none text-primary">{dueQuestionTotal}</p>
-              <p className="mt-0.5 text-[9px] leading-none text-muted">fila global</p>
+              <p className="text-sm font-semibold leading-none text-primary">{practiceCount}</p>
+              <p className="mt-0.5 text-[9px] leading-none text-muted">prática</p>
             </div>
           )}
           <button
@@ -132,7 +124,6 @@ export function CronogramaTodayPanel({
                     </div>
                   );
                 })}
-                {queueDetail && <p className="text-xs text-muted">{queueDetail}</p>}
                 {overflow > 0 && (
                   <p className="text-xs text-muted">+{overflow} mais</p>
                 )}

@@ -463,9 +463,6 @@ export function RelatorioBody({
                           {(AREA_LABELS[item.area as Area] ?? item.area)} · {item.theme}
                         </p>
                         <p className="text-xs text-muted">
-                          {item.dominant_signal ?? "Desempenho forte e estável."}
-                        </p>
-                        <p className="text-xs text-muted">
                           → {item.action_hint ?? "Manter revisão espaçada."}
                         </p>
                         <button
@@ -501,9 +498,6 @@ export function RelatorioBody({
                       <li key={rowKey} className="space-y-1 border-b border-edge pb-3 last:border-b-0">
                         <p className="text-sm font-medium">
                           {(AREA_LABELS[item.area as Area] ?? item.area)} · {item.theme}
-                        </p>
-                        <p className="text-xs text-muted">
-                          {item.dominant_signal ?? "Fraqueza recorrente com prioridade de intervenção."}
                         </p>
                         <p className="text-xs text-muted">
                           → {item.action_hint ?? "Reforçar fundamentos e revisar erros recentes."}

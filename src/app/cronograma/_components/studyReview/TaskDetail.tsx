@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AreaDot from "@/components/AreaDot";
 import { Button } from "@/components/ui/Button";
@@ -86,7 +86,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
       theme: topicPrimaryLabel(task) || task.theme,
       expected_questions: String(Math.max(1, Number(task.expected_questions) || 1)),
     });
-    return `/banco-de-questoes?${params.toString()}`;
+    return `/banco?${params.toString()}`;
   })();
 
   async function runAutoReschedule() {
@@ -225,7 +225,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
         </p>
         {editableStudy?.import_session_id && (
           <a
-            href="/banco-de-questoes"
+            href="/banco"
             className="absolute bottom-1.5 right-1.5 inline-flex items-center justify-center text-muted hover:text-ink"
             title="Ver correção do simulado"
           >

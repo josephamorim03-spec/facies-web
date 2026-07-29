@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const E2E_BASE_URL = "http://127.0.0.1:3000";
+const E2E_BASE_URL = process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:3000";
 const topic = {
   knowledge_node_id: "go-node",
   parent_knowledge_node_id: null,
@@ -20,9 +20,9 @@ const topic = {
   board_frequency: { SMK: 12 },
   charge_patterns: {},
   answer_types: {},
-  adaptive_weight: 2,
-  adaptive_weight_score: 0.7,
-  adaptive_weight_factors: {},
+  recommendation_rank: 1,
+  recommendation_reason: "high_yield",
+  ranking_policy_version: "question-ranking-2",
 };
 
 const childTopic = {
@@ -59,14 +59,51 @@ const item = {
   selection_reason: {},
   source: { institution: "USP - SP", board_code: "SMK", year: 2024 },
   selected_option: null,
+  eliminated_options: [],
+  answer_state: "unanswered",
+  answer_committed: false,
   doubtful: false,
+  confidence_self_rating: null,
   answered: false,
   needs_correction: false,
   correct_answer: null,
   is_correct: null,
+  is_annulled: false,
+  reported_problem: false,
+  report_type: null,
+  report_reason: null,
+  reported_at: null,
+  excluded_from_scoring: false,
+  exclusion_reason: null,
+  exclusion_note: null,
+  excluded_at: null,
 };
 
 const sourceOptions = [
+  {
+    option_key: "ACESSO-DIRETO",
+    label: "Residência (Acesso Direto)",
+    option_kind: "exam",
+    question_count: 18,
+    first_year: 2017,
+    last_year: 2026,
+  },
+  {
+    option_key: "REVALIDA",
+    label: "Revalida",
+    option_kind: "exam",
+    question_count: 2,
+    first_year: 2023,
+    last_year: 2024,
+  },
+  {
+    option_key: "RPLUS",
+    label: "Residência R+",
+    option_kind: "exam",
+    question_count: 5,
+    first_year: 2017,
+    last_year: 2021,
+  },
   {
     option_key: "SMK",
     label: "Smoke Board",
@@ -91,11 +128,36 @@ const yearStats = [
 ];
 
 async function mockQuestionBankMetadata(page: Page) {
-  await page.route("**/api/question-bank/sources", async (route) => {
-    await route.fulfill({ contentType: "application/json", body: JSON.stringify(sourceOptions) });
+  await page.route("**/api/question-bank/bootstrap**", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        topics: [topic, childTopic, otherAreaTopic],
+        sources: sourceOptions,
+        states: [],
+        years: yearStats,
+        total_global: 21,
+        read_model: {
+          generation: 1,
+          projected_at: "2026-05-27T15:00:00Z",
+          lag_seconds: 0,
+          status: "ready",
+          projected_count: 21,
+        },
+      }),
+    });
   });
-  await page.route("**/api/question-bank/years", async (route) => {
-    await route.fulfill({ contentType: "application/json", body: JSON.stringify(yearStats) });
+  await page.route("**/api/question-bank/facets**", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        years: yearStats,
+        boards: sourceOptions.filter((source) => source.option_kind === "board"),
+        exams: sourceOptions.filter((source) => source.option_kind === "exam"),
+        institutions: sourceOptions.filter((source) => source.option_kind === "institution"),
+        states: [],
+      }),
+    });
   });
 }
 
@@ -105,6 +167,12 @@ function sessionPayload(answered = false) {
     status: "active",
     mode: "adaptive",
     resolution_mode: "training",
+    scoring_mode: "immediate",
+    study_kind: "topic",
+    full_exam_name: null,
+    full_exam_year: null,
+    full_exam_type: null,
+    review_trail_enabled: true,
     primary_knowledge_node_id: "go-node",
     area: "GO",
     theme: "Obstetricia",
@@ -118,17 +186,31 @@ function sessionPayload(answered = false) {
     answered_count: answered ? 1 : 0,
     unanswered_count: answered ? 0 : 1,
     unanswered_question_numbers: answered ? [] : [1],
+    draft_count: answered ? 1 : 0,
+    draft_question_numbers: answered ? [1] : [],
     doubtful_count: 0,
+    answered_time_ms: 0,
     items: [
       answered
-        ? { ...item, selected_option: "A", answered: true, correct_answer: "A", is_correct: true }
+        ? {
+            ...item,
+            selected_option: "A",
+            answer_state: "draft",
+            answered: true,
+            correct_answer: "A",
+            is_correct: true,
+          }
         : item,
     ],
     created_at: "2026-05-27T15:00:00Z",
     updated_at: "2026-05-27T15:00:00Z",
+    results_revealed_at: null,
     finalized_at: null,
     directed_study_id: null,
     review_task_id: "rt_e2e",
+    reported_problem_count: 0,
+    excluded_from_scoring_count: 0,
+    scorable_question_count: 1,
   };
 }
 
@@ -167,30 +249,6 @@ test("question bank applies filters, calendar review context, and gated correcti
       body: JSON.stringify([{ id: "q1", stem: item.stem, alternatives: item.alternatives, charge_profile: null, difficulty_estimate: 0.42, content_grade: "usable", image_refs: [], table_refs: [], metadata: {}, source: item.source, knowledge_nodes: [] }]),
     });
   });
-  await page.route("**/api/question-bank/next-action", async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({
-        kind: "weak_area",
-        title: "Fortalecer GO",
-        subtitle: "Foco nas lacunas desta area",
-        meta: "~20 min - treino com correcao item a item",
-        cta_label: "Revisar agora",
-        area: "GO",
-        area_label: "Ginecologia e Obstetricia",
-        signals: [{ key: "area_critico", label: "area critica", severity: "critical" }],
-        start_payload: {
-          mode: "adaptive",
-          resolution_mode: "training",
-          area: "GO",
-          answer_status: "needs_review",
-          only_unanswered: false,
-          limit: 7,
-        },
-        generated_at: "2026-05-27T15:00:00Z",
-      }),
-    });
-  });
   await page.route("**/api/question-bank/performance", async (route) => {
     await route.fulfill({
       contentType: "application/json",
@@ -214,20 +272,11 @@ test("question bank applies filters, calendar review context, and gated correcti
   await page.route("**/api/question-bank/sessions/session_qb_e2e/items/1/attempt", async (route) => {
     await route.fulfill({ contentType: "application/json", body: JSON.stringify(sessionPayload(true)) });
   });
-  await page.route("**/api/question-bank/review-queue", async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({ due_count: 0, struggling_count: 0, total: 0 }),
-    });
-  });
   await page.route("**/api/reviews/agenda", async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
         tasks: [],
-        due_question_total: 0,
-        struggling_question_total: 0,
-        question_review_total: 0,
         generated_at: new Date().toISOString(),
       }),
     });
@@ -236,9 +285,7 @@ test("question bank applies filters, calendar review context, and gated correcti
   await page.goto("/banco-de-questoes?review_task_id=rt_e2e&date=2026-05-27&area=GO&theme=Obstetricia&expected_questions=12");
 
   await expect(page.getByRole("heading", { name: "Questões com raciocínio clínico" })).toBeVisible();
-  const recommendedSection = page.getByRole("region", { name: "Sessão recomendada" });
-  await expect(recommendedSection.getByText("Fortalecer GO")).toBeVisible();
-  await expect(recommendedSection.getByText("area critica")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Sessão recomendada" })).toHaveCount(0);
 
   await expect(page.getByTestId("question-bank-top-filters")).toBeVisible();
   await expect(page.locator("main aside")).toBeVisible();
@@ -250,22 +297,23 @@ test("question bank applies filters, calendar review context, and gated correcti
   await quantityInput.fill("99");
   await expect(quantityInput).toHaveValue("12");
 
-  await recommendedSection.getByRole("button", { name: /Revisar agora/ }).click();
+  await page.getByRole("button", { name: /Começar 12 questões.*treino com correção/i }).click();
+  await page.waitForURL("**/banco-de-questoes/sessao/session_qb_e2e**");
 
   const payload = createPayloads[0];
   expect(payload).toBeTruthy();
   if (!payload) throw new Error("Missing session creation payload.");
   expect(payload).toMatchObject({
     area: "GO",
-    limit: 7,
+    search: "Obstetricia",
+    exam_codes: ["ACESSO-DIRETO"],
+    limit: 12,
     resolution_mode: "training",
-    answer_status: "needs_review",
-    only_unanswered: false,
+    answer_status: "unanswered",
+    only_unanswered: true,
+    review_task_id: "rt_e2e",
   });
   expect(String(payload.performed_at)).toContain("2026-05-27");
-
-  // Session opens in new route; wait for navigation
-  await page.waitForURL("**/banco-de-questoes/sessao/session_qb_e2e**");
 
   await page.getByRole("button", { name: /^A\s+Placenta/ }).click();
   await expect(page.getByText("Gabarito A")).toHaveCount(0);
@@ -309,23 +357,6 @@ test("manual search becomes an active session filter and clears selected topics"
     topicRequestUrls.push(route.request().url());
     await route.fulfill({ contentType: "application/json", body: JSON.stringify([topic, childTopic, otherAreaTopic]) });
   });
-  await page.route("**/api/question-bank/next-action", async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({
-        kind: "fresh_practice",
-        title: "Praticar questões novas",
-        subtitle: "Bloco curto",
-        meta: "~20 min",
-        cta_label: "Começar treino",
-        area: null,
-        area_label: null,
-        signals: [],
-        start_payload: { mode: "adaptive", resolution_mode: "training", answer_status: "unanswered", only_unanswered: true, limit: 10 },
-        generated_at: "2026-05-27T15:00:00Z",
-      }),
-    });
-  });
   await page.route("**/api/question-bank/performance", async (route) => {
     await route.fulfill({
       contentType: "application/json",
@@ -336,17 +367,11 @@ test("manual search becomes an active session filter and clears selected topics"
       }),
     });
   });
-  await page.route("**/api/question-bank/review-queue", async (route) => {
-    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ due_count: 0, struggling_count: 0, total: 0 }) });
-  });
   await page.route("**/api/reviews/agenda", async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
         tasks: [],
-        due_question_total: 0,
-        struggling_question_total: 0,
-        question_review_total: 0,
         generated_at: new Date().toISOString(),
       }),
     });
@@ -366,6 +391,9 @@ test("manual search becomes an active session filter and clears selected topics"
   await expect(filterPanel).not.toContainText("2016");
 
   await page.getByText("Ajustar sessão", { exact: true }).click();
+  await expect(page.getByRole("checkbox", { name: /Residência \(Acesso Direto\)/ })).toBeChecked();
+  await expect(page.getByRole("checkbox", { name: /^Revalida/ })).not.toBeChecked();
+  await expect(page.getByRole("checkbox", { name: /Residência R\+/ })).not.toBeChecked();
   await page.getByRole("checkbox", { name: /Smoke Board/ }).check();
   await page.getByRole("checkbox", { name: /USP - SP/ }).check();
   await expect
@@ -414,6 +442,7 @@ test("manual search becomes an active session filter and clears selected topics"
   expect(payload.knowledge_node_ids).toBeUndefined();
   expect(payload.generate_review_trail).toBeUndefined();
   expect(payload.board_codes).toEqual(["SMK"]);
+  expect(payload.exam_codes).toEqual(["ACESSO-DIRETO"]);
   expect(payload.institutions).toEqual(["USP-SP"]);
   expect(payload).toMatchObject({
     answer_status: "unanswered",
@@ -453,23 +482,6 @@ test("builder keeps requested quantity above 50 before availability resolves", a
   await page.route("**/api/question-bank/topics**", async (route) => {
     await route.fulfill({ contentType: "application/json", body: JSON.stringify([topic, childTopic]) });
   });
-  await page.route("**/api/question-bank/next-action", async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({
-        kind: "fresh_practice",
-        title: "Praticar questoes novas",
-        subtitle: "Bloco estendido",
-        meta: "~60 min",
-        cta_label: "Comecar treino",
-        area: null,
-        area_label: null,
-        signals: [],
-        start_payload: { mode: "adaptive", resolution_mode: "training", answer_status: "unanswered", only_unanswered: true, limit: 10 },
-        generated_at: "2026-05-27T15:00:00Z",
-      }),
-    });
-  });
   await page.route("**/api/question-bank/performance", async (route) => {
     await route.fulfill({
       contentType: "application/json",
@@ -480,17 +492,11 @@ test("builder keeps requested quantity above 50 before availability resolves", a
       }),
     });
   });
-  await page.route("**/api/question-bank/review-queue", async (route) => {
-    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ due_count: 0, struggling_count: 0, total: 0 }) });
-  });
   await page.route("**/api/reviews/agenda", async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
         tasks: [],
-        due_question_total: 0,
-        struggling_question_total: 0,
-        question_review_total: 0,
         generated_at: new Date().toISOString(),
       }),
     });
@@ -550,6 +556,7 @@ test("simulation session allows answer changes by click and keyboard", async ({ 
       {
         ...item,
         selected_option: selectedOption,
+        answer_state: selectedOption ? "draft" : "unanswered",
         answered: Boolean(selectedOption),
         correct_answer: null,
         is_correct: null,

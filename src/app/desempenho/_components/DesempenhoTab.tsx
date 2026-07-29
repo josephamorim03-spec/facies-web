@@ -519,11 +519,7 @@ export function DesempenhoTab({
                         <li key={`strong-${item.key}`} className="text-xs">
                           <p className="text-sm font-medium">{item.area} · {item.theme}</p>
                           <p className="text-muted">
-                            {item.dominant_signal ?? "Desempenho forte e estável."}
-                          </p>
-                          <p className="text-muted">
-                            Confiança do sistema {item.system_confidence_pct !== null && item.system_confidence_pct !== undefined ? `${Math.round(item.system_confidence_pct)}%` : "—"}
-                            {" · "}Risco de regressão {item.regression_risk_pct !== null && item.regression_risk_pct !== undefined ? `${Math.round(item.regression_risk_pct)}%` : "—"}
+                            Risco de regressão {item.regression_risk_pct !== null && item.regression_risk_pct !== undefined ? `${Math.round(item.regression_risk_pct)}%` : "—"}
                             {" · "}Impacto {item.impact_score_pct !== null && item.impact_score_pct !== undefined ? `${Math.round(item.impact_score_pct)}%` : "—"}
                           </p>
                           <p className="text-muted">
@@ -548,11 +544,7 @@ export function DesempenhoTab({
                         <li key={`weak-${item.key}`} className="text-xs">
                           <p className="text-sm font-medium">{item.area} · {item.theme}</p>
                           <p className="text-muted">
-                            {item.dominant_signal ?? "Fraqueza recorrente com impacto relevante."}
-                          </p>
-                          <p className="text-muted">
                             Impacto {item.impact_score_pct !== null && item.impact_score_pct !== undefined ? `${Math.round(item.impact_score_pct)}%` : "—"}
-                            {" · "}Confiança do sistema {item.system_confidence_pct !== null && item.system_confidence_pct !== undefined ? `${Math.round(item.system_confidence_pct)}%` : "—"}
                             {" · "}Tendência {item.trend === "up" ? "↑" : item.trend === "down" ? "↓" : "estável"}
                           </p>
                           <p className="text-muted">
@@ -562,7 +554,7 @@ export function DesempenhoTab({
                             {" · "}{item.total_questions} questões
                           </p>
                           <Link
-                            href={`/banco-de-questoes?area=${encodeURIComponent(item.area)}&theme=${encodeURIComponent(item.theme)}&answer_status=unanswered_or_wrong`}
+                            href={`/banco?area=${encodeURIComponent(item.area)}&theme=${encodeURIComponent(item.theme)}&answer_status=unanswered_or_wrong`}
                             className="mt-1 inline-flex items-center gap-1 font-medium text-primary hover:underline"
                           >
                             {item.action_hint ?? "Reforçar este tema no banco"}

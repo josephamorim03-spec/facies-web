@@ -24,7 +24,7 @@ export function TodaySchedulePreview({
 }) {
   if (preview.items.length === 0 && preview.overdue_count === 0) return null;
   return (
-    <section className="rounded-lg border border-edge bg-surface p-4" aria-label="Agenda curta">
+    <section className="border-y border-edge py-4" aria-label="Agenda curta">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="font-serif text-xl font-semibold text-ink">Agenda curta</h2>

@@ -27,26 +27,23 @@ import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentExperience } from "@/lib/StudentExperienceContext";
 
-type QueueFilter = "all" | "questions" | "corrections" | "cards";
+type QueueFilter = "all" | "questions" | "cards";
 
 const FILTERS: Array<{ key: QueueFilter; label: string }> = [
   { key: "all", label: "Tudo" },
   { key: "questions", label: "Questões" },
-  { key: "corrections", label: "Correções" },
   { key: "cards", label: "Cards" },
 ];
 
 const CTA_LABEL: Partial<Record<TrainerActionKind, string>> = {
   resume_session: "Continuar revisão",
-  question_block: "Revisar questões",
-  scheduled_review: "Revisar agora",
-  guided_correction: "Corrigir raciocínio",
+  targeted_practice: "Praticar questões",
+  scheduled_topic_practice: "Praticar tema",
   flashcard_review: "Revisar cards",
 };
 
 function category(item: TrainerReviewQueueItem): Exclude<QueueFilter, "all"> {
   if (item.action.kind === "flashcard_review") return "cards";
-  if (item.action.kind === "guided_correction") return "corrections";
   return "questions";
 }
 
@@ -64,7 +61,6 @@ function compactCount(value: number): string {
 function filterCount(queue: TrainerReviewQueue, filter: QueueFilter): number {
   if (filter === "all") return queue.counts.total;
   if (filter === "questions") return queue.counts.questions;
-  if (filter === "corrections") return queue.counts.corrections;
   return queue.flashcards_overview?.due_count ?? queue.counts.cards;
 }
 
@@ -100,8 +96,8 @@ function ReviewSourceSummary({ queue }: { queue: TrainerReviewQueue }) {
     },
     {
       label: "Questoes",
-      value: load?.questions_due ?? 0,
-      detail: "fila de erro/revisao",
+      value: load?.question_practice ?? 0,
+      detail: "prática direcionada",
     },
     {
       label: "Cards",

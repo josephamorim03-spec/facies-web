@@ -414,8 +414,7 @@ export default function ImportSessionPage() {
                       handleOptionTouchEnd(question.question_number, letter)
                     }
                   >
-                    {!selected && (
-                      <>
+                    <>
                         {/* Mobile: swipe-to-reveal */}
                         <div
                           className="md:hidden absolute inset-y-0 right-0 w-9 flex items-center justify-center"
@@ -450,8 +449,7 @@ export default function ImportSessionPage() {
                             <IconScissors className="h-4 w-4" />
                           </button>
                         </div>
-                      </>
-                    )}
+                    </>
                     <button
                       type="button"
                       data-testid={`study-import-option-${question.question_number}-${letter}`}

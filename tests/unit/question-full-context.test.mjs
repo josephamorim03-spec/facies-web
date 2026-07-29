@@ -10,13 +10,13 @@ function read(relativePath) {
 }
 
 test("post-exam review uses the full question context instead of truncated stems", () => {
-  const source = read("src/app/banco-de-questoes/sessao/[sessionId]/_components/PostExamReview.tsx");
+  const source = read("src/app/banco/sessao/[sessionId]/_components/PostExamReview.tsx");
   assert.match(source, /QuestionFullContext/);
   assert.doesNotMatch(source, /line-clamp-3/);
 });
 
 test("confidence review shows full item context without revealing the answer", () => {
-  const source = read("src/app/banco-de-questoes/sessao/[sessionId]/_components/ConfidenceReviewStep.tsx");
+  const source = read("src/app/banco/sessao/[sessionId]/_components/ConfidenceReviewStep.tsx");
   assert.match(source, /QuestionFullContext/);
   assert.match(source, /showCorrectAnswer=\{false\}/);
   assert.doesNotMatch(source, /line-clamp-2/);

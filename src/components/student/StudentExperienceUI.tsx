@@ -116,7 +116,7 @@ export function ModuleSection({
 export function LearningStatus({ load }: { load: TrainerReviewLoad }) {
   const items = [
     ["Tarefas temáticas", load.topic_tasks_due],
-    ["Questões no ponto", load.questions_due],
+    ["Prática direcionada", load.question_practice],
     ["Cards no ponto", load.cards_due],
   ] as const;
   return (

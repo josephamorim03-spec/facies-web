@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import Link from "next/link";
 import { CalendarEventOut, DirectedStudyListItem, ReviewTask } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
@@ -234,7 +234,7 @@ export function CalendarEntryPopup({
       theme: displayLabel,
       expected_questions: String(task.expected_questions),
     });
-    const bancoUrl = `/banco-de-questoes?${bancoParams.toString()}`;
+    const bancoUrl = `/banco?${bancoParams.toString()}`;
     const sessionTitle = `Revisão #${revision} - ${displayLabel}`;
 
     content = (

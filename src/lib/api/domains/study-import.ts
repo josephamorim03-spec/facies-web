@@ -121,16 +121,12 @@ export type ReviewTask = {
   node_retention: number | null;
   node_volatility: number | null;
   at_risk: boolean;
-  due_question_count: number;
-  struggling_question_count: number;
-  question_review_count: number;
+  question_practice_count: number;
 };
 
 export type ReviewAgenda = {
   tasks: ReviewTask[];
-  due_question_total: number;
-  struggling_question_total: number;
-  question_review_total: number;
+  question_practice_total: number;
   generated_at: string;
 };
 
@@ -214,6 +210,12 @@ export type UserProfile = {
   shift_24h_capacity: number | null;
   display_name: string | null;
   photo_url: string | null;
+  priority_boards: string[];
+  weekly_goal_notifications_enabled: boolean;
+  calendar_change_alerts_enabled: boolean;
+  calendar_recommendations_enabled: boolean;
+  default_feedback_timing: "immediate" | "post_result";
+  has_chosen_feedback_default: boolean;
   has_completed_initial_goal_setup: boolean;
   access_status: "active" | "expired" | "pending_key";
 };
@@ -231,6 +233,12 @@ export async function updateProfile(
     shift_24h_capacity?: number | null;
     display_name?: string;
     reschedule_mode?: string;
+    priority_boards?: string[];
+    weekly_goal_notifications_enabled?: boolean;
+    calendar_change_alerts_enabled?: boolean;
+    calendar_recommendations_enabled?: boolean;
+    default_feedback_timing?: "immediate" | "post_result";
+    has_chosen_feedback_default?: boolean;
   }
 ): Promise<UserProfile> {
   const profile = await api<UserProfile>("/api/profile", {

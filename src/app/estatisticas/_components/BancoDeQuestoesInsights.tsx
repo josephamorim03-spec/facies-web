@@ -91,11 +91,6 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
     Object.values(longitudinal.answer_type_errors ?? {}).some((value) => value > 0) ||
     Object.values(longitudinal.reasoning_type_errors ?? {}).some((value) => value > 0);
 
-  const hasMetacognition =
-    (longitudinal.trap_sensitivity ?? 0) > 0.05 ||
-    (longitudinal.overconfidence_score ?? 0) > 0.05 ||
-    (longitudinal.impulsive_rate ?? 0) > 0.05;
-
   const anchorWeaknesses = (longitudinal.anchor_objective_weaknesses ?? []).filter(
     (w) => w.error_count > 0,
   );
@@ -104,7 +99,6 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
   if (
     !hasPatterns &&
     weakNodes.length === 0 &&
-    !hasMetacognition &&
     anchorWeaknesses.length === 0 &&
     recommendedBlocks.length === 0
   )
@@ -127,7 +121,7 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
               {recommendedBlocks.map((block) => (
                 <Link
                   key={block.node_id}
-                  href={`/banco-de-questoes?knowledge_node_ids=${encodeURIComponent(block.node_id)}&answer_status=unanswered_or_wrong`}
+                  href={`/banco?knowledge_node_ids=${encodeURIComponent(block.node_id)}&answer_status=unanswered_or_wrong`}
                   className="block border border-edge bg-paper p-3 hover:border-primary"
                 >
                   <p className="text-xs font-semibold text-ink">{block.label}</p>
@@ -161,29 +155,6 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
           </div>
         )}
 
-        {hasMetacognition && (
-          <div className="space-y-4 border border-edge p-4">
-            <p className="text-sm font-semibold">Padrão comportamental</p>
-            {[
-              { label: "Sensibilidade a pegadinhas", value: longitudinal.trap_sensitivity ?? 0, color: "text-warning" },
-              { label: "Excesso de confiança", value: longitudinal.overconfidence_score ?? 0, color: "text-danger" },
-              { label: "Taxa impulsiva", value: longitudinal.impulsive_rate ?? 0, color: "text-warning" },
-            ].map(({ label, value, color }) => (
-              <div key={label}>
-                <div className="mb-1 flex justify-between gap-3 text-xs">
-                  <span className="text-muted">{label}</span>
-                  <span className={`font-medium ${value > 0.15 ? color : "text-muted"}`}>{pct(value)}%</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-edge">
-                  <div
-                    className={`h-full rounded-full ${value > 0.15 ? "bg-warning" : "bg-edge"}`}
-                    style={{ width: `${pct(value)}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {weakNodes.length > 0 && (
@@ -199,7 +170,7 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
               return (
                 <Link
                   key={node.knowledge_node_id}
-                  href={`/banco-de-questoes?theme=${encodeURIComponent(node.node_name ?? "")}`}
+                  href={`/banco?theme=${encodeURIComponent(node.node_name ?? "")}`}
                   className="block border border-edge p-3 hover:border-primary"
                 >
                   <p className="truncate text-xs font-semibold text-ink">{label}</p>

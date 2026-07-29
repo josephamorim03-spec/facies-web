@@ -1,5 +1,4 @@
 import { api, authHeader } from "../../shared/http";
-import type { StudentSurfaceHome } from "../student-experience";
 import { appendArrayParams } from "./params";
 import type {
   QuestionBankAiRequestPreview,
@@ -14,13 +13,6 @@ import type {
   QuestionTextHighlightKind,
   QuestionTextHighlightTarget,
 } from "./types";
-
-export async function getQuestionBankPracticeHome(token: string): Promise<StudentSurfaceHome> {
-  return api<StudentSurfaceHome>("/api/question-bank/practice-home", {
-    headers: authHeader(token),
-    cache: "no-store",
-  });
-}
 
 export async function browseQuestionBankQuestions(
   token: string,

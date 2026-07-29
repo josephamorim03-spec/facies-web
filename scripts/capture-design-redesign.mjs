@@ -543,7 +543,24 @@ async function mockApi(page) {
         display_name: "Jose",
         access_status: "active",
         has_completed_initial_goal_setup: true,
+        photo_url: null,
+        priority_boards: ["USP-SP", "ENARE"],
+        weekly_goal_notifications_enabled: true,
+        calendar_change_alerts_enabled: true,
+        calendar_recommendations_enabled: true,
+        default_feedback_timing: "post_result",
+        has_chosen_feedback_default: true,
       });
+    }
+    if (method === "GET" && path === "/api/fsrs/config") {
+      return fulfillJson(route, { parameters: null, desired_retention: 0.9 });
+    }
+    if (method === "GET" && path === "/api/question-bank/boards") {
+      return fulfillJson(route, [
+        { board_code: "USP-SP", board_name: "USP-SP", question_count: 420 },
+        { board_code: "ENARE", board_name: "ENARE", question_count: 810 },
+        { board_code: "SUS-SP", board_name: "SUS-SP", question_count: 305 },
+      ]);
     }
     if (method === "GET" && path === "/api/me") return fulfillJson(route, { user_id: "design-user", display_name: "Jose" });
     if (method === "GET" && path === "/api/student/today") {
@@ -643,7 +660,19 @@ async function mockApi(page) {
       });
     }
     if (method === "GET" && path === "/api/question-bank/performance") {
-      return fulfillJson(route, { areas: [{ area: "GO", label: "GO", questions_seen: 72, accuracy: 0.64, wrong_count: 26, due_count: 8, readiness: 0.58, level: "atencao", next_action: "Treinar pre-eclampsia" }], exam: { simulation_count: 2, accuracy: 0.71, avg_time_ms: 94000, slow_rate: 0.18 }, generated_at: NOW });
+      return fulfillJson(route, {
+        areas: [{ area: "GO", label: "GO", questions_seen: 72, accuracy: 0.64, wrong_count: 26, practice_count: 26, readiness: 0.58, level: "atencao", next_action: "Treinar pre-eclampsia" }],
+        exam: { simulation_count: 2, accuracy: 0.71, avg_time_ms: 94000, slow_rate: 0.18 },
+        unique_questions: 72,
+        total_attempts: 94,
+        first_attempt_correct: 46,
+        first_attempt_accuracy: 0.64,
+        repeat_attempts: 22,
+        repeat_correct: 17,
+        repeat_accuracy: 0.77,
+        corrected_questions: 12,
+        generated_at: NOW,
+      });
     }
     if (method === "GET" && path === "/api/question-bank/bootstrap") return fulfillJson(route, questionBankBootstrap());
     if (method === "GET" && path === "/api/question-bank/facets") {
@@ -669,7 +698,15 @@ async function mockApi(page) {
         },
       ]);
     }
-    if (method === "GET" && path === "/api/question-bank/sessions") return fulfillJson(route, []);
+    if (method === "GET" && path === "/api/question-bank/sessions") {
+      return fulfillJson(route, [
+        {
+          ...sessionPayload(true),
+          theme: "Emergencias cardiovasculares",
+          feedback_timing: "post_result",
+        },
+      ]);
+    }
     if (method === "GET" && path === "/api/question-bank/sessions/design_session") return fulfillJson(route, sessionPayload(false));
     if (method === "PUT" && path === "/api/question-bank/sessions/design_session/items/1/attempt") return fulfillJson(route, sessionPayload(true));
     if (method === "POST" && path === "/api/question-bank/sessions/design_session/items/1/events") return fulfillJson(route, { events: [] });
@@ -758,39 +795,38 @@ async function runViewport(browser, viewport) {
     await page.getByRole("link", { name: /Come/ }).waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
-  await visit("/revisar", "revisar", async () => {
-    await page.getByRole("heading", { name: "Revisar" }).waitFor({ state: "visible", timeout: 30_000 });
+  await visit("/kros", "kros", async () => {
+    await page.getByRole("heading", { name: "Simulador adaptativo" }).waitFor({ state: "visible", timeout: 30_000 });
   });
 
-  await visit("/calendario", "calendario", async () => {
+  await visit("/cards", "cards", async () => {
+    await page.getByRole("heading", { name: "Revisão dinâmica" }).waitFor({ state: "visible", timeout: 30_000 });
+  });
+
+  await visit("/cards/registros", "cards-registros", async () => {
+    await page.getByRole("heading", { name: "Revisão dinâmica" }).waitFor({ state: "visible", timeout: 30_000 });
+  });
+
+  await visit("/planejamento", "planejamento", async () => {
     await page.locator("[aria-label='Calendário mensal']").waitFor({ state: "visible", timeout: 30_000 });
     await page.locator("[data-calendar-viewport='true']").waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
-  await visit("/estatisticas", "acompanhar", async () => {
+  await visit("/evolucao", "evolucao", async () => {
+    await page.getByRole("heading", { name: "Analise sua trajetória" }).waitFor({ state: "visible", timeout: 30_000 });
     await page.locator("svg.recharts-surface").first().waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
-  await visit("/banco-de-questoes", "praticar", async () => {
+  await visit("/banco", "banco", async () => {
     await page.getByText("Montar sessão").waitFor({ state: "visible", timeout: 30_000 });
     await page.getByText("Banca, ano e histórico").click();
     await page.getByText("Estado da prova").waitFor({ state: "visible", timeout: 30_000 });
     await page.getByText("SP").first().waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
-  await visit("/banco-de-questoes/sessao/design_session", "questao-resolver", async () => {
-    await page.getByText("Gestante de 33 semanas").waitFor({ state: "visible", timeout: 30_000 });
-    const gabaritoCount = await page.getByText(/Gabarito A/i).count();
-    if (gabaritoCount !== 0) throw new Error("Gabarito apareceu antes de revelar.");
-  });
-
-  await page.getByRole("button", { name: /^A\s+Internar/ }).click();
-  await page.getByRole("button", { name: "Ver gabarito" }).waitFor({ state: "visible", timeout: 30_000 });
-  if (await page.getByText(/Gabarito A/i).count()) throw new Error("Gabarito apareceu antes do clique de revelar.");
-  await page.getByRole("button", { name: "Ver gabarito" }).click();
-  await page.getByText(/Caminho validado|Erro capturado/i).waitFor({ state: "visible", timeout: 30_000 });
-  await assertNoOverflow(page);
-  report.screenshots.push(await capture(page, `${viewport.name}-questao-correcao`));
+  await visit("/preferencias", "preferencias", async () => {
+    await page.getByRole("heading", { name: "Preferências" }).waitFor({ state: "visible", timeout: 30_000 });
+  }, !viewport.mobile);
 
   await context.close();
   return report;

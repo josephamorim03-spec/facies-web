@@ -20,8 +20,8 @@ import {
   type QuestionBankAdminQuestionListItem,
   type QuestionBankReport,
 } from "@/lib/api/domains/question-bank-admin";
-import { QuestionImageRefs } from "@/app/banco-de-questoes/_components/QuestionImageRefs";
-import { QuestionFullContext } from "@/app/banco-de-questoes/_components/QuestionFullContext";
+import { QuestionImageRefs } from "@/app/banco/_components/QuestionImageRefs";
+import { QuestionFullContext } from "@/app/banco/_components/QuestionFullContext";
 
 const STATUS_OPTIONS = [
   ["published", "Publicadas"],

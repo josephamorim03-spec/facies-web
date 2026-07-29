@@ -214,7 +214,7 @@ function defaultClientCachePolicy(pathname: string): ResolvedClientCachePolicy |
   if (pathname === "/api/schedule/workload" || pathname === "/api/schedule/suggestions") {
     return { ttlMs: 45_000, swrMs: 2 * 60_000, tags: ["schedule", "calendar"] };
   }
-  if (pathname === "/api/schedule/generate" || pathname === "/api/subjects/rank" || pathname === "/api/user/state") {
+  if (pathname === "/api/schedule/generate") {
     return { ttlMs: 45_000, swrMs: 2 * 60_000, tags: ["schedule", "performance"] };
   }
   if (pathname === "/api/question-bank/topics") {
@@ -235,12 +235,6 @@ function defaultClientCachePolicy(pathname: string): ResolvedClientCachePolicy |
   }
   if (pathname === "/api/question-bank/diagnosis/longitudinal") {
     return { ttlMs: 60_000, swrMs: 5 * 60_000, tags: ["question-bank", "performance"] };
-  }
-  if (pathname === "/api/question-bank/review-queue") {
-    return { ttlMs: 30_000, swrMs: 2 * 60_000, tags: ["question-bank", "reviews"] };
-  }
-  if (pathname === "/api/question-bank/next-action") {
-    return { ttlMs: 30_000, swrMs: 2 * 60_000, tags: ["question-bank", "reviews", "performance"] };
   }
   if (pathname === "/api/question-bank/performance") {
     return { ttlMs: 60_000, swrMs: 5 * 60_000, tags: ["question-bank", "performance"] };
@@ -331,7 +325,7 @@ function mutationInvalidationTags(path: string): string[] {
     tags.add("schedule");
     tags.add("reviews");
   }
-  if (pathname.startsWith("/api/schedule") || pathname.startsWith("/api/user/state")) {
+  if (pathname.startsWith("/api/schedule")) {
     tags.add("schedule");
     tags.add("calendar");
     tags.add("reviews");

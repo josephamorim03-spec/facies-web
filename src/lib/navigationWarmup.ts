@@ -7,7 +7,6 @@ import {
   getProfile,
   getQuestionBankLongitudinalDiagnosis,
   getQuestionBankPerformance,
-  getQuestionBankReviewQueue,
   getReviewAgenda,
   getStudyPerformanceSummary,
   getTurboAreaStats,
@@ -46,7 +45,7 @@ function normalizeRoute(href: string): string {
 function isWarmableRoute(pathname: string): boolean {
   if (pathname.startsWith("/admin")) return false;
   if (pathname.startsWith("/auth") || pathname.startsWith("/login")) return false;
-  if (pathname.startsWith("/banco-de-questoes/sessao")) return false;
+  if (pathname.startsWith("/banco/sessao")) return false;
   if (pathname.startsWith("/revisao-turbo/sessao")) return false;
   return true;
 }
@@ -95,20 +94,19 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       getOperationalStreak(token),
       getStudyPerformanceSummary(token),
     );
-  } else if (intent === "practice") {
+  } else if (intent === "kros" || intent === "bank") {
     requests.push(
       browseQuestionBankTopics(token, { limit: 40, include_empty: false }),
       previewQuestionBankAvailability(token),
-      getQuestionBankReviewQueue(token),
       getQuestionBankPerformance(token),
     );
-  } else if (intent === "review") {
+  } else if (intent === "cards") {
     requests.push(
       getOperationalTurboOverview(token, { previewLimit: 4 }),
       getOperationalStreak(token),
       getTurboAreaStats(token),
     );
-  } else if (intent === "track") {
+  } else if (intent === "evolution") {
     requests.push(
       listDirectedStudies(token),
       listReviewTasks(token, { status: "pending" }),
@@ -117,7 +115,7 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       getQuestionBankLongitudinalDiagnosis(token),
       getTurboAreaStats(token),
     );
-  } else if (intent === "plan") {
+  } else if (intent === "planning") {
     requests.push(
       getReviewAgenda(token),
       listReviewTasks(token, { status: "pending" }),

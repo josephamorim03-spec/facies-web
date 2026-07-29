@@ -70,7 +70,7 @@ test.describe("Hoje bulk reschedule flow", () => {
     markTaskOverdue(db.pendingTasks[1], plusDays(today, -1));
 
     await page.goto("/hoje");
-    await expect(page.getByText(/Atrasadas - 2/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Atrasadas.*2/i })).toBeVisible();
     const initialListReviewHits = db.apiHits.listReviewTasks;
 
     await page.getByRole("button", { name: "Reagendar todas" }).click();
@@ -81,6 +81,6 @@ test.describe("Hoje bulk reschedule flow", () => {
     await expect.poll(() => db.apiHits.listReviewTasks).toBeGreaterThanOrEqual(initialListReviewHits + 2);
     await expect.poll(() => db.pendingTasks.filter((task) => task.is_overdue && task.due_date < currentTodayISO()).length).toBe(0);
     await expect(page.getByRole("dialog", { name: "Reagendar atrasadas" })).toHaveCount(0);
-    await expect(page.getByText(/Atrasadas -/i)).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /Atrasadas/i })).toHaveCount(0);
   });
 });

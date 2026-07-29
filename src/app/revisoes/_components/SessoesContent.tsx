@@ -88,7 +88,7 @@ export function SessoesContent({ initialTab = "inacabadas" }: { initialTab?: Ses
         answer_status: "unanswered_or_wrong",
         limit: 20,
       });
-      router.push(`/banco-de-questoes/sessao/${created.session_id}`);
+      router.push(`/banco/sessao/${created.session_id}`);
     } catch {
       setBusy(false);
     }
@@ -115,7 +115,7 @@ export function SessoesContent({ initialTab = "inacabadas" }: { initialTab?: Ses
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/banco-de-questoes"
+              href="/banco"
               className="inline-flex min-h-10 items-center justify-center rounded-lg border border-primary px-4 py-3 text-sm font-semibold text-primary hover:bg-surfaceMuted"
             >
               Nova sessão

@@ -116,9 +116,9 @@ export type QuestionBankTopic = {
   board_frequency: Record<string, number>;
   charge_patterns: Record<string, number>;
   answer_types: Record<string, number>;
-  adaptive_weight: number;
-  adaptive_weight_score: number;
-  adaptive_weight_factors: Record<string, number>;
+  recommendation_rank: number;
+  recommendation_reason: "knowledge_gap" | "high_yield" | "under_covered" | "scheduled";
+  ranking_policy_version: string;
 };
 
 export type QuestionBankBootstrap = {
@@ -226,6 +226,9 @@ export type QuestionBankQuestionAttempt = {
   attempt_id: string;
   session_id: string;
   selected_option: QuestionBankOption | null;
+  eliminated_options: QuestionBankOption[];
+  answer_state: "unanswered" | "draft" | "committed";
+  answer_committed: boolean;
   is_correct: boolean;
   time_ms: number | null;
   doubtful: boolean;
@@ -252,53 +255,13 @@ export type QuestionBankQuestionHistory = {
   attempts: QuestionBankQuestionAttempt[];
 };
 
-export type QuestionBankReviewQueue = {
-  due_count: number;
-  struggling_count: number;
-  total: number;
-};
-
-export type QuestionBankNextActionKind = "review_queue" | "weak_area" | "fresh_practice";
-export type QuestionBankNextActionSignalSeverity = "info" | "success" | "warning" | "critical";
-export type QuestionBankNextActionSignal = {
-  key: string;
-  label: string;
-  severity: QuestionBankNextActionSignalSeverity;
-};
-
-export type QuestionBankNextActionStartPayload = {
-  mode: "adaptive";
-  resolution_mode: "training";
-  area?: string | null;
-  answer_status: QuestionBankAnswerStatus;
-  only_unanswered: boolean;
-  limit: number;
-  knowledge_node_ids?: string[] | null;
-  cognitive_mode?: string | null;
-};
-
-export type QuestionBankNextAction = {
-  kind: QuestionBankNextActionKind;
-  title: string;
-  subtitle: string;
-  meta: string;
-  cta_label: string;
-  /** Pedagogical rationale in the tutor voice. Additive field. */
-  rationale: string | null;
-  area: string | null;
-  area_label: string | null;
-  signals: QuestionBankNextActionSignal[];
-  start_payload: QuestionBankNextActionStartPayload;
-  generated_at: string;
-};
-
 export type QuestionBankAreaReadiness = {
   area: string;
   label: string;
   questions_seen: number;
   accuracy: number | null;
   wrong_count: number;
-  due_count: number;
+  practice_count: number;
   readiness: number;
   level: "consolidando" | "atencao" | "critico";
   next_action: string;
@@ -315,6 +278,14 @@ export type QuestionBankPerformance = {
   areas: QuestionBankAreaReadiness[];
   exam: QuestionBankExamState;
   generated_at: string;
+  unique_questions: number;
+  total_attempts: number;
+  first_attempt_correct: number;
+  first_attempt_accuracy: number | null;
+  repeat_attempts: number;
+  repeat_correct: number;
+  repeat_accuracy: number | null;
+  corrected_questions: number;
 };
 
 // ── Exam debrief (Fase 3) ────────────────────────────────────────────────────
@@ -450,6 +421,9 @@ export type QuestionBankSessionItem = {
   selection_reason: Record<string, unknown>;
   source: Record<string, unknown>;
   selected_option: QuestionBankOption | null;
+  eliminated_options: QuestionBankOption[];
+  answer_state: "unanswered" | "draft" | "committed";
+  answer_committed: boolean;
   doubtful: boolean;
   bookmarked?: boolean;
   confidence_self_rating: number | null;
@@ -491,6 +465,8 @@ export type QuestionBankSession = {
   status: QuestionBankSessionStatus;
   mode: QuestionBankMode;
   resolution_mode: QuestionBankResolutionMode;
+  session_kind: QuestionBankSessionKind;
+  feedback_timing: QuestionBankFeedbackTiming;
   scoring_mode: QuestionBankScoringMode;
   study_kind: StudyKind;
   full_exam_name: string | null;
@@ -510,6 +486,8 @@ export type QuestionBankSession = {
   answered_count: number;
   unanswered_count: number;
   unanswered_question_numbers: number[];
+  draft_count: number;
+  draft_question_numbers: number[];
   doubtful_count: number;
   answered_time_ms: number;
   items: QuestionBankSessionItem[];
@@ -643,6 +621,7 @@ export type QuestionBankStudentEventType =
   | "question_view_ended"
   | "answer_selected"
   | "answer_changed"
+  | "answer_cleared"
   | "option_eliminated"
   | "confidence_marked"
   | "doubt_marked"
@@ -690,42 +669,11 @@ export type QuestionBankGuidedReview = {
   existing_responses: QuestionBankGuidedReviewResponse[];
 };
 
-export type QuestionBankLearnerCompetency = {
-  knowledge_node_id: string;
-  node_name: string | null;
-  node_type: string | null;
-  exposure_count: number;
-  mastery_score: number;
-  retention_score: number;
-  confidence: number;
-  uncertainty: number;
-  needs_review: boolean;
-  overconfidence_score: number;
-  trap_sensitivity: number;
-  next_action: string | null;
-};
-
-export type QuestionBankLearnerModel = {
-  user_id: string;
-  generated_at: string;
-  competencies: QuestionBankLearnerCompetency[];
-  metacognition: Record<string, unknown>;
-  adaptive_summary: Record<string, unknown>;
-};
-
-export type QuestionBankLearningInsight = {
-  insight_id: string;
-  insight_type: string;
-  title: string;
-  body: string;
-  severity: string;
-  payload: Record<string, unknown>;
-  generated_at: string;
-};
-
 export type QuestionBankSessionCreatePayload = {
   mode?: QuestionBankMode;
   resolution_mode?: QuestionBankResolutionMode;
+  session_kind?: QuestionBankSessionKind;
+  feedback_timing?: QuestionBankFeedbackTiming;
   study_kind?: StudyKind;
   full_exam_name?: string | null;
   full_exam_year?: number | null;
@@ -746,8 +694,24 @@ export type QuestionBankSessionCreatePayload = {
   include_no_year?: boolean;
   limit?: number;
   only_unanswered?: boolean;
+  correction_only?: boolean;
   answer_status?: QuestionBankAnswerStatus;
   correction_status?: QuestionBankCorrectionStatus;
   performed_at?: string;
   review_task_id?: string;
+};
+
+export type QuestionBankSessionKind =
+  | "kros"
+  | "bank_topic"
+  | "bank_combined"
+  | "institutional_exam";
+
+export type QuestionBankFeedbackTiming = "immediate" | "post_result";
+
+export type QuestionBankSessionDeleteResult = {
+  session_id: string;
+  deleted: boolean;
+  adaptive_evidence_retained: boolean;
+  retained_answer_count: number;
 };

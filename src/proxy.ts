@@ -23,7 +23,7 @@ export function proxy(request: NextRequest) {
 
   if (pathname.startsWith("/agenda-operacional/importar") || pathname.startsWith("/cronograma/importar")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/banco-de-questoes";
+    url.pathname = "/banco";
     url.search = "";
     return NextResponse.redirect(url);
   }

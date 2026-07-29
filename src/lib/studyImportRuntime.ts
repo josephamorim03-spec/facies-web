@@ -13,7 +13,7 @@ function normalizeSessionId(raw: string | null | undefined): string | null {
 }
 
 export function buildStudyImportRuntimePath(_sessionId: string): string {
-  return "/banco-de-questoes";
+  return "/banco";
 }
 
 export function isStudyImportRuntimePath(pathname: string | null | undefined): boolean {

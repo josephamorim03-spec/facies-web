@@ -1,11 +1,9 @@
 "use client";
 
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  AdaptiveScheduleGenerate,
   DirectedStudyListItem,
-  getAdaptiveSchedule,
   getProfile,
   getQuestionBankLongitudinalDiagnosis,
   getStudyPerformanceSummary,
@@ -22,14 +20,8 @@ import { Area, PERIOD_SESSION_KEY, Period, ThemeListSort } from "../../desempenh
 
 type BackgroundLoadingState = {
   turbo: boolean;
-  adaptive: boolean;
   longitudinal: boolean;
 };
-
-function todayLocalISO(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-}
 
 export function useEstatisticasPageState() {
   const authTokenRef = useRef("");
@@ -40,7 +32,6 @@ export function useEstatisticasPageState() {
   const [studies, setStudies] = useState<DirectedStudyListItem[]>([]);
   const [performanceSummary, setPerformanceSummary] = useState<StudyPerformanceSummary | null>(null);
   const [turboAreaStats, setTurboAreaStats] = useState<OperationalTurboAreaStats | null>(null);
-  const [adaptiveTodayPlan, setAdaptiveTodayPlan] = useState<AdaptiveScheduleGenerate | null>(null);
   const [longitudinal, setLongitudinal] = useState<QuestionBankLongitudinalDiagnosis | null>(null);
   const [weeklyGoal, setWeeklyGoal] = useState(200);
   const [displayName, setDisplayName] = useState<string | null>(null);
@@ -52,7 +43,6 @@ export function useEstatisticasPageState() {
   const [themeHelpArea, setThemeHelpArea] = useState<Area | null>(null);
   const [backgroundLoading, setBackgroundLoading] = useState<BackgroundLoadingState>({
     turbo: false,
-    adaptive: false,
     longitudinal: false,
   });
 
@@ -103,7 +93,7 @@ export function useEstatisticasPageState() {
     const authToken = authTokenRef.current;
     setLoading(true);
     setError("");
-    setBackgroundLoading({ turbo: true, adaptive: true, longitudinal: true });
+    setBackgroundLoading({ turbo: true, longitudinal: true });
 
     Promise.all([
       getProfile(authToken),
@@ -143,20 +133,6 @@ export function useEstatisticasPageState() {
         setBackgroundLoading((prev) => ({ ...prev, turbo: false }));
       });
 
-    getAdaptiveSchedule(authToken, todayLocalISO())
-      .then((plan) => {
-        if (cancelled) return;
-        setAdaptiveTodayPlan(plan);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setAdaptiveTodayPlan(null);
-      })
-      .finally(() => {
-        if (cancelled) return;
-        setBackgroundLoading((prev) => ({ ...prev, adaptive: false }));
-      });
-
     getQuestionBankLongitudinalDiagnosis(authToken)
       .then((diagnosis) => {
         if (cancelled) return;
@@ -176,11 +152,6 @@ export function useEstatisticasPageState() {
     };
   }, [hydrated]);
 
-  const adaptiveWeek = useMemo(
-    () => (adaptiveTodayPlan ? [adaptiveTodayPlan] : []),
-    [adaptiveTodayPlan],
-  );
-
   return {
     pending,
     done,
@@ -195,11 +166,9 @@ export function useEstatisticasPageState() {
     themeSort,
     themeHelpArea,
     weeklyGoal,
-    adaptiveWeek,
     displayName,
     backgroundLoading,
     isTurboLoading: backgroundLoading.turbo,
-    isAdaptiveLoading: backgroundLoading.adaptive,
     isLongitudinalLoading: backgroundLoading.longitudinal,
     setThemeSort,
     setThemeHelpArea,

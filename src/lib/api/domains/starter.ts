@@ -1,19 +1,5 @@
 import { api, authHeader } from "../shared/http";
 
-export type PlanDraft = {
-  total_minutes: number;
-  due_review_ids: string[];
-  new_item_ids: string[];
-  notes: string[];
-};
-
-export type ChangeSet = {
-  changeset_id: string;
-  expires_at: string;
-  status: "DRAFT" | "APPLIED" | "EXPIRED" | "FAILED" | "NO_EFFECT" | "PENDING" | string;
-  plan: PlanDraft;
-};
-
 export type ItemKind = "QUESTION" | "TOPIC" | "CARD" | "BLOCK";
 
 export type StudyItem = {
@@ -69,25 +55,6 @@ export async function submitReview(token: string, payload: { item_id: string; ra
     method: "POST",
     headers: authHeader(token),
     body: JSON.stringify(payload),
-  });
-}
-
-export async function planDaily(token: string, payload: { day?: string; ttl_hours?: number }): Promise<ChangeSet> {
-  return api<ChangeSet>("/api/plan/daily", {
-    method: "POST",
-    headers: authHeader(token),
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function getChangeSet(token: string, id: string): Promise<ChangeSet> {
-  return api<ChangeSet>(`/api/changesets/${id}`, { headers: authHeader(token) });
-}
-
-export async function acceptAll(token: string, id: string): Promise<ChangeSet> {
-  return api<ChangeSet>(`/api/changesets/${id}/accept-all`, {
-    method: "POST",
-    headers: authHeader(token),
   });
 }
 

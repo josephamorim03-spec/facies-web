@@ -5,8 +5,7 @@ import {
   type TrainerAction,
 } from "@/lib/api";
 
-// Structural subset shared by TrainerStartPayload and QuestionBankNextActionStartPayload
-// so a single mapping serves both the trainer CTA and the legacy banco shortcut.
+// Structural subset used by the canonical Trainer action payload.
 type SessionStartFields = {
   mode?: string | null;
   resolution_mode?: string | null;
@@ -15,18 +14,13 @@ type SessionStartFields = {
   only_unanswered?: boolean | null;
   limit?: number | null;
   review_task_id?: string | null;
-  // Fase 4: prescrição no nível da microcompetência.
   knowledge_node_ids?: string[] | null;
-  cognitive_mode?: string | null;
 };
 
 /**
  * Single source of truth mapping a trainer `start_payload` to a question-bank
- * session-create payload. Shared by the trainer CTA and `/banco-de-questoes`'s
- * `startRecommendedSession` so the two never diverge.
- *
- * IMPORTANT: `review_task_id` must be forwarded for `scheduled_review` — without
- * it, `finalize_session` never completes the ReviewTask and the FSRS loop breaks.
+ * session-create payload. `review_task_id` keeps scheduled topic practice
+ * constrained to the task selected by the cronograma.
  */
 export function buildSessionCreateFromTrainerPayload(
   startPayload: SessionStartFields | null | undefined,
@@ -55,7 +49,7 @@ export function buildSessionCreateFromTrainerPayload(
 /**
  * Create a question-bank session from a trainer action, record `started` with
  * the real `session_id` (best-effort — never blocks the student), and return the
- * session id. Used for `question_block` and `scheduled_review`.
+ * session id. Used for targeted and scheduled topic practice.
  */
 export async function startTrainerQuestionSession(params: {
   token: string;

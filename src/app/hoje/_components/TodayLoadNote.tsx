@@ -6,8 +6,8 @@ export function TodayLoadNote({ load }: { load: StudentToday["today_load"] }) {
   return (
     <aside
       aria-label="Carga do dia"
-      className={`rounded-lg border px-4 py-3 text-sm ${
-        load.overload_alert ? "border-warning/50 bg-warning/5" : "border-edge bg-surface"
+      className={`border-y px-1 py-3 text-sm ${
+        load.overload_alert ? "border-warning/50 text-warning" : "border-edge"
       }`}
     >
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">

@@ -11,15 +11,17 @@ import { REVIEW_ROUTES } from "@/lib/reviewRoutes";
 import { startTrainerQuestionSession, withTrainerHandoff } from "@/lib/trainer/session";
 
 // Kinds whose "start" means creating a question-bank session right here.
-const SESSION_KINDS = new Set(["question_block", "scheduled_review"]);
+const SESSION_KINDS = new Set([
+  "targeted_practice",
+  "scheduled_topic_practice",
+]);
 
 const FALLBACK_HREF: Record<string, string> = {
   flashcard_review: REVIEW_ROUTES.adaptiveCards,
   manual_study: REVIEW_ROUTES.notebook,
   // Iniciar um simulado vive em Questões (intenção "Simular prova"); /provas é
   // só o histórico filtrado (medição), não a criação.
-  simulation: "/banco-de-questoes",
-  guided_correction: "/banco-de-questoes",
+  simulation: "/banco",
 };
 
 /**
@@ -63,7 +65,7 @@ export function TrainerActionCTA({
           source_page: sourcePage,
         });
         if (result.session_id) {
-          router.push(`/banco-de-questoes/sessao/${result.session_id}`);
+          router.push(`/banco/sessao/${result.session_id}`);
           return;
         }
         const target = result.href ?? action.href ?? FALLBACK_HREF[action.kind] ?? "/hoje";
@@ -96,7 +98,7 @@ export function TrainerActionCTA({
           action,
           sourcePage,
         });
-        router.push(`/banco-de-questoes/sessao/${sessionId}`);
+        router.push(`/banco/sessao/${sessionId}`);
       } catch (err) {
         const message = err instanceof Error ? err.message : "Não foi possível iniciar a sessão.";
         showToast(message, "error");

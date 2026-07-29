@@ -3,9 +3,8 @@ import type { OperationalTurboOverview } from "./operational";
 
 export type TrainerActionKind =
   | "resume_session"
-  | "question_block"
-  | "scheduled_review"
-  | "guided_correction"
+  | "targeted_practice"
+  | "scheduled_topic_practice"
   | "flashcard_review"
   | "simulation"
   | "manual_study";
@@ -47,7 +46,9 @@ export type TrainerStartPayload = {
   limit?: number | null;
   review_task_id?: string | null;
   knowledge_node_ids?: string[] | null;
-  cognitive_mode?: string | null;
+  selection_intent?: string | null;
+  selection_policy?: string | null;
+  reason_code?: string | null;
 };
 
 export type TrainerAction = {
@@ -86,7 +87,7 @@ export type TrainerDailyLoad = {
 
 export type TrainerReviewLoad = {
   topic_tasks_due: number;
-  questions_due: number;
+  question_practice: number;
   cards_due: number;
   overdue_topic_tasks: number;
   overdue_cards: number;
@@ -158,7 +159,7 @@ export type TrainerReviewQueue = {
   policy_version: string;
   primary_item: TrainerReviewQueueItem | null;
   items: TrainerReviewQueueItem[];
-  counts: { total: number; questions: number; corrections: number; cards: number };
+  counts: { total: number; questions: number; cards: number };
   daily_load: TrainerDailyLoad;
   flashcards_overview?: OperationalTurboOverview | null;
   previous_outcome: TrainerOutcome | null;

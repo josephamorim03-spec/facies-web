@@ -133,32 +133,6 @@ export async function rejectScheduleSuggestion(
 
 // ── Adaptive Scheduling ──────────────────────────────────────────
 
-export type AdaptiveUserState = {
-  user_id: string;
-  is_on_call: boolean;
-  post_call: boolean;
-  energy_level: number;
-  sleep_hours: number;
-  updated_at: string;
-};
-
-export type AdaptiveUserStateIn = {
-  is_on_call: boolean;
-  post_call: boolean;
-  energy_level: number;
-  sleep_hours: number;
-};
-
-export type AdaptiveSubjectRank = {
-  area: string;
-  theme: string;
-  incidence_weight: number;
-  error_rate: number;
-  cognitive_factor: number;
-  context_multiplier: number;
-  score: number;
-};
-
 export type AdaptiveScheduleBlock = {
   area: string;
   theme: string;
@@ -178,46 +152,6 @@ export type AdaptiveScheduleGenerate = {
   blocks: AdaptiveScheduleBlock[];
 };
 
-export type AdaptiveRebalanceItem = {
-  task_id: string;
-  old_due_date: string;
-  new_due_date: string;
-  locked: boolean;
-};
-
-export type AdaptiveRebalanceOut = {
-  horizon_days: number;
-  redistributed: number;
-  recovery_mode: boolean;
-  rebalance_required: boolean;
-  reason: string | null;
-  items: AdaptiveRebalanceItem[];
-};
-
-export async function getUserState(token: string): Promise<AdaptiveUserState> {
-  return api<AdaptiveUserState>("/api/user/state", { headers: authHeader(token) });
-}
-
-export async function setUserState(
-  token: string,
-  payload: AdaptiveUserStateIn
-): Promise<AdaptiveUserState> {
-  return api<AdaptiveUserState>("/api/user/state", {
-    method: "POST",
-    headers: authHeader(token),
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function getSubjectsRank(
-  token: string,
-  limit: number = 10
-): Promise<AdaptiveSubjectRank[]> {
-  return api<AdaptiveSubjectRank[]>(`/api/subjects/rank?limit=${limit}`, {
-    headers: authHeader(token),
-  });
-}
-
 export async function getAdaptiveSchedule(
   token: string,
   day?: string
@@ -228,13 +162,3 @@ export async function getAdaptiveSchedule(
   });
 }
 
-export async function rebalanceSchedule(
-  token: string,
-  payload: { horizon_days: number }
-): Promise<AdaptiveRebalanceOut> {
-  return api<AdaptiveRebalanceOut>("/api/schedule/rebalance", {
-    method: "POST",
-    headers: authHeader(token),
-    body: JSON.stringify(payload),
-  });
-}

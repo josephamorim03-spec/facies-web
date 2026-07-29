@@ -27,5 +27,5 @@ export function taskHref(task: ReviewTask): string {
     theme: task.theme,
     expected_questions: String(Math.max(1, Number(task.expected_questions ?? 10))),
   });
-  return `/banco-de-questoes?${params.toString()}`;
+  return `/banco?${params.toString()}`;
 }

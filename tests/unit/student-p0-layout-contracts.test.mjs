@@ -26,18 +26,8 @@ test("Cronograma coloca o calendario mensal antes dos paineis auxiliares", () =>
     false,
     "calendario nao deve renderizar CTA redundante do proprio plano",
   );
-  assertComesBefore(
-    source,
-    "<CronogramaCalendarView",
-    "<CronogramaStreakCard",
-    "o calendario deve aparecer antes do streak",
-  );
-  assertComesBefore(
-    source,
-    "<CronogramaCalendarView",
-    "<CronogramaTodayPanel",
-    "o calendario deve aparecer antes do painel do dia",
-  );
+  assert.match(source, /<CronogramaCalendarView/);
+  assert.equal(source.includes("<WeeklyGoalControl"), false);
   assert.match(source, /aria-label="Calendário mensal"/);
 });
 

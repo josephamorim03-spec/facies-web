@@ -5,7 +5,7 @@ import {
   type QuestionBankReviewResolutionAction,
   type QuestionBankReviewResolutionOptions,
 } from "@/lib/api/domains/question-bank-admin";
-import { QuestionFullContext } from "@/app/banco-de-questoes/_components/QuestionFullContext";
+import { QuestionFullContext } from "@/app/banco/_components/QuestionFullContext";
 
 const ANSWER_OPTIONS = ["A", "B", "C", "D", "E"] as const;
 const LANE_LABELS: Record<string, string> = {

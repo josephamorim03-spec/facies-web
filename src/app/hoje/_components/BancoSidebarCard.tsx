@@ -21,7 +21,7 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
         <p className="mt-2 text-xs leading-relaxed text-muted">
           Responda questões no banco para ver seu progresso aqui.
         </p>
-        <Link href="/banco-de-questoes" className="mt-3 block text-xs font-semibold text-primary hover:underline">
+        <Link href="/banco" className="mt-3 block text-xs font-semibold text-primary hover:underline">
           Acessar banco
         </Link>
       </section>
@@ -66,7 +66,7 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
             return (
               <Link
                 key={node.knowledge_node_id}
-                href={`/banco-de-questoes?theme=${encodeURIComponent(theme)}`}
+                href={`/banco?theme=${encodeURIComponent(theme)}`}
                 className="group block"
               >
                 <div className="mb-0.5 flex items-center justify-between gap-2 text-xs">
@@ -88,8 +88,8 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
 
       <Link
         href={weakNodes.length > 0
-          ? `/banco-de-questoes?theme=${encodeURIComponent(weakNodes[0].node_name ?? weakNodes[0].knowledge_node_id)}`
-          : "/banco-de-questoes"
+          ? `/banco?theme=${encodeURIComponent(weakNodes[0].node_name ?? weakNodes[0].knowledge_node_id)}`
+          : "/banco"
         }
         className="block rounded-lg border border-edge px-3 py-2 text-center text-xs font-semibold transition-colors hover:border-primary hover:text-primary"
       >

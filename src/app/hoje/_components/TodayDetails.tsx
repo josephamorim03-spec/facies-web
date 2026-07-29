@@ -18,14 +18,14 @@ export function TodayDetails({
   children?: ReactNode;
 }) {
   return (
-    <details className="group rounded-lg border border-edge bg-surface">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-ink sm:px-5">
+    <details className="group border-y border-edge">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3 text-sm font-semibold text-ink">
         <span>Detalhes e metricas</span>
         <span className="text-muted transition group-open:rotate-90" aria-hidden="true">
           &gt;
         </span>
       </summary>
-      <div className="space-y-5 border-t border-edge p-4 sm:p-5">
+      <div className="space-y-5 border-t border-edge py-4 sm:py-5">
         {today.status !== "complete" ? (
           <p className="rounded-lg border border-edge bg-paper px-3 py-2 text-xs leading-5 text-muted">
             Alguns dados foram carregados parcialmente: {today.missing_sources.join(", ") || "fonte indisponivel"}.
