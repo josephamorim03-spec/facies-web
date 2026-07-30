@@ -16,19 +16,19 @@ import { getAuthToken } from "@/lib/auth";
 
 const FALLBACK_LINKS = [
   {
-    label: "Relatorio",
+    label: "Relatório",
     href: "/dados-e-relatorios/relatorio",
     reason: "Leitura narrativa do progresso e dos limites dos dados.",
   },
   {
-    label: "Graficos",
+    label: "Gráficos",
     href: "/dados-e-relatorios/graficos",
-    reason: "Series de acerto, volume, areas e revisoes.",
+    reason: "Séries de acerto, volume, áreas e revisões.",
   },
   {
-    label: "Historico",
+    label: "Histórico",
     href: "/revisoes",
-    reason: "Sessoes e provas registradas para auditoria.",
+    reason: "Sessões e provas registradas para auditoria.",
   },
 ];
 
@@ -58,7 +58,7 @@ export default function DadosERelatoriosPage() {
       <StudentPageHeader
         eyebrow="Dados"
         title="Investigue sem se perder"
-        description="Relatorios e graficos ficam aqui para consulta. A proxima acao continua em Acompanhar."
+        description="Relatórios e gráficos ficam aqui para consulta. A próxima ação continua em Acompanhar."
         actions={
           trackHome ? (
             <DataFreshness
@@ -100,10 +100,10 @@ export default function DadosERelatoriosPage() {
               O que os dados dizem agora
             </p>
             <h2 className="mt-2 font-serif text-2xl font-semibold text-ink">
-              Ainda nao consegui montar o retrato
+              Ainda não consegui montar o retrato
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted">
-              Os caminhos de investigacao continuam disponiveis, mas a leitura principal depende do agregador.
+              Os caminhos de investigação continuam disponíveis, mas a leitura principal depende do agregador.
             </p>
           </div>
           <nav className="grid gap-2 sm:grid-cols-3" aria-label="Aprofundamentos">

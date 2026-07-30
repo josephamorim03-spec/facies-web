@@ -9,11 +9,10 @@ export default function KrosLoading() {
   return (
     <div className="space-y-5 md:space-y-6" aria-label="Carregando o Kros" aria-busy="true">
       <header>
-        <div className="mb-4 flex items-center gap-3">
-          <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="h-2.5 w-12 rounded-control" />
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-9 w-72 max-w-full rounded-control" />
+          <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
         </div>
-        <Skeleton className="h-9 w-72 max-w-full rounded-control" />
         <Skeleton className="mt-3.5 h-3.5 w-full max-w-2xl rounded-control" />
         <Skeleton className="mt-2 h-3.5 w-3/5 max-w-md rounded-control" />
       </header>

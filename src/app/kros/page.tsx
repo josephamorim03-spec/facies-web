@@ -92,16 +92,22 @@ export default function KrosPage() {
   return (
     <div className={`space-y-5 md:space-y-6 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
       <header>
-        <div className="mb-4 flex items-center gap-3 text-primary">
-          <KrosGlyph className="h-8 w-8" motion={busy ? "busy" : "ambient"} />
-          <span className="paper-eyebrow">Kros</span>
+        {/* Sem eyebrow "Kros": o item de menu e o titulo da barra ja nomeiam a
+            tela: repetir aqui era a terceira vez na mesma dobra. O glifo fica
+            ao lado do titulo, que e' onde ele ainda diz alguma coisa (o estado
+            `busy` durante a montagem da prova). */}
+        <div className="flex items-center gap-3">
+          <h1
+            id="kros-title"
+            className="font-serif text-3xl font-semibold leading-tight text-ink sm:text-4xl"
+          >
+            Simulador adaptativo
+          </h1>
+          <KrosGlyph
+            className="h-8 w-8 shrink-0 text-primary"
+            motion={busy ? "busy" : "ambient"}
+          />
         </div>
-        <h1
-          id="kros-title"
-          className="font-serif text-3xl font-semibold leading-tight text-ink sm:text-4xl"
-        >
-          Simulador adaptativo
-        </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
           Uma prova inédita montada pelas suas necessidades, pelas instituições
           prioritárias e pelo que ainda falta cobrir.

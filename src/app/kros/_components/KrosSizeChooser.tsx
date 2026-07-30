@@ -44,16 +44,20 @@ export function KrosSizeChooser({ value, onChange, disabled = false }: KrosSizeC
               active ? "text-primaryInk" : "text-muted hover:bg-surfaceMuted hover:text-ink"
             }`}
           >
+            {/* A pilha e' por ordem de pintura, nao por `-z-10`: um z negativo
+                jogava a pilula para tras do `bg-paper` do container, entao ela
+                sumia e sobrava texto `primaryInk` sobre papel -- ilegivel nos
+                dois temas. Pilula primeiro, rotulos em `relative` por cima. */}
             {active && (
               <motion.span
                 layoutId={reduceMotion ? undefined : "kros-size-pill"}
                 aria-hidden="true"
-                className="absolute inset-0 -z-10 rounded-control bg-primary"
+                className="absolute inset-0 rounded-control bg-primary"
                 transition={{ type: "tween", duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
               />
             )}
-            <span className="block text-3xl font-semibold">{option}</span>
-            <span className="mt-1 block text-xs">questões inéditas</span>
+            <span className="relative block text-3xl font-semibold">{option}</span>
+            <span className="relative mt-1 block text-xs">questões inéditas</span>
           </button>
         );
       })}
