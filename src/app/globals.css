@@ -203,13 +203,16 @@
 
   .paper-skeleton {
     @apply bg-surfaceMuted;
-    /* Entrada + respiro continuo. So o fade de entrada deixava um paredao cinza
-       parado, que le como conteudo quebrado em vez de carregamento. O respiro e
-       de opacidade (nao um shimmer de gradiente) para nao brigar com a estetica
-       de papel. `prefers-reduced-motion` desliga tudo isso globalmente. */
-    animation:
-      paper-skeleton-enter var(--motion-slow) var(--ease-paper) both,
-      paper-skeleton-breathe 1.6s var(--ease-paper) var(--motion-slow) infinite;
+    /* Respiro continuo de opacidade (nao um shimmer de gradiente, que brigaria
+       com a estetica de papel) -- e' ele que impede o paredao cinza parado, que
+       le como conteudo quebrado em vez de carregamento.
+
+       Sem fade de entrada de proposito: o `loading.tsx` da rota e o skeleton do
+       cliente sao arvores React diferentes, entao um fade one-shot tocava de
+       novo na hidratacao e a espera parecia recomecar do zero. O keyframe abaixo
+       comeca em `opacity: 1`, entao o bloco ja nasce opaco.
+       `prefers-reduced-motion` desliga tudo isso globalmente. */
+    animation: paper-skeleton-breathe 1.6s var(--ease-paper) infinite;
   }
 
   .student-page {
@@ -451,44 +454,9 @@
     stroke-width var(--motion-base) var(--ease-paper);
 }
 
-/* ── Constelacao de fundo da /kros ──────────────────────────────────────── */
-/* Mesma linguagem de nos e ligacoes do icone, em opacidade de textura. A
-   deriva e longa o bastante para nao ser percebida como movimento. */
-.kros-constellation .kc-edge {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1;
-  opacity: 0.16;
-}
-
-.kros-constellation .kc-node {
-  fill: currentColor;
-  opacity: 0.22;
-}
-
-.kros-constellation g {
-  transform-box: view-box;
-  animation: kc-drift 52s ease-in-out infinite;
-}
-
-.kros-constellation g.kc-far {
-  animation-duration: 78s;
-  animation-direction: reverse;
-}
-
-@keyframes kc-drift {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-10px, 6px); }
-}
-
 @keyframes student-page-enter {
   from { opacity: 0; transform: translateY(3px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes paper-skeleton-enter {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 @keyframes paper-skeleton-breathe {

@@ -19,6 +19,7 @@ const STUDENT_TODAY_FIXTURE = {
     source: "navigation-shell-e2e",
     priority_reason: "Manter consistência no estudo.",
     confidence: "high",
+    area: "CM",
   },
   backup_actions: [],
   today_load: {

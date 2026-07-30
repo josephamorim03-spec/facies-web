@@ -74,13 +74,13 @@ export function TodayDaySummarySkeleton() {
     <section className="border-y border-edge py-4" aria-label="Atividades de hoje carregando">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1.5">
-          <Skeleton className="h-5 w-36 rounded-sm" />
-          <Skeleton className="h-3 w-24 rounded-sm" />
+          <Skeleton className="h-5 w-36 rounded-control" />
+          <Skeleton className="h-3 w-24 rounded-control" />
         </div>
         <Skeleton className="h-7 w-24 rounded-control" />
       </div>
       <div className="mt-4 space-y-3">
-        <Skeleton className="h-3 w-full rounded-full" />
+        <Skeleton className="h-2 w-full rounded-full" />
         <div className="flex gap-2">
           <Skeleton className="h-6 w-20 rounded-full" />
           <Skeleton className="h-6 w-24 rounded-full" />
@@ -89,12 +89,12 @@ export function TodayDaySummarySkeleton() {
         <div className="divide-y divide-edge border-y border-edge">
           {Array.from({ length: 3 }).map((_, index) => (
             <div key={index} className="flex items-center gap-3 py-3">
-              <Skeleton className="h-3 w-3 rounded-full" />
+              <Skeleton className="h-2.5 w-2.5 rounded-full" />
               <div className="min-w-0 flex-1 space-y-1.5">
-                <Skeleton className="h-3 w-3/5 rounded-sm" />
-                <Skeleton className="h-2.5 w-32 rounded-sm" />
+                <Skeleton className="h-3 w-3/5 rounded-control" />
+                <Skeleton className="h-2.5 w-32 rounded-control" />
               </div>
-              <Skeleton className="h-3 w-16 rounded-sm" />
+              <Skeleton className="h-3 w-16 rounded-control" />
             </div>
           ))}
         </div>
@@ -214,9 +214,9 @@ export function TodayDaySummarySection({
       {error ? (
         <p className="mt-3 text-xs text-warning">Resumo mantido enquanto a atualizacao falhou.</p>
       ) : null}
-      {loading ? (
-        <p className="mt-3 text-xs text-muted">Atualizando em segundo plano...</p>
-      ) : null}
+      {/* Sem aviso de "atualizando": o `aria-busy` acima ja anuncia o estado, e
+          um terceiro sinal de carregamento sobre um bloco que tem skeleton era
+          parte do que fazia a tela parecer ter duas origens de loading. */}
     </section>
   );
 }

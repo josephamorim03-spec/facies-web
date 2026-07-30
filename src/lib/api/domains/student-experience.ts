@@ -65,6 +65,8 @@ export type StudentTodayAction = {
   source: string;
   priority_reason: string;
   confidence: "low" | "medium" | "high";
+  /** Grande area, quando a origem sabe qual e. Nulo = nao ha area. */
+  area: string | null;
 };
 
 export type StudentToday = {
