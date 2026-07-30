@@ -426,9 +426,9 @@ export default function CronogramaPage({
           </div>
         </div>
       ) : isDesktopNavigation ? (
-        <div className="grid grid-cols-[1fr_auto] items-center gap-2">
+        <div className="relative flex min-h-11 items-center justify-center">
           {renderMonthControl("w-full max-w-md")}
-          <div className="flex items-center gap-1">
+          <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1">
             <button
               type="button"
               onClick={() => setSearchOpen(true)}

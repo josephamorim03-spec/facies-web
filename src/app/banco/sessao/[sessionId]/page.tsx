@@ -901,9 +901,8 @@ export default function SessionPage() {
 
   const total = session.total_questions;
   const sessionDisplayLabel = session.subtheme ?? session.theme ?? "Sessao";
-  // The displayed "n/total" + progress must track movement through the (possibly
-  // reranked) `items` array, not the stable `position` id — otherwise the counter
-  // and progress bar jump around as the adaptive order changes.
+  // The displayed "n/total" follows the stable `items` array instead of assuming
+  // position IDs are contiguous (reported/excluded questions may create gaps).
   const currentIndex = session.items.findIndex((i) => i.position === currentPosition);
   const displayPosition = currentIndex >= 0 ? currentIndex + 1 : currentPosition;
   const primaryNode = currentItem.knowledge_nodes.find((node) => node.is_primary) ?? currentItem.knowledge_nodes[0];

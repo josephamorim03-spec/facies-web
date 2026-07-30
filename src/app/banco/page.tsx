@@ -36,6 +36,7 @@ import { Button } from "@/components/ui/Button";
 import FiltersBar from "./_components/FiltersBar";
 import QuestionList from "./_components/QuestionList";
 import CreateSessionPanel from "./_components/CreateSessionPanel";
+import { BancoDeQuestoesSkeleton } from "./_components/BancoDeQuestoesSkeleton";
 import { filterTopicsLocally } from "./_components/topicTree";
 import {
   QUESTION_BANK_LIMIT_CAP,
@@ -260,7 +261,7 @@ function localNoonISO(dateISO: string | null): string {
 
 export default function BancoDeQuestoesPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-muted">Carregando...</div>}>
+    <Suspense fallback={<BancoDeQuestoesSkeleton />}>
       <BancoDeQuestoesContent />
     </Suspense>
   );
@@ -899,17 +900,34 @@ function BancoDeQuestoesContent() {
     await startSession({ skipDefaultPrompt: true });
   }
 
-  if (!tokenResolved) return <div className="p-6 text-sm text-muted">Carregando...</div>;
+  if (!tokenResolved) return <BancoDeQuestoesSkeleton />;
   if (entryContext.source && !calendarContextResolved) {
     return <div className="p-6 text-sm text-muted" aria-live="polite">Configurando a revisão do calendário...</div>;
   }
 
   const canStartConfigured = !busy && (studyKind !== "full_exam" || fullExamReady) && !!availability && availability.available_count > 0;
   const configuredStartLabel = questionBankCtaLabel(clampedLimit, resolutionMode, studyKind);
+  // Zero questoes tem causas diferentes e acoes diferentes. Sem dizer qual, a
+  // tela so mostra "Max. 0" e um botao morto — foi o que fez o filtro parecer
+  // quebrado.
+  const emptyReason = (() => {
+    if (loadingPreview || !availability || availability.available_count > 0) return null;
+    if (availability.total_count === 0) {
+      return activeFilters.length > 0
+        ? "Nenhuma questão combina com os filtros atuais. Remova um filtro para ampliar a busca."
+        : "Nenhuma questão disponível no banco para esta configuração.";
+    }
+    if (answerStatus === "unanswered") {
+      return `Você já respondeu todas as ${availability.total_count} questões deste filtro. Troque o histórico para "todas" ou "só erros".`;
+    }
+    return `As ${availability.total_count} questões do filtro não se encaixam neste histórico. Ajuste o histórico da sessão.`;
+  })();
 
   return (
     <div className="min-h-screen bg-paper text-ink">
-      <div className={`mx-auto max-w-7xl space-y-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
+      {/* Sem max-w proprio: o AppShell ja limita o conteudo em `lg:max-w-6xl`.
+          O `max-w-7xl` que estava aqui nunca chegava a valer. */}
+      <div className={`space-y-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
         <section className="space-y-4" aria-label="Montador de sessão">
           <div className="flex w-full flex-wrap items-center justify-between gap-3 border-b border-edge pb-4">
             <span className="min-w-0">
@@ -1029,8 +1047,11 @@ function BancoDeQuestoesContent() {
               studyKind={studyKind}
               canStartSession={studyKind !== "full_exam" || fullExamReady}
               error={error}
+              startLabel={configuredStartLabel}
+              emptyReason={emptyReason}
               onRefreshAvailability={() => void refreshAvailability()}
               onPreviewQuestions={() => void previewQuestions()}
+              onStartSession={() => void startSession()}
               onRetry={() => {
                 if (availability) void startSession();
                 else void refreshAvailability();
@@ -1044,25 +1065,29 @@ function BancoDeQuestoesContent() {
           />
         </section>
 
-        <BottomActionBar
-          maxWidthClassName="max-w-7xl"
-          hiddenOnMobile={quantityEditing}
-          status={error ? <span className="text-danger" role="alert">{error}</span> : null}
-        >
-          <Button
-            type="button"
-            variant="primary"
-            size="md"
-            onClick={() => void startSession()}
-            disabled={!canStartConfigured}
-            className="w-full"
+        {/* Somente no mobile: no desktop a acao primaria vive no painel Resumo,
+            junto do numero que ela executa. Como card estatico no fim da pagina
+            ela ficava orfa e empurrada para a direita. */}
+        {!quantityEditing && (
+          <BottomActionBar
+            className="md:hidden"
+            status={error ? <span className="text-danger" role="alert">{error}</span> : null}
           >
-            {busy ? "Preparando..." : configuredStartLabel}
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
-              <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
-            </svg>
-          </Button>
-        </BottomActionBar>
+            <Button
+              type="button"
+              variant="primary"
+              size="md"
+              onClick={() => void startSession()}
+              disabled={!canStartConfigured}
+              className="w-full"
+            >
+              {busy ? "Preparando..." : configuredStartLabel}
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
+              </svg>
+            </Button>
+          </BottomActionBar>
+        )}
       </div>
       <ConfirmDialog
         open={feedbackDefaultPromptOpen}

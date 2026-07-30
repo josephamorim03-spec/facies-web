@@ -23,6 +23,7 @@ import {
 import type { GraficosState, GraficosRefs, GraficosActions } from "../_hooks/useGraficosData";
 import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
 import { AreaSmallMultiples } from "./AreaSmallMultiples";
+import { useChartEntrance } from "../_hooks/useChartEntrance";
 
 type Props = {
   state: GraficosState;
@@ -31,6 +32,7 @@ type Props = {
 };
 
 export function AreaLinesChart({ state, refs, actions }: Props) {
+  const entering = useChartEntrance();
   const {
     activeAreaLines,
     areaLineData,
@@ -135,8 +137,13 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
                   }}
                   activeDot={false}
                   connectNulls={false}
-                  isAnimationActive={isLocked}
-                  animationDuration={300}
+                  // Anima só na entrada. Antes animava ao travar a série, o que
+                  // redesenhava a linha inteira a cada clique na legenda; agora
+                  // o realce é uma transição de opacidade em CSS (globals.css).
+                  className="chart-series-line"
+                  isAnimationActive={entering}
+                  animationDuration={700}
+                  animationEasing="ease-out"
                 />
               );
             })}

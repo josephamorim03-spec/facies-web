@@ -1,8 +1,61 @@
 import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
+import type { StudentToday } from "@/lib/api";
 import { addHttpOnlySession } from "./support/authCookies";
 import { forceDesktopNavigation } from "./support/desktopNav";
+
+const STUDENT_TODAY_FIXTURE = {
+  contract_version: "student-today-v1",
+  generated_at: "2026-07-29T12:00:00Z",
+  status: "complete",
+  primary_action: {
+    kind: "targeted_practice",
+    title: "Treino leve",
+    rationale: "Pratique um bloco curto para manter o ritmo.",
+    estimated_minutes: 5,
+    href: "/banco-de-questoes",
+    cta_label: "Começar",
+    source: "navigation-shell-e2e",
+    priority_reason: "Manter consistência no estudo.",
+    confidence: "high",
+  },
+  backup_actions: [],
+  today_load: {
+    label: "leve",
+    estimated_minutes: 5,
+    recommended_limit_minutes: 30,
+    overload_alert: false,
+    short_message: "Carga leve para hoje.",
+  },
+  schedule_preview: {
+    date: "2026-07-29",
+    items: [],
+    overdue_count: 0,
+    hidden_count: 0,
+    reschedule_recommended: false,
+  },
+  review_snapshot: {
+    pending_reviews: 0,
+    overdue_reviews: 0,
+    cards_due: 0,
+    estimated_minutes: 0,
+  },
+  progress_snapshot: {
+    questions_done_week: 0,
+    weekly_goal_questions: 300,
+    weekly_progress_pct: 0,
+    accuracy_pct: null,
+  },
+  details: {
+    active_session: null,
+    trainer_action: null,
+    secondary_actions: [],
+    schedule_suggestions_count: 0,
+    evidence_confidence: "high",
+  },
+  missing_sources: [],
+} satisfies StudentToday;
 
 function navSidebar(page: Page) {
   return page.locator("aside").filter({ has: page.locator("[data-nav-surface='sidebar']") });
@@ -39,6 +92,10 @@ async function mockShellApi(page: Page) {
       return json({ user_id: "user_nav_e2e", display_name: "E2E User" });
     }
 
+    if (method === "GET" && path === "/api/student/today") {
+      return json(STUDENT_TODAY_FIXTURE);
+    }
+
     if (method === "GET" && path === "/api/trainer/prescription/today") {
       return json({
         recommendation_id: "rec_nav_e2e",
@@ -70,6 +127,18 @@ async function mockShellApi(page: Page) {
         plan_progress: { completed_actions: 0, total_actions: 1 },
         previous_outcome: null,
         missing_sources: [],
+      });
+    }
+
+    if (
+      method === "POST" &&
+      path === "/api/trainer/recommendations/rec_nav_e2e/events"
+    ) {
+      return json({
+        event_id: "event_nav_e2e_shown",
+        recommendation_id: "rec_nav_e2e",
+        event_type: "shown",
+        occurred_at: "2026-07-29T12:00:00Z",
       });
     }
 
@@ -171,7 +240,7 @@ async function mockShellApi(page: Page) {
       return json([]);
     }
 
-    return json({});
+    return json({ detail: `Unhandled shell API mock: ${method} ${path}` }, 501);
   });
 }
 

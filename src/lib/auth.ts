@@ -2,6 +2,8 @@ import { resetSessionExpirationState } from "./sessionExpiration";
 
 const TOKEN_KEY = "krosmed_token";
 const SESSION_KEY = "krosmed_session";
+const REFRESH_KEY = "krosmed_refresh";
+const REFRESH_HINT_KEY = "krosmed_refresh_hint";
 const INTERNAL_CSRF_HEADER = "X-KrosMed-CSRF";
 const INTERNAL_CSRF_VALUE = "1";
 
@@ -26,7 +28,7 @@ export function getAuthToken(): string {
   return "";
 }
 
-export async function establishAuthSession(token: string): Promise<void> {
+export async function establishAuthSession(token: string, rememberDevice = false): Promise<void> {
   const normalized = token.trim();
   if (!normalized) {
     throw new Error("Token vazio.");
@@ -39,11 +41,32 @@ export async function establishAuthSession(token: string): Promise<void> {
       "Content-Type": "application/json",
       [INTERNAL_CSRF_HEADER]: INTERNAL_CSRF_VALUE,
     },
-    body: JSON.stringify({}),
+    body: JSON.stringify({ access_token: normalized, remember_device: rememberDevice }),
   });
   if (!response.ok) {
     throw new Error("Sessao invalida.");
   }
+}
+
+export async function refreshAuthSession(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  try {
+    const response = await fetch("/api/auth/session/refresh", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        [INTERNAL_CSRF_HEADER]: INTERNAL_CSRF_VALUE,
+      },
+      cache: "no-store",
+    });
+    if (response.ok) {
+      resetSessionExpirationState();
+      return true;
+    }
+  } catch {
+    // handled by caller
+  }
+  return false;
 }
 
 export function setAuthToken(token: string): void {
@@ -56,8 +79,10 @@ export function clearAuthToken(): void {
   if (typeof window === "undefined") return;
   const secure = secureCookieSuffix();
   document.cookie = `${TOKEN_KEY}=; SameSite=Strict; Path=/; Max-Age=0${secure}`;
+  document.cookie = `${REFRESH_HINT_KEY}=; SameSite=Lax; Path=/; Max-Age=0${secure}`;
   // Best effort cleanup for old non-httpOnly session cookies (if any).
   document.cookie = `${SESSION_KEY}=; SameSite=Lax; Path=/; Max-Age=0${secure}`;
+  document.cookie = `${REFRESH_KEY}=; SameSite=Lax; Path=/api/auth; Max-Age=0${secure}`;
   void fetch("/api/auth/logout", {
     method: "POST",
     credentials: "same-origin",

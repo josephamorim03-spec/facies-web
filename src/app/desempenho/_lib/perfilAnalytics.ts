@@ -1,13 +1,16 @@
 import { ReviewTask } from "@/lib/api";
-import { AREA_HEX, AREA_FULL_EXAM_HEX } from "@/lib/areaColors";
+import { AREA_VAR, AREA_FULL_EXAM_VAR } from "@/lib/areaColors";
 import { AREA_FULL_LABELS } from "@/lib/areaIdentity";
 import { Area, Period, ThemeListSort } from "./perfilShared";
 
 export const AREAS: Area[] = ["GO", "PD", "MP", "CG", "CM", "OU"];
 export const AREA_LABELS: Record<Area, string> = AREA_FULL_LABELS;
-// Single source of truth — re-exported from the canonical area palette in lib/areaColors.
-export const AREA_COLORS: Record<Area, string> = AREA_HEX;
-export const FULL_EXAM_COLOR = AREA_FULL_EXAM_HEX;
+// Single source of truth — re-exported from the canonical area palette in
+// lib/areaColors. Usa a forma CSS var (não o hex): estes valores vão parar em
+// séries do Recharts e em SVG, e o hex é o mesmo nos dois temas — as áreas
+// ficavam ilegíveis sobre o papel escuro. A var tem override no `.dark`.
+export const AREA_COLORS: Record<Area, string> = AREA_VAR;
+export const FULL_EXAM_COLOR = AREA_FULL_EXAM_VAR;
 
 export const PERIOD_LABELS: Record<Period, string> = {
   semanal: "Semanal", mensal: "Mensal", geral: "Geral",

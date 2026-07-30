@@ -225,6 +225,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Auth Session */
+        post: operations["create_auth_session_auth_session_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/session/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh Auth Session */
+        post: operations["refresh_auth_session_auth_session_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/forgot-password": {
         parameters: {
             query?: never;
@@ -1688,6 +1722,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/objectives/catalog/institutions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Institutions */
+        get: operations["list_institutions_objectives_catalog_institutions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/objectives/catalog/programs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Programs */
+        get: operations["list_programs_objectives_catalog_programs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/objectives/catalog/programs/{program_id}/access-paths": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Access Paths */
+        get: operations["list_access_paths_objectives_catalog_programs__program_id__access_paths_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/student/experience": {
         parameters: {
             query?: never;
@@ -2498,6 +2583,28 @@ export interface components {
             /** Task Id */
             task_id: string;
         };
+        /** AccessPathListOut */
+        AccessPathListOut: {
+            /**
+             * Contract Version
+             * @default objective-catalog-v1
+             * @constant
+             */
+            contract_version: "objective-catalog-v1";
+            /** Items */
+            items?: components["schemas"]["AccessPathOut"][];
+        };
+        /** AccessPathOut */
+        AccessPathOut: {
+            planning_focus: components["schemas"]["PlanningFocusOut"];
+            destination: components["schemas"]["ObjectiveDestinationOut"];
+            /**
+             * Participation Status
+             * @enum {string}
+             */
+            participation_status: "estimated" | "confirmed" | "not_participating" | "withdrawn";
+            source: components["schemas"]["ObjectiveSourceOut"];
+        };
         /** AccountDeleteIn */
         AccountDeleteIn: {
             /** Email */
@@ -2667,6 +2774,33 @@ export interface components {
             done: boolean;
             /** Results */
             results?: components["schemas"]["AnalyzeSimulationErrorsProgressiveStatusItemOut"][];
+        };
+        /** AuthSessionRequest */
+        AuthSessionRequest: {
+            /** Access Token */
+            access_token: string;
+            /**
+             * Remember Device
+             * @default false
+             */
+            remember_device: boolean;
+        };
+        /** AuthSessionResponse */
+        AuthSessionResponse: {
+            /** Access Token */
+            access_token: string;
+            /** Refresh Token */
+            refresh_token?: string | null;
+            /** Token Type */
+            token_type: string;
+            /** User Id */
+            user_id: string;
+            /** Email */
+            email?: string | null;
+            /** Email Verified */
+            email_verified?: boolean | null;
+            /** Issuer */
+            issuer: string;
         };
         /** BackgroundJobAcceptedOut */
         BackgroundJobAcceptedOut: {
@@ -3352,6 +3486,28 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** InstitutionListOut */
+        InstitutionListOut: {
+            /**
+             * Contract Version
+             * @default objective-catalog-v1
+             * @constant
+             */
+            contract_version: "objective-catalog-v1";
+            /** Items */
+            items?: components["schemas"]["InstitutionOut"][];
+        };
+        /** InstitutionOut */
+        InstitutionOut: {
+            /** Institution Id */
+            institution_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+        };
         /** ItemCreate */
         ItemCreate: {
             /** @default QUESTION */
@@ -3534,11 +3690,18 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+            /**
+             * Remember Device
+             * @default false
+             */
+            remember_device: boolean;
         };
         /** LoginResponse */
         LoginResponse: {
             /** Access Token */
             access_token: string;
+            /** Refresh Token */
+            refresh_token?: string | null;
             /** Token Type */
             token_type: string;
             /** User Id */
@@ -3547,6 +3710,11 @@ export interface components {
             email: string;
             /** Email Verified */
             email_verified: boolean;
+        };
+        /** LogoutRequest */
+        LogoutRequest: {
+            /** Refresh Token */
+            refresh_token?: string | null;
         };
         /** NotificationSettingsBody */
         NotificationSettingsBody: {
@@ -3571,6 +3739,33 @@ export interface components {
             notify_theory_review: boolean;
             /** Is Active */
             is_active: boolean;
+        };
+        /** ObjectiveDestinationOut */
+        ObjectiveDestinationOut: {
+            /** Institution Id */
+            institution_id: string;
+            /** Institution Name */
+            institution_name: string;
+            /** Program Id */
+            program_id: string;
+            /** Program Name */
+            program_name: string;
+            /** Specialty Name */
+            specialty_name: string;
+            /**
+             * Access Modality
+             * @enum {string}
+             */
+            access_modality: "direct" | "prerequisite" | "mixed" | "unknown";
+        };
+        /** ObjectiveSourceOut */
+        ObjectiveSourceOut: {
+            /** Source Id */
+            source_id: string;
+            /** Url */
+            url: string;
+            /** Verified At */
+            verified_at: string;
         };
         /** OperationalAttachmentPresignIn */
         OperationalAttachmentPresignIn: {
@@ -4056,6 +4251,20 @@ export interface components {
             /** Days Since Last Study */
             days_since_last_study?: number | null;
         };
+        /** PlanningFocusOut */
+        PlanningFocusOut: {
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "selection_process";
+            /** Label */
+            label: string;
+            /** Selection Process Id */
+            selection_process_id: string;
+            /** Edition Id */
+            edition_id: string;
+        };
         /** ProfileOut */
         ProfileOut: {
             /** User Id */
@@ -4141,6 +4350,37 @@ export interface components {
             default_feedback_timing?: string | null;
             /** Has Chosen Feedback Default */
             has_chosen_feedback_default?: boolean | null;
+        };
+        /** ProgramListOut */
+        ProgramListOut: {
+            /**
+             * Contract Version
+             * @default objective-catalog-v1
+             * @constant
+             */
+            contract_version: "objective-catalog-v1";
+            /** Items */
+            items?: components["schemas"]["ProgramOut"][];
+        };
+        /** ProgramOut */
+        ProgramOut: {
+            /** Program Id */
+            program_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Access Modality
+             * @enum {string}
+             */
+            access_modality: "direct" | "prerequisite" | "mixed" | "unknown";
+            /** Institution Id */
+            institution_id: string;
+            /** Institution Name */
+            institution_name: string;
+            /** Specialty Id */
+            specialty_id: string;
+            /** Specialty Name */
+            specialty_name: string;
         };
         /** ProgressiveAnalyzeQuestionHandleOut */
         ProgressiveAnalyzeQuestionHandleOut: {
@@ -6134,6 +6374,22 @@ export interface components {
             /** Key Code */
             key_code: string;
         };
+        /** RefreshSessionRequest */
+        RefreshSessionRequest: {
+            /** Refresh Token */
+            refresh_token: string;
+        };
+        /** RefreshSessionResponse */
+        RefreshSessionResponse: {
+            /** Access Token */
+            access_token: string;
+            /** Refresh Token */
+            refresh_token: string;
+            /** Token Type */
+            token_type: string;
+            /** User Id */
+            user_id: string;
+        };
         /** ResendVerificationRequest */
         ResendVerificationRequest: {
             /** Email */
@@ -8001,6 +8257,72 @@ export interface operations {
             };
         };
     };
+    create_auth_session_auth_session_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AuthSessionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_auth_session_auth_session_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshSessionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefreshSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     forgot_password_auth_forgot_password_post: {
         parameters: {
             query?: never;
@@ -8142,7 +8464,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["LogoutRequest"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             204: {
@@ -11104,6 +11430,107 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LearningActionStartResultOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_institutions_objectives_catalog_institutions_get: {
+        parameters: {
+            query?: {
+                query?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstitutionListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_programs_objectives_catalog_programs_get: {
+        parameters: {
+            query?: {
+                institution_id?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_access_paths_objectives_catalog_programs__program_id__access_paths_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                program_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessPathListOut"];
                 };
             };
             /** @description Validation Error */

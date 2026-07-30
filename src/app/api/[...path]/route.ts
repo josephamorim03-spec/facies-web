@@ -4,6 +4,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const SESSION_COOKIE_NAME = "krosmed_session";
+const REFRESH_COOKIE_NAME = "krosmed_refresh";
+const REFRESH_HINT_COOKIE_NAME = "krosmed_refresh_hint";
 const TOKEN_COOKIE_NAME = "krosmed_token";
 const SESSION_EXPIRED_HEADER = "X-KrosMed-Session-Expired";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
@@ -20,7 +22,7 @@ const HOP_BY_HOP_HEADERS = new Set([
   "transfer-encoding",
   "upgrade",
 ]);
-const AUTH_SESSION_PATHS = new Set<string>();
+const AUTH_SESSION_PATHS = new Set<string>(["auth/login"]);
 const LONG_TIMEOUT_PROXY_PATHS = new Set([
   "analysis/simulations/analyze-errors/progressive/stream",
 ]);
@@ -35,9 +37,14 @@ function parseEnvPositiveInt(name: string, fallback: number, minValue: number = 
 
 const DEFAULT_PROXY_TIMEOUT_MS = parseEnvPositiveInt("NEXT_API_PROXY_TIMEOUT_MS", 25000, 1000);
 const SESSION_MAX_AGE_SECONDS = parseEnvPositiveInt(
-  "NEXT_SESSION_MAX_AGE_SECONDS",
-  7 * 24 * 60 * 60,
+  "NEXT_ACCESS_COOKIE_MAX_AGE_SECONDS",
+  parseEnvPositiveInt("NEXT_SESSION_MAX_AGE_SECONDS", 15 * 60, 300),
   300,
+);
+const REFRESH_MAX_AGE_SECONDS = parseEnvPositiveInt(
+  "NEXT_REFRESH_COOKIE_MAX_AGE_SECONDS",
+  30 * 24 * 60 * 60,
+  3600,
 );
 const STREAM_PROXY_TIMEOUT_MS = parseEnvPositiveInt(
   "NEXT_API_PROXY_STREAM_TIMEOUT_MS",
@@ -191,7 +198,12 @@ function expireSessionCookie(response: NextResponse, secure: boolean): void {
   });
 }
 
-function setSessionCookie(response: NextResponse, accessToken: string, secure: boolean): void {
+function setSessionCookies(
+  response: NextResponse,
+  accessToken: string,
+  refreshToken: string,
+  secure: boolean,
+): void {
   response.cookies.set({
     name: SESSION_COOKIE_NAME,
     value: accessToken,
@@ -201,6 +213,45 @@ function setSessionCookie(response: NextResponse, accessToken: string, secure: b
     path: "/",
     maxAge: SESSION_MAX_AGE_SECONDS,
   });
+  if (refreshToken) {
+    response.cookies.set({
+      name: REFRESH_COOKIE_NAME,
+      value: refreshToken,
+      httpOnly: true,
+      sameSite: "lax",
+      secure,
+      path: "/api/auth",
+      maxAge: REFRESH_MAX_AGE_SECONDS,
+    });
+    response.cookies.set({
+      name: REFRESH_HINT_COOKIE_NAME,
+      value: "1",
+      httpOnly: true,
+      sameSite: "lax",
+      secure,
+      path: "/",
+      maxAge: REFRESH_MAX_AGE_SECONDS,
+    });
+  } else {
+    response.cookies.set({
+      name: REFRESH_COOKIE_NAME,
+      value: "",
+      httpOnly: true,
+      sameSite: "lax",
+      secure,
+      path: "/api/auth",
+      maxAge: 0,
+    });
+    response.cookies.set({
+      name: REFRESH_HINT_COOKIE_NAME,
+      value: "",
+      httpOnly: true,
+      sameSite: "lax",
+      secure,
+      path: "/",
+      maxAge: 0,
+    });
+  }
   expireLegacyTokenCookie(response, secure);
 }
 
@@ -215,6 +266,7 @@ function redactAccessTokenPayload(payload: unknown): unknown {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return payload;
   const redacted = { ...(payload as Record<string, unknown>) };
   delete redacted.access_token;
+  delete redacted.refresh_token;
   return redacted;
 }
 
@@ -264,6 +316,7 @@ async function proxyHandler(
   const proxyPath = buildProxyPath(pathParts);
   const pathKey = pathParts.join("/");
   const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value?.trim() || "";
+  const refreshHint = request.cookies.get(REFRESH_HINT_COOKIE_NAME)?.value?.trim() || "";
   if (sessionToken && isProtectedProxyPath(pathKey) && isJwtExpired(sessionToken)) {
     const expiredResponse = responseWithRequestId(
       { code: "oidc_token_invalid", message: "Token expired" },
@@ -348,6 +401,10 @@ async function proxyHandler(
       typeof payloadRecord?.access_token === "string"
         ? payloadRecord.access_token.trim()
         : "";
+    const refreshToken =
+      typeof payloadRecord?.refresh_token === "string"
+        ? payloadRecord.refresh_token.trim()
+        : "";
 
     responseHeaders.delete("content-length");
     const response = NextResponse.json(redactAccessTokenPayload(payload), {
@@ -356,7 +413,7 @@ async function proxyHandler(
       headers: responseHeaders,
     });
     if (accessToken) {
-      setSessionCookie(response, accessToken, isSecureRequest(request));
+      setSessionCookies(response, accessToken, refreshToken, isSecureRequest(request));
     }
     return response;
   }
@@ -366,6 +423,11 @@ async function proxyHandler(
     statusText: upstreamResponse.statusText,
     headers: responseHeaders,
   });
+
+  if (upstreamResponse.status === 401 && (sessionToken || refreshHint) && isProtectedProxyPath(pathKey)) {
+    response.headers.set(SESSION_EXPIRED_HEADER, "1");
+    expireSessionCookie(response, isSecureRequest(request));
+  }
 
   return response;
 }

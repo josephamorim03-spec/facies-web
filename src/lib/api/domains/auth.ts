@@ -10,6 +10,7 @@ export type AuthSignupResponse = {
 
 export type AuthLoginResponse = {
   access_token?: string;
+  refresh_token?: string | null;
   token_type: string;
   user_id: string;
   email: string;
@@ -56,7 +57,11 @@ export async function signupLocalAccount(payload: {
   });
 }
 
-export async function loginLocalAccount(payload: { email: string; password: string }): Promise<AuthLoginResponse> {
+export async function loginLocalAccount(payload: {
+  email: string;
+  password: string;
+  remember_device?: boolean;
+}): Promise<AuthLoginResponse> {
   return api<AuthLoginResponse>("/api/auth/login", {
     method: "POST",
     body: JSON.stringify(payload),

@@ -26,6 +26,7 @@ module.exports = {
           cm: "var(--area-cm)",
           mp: "var(--area-mp)",
           ou: "var(--area-ou)",
+          ob: "var(--area-ob)",
         },
       },
       fontFamily: {

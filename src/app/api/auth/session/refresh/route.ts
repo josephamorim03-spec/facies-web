@@ -7,9 +7,9 @@ const SESSION_COOKIE_NAME = "krosmed_session";
 const REFRESH_COOKIE_NAME = "krosmed_refresh";
 const REFRESH_HINT_COOKIE_NAME = "krosmed_refresh_hint";
 const TOKEN_COOKIE_NAME = "krosmed_token";
+const SESSION_EXPIRED_HEADER = "X-KrosMed-Session-Expired";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
-const MAX_TOKEN_LENGTH = 4096;
 
 function parseEnvPositiveInt(name: string, fallback: number, minValue: number = 1): number {
   const raw = String(process.env[name] ?? "").trim();
@@ -98,22 +98,24 @@ function createRequestId(seed?: string | null): string {
   return `req_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
 }
 
-function extractBearerToken(raw: string | null): string {
-  const header = String(raw ?? "").trim();
-  const parts = header.split(" ", 2);
-  if (parts.length !== 2 || parts[0]?.toLowerCase() !== "bearer") return "";
-  return parts[1]?.trim() ?? "";
-}
-
-async function tokenFromRequest(request: NextRequest): Promise<string> {
-  const headerToken = extractBearerToken(request.headers.get("authorization"));
-  if (headerToken) return headerToken;
-  const payload = await request.json().catch(() => null);
-  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
-    const accessToken = (payload as Record<string, unknown>).access_token;
-    if (typeof accessToken === "string") return accessToken.trim();
+function clearSessionCookies(response: NextResponse, request: NextRequest): void {
+  const secure = isSecureRequest(request);
+  for (const cookie of [
+    { name: SESSION_COOKIE_NAME, path: "/" },
+    { name: REFRESH_HINT_COOKIE_NAME, path: "/" },
+    { name: TOKEN_COOKIE_NAME, path: "/" },
+    { name: REFRESH_COOKIE_NAME, path: "/api/auth" },
+  ]) {
+    response.cookies.set({
+      name: cookie.name,
+      value: "",
+      httpOnly: cookie.name !== TOKEN_COOKIE_NAME,
+      sameSite: cookie.name === TOKEN_COOKIE_NAME ? "strict" : "lax",
+      secure,
+      path: cookie.path,
+      maxAge: 0,
+    });
   }
-  return "";
 }
 
 function setSessionCookies(
@@ -132,45 +134,24 @@ function setSessionCookies(
     path: "/",
     maxAge: SESSION_MAX_AGE_SECONDS,
   });
-  if (refreshToken) {
-    response.cookies.set({
-      name: REFRESH_COOKIE_NAME,
-      value: refreshToken,
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/api/auth",
-      maxAge: REFRESH_MAX_AGE_SECONDS,
-    });
-    response.cookies.set({
-      name: REFRESH_HINT_COOKIE_NAME,
-      value: "1",
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/",
-      maxAge: REFRESH_MAX_AGE_SECONDS,
-    });
-  } else {
-    response.cookies.set({
-      name: REFRESH_COOKIE_NAME,
-      value: "",
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/api/auth",
-      maxAge: 0,
-    });
-    response.cookies.set({
-      name: REFRESH_HINT_COOKIE_NAME,
-      value: "",
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/",
-      maxAge: 0,
-    });
-  }
+  response.cookies.set({
+    name: REFRESH_COOKIE_NAME,
+    value: refreshToken,
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    path: "/api/auth",
+    maxAge: REFRESH_MAX_AGE_SECONDS,
+  });
+  response.cookies.set({
+    name: REFRESH_HINT_COOKIE_NAME,
+    value: "1",
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    path: "/",
+    maxAge: REFRESH_MAX_AGE_SECONDS,
+  });
   response.cookies.set({
     name: TOKEN_COOKIE_NAME,
     value: "",
@@ -181,70 +162,70 @@ function setSessionCookies(
   });
 }
 
-function jsonError(code: string, status: number, requestId: string): NextResponse {
-  return NextResponse.json(
-    { code, message: "Sessao invalida.", request_id: requestId },
-    { status, headers: { "X-Request-Id": requestId } },
-  );
-}
-
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = createRequestId(request.headers.get("x-request-id"));
   if (!isTrustedBrowserMutation(request)) {
-    return jsonError("csrf_rejected", 403, requestId);
-  }
-  const accessToken = await tokenFromRequest(request);
-
-  if (!accessToken || accessToken.length > MAX_TOKEN_LENGTH) {
-    return jsonError("invalid_session_token", 401, requestId);
+    return NextResponse.json(
+      { code: "csrf_rejected" },
+      { status: 403, headers: { "X-Request-Id": requestId } },
+    );
   }
 
-  const payload = await request.json().catch(() => null);
-  const rememberDevice =
-    payload && typeof payload === "object" && !Array.isArray(payload)
-      ? Boolean((payload as Record<string, unknown>).remember_device)
-      : false;
+  const refreshToken = request.cookies.get(REFRESH_COOKIE_NAME)?.value?.trim() || "";
+  if (!refreshToken) {
+    const response = NextResponse.json(
+      { code: "invalid_refresh_session" },
+      { status: 401, headers: { "X-Request-Id": requestId } },
+    );
+    response.headers.set(SESSION_EXPIRED_HEADER, "1");
+    clearSessionCookies(response, request);
+    return response;
+  }
 
-  const validationResponse = await fetch(`${proxyTarget()}/auth/session`, {
+  const upstream = await fetch(`${proxyTarget()}/auth/session/refresh`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-Request-Id": requestId,
     },
-    body: JSON.stringify({ access_token: accessToken, remember_device: rememberDevice }),
+    body: JSON.stringify({ refresh_token: refreshToken }),
     cache: "no-store",
   }).catch(() => null);
 
-  if (!validationResponse?.ok) {
-    return jsonError("invalid_session_token", 401, requestId);
+  if (!upstream?.ok) {
+    const response = NextResponse.json(
+      { code: "invalid_refresh_session" },
+      { status: 401, headers: { "X-Request-Id": requestId } },
+    );
+    response.headers.set(SESSION_EXPIRED_HEADER, "1");
+    clearSessionCookies(response, request);
+    return response;
   }
 
-  const identity = await validationResponse.json().catch(() => null);
-  const userIdValue =
-    identity && typeof identity === "object" && !Array.isArray(identity)
-      ? (identity as Record<string, unknown>).user_id
-      : null;
-  const userId = typeof userIdValue === "string" ? userIdValue.trim() : "";
-  const sessionAccessTokenValue =
-    identity && typeof identity === "object" && !Array.isArray(identity)
-      ? (identity as Record<string, unknown>).access_token
-      : null;
-  const sessionAccessToken =
-    typeof sessionAccessTokenValue === "string" ? sessionAccessTokenValue.trim() : "";
-  const refreshTokenValue =
-    identity && typeof identity === "object" && !Array.isArray(identity)
-      ? (identity as Record<string, unknown>).refresh_token
-      : null;
-  const refreshToken = typeof refreshTokenValue === "string" ? refreshTokenValue.trim() : "";
+  const payload = await upstream.json().catch(() => null);
+  const accessToken =
+    payload && typeof payload === "object" && !Array.isArray(payload)
+      ? String((payload as Record<string, unknown>).access_token ?? "").trim()
+      : "";
+  const nextRefreshToken =
+    payload && typeof payload === "object" && !Array.isArray(payload)
+      ? String((payload as Record<string, unknown>).refresh_token ?? "").trim()
+      : "";
 
-  if (!userId || !sessionAccessToken) {
-    return jsonError("invalid_session_token", 401, requestId);
+  if (!accessToken || !nextRefreshToken) {
+    const response = NextResponse.json(
+      { code: "invalid_refresh_session" },
+      { status: 401, headers: { "X-Request-Id": requestId } },
+    );
+    response.headers.set(SESSION_EXPIRED_HEADER, "1");
+    clearSessionCookies(response, request);
+    return response;
   }
 
-  const response = NextResponse.json(
-    { user_id: userId },
-    { status: 200, headers: { "X-Request-Id": requestId } },
-  );
-  setSessionCookies(response, request, sessionAccessToken, refreshToken);
+  const response = new NextResponse(null, {
+    status: 204,
+    headers: { "X-Request-Id": requestId },
+  });
+  setSessionCookies(response, request, accessToken, nextRefreshToken);
   return response;
 }

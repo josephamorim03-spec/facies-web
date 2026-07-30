@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { clearAuthToken, setAuthToken } from "@/lib/auth";
+import { clearAuthToken } from "@/lib/auth";
 import { resolveAuthenticatedLandingRoute } from "@/lib/initialGoalSetup";
 import { loginLocalAccount } from "@/lib/api";
 import { useGoogleSignIn } from "./_hooks/useGoogleSignIn";
@@ -13,21 +13,36 @@ import { InstallBanner } from "./_components/InstallBanner";
 import { KrosIntro } from "./_components/KrosIntro";
 import styles from "./LoginPremium.module.css";
 
+function safeInternalNext(value: string): string | null {
+  const normalized = value.trim();
+  if (!normalized.startsWith("/") || normalized.startsWith("//")) return null;
+  if (normalized.startsWith("/login") || normalized.startsWith("/auth")) return null;
+  try {
+    const parsed = new URL(normalized, "http://krosmed.local");
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return null;
+  }
+}
+
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionExpired = searchParams.get("reason") === "expired";
+  const nextParam = searchParams.get("next") ?? "";
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
   const isDevMode = !googleClientId;
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [rememberDevice, setRememberDevice] = useState(false);
   const [loginBusy, setLoginBusy] = useState(false);
   const [loginError, setLoginError] = useState("");
 
   const { googleButtonRef, googleError, setGoogleError } = useGoogleSignIn({
     googleClientId,
     view: "login",
+    rememberDevice,
   });
   const { installState, showIosTooltip, setShowIosTooltip, handleInstall } =
     useInstallPrompt();
@@ -40,10 +55,12 @@ function LoginPageContent() {
     setLoginBusy(true);
     setLoginError("");
     try {
-      const res = await loginLocalAccount({ email: loginEmail.trim(), password: loginPassword });
-      if (!res.access_token) throw new Error("Token ausente na resposta.");
-      setAuthToken(res.access_token);
-      const route = await resolveAuthenticatedLandingRoute(res.access_token);
+      await loginLocalAccount({
+        email: loginEmail.trim(),
+        password: loginPassword,
+        remember_device: rememberDevice,
+      });
+      const route = safeInternalNext(nextParam) ?? await resolveAuthenticatedLandingRoute("");
       router.replace(route);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
@@ -124,6 +141,8 @@ function LoginPageContent() {
                   setLoginEmail={setLoginEmail}
                   loginPassword={loginPassword}
                   setLoginPassword={setLoginPassword}
+                  rememberDevice={rememberDevice}
+                  setRememberDevice={setRememberDevice}
                   loginBusy={loginBusy}
                   loginError={loginError}
                   googleClientId={googleClientId}
@@ -134,12 +153,28 @@ function LoginPageContent() {
                   onSwitchView={() => undefined}
                 />
               ) : (
-                <GoogleSection
-                  googleClientId={googleClientId}
-                  googleButtonRef={googleButtonRef}
-                  googleError={googleError}
-                  onGoogleError={setGoogleError}
-                />
+                <div className="space-y-3">
+                  <label className="flex cursor-pointer items-start gap-2 text-left text-sm text-muted">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 rounded border-edge text-ink"
+                      checked={rememberDevice}
+                      onChange={(event) => setRememberDevice(event.target.checked)}
+                    />
+                    <span>
+                      Lembrar neste dispositivo
+                      <span className="block text-xs text-muted">
+                        Mantém sua sessão ativa com cookie seguro por até 30 dias.
+                      </span>
+                    </span>
+                  </label>
+                  <GoogleSection
+                    googleClientId={googleClientId}
+                    googleButtonRef={googleButtonRef}
+                    googleError={googleError}
+                    onGoogleError={setGoogleError}
+                  />
+                </div>
               )}
             </div>
           </div>

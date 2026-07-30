@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const SESSION_COOKIE_NAME = "krosmed_session";
+const REFRESH_COOKIE_NAME = "krosmed_refresh";
+const REFRESH_HINT_COOKIE_NAME = "krosmed_refresh_hint";
 const TOKEN_COOKIE_NAME = "krosmed_token";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
@@ -67,17 +69,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const secure = isSecureRequest(request);
 
   // Forward the token to the backend so it can be revoked server-side.
-  const token = request.cookies.get(TOKEN_COOKIE_NAME)?.value;
-  if (token) {
+  const token =
+    request.cookies.get(SESSION_COOKIE_NAME)?.value ||
+    request.cookies.get(TOKEN_COOKIE_NAME)?.value;
+  const refreshToken = request.cookies.get(REFRESH_COOKIE_NAME)?.value || "";
+  if (token || refreshToken) {
     const apiTarget =
       process.env.NEXT_API_PROXY_TARGET || `http://localhost:8000`;
     try {
       await fetch(`${apiTarget}/auth/logout`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ refresh_token: refreshToken }),
       });
     } catch {
       // Backend unreachable is acceptable — cookie removal still happens below.
@@ -100,6 +106,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     name: TOKEN_COOKIE_NAME,
     value: "",
     sameSite: "strict",
+    secure,
+    path: "/",
+    maxAge: 0,
+  });
+  response.cookies.set({
+    name: REFRESH_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    path: "/api/auth",
+    maxAge: 0,
+  });
+  response.cookies.set({
+    name: REFRESH_HINT_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
     secure,
     path: "/",
     maxAge: 0,

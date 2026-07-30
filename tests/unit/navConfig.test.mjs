@@ -19,7 +19,18 @@ function findItem(href) {
 
 test("navigation exposes the canonical student destinations", () => {
   const hrefs = NAV_GROUPS_CONFIG.flatMap((group) => group.items.map((item) => item.href));
-  assert.deepEqual(hrefs, ["/hoje", "/kros", "/banco", "/cards", "/evolucao", "/planejamento"]);
+  assert.deepEqual(hrefs, ["/kros", "/hoje", "/banco", "/cards", "/evolucao", "/planejamento"]);
+});
+
+test("navigation isolates Kros in its own group above the study routine", () => {
+  assert.deepEqual(
+    NAV_GROUPS_CONFIG.map((group) => group.items.map((item) => item.href)),
+    [
+      ["/kros"],
+      ["/hoje", "/banco", "/cards"],
+      ["/evolucao", "/planejamento"],
+    ],
+  );
 });
 
 test("legacy routes keep activating their canonical destination", () => {

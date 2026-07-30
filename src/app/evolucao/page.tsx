@@ -183,7 +183,7 @@ export default function EvolucaoPage() {
                 <div className="mb-3">
                   <h2 id="evolution-summary-title" className="text-sm font-semibold text-ink">Resumo do desempenho</h2>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="student-stagger grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                   <SummaryMetric
                     label="Primeira tentativa"
                     value={accuracy(performance?.first_attempt_accuracy)}

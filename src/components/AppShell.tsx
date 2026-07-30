@@ -36,7 +36,9 @@ type BuildVersionPayload = {
 };
 
 const SHOW_BUILD_BADGE = process.env.NEXT_PUBLIC_SHOW_BUILD_BADGE === "1";
-const PRIMARY_NAV_ROUTES = ["/hoje", "/kros", "/banco", "/cards", "/evolucao", "/planejamento"];
+// Mesma ordem de NAV_GROUPS_CONFIG (lib/navConfig.ts) — define a prioridade do
+// warm-up ocioso, então segue a ordem em que os destinos aparecem no menu.
+const PRIMARY_NAV_ROUTES = ["/kros", "/hoje", "/banco", "/cards", "/evolucao", "/planejamento"];
 
 type IdleCallbackHandle = number;
 type WindowWithIdleCallback = Window & {

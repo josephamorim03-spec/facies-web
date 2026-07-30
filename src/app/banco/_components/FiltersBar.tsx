@@ -606,48 +606,51 @@ export default function FiltersBar(props: FiltersBarProps) {
           </div>
         ) : null}
 
-        <div className="mx-auto grid w-full max-w-md gap-3 border-t border-edge pt-5 text-center">
-          <label className="flex flex-col items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Questões</span>
-            <input
-              type="number"
-              min={1}
-              max={limitMax}
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={limitDraft}
-              onFocus={() => onQuantityEditingChange?.(true)}
-              onChange={(e) => {
-                const next = e.target.value;
-                if (/^\d*$/.test(next)) setLimitDraft(next);
-              }}
-              onBlur={() => {
-                commitLimitDraft();
-                onQuantityEditingChange?.(false);
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") event.currentTarget.blur();
-              }}
-              className="mx-auto w-28 text-center"
-            />
-          </label>
-          <div className="space-y-3">
-            <input
-              type="range"
-              min={1}
-              max={limitMax}
-              value={clampedLimit}
-              onChange={(e) => {
-                const next = Number(e.target.value);
-                setLimitDraft(String(next));
-                onLimitChange(next);
-              }}
-              className="w-full"
-              style={{ "--track-bg": `linear-gradient(to right, var(--range-fill) 0%, var(--range-fill) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) 100%)` } as CSSProperties}
-              aria-label="Quantidade de questões"
-            />
-            <p className="text-xs text-muted">Máx. {Math.min(120, maxSelectable)}</p>
+        {/* Alinhado a esquerda e em largura cheia, como o cabecalho da secao e os
+            cards de modo acima. Centralizar num `max-w-md` fazia deste bloco uma
+            ilha estreita que nao encostava em nenhuma borda vizinha. */}
+        <div className="space-y-3 border-t border-edge pt-5">
+          <div className="flex items-end justify-between gap-4">
+            <label className="space-y-1.5">
+              <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-muted">Questões</span>
+              <input
+                type="number"
+                min={1}
+                max={limitMax}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={limitDraft}
+                onFocus={() => onQuantityEditingChange?.(true)}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  if (/^\d*$/.test(next)) setLimitDraft(next);
+                }}
+                onBlur={() => {
+                  commitLimitDraft();
+                  onQuantityEditingChange?.(false);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") event.currentTarget.blur();
+                }}
+                className="w-24 text-center"
+              />
+            </label>
+            <p className="pb-2.5 text-xs text-muted">Máx. {Math.min(120, maxSelectable)}</p>
           </div>
+          <input
+            type="range"
+            min={1}
+            max={limitMax}
+            value={clampedLimit}
+            onChange={(e) => {
+              const next = Number(e.target.value);
+              setLimitDraft(String(next));
+              onLimitChange(next);
+            }}
+            className="w-full"
+            style={{ "--track-bg": `linear-gradient(to right, var(--range-fill) 0%, var(--range-fill) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) 100%)` } as CSSProperties}
+            aria-label="Quantidade de questões"
+          />
         </div>
       </section>
     </div>

@@ -18,7 +18,7 @@ function ChartCard({
   className?: string;
 }) {
   return (
-    <article className={`rounded-xl border border-edge bg-surface p-4 shadow-[0_1px_0_color-mix(in_srgb,var(--color-ink)_8%,transparent)] sm:p-5 ${className}`}>
+    <article className={`surface-cozy p-4 sm:p-5 ${className}`}>
       {children}
     </article>
   );

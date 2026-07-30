@@ -9,6 +9,8 @@ export type LoginFormProps = {
   setLoginEmail: (v: string) => void;
   loginPassword: string;
   setLoginPassword: (v: string) => void;
+  rememberDevice: boolean;
+  setRememberDevice: (v: boolean) => void;
   loginBusy: boolean;
   loginError: string;
   googleClientId: string;
@@ -24,6 +26,8 @@ export function LoginForm({
   setLoginEmail,
   loginPassword,
   setLoginPassword,
+  rememberDevice,
+  setRememberDevice,
   loginBusy,
   loginError,
   googleClientId,
@@ -58,6 +62,20 @@ export function LoginForm({
         onChange={(event) => setLoginPassword(event.target.value)}
         onKeyDown={(event) => event.key === "Enter" && onLogin()}
       />
+      <label className="flex cursor-pointer items-start gap-2 text-left text-sm text-muted">
+        <input
+          type="checkbox"
+          className="mt-0.5 h-4 w-4 rounded border-edge text-ink"
+          checked={rememberDevice}
+          onChange={(event) => setRememberDevice(event.target.checked)}
+        />
+        <span>
+          Lembrar neste dispositivo
+          <span className="block text-xs text-muted">
+            Mantém sua sessão ativa com cookie seguro por até 30 dias.
+          </span>
+        </span>
+      </label>
       {loginError && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-700">
           {loginError}

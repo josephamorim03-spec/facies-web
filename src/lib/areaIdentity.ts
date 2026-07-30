@@ -24,6 +24,24 @@ export const AREA_HEX: Record<DisplayArea, string> = {
   OU: "#5F6762",
 };
 
+/**
+ * Mesma paleta de área na forma de CSS var. Prefira isto ao AREA_HEX em
+ * qualquer coisa desenhada na tela (Recharts aceita `var()` em stroke/fill):
+ * o hex é fixo nos dois temas, enquanto a var tem override no `.dark` e
+ * continua legível sobre o papel escuro.
+ */
+export const AREA_VAR: Record<DisplayArea, string> = {
+  GO: "var(--area-go)",
+  OB: "var(--area-ob)",
+  PD: "var(--area-ped)",
+  MP: "var(--area-mp)",
+  CG: "var(--area-cg)",
+  CM: "var(--area-cm)",
+  OU: "var(--area-ou)",
+};
+
+export const AREA_FULL_EXAM_VAR = "var(--area-full-exam)";
+
 export const AREA_BG_CLASS: Record<DisplayArea, string> = {
   GO: "bg-area-go", OB: "bg-area-go", PD: "bg-area-ped", MP: "bg-area-mp",
   CG: "bg-area-cg", CM: "bg-area-cm", OU: "bg-area-ou",

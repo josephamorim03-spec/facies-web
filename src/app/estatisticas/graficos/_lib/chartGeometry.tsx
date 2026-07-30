@@ -9,7 +9,9 @@ export const CHART_EDGE = "var(--color-edge)";
 export const CHART_MUTED = "var(--color-muted)";
 export const TOUCH_INTERACTION_QUERY = "(hover: none), (pointer: coarse)";
 export const AREA_SEGMENT_ORDER: AreaKey[] = ["GO", "PD", "CG", "MP", "CM", "OU"];
-export const VOLUME_ACTIVE_OUTLINE = "#2f2f2f";
+// Contorno da barra ativa. Precisa ser token: com um cinza-quase-preto fixo,
+// o realce sumia sobre o papel escuro.
+export const VOLUME_ACTIVE_OUTLINE = CHART_INK;
 export const VOLUME_SEGMENT_GUTTER_PX = 24;
 export const VOLUME_SEGMENT_LABEL_LEFT_PX = 4;
 export const VOLUME_SEGMENT_PIN_LENGTH_PX = 6;
@@ -142,13 +144,13 @@ export function formatPct(value: number | null | undefined): string {
   return `${Math.round(value)}%`;
 }
 
-export function toRgba(hex: string, alpha: number): string {
-  const value = hex.replace("#", "").trim();
-  if (value.length !== 6) return `rgba(255,255,255,${alpha})`;
-  const r = parseInt(value.slice(0, 2), 16);
-  const g = parseInt(value.slice(2, 4), 16);
-  const b = parseInt(value.slice(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+/**
+ * Aplica alfa a qualquer cor — inclusive a uma CSS var, que é como as cores de
+ * gráfico chegam aqui. A versão anterior fazia parse de hex e devolvia branco
+ * para qualquer outra coisa.
+ */
+export function withAlpha(color: string, alpha: number): string {
+  return `color-mix(in srgb, ${color} ${Math.round(alpha * 100)}%, transparent)`;
 }
 
 export function clamp(value: number, min: number, max: number): number {

@@ -27,6 +27,10 @@ import {
 } from "../_lib/chartGeometry";
 import type { GraficosState, GraficosRefs, GraficosActions } from "../_hooks/useGraficosData";
 import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
+import {
+  studyChartTooltipContentStyle,
+  studyChartTooltipLabelStyle,
+} from "@/components/charts/studyChartTooltip";
 
 type Props = {
   state: GraficosState;
@@ -99,7 +103,9 @@ export function VolumeChart({ state, refs, actions }: Props) {
                   tick={(props: WeekTickProps) =>
                     renderWeekTickLabel(props, weekIndexByLabel, {
                       activeWeekIndex: volumeActiveWeekIndex,
-                      activeFill: "#ffffff",
+                      // Rótulo da semana ativa, desenhado sobre a barra em
+                      // `--color-primary`. Era um branco fixo, ilegível no claro.
+                      activeFill: "var(--color-primary-ink)",
                       defaultFill: CHART_MUTED,
                     })
                   }
@@ -182,8 +188,8 @@ export function VolumeChart({ state, refs, actions }: Props) {
               <YAxis domain={[0, 1]} tickFormatter={(v: number) => `${Math.round(v * 100)}%`} tick={{ fontSize: 10, fill: CHART_MUTED }} width={CHART_Y_AXIS_WIDTH} />
               <Tooltip
                 cursor={{ fill: CHART_EDGE, fillOpacity: 0.25 }}
-                contentStyle={{ background: "var(--color-surface)", border: "1px solid var(--color-edge)", borderRadius: 8, fontSize: 12 }}
-                labelStyle={{ color: "var(--color-ink)", fontWeight: 600 }}
+                contentStyle={studyChartTooltipContentStyle}
+                labelStyle={studyChartTooltipLabelStyle}
                 itemStyle={{ padding: 0 }}
                 formatter={(value, name) => [`${value ?? 0} q`, String(name)]}
               />

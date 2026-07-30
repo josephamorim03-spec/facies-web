@@ -16,9 +16,9 @@ import { useSessionNavGuard } from "@/hooks/useSessionNavGuard";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { getAuthToken } from "@/lib/auth";
 import { warmRoute, warmRouteData } from "@/lib/navigationWarmup";
+import { KrosGlyph, type KrosGlyphMotion } from "@/components/KrosGlyph";
 import {
   CalendarDays,
-  BrainCircuit,
   ChartNoAxesCombined,
   House,
   Layers3,
@@ -42,7 +42,6 @@ function KrosmedIcon({ className }: { className?: string }) {
 
 const ICON_MAP: Record<string, LucideIcon> = {
   today: House,
-  kros: BrainCircuit,
   bank: LibraryBig,
   cards: Layers3,
   evolution: ChartNoAxesCombined,
@@ -50,12 +49,51 @@ const ICON_MAP: Record<string, LucideIcon> = {
   settings: Settings,
 };
 
-const NAV_GROUPS = NAV_GROUPS_CONFIG.map((group) => ({
-  items: group.items.map((item) => ({
-    ...item,
-    Icon: ICON_MAP[item.icon] ?? LibraryBig,
-  })),
-}));
+/**
+ * A Kros não usa ícone do Lucide: é o glifo próprio, que anima. Os demais
+ * destinos seguem o mapa acima.
+ */
+function NavIcon({
+  icon,
+  className,
+  krosMotion = "ambient",
+}: {
+  icon: string;
+  className?: string;
+  krosMotion?: KrosGlyphMotion;
+}) {
+  if (icon === "kros") return <KrosGlyph className={className} motion={krosMotion} />;
+  const Icon = ICON_MAP[icon] ?? LibraryBig;
+  return <Icon className={className} />;
+}
+
+const NAV_GROUPS = NAV_GROUPS_CONFIG;
+
+/**
+ * Dispara a animação de apresentação do glifo quando a superfície de navegação
+ * abre (sidebar expandindo ou drawer). Volta ao loop ambiente ao terminar.
+ */
+const KROS_WAKE_MS = 2000;
+
+function useKrosWake(open: boolean): KrosGlyphMotion {
+  const [motion, setMotion] = useState<KrosGlyphMotion>("ambient");
+  const [previousOpen, setPreviousOpen] = useState(open);
+
+  // Ajuste de estado durante a renderização — o padrão do React para reagir à
+  // mudança de uma prop, em vez de um efeito que dispara render em cascata.
+  if (open !== previousOpen) {
+    setPreviousOpen(open);
+    if (open) setMotion("wake");
+  }
+
+  useEffect(() => {
+    if (motion !== "wake") return;
+    const timer = window.setTimeout(() => setMotion("ambient"), KROS_WAKE_MS);
+    return () => window.clearTimeout(timer);
+  }, [motion]);
+
+  return motion;
+}
 
 export const NAV_OPEN_EVENT = "kros:open-nav";
 
@@ -105,6 +143,7 @@ export default function Nav({ displayName, photoUrl }: { displayName?: string | 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const historyAnchorPathRef = useRef<string | null>(null);
   const hideCompletely = useNavHideCompletely(pathname);
+  const krosMotion = useKrosWake(drawerOpen && !isDesktopNavigation && !hideCompletely);
 
   const {
     exitConfirmOpen,
@@ -277,7 +316,7 @@ export default function Nav({ displayName, photoUrl }: { displayName?: string | 
         <div className="fixed inset-0 z-50" onClick={() => setDrawerOpen(false)}>
           <div className="absolute inset-0 bg-black/30" />
           <nav
-            className="drawer-enter absolute left-0 top-0 flex h-full w-64 flex-col border-r border-edge bg-paper p-6 shadow-[var(--soft-shadow)]"
+            className="drawer-enter absolute left-0 top-0 flex h-full w-64 flex-col border-r border-edge bg-paper p-6 shadow-soft"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-6 flex items-center">
@@ -291,8 +330,14 @@ export default function Nav({ displayName, photoUrl }: { displayName?: string | 
                 <div key={gi}>
                   {gi > 0 && <hr className="border-edge my-3" />}
                   {group.items.map((item) => {
-                    const { href, shortLabel, Icon } = item;
+                    const { href, shortLabel, icon } = item;
                     const active = isNavItemActive(pathname, item);
+                    // A Kros ganha uma superfície teal levíssima em repouso —
+                    // presente sem imitar o estado "selecionado".
+                    const restingClass =
+                      icon === "kros"
+                        ? "nav-kros-item"
+                        : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink";
                     return (
                       <FastNavLink
                         key={href}
@@ -303,12 +348,10 @@ export default function Nav({ displayName, photoUrl }: { displayName?: string | 
                         data-nav-item-href={href}
                         data-nav-active={active ? "true" : "false"}
                         className={`flex items-center gap-3 whitespace-nowrap rounded-xl border px-3 py-2.5 text-sm font-medium leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                          active
-                            ? "border-primary bg-surface text-ink shadow-sm"
-                            : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink"
+                          active ? "border-primary bg-surface text-ink shadow-sm" : restingClass
                         }`}
                       >
-                        <Icon className="w-5 h-5 shrink-0" />
+                        <NavIcon icon={icon} className="w-5 h-5 shrink-0" krosMotion={krosMotion} />
                         {shortLabel}
                       </FastNavLink>
                     );
@@ -384,6 +427,7 @@ export function SidebarNav({
   const [hovered, setHovered] = useState(false);
   const [pinned, setPinned] = useState(false);
   const visible = hovered || pinned;
+  const krosMotion = useKrosWake(visible && !hideCompletely && isDesktopNavigation);
 
   const {
     exitConfirmOpen,
@@ -443,8 +487,14 @@ export function SidebarNav({
             <div key={gi}>
               {gi > 0 && <hr className="border-edge my-3 mx-1" />}
               {group.items.map((item) => {
-                const { href, shortLabel, Icon } = item;
+                const { href, shortLabel, icon } = item;
                 const active = isNavItemActive(pathname, item);
+                // A Kros ganha uma superfície teal levíssima em repouso —
+                // presente sem imitar o estado "selecionado".
+                const restingClass =
+                  icon === "kros"
+                    ? "nav-kros-item"
+                    : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink";
                 return (
                   <FastNavLink
                     key={href}
@@ -455,13 +505,11 @@ export function SidebarNav({
                     data-nav-item-href={href}
                     data-nav-active={active ? "true" : "false"}
                     className={`paper-control flex min-h-11 w-full min-w-0 items-center border text-xs font-medium leading-tight focus-visible:outline-none ${visible ? "gap-3 px-2.5" : "justify-center px-0"} ${
-                      active
-                        ? "border-primary bg-surface text-ink"
-                        : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink"
+                      active ? "border-primary bg-surface text-ink" : restingClass
                     }`}
                     aria-current={active ? "page" : undefined}
                   >
-                    <Icon className="w-5 h-5 shrink-0" />
+                    <NavIcon icon={icon} className="w-5 h-5 shrink-0" krosMotion={krosMotion} />
                     {visible && <span className="min-w-0 flex-1 truncate whitespace-nowrap" title={shortLabel}>{shortLabel}</span>}
                   </FastNavLink>
                 );

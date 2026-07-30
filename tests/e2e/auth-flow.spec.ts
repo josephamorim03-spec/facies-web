@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("Auth flow", () => {
   test("redirects unauthenticated user to /login", async ({ page }) => {
     await page.goto("/cronograma");
-    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveURL(/\/login\?next=%2Fcronograma$/);
   });
 
   test("/api/auth/session rejects request without CSRF header", async ({ request }) => {
@@ -69,11 +69,27 @@ test.describe("Auth flow", () => {
         httpOnly: true,
         sameSite: "Lax",
       },
+      {
+        name: "krosmed_refresh",
+        value: "refresh_e2e",
+        url: "http://127.0.0.1:3000/api/auth",
+        httpOnly: true,
+        sameSite: "Lax",
+      },
+      {
+        name: "krosmed_refresh_hint",
+        value: "1",
+        url: "http://127.0.0.1:3000",
+        httpOnly: true,
+        sameSite: "Lax",
+      },
     ]);
 
     const before = await context.cookies();
     expect(before.some((c) => c.name === "krosmed_token")).toBeTruthy();
     expect(before.some((c) => c.name === "krosmed_session")).toBeTruthy();
+    expect(before.some((c) => c.name === "krosmed_refresh")).toBeTruthy();
+    expect(before.some((c) => c.name === "krosmed_refresh_hint")).toBeTruthy();
 
     // Perform logout via the API
     await page.goto("http://localhost:3000/api/version");
@@ -89,5 +105,7 @@ test.describe("Auth flow", () => {
     const after = await context.cookies();
     expect(after.some((c) => c.name === "krosmed_token")).toBeFalsy();
     expect(after.some((c) => c.name === "krosmed_session")).toBeFalsy();
+    expect(after.some((c) => c.name === "krosmed_refresh")).toBeFalsy();
+    expect(after.some((c) => c.name === "krosmed_refresh_hint")).toBeFalsy();
   });
 });

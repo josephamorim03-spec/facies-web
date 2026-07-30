@@ -21,6 +21,7 @@ import {
   type WeekTickProps,
 } from "../_lib/chartGeometry";
 import type { GraficosState, GraficosRefs, GraficosActions } from "../_hooks/useGraficosData";
+import { useChartEntrance } from "../_hooks/useChartEntrance";
 
 type Props = {
   state: GraficosState;
@@ -29,6 +30,7 @@ type Props = {
 };
 
 export function AccuracyChart({ state, refs, actions }: Props) {
+  const entering = useChartEntrance();
   const {
     weeks,
     volumeXAxisTicks,
@@ -104,6 +106,9 @@ export function AccuracyChart({ state, refs, actions }: Props) {
               strokeWidth={2}
               fill="url(#accuracyFill)"
               connectNulls={false}
+              isAnimationActive={entering}
+              animationDuration={700}
+              animationEasing="ease-out"
               dot={(props: any) => {
                 const payload = props?.payload;
                 if (!payload || payload.accuracy_pct === null || Number(payload.total ?? 0) <= 0) return null;

@@ -1,4 +1,4 @@
-import { clearAuthToken } from "../../auth";
+import { clearAuthToken, refreshAuthSession } from "../../auth";
 import {
   dispatchSessionExpired,
   isSessionExpiredApiResponse,
@@ -617,6 +617,7 @@ export async function fetchRaw(path: string, init?: APIRequestInit): Promise<Res
   const canRetry = shouldRetryMethod(method, headers, retryPolicy);
   const retryStatuses = new Set<number>(retryPolicy.retryOnStatuses);
   const maxAttempts = canRetry ? retryPolicy.maxAttempts : 1;
+  let didSessionRefreshRetry = false;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     const timeout = createTimeoutSignal(init?.timeoutMs ?? DEFAULT_API_TIMEOUT_MS);
@@ -628,6 +629,19 @@ export async function fetchRaw(path: string, init?: APIRequestInit): Promise<Res
         signal,
         headers,
       });
+      if (
+        shouldHandleSessionExpired(path, response) &&
+        !didSessionRefreshRetry
+      ) {
+        const refreshed = await refreshAuthSession();
+        if (refreshed) {
+          didSessionRefreshRetry = true;
+          attempt -= 1;
+          continue;
+        }
+        handleSessionExpiredResponse(path, response);
+        return response;
+      }
       if (!canRetry || !retryStatuses.has(response.status) || attempt >= maxAttempts) {
         handleSessionExpiredResponse(path, response);
         return response;

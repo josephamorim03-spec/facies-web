@@ -20,7 +20,7 @@ import {
   VOLUME_ACTIVE_OUTLINE,
   detectTouchInteractionMode,
   resolveIndexFromClientX,
-  toRgba,
+  withAlpha,
   clamp,
   computeChartPoint,
   computeExplodedLabelPlacement,
@@ -541,7 +541,7 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
           fill="none"
           stroke={VOLUME_ACTIVE_OUTLINE}
           strokeWidth={1.5}
-          style={{ filter: `drop-shadow(0 0 7px ${toRgba(VOLUME_ACTIVE_OUTLINE, 0.45)})` }}
+          style={{ filter: `drop-shadow(0 0 7px ${withAlpha(VOLUME_ACTIVE_OUTLINE, 0.45)})` }}
         />
       </g>
     );

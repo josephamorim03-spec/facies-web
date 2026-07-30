@@ -15,9 +15,15 @@ export function proxy(request: NextRequest) {
   }
 
   const sessionToken = request.cookies.get("krosmed_session")?.value?.trim() || "";
-  if (!sessionToken) {
+  const refreshHint = request.cookies.get("krosmed_refresh_hint")?.value?.trim() || "";
+  if (!sessionToken && !refreshHint) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    const nextPath = `${pathname}${request.nextUrl.search}`;
+    url.search = "";
+    if (nextPath && nextPath !== "/") {
+      url.searchParams.set("next", nextPath);
+    }
     return NextResponse.redirect(url);
   }
 

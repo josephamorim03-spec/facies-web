@@ -8,7 +8,7 @@ const E2E_BROWSER_URL = "http://localhost:3000";
 test.describe("Auth proxy + cookies", () => {
   test("redirects protected route to login when auth cookies are missing", async ({ page }) => {
     await page.goto("/cronograma");
-    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveURL(/\/login\?next=%2Fcronograma$/);
   });
 
   test("/api/version remains publicly accessible", async ({ request }) => {
@@ -42,11 +42,27 @@ test.describe("Auth proxy + cookies", () => {
         httpOnly: true,
         sameSite: "Lax",
       },
+      {
+        name: "krosmed_refresh",
+        value: "refresh_e2e",
+        url: `${E2E_BROWSER_URL}/api/auth`,
+        httpOnly: true,
+        sameSite: "Lax",
+      },
+      {
+        name: "krosmed_refresh_hint",
+        value: "1",
+        url: E2E_BROWSER_URL,
+        httpOnly: true,
+        sameSite: "Lax",
+      },
     ]);
 
     const before = await context.cookies();
     expect(before.some((cookie) => cookie.name === "krosmed_token")).toBeTruthy();
     expect(before.some((cookie) => cookie.name === "krosmed_session")).toBeTruthy();
+    expect(before.some((cookie) => cookie.name === "krosmed_refresh")).toBeTruthy();
+    expect(before.some((cookie) => cookie.name === "krosmed_refresh_hint")).toBeTruthy();
 
     await page.goto(`${E2E_BROWSER_URL}/api/version`);
     const status = await page.evaluate(async () => {
@@ -63,6 +79,8 @@ test.describe("Auth proxy + cookies", () => {
     const after = await context.cookies();
     expect(after.some((cookie) => cookie.name === "krosmed_token")).toBeFalsy();
     expect(after.some((cookie) => cookie.name === "krosmed_session")).toBeFalsy();
+    expect(after.some((cookie) => cookie.name === "krosmed_refresh")).toBeFalsy();
+    expect(after.some((cookie) => cookie.name === "krosmed_refresh_hint")).toBeFalsy();
   });
 
   test("rejects mutating auth requests without the internal CSRF header", async ({ context }) => {

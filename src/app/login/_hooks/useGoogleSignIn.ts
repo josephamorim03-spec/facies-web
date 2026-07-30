@@ -26,6 +26,7 @@ function decodeJwtPayload(token: string): Record<string, unknown> {
 export type UseGoogleSignInParams = {
   googleClientId: string;
   view: "login" | "signup" | "forgot" | "verify";
+  rememberDevice?: boolean;
 };
 
 export type UseGoogleSignInReturn = {
@@ -34,7 +35,7 @@ export type UseGoogleSignInReturn = {
   setGoogleError: (error: string) => void;
 };
 
-export function useGoogleSignIn({ googleClientId, view }: UseGoogleSignInParams): UseGoogleSignInReturn {
+export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }: UseGoogleSignInParams): UseGoogleSignInReturn {
   const router = useRouter();
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
   const watchdogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -71,7 +72,7 @@ export function useGoogleSignIn({ googleClientId, view }: UseGoogleSignInParams)
             return;
           }
           gsiLog("gsi_me_success");
-          await establishAuthSession(idToken);
+          await establishAuthSession(idToken, rememberDevice);
 
           const claims = decodeJwtPayload(idToken);
           const given = typeof claims.given_name === "string" ? claims.given_name.trim() : "";
@@ -230,7 +231,7 @@ export function useGoogleSignIn({ googleClientId, view }: UseGoogleSignInParams)
         }, 0);
       }
     }
-  }, [googleClientId, router, view]);
+  }, [googleClientId, rememberDevice, router, view]);
 
   return { googleButtonRef, googleError, setGoogleError };
 }

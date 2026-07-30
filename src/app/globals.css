@@ -26,14 +26,21 @@
   --range-thumb: var(--color-primary);
   --radius-control: 0.5rem;
   --radius-surface: 0.5rem;
-  --radius-hero: 0.5rem;
+  /* Único raio com curva: reservado a superfícies-herói (.surface-hero,
+     .surface-cozy). Controles e cards seguem chapados em 0.5rem. */
+  --radius-hero: 0.875rem;
   --reading-measure: 68ch;
   --content-wide: 72rem;
   --space-page: clamp(1rem, 2vw, 1.5rem);
   --motion-fast: 120ms;
   --motion-base: 180ms;
   --motion-slow: 240ms;
+  /* Período dos loops ambientes. Longo de propósito: a ação ocupa só o
+     início do ciclo, para notar de canto de olho e não cansar. */
+  --motion-ambient: 24s;
   --ease-paper: cubic-bezier(0.2, 0, 0, 1);
+  /* Assentamento mais macio que o --ease-paper, sem overshoot. */
+  --ease-cozy: cubic-bezier(0.32, 0.72, 0, 1);
   --mobile-nav-height: 4rem;
   --bottom-action-bar-min-height: 5.25rem;
   --bottom-action-bar-space: calc(var(--bottom-action-bar-min-height) + env(safe-area-inset-bottom, 0px));
@@ -45,6 +52,7 @@
   --area-cg:  #963B40;
   --area-cm:  #1F6B4C;
   --area-ou:  #5F6762;
+  --area-ob:  #6F5797;
   --area-full-exam: #0F4C5C;
 }
 
@@ -70,6 +78,18 @@
   --range-fill:  var(--color-primary);
   --range-rest:  #33362F;
   --range-thumb: var(--color-primary);
+
+  /* Paleta de área no escuro. Sem estes overrides, os hexes saturados do
+     tema claro ficam ilegíveis sobre o papel #151613 — é o que acontecia
+     nos gráficos da Evolução. Versões claras, mirando >= 4.5:1. */
+  --area-go:  #D08CBE;
+  --area-ped: #7FB6D8;
+  --area-mp:  #D6AD52;
+  --area-cg:  #E08A8F;
+  --area-cm:  #7CC49F;
+  --area-ou:  #A9B2AC;
+  --area-ob:  #B6A2D8;
+  --area-full-exam: #6FAFC0;
 }
 
 @layer base {
@@ -183,7 +203,13 @@
 
   .paper-skeleton {
     @apply bg-surfaceMuted;
-    animation: paper-skeleton-enter var(--motion-slow) var(--ease-paper) both;
+    /* Entrada + respiro continuo. So o fade de entrada deixava um paredao cinza
+       parado, que le como conteudo quebrado em vez de carregamento. O respiro e
+       de opacidade (nao um shimmer de gradiente) para nao brigar com a estetica
+       de papel. `prefers-reduced-motion` desliga tudo isso globalmente. */
+    animation:
+      paper-skeleton-enter var(--motion-slow) var(--ease-paper) both,
+      paper-skeleton-breathe 1.6s var(--ease-paper) var(--motion-slow) infinite;
   }
 
   .student-page {
@@ -194,6 +220,265 @@
   .student-page-header {
     min-height: 5.5rem;
   }
+
+  /* Superficie-heroi: unica geometria com curva no sistema. Reservada a
+     cartoes que abrem uma tela (herois, cartoes de grafico). O realce de
+     1px no topo e o que da leitura de material, sem custar uma sombra. */
+  .surface-cozy {
+    @apply border border-edge bg-surface;
+    position: relative;
+    border-radius: var(--radius-hero);
+    box-shadow: var(--soft-shadow);
+  }
+
+  .surface-cozy::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    border-radius: var(--radius-hero) var(--radius-hero) 0 0;
+    background: color-mix(in srgb, var(--color-ink) 7%, transparent);
+    pointer-events: none;
+  }
+
+  /* Elevacao de 1px no hover. So para superficies clicaveis. */
+  .hover-lift {
+    transition:
+      transform var(--motion-fast) var(--ease-cozy),
+      box-shadow var(--motion-fast) var(--ease-cozy);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--overlay-shadow);
+  }
+
+  /* Entrada em cascata leve para as secoes de primeiro nivel de uma pagina.
+     Teto em 6 filhos: acima disso a espera acumulada passa a ser percebida
+     como lentidao em vez de acabamento. */
+  .student-stagger > * {
+    animation: stagger-rise var(--motion-base) var(--ease-cozy) both;
+  }
+  .student-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .student-stagger > *:nth-child(2) { animation-delay: 45ms; }
+  .student-stagger > *:nth-child(3) { animation-delay: 90ms; }
+  .student-stagger > *:nth-child(4) { animation-delay: 135ms; }
+  .student-stagger > *:nth-child(5) { animation-delay: 180ms; }
+  .student-stagger > *:nth-child(6) { animation-delay: 225ms; }
+  .student-stagger > *:nth-child(n + 7) { animation-delay: 225ms; }
+
+  /* Repouso do item Kros no menu. Classe propria em vez de `bg-primary/8`
+     para nao depender de como o Tailwind resolve modificador de opacidade
+     sobre uma cor declarada como var(). */
+  .nav-kros-item {
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-paper));
+    border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+    @apply text-ink;
+  }
+
+  .nav-kros-item:hover {
+    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-paper));
+    border-color: color-mix(in srgb, var(--color-primary) 46%, transparent);
+  }
+}
+
+@keyframes stagger-rise {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Desenho de traco. Depende de `pathLength="100"` no SVG, o que dispensa
+   medir geometria em JS — e por ser CSS, o bloco global de
+   `prefers-reduced-motion` no fim deste arquivo ja desliga tudo. */
+@keyframes kros-draw {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes kros-node-in {
+  from { opacity: 0; transform: scale(0.2); }
+  to { opacity: 0.62; transform: scale(1); }
+}
+
+@keyframes kros-core-in {
+  from { opacity: 0; transform: scale(0.2); }
+  to { opacity: 0.95; transform: scale(1); }
+}
+
+/* Arco que circunda o icone da Kros: uma volta em ~3,2s dentro de um ciclo
+   de 24s. O movimento fica na borda do icone, longe do texto que se le.
+   A acao fica na segunda metade do ciclo de proposito: quando o menu abre, a
+   volta de apresentacao ("wake") toca e o loop ambiente reinicia do zero — se
+   a acao estivesse no inicio, as duas tocariam coladas. Assim a proxima volta
+   so acontece ~14s depois. Os atrasos dos nos abaixo somam o mesmo deslocamento. */
+@keyframes kros-orbit {
+  0%, 58.5% { stroke-dashoffset: 0; opacity: 0; }
+  60% { opacity: 0.28; }
+  70% { opacity: 0.28; }
+  71.8% { stroke-dashoffset: -100; opacity: 0; }
+  100% { stroke-dashoffset: -100; opacity: 0; }
+}
+
+@keyframes kros-orbit-once {
+  0% { stroke-dashoffset: 0; opacity: 0; }
+  10% { opacity: 0.28; }
+  84% { opacity: 0.28; }
+  100% { stroke-dashoffset: -100; opacity: 0; }
+}
+
+/* Cada no responde no instante em que o arco passa por ele. */
+@keyframes kros-node-blink {
+  0%, 100% { opacity: 0.62; }
+  0.6% { opacity: 1; }
+  3% { opacity: 0.62; }
+}
+
+@keyframes kros-core-breathe {
+  0%, 100% { opacity: 0.95; transform: scale(1); }
+  1.5% { opacity: 1; transform: scale(1.16); }
+  5% { opacity: 0.95; transform: scale(1); }
+}
+
+/* Traco de linha de grafico desenhando na entrada. */
+@keyframes chart-line-draw {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* ── Icone da Kros (components/KrosGlyph.tsx) ───────────────────────────── */
+.kros-glyph {
+  display: block;
+  overflow: visible;
+}
+
+.kros-glyph .kg-link {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  opacity: 0.4;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+}
+
+.kros-glyph .kg-chord {
+  stroke-width: 1.1;
+  opacity: 0.24;
+}
+
+.kros-glyph .kg-node {
+  fill: currentColor;
+  opacity: 0.62;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.kros-glyph .kg-core {
+  fill: currentColor;
+  opacity: 0.95;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.kros-glyph .kg-orbit {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-dasharray: 20 80;
+  stroke-dashoffset: 0;
+  opacity: 0;
+}
+
+.kros-glyph[data-kros-motion="ambient"] .kg-orbit {
+  animation: kros-orbit var(--motion-ambient) linear infinite;
+}
+.kros-glyph[data-kros-motion="ambient"] .kg-node {
+  animation: kros-node-blink var(--motion-ambient) var(--ease-paper) infinite;
+}
+.kros-glyph[data-kros-motion="ambient"] .kg-core {
+  animation: kros-core-breathe var(--motion-ambient) var(--ease-paper) infinite;
+}
+/* Atrasos = 14,04s (inicio da volta, ver kros-orbit) + a posicao angular de
+   cada no ao longo do arco. */
+.kros-glyph[data-kros-motion="ambient"] .kg-n-e { animation-delay: 14.41s; }
+.kros-glyph[data-kros-motion="ambient"] .kg-n-d { animation-delay: 15.19s; }
+.kros-glyph[data-kros-motion="ambient"] .kg-n-a { animation-delay: 15.88s; }
+.kros-glyph[data-kros-motion="ambient"] .kg-n-b { animation-delay: 16.39s; }
+.kros-glyph[data-kros-motion="ambient"] .kg-n-c { animation-delay: 16.98s; }
+.kros-glyph[data-kros-motion="ambient"] .kg-core { animation-delay: 16.64s; }
+
+/* Abertura do menu: nucleo aparece, conexoes se estendem, nos acendem e o
+   arco da uma volta de apresentacao. */
+.kros-glyph[data-kros-motion="wake"] .kg-core {
+  animation: kros-core-in 220ms var(--ease-cozy) both;
+}
+.kros-glyph[data-kros-motion="wake"] .kg-link {
+  animation: kros-draw 240ms var(--ease-cozy) both;
+}
+.kros-glyph[data-kros-motion="wake"] .kg-l1 { animation-delay: 130ms; }
+.kros-glyph[data-kros-motion="wake"] .kg-l2 { animation-delay: 175ms; }
+.kros-glyph[data-kros-motion="wake"] .kg-l3 { animation-delay: 220ms; }
+.kros-glyph[data-kros-motion="wake"] .kg-l4 { animation-delay: 265ms; }
+.kros-glyph[data-kros-motion="wake"] .kg-l5 { animation-delay: 310ms; }
+.kros-glyph[data-kros-motion="wake"] .kg-chord { animation-delay: 380ms; }
+.kros-glyph[data-kros-motion="wake"] .kg-node {
+  animation: kros-node-in 190ms var(--ease-cozy) both;
+}
+.kros-glyph[data-kros-motion="wake"] .kg-n-a { animation-delay: 320ms; }
+.kros-glyph[data-kros-motion="wake"] .kg-n-b { animation-delay: 365ms; }
+.kros-glyph[data-kros-motion="wake"] .kg-n-c { animation-delay: 410ms; }
+.kros-glyph[data-kros-motion="wake"] .kg-n-d { animation-delay: 455ms; }
+.kros-glyph[data-kros-motion="wake"] .kg-n-e { animation-delay: 500ms; }
+.kros-glyph[data-kros-motion="wake"] .kg-orbit {
+  animation: kros-orbit-once 1500ms linear 420ms both;
+}
+
+/* Enquanto a prova e montada, o arco nao para de circundar. */
+.kros-glyph[data-kros-motion="busy"] .kg-orbit {
+  opacity: 1;
+  animation: kros-orbit-once 1300ms linear infinite;
+}
+
+/* ── Graficos ───────────────────────────────────────────────────────────── */
+/* Travar/destravar uma serie na legenda so muda a opacidade e a espessura do
+   traco. Transicionar em CSS evita o redesenho completo que o Recharts fazia,
+   e o bloco de `prefers-reduced-motion` no fim do arquivo desliga tudo. O
+   seletor mira a curva (filha direta do grupo da serie), nao os pontos. */
+.chart-series-line > path {
+  transition:
+    stroke-opacity var(--motion-base) var(--ease-paper),
+    stroke-width var(--motion-base) var(--ease-paper);
+}
+
+/* ── Constelacao de fundo da /kros ──────────────────────────────────────── */
+/* Mesma linguagem de nos e ligacoes do icone, em opacidade de textura. A
+   deriva e longa o bastante para nao ser percebida como movimento. */
+.kros-constellation .kc-edge {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  opacity: 0.16;
+}
+
+.kros-constellation .kc-node {
+  fill: currentColor;
+  opacity: 0.22;
+}
+
+.kros-constellation g {
+  transform-box: view-box;
+  animation: kc-drift 52s ease-in-out infinite;
+}
+
+.kros-constellation g.kc-far {
+  animation-duration: 78s;
+  animation-direction: reverse;
+}
+
+@keyframes kc-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-10px, 6px); }
 }
 
 @keyframes student-page-enter {
@@ -204,6 +489,11 @@
 @keyframes paper-skeleton-enter {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes paper-skeleton-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
 }
 
 /* ── Range slider — cross-browser consistent ─────────────────────────────── */

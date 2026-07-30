@@ -160,14 +160,16 @@ function navItem(intent: StudentIntent): NavItemConfig {
   };
 }
 
+// Três blocos, separados por divisória: a Kros é o chamariz do produto e fica
+// sozinha no topo; depois a rotina de estudo; depois o acompanhamento.
+// Alterar esta ordem exige atualizar `tests/unit/navConfig.test.mjs` e
+// `PRIMARY_NAV_ROUTES` em `components/AppShell.tsx`.
 export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
   {
-    items: [
-      navItem("today"),
-      navItem("kros"),
-      navItem("bank"),
-      navItem("cards"),
-    ],
+    items: [navItem("kros")],
+  },
+  {
+    items: [navItem("today"), navItem("bank"), navItem("cards")],
   },
   {
     items: [navItem("evolution"), navItem("planning")],

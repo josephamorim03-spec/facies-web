@@ -79,8 +79,11 @@ type CreateSessionPanelProps = {
   studyKind: StudyKind;
   canStartSession?: boolean;
   error?: string | null;
+  startLabel: string;
+  emptyReason?: string | null;
   onRefreshAvailability: () => void;
   onPreviewQuestions: () => void;
+  onStartSession: () => void;
   onRetry?: () => void;
 };
 
@@ -93,8 +96,11 @@ export default function CreateSessionPanel({
   studyKind,
   canStartSession = true,
   error,
+  startLabel,
+  emptyReason,
   onRefreshAvailability,
   onPreviewQuestions,
+  onStartSession,
   onRetry,
 }: CreateSessionPanelProps) {
   const canStart = !busy && canStartSession && !!availability && availability.available_count > 0;
@@ -155,7 +161,30 @@ export default function CreateSessionPanel({
         </Alert>
       )}
 
-      <div className="mt-4">
+      {/* Estado vazio explicado: zero questoes com um botao desabilitado e sem
+          motivo era o que fazia a tela parecer quebrada. */}
+      {!error && emptyReason && (
+        <p className="mt-4 border-l-2 border-edge pl-3 text-sm text-muted" aria-live="polite">
+          {emptyReason}
+        </p>
+      )}
+
+      {/* Acao primaria mora junto do resumo sobre o qual ela age. No mobile a
+          BottomActionBar assume (ver banco/page.tsx). */}
+      <div className="mt-4 space-y-2">
+        <Button
+          type="button"
+          variant="primary"
+          size="md"
+          onClick={onStartSession}
+          disabled={busy || !canStart}
+          className="hidden w-full md:flex"
+        >
+          {busy ? "Preparando..." : startLabel}
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+            <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
+          </svg>
+        </Button>
         <Button type="button" variant="secondary" size="md" onClick={onPreviewQuestions} disabled={busy || !canStart} className="w-full">
           Ver prévia
         </Button>
