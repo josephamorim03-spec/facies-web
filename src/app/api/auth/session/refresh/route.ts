@@ -1,47 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  ACCESS_COOKIE_MAX_AGE_SECONDS,
+  REFRESH_COOKIE_NAME,
+  clearSessionCookies,
+  isPersistentSession,
+  isSecureRequest,
+  setSessionCookies,
+} from "@/lib/server/sessionCookies";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SESSION_COOKIE_NAME = "krosmed_session";
-const REFRESH_COOKIE_NAME = "krosmed_refresh";
-const REFRESH_HINT_COOKIE_NAME = "krosmed_refresh_hint";
-const TOKEN_COOKIE_NAME = "krosmed_token";
 const SESSION_EXPIRED_HEADER = "X-KrosMed-Session-Expired";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
 
-function parseEnvPositiveInt(name: string, fallback: number, minValue: number = 1): number {
-  const raw = String(process.env[name] ?? "").trim();
-  if (!raw) return fallback;
-  const parsed = Number.parseInt(raw, 10);
-  if (!Number.isFinite(parsed) || parsed < minValue) return fallback;
-  return parsed;
-}
-
-const SESSION_MAX_AGE_SECONDS = parseEnvPositiveInt(
-  "NEXT_ACCESS_COOKIE_MAX_AGE_SECONDS",
-  parseEnvPositiveInt("NEXT_SESSION_MAX_AGE_SECONDS", 15 * 60, 300),
-  300,
-);
-const REFRESH_MAX_AGE_SECONDS = parseEnvPositiveInt(
-  "NEXT_REFRESH_COOKIE_MAX_AGE_SECONDS",
-  30 * 24 * 60 * 60,
-  3600,
-);
-
 function proxyTarget(): string {
   const raw = process.env.NEXT_API_PROXY_TARGET || "http://127.0.0.1:8000";
   return raw.replace(/\/+$/, "");
-}
-
-function isSecureRequest(request: NextRequest): boolean {
-  if (request.nextUrl.protocol === "https:") return true;
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  if (forwardedProto) {
-    return forwardedProto.split(",")[0]?.trim().toLowerCase() === "https";
-  }
-  return process.env.NODE_ENV === "production";
 }
 
 function requestOrigin(request: NextRequest): string {
@@ -98,68 +75,26 @@ function createRequestId(seed?: string | null): string {
   return `req_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
 }
 
-function clearSessionCookies(response: NextResponse, request: NextRequest): void {
-  const secure = isSecureRequest(request);
-  for (const cookie of [
-    { name: SESSION_COOKIE_NAME, path: "/" },
-    { name: REFRESH_HINT_COOKIE_NAME, path: "/" },
-    { name: TOKEN_COOKIE_NAME, path: "/" },
-    { name: REFRESH_COOKIE_NAME, path: "/api/auth" },
-  ]) {
-    response.cookies.set({
-      name: cookie.name,
-      value: "",
-      httpOnly: cookie.name !== TOKEN_COOKIE_NAME,
-      sameSite: cookie.name === TOKEN_COOKIE_NAME ? "strict" : "lax",
-      secure,
-      path: cookie.path,
-      maxAge: 0,
-    });
-  }
+/** Sessão comprovadamente inválida: apaga os cookies e manda o cliente relogar. */
+function sessionExpiredResponse(request: NextRequest, requestId: string): NextResponse {
+  const response = NextResponse.json(
+    { code: "invalid_refresh_session" },
+    { status: 401, headers: { "X-Request-Id": requestId } },
+  );
+  response.headers.set(SESSION_EXPIRED_HEADER, "1");
+  clearSessionCookies(response, isSecureRequest(request));
+  return response;
 }
 
-function setSessionCookies(
-  response: NextResponse,
-  request: NextRequest,
-  accessToken: string,
-  refreshToken: string,
-): void {
-  const secure = isSecureRequest(request);
-  response.cookies.set({
-    name: SESSION_COOKIE_NAME,
-    value: accessToken,
-    httpOnly: true,
-    sameSite: "lax",
-    secure,
-    path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
-  });
-  response.cookies.set({
-    name: REFRESH_COOKIE_NAME,
-    value: refreshToken,
-    httpOnly: true,
-    sameSite: "lax",
-    secure,
-    path: "/api/auth",
-    maxAge: REFRESH_MAX_AGE_SECONDS,
-  });
-  response.cookies.set({
-    name: REFRESH_HINT_COOKIE_NAME,
-    value: "1",
-    httpOnly: true,
-    sameSite: "lax",
-    secure,
-    path: "/",
-    maxAge: REFRESH_MAX_AGE_SECONDS,
-  });
-  response.cookies.set({
-    name: TOKEN_COOKIE_NAME,
-    value: "",
-    sameSite: "strict",
-    secure,
-    path: "/",
-    maxAge: 0,
-  });
+function upstreamErrorCode(payload: unknown): string {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return "";
+  const record = payload as Record<string, unknown>;
+  const detail = record.detail;
+  if (detail && typeof detail === "object" && !Array.isArray(detail)) {
+    const code = (detail as Record<string, unknown>).code;
+    if (typeof code === "string") return code;
+  }
+  return typeof record.code === "string" ? record.code : "";
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -173,14 +108,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const refreshToken = request.cookies.get(REFRESH_COOKIE_NAME)?.value?.trim() || "";
   if (!refreshToken) {
-    const response = NextResponse.json(
-      { code: "invalid_refresh_session" },
-      { status: 401, headers: { "X-Request-Id": requestId } },
-    );
-    response.headers.set(SESSION_EXPIRED_HEADER, "1");
-    clearSessionCookies(response, request);
-    return response;
+    return sessionExpiredResponse(request, requestId);
   }
+
+  const persistent = isPersistentSession(request);
 
   const upstream = await fetch(`${proxyTarget()}/auth/session/refresh`, {
     method: "POST",
@@ -192,14 +123,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     cache: "no-store",
   }).catch(() => null);
 
-  if (!upstream?.ok) {
-    const response = NextResponse.json(
-      { code: "invalid_refresh_session" },
-      { status: 401, headers: { "X-Request-Id": requestId } },
+  // Backend fora do ar, lento ou limitando por taxa NÃO é sessão inválida. Tratar
+  // como tal (o comportamento anterior) transformava um blip de infra em logout
+  // definitivo, porque o cliente reage limpando cookie e revogando no servidor.
+  if (upstream === null || upstream.status === 429 || upstream.status >= 500) {
+    return NextResponse.json(
+      { code: "refresh_unavailable" },
+      {
+        status: 503,
+        headers: {
+          "X-Request-Id": requestId,
+          ...(upstream?.headers.get("Retry-After")
+            ? { "Retry-After": upstream.headers.get("Retry-After") as string }
+            : {}),
+        },
+      },
     );
-    response.headers.set(SESSION_EXPIRED_HEADER, "1");
-    clearSessionCookies(response, request);
-    return response;
+  }
+
+  if (!upstream.ok) {
+    const errorPayload = await upstream.json().catch(() => null);
+    // Corrida do próprio cliente: outra requisição já rotacionou e os cookies
+    // novos já foram entregues ao navegador. Preserva a sessão e devolve 409 para
+    // o cliente simplesmente repetir a requisição original.
+    if (upstream.status === 401 && upstreamErrorCode(errorPayload) === "refresh_race") {
+      return NextResponse.json(
+        { code: "refresh_race" },
+        { status: 409, headers: { "X-Request-Id": requestId } },
+      );
+    }
+    return sessionExpiredResponse(request, requestId);
   }
 
   const payload = await upstream.json().catch(() => null);
@@ -213,19 +166,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : "";
 
   if (!accessToken || !nextRefreshToken) {
-    const response = NextResponse.json(
-      { code: "invalid_refresh_session" },
-      { status: 401, headers: { "X-Request-Id": requestId } },
-    );
-    response.headers.set(SESSION_EXPIRED_HEADER, "1");
-    clearSessionCookies(response, request);
-    return response;
+    return sessionExpiredResponse(request, requestId);
   }
 
-  const response = new NextResponse(null, {
-    status: 204,
-    headers: { "X-Request-Id": requestId },
+  // `expires_in` alimenta a renovação proativa no cliente. Não é segredo e nenhum
+  // token é exposto — os tokens seguem apenas em cookies httpOnly.
+  const response = NextResponse.json(
+    { expires_in: ACCESS_COOKIE_MAX_AGE_SECONDS },
+    { status: 200, headers: { "X-Request-Id": requestId } },
+  );
+  setSessionCookies(response, {
+    accessToken,
+    refreshToken: nextRefreshToken,
+    secure: isSecureRequest(request),
+    persistent,
   });
-  setSessionCookies(response, request, accessToken, nextRefreshToken);
   return response;
 }

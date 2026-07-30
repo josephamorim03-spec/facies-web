@@ -343,7 +343,7 @@ export function useTaskDragReschedule({
         x: touchMeta.clientX,
         y: touchMeta.clientY,
         color: touchMeta.color ?? AREA_COLORS[task.area] ?? "#888",
-        label: task.subtheme || task.theme || "Revisao",
+        label: task.subtheme || task.theme || "Revisão",
       });
       if (typeof document !== "undefined") {
         document.body.classList.add("touch-drag-lock");

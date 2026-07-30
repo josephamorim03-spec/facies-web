@@ -1,47 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  ACCESS_COOKIE_MAX_AGE_SECONDS,
+  isSecureRequest,
+  setSessionCookies,
+} from "@/lib/server/sessionCookies";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SESSION_COOKIE_NAME = "krosmed_session";
-const REFRESH_COOKIE_NAME = "krosmed_refresh";
-const REFRESH_HINT_COOKIE_NAME = "krosmed_refresh_hint";
-const TOKEN_COOKIE_NAME = "krosmed_token";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
 const MAX_TOKEN_LENGTH = 4096;
 
-function parseEnvPositiveInt(name: string, fallback: number, minValue: number = 1): number {
-  const raw = String(process.env[name] ?? "").trim();
-  if (!raw) return fallback;
-  const parsed = Number.parseInt(raw, 10);
-  if (!Number.isFinite(parsed) || parsed < minValue) return fallback;
-  return parsed;
-}
-
-const SESSION_MAX_AGE_SECONDS = parseEnvPositiveInt(
-  "NEXT_ACCESS_COOKIE_MAX_AGE_SECONDS",
-  parseEnvPositiveInt("NEXT_SESSION_MAX_AGE_SECONDS", 15 * 60, 300),
-  300,
-);
-const REFRESH_MAX_AGE_SECONDS = parseEnvPositiveInt(
-  "NEXT_REFRESH_COOKIE_MAX_AGE_SECONDS",
-  30 * 24 * 60 * 60,
-  3600,
-);
-
 function proxyTarget(): string {
   const raw = process.env.NEXT_API_PROXY_TARGET || "http://127.0.0.1:8000";
   return raw.replace(/\/+$/, "");
-}
-
-function isSecureRequest(request: NextRequest): boolean {
-  if (request.nextUrl.protocol === "https:") return true;
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  if (forwardedProto) {
-    return forwardedProto.split(",")[0]?.trim().toLowerCase() === "https";
-  }
-  return process.env.NODE_ENV === "production";
 }
 
 function requestOrigin(request: NextRequest): string {
@@ -116,71 +90,6 @@ async function tokenFromRequest(request: NextRequest): Promise<string> {
   return "";
 }
 
-function setSessionCookies(
-  response: NextResponse,
-  request: NextRequest,
-  accessToken: string,
-  refreshToken: string,
-): void {
-  const secure = isSecureRequest(request);
-  response.cookies.set({
-    name: SESSION_COOKIE_NAME,
-    value: accessToken,
-    httpOnly: true,
-    sameSite: "lax",
-    secure,
-    path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
-  });
-  if (refreshToken) {
-    response.cookies.set({
-      name: REFRESH_COOKIE_NAME,
-      value: refreshToken,
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/api/auth",
-      maxAge: REFRESH_MAX_AGE_SECONDS,
-    });
-    response.cookies.set({
-      name: REFRESH_HINT_COOKIE_NAME,
-      value: "1",
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/",
-      maxAge: REFRESH_MAX_AGE_SECONDS,
-    });
-  } else {
-    response.cookies.set({
-      name: REFRESH_COOKIE_NAME,
-      value: "",
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/api/auth",
-      maxAge: 0,
-    });
-    response.cookies.set({
-      name: REFRESH_HINT_COOKIE_NAME,
-      value: "",
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/",
-      maxAge: 0,
-    });
-  }
-  response.cookies.set({
-    name: TOKEN_COOKIE_NAME,
-    value: "",
-    sameSite: "strict",
-    secure,
-    path: "/",
-    maxAge: 0,
-  });
-}
-
 function jsonError(code: string, status: number, requestId: string): NextResponse {
   return NextResponse.json(
     { code, message: "Sessao invalida.", request_id: requestId },
@@ -241,10 +150,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return jsonError("invalid_session_token", 401, requestId);
   }
 
+  // `expires_in` alimenta a renovação proativa no cliente; nenhum token vaza para
+  // o navegador (seguem só em cookies httpOnly).
   const response = NextResponse.json(
-    { user_id: userId },
+    { user_id: userId, expires_in: ACCESS_COOKIE_MAX_AGE_SECONDS },
     { status: 200, headers: { "X-Request-Id": requestId } },
   );
-  setSessionCookies(response, request, sessionAccessToken, refreshToken);
+  setSessionCookies(response, {
+    accessToken: sessionAccessToken,
+    refreshToken,
+    secure: isSecureRequest(request),
+    persistent: rememberDevice,
+  });
   return response;
 }

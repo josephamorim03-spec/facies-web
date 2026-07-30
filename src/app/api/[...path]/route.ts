@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  SESSION_COOKIE_NAME,
+  expireAccessCookie,
+  hasRefreshHint,
+  isPersistentSession,
+  isSecureRequest,
+  parseEnvPositiveInt,
+  setSessionCookies,
+} from "@/lib/server/sessionCookies";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SESSION_COOKIE_NAME = "krosmed_session";
-const REFRESH_COOKIE_NAME = "krosmed_refresh";
-const REFRESH_HINT_COOKIE_NAME = "krosmed_refresh_hint";
-const TOKEN_COOKIE_NAME = "krosmed_token";
 const SESSION_EXPIRED_HEADER = "X-KrosMed-Session-Expired";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
@@ -27,25 +33,7 @@ const LONG_TIMEOUT_PROXY_PATHS = new Set([
   "analysis/simulations/analyze-errors/progressive/stream",
 ]);
 
-function parseEnvPositiveInt(name: string, fallback: number, minValue: number = 1): number {
-  const raw = String(process.env[name] ?? "").trim();
-  if (!raw) return fallback;
-  const parsed = Number.parseInt(raw, 10);
-  if (!Number.isFinite(parsed) || parsed < minValue) return fallback;
-  return parsed;
-}
-
 const DEFAULT_PROXY_TIMEOUT_MS = parseEnvPositiveInt("NEXT_API_PROXY_TIMEOUT_MS", 25000, 1000);
-const SESSION_MAX_AGE_SECONDS = parseEnvPositiveInt(
-  "NEXT_ACCESS_COOKIE_MAX_AGE_SECONDS",
-  parseEnvPositiveInt("NEXT_SESSION_MAX_AGE_SECONDS", 15 * 60, 300),
-  300,
-);
-const REFRESH_MAX_AGE_SECONDS = parseEnvPositiveInt(
-  "NEXT_REFRESH_COOKIE_MAX_AGE_SECONDS",
-  30 * 24 * 60 * 60,
-  3600,
-);
 const STREAM_PROXY_TIMEOUT_MS = parseEnvPositiveInt(
   "NEXT_API_PROXY_STREAM_TIMEOUT_MS",
   190000,
@@ -62,15 +50,6 @@ class UpstreamTimeoutError extends Error {
 function proxyTarget(): string {
   const raw = process.env.NEXT_API_PROXY_TARGET || "http://127.0.0.1:8000";
   return raw.replace(/\/+$/, "");
-}
-
-function isSecureRequest(request: NextRequest): boolean {
-  if (request.nextUrl.protocol === "https:") return true;
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  if (forwardedProto) {
-    return forwardedProto.split(",")[0]?.trim().toLowerCase() === "https";
-  }
-  return process.env.NODE_ENV === "production";
 }
 
 function requestOrigin(request: NextRequest): string {
@@ -175,84 +154,16 @@ function isJwtExpired(token: string): boolean {
   }
 }
 
-function expireLegacyTokenCookie(response: NextResponse, secure: boolean): void {
-  response.cookies.set({
-    name: TOKEN_COOKIE_NAME,
-    value: "",
-    sameSite: "strict",
-    secure,
-    path: "/",
-    maxAge: 0,
-  });
-}
-
-function expireSessionCookie(response: NextResponse, secure: boolean): void {
-  response.cookies.set({
-    name: SESSION_COOKIE_NAME,
-    value: "",
-    httpOnly: true,
-    sameSite: "lax",
-    secure,
-    path: "/",
-    maxAge: 0,
-  });
-}
-
-function setSessionCookies(
-  response: NextResponse,
-  accessToken: string,
-  refreshToken: string,
-  secure: boolean,
-): void {
-  response.cookies.set({
-    name: SESSION_COOKIE_NAME,
-    value: accessToken,
-    httpOnly: true,
-    sameSite: "lax",
-    secure,
-    path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
-  });
-  if (refreshToken) {
-    response.cookies.set({
-      name: REFRESH_COOKIE_NAME,
-      value: refreshToken,
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/api/auth",
-      maxAge: REFRESH_MAX_AGE_SECONDS,
-    });
-    response.cookies.set({
-      name: REFRESH_HINT_COOKIE_NAME,
-      value: "1",
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/",
-      maxAge: REFRESH_MAX_AGE_SECONDS,
-    });
-  } else {
-    response.cookies.set({
-      name: REFRESH_COOKIE_NAME,
-      value: "",
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/api/auth",
-      maxAge: 0,
-    });
-    response.cookies.set({
-      name: REFRESH_HINT_COOKIE_NAME,
-      value: "",
-      httpOnly: true,
-      sameSite: "lax",
-      secure,
-      path: "/",
-      maxAge: 0,
-    });
+function rememberDeviceFromBody(body: ArrayBuffer | undefined): boolean | null {
+  if (!body || body.byteLength === 0) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(body).toString("utf8"));
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    const raw = (parsed as Record<string, unknown>).remember_device;
+    return typeof raw === "boolean" ? raw : null;
+  } catch {
+    return null;
   }
-  expireLegacyTokenCookie(response, secure);
 }
 
 function isProtectedProxyPath(pathKey: string): boolean {
@@ -316,7 +227,7 @@ async function proxyHandler(
   const proxyPath = buildProxyPath(pathParts);
   const pathKey = pathParts.join("/");
   const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value?.trim() || "";
-  const refreshHint = request.cookies.get(REFRESH_HINT_COOKIE_NAME)?.value?.trim() || "";
+  const refreshHint = hasRefreshHint(request);
   if (sessionToken && isProtectedProxyPath(pathKey) && isJwtExpired(sessionToken)) {
     const expiredResponse = responseWithRequestId(
       { code: "oidc_token_invalid", message: "Token expired" },
@@ -324,7 +235,7 @@ async function proxyHandler(
       requestId,
     );
     expiredResponse.headers.set(SESSION_EXPIRED_HEADER, "1");
-    expireSessionCookie(expiredResponse, isSecureRequest(request));
+    expireAccessCookie(expiredResponse, isSecureRequest(request));
     return expiredResponse;
   }
 
@@ -413,7 +324,14 @@ async function proxyHandler(
       headers: responseHeaders,
     });
     if (accessToken) {
-      setSessionCookies(response, accessToken, refreshToken, isSecureRequest(request));
+      setSessionCookies(response, {
+        accessToken,
+        refreshToken,
+        secure: isSecureRequest(request),
+        // O login local manda `remember_device` no corpo; para as demais rotas de
+        // auth, preserva a classe já registrada no cookie-dica.
+        persistent: rememberDeviceFromBody(requestBody) ?? isPersistentSession(request),
+      });
     }
     return response;
   }
@@ -426,7 +344,10 @@ async function proxyHandler(
 
   if (upstreamResponse.status === 401 && (sessionToken || refreshHint) && isProtectedProxyPath(pathKey)) {
     response.headers.set(SESSION_EXPIRED_HEADER, "1");
-    expireSessionCookie(response, isSecureRequest(request));
+    // Só o access token é derrubado: os cookies de refresh continuam para que o
+    // cliente possa renovar. Limpar tudo aqui é o que tornava um 401 transitório
+    // um logout definitivo.
+    expireAccessCookie(response, isSecureRequest(request));
   }
 
   return response;

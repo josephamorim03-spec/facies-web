@@ -25,6 +25,7 @@ import {
   startSessionExpiredRedirect,
   subscribeSessionExpired,
 } from "@/lib/sessionExpiration";
+import { startSessionKeepalive } from "@/lib/sessionKeepalive";
 import { getStudentPageTitle } from "@/lib/navConfig";
 import { QueryProvider } from "@/lib/QueryProvider";
 import { MotionConfig } from "motion/react";
@@ -198,6 +199,10 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       setSessionExpiredOpen(true);
     });
   }, []);
+
+  // Renova a sessão antes do vencimento enquanto o aluno está no app, para que o
+  // access token não expire no meio de uma ação.
+  useEffect(() => startSessionKeepalive(), []);
 
   function redirectToExpiredLogin() {
     acknowledgeSessionExpired();

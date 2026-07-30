@@ -109,8 +109,7 @@ export default function KrosPage() {
           />
         </div>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
-          Uma prova inédita montada pelas suas necessidades, pelas instituições
-          prioritárias e pelo que ainda falta cobrir.
+          Montado com base nas suas necessidades de aprendizado e instituições prioritárias
         </p>
       </header>
 

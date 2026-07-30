@@ -154,26 +154,24 @@ function LoginPageContent() {
                 />
               ) : (
                 <div className="space-y-3">
-                  <label className="flex cursor-pointer items-start gap-2 text-left text-sm text-muted">
-                    <input
-                      type="checkbox"
-                      className="mt-0.5 h-4 w-4 rounded border-edge text-ink"
-                      checked={rememberDevice}
-                      onChange={(event) => setRememberDevice(event.target.checked)}
-                    />
-                    <span>
-                      Lembrar neste dispositivo
-                      <span className="block text-xs text-muted">
-                        Mantém sua sessão ativa com cookie seguro por até 30 dias.
-                      </span>
-                    </span>
-                  </label>
                   <GoogleSection
                     googleClientId={googleClientId}
                     googleButtonRef={googleButtonRef}
                     googleError={googleError}
                     onGoogleError={setGoogleError}
                   />
+                  {/* Depois do botao do Google, centralizado: e' uma opcao
+                      sobre o login que acabou de acontecer, nao um passo antes
+                      dele. `items-center` alinha a caixa com a linha do texto. */}
+                  <label className="flex cursor-pointer items-center justify-center gap-2 text-sm text-muted">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 shrink-0 rounded border-edge text-ink"
+                      checked={rememberDevice}
+                      onChange={(event) => setRememberDevice(event.target.checked)}
+                    />
+                    <span>Lembrar neste dispositivo</span>
+                  </label>
                 </div>
               )}
             </div>

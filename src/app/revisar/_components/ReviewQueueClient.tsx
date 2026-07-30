@@ -106,7 +106,7 @@ function ReviewSourceSummary({ queue }: { queue: TrainerReviewQueue }) {
     },
   ];
   return (
-    <section className="rounded-surface border border-edge bg-surface px-4 py-4 sm:px-5" aria-label="Carga de revisao">
+    <section className="rounded-surface border border-edge bg-surface px-4 py-4 sm:px-5" aria-label="Carga de revisão">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
         <h2 className="font-serif text-xl font-semibold text-ink">Carga de revisão</h2>
         <p className="text-sm tabular-nums text-muted">≈ {estimatedMinutes} min hoje</p>
@@ -162,7 +162,7 @@ function FlashcardsOverviewPanel({
           </h2>
           <p className="mt-1.5 text-sm leading-relaxed text-muted">
             {hasDue
-              ? `${overview.due_count} card${overview.due_count === 1 ? "" : "s"} chegou${overview.due_count === 1 ? "" : "ram"} ao ponto de revisao.`
+              ? `${overview.due_count} card${overview.due_count === 1 ? "" : "s"} chegou${overview.due_count === 1 ? "" : "ram"} ao ponto de revisão.`
               : "Nenhum card venceu agora; eles continuam visiveis aqui para manutencao opcional."}
           </p>
         </div>

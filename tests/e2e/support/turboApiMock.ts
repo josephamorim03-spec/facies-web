@@ -67,7 +67,7 @@ function overview(dueCount = 2) {
           note_id: turboNote.note_id,
           reasons: ["overdue", "wrong_question"],
           primary_reason: "overdue",
-          label: "Card prioritario da revisao.",
+          label: "Card prioritário da revisão.",
         },
       },
     ],

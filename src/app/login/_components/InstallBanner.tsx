@@ -30,7 +30,7 @@ export function InstallBanner({
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14" />
         </svg>
         <Image src="/apple-touch-icon.png" alt="KrosMed" width={24} height={24} className="w-6 h-6 rounded-md" />
-        <span className="text-xs text-muted whitespace-nowrap">Instalar app</span>
+        <span className="text-xs text-muted whitespace-nowrap">Instalar</span>
       </button>
 
       {showIosTooltip && (

@@ -84,10 +84,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_RAW_LABELS = new Set(Object.values({
-  revisao_vencida: "revisao vencida",
+  revisao_vencida: "revisão vencida",
   fraqueza: "fraqueza recorrente",
-  nova: "questao nova",
-  reforco: "reforco",
+  nova: "questão nova",
+  reforco: "reforço",
 }));
 
 function selectionReasons(reason: Record<string, unknown>): string[] {

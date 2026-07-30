@@ -540,6 +540,9 @@ function shouldRetryMethod(
   return hasIdempotencyKey || retryPolicy.allowRetryOnNonIdempotent;
 }
 
+/** Ciclos de refresh permitidos por requisição antes de aceitar a expiração. */
+const MAX_SESSION_REFRESH_ATTEMPTS = 2;
+
 function buildSessionExpiredError(details?: unknown): APIError {
   const requestId =
     details && typeof details === "object" && !Array.isArray(details)
@@ -617,7 +620,7 @@ export async function fetchRaw(path: string, init?: APIRequestInit): Promise<Res
   const canRetry = shouldRetryMethod(method, headers, retryPolicy);
   const retryStatuses = new Set<number>(retryPolicy.retryOnStatuses);
   const maxAttempts = canRetry ? retryPolicy.maxAttempts : 1;
-  let didSessionRefreshRetry = false;
+  let sessionRefreshAttempts = 0;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     const timeout = createTimeoutSignal(init?.timeoutMs ?? DEFAULT_API_TIMEOUT_MS);
@@ -631,11 +634,13 @@ export async function fetchRaw(path: string, init?: APIRequestInit): Promise<Res
       });
       if (
         shouldHandleSessionExpired(path, response) &&
-        !didSessionRefreshRetry
+        sessionRefreshAttempts < MAX_SESSION_REFRESH_ATTEMPTS
       ) {
-        const refreshed = await refreshAuthSession();
-        if (refreshed) {
-          didSessionRefreshRetry = true;
+        sessionRefreshAttempts += 1;
+        // Um segundo ciclo cobre a corrida entre abas: quem recebeu "raced" pode
+        // ter repetido antes de o cookie do vencedor chegar. Sem essa folga, uma
+        // disputa de milissegundos vira "sessão expirada".
+        if ((await refreshAuthSession()) !== "failed") {
           attempt -= 1;
           continue;
         }

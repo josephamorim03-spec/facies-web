@@ -102,7 +102,7 @@ function loadNote() {
     estimated_minutes: 62,
     recommended_limit_minutes: 75,
     overload_alert: false,
-    short_message: "Carga sustentavel: um bloco clinico e revisao curta.",
+    short_message: "Carga sustentável: um bloco clínico e revisão curta.",
   };
 }
 
@@ -154,7 +154,7 @@ function surfaceHome(kind) {
   const titleByKind = {
     review: "Revisar GO antes de abrir assunto novo",
     track: "Graficos primeiro: queda recente em GO",
-    plan: "Proteger calendario de revisao",
+    plan: "Proteger calendario de revisão",
   };
   return {
     contract_version: kind === "review" ? "student-review-home-v1" : kind === "track" ? "student-track-v1" : "student-plan-v1",

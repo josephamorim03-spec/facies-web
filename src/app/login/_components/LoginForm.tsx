@@ -62,19 +62,16 @@ export function LoginForm({
         onChange={(event) => setLoginPassword(event.target.value)}
         onKeyDown={(event) => event.key === "Enter" && onLogin()}
       />
-      <label className="flex cursor-pointer items-start gap-2 text-left text-sm text-muted">
+      {/* Aqui a caixa fica acima do "Entrar" de proposito: neste formulario ela
+          governa os dois caminhos de login, o local e o do Google. */}
+      <label className="flex cursor-pointer items-center gap-2 text-left text-sm text-muted">
         <input
           type="checkbox"
-          className="mt-0.5 h-4 w-4 rounded border-edge text-ink"
+          className="h-4 w-4 shrink-0 rounded border-edge text-ink"
           checked={rememberDevice}
           onChange={(event) => setRememberDevice(event.target.checked)}
         />
-        <span>
-          Lembrar neste dispositivo
-          <span className="block text-xs text-muted">
-            Mantém sua sessão ativa com cookie seguro por até 30 dias.
-          </span>
-        </span>
+        <span>Lembrar neste dispositivo</span>
       </label>
       {loginError && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-700">
