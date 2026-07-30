@@ -97,7 +97,7 @@ const sourceOptions = [
     last_year: 2024,
   },
   {
-    option_key: "RPLUS",
+    option_key: "Especialista",
     label: "Residência R+",
     option_kind: "exam",
     question_count: 5,

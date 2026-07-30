@@ -7,7 +7,7 @@ test.describe("Importacao de prova legacy routes", () => {
     await addHttpOnlySession(context);
   });
 
-  test("redireciona rotas antigas de importacao para o banco de questoes", async ({ page }) => {
+  test("redireciona rotas antigas de importação para o banco de questões", async ({ page }) => {
     await page.goto("/agenda-operacional/importar/session_import_e2e");
     await expect(page).toHaveURL(/\/banco-de-questoes$/);
   });

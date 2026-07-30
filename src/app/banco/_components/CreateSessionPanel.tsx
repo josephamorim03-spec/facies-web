@@ -161,7 +161,7 @@ export default function CreateSessionPanel({
         </Alert>
       )}
 
-      {/* Estado vazio explicado: zero questoes com um botao desabilitado e sem
+      {/* Estado vazio explicado: zero questões com um botão desabilitado e sem
           motivo era o que fazia a tela parecer quebrada. */}
       {!error && emptyReason && (
         <p className="mt-4 border-l-2 border-edge pl-3 text-sm text-muted" aria-live="polite">

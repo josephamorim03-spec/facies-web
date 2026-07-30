@@ -87,8 +87,8 @@ export default function DadosERelatoriosPage() {
             <StudentSurfaceSnapshot
               items={[
                 { label: "Qualidade", value: trackHome.data_quality },
-                { label: "Questoes na semana", value: String(trackHome.details.questions_done_week ?? "-") },
-                { label: "Precisao", value: trackHome.details.accuracy_pct === null || trackHome.details.accuracy_pct === undefined ? "-" : `${Math.round(Number(trackHome.details.accuracy_pct))}%` },
+                { label: "Questões na semana", value: String(trackHome.details.questions_done_week ?? "-") },
+                { label: "Precisão", value: trackHome.details.accuracy_pct === null || trackHome.details.accuracy_pct === undefined ? "-" : `${Math.round(Number(trackHome.details.accuracy_pct))}%` },
               ]}
             />
           </StudentDetailsDisclosure>

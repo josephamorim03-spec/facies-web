@@ -223,7 +223,7 @@ test.describe("Cronograma mobile portrait UX", () => {
     await page.goto("/cronograma");
 
     const panel = page.getByLabel("Para revisar hoje");
-    await expect(panel).toContainText("1 tarefa · 3 questoes na fila global do banco");
+    await expect(panel).toContainText("1 tarefa · 3 questões na fila global do banco");
     await expect(panel).toContainText("fila global");
 
     await panel.getByRole("button", { name: /Expandir revisoes de hoje/i }).click();

@@ -130,7 +130,7 @@ export function buildDayActivitySummary(params: {
 
   for (const study of dayStudies.filter((item) => !item.is_review)) {
     const isExam = isFullExamStudy(study);
-    increment(categories, isExam ? "exam" : "study", isExam ? "Provas" : "Questoes");
+    increment(categories, isExam ? "exam" : "study", isExam ? "Provas" : "Questões");
     items.push({
       key: `study:${study.study_id}`,
       kind: isExam ? "exam" : "study",

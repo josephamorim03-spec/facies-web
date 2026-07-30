@@ -7,7 +7,7 @@ import type { StudentTodayAction } from "@/lib/api";
 function sourceLabel(source: string): string {
   const labels: Record<string, string> = {
     trainer: "Treinador",
-    question_bank: "Banco de questoes",
+    question_bank: "Banco de questões",
     schedule: "Agenda",
     flashcards: "Flashcards",
     student_experience: "Hoje",
