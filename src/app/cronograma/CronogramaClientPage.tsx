@@ -515,23 +515,44 @@ export default function CronogramaPage({
           <h2 id="routine-suggestions-title" className="text-sm font-semibold text-ink">
             Sugestões para a rotina
           </h2>
-          <div className="mt-2 divide-y divide-edge border-y border-edge">
-            <Link href="/kros" className="group flex min-h-14 items-center gap-3 py-3 text-sm">
-              <CalendarCheck2 className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
-              <span className="min-w-0 flex-1">
-                <strong className="block font-semibold text-ink">Reserve um Kros de 50 questões</strong>
-                <span className="text-xs text-muted">Escolha o melhor dia antes de iniciar.</span>
-              </span>
-              <ArrowRight className="h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-            </Link>
-            <Link href="/banco?tipo=prova" className="group flex min-h-14 items-center gap-3 py-3 text-sm">
-              <CalendarCheck2 className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
-              <span className="min-w-0 flex-1">
-                <strong className="block font-semibold text-ink">Planeje uma prova institucional</strong>
-                <span className="text-xs text-muted">Defina instituição e ano no Banco.</span>
-              </span>
-              <ArrowRight className="h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-            </Link>
+          {/* Tracejado + tom `attention`: estas linhas dividiam a mesma
+              superficie solida das atividades reais do calendario, entao
+              pareciam ja agendadas. O que separa as duas coisas nao pode ser so
+              a posicao na tela. */}
+          <div className="mt-2 space-y-2">
+            {[
+              {
+                href: "/kros",
+                title: "Reserve um Kros de 50 questões",
+                detail: "Escolha o melhor dia antes de iniciar.",
+                cta: "Escolher dia e adicionar",
+              },
+              {
+                href: "/banco?tipo=prova",
+                title: "Planeje uma prova institucional",
+                detail: "Defina instituição e ano no Banco.",
+                cta: "Definir prova e adicionar",
+              },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="paper-dashed group flex min-h-14 items-center gap-3 border-warning/35 bg-warning/5 px-3 py-3 text-sm"
+              >
+                <CalendarCheck2 className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-warning">
+                    Sugestão — ainda não adicionada
+                  </span>
+                  <strong className="mt-0.5 block font-semibold text-ink">{item.title}</strong>
+                  <span className="text-xs text-muted">{item.detail}</span>
+                </span>
+                <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-primary">
+                  {item.cta}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                </span>
+              </Link>
+            ))}
           </div>
         </section>
       ) : null}
