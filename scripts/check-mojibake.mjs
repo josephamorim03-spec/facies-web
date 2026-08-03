@@ -24,6 +24,14 @@ const patterns = [
   { label: "Windows-1252 punctuation corruption (em-dash, quotes etc.)", regex: /\u00E2[\u20AC\u201A\u0192\u201E\u2026\u2020\u2021\u02C6\u2030\u0160\u2039\u0152\u017D\u2018\u2019\u201C\u201D\u2022\u2013\u2014\u02DC\u2122\u0161\u203A\u0153\u017E\u0178]/u },
   { label: "Emoji corruption", regex: /\u00F0\u0178/u },
   { label: "Unicode replacement character (U+FFFD)", regex: /\uFFFD/u },
+  // Um acento colado numa interpolacao quase sempre e' pontuacao de codigo que
+  // virou letra: `/rota?${params}` digitado (ou substituido) como `/rota\u00F3${params}`.
+  // Nenhum checker anterior pegava isso, porque `o` acentuado e' caractere valido
+  // e nao mojibake -- quatro URLs quebradas passaram por aqui antes de 2026-08-03.
+  {
+    label: "Acento onde se espera pontuacao de codigo (`?`/`&`) antes de ${...}",
+    regex: /[\u00E0-\u00FC]\$\{/u,
+  },
 ];
 
 function walk(dir) {

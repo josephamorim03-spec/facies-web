@@ -1101,7 +1101,7 @@ export async function getQuestionBankTaxonomySuggestionClusters(limit = 100): Pr
   return api<{
     clusters: QuestionBankTaxonomySuggestionCluster[];
     total_clusters: number;
-  }>(`/api/admin/question-bank/taxonomy/suggestion-clustersó${params.toString()}`);
+  }>(`/api/admin/question-bank/taxonomy/suggestion-clusters?${params.toString()}`);
 }
 
 export async function decideQuestionBankTaxonomySuggestionCluster(
@@ -1176,7 +1176,7 @@ export async function getQuestionBankAdminAiBatches(
 ): Promise<{ batches: QuestionBankAiBatch[] }> {
   const params = new URLSearchParams({ limit: String(limit) });
   return api<{ batches: QuestionBankAiBatch[] }>(
-    `/api/admin/question-bank/ai-enrichment/batchesó${params.toString()}`,
+    `/api/admin/question-bank/ai-enrichment/batches?${params.toString()}`,
   );
 }
 

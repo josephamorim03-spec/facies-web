@@ -7,7 +7,10 @@ const cwd = process.cwd();
 const roots = [
   path.join(cwd, "src", "app"),
   path.join(cwd, "src", "components"),
-  path.join(cwd, "src", "lib", "api", "domains"),
+  // `src/lib` inteiro, nao so `api/domains`: `guidanceCopy.ts` mora na raiz de
+  // lib e e' a fonte UNICA do vocabulario do aluno -- ficava fora do checker,
+  // que e' como "as duas finalistasó" chegou a producao sem ninguem reclamar.
+  path.join(cwd, "src", "lib"),
   path.join(cwd, "scripts", "capture-design-redesign.mjs"),
 ];
 
@@ -124,12 +127,24 @@ function findTerms(text) {
   return hits;
 }
 
+// Uma `forcingQuestion` que nao termina em `?` normalmente perdeu a pontuacao
+// para uma letra -- foi assim que "separava as duas finalistasó" chegou ate a UI
+// sem que lint, typecheck ou o checker de mojibake reclamassem.
+const questionContract = [];
+function checkQuestionContract(line, file, index) {
+  const match = /forcingQuestion:\s*"([^"]*)"/.exec(line);
+  if (match && !match[1].trimEnd().endsWith("?")) {
+    questionContract.push({ file, line: index + 1, text: match[1] });
+  }
+}
+
 const failures = [];
 for (const file of roots.flatMap(walk)) {
   const relative = path.relative(cwd, file).replaceAll(path.sep, "/");
   if (relative.startsWith("src/lib/api/generated/")) continue;
   const lines = fs.readFileSync(file, "utf8").split(/\r?\n/);
   lines.forEach((line, index) => {
+    checkQuestionContract(line, relative, index);
     if (skipLinePatterns.some((pattern) => pattern.test(line))) return;
     for (const candidate of candidatesFromLine(line)) {
       if (shouldSkipCandidate(candidate)) continue;
@@ -143,6 +158,15 @@ for (const file of roots.flatMap(walk)) {
       });
     }
   });
+}
+
+if (questionContract.length > 0) {
+  console.error("Found forcingQuestion copy that does not end with `?`:");
+  for (const item of questionContract) {
+    console.error(`- ${item.file}:${item.line}`);
+    console.error(`  ${item.text}`);
+  }
+  process.exit(1);
 }
 
 if (failures.length > 0) {

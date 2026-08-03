@@ -43,7 +43,7 @@ const PRIMARY_NAV_ROUTES = ["/kros", "/hoje", "/banco", "/cards", "/evolucao", "
 
 type IdleCallbackHandle = number;
 type WindowWithIdleCallback = Window & {
-  requestIdleCallback?: (callback: () => void, option: { timeout?: number }) => IdleCallbackHandle;
+  requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => IdleCallbackHandle;
   cancelIdleCallback?: (handle: IdleCallbackHandle) => void;
 };
 

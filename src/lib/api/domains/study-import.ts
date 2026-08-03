@@ -408,7 +408,7 @@ export async function listStudyImportSessionQuestions(
   });
   if (params.only_unanswered) q.set("only_unanswered", "true");
   return api<StudyImportQuestionPage>(
-    `/api/studies/import/sessions/${sessionId}/questionsó${q.toString()}`,
+    `/api/studies/import/sessions/${sessionId}/questions?${q.toString()}`,
     { headers: authHeader(token) },
   );
 }

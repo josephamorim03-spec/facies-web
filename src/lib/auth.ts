@@ -53,7 +53,7 @@ export async function establishAuthSession(token: string, rememberDevice = false
     body: JSON.stringify({ access_token: normalized, remember_device: rememberDevice }),
   });
   if (!response.ok) {
-    throw new Error("Sessao invalida.");
+    throw new Error("Sessão inválida.");
   }
   const payload = await response.json().catch(() => null);
   dispatchSessionRenewed({ expiresInSeconds: expiresInFromPayload(payload) });
