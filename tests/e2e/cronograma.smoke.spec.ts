@@ -93,9 +93,20 @@ test.describe("Cronograma smoke", () => {
     await expect(monthTitle).toBeVisible();
     await expectCenteredOnX(monthNav, monthTitle, 64);
 
+    // O mes de partida precisa ser lido e reconferido: a transicao entre meses e'
+    // animada e continua, e clicar em "anterior" enquanto a ida ainda corre faz
+    // o clique se perder -- o calendario ficava em SET e a celula de hoje, que
+    // vive no mes corrente, sumia mais adiante no teste. Falhava so as vezes,
+    // conforme o tempo de animacao.
+    const startMonth = (await monthTitle.textContent())?.trim() ?? "";
+    expect(startMonth).not.toBe("");
+
     await page.getByLabel(nextMonthLabel).click();
+    await expect(monthTitle).not.toHaveText(startMonth);
     await expectCenteredOnX(monthNav, monthTitle, 64);
+
     await page.getByLabel(previousMonthLabel).click();
+    await expect(monthTitle).toHaveText(startMonth);
     await expectCenteredOnX(monthNav, monthTitle, 64);
 
     // O resumo semanal desta tela e' o WeeklyGoalControl, no rodape. O antigo
@@ -136,7 +147,12 @@ test.describe("Cronograma smoke", () => {
       await draggableEventHandle.dispatchEvent("dragend", { dataTransfer }).catch(() => undefined);
     }
 
-    await page.getByLabel("Ir para hoje").click();
+    // Nao ha controle que salte o calendario para hoje: o unico "Ir para Hoje"
+    // desta tela e' o LINK do cabecalho para a pagina /hoje -- clica-lo levava o
+    // teste para fora do cronograma, e por isso a celula sumia. (O `goToToday`
+    // do hook chega a ser guardado em `goToTodayRef`, mas nada o chama.)
+    // Depois do avanca-e-volta acima o calendario ja esta no mes corrente, que
+    // e' onde a celula de hoje vive.
     const todayCell = page.locator(`[data-cell-iso="${today}"]`).first();
     await expect(todayCell).toBeVisible();
     // A célula pode conter barras clicáveis. Acione o próprio controle de dia
