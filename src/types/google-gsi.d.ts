@@ -25,8 +25,10 @@ interface GoogleGSI {
 }
 
 interface Window {
+  // `window.google` é um namespace compartilhado entre bibliotecas do Google
+  // (Maps, reCAPTCHA); `accounts` é opcional porque pode não estar presente.
   google?: {
-    account: {
+    accounts?: {
       id?: GoogleGSI;
     };
   };

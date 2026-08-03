@@ -8,10 +8,22 @@ import { resolveAuthenticatedLandingRoute } from "@/lib/initialGoalSetup";
 
 type GoogleGSICredentialResponse = { credential?: string };
 
+// Teto do polling: ~6s (40 × 150ms) antes de desistir e avisar o usuário.
+const WAIT_INTERVAL_MS = 150;
+const MAX_WAIT_ATTEMPTS = 40;
+
 function gsiLog(event: string, extra?: Record<string, unknown>) {
   if (process.env.NODE_ENV !== "production") {
     console.log(`[GSI] ${event}`, { ts: Date.now(), ...extra });
   }
+}
+
+// Diferente de gsiLog, roda também em produção. Sem isso o erro real vira só a
+// mensagem amigável na tela e fica indiagnosticável no DevTools — foi assim que
+// um typo de namespace (`google.account` vs `google.accounts`) chegou em prod.
+// O GSI não expõe token nesses erros; o id_token só trafega no callback.
+function gsiError(event: string, err: unknown) {
+  console.error(`[GSI] ${event}`, err);
 }
 
 function decodeJwtPayload(token: string): Record<string, unknown> {
@@ -50,6 +62,7 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
       let cancelled = false;
       let waitTimeout: ReturnType<typeof setTimeout> | null = null;
       let gsiConfigured = false;
+      let waitAttempts = 0;
 
       async function handleGoogleCredential(response: GoogleGSICredentialResponse) {
         gsiLog("gsi_credential_received", { hasToken: !!(response?.credential) });
@@ -100,7 +113,7 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
 
       function initGoogleButton() {
         try {
-          const gsi = window.google?.account.id;
+          const gsi = window.google?.accounts?.id;
           const container = googleButtonRef.current;
           if (!gsi || !container) return;
           if (!gsiConfigured) {
@@ -125,19 +138,34 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
         } catch (err) {
           gsiConfigured = false;
           gsiLog("gsi_init_error", { error: String(err) });
+          gsiError("gsi_init_error", err);
           if (!cancelled) setGoogleError("Erro ao inicializar botão Google.");
         }
       }
 
       // Polling fallback: fires after script load in case window.google isn't
       // populated synchronously by the onload event (common on slow connections).
+      // Roda dentro de setTimeout, ou seja, fora do try/catch do effect: sem o
+      // catch abaixo qualquer erro aqui mataria o polling silenciosamente.
       const waitForGoogle = () => {
         if (cancelled) return;
-        if (window.google?.account.id) {
-          initGoogleButton();
+        try {
+          if (window.google?.accounts?.id) {
+            initGoogleButton();
+            return;
+          }
+        } catch (err) {
+          gsiLog("gsi_wait_error", { error: String(err) });
+          // Só na primeira falha: o polling repetiria o mesmo erro 40x.
+          if (waitAttempts === 0) gsiError("gsi_wait_error", err);
+        }
+        waitAttempts += 1;
+        if (waitAttempts > MAX_WAIT_ATTEMPTS) {
+          gsiLog("gsi_wait_timeout", { attempts: waitAttempts });
+          setGoogleError("Não foi possível carregar o login Google.");
           return;
         }
-        waitTimeout = setTimeout(waitForGoogle, 150);
+        waitTimeout = setTimeout(waitForGoogle, WAIT_INTERVAL_MS);
       };
 
       // Click detection via pointerdown capture on document: the GSI button
@@ -171,8 +199,13 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
         const stale = !iframe || iframe.getBoundingClientRect().width === 0;
         if (stale) {
           gsiLog("gsi_button_stale_on_focus");
-          if (window.google?.account.id) initGoogleButton();
-          else waitForGoogle();
+          if (window.google?.accounts?.id) initGoogleButton();
+          else {
+            // Nova tentativa a partir do foco: zera o teto do polling anterior.
+            waitAttempts = 0;
+            if (waitTimeout) clearTimeout(waitTimeout);
+            waitForGoogle();
+          }
         }
       };
       document.addEventListener("visibilitychange", revalidateOnFocus);
@@ -187,7 +220,7 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
         window.removeEventListener("focus", revalidateOnFocus);
       };
 
-      if (window.google?.account.id) {
+      if (window.google?.accounts?.id) {
         initGoogleButton();
         return cleanup;
       }
@@ -225,6 +258,7 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
       };
     } catch (err) {
       gsiLog("gsi_effect_error", { error: String(err) });
+      gsiError("gsi_effect_error", err);
       if (typeof setGoogleError === "function") {
         window.setTimeout(() => {
           setGoogleError("Erro ao carregar login Google. Recarregue a página.");
