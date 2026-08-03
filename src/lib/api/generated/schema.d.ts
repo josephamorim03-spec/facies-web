@@ -191,40 +191,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/signup": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Signup */
-        post: operations["signup_auth_signup_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Login */
-        post: operations["login_auth_login_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/auth/session": {
         parameters: {
             query?: never;
@@ -253,6 +219,57 @@ export interface paths {
         put?: never;
         /** Refresh Auth Session */
         post: operations["refresh_auth_session_auth_session_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout */
+        post: operations["logout_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Signup */
+        post: operations["signup_auth_signup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login_auth_login_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -321,23 +338,6 @@ export interface paths {
         put?: never;
         /** Resend Verification */
         post: operations["resend_verification_auth_resend_verification_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Logout */
-        post: operations["logout_auth_logout_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1765,6 +1765,227 @@ export interface paths {
         };
         /** List Access Paths */
         get: operations["list_access_paths_objectives_catalog_programs__program_id__access_paths_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/objectives/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Objectives */
+        get: operations["get_my_objectives_objectives_mine_get"];
+        /** Replace My Objectives */
+        put: operations["replace_my_objectives_objectives_mine_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/onboarding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Onboarding */
+        get: operations["get_onboarding_onboarding_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/onboarding/objectives": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save Onboarding Objectives
+         * @description Etapa de objetivos do wizard.
+         *
+         *     Diferente de `PUT /objectives/mine`: aqui a origem é `onboarding`, o que
+         *     semeia `priority_boards` a partir das bancas escolhidas para o ranking já
+         *     ter peso de banca no primeiro simulado.
+         */
+        put: operations["save_onboarding_objectives_onboarding_objectives_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/onboarding/routine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Routine */
+        put: operations["save_routine_onboarding_routine_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/onboarding/capacity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Capacity */
+        put: operations["save_capacity_onboarding_capacity_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/onboarding/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete Onboarding */
+        post: operations["complete_onboarding_onboarding_complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plan/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Current Plan */
+        get: operations["get_current_plan_plan_current_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plan/regenerate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Regenerate Plan */
+        post: operations["regenerate_plan_plan_regenerate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plan/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Activities */
+        get: operations["list_activities_plan_activities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plan/activities/{activity_id}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Activity
+         * @description Inicia a atividade e diz **o que aconteceu**, não só devolve a sessão.
+         */
+        post: operations["start_activity_plan_activities__activity_id__start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plan/activities/{activity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Activity
+         * @description Aceitar, reduzir, reagendar, pular ou travar.
+         *
+         *     Invariante de controle: o estudante pode ajustar uma recomendação. Uma
+         *     atividade já concluída não é editável — isso reescreveria um fato.
+         */
+        patch: operations["patch_activity_plan_activities__activity_id__patch"];
+        trace?: never;
+    };
+    "/plan/activities/{activity_id}/explanation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Activity Explanation */
+        get: operations["get_activity_explanation_plan_activities__activity_id__explanation_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3683,6 +3904,10 @@ export interface components {
             event_id?: string | null;
             /** Blocked Reason */
             blocked_reason?: string | null;
+            /** Launch Status */
+            launch_status?: string | null;
+            /** Fallback Reason */
+            fallback_reason?: string | null;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -3766,6 +3991,77 @@ export interface components {
             url: string;
             /** Verified At */
             verified_at: string;
+        };
+        /** OnboardingCapacityIn */
+        OnboardingCapacityIn: {
+            /** Study Availability */
+            study_availability: {
+                [key: string]: number;
+            };
+            /** Weekly Goal Questions */
+            weekly_goal_questions?: number | null;
+        };
+        /** OnboardingRoutineIn */
+        OnboardingRoutineIn: {
+            /** Days */
+            days?: components["schemas"]["RoutineDayIn"][];
+            /** Shift 12H Capacity */
+            shift_12h_capacity?: number | null;
+            /** Shift 24H Capacity */
+            shift_24h_capacity?: number | null;
+        };
+        /** OnboardingStateOut */
+        OnboardingStateOut: {
+            /**
+             * Contract Version
+             * @default student-onboarding-v1
+             * @constant
+             */
+            contract_version: "student-onboarding-v1";
+            /**
+             * State
+             * @default pending
+             */
+            state: string;
+            /**
+             * Next Step
+             * @default objectives
+             * @enum {string}
+             */
+            next_step: "objectives" | "routine" | "capacity" | "ready";
+            /** Completed Steps */
+            completed_steps?: string[];
+            /**
+             * Has Selected Objectives
+             * @default false
+             */
+            has_selected_objectives: boolean;
+            /**
+             * Objectives Revision
+             * @default 0
+             */
+            objectives_revision: number;
+            /**
+             * Has Routine
+             * @default false
+             */
+            has_routine: boolean;
+            /**
+             * Has Availability
+             * @default false
+             */
+            has_availability: boolean;
+            /**
+             * Weekly Goal Questions
+             * @default 0
+             */
+            weekly_goal_questions: number;
+            /** Study Availability */
+            study_availability?: {
+                [key: string]: number;
+            };
+            /** Completed At */
+            completed_at?: string | null;
         };
         /** OperationalAttachmentPresignIn */
         OperationalAttachmentPresignIn: {
@@ -5160,7 +5456,7 @@ export interface components {
         };
         /**
          * QuestionBankExamStateOut
-         * @description Estado de prova: desempenho sob simulado.
+         * @description Estado de prova: desempenho em baterias diagnosticas Kros.
          */
         QuestionBankExamStateOut: {
             /**
@@ -5168,6 +5464,11 @@ export interface components {
              * @default 0
              */
             simulation_count: number;
+            /**
+             * Question Count
+             * @default 0
+             */
+            question_count: number;
             /** Accuracy */
             accuracy?: number | null;
             /** Avg Time Ms */
@@ -5759,6 +6060,16 @@ export interface components {
             performed_at?: string | null;
             /** Review Task Id */
             review_task_id?: string | null;
+            /** Session Purpose */
+            session_purpose?: "diagnostic" | null;
+            /** Diagnostic Area Quota */
+            diagnostic_area_quota?: {
+                [key: string]: number;
+            } | null;
+            /** Diagnostic Area Counts */
+            diagnostic_area_counts?: {
+                [key: string]: number;
+            } | null;
             /** Time Limit Minutes */
             time_limit_minutes?: number | null;
         };
@@ -5937,6 +6248,17 @@ export interface components {
              * @enum {string}
              */
             resolution_mode: "training" | "simulation";
+            /**
+             * Session Purpose
+             * @default adaptive_practice
+             * @enum {string}
+             */
+            session_purpose: "diagnostic" | "adaptive_practice" | "adaptive_simulation" | "institutional_exam";
+            /**
+             * Session Purpose Inferred
+             * @default false
+             */
+            session_purpose_inferred: boolean;
             /**
              * Session Kind
              * @default bank_topic
@@ -6518,6 +6840,27 @@ export interface components {
             /** Due Date */
             due_date?: string | null;
         };
+        /** RoutineDayIn */
+        RoutineDayIn: {
+            /**
+             * Weekday
+             * @description 0=segunda … 6=domingo
+             */
+            weekday: number;
+            /**
+             * Label
+             * @default Compromisso
+             */
+            label: string;
+            /** Duration Hours */
+            duration_hours: number;
+            /**
+             * Kind
+             * @default work
+             * @enum {string}
+             */
+            kind: "shift" | "work" | "other";
+        };
         /** ScheduleBlockOut */
         ScheduleBlockOut: {
             /** Area */
@@ -6731,6 +7074,80 @@ export interface components {
              */
             source_status: "complete" | "missing" | "stale";
         };
+        /** StudentObjectiveIn */
+        StudentObjectiveIn: {
+            /** Board Code */
+            board_code: string;
+            /** Label */
+            label?: string | null;
+            /** Exam Name */
+            exam_name?: string | null;
+            /** Exam Date */
+            exam_date?: string | null;
+            /**
+             * Date Status
+             * @default estimated
+             * @enum {string}
+             */
+            date_status: "estimated" | "confirmed";
+            /** Program Id */
+            program_id?: string | null;
+            /** Edition Id */
+            edition_id?: string | null;
+        };
+        /** StudentObjectiveOut */
+        StudentObjectiveOut: {
+            /** Student Objective Id */
+            student_objective_id: string;
+            /** Priority */
+            priority: number;
+            /** Label */
+            label: string;
+            /** Board Code */
+            board_code: string;
+            /** Exam Name */
+            exam_name?: string | null;
+            /** Exam Date */
+            exam_date?: string | null;
+            /**
+             * Date Status
+             * @default estimated
+             * @enum {string}
+             */
+            date_status: "estimated" | "confirmed";
+            /** Program Id */
+            program_id?: string | null;
+            /** Edition Id */
+            edition_id?: string | null;
+        };
+        /** StudentObjectivesOut */
+        StudentObjectivesOut: {
+            /**
+             * Contract Version
+             * @default student-objectives-v1
+             * @constant
+             */
+            contract_version: "student-objectives-v1";
+            /**
+             * Selection Revision
+             * @default 0
+             */
+            selection_revision: number;
+            /**
+             * Has Selected Objectives
+             * @default false
+             */
+            has_selected_objectives: boolean;
+            /** Items */
+            items?: components["schemas"]["StudentObjectiveOut"][];
+        };
+        /** StudentObjectivesReplaceIn */
+        StudentObjectivesReplaceIn: {
+            /** Items */
+            items: components["schemas"]["StudentObjectiveIn"][];
+            /** Expected Revision */
+            expected_revision?: number | null;
+        };
         /** StudentSurfaceDeepLinkOut */
         StudentSurfaceDeepLinkOut: {
             /** Label */
@@ -6867,10 +7284,17 @@ export interface components {
              * @enum {string}
              */
             confidence: "low" | "medium" | "high";
+            /** Area */
+            area?: string | null;
+            execution?: components["schemas"]["StudentTodayExecutionOut"] | null;
         };
         /** StudentTodayDetailsOut */
         StudentTodayDetailsOut: {
             active_session?: components["schemas"]["StudentExperienceActiveSessionOut"] | null;
+            /**
+             * @deprecated
+             * @description Deprecated compatibility field; use primary_action.execution.
+             */
             trainer_action?: components["schemas"]["TrainerActionOut"] | null;
             /** Secondary Actions */
             secondary_actions?: components["schemas"]["TrainerActionOut"][];
@@ -6885,6 +7309,22 @@ export interface components {
              * @enum {string}
              */
             evidence_confidence: "low" | "medium" | "high";
+        };
+        /** StudentTodayExecutionOut */
+        StudentTodayExecutionOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "trainer_action" | "resume_session" | "href";
+            /** Recommendation Id */
+            recommendation_id?: string | null;
+            /** Action Id */
+            action_id?: string | null;
+            /** Session Id */
+            session_id?: string | null;
+            /** Href */
+            href?: string | null;
         };
         /** StudentTodayLoadOut */
         StudentTodayLoadOut: {
@@ -7204,6 +7644,187 @@ export interface components {
             /** Health Score Pct */
             health_score_pct?: number | null;
         };
+        /** StudyPlanActivityExplanationOut */
+        StudyPlanActivityExplanationOut: {
+            /**
+             * Contract Version
+             * @default study-plan-v1
+             * @constant
+             */
+            contract_version: "study-plan-v1";
+            /** Activity Id */
+            activity_id: string;
+            /** Title */
+            title: string;
+            /** Policy Version */
+            policy_version: string;
+            /** Intervention */
+            intervention?: string | null;
+            /** Selected Because */
+            selected_because?: string[];
+            /** Factors */
+            factors?: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * StudyPlanActivityLaunchOut
+         * @description Resultado do início — nunca só a sessão.
+         *
+         *     Se houve fallback, o aluno recebeu algo diferente do prometido e precisa
+         *     saber. Reduzir ou relaxar filtro em silêncio é o oposto de "toda
+         *     recomendação diz o que foi recomendado e por quê".
+         */
+        StudyPlanActivityLaunchOut: {
+            /**
+             * Contract Version
+             * @default study-plan-v1
+             * @constant
+             */
+            contract_version: "study-plan-v1";
+            /**
+             * Launch Status
+             * @enum {string}
+             */
+            launch_status: "launched" | "launched_with_fallback" | "unavailable" | "requires_regeneration";
+            /** Fallback Reason */
+            fallback_reason?: ("insufficient_candidates" | "stratification_failed" | "catalog_version_changed" | "objective_changed" | "availability_changed" | "policy_version_changed" | "review_task_unavailable" | "invalid_recipe_version" | "exam_already_occurred") | null;
+            session?: components["schemas"]["QuestionBankSessionOut"] | null;
+        };
+        /** StudyPlanActivityListOut */
+        StudyPlanActivityListOut: {
+            /**
+             * Contract Version
+             * @default study-plan-v1
+             * @constant
+             */
+            contract_version: "study-plan-v1";
+            /** Items */
+            items?: components["schemas"]["StudyPlanActivityOut"][];
+        };
+        /** StudyPlanActivityOut */
+        StudyPlanActivityOut: {
+            /** Activity Id */
+            activity_id: string;
+            /** Scheduled Date */
+            scheduled_date?: string | null;
+            /** Slot Order */
+            slot_order: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "diagnostic_kros" | "topic_practice" | "multi_topic_simulado" | "adaptive_simulado" | "dna_drill" | "review" | "rest";
+            /** Title */
+            title: string;
+            /**
+             * Difficulty Class
+             * @default padrao
+             * @enum {string}
+             */
+            difficulty_class: "leve" | "padrao" | "critico";
+            /**
+             * Estimated Minutes
+             * @default 0
+             */
+            estimated_minutes: number;
+            /**
+             * Estimated Questions
+             * @default 0
+             */
+            estimated_questions: number;
+            /**
+             * Status
+             * @default pending
+             * @enum {string}
+             */
+            status: "pending" | "started" | "done" | "skipped" | "rescheduled" | "expired";
+            /**
+             * Locked
+             * @default false
+             */
+            locked: boolean;
+            /** Session Id */
+            session_id?: string | null;
+            /** Review Task Id */
+            review_task_id?: string | null;
+            /** Observed Minutes */
+            observed_minutes?: number | null;
+            /** Observed Questions */
+            observed_questions?: number | null;
+            /** Completed At */
+            completed_at?: string | null;
+            /**
+             * Change Type
+             * @default added
+             * @enum {string}
+             */
+            change_type: "added" | "kept" | "moved" | "resized" | "unscheduled";
+            /** Unscheduled Reason */
+            unscheduled_reason?: string | null;
+            /** Recommended Window */
+            recommended_window?: {
+                [key: string]: unknown;
+            } | null;
+            /** Rationale */
+            rationale?: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * StudyPlanActivityPatchIn
+         * @description Aceitar, reduzir, reagendar, pular ou travar uma atividade.
+         */
+        StudyPlanActivityPatchIn: {
+            /** Status */
+            status?: ("pending" | "skipped" | "rescheduled") | null;
+            /** Scheduled Date */
+            scheduled_date?: string | null;
+            /** Locked */
+            locked?: boolean | null;
+            /** Estimated Questions */
+            estimated_questions?: number | null;
+        };
+        /** StudyPlanOut */
+        StudyPlanOut: {
+            /**
+             * Contract Version
+             * @default study-plan-v1
+             * @constant
+             */
+            contract_version: "study-plan-v1";
+            /** Plan Id */
+            plan_id: string;
+            /**
+             * Revision
+             * @default 1
+             */
+            revision: number;
+            /** Policy Version */
+            policy_version: string;
+            /**
+             * Evidence Level
+             * @default inicial
+             * @enum {string}
+             */
+            evidence_level: "inicial" | "adaptado_por_evidencias" | "alta_confianca";
+            /** Horizon Start */
+            horizon_start: string;
+            /** Horizon End */
+            horizon_end: string;
+            /** Generated At */
+            generated_at: string;
+            /** Objectives */
+            objectives?: {
+                [key: string]: unknown;
+            }[];
+            /** Explanation */
+            explanation?: {
+                [key: string]: unknown;
+            };
+            /** Activities */
+            activities?: components["schemas"]["StudyPlanActivityOut"][];
+        };
         /** SubscribeBody */
         SubscribeBody: {
             /** Endpoint */
@@ -7311,7 +7932,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "resume_session" | "targeted_practice" | "scheduled_topic_practice" | "flashcard_review" | "simulation" | "manual_study";
+            kind: "resume_session" | "targeted_practice" | "scheduled_topic_practice" | "flashcard_review" | "simulation" | "manual_study" | "rest";
             /** Action Id */
             action_id?: string | null;
             /** Title */
@@ -7342,6 +7963,18 @@ export interface components {
             /** Href */
             href?: string | null;
             pedagogical_confidence?: components["schemas"]["TrainerPedagogicalConfidenceOut"] | null;
+            /** Plan Activity Id */
+            plan_activity_id?: string | null;
+            /** Plan Activity Kind */
+            plan_activity_kind?: string | null;
+            /** Plan Id */
+            plan_id?: string | null;
+            /** Plan Revision */
+            plan_revision?: number | null;
+            /** Plan Policy Version */
+            plan_policy_version?: string | null;
+            /** Selection Policy Version */
+            selection_policy_version?: string | null;
         };
         /**
          * TrainerClosedLoopOut
@@ -7538,6 +8171,16 @@ export interface components {
             generated_at: string;
             /** Policy Version */
             policy_version: string;
+            /**
+             * Authority Mode
+             * @default legacy
+             * @enum {string}
+             */
+            authority_mode: "legacy" | "study_plan";
+            /** Plan Id */
+            plan_id?: string | null;
+            /** Plan Revision */
+            plan_revision?: number | null;
             primary_action: components["schemas"]["TrainerActionOut"];
             /** Secondary Actions */
             secondary_actions?: components["schemas"]["TrainerActionOut"][];
@@ -8191,72 +8834,6 @@ export interface operations {
             };
         };
     };
-    signup_auth_signup_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SignupRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SignupResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    login_auth_login_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LoginRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LoginResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     create_auth_session_auth_session_post: {
         parameters: {
             query?: never;
@@ -8310,6 +8887,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RefreshSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["LogoutRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    signup_auth_signup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignupRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignupResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    login_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
                 };
             };
             /** @description Validation Error */
@@ -8443,39 +9119,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ResendVerificationResponse"];
                 };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    logout_auth_logout_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["LogoutRequest"] | null;
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -11531,6 +12174,438 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AccessPathListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_objectives_objectives_mine_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentObjectivesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_my_objectives_objectives_mine_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentObjectivesReplaceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentObjectivesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_onboarding_onboarding_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_onboarding_objectives_onboarding_objectives_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentObjectivesReplaceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_routine_onboarding_routine_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnboardingRoutineIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_capacity_onboarding_capacity_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnboardingCapacityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    complete_onboarding_onboarding_complete_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_current_plan_plan_current_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyPlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    regenerate_plan_plan_regenerate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyPlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_activities_plan_activities_get: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyPlanActivityListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_activity_plan_activities__activity_id__start_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyPlanActivityLaunchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_activity_plan_activities__activity_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudyPlanActivityPatchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyPlanActivityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_activity_explanation_plan_activities__activity_id__explanation_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyPlanActivityExplanationOut"];
                 };
             };
             /** @description Validation Error */
