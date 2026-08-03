@@ -20,6 +20,7 @@ import { KrosGlyph, type KrosGlyphMotion } from "@/components/KrosGlyph";
 import {
   CalendarDays,
   ChartNoAxesCombined,
+  CircleUserRound,
   House,
   Layers3,
   LibraryBig,
@@ -46,6 +47,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   cards: Layers3,
   evolution: ChartNoAxesCombined,
   planning: CalendarDays,
+  profile: CircleUserRound,
   settings: Settings,
 };
 
@@ -361,18 +363,15 @@ export default function Nav({ displayName, photoUrl }: { displayName?: string | 
             </div>
             <div className="mt-auto border-t border-edge">
               {(displayName || photoUrl) && (
-                <Link
-                  href="/preferencias"
-                  onClick={() => setDrawerOpen(false)}
-                  className="flex items-center gap-2.5 border-b border-edge px-4 py-3 transition-colors hover:bg-surfaceMuted"
-                >
+                // Identidade, não atalho: Perfil virou item do menu, e manter o
+                // avatar clicável para o mesmo destino obrigava a aprender dois
+                // caminhos para a mesma tela.
+                <div className="flex items-center gap-2.5 border-b border-edge px-4 py-3">
                   <UserAvatar photoUrl={photoUrl} displayName={displayName} />
                   <p className="min-w-0 flex-1 truncate text-sm font-medium text-ink">
                     {displayName?.split(" ")[0] ?? ""}
                   </p>
-                  <Settings className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
-                  <span className="sr-only">Preferências</span>
-                </Link>
+                </div>
               )}
               <div className="flex items-center justify-between px-2 py-2">
                 <button
@@ -521,10 +520,8 @@ export function SidebarNav({
         {/* User info + Logout + Theme */}
         <div className="border-t border-edge shrink-0">
           {(displayName || photoUrl) && (
-            <Link
-              href="/preferencias"
-              title="Preferências"
-              className={`flex items-center border-b border-edge transition-colors hover:bg-surfaceMuted ${visible ? "gap-2.5 px-4 py-3" : "justify-center py-3"}`}
+            <div
+              className={`flex items-center border-b border-edge ${visible ? "gap-2.5 px-4 py-3" : "justify-center py-3"}`}
             >
               <UserAvatar photoUrl={photoUrl} displayName={displayName} size={visible ? "md" : "sm"} />
               {visible && (
@@ -535,9 +532,7 @@ export function SidebarNav({
                   )}
                 </div>
               )}
-              {visible && <Settings className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />}
-              <span className="sr-only">Preferências</span>
-            </Link>
+            </div>
           )}
           <div className={`flex items-center ${visible ? "justify-between px-3" : "justify-center"} py-2.5`}>
             {visible ? (

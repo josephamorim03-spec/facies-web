@@ -10,10 +10,10 @@ const E2E_BROWSER_URL = E2E_BASE_URL;
 
 test.describe("Auth proxy + cookies", () => {
   test("redirects protected route to login when auth cookies are missing", async ({ page }) => {
-    // `/cronograma` e' 308 para `/planejamento` (next.config.js), entao o `next`
-    // guardado no login e' o destino canonico, nao o alias de entrada.
+    // `/cronograma` voltou a ser a canonica, entao o `next` guardado no login e'
+    // ela mesma.
     await page.goto("/cronograma");
-    await expect(page).toHaveURL(/\/login\?next=%2Fplanejamento$/);
+    await expect(page).toHaveURL(/\/login\?next=%2Fcronograma$/);
   });
 
   test("/api/version remains publicly accessible", async ({ request }) => {
@@ -30,7 +30,7 @@ test.describe("Auth proxy + cookies", () => {
 
     await page.goto("/cronograma");
 
-    await expect(page).toHaveURL(/\/planejamento$/);
+    await expect(page).toHaveURL(/\/cronograma$/);
   });
 
   test("logout endpoint clears both client and server auth cookies", async ({ context, page }) => {

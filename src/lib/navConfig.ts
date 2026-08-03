@@ -4,7 +4,8 @@ export type StudentIntent =
   | "bank"
   | "cards"
   | "evolution"
-  | "planning";
+  | "planning"
+  | "profile";
 
 export type StudentNavIcon = StudentIntent;
 
@@ -44,11 +45,20 @@ const INTENTS: Record<
     title: "Evolução",
     icon: "evolution",
   },
+  // `/cronograma` e' a URL canonica: e' o nome que a tela usa com o aluno, e o
+  // diretorio real do codigo (`app/cronograma/`). `/planejamento` continua
+  // respondendo como alias compativel.
   planning: {
-    path: "/planejamento",
-    label: "Planejamento",
-    title: "Planejamento",
+    path: "/cronograma",
+    label: "Cronograma",
+    title: "Cronograma",
     icon: "planning",
+  },
+  profile: {
+    path: "/preferencias",
+    label: "Perfil",
+    title: "Perfil",
+    icon: "profile",
   },
 };
 
@@ -64,12 +74,13 @@ const LEGACY_PATHS: Record<StudentIntent, string[]> = {
   ],
   planning: [
     "/planejar",
-    "/cronograma",
+    "/planejamento",
     "/calendario",
     "/agenda-operacional",
-    "/rotina-e-metas",
     "/desempenho",
   ],
+  // `/rotina-e-metas` e' 308 para `/preferencias`, entao pertence ao Perfil.
+  profile: ["/rotina-e-metas", "/perfil"],
 };
 
 function route(path: string, title: string, intent: StudentIntent): StudentRouteConfig {
@@ -162,8 +173,15 @@ function navItem(intent: StudentIntent): NavItemConfig {
   };
 }
 
-// Três blocos, separados por divisória: a Kros é o chamariz do produto e fica
-// sozinha no topo; depois a rotina de estudo; depois o acompanhamento.
+// Quatro blocos, separados por divisória, agrupados por PERGUNTA e não por tipo
+// de tela: a Kros é o chamariz e fica sozinha; "o que faço agora" (Hoje) com
+// "quando" (Cronograma); depois onde o estudo acontece (Banco, Cards); por fim
+// olhar para trás e para si (Evolução, Perfil).
+//
+// Perfil é item de menu, não um botão solto ao lado da foto: uma área de
+// destino merece o mesmo peso das outras, e o atalho duplicado obrigava o aluno
+// a aprender dois caminhos para a mesma tela.
+//
 // Alterar esta ordem exige atualizar `tests/unit/navConfig.test.mjs` e
 // `PRIMARY_NAV_ROUTES` em `components/AppShell.tsx`.
 export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
@@ -171,9 +189,12 @@ export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
     items: [navItem("kros")],
   },
   {
-    items: [navItem("today"), navItem("bank"), navItem("cards")],
+    items: [navItem("today"), navItem("planning")],
   },
   {
-    items: [navItem("evolution"), navItem("planning")],
+    items: [navItem("bank"), navItem("cards")],
+  },
+  {
+    items: [navItem("evolution"), navItem("profile")],
   },
 ];

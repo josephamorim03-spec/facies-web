@@ -309,7 +309,7 @@ export default function TodayPage() {
   const today = useMemo(() => todayISO(), []);
   const weekDays = useMemo(() => getWeekDays(), []);
   const [selectedDayIso, setSelectedDayIso] = useState(today);
-  const planningTodayHref = `/planejamento?day=${today}`;
+  const planningTodayHref = `/cronograma?day=${today}`;
 
   async function fetchTasks(showLoadingState: boolean = false) {
     const token = getAuthToken();
@@ -895,7 +895,7 @@ export default function TodayPage() {
             <section className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="font-serif text-2xl font-semibold">Plano de estudos de hoje</h2>
-                <Link href="/planejamento" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                <Link href="/cronograma" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
                   Ver plano completo
                   <IconArrowRight className="h-4 w-4" />
                 </Link>

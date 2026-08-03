@@ -19,7 +19,7 @@ function findItem(href) {
 
 test("navigation exposes the canonical student destinations", () => {
   const hrefs = NAV_GROUPS_CONFIG.flatMap((group) => group.items.map((item) => item.href));
-  assert.deepEqual(hrefs, ["/kros", "/hoje", "/banco", "/cards", "/evolucao", "/planejamento"]);
+  assert.deepEqual(hrefs, ["/kros", "/hoje", "/cronograma", "/banco", "/cards", "/evolucao", "/preferencias"]);
 });
 
 test("navigation isolates Kros in its own group above the study routine", () => {
@@ -27,8 +27,9 @@ test("navigation isolates Kros in its own group above the study routine", () => 
     NAV_GROUPS_CONFIG.map((group) => group.items.map((item) => item.href)),
     [
       ["/kros"],
-      ["/hoje", "/banco", "/cards"],
-      ["/evolucao", "/planejamento"],
+      ["/hoje", "/cronograma"],
+      ["/banco", "/cards"],
+      ["/evolucao", "/preferencias"],
     ],
   );
 });
@@ -39,7 +40,7 @@ test("legacy routes keep activating their canonical destination", () => {
   assert.equal(isNavItemActive("/praticar", findItem("/banco")), true);
   assert.equal(isNavItemActive("/revisar", findItem("/cards")), true);
   assert.equal(isNavItemActive("/acompanhar", findItem("/evolucao")), true);
-  assert.equal(isNavItemActive("/cronograma", findItem("/planejamento")), true);
+  assert.equal(isNavItemActive("/planejamento", findItem("/cronograma")), true);
 });
 
 test("canonical destinations own their related aliases", () => {
@@ -47,13 +48,14 @@ test("canonical destinations own their related aliases", () => {
   assert.equal(isNavItemActive("/cards-adaptativos", findItem("/cards")), true);
   assert.equal(isNavItemActive("/caderno", findItem("/cards")), true);
   assert.equal(isNavItemActive("/estatisticas", findItem("/evolucao")), true);
-  assert.equal(isNavItemActive("/agenda-operacional", findItem("/planejamento")), true);
+  assert.equal(isNavItemActive("/agenda-operacional", findItem("/cronograma")), true);
+  assert.equal(isNavItemActive("/rotina-e-metas", findItem("/preferencias")), true);
 });
 
 test("legacy titles resolve to their canonical destination", () => {
-  assert.equal(getStudentPageTitle("/cronograma"), "Planejamento");
-  assert.equal(getStudentPageTitle("/calendario"), "Planejamento");
-  assert.equal(getStudentPageTitle("/agenda-operacional"), "Planejamento");
+  assert.equal(getStudentPageTitle("/planejamento"), "Cronograma");
+  assert.equal(getStudentPageTitle("/calendario"), "Cronograma");
+  assert.equal(getStudentPageTitle("/agenda-operacional"), "Cronograma");
 });
 
 test("global shell does not duplicate route subnavigation", () => {

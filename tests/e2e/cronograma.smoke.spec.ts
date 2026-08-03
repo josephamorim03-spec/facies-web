@@ -180,8 +180,14 @@ test.describe("Cronograma smoke", () => {
     const previousMonthLabel = /M.s anterior/i;
 
     await expect(viewport).toHaveAttribute("data-calendar-active-rows", "6");
+    // `data-calendar-active-rows` e' atributo de DOM: existe antes de o layout
+    // assentar. Enquanto `/cronograma` era 308 para `/planejamento`, o salto
+    // extra dava tempo suficiente por acidente; com a canonica respondendo
+    // direto, a medicao chegava a pegar altura 0. Espera o LAYOUT, nao o DOM.
+    await expect
+      .poll(async () => (await viewport.boundingBox())?.height ?? 0)
+      .toBeGreaterThan(0);
     const heightBefore = (await viewport.boundingBox())?.height ?? 0;
-    expect(heightBefore).toBeGreaterThan(0);
     await assertCalendarViewportNoCutAndSmallGap(page);
 
     await page.getByLabel(nextMonthLabel).click();

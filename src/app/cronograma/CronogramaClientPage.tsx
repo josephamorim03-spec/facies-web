@@ -9,10 +9,8 @@ import {
   ChevronLeft,
   ChevronRight,
   HelpCircle,
-  House,
 } from "lucide-react";
 
-import { TopBarActionLink } from "@/components/TopBarActionLink";
 import { Button } from "@/components/ui/Button";
 import { useNavbar } from "@/lib/NavbarContext";
 import { buildStudyImportRuntimePath, readActiveStudyImportSessionId } from "@/lib/studyImportRuntime";
@@ -353,9 +351,6 @@ export default function CronogramaPage({
         >
           <HelpCircle className="h-5 w-5" aria-hidden="true" />
         </button>
-        <TopBarActionLink href="/hoje" label="Ir para Hoje" title="Ir para Hoje">
-          <House className="h-5 w-5" aria-hidden="true" />
-        </TopBarActionLink>
       </>,
     );
     return () => {
@@ -464,9 +459,6 @@ export default function CronogramaPage({
             >
               <HelpCircle className="h-5 w-5" aria-hidden="true" />
             </button>
-            <TopBarActionLink href="/hoje" label="Ir para Hoje" title="Ir para Hoje">
-              <House className="h-5 w-5" aria-hidden="true" />
-            </TopBarActionLink>
           </div>
         </div>
       ) : null}

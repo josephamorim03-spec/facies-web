@@ -68,9 +68,13 @@ const nextConfig = {
       { source: "/dados-e-relatorios", destination: "/evolucao", permanent: true },
       { source: "/dados-e-relatorios/:path*", destination: "/evolucao", permanent: true },
       { source: "/revisoes", destination: "/evolucao", permanent: true },
-      { source: "/planejar", destination: "/planejamento", permanent: true },
-      { source: "/cronograma", destination: "/planejamento", permanent: true },
-      { source: "/calendario", destination: "/planejamento", permanent: true },
+      // `/cronograma` e' a canonica: e' o nome que a tela usa com o aluno e o
+      // diretorio real da pagina. O 308 estava invertido -- mandava a canonica
+      // para o alias, e o proprio `app/planejamento/page.tsx` so reexportava
+      // `app/cronograma/page.tsx`.
+      { source: "/planejar", destination: "/cronograma", permanent: true },
+      { source: "/planejamento", destination: "/cronograma", permanent: true },
+      { source: "/calendario", destination: "/cronograma", permanent: true },
       { source: "/rotina-e-metas", destination: "/preferencias", permanent: true },
       { source: "/perfil", destination: "/preferencias", permanent: true },
     ];

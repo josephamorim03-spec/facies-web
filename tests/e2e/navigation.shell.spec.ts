@@ -282,14 +282,14 @@ test.describe("Navigation shell", () => {
   // LEGACY_PATHS lhe atribui em navConfig.ts).
   const desktopCases = [
     { path: "/hoje", activeHref: "/hoje" },
-    { path: "/calendario", activeHref: "/planejamento" }, // 308 -> /planejamento
+    { path: "/calendario", activeHref: "/cronograma" }, // 308 -> /cronograma
     { path: "/caderno", activeHref: "/cards" }, // 308 -> /cards/registros
     { path: "/revisoes", activeHref: "/evolucao" }, // 308 -> /evolucao
     { path: "/dados-e-relatorios/graficos", activeHref: "/evolucao" }, // 308 -> /evolucao
     { path: "/estatisticas/relatorio", activeHref: "/evolucao" }, // rota real, intent evolution
     // `/desempenho` encadeia DOIS saltos: `redirect("/cronograma")` no servidor
-    // e depois o 308 do next.config para `/planejamento`.
-    { path: "/desempenho", activeHref: "/planejamento", landsOn: "/planejamento" },
+    // e o /cronograma agora e' a propria canonica.
+    { path: "/desempenho", activeHref: "/cronograma", landsOn: "/cronograma" },
   ];
 
   for (const { path, activeHref, landsOn } of desktopCases) {
@@ -329,12 +329,12 @@ test.describe("Navigation shell", () => {
     await page.goto("/hoje");
     await navSidebar(page).hover();
 
-    // "Planejamento" e' o rotulo mais longo do menu atual -- se algum couber
+    // "Cronograma" e' o rotulo mais longo do menu atual -- se algum couber
     // errado no container, e' este.
-    const longestItem = page.locator("aside [data-nav-item-href='/planejamento']");
+    const longestItem = page.locator("aside [data-nav-item-href='/cronograma']");
     const longestLabel = longestItem.locator("span");
     await expect(longestItem).toBeVisible();
-    await expect(longestLabel).toHaveText("Planejamento");
+    await expect(longestLabel).toHaveText("Cronograma");
 
     const [itemBox, labelBox] = await Promise.all([longestItem.boundingBox(), longestLabel.boundingBox()]);
     expect(itemBox).not.toBeNull();
@@ -345,13 +345,13 @@ test.describe("Navigation shell", () => {
     expect(labelBox.x + labelBox.width).toBeLessThanOrEqual(itemBox.x + itemBox.width + 1);
   });
 
-  test("removes Cronograma and Caderno from desktop sidebar", async ({ page }) => {
+  test("mostra Cronograma e mantem Caderno fora da sidebar", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/hoje");
 
     const sidebar = navSidebar(page);
     await expect(sidebar).toBeVisible();
-    await expect(sidebar.locator("[data-nav-item-href='/cronograma']")).toHaveCount(0);
+    await expect(sidebar.locator("[data-nav-item-href='/cronograma']")).toHaveCount(1);
     await expect(sidebar.locator("[data-nav-item-href='/caderno']")).toHaveCount(0);
   });
 
@@ -361,8 +361,11 @@ test.describe("Navigation shell", () => {
     await page.goto("/caderno");
     await expect(page.getByRole("link", { name: "Cards" })).toHaveAttribute("href", "/cards");
 
+    // O atalho "Ir para Hoje" do cabecalho do Cronograma saiu: Hoje e Cronograma
+    // sao vizinhos no menu, e o atalho ensinava um segundo caminho para o mesmo
+    // destino.
     await page.goto("/calendario");
-    await expect(page.getByRole("link", { name: "Hoje" }).first()).toHaveAttribute("href", "/hoje");
+    await expect(page.getByRole("link", { name: "Ir para Hoje" })).toHaveCount(0);
 
     await page.goto("/estatisticas/relatorio");
     await expect(page.getByRole("link", { name: "Desempenho" })).toHaveAttribute("href", "/estatisticas");
@@ -391,21 +394,21 @@ test.describe("Navigation shell mobile drawer", () => {
     await expect(activeItems).toHaveAttribute("aria-current", "page");
   });
 
-  test("mostra as seis intencoes no drawer sem estouro horizontal", async ({ page }) => {
+  test("mostra as sete intencoes no drawer sem estouro horizontal", async ({ page }) => {
     // No mobile a navegacao e' o drawer, nao uma barra inferior: o `aria-label`
     // "Navegação principal" pertence a sidebar, que fica oculta neste viewport.
     await page.goto("/hoje");
     await page.getByLabel("Menu").click();
 
     const drawerItems = page.locator("[data-nav-surface='drawer']");
-    for (const label of ["Kros", "Hoje", "Banco", "Cards", "Evolução", "Planejamento"]) {
+    for (const label of ["Kros", "Hoje", "Cronograma", "Banco", "Cards", "Evolução", "Perfil"]) {
       await expect(drawerItems.getByText(label, { exact: true })).toBeVisible();
     }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
-  test("removes Cronograma and Caderno from mobile drawer", async ({ page }) => {
+  test("mostra Cronograma e mantem Caderno fora do drawer", async ({ page }) => {
     await page.goto("/hoje");
     await page.getByLabel("Menu").click();
 
@@ -413,7 +416,8 @@ test.describe("Navigation shell mobile drawer", () => {
     // FECHADO e o teste passaria sem testar nada.
     await expect(page.locator("[data-nav-surface='drawer']").first()).toBeVisible();
 
-    await expect(page.locator("[data-nav-surface='drawer'][data-nav-item-href='/cronograma']")).toHaveCount(0);
+    // Cronograma deixou de ser rota escondida: virou item do menu, ao lado de Hoje.
+    await expect(page.locator("[data-nav-surface='drawer'][data-nav-item-href='/cronograma']")).toHaveCount(1);
     await expect(page.locator("[data-nav-surface='drawer'][data-nav-item-href='/caderno']")).toHaveCount(0);
   });
 
@@ -421,9 +425,9 @@ test.describe("Navigation shell mobile drawer", () => {
     // O par Hoje<->Planejamento deixou de ser "Calendário" no topo. O rotulo
     // agora depende do estado do dia ("Ver plano completo" com plano, "Abrir
     // planejamento" vazio), entao o contrato verificado e' o destino, nao o
-    // texto: de /hoje sempre se alcanca o planejamento.
+    // texto: de /hoje sempre se alcanca o cronograma.
     await page.goto("/hoje");
-    await expect(page.locator('main a[href^="/planejamento"]').first()).toBeVisible();
+    await expect(page.locator('main a[href^="/cronograma"]').first()).toBeVisible();
 
     // O cabecalho do mobile nao repete os atalhos do desktop (que a suite ja
     // cobre em "shows reciprocal top-right links on desktop child pages"); o que
