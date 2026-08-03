@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { GuidanceNote } from "@/components/GuidanceNote";
+import { Button } from "@/components/ui/Button";
 import { SessionExitButton } from "./SessionExitButton";
 import type {
   QuestionBankAiRequestPreview,
@@ -153,7 +154,7 @@ type StudyQuestionProps = {
   onShowHistory?: () => void;
   onRequestAiCorrection?: () => void;
   aiRequestPreview?: QuestionBankAiRequestPreview | null;
-  aiRequestStatus?: QuestionBankAiRequestResult | QuestionBankAiRequestStatusResult | null;
+  aiRequestStatus: QuestionBankAiRequestResult | QuestionBankAiRequestStatusResult | null;
   aiCorrectionRequesting?: boolean;
   aiCorrectionRequested?: boolean;
 };
@@ -307,34 +308,34 @@ function hasCanonicalCorrection(item: QuestionBankSessionItem): boolean {
 function aiStatusLabel(status: string | undefined): string {
   switch (status) {
     case "cached":
-      return "Analise reaproveitavel";
+      return "Análise reaproveitável";
     case "completed":
-      return "Analise concluida";
+      return "Análise concluída";
     case "blocked_by_quality":
-      return "Analise bloqueada";
+      return "Análise bloqueada";
     case "running":
-      return "Analise em andamento";
+      return "Análise em andamento";
     case "queued":
-      return "Analise enfileirada";
+      return "Análise enfileirada";
     default:
-      return "Resolucao por IA";
+      return "Resolução por IA";
   }
 }
 
 function aiStatusMessage(status: string | undefined): string {
   switch (status) {
     case "cached":
-      return "Ja existe leitura reaproveitavel para esta questao. Reabrir nao consome nova cota.";
+      return "Já existe leitura reaproveitável para esta questão. Reabrir não consome nova cota.";
     case "completed":
-      return "A IA concluiu a leitura editorial e pedagógica desta questao.";
+      return "A IA concluiu a leitura editorial e pedagógica desta questão.";
     case "blocked_by_quality":
-      return "A questao tem bloqueios editoriais e precisa de correcao antes da analise profunda.";
+      return "A questão tem bloqueios editoriais e precisa de correção antes da análise profunda.";
     case "running":
-      return "A IA esta analisando a integridade e o DNA pedagogico da questao.";
+      return "A IA está analisando a integridade e o DNA pedagógico da questão.";
     case "queued":
-      return "A solicitacao foi aceita e deve rodar assim que houver capacidade.";
+      return "A solicitação foi aceita e deve rodar assim que houver capacidade.";
     default:
-      return "A IA prepara uma resolucao pedagogica e valida integridade antes de qualquer uso editorial.";
+      return "A IA prepara uma resolução pedagógica e valida integridade antes de qualquer uso editorial.";
   }
 }
 
@@ -514,7 +515,7 @@ export default function StudyQuestion({
                   {(() => {
                     const diff = difficultyChip(item.difficulty_estimate);
                     const adaptive = item.adaptive_explanation;
-                    const reasons = adaptive?.reasons?.length
+                    const reasons = adaptive?.reasons.length
                       ? adaptive.reasons.slice(0, 3)
                       : selectionReasons(item.selection_reason);
                     const stats = item.attempt_stats;
@@ -876,29 +877,31 @@ export default function StudyQuestion({
                           : aiStatus === "blocked_by_quality"
                             ? "Corrigir antes de rodar"
                             : aiStatus === "cached"
-                              ? "Analise em cache"
+                              ? "Análise em cache"
                               : aiStatus === "completed"
-                                ? "Analise concluida"
+                                ? "Análise concluída"
                                 : aiStatus === "running"
                                   ? "IA em andamento"
                                   : aiStatus === "queued"
-                                    ? "Solicitacao enviada"
+                                    ? "Solicitação enviada"
                                 : aiCorrectionRequested
-                                  ? "Solicitacao enviada"
-                                  : "Solicitar resolucao por IA"}
+                                  ? "Solicitação enviada"
+                                  : "Solicitar resolução por IA"}
                       </button>
                     </div>
                   </div>
                 )}
                 {onQuickNote && (
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={onQuickNote}
-                    className="mt-4 inline-flex items-center gap-2 rounded-lg border border-primary px-3 py-2 text-xs font-semibold text-primary transition hover:bg-surfaceMuted"
+                    leftIcon={<IconBook className="h-3.5 w-3.5" aria-hidden="true" />}
+                    className="mt-4"
                   >
-                    <IconBook className="h-3.5 w-3.5" />
                     Criar flashcard deste aprendizado
-                  </button>
+                  </Button>
                 )}
               </section>
             )}

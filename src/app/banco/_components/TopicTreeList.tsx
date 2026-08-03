@@ -125,7 +125,7 @@ export function TopicTreeList({
     }
     if (error) {
       return (
-        <div className="rounded-lg border border-dashed border-edge bg-surface p-4 text-sm text-muted">
+        <div className="paper-dashed bg-surface p-4 text-sm text-muted">
           <p>Não foi possível carregar os assuntos agora.</p>
           {onRetry && (
             <button
@@ -140,7 +140,7 @@ export function TopicTreeList({
       );
     }
     return (
-      <div className="rounded-lg border border-dashed border-edge bg-surface p-4 text-sm text-muted">
+      <div className="paper-dashed bg-surface p-4 text-sm text-muted">
         Nenhum assunto encontrado para os filtros atuais.
       </div>
     );

@@ -123,7 +123,7 @@ export default function YearPicker({
           )}
         </div>
       ) : numericYears.length === 0 && noYearCount === 0 ? (
-        <p className="rounded-lg border border-dashed border-edge px-3 py-4 text-center text-xs text-muted">
+        <p className="paper-dashed px-3 py-4 text-center text-xs text-muted">
           Nenhum ano disponível com os filtros atuais.
         </p>
       ) : (

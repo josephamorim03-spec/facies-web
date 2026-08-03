@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Search } from "lucide-react";
+import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
 
 type CadernoHeaderProps = {
   tab: "registro" | "pesquisar";
@@ -8,33 +8,26 @@ type CadernoHeaderProps = {
   onExitSearch: () => void;
 };
 
-export function CadernoHeader({ tab, onEnterSearch, onExitSearch }: CadernoHeaderProps) {
-  if (tab === "pesquisar") {
-    return (
-      <div className="flex min-h-11 items-center justify-center gap-3 border-y border-edge py-2">
-        <button
-          type="button"
-          onClick={onExitSearch}
-          aria-label="Voltar para registrar"
-          className="paper-control inline-flex min-h-10 items-center gap-2 px-3 text-sm font-semibold text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Registrar
-        </button>
-      </div>
-    );
-  }
+const OPTIONS = [
+  { value: "registro" as const, label: "Novo registro" },
+  { value: "pesquisar" as const, label: "Pesquisar registros" },
+];
 
+/**
+ * Os dois modos de Registros ficam sempre visíveis. O controle anterior era
+ * assimétrico -- lupa sem rótulo para entrar, seta com rótulo para voltar --
+ * o que escondia metade da tela atrás de um ícone.
+ */
+export function CadernoHeader({ tab, onEnterSearch, onExitSearch }: CadernoHeaderProps) {
   return (
     <div className="flex min-h-11 items-center justify-center gap-3 border-y border-edge py-2">
-      <button
-        type="button"
-        onClick={onEnterSearch}
-        aria-label="Pesquisar registros"
-        className="paper-control inline-flex min-h-10 min-w-10 items-center justify-center text-muted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-      >
-        <Search className="h-4 w-4" aria-hidden="true" />
-      </button>
+      <SegmentedToggle
+        value={tab}
+        onChange={(next) => (next === "pesquisar" ? onEnterSearch() : onExitSearch())}
+        options={OPTIONS}
+        ariaLabel="Modo dos registros"
+        size="md"
+      />
     </div>
   );
 }

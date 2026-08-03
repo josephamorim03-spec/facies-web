@@ -14,7 +14,7 @@ export function SlopeComparison({ state, actions }: Props) {
   if (slopeData.length === 0) return null;
 
   return (
-    <section data-testid="chart-area-slope" className="space-y-3 pt-4 border-t border-edge">
+    <section data-testid="chart-area-slope" className="space-y-3">
       <h2 className="text-sm font-medium">Comparativo de Evolução por Área</h2>
       <p className="text-xs text-muted">
         Acerto acumulado em duas metades das semanas registradas

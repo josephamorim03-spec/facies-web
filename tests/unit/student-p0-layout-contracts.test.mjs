@@ -27,7 +27,14 @@ test("Cronograma coloca o calendario mensal antes dos paineis auxiliares", () =>
     "calendario nao deve renderizar CTA redundante do proprio plano",
   );
   assert.match(source, /<CronogramaCalendarView/);
-  assert.equal(source.includes("<WeeklyGoalControl"), false);
+  // A meta semanal voltou, mas como painel auxiliar: o calendario continua
+  // sendo o heroi da tela, entao ela so pode aparecer depois dele.
+  assertComesBefore(
+    source,
+    "<CronogramaCalendarView",
+    "<WeeklyGoalControl",
+    "a meta semanal nao pode competir com o calendario pelo topo da tela",
+  );
   assert.match(source, /aria-label="Calendário mensal"/);
 });
 

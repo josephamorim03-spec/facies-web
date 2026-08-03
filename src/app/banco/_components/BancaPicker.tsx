@@ -263,7 +263,7 @@ export default function BancaPicker({
           )}
         </div>
       ) : sources.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-edge px-3 py-4 text-center text-xs text-muted">
+        <p className="paper-dashed px-3 py-4 text-center text-xs text-muted">
           Nenhuma fonte disponível.
         </p>
       ) : (

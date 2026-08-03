@@ -31,9 +31,9 @@ type DemandFilter =
 
 const FILTERS: Array<[DemandFilter, string]> = [
   ["student_requested", "Pedidas por alunos"],
-  ["without_correction", "Sem resolucao"],
+  ["without_correction", "Sem resolução"],
   ["queued", "IA em andamento"],
-  ["completed", "Ja processadas"],
+  ["completed", "Já processadas"],
   ["blocked", "Bloqueadas"],
   ["broken", "Quebradas"],
   ["has_reports", "Denunciadas"],
@@ -99,7 +99,7 @@ function actionLabel(action: string): string {
     case "send_to_ai":
       return "Enviar para IA";
     case "send_to_human_review":
-      return "Revisao humana";
+      return "Revisão humana";
     case "already_processed":
       return "Ignorar";
     case "wait":
@@ -118,7 +118,7 @@ function blockerLabel(code: string): string {
     case "missing_answer":
       return "sem gabarito";
     case "answer_not_in_alternatives":
-      return "gabarito nao bate";
+      return "gabarito não bate";
     case "missing_options":
       return "faltam alternativas";
     case "empty_alternative":
@@ -134,7 +134,7 @@ function blockerLabel(code: string): string {
     case "topic_header_in_stem":
       return "tema como titulo no enunciado";
     case "missing_required_media":
-      return "midia ausente";
+      return "média ausente";
     default:
       return code.replaceAll("_", " ");
   }
@@ -299,7 +299,7 @@ export default function AiResolutionPanel() {
       setSelected(new Set(hydratedItems.filter((item) => item.can_admin_batch && !item.has_open_reports).map((item) => item.question_id)));
       setAiPreview(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao carregar demandas de resolucao.");
+      setError(err instanceof Error ? err.message : "Falha ao carregar demandas de resolução.");
     } finally {
       setLoading(false);
     }
@@ -341,12 +341,12 @@ export default function AiResolutionPanel() {
   function selectRecommendedNextBatch() {
     if (reportedIds.length) {
       selectIds(reportedIds);
-      setNotice("Prioridade segura: denuncias abertas selecionadas para revisao humana.");
+      setNotice("Prioridade segura: denúncias abertas selecionadas para revisão humana.");
       return;
     }
     if (brokenIds.length) {
       selectIds(brokenIds);
-      setNotice("Questoes quebradas/corrompidas selecionadas para correcao estrutural.");
+      setNotice("Questões quebradas/corrompidas selecionadas para correção estrutural.");
       return;
     }
     if (safeAiIds.length) {
@@ -356,22 +356,22 @@ export default function AiResolutionPanel() {
     }
     if (blockedIds.length) {
       selectIds(blockedIds);
-      setNotice("Bloqueios editoriais selecionados para revisao humana.");
+      setNotice("Bloqueios editoriais selecionados para revisão humana.");
       return;
     }
     if (processedCleanIds.length) {
       selectIds(processedCleanIds);
-      setNotice("Questoes processadas e sem alertas selecionadas para auditoria editorial/SQLite.");
+      setNotice("Questões processadas e sem alertas selecionadas para auditoria editorial/SQLite.");
       return;
     }
-    setNotice("Nada acionavel neste recorte. Cole IDs ou mude o filtro.");
+    setNotice("Nada acionável neste recorte. Cole IDs ou mude o filtro.");
   }
 
   const cards = [
     ["Pedidas por alunos", data?.summary.student_requested ?? 0, "demandas reais do aluno"],
-    ["Sem resolucao", data?.summary.without_correction ?? 0, "sem correcao canonica"],
+    ["Sem resolução", data?.summary.without_correction ?? 0, "sem correção canônica"],
     ["IA em andamento", data?.summary.queued ?? 0, "fila ou running"],
-    ["Ja processadas", data?.summary.completed ?? 0, "completed/cache"],
+    ["Já processadas", data?.summary.completed ?? 0, "completed/cache"],
     ["Bloqueadas", data?.summary.blocked ?? 0, "qualidade/revisao"],
     ["Quebradas", brokenIds.length, "estrutura/importacao"],
     ["Denunciadas", reports.length, "reports abertos"],
@@ -382,11 +382,11 @@ export default function AiResolutionPanel() {
       <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Resolucao IA</p>
-            <h1 className="mt-1 text-2xl font-semibold text-gray-900 dark:text-gray-100">Central leiga de resolucao de questoes</h1>
+            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Resolução IA</p>
+            <h1 className="mt-1 text-2xl font-semibold text-gray-900 dark:text-gray-100">Central leiga de resolução de questões</h1>
             <p className="mt-2 max-w-3xl text-sm text-gray-600 dark:text-gray-300">
-              Veja o que alunos pediram, cole lotes de IDs e envie para IA sem aprovar conteudo medico automaticamente.
-              Pedido de resolucao nao e denuncia: reports continuam separados.
+              Veja o que alunos pediram, cole lotes de IDs e envie para IA sem aprovar conteúdo médico automaticamente.
+              Pedido de resolução não é denúncia: reports continuam separados.
             </p>
           </div>
           <button
@@ -422,10 +422,10 @@ export default function AiResolutionPanel() {
 
       <section className="grid gap-3 xl:grid-cols-5">
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-900 shadow-sm dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-200">
-          <div className="text-xs font-semibold uppercase opacity-70">1. Seguranca medica</div>
-          <div className="mt-1 text-lg font-semibold">Denuncias primeiro</div>
+          <div className="text-xs font-semibold uppercase opacity-70">1. Segurança médica</div>
+          <div className="mt-1 text-lg font-semibold">Denúncias primeiro</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
-            Questoes denunciadas ficam fora da IA em lote ate revisao humana.
+            Questões denunciadas ficam fora da IA em lote até revisão humana.
           </p>
           <button
             onClick={() => selectIds(reportedIds)}
@@ -436,7 +436,7 @@ export default function AiResolutionPanel() {
           </button>
         </div>
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-rose-900 shadow-sm dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-200">
-          <div className="text-xs font-semibold uppercase opacity-70">2. Importacao quebrada</div>
+          <div className="text-xs font-semibold uppercase opacity-70">2. Importação quebrada</div>
           <div className="mt-1 text-lg font-semibold">Corrigir estrutura</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
             Sem enunciado, sem gabarito, alternativa vazia, ordem A/C/B/D ou banca/ano no texto.
@@ -453,7 +453,7 @@ export default function AiResolutionPanel() {
           <div className="text-xs font-semibold uppercase opacity-70">3. Lote seguro</div>
           <div className="mt-1 text-lg font-semibold">Pode mandar para IA</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
-            Sem denuncia, sem bloqueio, sem correcao pronta e sem job rodando.
+            Sem denúncia, sem bloqueio, sem correção pronta e sem job rodando.
           </p>
           <button
             onClick={() => selectIds(safeAiIds)}
@@ -464,7 +464,7 @@ export default function AiResolutionPanel() {
           </button>
         </div>
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-200">
-          <div className="text-xs font-semibold uppercase opacity-70">4. Revisao humana</div>
+          <div className="text-xs font-semibold uppercase opacity-70">4. Revisão humana</div>
           <div className="mt-1 text-lg font-semibold">Bloqueios editoriais</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
             Estrutura ruim, reports ou qualidade incerta devem virar fila humana.
@@ -474,14 +474,14 @@ export default function AiResolutionPanel() {
             disabled={!reportedIds.length && !brokenIds.length && !blockedIds.length}
             className="mt-3 rounded-lg bg-amber-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-amber-600 disabled:opacity-50"
           >
-            Selecionar revisao ({new Set([...reportedIds, ...brokenIds, ...blockedIds]).size})
+            Selecionar revisão ({new Set([...reportedIds, ...brokenIds, ...blockedIds]).size})
           </button>
         </div>
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-200">
           <div className="text-xs font-semibold uppercase opacity-70">5. Valor editorial</div>
           <div className="mt-1 text-lg font-semibold">Prontas para gate/SQLite</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
-            IA rodada nao aprova sozinha: daqui ainda passa por auditoria e gate medico.
+            IA rodada não aprova sozinha: daqui ainda passa por auditoria e gate médico.
           </p>
           <button
             onClick={() => selectIds(processedCleanIds)}
@@ -500,8 +500,8 @@ export default function AiResolutionPanel() {
               <div>
                 <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Modo leigo: o que fazer agora</div>
                 <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
-                  Use de cima para baixo: resolva denuncias, corrija questoes quebradas, rode IA nos lotes seguros, mande bloqueios para revisao,
-                  e so depois pense em publicar no catalogo SQLite.
+                  Use de cima para baixo: resolva denúncias, corrija questões quebradas, rode IA nos lotes seguros, mande bloqueios para revisão,
+                  e só depois pense em publicar no catálogo SQLite.
                 </p>
               </div>
               <span className="rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -512,26 +512,26 @@ export default function AiResolutionPanel() {
               onClick={selectRecommendedNextBatch}
               className="mt-4 w-full rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white"
             >
-              Escolher proximo lote seguro automaticamente
+              Escolher próximo lote seguro automaticamente
             </button>
             <ol className="mt-4 space-y-2 text-xs text-gray-600 dark:text-gray-300">
-              <li><span className="font-semibold">Denunciada?</span> Nao envie para IA em lote; mande para revisao humana e leia o motivo.</li>
-              <li><span className="font-semibold">Quebrada?</span> Corrija importacao/estrutura antes: IA nao salva questao sem enunciado, gabarito ou alternativas boas.</li>
-              <li><span className="font-semibold">Sem resolucao e sem bloqueio?</span> Selecione lote seguro e rode dry-run antes de enfileirar.</li>
-              <li><span className="font-semibold">Ja processada?</span> Ignore, salvo se voce marcou reprocessar conscientemente.</li>
-              <li><span className="font-semibold">SQLite?</span> IA rodada ajuda, mas a entrada no catalogo depende de revisao humana/versionada e gate medico.</li>
+              <li><span className="font-semibold">Denunciada?</span> Não envie para IA em lote; mande para revisão humana e leia o motivo.</li>
+              <li><span className="font-semibold">Quebrada?</span> Corrija importação/estrutura antes: IA não salva questão sem enunciado, gabarito ou alternativas boas.</li>
+              <li><span className="font-semibold">Sem resolução e sem bloqueio?</span> Selecione lote seguro e rode dry-run antes de enfileirar.</li>
+              <li><span className="font-semibold">Já processada?</span> Ignore, salvo se você marcou reprocessar conscientemente.</li>
+              <li><span className="font-semibold">SQLite?</span> IA rodada ajuda, mas a entrada no catálogo depende de revisão humana/versionada e gate médico.</li>
             </ol>
           </div>
 
           <div className="rounded-lg border border-emerald-200 bg-white p-5 shadow-sm dark:border-emerald-900/40 dark:bg-gray-900">
-            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Saida editorial / SQLite</div>
+            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Saída editorial / SQLite</div>
             <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
-              Esta tela prepara valor editorial; ela nao publica sozinha. Para uma questao entrar no catalogo SQLite do aluno,
-              precisa estar sem denuncia aberta, sem bloqueio, com IA/resolucao util quando necessario e revisao humana versionada.
+              Esta tela prepara valor editorial; ela não publica sozinha. Para uma questão entrar no catálogo SQLite do aluno,
+              precisa estar sem denúncia aberta, sem bloqueio, com IA/resolução útil quando necessário e revisão humana versionada.
             </p>
             <div className="mt-4 grid gap-2 text-xs text-gray-600 dark:text-gray-300">
               <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-800">
-                <span>Sem denuncia aberta</span>
+                <span>Sem denúncia aberta</span>
                 <span className="font-semibold">{items.length - reportedIds.length}/{items.length || 0}</span>
               </div>
               <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-800">
@@ -539,7 +539,7 @@ export default function AiResolutionPanel() {
                 <span className="font-semibold">{items.length - blockedIds.length}/{items.length || 0}</span>
               </div>
               <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-800">
-                <span>Sem quebra estrutural/importacao</span>
+                <span>Sem quebra estrutural/importação</span>
                 <span className="font-semibold">{items.length - brokenIds.length}/{items.length || 0}</span>
               </div>
               <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-800">
@@ -548,7 +548,7 @@ export default function AiResolutionPanel() {
               </div>
             </div>
             <p className="mt-3 text-[11px] leading-5 text-gray-500 dark:text-gray-400">
-              Transferir para SQLite continua sendo operacao do publisher/gate medico; aqui voce reduz o caos antes do release.
+              Transferir para SQLite continua sendo operação do publisher/gate médico; aqui você reduz o caos antes do release.
             </p>
           </div>
 
@@ -576,10 +576,10 @@ export default function AiResolutionPanel() {
 
           <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <label className="text-sm font-semibold text-gray-900 dark:text-gray-100" htmlFor="ai-resolution-ids">
-              Colar IDs de questoes
+              Colar IDs de questões
             </label>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Pode colar um por linha, separado por espaco, virgula ou ponto-e-virgula.
+              Pode colar um por linha, separado por espaço, vírgula ou ponto-e-vírgula.
             </p>
             <textarea
               id="ai-resolution-ids"
@@ -602,36 +602,36 @@ export default function AiResolutionPanel() {
                 disabled={!items.length}
                 className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
               >
-                Selecionar elegiveis
+                Selecionar elegíveis
               </button>
               <button
                 onClick={() => setSelected(new Set())}
                 disabled={!selected.size}
                 className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
               >
-                Limpar selecao
+                Limpar seleção
               </button>
             </div>
             {data?.missing_question_ids.length ? (
               <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-                IDs nao encontrados: {data.missing_question_ids.join(", ")}
+                IDs não encontrados: {data.missing_question_ids.join(", ")}
               </div>
             ) : null}
           </div>
 
           <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Acao em lote</div>
+            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Ação em lote</div>
             <label className="mt-3 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
               <input
                 type="checkbox"
                 checked={includeProcessed}
                 onChange={(event) => setIncludeProcessed(event.target.checked)}
               />
-              Reprocessar tambem ja processadas
+              Reprocessar também já processadas
             </label>
             <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-              Selecionadas: <span className="font-semibold">{selected.size}</span>. Enviaveis para IA agora:{" "}
-              <span className="font-semibold">{batchableSelectedIds.length}</span>. Denunciadas ficam fora da IA e devem ir para revisao humana.
+              Selecionadas: <span className="font-semibold">{selected.size}</span>. Enviáveis para IA agora:{" "}
+              <span className="font-semibold">{batchableSelectedIds.length}</span>. Denunciadas ficam fora da IA e devem ir para revisão humana.
             </div>
             <div className="mt-4 grid gap-2">
               <button
@@ -663,13 +663,13 @@ export default function AiResolutionPanel() {
               </button>
               <button
                 disabled={!selected.size || Boolean(busy)}
-                onClick={() => void runSafely("Mandando para revisao humana", async () => {
+                onClick={() => void runSafely("Mandando para revisão humana", async () => {
                   const result = await routeQuestionBankEditorialBatch(selectedIds, "editorial_review");
-                  setNotice(`${result.count} questoes roteadas para revisao humana.`);
+                  setNotice(`${result.count} questões roteadas para revisão humana.`);
                 })}
                 className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-500 disabled:opacity-50"
               >
-                Mandar para revisao humana
+                Mandar para revisão humana
               </button>
               <button
                 disabled={!selected.size}
@@ -696,7 +696,7 @@ export default function AiResolutionPanel() {
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <div className="flex items-center justify-between gap-3 border-b border-gray-100 p-4 dark:border-gray-800">
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Fila de resolucao</div>
+              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Fila de resolução</div>
               <div className="text-xs text-gray-500 dark:text-gray-400">{items.length} itens carregados</div>
             </div>
             <button
@@ -716,10 +716,10 @@ export default function AiResolutionPanel() {
                 <thead className="sticky top-0 bg-gray-50 text-left text-xs uppercase text-gray-500 dark:bg-gray-950 dark:text-gray-400">
                   <tr>
                     <th className="px-3 py-3">Sel.</th>
-                    <th className="px-3 py-3">Questao</th>
+                    <th className="px-3 py-3">Questão</th>
                     <th className="px-3 py-3">Demanda</th>
                     <th className="px-3 py-3">Status</th>
-                    <th className="px-3 py-3">Acao</th>
+                    <th className="px-3 py-3">Ação</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -738,7 +738,7 @@ export default function AiResolutionPanel() {
                       <td className="px-3 py-3">
                         <div className="font-mono text-xs font-semibold text-gray-900 dark:text-gray-100">{item.question_id}</div>
                         <div className="mt-1 max-w-xl text-xs leading-5 text-gray-600 dark:text-gray-300">
-                          {item.stem_preview || "Sem enunciado disponivel neste recorte."}
+                          {item.stem_preview || "Sem enunciado disponível neste recorte."}
                         </div>
                         {item.quality_blockers.length ? (
                           <div className="mt-2 flex flex-wrap gap-1">
@@ -762,7 +762,7 @@ export default function AiResolutionPanel() {
                               </div>
                             ))}
                             {questionReports.length > 2 ? (
-                              <div>+{questionReports.length - 2} outras denuncias abertas</div>
+                              <div>+{questionReports.length - 2} outras denúncias abertas</div>
                             ) : null}
                           </div>
                         ) : null}
@@ -774,13 +774,13 @@ export default function AiResolutionPanel() {
                       </td>
                       <td className="px-3 py-3 text-xs text-gray-600 dark:text-gray-300">
                         <div className="font-semibold">{statusLabel(item.ai_request_status)}</div>
-                        <div>{item.has_canonical_correction ? "correcao canonica existe" : "sem correcao canonica"}</div>
+                        <div>{item.has_canonical_correction ? "correção canônica existe" : "sem correção canônica"}</div>
                         <div>{item.has_open_reports ? `${item.open_reports} reports abertos` : "sem reports abertos"}</div>
                         <div>{isBroken ? "quebrada/corrompida" : "estrutura sem alerta"}</div>
                       </td>
                       <td className="px-3 py-3">
                         <div className="text-xs font-semibold text-gray-700 dark:text-gray-200">
-                          {item.has_open_reports ? "Revisao humana" : isBroken ? "Corrigir estrutura" : actionLabel(item.recommended_action)}
+                          {item.has_open_reports ? "Revisão humana" : isBroken ? "Corrigir estrutura" : actionLabel(item.recommended_action)}
                         </div>
                         <button
                           onClick={() => void runSafely("Carregando detalhes", async () => {
@@ -798,7 +798,7 @@ export default function AiResolutionPanel() {
               </table>
             ) : (
               <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                Nenhuma questao neste recorte. Cole IDs ou mude o filtro.
+                Nenhuma questão neste recorte. Cole IDs ou mude o filtro.
               </div>
             )}
           </div>

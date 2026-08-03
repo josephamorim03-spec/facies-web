@@ -95,7 +95,7 @@ function ReviewSourceSummary({ queue }: { queue: TrainerReviewQueue }) {
       detail: load?.overdue_topic_tasks ? `${load.overdue_topic_tasks} atrasada(s)` : "tarefas no ponto",
     },
     {
-      label: "Questoes",
+      label: "Questões",
       value: load?.question_practice ?? 0,
       detail: "prática direcionada",
     },
@@ -409,9 +409,9 @@ export function ReviewQueueClient() {
                   <QueueRow key={item.action.action_id ?? `${item.rank}-${item.action.kind}`} queue={queue} item={item} onStale={() => void load()} />
                 ))}
                 {remaining.length === 0 && (
-                  <p className="rounded-surface border border-dashed border-edge px-4 py-6 text-center text-sm text-muted">
+                  <p className="paper-dashed px-4 py-6 text-center text-sm text-muted">
                     {filter === "cards" && queue.flashcards_overview
-                      ? "Nenhuma acao urgente de cards agora. O resumo acima mostra o que ja existe no caderno."
+                      ? "Nenhuma ação urgente de cards agora. O resumo acima mostra o que já existe no caderno."
                       : "Nenhuma outra ação deste tipo na fila atual."}
                   </p>
                 )}

@@ -22,7 +22,7 @@ export type DayActivitySummaryItem = {
   status: DayActivityStatus;
   href?: string;
   area?: string | null;
-  progress?: string;
+  progress: string;
   isNext?: boolean;
 };
 
@@ -70,7 +70,7 @@ function studyTitle(study: DirectedStudyListItem): string {
   if (isFullExamStudy(study)) {
     return String(study.full_exam_name ?? study.theme ?? "").trim() || "Prova";
   }
-  return topicPrimaryLabel(study) || study.theme || "Sessao de estudo";
+  return topicPrimaryLabel(study) || study.theme || "Sessão de estudo";
 }
 
 export function buildDayActivitySummary(params: {
@@ -101,7 +101,7 @@ export function buildDayActivitySummary(params: {
   const items: DayActivitySummaryItem[] = [];
 
   for (const task of pendingTasks) {
-    increment(categories, "review", "Revisoes");
+    increment(categories, "review", "Revisões");
     items.push({
       key: `pending:${task.task_id}`,
       kind: "review",
@@ -115,7 +115,7 @@ export function buildDayActivitySummary(params: {
   }
 
   for (const task of doneTasks) {
-    increment(categories, "review", "Revisoes");
+    increment(categories, "review", "Revisões");
     items.push({
       key: `done:${task.task_id}`,
       kind: "review",
@@ -135,7 +135,7 @@ export function buildDayActivitySummary(params: {
       key: `study:${study.study_id}`,
       kind: isExam ? "exam" : "study",
       title: studyTitle(study),
-      label: isExam ? "Prova concluida" : "Sessao concluida",
+      label: isExam ? "Prova concluida" : "Sessão concluída",
       status: "done",
       href: study.import_session_id
         ? `/cronograma/importar/${study.import_session_id}/resultados`
@@ -170,6 +170,7 @@ export function buildDayActivitySummary(params: {
       title: eventItem.title,
       label: eventItem.label,
       status: "scheduled",
+      progress: "",
     });
   }
 
@@ -178,8 +179,8 @@ export function buildDayActivitySummary(params: {
     items.push({
       key: `session:${session.session_id}`,
       kind: "session",
-      title: session.theme ?? session.full_exam_name ?? "Sessao do banco",
-      label: session.resolution_mode === "simulation" ? "Simulado em andamento" : "Sessao em andamento",
+      title: session.theme ?? session.full_exam_name ?? "Sessão do banco",
+      label: session.resolution_mode === "simulation" ? "Simulado em andamento" : "Sessão em andamento",
       status: "in_progress",
       href: `/banco/sessao/${session.session_id}`,
       area: session.area,

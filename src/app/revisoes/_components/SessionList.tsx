@@ -110,7 +110,7 @@ function SessionRow({ session }: { session: QuestionBankSession }) {
 export function SessionList({ sessions, tab }: { sessions: QuestionBankSession[]; tab: SessionsTab }) {
   if (sessions.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-edge bg-paper p-8 text-center text-sm text-muted">
+      <div className="paper-dashed bg-paper p-8 text-center text-sm text-muted">
         <p>{EMPTY_COPY[tab]}</p>
         <Link
           href="/banco"

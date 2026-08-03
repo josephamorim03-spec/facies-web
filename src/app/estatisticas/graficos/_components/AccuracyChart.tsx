@@ -51,7 +51,7 @@ export function AccuracyChart({ state, refs, actions }: Props) {
     // eslint-disable-next-line react-hooks/refs
     <section ref={refs.accuracySectionRef}
       data-testid="chart-weekly-accuracy"
-      className="space-y-2 pb-4"
+      className="space-y-2"
     >
       <div className="flex items-center gap-2">
         <h2 className="text-sm font-medium">Evolução de Acerto Geral</h2>
@@ -110,7 +110,7 @@ export function AccuracyChart({ state, refs, actions }: Props) {
               animationDuration={700}
               animationEasing="ease-out"
               dot={(props: any) => {
-                const payload = props?.payload;
+                const payload = props.payload;
                 if (!payload || payload.accuracy_pct === null || Number(payload.total ?? 0) <= 0) return null;
                 const isActive = props.index === accuracyActiveWeekIndex;
                 if (!isActive) {

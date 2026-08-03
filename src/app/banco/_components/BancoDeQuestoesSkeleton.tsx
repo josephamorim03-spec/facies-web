@@ -42,7 +42,7 @@ export function BancoDeQuestoesSkeleton() {
               </div>
             </div>
 
-            {/* 2. Ajustar sessao */}
+            {/* 2. Refinar selecao */}
             <div className="flex items-center justify-between gap-3 border-t border-edge p-4 md:p-5">
               <div className="space-y-1.5">
                 <Skeleton className="h-3 w-28 rounded-control" />

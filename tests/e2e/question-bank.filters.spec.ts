@@ -391,7 +391,7 @@ test("manual search becomes an active session filter and clears selected topics"
   await expect(filterPanel).toContainText("2024");
   await expect(filterPanel).not.toContainText("2016");
 
-  await page.getByText("Ajustar sessão", { exact: true }).click();
+  await page.getByText("2. Refinar seleção", { exact: true }).click();
   await expect(page.getByRole("checkbox", { name: /Residência \(Acesso Direto\)/ })).toBeChecked();
   await expect(page.getByRole("checkbox", { name: /^Revalida/ })).not.toBeChecked();
   await expect(page.getByRole("checkbox", { name: /Residência R\+/ })).not.toBeChecked();

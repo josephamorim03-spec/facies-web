@@ -8,7 +8,7 @@ import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, TabsScrollArea } from "@/components/
 export function CardsSectionTabs({ active }: { active: "review" | "records" }) {
   const items = [
     { id: "review" as const, label: "Revisar", href: "/cards", Icon: Layers3 },
-    { id: "records" as const, label: "Registrar", href: "/cards/registros", Icon: NotebookPen },
+    { id: "records" as const, label: "Registros", href: "/cards/registros", Icon: NotebookPen },
   ];
 
   return (

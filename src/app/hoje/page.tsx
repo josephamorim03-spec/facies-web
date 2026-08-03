@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useNavbar } from "@/lib/NavbarContext";
@@ -32,8 +32,6 @@ import {
   listEvents,
   listScheduleSuggestions,
   getStudyPerformanceSummary,
-  getTrainerPrescription,
-  recordTrainerRecommendationEvent,
   listDirectedStudies,
   listQuestionBankSessions,
   deleteQuestionBankSession,
@@ -295,8 +293,7 @@ export default function TodayPage() {
   const [discardSession, setDiscardSession] = useState<QuestionBankSession | null>(null);
   const [studentToday, setStudentToday] = useState<StudentToday | null>(null);
   const [studentTodayFailed, setStudentTodayFailed] = useState(false);
-  const [prescription, setPrescription] = useState<TrainerPrescription | null>(null);
-  const shownRecommendationRef = useRef<string | null>(null);
+  const [prescription] = useState<TrainerPrescription | null>(null);
   const [weeklyGoal, setWeeklyGoal] = useState(200);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -318,7 +315,6 @@ export default function TodayPage() {
     const token = getAuthToken();
     const studentTodayRequest = getStudentToday(token).catch(() => null);
     const longitudinalRequest = getQuestionBankLongitudinalDiagnosis(token).catch(() => null);
-    const prescriptionRequest = getTrainerPrescription(token).catch(() => null);
     const pageDataRequest = loadTodayPageData(token);
 
     if (showLoadingState && !studentToday) setLoading(true);
@@ -354,7 +350,7 @@ export default function TodayPage() {
       setStudentTodayFailed(true);
       if (!studentToday) {
         setStudentToday(null);
-        setError(getErrorMessage(e, "Erro ao carregar revisoes."));
+        setError(getErrorMessage(e, "Erro ao carregar revisões."));
       }
     } finally {
       if (showLoadingState) setLoading(false);
@@ -364,16 +360,6 @@ export default function TodayPage() {
       setLongitudinal(diagnosis);
     });
 
-    void prescriptionRequest.then((data) => {
-      setPrescription(data);
-      // Fire the `shown` lifecycle event once per recommendation (best-effort).
-      if (data && shownRecommendationRef.current !== data.recommendation_id) {
-        shownRecommendationRef.current = data.recommendation_id;
-        void recordTrainerRecommendationEvent(token, data.recommendation_id, {
-          event_type: "shown",
-        }).catch(() => null);
-      }
-    });
   }
 
   async function discardActiveSession() {
@@ -659,14 +645,20 @@ export default function TodayPage() {
   if (loading) return <TodayPageSkeleton />;
 
   if (!error && studentToday) {
-    const isRestState = studentToday.primary_action.kind === "rest_or_short_block";
+    const isRestState = ["rest", "rest_or_short_block"].includes(
+      studentToday.primary_action.kind,
+    );
     return (
       <div className="space-y-5 md:space-y-6">
         <header className="space-y-1">
           <h1 className="font-serif text-3xl font-semibold leading-tight text-ink md:text-4xl">{greeting}</h1>
         </header>
 
-        {isRestState ? <TodayEmptyState /> : <TodayPrimaryAction action={studentToday.primary_action} />}
+        {isRestState ? (
+          <TodayEmptyState />
+        ) : (
+          <TodayPrimaryAction action={studentToday.primary_action} />
+        )}
 
         <TodayDaySummarySection
           summary={secondaryLoading && todayActivitySummary.total === 0 ? null : todayActivitySummary}
@@ -679,14 +671,14 @@ export default function TodayPage() {
           <section
             key={activeSession.session_id}
             className="flex flex-col gap-3 border-y border-edge py-4 sm:flex-row sm:items-center sm:justify-between"
-            aria-label="Sessao em andamento"
+            aria-label="Sessão em andamento"
           >
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
                 Continue de onde parou
               </p>
               <p className="mt-1 truncate font-serif text-lg font-semibold leading-tight text-ink">
-                {activeSession.theme ?? activeSession.full_exam_name ?? "Sessao do banco"}
+                {activeSession.theme ?? activeSession.full_exam_name ?? "Sessão do banco"}
               </p>
               <p className="mt-0.5 text-xs text-muted">
                 {activeSession.answered_count}/{activeSession.total_questions} respondidas
@@ -697,10 +689,10 @@ export default function TodayPage() {
                 type="button"
                 onClick={() => setDiscardSession(activeSession)}
                 className="inline-flex min-h-11 items-center justify-center p-3 text-muted transition hover:text-danger"
-                title="Descartar sessao"
+                title="Descartar sessão"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
-                <span className="sr-only">Descartar sessao</span>
+                <span className="sr-only">Descartar sessão</span>
               </button>
               <Link
                 href={`/banco/sessao/${activeSession.session_id}`}
@@ -730,14 +722,14 @@ export default function TodayPage() {
 
         <ConfirmDialog
           open={discardSession !== null}
-          title="Descartar sessao?"
+          title="Descartar sessão?"
           message={
             discardSession?.feedback_timing === "immediate" &&
             discardSession.answered_count > 0
-              ? "A sessao sumira do historico. Como o gabarito ja foi exibido, as respostas dadas continuarao sendo contabilizadas somente para adaptar futuras recomendacoes."
-              : "A sessao e as respostas ainda nao enviadas serao apagadas. Ela nao aparecera no historico nem afetara seus resultados."
+              ? "A sessão sumirá do histórico. Como o gabarito já foi exibido, as respostas dadas continuarão sendo contabilizadas somente para adaptar futuras recomendações."
+              : "A sessão e as respostas ainda não enviadas serão apagadas. Ela não aparecerá no histórico nem afetará seus resultados."
           }
-          cancelLabel="Manter sessao"
+          cancelLabel="Manter sessão"
           confirmLabel="Descartar"
           onCancel={() => setDiscardSession(null)}
           onConfirm={() => void discardActiveSession()}
@@ -969,7 +961,7 @@ export default function TodayPage() {
                     );
                   })
                 ) : (
-                  <div className="flex items-center gap-3 rounded-lg border border-dashed border-edge bg-surface px-3 py-3 sm:justify-center sm:px-4">
+                  <div className="paper-dashed flex items-center gap-3 bg-surface px-3 py-3 sm:justify-center sm:px-4">
                     <IconShield className="h-5 w-5 shrink-0 text-muted sm:h-6 sm:w-6" />
                     <p className="text-sm leading-snug text-muted">
                       {selectedDayIso === today

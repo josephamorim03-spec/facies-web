@@ -189,6 +189,16 @@
     @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-muted;
   }
 
+  /* Superficie provisoria: vazio, placeholder ou espaco reservado. O tracejado
+     diz "aqui cabe algo que ainda nao esta aqui", entao nunca deve envolver
+     conteudo real -- conteudo real usa borda solida.
+
+     Existia como 18 copias manuais de `rounded-lg border border-dashed
+     border-edge`, com o raio divergindo entre `lg`, `surface` e `xl`. */
+  .paper-dashed {
+    @apply rounded-surface border border-dashed border-edge;
+  }
+
   .paper-reading {
     width: 100%;
     max-width: var(--reading-measure);

@@ -16,7 +16,7 @@ type KnowledgeNodeLike = {
 
 type QuestionFullContextProps = {
   stem: string | null | undefined;
-  alternatives?: Record<string, string> | null;
+  alternatives: Record<string, string> | null;
   imageRefs?: string[] | null;
   tableRefs?: unknown[] | null;
   source?: Record<string, unknown> | null;
@@ -69,7 +69,7 @@ export function QuestionFullContext({
   tableRefs,
   source,
   knowledgeNodes,
-  eyebrow = "Questao completa",
+  eyebrow = "Questão completa",
   selectedOption,
   correctAnswer,
   isCorrect,
@@ -162,8 +162,8 @@ export function QuestionFullContext({
           })}
         </div>
       ) : (
-        <div className="mt-4 rounded-lg border border-dashed border-edge bg-surface px-3 py-2 text-sm font-semibold text-muted">
-          Alternativas nao disponiveis neste contexto.
+        <div className="paper-dashed mt-4 bg-surface px-3 py-2 text-sm font-semibold text-muted">
+          Alternativas não disponíveis neste contexto.
         </div>
       )}
 

@@ -46,7 +46,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
   if (activeAreaLines.length === 0) return null;
 
   return (
-    <section data-testid="chart-area-lines" className="space-y-2 pt-4 border-t border-edge">
+    <section data-testid="chart-area-lines" className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-medium">Evolução de Acerto por Área</h2>
         <SegmentedToggle
@@ -122,7 +122,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
                   strokeWidth={isLocked ? 2.8 : 1.8}
                   strokeOpacity={opacity}
                   dot={(props: any) => {
-                    const val = props?.payload?.[area];
+                    const val = props.payload?.[area];
                     if (val === null || val === undefined) return <g key={`dot-${area}-${props.index}`} />;
                     if (!isLocked) {
                       return (

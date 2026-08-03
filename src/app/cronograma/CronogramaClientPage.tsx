@@ -22,6 +22,7 @@ import { CronogramaCalendarView } from "./_components/CronogramaCalendarView";
 import { IconSearch, IconX } from "./_components/CronogramaIcons";
 import { CronogramaStreakCard } from "./_components/CronogramaStreakCard";
 import { RescheduleSuggestionDialog } from "./_components/RescheduleSuggestionDialog";
+import { WeeklyGoalControl } from "./_components/WeeklyGoalControl";
 import { useCronogramaPageState } from "./_hooks/useCronogramaPageState";
 import { useCronogramaSearchFilters } from "./_hooks/useCronogramaSearchFilters";
 import {
@@ -29,6 +30,7 @@ import {
   buildStudyMap,
   SHORT_MONTH_LABELS,
 } from "./_lib/cronogramaShared";
+import { buildWeeklyOpsMetrics } from "./_lib/weeklyOpsMetrics";
 import { writeCronogramaViewModeSession } from "./_lib/viewModeSession";
 
 function detectMobilePortraitMode(isDesktopNavigation: boolean): boolean {
@@ -83,12 +85,12 @@ function nextCoachStep(state: CalendarCoachState): CalendarCoachStep | null {
 
 function calendarCoachCopy(step: CalendarCoachStep): string {
   if (step === "month") {
-    return "Use as setas ou toque no mes para navegar. Em celulares e tablets, voce tambem pode deslizar o calendario.";
+    return "Use as setas ou toque no mês para navegar. Em celulares e tablets, deslizar o calendário.";
   }
   if (step === "manage") {
-    return "Selecione um dia e use Adicionar para criar estudo ou compromisso. Toque em um estudo ou compromisso no calendario para ver opcoes como Apagar e Reagendar.";
+    return "Selecione um dia e use Adicionar para criar estudo ou compromisso. Toque em um estudo ou compromisso no calendário para ver opções como Apagar e Reagendar.";
   }
-  return "Arrastar e soltar e um atalho para dispositivos touchscreen: toque e segure uma revisao ou compromisso e leve para outro dia. No desktop, use o botao Reagendar.";
+  return "Arrastar e soltar é um atalho para dispositivos touchscreen: toque e segure uma revisão ou compromisso e leve para outro dia. No desktop, use o botão Reagendar.";
 }
 
 function CalendarCoachmark({
@@ -189,6 +191,8 @@ export default function CronogramaPage({
     suggestionActionKey,
     showEventSuggestionModal,
     token,
+    today,
+    weeklyGoal,
     calendarRecommendationsEnabled,
     eventModalSuggestions,
     fetchAll,
@@ -212,6 +216,21 @@ export default function CronogramaPage({
 
   const studyMap = buildStudyMap(studies);
   const studiesByDate = buildStudiesByDate(studies);
+
+  // Mesma fonte que o /hoje usa, para as duas telas nao divergirem no numero.
+  // `questionPractice` do hook NAO serve aqui: e' contagem vitalicia de erro na
+  // primeira tentativa, nao questoes feitas na semana.
+  const weeklyOps = useMemo(
+    () =>
+      buildWeeklyOpsMetrics({
+        weeklyGoal,
+        pendingTasks: tasks,
+        doneTasks,
+        studies,
+        todayIso: today,
+      }),
+    [weeklyGoal, tasks, doneTasks, studies, today],
+  );
 
   const {
     searchInput,
@@ -534,6 +553,17 @@ export default function CronogramaPage({
             Reagendar
           </Button>
         </div>
+      ) : null}
+
+      {!loading && weeklyGoal > 0 ? (
+        <WeeklyGoalControl
+          token={token}
+          weeklyGoal={weeklyGoal}
+          completedQuestions={weeklyOps.doneQuestionsWeek}
+          progressPct={weeklyOps.progressPct}
+          remainingQuestions={weeklyOps.weeklyGoalRemainingQuestions}
+          onSaved={fetchAll}
+        />
       ) : null}
 
       {monthPickerOpen ? (

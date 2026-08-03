@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export function TodayEmptyState() {
   return (
-    <section className="rounded-lg border border-dashed border-edge bg-surface px-4 py-6 sm:px-6">
+    <section className="paper-dashed bg-surface px-4 py-6 sm:px-6">
       <h2 className="font-serif text-2xl font-semibold text-ink">Suficiente por hoje</h2>
       <Link
         href="/banco?limit=10"

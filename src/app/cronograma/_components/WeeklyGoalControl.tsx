@@ -44,6 +44,15 @@ export function WeeklyGoalControl({
     if (!open) setDraft(String(weeklyGoal));
   }, [open, weeklyGoal]);
 
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
   async function save() {
     if (saving || invalid) return;
     setSaving(true);

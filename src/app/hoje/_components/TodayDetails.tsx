@@ -50,7 +50,7 @@ export function TodayDetails({
             </Link>
           </div>
           <div className="rounded-lg border border-edge bg-paper p-3">
-            <p className="text-xs text-muted">Revisoes</p>
+            <p className="text-xs text-muted">Revisões</p>
             <p className="mt-1 text-lg font-semibold text-ink">
               {today.review_snapshot.pending_reviews + today.review_snapshot.cards_due}
             </p>
@@ -63,7 +63,7 @@ export function TodayDetails({
             href={today.details.active_session.href}
             className="block rounded-surface border border-edge bg-paper p-3 hover:border-primary"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Sessao aberta</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Sessão aberta</p>
             <p className="mt-1 truncate font-semibold text-ink">{today.details.active_session.title}</p>
             <p className="text-xs text-muted">
               {today.details.active_session.answered_count}/{today.details.active_session.total_questions} respondidas

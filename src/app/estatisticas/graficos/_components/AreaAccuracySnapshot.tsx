@@ -14,7 +14,7 @@ export function AreaAccuracySnapshot({ performance }: Props) {
     .sort((a, b) => (b.accuracy ?? 0) - (a.accuracy ?? 0));
 
   return (
-    <section data-testid="chart-area-accuracy-snapshot" className="space-y-3 pt-4 border-t border-edge">
+    <section data-testid="chart-area-accuracy-snapshot" className="space-y-3">
       <div>
         <h2 className="text-sm font-medium">Acerto por grande área</h2>
         <p className="mt-1 text-xs text-muted">Acurácia diagnóstica acumulada pela primeira tentativa.</p>

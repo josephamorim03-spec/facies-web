@@ -12,7 +12,7 @@ export function CardsAnalysis({ state }: Props) {
   const { turboAreaLoading, turboAreaStats, cardAnalysisRows } = state;
 
   return (
-    <section data-testid="chart-cards-analysis" className="space-y-3 pt-4 border-t border-edge">
+    <section data-testid="chart-cards-analysis" className="space-y-3">
       <h2 className="text-sm font-medium">Análise de cards</h2>
       {turboAreaLoading ? (
         <div className="space-y-2 animate-pulse">

@@ -102,7 +102,7 @@ export default function PostExamReview({
   const scheduledCount = finalizeOut?.created_tasks.length ?? 0;
   const savedCorrectionCount = corrections.length;
   const isFullExam = session.study_kind === "full_exam";
-  const sessionDisplayLabel = session.subtheme ?? session.theme ?? "Sessao concluida";
+  const sessionDisplayLabel = session.subtheme ?? session.theme ?? "Sessão concluída";
   const resultLabel = isFullExam
     ? "Resultado da prova"
     : session.resolution_mode === "simulation"
@@ -110,7 +110,9 @@ export default function PostExamReview({
       : "Resultado da sessão";
   const gainTitle =
     wrongItems.length > 0
-      ? `${wrongItems.length} erro${wrongItems.length === 1 ? "" : "s"} virou${wrongItems.length === 1 ? "" : "aram"} material de estudo`
+      ? wrongItems.length === 1
+        ? "1 erro virou material de estudo"
+        : `${wrongItems.length} erros viraram material de estudo`
       : correctItems.length === scoredItems.length
         ? "Sessão limpa: bom desempenho observado"
         : "Sessão concluída com mapa mais claro";
@@ -227,11 +229,11 @@ export default function PostExamReview({
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
-                  Resultado ainda nao contabilizado
+                  Resultado ainda não contabilizado
                 </p>
                 <p className="mt-1 text-sm leading-relaxed text-muted">
                   {reportedItems.length > 0
-                    ? "Revise as questoes denunciadas antes de gravar seu desempenho."
+                    ? "Revise as questões denunciadas antes de gravar seu desempenho."
                     : "Conferiu o resultado? Grave para atualizar seu desempenho e agenda."}
                 </p>
                 {actionError && <p className="mt-2 text-xs font-semibold text-danger">{actionError}</p>}
@@ -486,7 +488,7 @@ export default function PostExamReview({
                   ? "Nenhum acerto registrado nesta sessão."
                   : "Você não marcou nenhuma questão.";
             return (
-              <div className="rounded-xl border border-dashed border-edge bg-surface p-8 text-center text-sm text-muted">
+              <div className="paper-dashed bg-surface p-8 text-center text-sm text-muted">
                 {emptyMessage}
               </div>
             );
@@ -528,7 +530,7 @@ export default function PostExamReview({
                           }
                           className="text-xs font-semibold text-muted transition hover:text-ink"
                         >
-                          {item.reported_problem ? "Editar denuncia" : "Denunciar questao"}
+                          {item.reported_problem ? "Editar denuncia" : "Denunciar questão"}
                         </button>
                         {item.reported_problem && (
                           <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink">
@@ -570,7 +572,7 @@ export default function PostExamReview({
                           maxLength={4000}
                           rows={3}
                           className="mt-3 w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm outline-none focus:border-primary"
-                          placeholder="O que parece errado nesta questao?"
+                          placeholder="O que parece errado nesta questão?"
                         />
                         <div className="mt-2 flex justify-end gap-2">
                           <button

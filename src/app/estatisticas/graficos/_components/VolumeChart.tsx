@@ -71,7 +71,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
     <section
       ref={volumeSectionRef}
       data-testid="chart-weekly-volume"
-      className="space-y-2 pt-4 border-t border-edge"
+      className="space-y-2"
     >
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-medium">Volume de Estudo</h2>

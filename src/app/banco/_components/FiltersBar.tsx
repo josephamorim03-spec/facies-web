@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import type {
   FullExamType,
   QuestionBankAnswerStatus,
@@ -136,7 +136,7 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-function SectionHeader({ step, title, detail }: { step: string; title: string; detail?: string }) {
+function SectionHeader({ step, title, detail }: { step: string; title: string; detail?: ReactNode }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-2">
       <div>
@@ -200,7 +200,7 @@ function StatePicker({
         )}
       </div>
       {options.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-edge px-3 py-4 text-center text-xs text-muted">
+        <p className="paper-dashed px-3 py-4 text-center text-xs text-muted">
           Nenhuma UF catalogada neste recorte.
         </p>
       ) : (
@@ -427,12 +427,17 @@ export default function FiltersBar(props: FiltersBarProps) {
       </section>
 
       <details id="question-bank-adjustments" className="group p-4 md:p-5">
-        <summary className="paper-control flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 border border-edge bg-paper px-4 py-3 marker:hidden">
-          <span>
-            <span className="paper-eyebrow text-primary">Ajustar sessão</span>
-            <span className="mt-0.5 block font-serif text-lg font-semibold text-ink">Banca, ano e histórico</span>
-          </span>
-          <span className="text-right text-xs text-muted">{statusLabel} · {sourceDetail} · {stateDetail}<span className="ml-2 inline-block transition-transform group-open:rotate-180" aria-hidden="true">⌄</span></span>
+        <summary className="paper-control min-h-11 cursor-pointer list-none marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+          <SectionHeader
+            step="2. Refinar seleção"
+            title="Banca, ano e histórico"
+            detail={
+              <span className="text-right">
+                {statusLabel} · {sourceDetail} · {stateDetail}
+                <span className="ml-2 inline-block transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+              </span>
+            }
+          />
         </summary>
 
         <div className="mt-4 space-y-4">
@@ -466,7 +471,7 @@ export default function FiltersBar(props: FiltersBarProps) {
             onRetry={onYearsRetry}
           />
 
-          <div className="space-y-3 border-t border-edge pt-4">
+          <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Status das questões</p>
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -510,13 +515,13 @@ export default function FiltersBar(props: FiltersBarProps) {
                 ))}
               </div>
             )}
-            <div className="border-t border-edge pt-3">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted">Correcao IA</p>
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted">Correção IA</p>
               <div className="flex flex-wrap gap-2">
                 {([
                   ["all", "Todas"],
-                  ["with_correction", "Com correcao"],
-                  ["without_correction", "Sem correcao"],
+                  ["with_correction", "Com correção"],
+                  ["without_correction", "Sem correção"],
                 ] as const).map(([value, label]) => (
                   <button
                     key={value}
