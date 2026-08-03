@@ -21,7 +21,7 @@ export default function CandidatesPanel({
     <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Questoes extraidas</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Questões extraídas</h2>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Candidatas do import selecionado.</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">

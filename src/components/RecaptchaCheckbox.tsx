@@ -85,7 +85,7 @@ export default function RecaptchaCheckbox({
     }
 
     const script = document.createElement("script");
-    script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
+    script.src = "https://www.google.com/recaptcha/api.jsórender=explicit";
     script.async = true;
     script.defer = true;
     script.dataset.krosmedRecaptcha = "true";

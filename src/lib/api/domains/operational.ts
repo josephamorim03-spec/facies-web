@@ -170,7 +170,7 @@ export type OperationalAttachmentPresignOut = {
   upload_url: string;
   method: string;
   headers: Record<string, string>;
-  attachment_ref: string;
+  attachment_refs: string;
   expires_in_seconds: number;
 };
 
@@ -207,9 +207,9 @@ export async function createOperationalNote(
     external_links?: string[];
     attachment_refs?: string[];
   },
-  options?: { idempotencyKey?: string | null },
+  option: { idempotencyKey?: string | null } = {},
 ): Promise<OperationalNoteItem> {
-  const idempotencyKey = options?.idempotencyKey?.trim() ?? "";
+  const idempotencyKey = option.idempotencyKey?.trim() ?? "";
   const result = await api<OperationalNoteItem>("/api/notes/operational", {
     method: "POST",
     headers: {
@@ -230,7 +230,7 @@ export async function createOperationalNote(
 
 export async function listOperationalNotes(
   token: string,
-  params?: {
+  param: {
     area?: string;
     theme?: string;
     source_type?: OperationalSourceType | "";
@@ -244,16 +244,16 @@ export async function listOperationalNotes(
   }
 ): Promise<OperationalNoteItem[]> {
   const q = new URLSearchParams();
-  if (params?.area) q.set("area", params.area);
-  if (params?.theme) q.set("theme", params.theme);
-  if (params?.source_type) q.set("source_type", params.source_type);
-  if (params?.question_outcome) q.set("question_outcome", params.question_outcome);
-  if (typeof params?.weight_min === "number") q.set("weight_min", String(params.weight_min));
-  if (typeof params?.weight_max === "number") q.set("weight_max", String(params.weight_max));
-  if (params?.created_from) q.set("created_from", params.created_from);
-  if (params?.created_to) q.set("created_to", params.created_to);
-  if (params?.sort) q.set("sort", params.sort);
-  if (typeof params?.limit === "number") q.set("limit", String(params.limit));
+  if (param.area) q.set("area", param.area);
+  if (param.theme) q.set("theme", param.theme);
+  if (param.source_type) q.set("source_type", param.source_type);
+  if (param.question_outcome) q.set("question_outcome", param.question_outcome);
+  if (typeof param.weight_min === "number") q.set("weight_min", String(param.weight_min));
+  if (typeof param.weight_max === "number") q.set("weight_max", String(param.weight_max));
+  if (param.created_from) q.set("created_from", param.created_from);
+  if (param.created_to) q.set("created_to", param.created_to);
+  if (param.sort) q.set("sort", param.sort);
+  if (typeof param.limit === "number") q.set("limit", String(param.limit));
   const qs = q.toString();
   return api<OperationalNoteItem[]>(`/api/notes/operational${qs ? `?${qs}` : ""}`, {
     headers: authHeader(token),
@@ -269,11 +269,11 @@ export async function getTurboAreaStats(token: string): Promise<OperationalTurbo
 
 export async function getOperationalTurboOverview(
   token: string,
-  params?: { area?: string; previewLimit?: number },
+  param: { area?: string; previewLimit?: number },
 ): Promise<OperationalTurboOverview> {
   const q = new URLSearchParams();
-  if (params?.area) q.set("area", params.area);
-  if (typeof params?.previewLimit === "number") q.set("preview_limit", String(params.previewLimit));
+  if (param.area) q.set("area", param.area);
+  if (typeof param.previewLimit === "number") q.set("preview_limit", String(param.previewLimit));
   const qs = q.toString();
   return api<OperationalTurboOverview>(
     `/api/notes/operational/turbo/overview${qs ? `?${qs}` : ""}`,
@@ -330,20 +330,20 @@ export async function fetchTurboIntervalPreview(
 
 export async function startOperationalTurboSession(
   token: string,
-  options?: {
+  option: {
     noteIds?: string[];
     targetCards?: number;
     area?: OperationalAreaCode;
     recommendationId?: string;
     actionId?: string;
-  },
+  } = {},
 ): Promise<OperationalTurboSessionSnapshot> {
   const payload: Record<string, unknown> = {};
-  if (options?.noteIds?.length) payload.note_ids = options.noteIds;
-  if (typeof options?.targetCards === "number" && options.targetCards >= 1) payload.target_cards = options.targetCards;
-  if (options?.area) payload.area = options.area;
-  if (options?.recommendationId) payload.recommendation_id = options.recommendationId;
-  if (options?.actionId) payload.action_id = options.actionId;
+  if (option.noteIds?.length) payload.note_ids = option.noteIds;
+  if (typeof option.targetCards === "number" && option.targetCards >= 1) payload.target_cards = option.targetCards;
+  if (option.area) payload.area = option.area;
+  if (option.recommendationId) payload.recommendation_id = option.recommendationId;
+  if (option.actionId) payload.action_id = option.actionId;
   return api<OperationalTurboSessionSnapshot>("/api/notes/operational/turbo/session/start", {
     method: "POST",
     headers: authHeader(token),
@@ -433,7 +433,7 @@ export async function getOperationalAttachmentDownloadUrl(
   token: string,
   attachmentRef: string
 ): Promise<{ url: string }> {
-  const q = new URLSearchParams({ attachment_ref: attachmentRef });
+  const q = new URLSearchParams({ attachment_refs: attachmentRef });
   const out = await api<{ url: string }>(`/api/notes/operational/attachments/url?${q.toString()}`, {
     headers: authHeader(token),
   });

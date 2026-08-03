@@ -9,6 +9,7 @@ export type QuestionBankAdminWarning = {
   reason?: string;
   provider?: string;
   samples?: { question_number: number | string | null; sample: string }[];
+  sample?: { question_number: number | string | null; sample: string }[];
 };
 
 export type QuestionBankOcrSummary = {
@@ -45,8 +46,8 @@ export type QuestionBankEditorialReadiness = {
   warning_questions: number;
   publishable_questions: number;
   blockers: string[];
-  pipeline_warnings?: string[];
-  estimated_llm_calls?: {
+  pipeline_warnings: string[];
+  estimated_llm_calls: {
     cheap?: number;
     strong?: string | number;
   };
@@ -55,39 +56,39 @@ export type QuestionBankEditorialReadiness = {
 export type QuestionBankAdminPreviewSummary = {
   detected_metadata: Record<string, unknown>;
   override_metadata: Record<string, unknown>;
-  question_overrides?: Record<string, Record<string, unknown>>;
+  question_overrides: Record<string, Record<string, unknown>>;
   import_metadata_used: Record<string, unknown>;
-  editorial_controls?: {
+  editorial_controls: {
     classification_preset_policy?: string | null;
     batch_classification_preset?: Record<string, string>;
     batch_source_profile?: Record<string, unknown>;
     question_override_count?: number;
-    question_override_numbers?: string[];
+    question_override_number: string[];
   };
   question_editorial_metadata?: QuestionBankEditorialMetadata[];
-  editorial_readiness?: QuestionBankEditorialReadiness;
+  editorial_readiness: QuestionBankEditorialReadiness;
   years_detected: number[];
   years_applied: number[];
   is_mixed_source: boolean;
   warnings: QuestionBankAdminWarning[];
   can_import?: boolean;
   can_auto_pipeline?: boolean;
-  import_blockers?: string[];
-  pipeline_blockers?: string[];
-  pipeline_warnings?: string[];
+  import_blockers: string[];
+  pipeline_blockers: string[];
+  pipeline_warnings: string[];
   small_batch_well_formed?: boolean;
   quality_summary?: {
-    total_questions?: number;
-    blocked_questions?: number;
-    warning_questions?: number;
-    publishable_questions?: number;
+    total_questions: number;
+    blocked_questions: number;
+    warning_questions: number;
+    publishable_questions: number;
     quality_score?: number;
-    suspicious?: boolean;
+    suspicious: boolean;
     image_extraction_failed?: boolean;
     ocr_summary?: QuestionBankOcrSummary;
-    question_diagnostics?: QuestionBankQuestionDiagnostic[];
+    question_diagnostics: QuestionBankQuestionDiagnostic[];
   };
-  question_diagnostics?: QuestionBankQuestionDiagnostic[];
+  question_diagnostics: QuestionBankQuestionDiagnostic[];
 };
 
 export type QuestionBankEditorialMetadata = {
@@ -148,7 +149,7 @@ export type QuestionBankAdminImportItem = {
   is_zero_ai_locked?: boolean;
   is_artifact?: boolean;
   artifact_reason?: string | null;
-  pipeline_counts?: {
+  pipeline_counts: {
     pending: number;
     processing: number;
     done: number;
@@ -158,9 +159,9 @@ export type QuestionBankAdminImportItem = {
 };
 
 type QuestionBankAdminImportWireItem = Partial<QuestionBankAdminImportItem> & {
-  active_jobs?: number;
-  failed_jobs?: number;
-  quarantine_jobs?: number;
+  active_jobs: number;
+  failed_jobs: number;
+  quarantine_jobs: number;
   candidates?: number;
   questions?: number;
 };
@@ -182,7 +183,7 @@ export type QuestionBankAdminPipelineStage = {
   avg_duration_ms: number | null;
   last_error: string | null;
   last_error_at: string | null;
-  oldest_pending_age_seconds?: number | null;
+  oldest_pending_age_seconds: number | null;
 };
 
 export type QuestionBankAdminHotspotItem = {
@@ -298,33 +299,33 @@ export type QuestionBankAdminReadiness = {
 export type QuestionBankAdminStorageSummary = {
   pg_database_size: number;
   pg_wal_size?: number;
-  effective_used_bytes?: number;
-  volume_capacity_bytes?: number;
-  observed_volume_used_bytes?: number | null;
+  effective_used_bytes: number;
+  volume_capacity_bytes: number;
+  observed_volume_used_bytes: number | null;
   headroom_bytes: number | null;
-  total_questions?: number;
+  total_questions: number;
   recommended_action?: string;
   safe_ai_batch_available?: boolean;
   safe_ai_pilot_available?: boolean;
-  green_bytes?: number;
-  warn_bytes?: number;
-  pause_bytes?: number;
-  critical_bytes?: number;
+  green_bytes: number;
+  warn_bytes: number;
+  pause_bytes: number;
+  critical_bytes: number;
   storage_gate?: {
     state: "green" | "yellow" | "red" | "critical" | "unknown" | string;
     recommendation: string;
     pg_database_size: number;
     pg_wal_size?: number;
-    storage_overhead_bytes?: number;
-    calculated_volume_used_bytes?: number;
-    observed_volume_used_bytes?: number | null;
-    effective_used_bytes?: number;
+    storage_overhead_bytes: number;
+    calculated_volume_used_bytes: number;
+    observed_volume_used_bytes: number | null;
+    effective_used_bytes: number;
     volume_limit_bytes: number;
     headroom_bytes: number | null;
     thresholds: Record<string, number>;
     cleanup: {
       estimated_reclaimable_bytes: number;
-      estimated_database_size_after_cleanup_bytes?: number;
+      estimated_database_size_after_cleanup_bytes: number;
       estimated_size_after_cleanup_bytes: number;
       estimated_headroom_after_cleanup_bytes: number | null;
     };
@@ -369,8 +370,8 @@ export type QuestionBankAdminStorageSummary = {
     access_key_configured?: boolean;
     secret_key_configured?: boolean;
     durable?: boolean;
-    lifecycle_days?: string | null;
-    questions_with_images?: number;
+    lifecycle_days: string | null;
+    questions_with_images: number;
   };
 };
 
@@ -422,16 +423,16 @@ export type QuestionBankReviewQueueItem = {
   publish_blockers: string[];
   issues: Record<string, unknown>;
   has_image: boolean;
-  open_reports?: number;
+  open_reports: number;
   review_lane?: string;
   suggested_action?: string;
   ai_read_summary?: QuestionBankAiReadSummary;
   question_quality_inspection?: {
     inspection_status: string;
-    warning_flags?: Array<{ code: string; severity: string; message: string }>;
-    blocking_flags?: Array<{ code: string; severity: string; message: string }>;
-    trap_patterns?: string[];
-    editorial_risks?: string[];
+    warning_flags: Array<{ code: string; severity: string; message: string }>;
+    blocking_flags: Array<{ code: string; severity: string; message: string }>;
+    trap_patterns: string[];
+    editorial_risks: string[];
   };
   question_dna_profile?: {
     schema_version?: string;
@@ -439,8 +440,8 @@ export type QuestionBankReviewQueueItem = {
     reasoning_type?: string | null;
     answer_type?: string | null;
     negative_structure?: string | null;
-    trap_signatures?: string[];
-    quality_flags?: string[];
+    trap_signatures: string[];
+    quality_flags: string[];
   };
   repair_draft?: {
     repair_draft_id?: string;
@@ -467,7 +468,7 @@ export type QuestionBankReviewResolutionOptions = {
 export type QuestionBankReviewResolutionResult = {
   result: string;
   question_id: string;
-  status?: string;
+  status: string;
   blockers?: string[];
   nodes_copied?: number;
 };
@@ -638,7 +639,7 @@ export async function getQuestionBankAdminStorageSummary(): Promise<QuestionBank
 
 export async function compactQuestionBankAdminImport(
   importId: string,
-  options?: {
+  option: {
     dryRun?: boolean;
     includeFailed?: boolean;
     mode?: "conservative" | "aggressive";
@@ -649,9 +650,9 @@ export async function compactQuestionBankAdminImport(
     {
       method: "POST",
       body: JSON.stringify({
-        dry_run: options?.dryRun !== false,
-        include_failed: options?.includeFailed === true,
-        mode: options?.mode,
+        dry_run: option.dryRun !== false,
+        include_failed: option.includeFailed === true,
+        mode: option.mode,
       }),
       headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
     },
@@ -685,9 +686,9 @@ export async function runQuestionBankAdminAll(
 ): Promise<{
   launched: boolean;
   background: boolean;
-  workers?: number;
+  worker: number;
   imported_file_id?: string | null;
-  totals?: Record<string, number>;
+  total: Record<string, number>;
 }> {
   const params = new URLSearchParams({ background: background ? "true" : "false" });
   if (importedFileId) params.set("imported_file_id", importedFileId);
@@ -695,9 +696,9 @@ export async function runQuestionBankAdminAll(
   return api<{
     launched: boolean;
     background: boolean;
-    workers?: number;
+    worker: number;
     imported_file_id?: string | null;
-    totals?: Record<string, number>;
+    total: Record<string, number>;
   }>(`/api/admin/question-bank/pipeline/run-all?${params.toString()}`, {
     method: "POST",
   });
@@ -735,7 +736,7 @@ export type QuestionBankAiEnrichmentResult = {
   cost_estimate: QuestionBankAiCostEstimate;
   rollout_cost_state?: Record<string, unknown> | null;
   results: Array<{
-    status?: string;
+    status: string;
     action?: string;
     question_id?: string;
     job_id?: string;
@@ -773,17 +774,17 @@ export type QuestionBankAiResolutionDemand = {
   summary: Record<string, number>;
 };
 
-export async function getQuestionBankAiResolutionRequests(options?: {
+export async function getQuestionBankAiResolutionRequests(options: {
   filter?: "student_requested" | "without_correction" | "queued" | "completed" | "blocked" | "has_reports" | "all";
   questionIds?: string[];
   limit?: number;
   offset?: number;
 }): Promise<QuestionBankAiResolutionDemand> {
   const params = new URLSearchParams();
-  if (options?.filter) params.set("filter", options.filter);
-  if (options?.limit) params.set("limit", String(options.limit));
-  if (options?.offset) params.set("offset", String(options.offset));
-  for (const questionId of options?.questionIds ?? []) {
+  if (options.filter) params.set("filter", options.filter);
+  if (options.limit) params.set("limit", String(options.limit));
+  if (options.offset) params.set("offset", String(options.offset));
+  for (const questionId of options.questionIds ?? []) {
     const clean = String(questionId || "").trim();
     if (clean) params.append("question_ids", clean);
   }
@@ -795,7 +796,7 @@ export async function getQuestionBankAiResolutionRequests(options?: {
 
 // Preview the economical AI enrichment (dry-run) against the real production endpoint.
 // Selection is global — the best N published questions still missing enrichment.
-export async function previewQuestionBankAdminAiEnrichment(options?: {
+export async function previewQuestionBankAdminAiEnrichment(options: {
   selectionLimit?: number;
   questionIds?: string[];
   rolloutId?: string;
@@ -809,11 +810,11 @@ export async function previewQuestionBankAdminAiEnrichment(options?: {
       headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
       body: JSON.stringify({
         dry_run: true,
-        selection_limit: options?.selectionLimit,
-        question_ids: options?.questionIds,
-        rollout_id: options?.rolloutId,
-        cost_cap_brl: options?.costCapBrl,
-        requested_capabilities: options?.requestedCapabilities,
+        selection_limit: options.selectionLimit,
+        question_ids: options.questionIds,
+        rollout_id: options.rolloutId,
+        cost_cap_brl: options.costCapBrl,
+        requested_capabilities: options.requestedCapabilities,
         visibility_policy: "approved_only",
         source_mode: "canonical_adapter",
       }),
@@ -869,7 +870,7 @@ export type QuestionBankAiPreflight = {
   storage: {
     state?: string | null;
     recommendation?: string | null;
-    headroom_bytes?: number | null;
+    headroom_byte: number | null;
     allows: Record<string, boolean>;
     ai_growth_forecast: Record<string, unknown>;
     observed_bytes_per_item?: number | null;
@@ -877,7 +878,7 @@ export type QuestionBankAiPreflight = {
   recomputed_lint: {
     sample_size: number;
     blockers: Record<string, number>;
-    sample: Array<Record<string, unknown>>;
+    samples?: Array<Record<string, unknown>>;
   };
 };
 
@@ -888,7 +889,7 @@ export async function getQuestionBankAdminAiPreflight(sampleSize = 100): Promise
   );
 }
 
-export async function createQuestionBankAiRollout(options?: {
+export async function createQuestionBankAiRollout(option: {
   actor?: string;
   scope?: string;
   costCapBrl?: number;
@@ -912,12 +913,12 @@ export async function createQuestionBankAiRollout(options?: {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
     body: JSON.stringify({
-      actor: options?.actor,
-      scope: options?.scope ?? "baseline_2016_2026",
-      cost_cap_brl: options?.costCapBrl ?? 25,
-      hard_stop_fraction: options?.hardStopFraction ?? 0.8,
-      visibility_policy: options?.visibilityPolicy ?? "approved_only",
-      metadata: options?.metadata,
+      actor: option.actor,
+      scope: option.scope ?? "baseline_2016_2026",
+      cost_cap_brl: option.costCapBrl ?? 25,
+      hard_stop_fraction: option.hardStopFraction ?? 0.8,
+      visibility_policy: option.visibilityPolicy ?? "approved_only",
+      metadata: option.metadata,
     }),
     },
   );
@@ -928,9 +929,9 @@ export type QuestionBankAiCostSummary = {
   days: number;
   ledger: Array<Record<string, unknown>>;
   batches: Array<Record<string, unknown>>;
-  rollouts?: Array<{
+  rollout: Array<{
     id: string;
-    status?: string | null;
+    status: string | null;
     scope?: string | null;
     actor?: string | null;
     cost_cap_brl?: number | string | null;
@@ -991,9 +992,9 @@ export type QuestionBankAiDraft = {
   validation_report: {
     valid?: boolean;
     decision?: string;
-    errors?: string[];
-    warnings?: string[];
-    uncertain_fields?: string[];
+    errors: string[];
+    warnings: string[];
+    uncertain_field: string[];
   };
   question_version: number;
   evidence_corpus_version: string;
@@ -1007,15 +1008,15 @@ export async function getQuestionBankEditorialIntelligenceCoverage(): Promise<Qu
   );
 }
 
-export async function getQuestionBankAiDrafts(options?: {
+export async function getQuestionBankAiDrafts(options: {
   draftKind?: string;
   status?: string;
   limit?: number;
 }): Promise<{ drafts: QuestionBankAiDraft[] }> {
   const params = new URLSearchParams();
-  if (options?.draftKind) params.set("draft_kind", options.draftKind);
-  params.set("status", options?.status ?? "pending_review");
-  params.set("limit", String(Math.max(1, Math.min(200, options?.limit ?? 20))));
+  if (options.draftKind) params.set("draft_kind", options.draftKind);
+  params.set("status", options.status ?? "pending_review");
+  params.set("limit", String(Math.max(1, Math.min(200, options.limit ?? 20))));
   return api<{ drafts: QuestionBankAiDraft[] }>(
     `/api/admin/question-bank/ai-enrichment/drafts?${params.toString()}`,
   );
@@ -1048,7 +1049,7 @@ export async function decideQuestionBankAiDraft(
 
 export async function markQuestionBankEvidenceRevalidation(options: {
   evidenceCorpusVersion: string;
-  capabilities?: Array<"clinical_resolution" | "flashcard_template">;
+  capabilities: Array<"clinical_resolution" | "flashcard_template">;
   actor?: string;
 }): Promise<Record<string, unknown>> {
   return api<Record<string, unknown>>(
@@ -1067,14 +1068,14 @@ export async function markQuestionBankEvidenceRevalidation(options: {
 
 export async function revertQuestionBankAiRollout(
   rolloutId: string,
-  options?: { actor?: string },
+  option: { actor?: string },
 ): Promise<Record<string, unknown>> {
   return api<Record<string, unknown>>(
     `/api/admin/question-bank/ai-enrichment/rollouts/${encodeURIComponent(rolloutId)}/revert`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
-      body: JSON.stringify({ actor: options?.actor }),
+      body: JSON.stringify({ actor: option.actor }),
     },
   );
 }
@@ -1100,7 +1101,7 @@ export async function getQuestionBankTaxonomySuggestionClusters(limit = 100): Pr
   return api<{
     clusters: QuestionBankTaxonomySuggestionCluster[];
     total_clusters: number;
-  }>(`/api/admin/question-bank/taxonomy/suggestion-clusters?${params.toString()}`);
+  }>(`/api/admin/question-bank/taxonomy/suggestion-clustersó${params.toString()}`);
 }
 
 export async function decideQuestionBankTaxonomySuggestionCluster(
@@ -1141,8 +1142,8 @@ export type QuestionBankAdminPipelineJob = {
   status: string;
   question_id?: string | null;
   candidate_id?: string | null;
-  attempts?: number;
-  max_attempts?: number;
+  attempt: number;
+  max_attempt: number;
   error_log?: string | null;
   updated_at?: string | null;
 };
@@ -1175,7 +1176,7 @@ export async function getQuestionBankAdminAiBatches(
 ): Promise<{ batches: QuestionBankAiBatch[] }> {
   const params = new URLSearchParams({ limit: String(limit) });
   return api<{ batches: QuestionBankAiBatch[] }>(
-    `/api/admin/question-bank/ai-enrichment/batches?${params.toString()}`,
+    `/api/admin/question-bank/ai-enrichment/batchesó${params.toString()}`,
   );
 }
 
@@ -1236,11 +1237,11 @@ export type QuestionBankEditorialQueueResponse = {
     stale?: number;
     failed?: number;
     critical?: number;
-    oldest_active_seconds?: number | null;
+    oldest_active_second: number | null;
   };
 };
 
-export async function getQuestionBankEditorialQueue(options?: {
+export async function getQuestionBankEditorialQueue(options: {
   q?: string;
   lane?: string;
   priority?: string;
@@ -1249,12 +1250,12 @@ export async function getQuestionBankEditorialQueue(options?: {
   offset?: number;
 }): Promise<QuestionBankEditorialQueueResponse> {
   const params = new URLSearchParams();
-  if (options?.q) params.set("q", options.q);
-  if (options?.lane) params.set("lane", options.lane);
-  if (options?.priority) params.set("priority", options.priority);
-  if (options?.status) params.set("status", options.status);
-  if (options?.limit) params.set("limit", String(options.limit));
-  if (options?.offset) params.set("offset", String(options.offset));
+  if (options.q) params.set("q", options.q);
+  if (options.lane) params.set("lane", options.lane);
+  if (options.priority) params.set("priority", options.priority);
+  if (options.status) params.set("status", options.status);
+  if (options.limit) params.set("limit", String(options.limit));
+  if (options.offset) params.set("offset", String(options.offset));
   return api<QuestionBankEditorialQueueResponse>(
     `/api/admin/question-bank/editorial-queue?${params.toString()}`,
   );
@@ -1315,13 +1316,13 @@ export async function routeQuestionBankEditorialBatch(
 export async function decideQuestionBankEditorialReview(
   reviewId: string,
   action: "approve" | "reject" | "request_changes" | "specialist_review",
-  options?: { note?: string; acceptedPatch?: Record<string, unknown> },
+  option: { note?: string; acceptedPatch?: Record<string, unknown> },
 ): Promise<Record<string, unknown>> {
   return api<Record<string, unknown>>(
     `/api/admin/question-bank/editorial-reviews/${encodeURIComponent(reviewId)}/decision`,
     {
       method: "POST",
-      body: JSON.stringify({ action, note: options?.note, accepted_patch: options?.acceptedPatch }),
+      body: JSON.stringify({ action, note: option.note, accepted_patch: option.acceptedPatch }),
       headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
     },
   );
@@ -1366,7 +1367,7 @@ export async function getQuestionBankReviewQueue(
 export async function resolveQuestionBankReviewQuestion(
   questionId: string,
   action: QuestionBankReviewResolutionAction,
-  options?: QuestionBankReviewResolutionOptions,
+  options: QuestionBankReviewResolutionOptions,
 ): Promise<QuestionBankReviewResolutionResult> {
   return api<QuestionBankReviewResolutionResult>(
     `/api/admin/question-bank/questions/${encodeURIComponent(questionId)}/resolve`,
@@ -1381,13 +1382,13 @@ export async function resolveQuestionBankReviewQuestion(
 export async function updateQuestionBankQuestionStatus(
   questionId: string,
   action: "publish" | "unpublish" | "block" | "deprecate",
-  options?: { reason?: string },
+  option: { reason?: string } = {},
 ): Promise<{ question_id: string; action: string; status: string }> {
   return api<{ question_id: string; action: string; status: string }>(
     `/api/admin/question-bank/questions/${encodeURIComponent(questionId)}/status`,
     {
       method: "PATCH",
-      body: JSON.stringify({ action, reason: options?.reason ?? `admin_ui_${action}` }),
+      body: JSON.stringify({ action, reason: option.reason ?? `admin_ui_${action}` }),
       headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
     },
   );
@@ -1406,12 +1407,12 @@ export type QuestionBankStemIncompleteReclassification = {
   before_blockers: Record<string, number>;
   after_blockers: Record<string, number>;
   checksum: string;
-  sample: Record<string, Array<Record<string, unknown>>>;
+  samples: Record<string, Array<Record<string, unknown>>>;
   errors: Array<Record<string, unknown>>;
 };
 
 export async function dryRunStemIncompleteReclassification(
-  options?: { limit?: number; scopeId?: string; sampleSize?: number },
+  option: { limit?: number; scopeId?: string; sampleSize?: number },
 ): Promise<QuestionBankStemIncompleteReclassification> {
   return api<QuestionBankStemIncompleteReclassification>(
     "/api/admin/question-bank/data-quality/reclassify-stem-incomplete",
@@ -1419,9 +1420,9 @@ export async function dryRunStemIncompleteReclassification(
       method: "POST",
       body: JSON.stringify({
         dry_run: true,
-        limit: options?.limit ?? 1000,
-        scope_id: options?.scopeId,
-        sample_size: options?.sampleSize ?? 10,
+        limit: option.limit ?? 1000,
+        scope_id: option.scopeId,
+        sample_size: option.sampleSize ?? 10,
       }),
       headers: { "Content-Type": "application/json", "x-krosmed-csrf": "1" },
     },
@@ -1456,11 +1457,11 @@ export type QuestionBankReport = {
   candidate_id?: string | null;
   occurrence_id?: string | null;
   imported_file_id?: string | null;
-  ai_triage_status?: string | null;
+  ai_triage_status: string | null;
   ai_triage_job_id?: string | null;
-  ai_diagnosis?: Record<string, unknown>;
+  ai_diagnosis: Record<string, unknown>;
   suggested_patch?: Record<string, unknown>;
-  repair_status?: string | null;
+  repair_status: string | null;
   repair_job_id?: string | null;
   repair_action?: string | null;
   question: {
@@ -1478,11 +1479,11 @@ export type QuestionBankReport = {
 };
 
 export async function listQuestionBankReports(
-  options?: { status?: string; limit?: number },
+  options: { status?: string; limit?: number },
 ): Promise<{ items: QuestionBankReport[]; total: number; limit: number; offset: number }> {
   const params = new URLSearchParams();
-  params.set("status", options?.status ?? "pending");
-  if (options?.limit) params.set("limit", String(options.limit));
+  params.set("status", options.status ?? "pending");
+  if (options.limit) params.set("limit", String(options.limit));
   const qs = params.toString();
   return api<{ items: QuestionBankReport[]; total: number; limit: number; offset: number }>(
     `/api/admin/question-bank/questions/reports${qs ? `?${qs}` : ""}`,
@@ -1577,8 +1578,8 @@ export type QuestionDna = {
   confidence: number;
   dimensions: Record<string, unknown>;
   tags: string[];
-  quality_flags?: string[];
-  vector_keys?: Record<string, number>;
+  quality_flags: string[];
+  vector_key: Record<string, number>;
   vector?: number[];
 };
 
@@ -1601,8 +1602,8 @@ export type QuestionBankAdminEnrichmentLogEntry = {
   occurrence_id?: string | null;
   source_id?: string | null;
   candidate_id?: string | null;
-  added_node_ids?: string[];
-  bumped_node_ids?: string[];
+  added_node_id: string[];
+  bumped_node_id: string[];
   proposed_primary_node_id?: string | null;
 };
 
@@ -1716,14 +1717,14 @@ export type QuestionBankAdminQuestionDetail = {
   similar_questions: QuestionBankAdminSimilarQuestion[];
   topic_review: QuestionBankAdminTopicReview | null;
   dedup_enrichment_log: QuestionBankAdminEnrichmentLogEntry[];
-  edit_log: { by?: string; at?: string; fields?: string[] }[];
+  edit_log: { by?: string; até: string; field: string[] }[];
   ai_read_summary?: QuestionBankAiReadSummary;
   question_quality_inspection?: {
     inspection_status: string;
-    warning_flags?: Array<{ code: string; severity: string; message: string }>;
-    blocking_flags?: Array<{ code: string; severity: string; message: string }>;
-    trap_patterns?: string[];
-    editorial_risks?: string[];
+    warning_flags: Array<{ code: string; severity: string; message: string }>;
+    blocking_flags: Array<{ code: string; severity: string; message: string }>;
+    trap_patterns: string[];
+    editorial_risks: string[];
   };
   question_dna_profile?: {
     schema_version?: string;
@@ -1731,8 +1732,8 @@ export type QuestionBankAdminQuestionDetail = {
     reasoning_type?: string | null;
     answer_type?: string | null;
     negative_structure?: string | null;
-    trap_signatures?: string[];
-    quality_flags?: string[];
+    trap_signatures: string[];
+    quality_flags: string[];
   };
   repair_draft?: {
     repair_draft_id?: string;
@@ -1778,12 +1779,12 @@ export type QuestionBankAdminEditResult = {
   question_id: string;
   blockers?: string[];
   duplicate_of?: string;
-  changed_fields?: string[];
+  changed_field: string[];
 };
 
-export async function searchQuestionBankAdminQuestions(params?: {
+export async function searchQuestionBankAdminQuestions(param: {
   q?: string;
-  status?: string;
+  status: string;
   content_grade?: string;
   board_code?: string;
   year?: number;
@@ -1800,25 +1801,25 @@ export async function searchQuestionBankAdminQuestions(params?: {
   offset?: number;
 }): Promise<QuestionBankAdminQuestionsResponse> {
   const search = new URLSearchParams();
-  if (params?.q?.trim()) search.set("q", params.q.trim());
-  if (params?.status) search.set("status", params.status);
-  if (params?.content_grade) search.set("content_grade", params.content_grade);
-  if (params?.board_code?.trim()) search.set("board_code", params.board_code.trim());
-  if (params?.year) search.set("year", String(params.year));
-  if (params?.knowledge_node_id) search.set("knowledge_node_id", params.knowledge_node_id);
-  if (params?.missing_topic !== undefined) search.set("missing_topic", params.missing_topic ? "true" : "false");
-  if (params?.needs_topic_review !== undefined)
-    search.set("needs_topic_review", params.needs_topic_review ? "true" : "false");
-  if (params?.has_image !== undefined) search.set("has_image", params.has_image ? "true" : "false");
-  if (params?.missing_fingerprint !== undefined)
-    search.set("missing_fingerprint", params.missing_fingerprint ? "true" : "false");
-  if (params?.fingerprint_tag?.trim()) search.set("fingerprint_tag", params.fingerprint_tag.trim());
-  if (params?.fingerprint_low_confidence) search.set("fingerprint_low_confidence", "true");
-  if (params?.missing_similar) search.set("missing_similar", "true");
-  if (params?.fingerprint_schema_version?.trim())
-    search.set("fingerprint_schema_version", params.fingerprint_schema_version.trim());
-  if (params?.limit) search.set("limit", String(params.limit));
-  if (params?.offset) search.set("offset", String(params.offset));
+  if (param.q?.trim()) search.set("q", param.q.trim());
+  if (param.status) search.set("status", param.status);
+  if (param.content_grade) search.set("content_grade", param.content_grade);
+  if (param.board_code?.trim()) search.set("board_code", param.board_code.trim());
+  if (param.year) search.set("year", String(param.year));
+  if (param.knowledge_node_id) search.set("knowledge_node_id", param.knowledge_node_id);
+  if (param.missing_topic !== undefined) search.set("missing_topic", param.missing_topic ? "true" : "false");
+  if (param.needs_topic_review !== undefined)
+    search.set("needs_topic_review", param.needs_topic_review ? "true" : "false");
+  if (param.has_image !== undefined) search.set("has_image", param.has_image ? "true" : "false");
+  if (param.missing_fingerprint !== undefined)
+    search.set("missing_fingerprint", param.missing_fingerprint ? "true" : "false");
+  if (param.fingerprint_tag?.trim()) search.set("fingerprint_tag", param.fingerprint_tag.trim());
+  if (param.fingerprint_low_confidence) search.set("fingerprint_low_confidence", "true");
+  if (param.missing_similar) search.set("missing_similar", "true");
+  if (param.fingerprint_schema_version?.trim())
+    search.set("fingerprint_schema_version", param.fingerprint_schema_version.trim());
+  if (param.limit) search.set("limit", String(param.limit));
+  if (param.offset) search.set("offset", String(param.offset));
   const qs = search.toString();
   return api<QuestionBankAdminQuestionsResponse>(
     `/api/admin/question-bank/questions${qs ? `?${qs}` : ""}`,
@@ -1856,27 +1857,27 @@ export async function editQuestionBankAdminQuestion(
 
 export async function deleteQuestionBankAdminQuestion(
   questionId: string,
-  options?: { hard?: boolean; reason?: string },
-): Promise<{ result: string; question_id: string; status?: string }> {
+  option: { hard?: boolean; reason?: string } = {},
+): Promise<{ result: string; question_id: string; status: string }> {
   const search = new URLSearchParams();
-  if (options?.hard) search.set("hard", "true");
-  if (options?.reason) search.set("reason", options.reason);
+  if (option.hard) search.set("hard", "true");
+  if (option.reason) search.set("reason", option.reason);
   const qs = search.toString();
-  return api<{ result: string; question_id: string; status?: string }>(
+  return api<{ result: string; question_id: string; status: string }>(
     `/api/admin/question-bank/questions/${encodeURIComponent(questionId)}${qs ? `?${qs}` : ""}`,
     { method: "DELETE", headers: { "x-krosmed-csrf": "1" } },
   );
 }
 
-export async function listQuestionBankAdminKnowledgeNodes(params?: {
+export async function listQuestionBankAdminKnowledgeNodes(param: {
   q?: string;
   type?: string;
   limit?: number;
 }): Promise<{ items: QuestionBankAdminKnowledgeNode[] }> {
   const search = new URLSearchParams();
-  if (params?.q?.trim()) search.set("q", params.q.trim());
-  if (params?.type) search.set("type", params.type);
-  if (params?.limit) search.set("limit", String(params.limit));
+  if (param.q?.trim()) search.set("q", param.q.trim());
+  if (param.type) search.set("type", param.type);
+  if (param.limit) search.set("limit", String(param.limit));
   const qs = search.toString();
   return api<{ items: QuestionBankAdminKnowledgeNode[] }>(
     `/api/admin/question-bank/knowledge-nodes${qs ? `?${qs}` : ""}`,

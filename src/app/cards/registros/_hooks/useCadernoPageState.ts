@@ -253,7 +253,7 @@ export function useCadernoPageState() {
           headers: presigned.headers,
           body: file,
         });
-        uploadedRefs.push(presigned.attachment_ref);
+        uploadedRefs.push(presigned.attachment_refs);
       }
       const extLinks = externalLinksInput.split(/\n|,/g).map((s) => s.trim()).filter(Boolean);
       await createOperationalNote(token, {
@@ -377,7 +377,7 @@ export function useCadernoPageState() {
   async function handleTurboStart(count: number) {
     const noteIds = pendingTurboDeck.slice(0, count).map((note) => note.note_id);
     if (noteIds.length < MANUAL_TURBO_MIN_CARDS) {
-      setError(`Selecione pelo menos ${MANUAL_TURBO_MIN_CARDS} cards para iniciar a revisao.`);
+      setError(`Selecione pelo menos ${MANUAL_TURBO_MIN_CARDS} cards para iniciar a revisão.`);
       return;
     }
     setPendingTurboDeck([]);

@@ -40,7 +40,7 @@ type WrongQuestionPayload = {
   theme?: string | null;
   source_exam?: string | null;
   instruction?: string | null;
-  image_attachment_refs?: string[] | null;
+  image_attachment_refs: string[] | null;
 };
 
 type UseResultadosAnalysisFlowParams = {

@@ -84,7 +84,7 @@ function metric(key, label, value, unit = "") {
 function todayAction(overrides = {}) {
   return {
     kind: "question_block",
-    title: "Resolver bloco clinico de GO",
+    title: "Resolver bloco clínico de GO",
     rationale: "A maior alavanca hoje e corrigir pre-eclampsia e hemorragias do terceiro trimestre enquanto a memoria ainda esta quente.",
     estimated_minutes: 35,
     href: "/banco-de-questoes?area=GO&answer_status=needs_review",
@@ -135,7 +135,7 @@ function studentExperience() {
     status: "complete",
     period: { kind: "week", starts_at: "2026-07-20", ends_at: "2026-07-27", timezone: "America/Sao_Paulo" },
     activity: {
-      questions_answered: metric("questions_answered", "Questoes respondidas", 186, "q"),
+      questions_answered: metric("questions_answered", "Questões respondidas", 186, "q"),
       questions_correct: metric("questions_correct", "Acertos", 132, "q"),
       questions_wrong: metric("questions_wrong", "Erros", 54, "q"),
       accuracy_pct: metric("accuracy_pct", "Precisao", 71, "%"),
@@ -171,8 +171,8 @@ function surfaceHome(kind) {
     ],
     load_note: loadNote(),
     insight: {
-      title: kind === "track" ? "GO perdeu estabilidade nas ultimas semanas" : "Revisao cabe no dia sem apertar",
-      message: "O sinal vem de questoes recentes, nao de uma media antiga. Use a proxima acao como intervencao curta.",
+      title: kind === "track" ? "GO perdeu estabilidade nas ultimas semanas" : "Revisão cabe no dia sem apertar",
+      message: "O sinal vem de questões recentes, não de uma média antiga. Use a próxima ação como intervenção curta.",
       severity: "attention",
       action_kind: "question_block",
       href: "/banco-de-questoes",
@@ -180,11 +180,11 @@ function surfaceHome(kind) {
     },
     support_metric: { label: "Precisao recente", value: 64, unit: "%", period: "week", source: "question_bank", interpretation: "Abaixo do seu plato de 72%." },
     deep_links: [
-      { label: "Banco de questoes", href: "/banco-de-questoes", reason: "treino ativo" },
+      { label: "Banco de questões", href: "/banco-de-questoes", reason: "treino ativo" },
       { label: "Relatorio", href: "/estatisticas/relatorio", reason: "detalhar sinal" },
     ],
     data_quality: "sufficient",
-    goal_status: { weekly_goal: 240, weekly_progress_pct: 78, load_label: "adequada", overload_alert: false, recommended_action: "manter revisao curta" },
+    goal_status: { weekly_goal: 240, weekly_progress_pct: 78, load_label: "adequada", overload_alert: false, recommended_action: "manter revisão curta" },
     details: { questions_done_week: 186, accuracy_pct: 71 },
     missing_sources: [],
   };
@@ -395,10 +395,10 @@ function qbankTopic(overrides = {}) {
     knowledge_node_id: "go-node",
     parent_knowledge_node_id: "go-root",
     node_code: "QB-GO-PREECLAMPSIA",
-    node_name: "Pre-eclampsia grave",
+    node_name: "Pré-eclâmpsia grave",
     node_type: "microcompetency",
-    node_path: ["Ginecologia e Obstetricia", "Hipertensao na gestacao"],
-    path_label: "GO > Hipertensao na gestacao > Pre-eclampsia grave",
+    node_path: ["Ginecologia e Obstetricia", "Hipertensão na gestação"],
+    path_label: "GO > Hipertensão na gestação > Pré-eclâmpsia grave",
     depth: 3,
     display_order: 1,
     description: "Conduta, sulfato de magnesio e criterio de interrupcao.",
@@ -426,7 +426,7 @@ function qbankTopic(overrides = {}) {
 function questionBankBootstrap() {
   const topics = [
     qbankTopic({ knowledge_node_id: "go-root", parent_knowledge_node_id: null, node_name: "Ginecologia e Obstetricia", node_type: "specialty", depth: 1, question_count: 180, adaptive_weight_score: 72 }),
-    qbankTopic({ knowledge_node_id: "go-hipertensao", parent_knowledge_node_id: "go-root", node_name: "Hipertensao na gestacao", node_type: "theme", depth: 2, question_count: 74, adaptive_weight_score: 80 }),
+    qbankTopic({ knowledge_node_id: "go-hipertensao", parent_knowledge_node_id: "go-root", node_name: "Hipertensão na gestação", node_type: "theme", depth: 2, question_count: 74, adaptive_weight_score: 80 }),
     qbankTopic(),
   ];
   return {
@@ -489,18 +489,18 @@ function sessionPayload(answered = false) {
       {
         question_id: "q-design-1",
         position: 1,
-        stem: "Gestante de 33 semanas chega com cefaleia intensa, escotomas e PA 170/110 mmHg. Proteinuria confirmada. Qual e a proxima conduta mais adequada?",
+        stem: "Gestante de 33 semanas chega com cefaleia intensa, escotomas e PA 170/110 mmHg. Proteinúria confirmada. Qual é a próxima conduta mais adequada?",
         alternatives: {
-          A: "Internar, controlar PA, iniciar sulfato de magnesio e avaliar interrupcao da gestacao.",
+          A: "Internar, controlar PA, iniciar sulfato de magnésio e avaliar interrupção da gestação.",
           B: "Alta com metildopa e retorno em sete dias.",
           C: "Tocolitico e corticoterapia isolada ate 40 semanas.",
-          D: "Restricao hidrica e observacao domiciliar.",
+          D: "Restrição hídrica e observação domiciliar.",
           E: "Antibiotico empirico por suspeita de pielonefrite.",
         },
         image_refs: [],
         table_refs: [],
-        knowledge_nodes: [{ knowledge_node_id: "go-node", node_name: "Pre-eclampsia grave", node_type: "microcompetency", is_primary: true }],
-        primary_microcompetency_label: "Pre-eclampsia grave",
+        knowledge_nodes: [{ knowledge_node_id: "go-node", node_name: "Pré-eclâmpsia grave", node_type: "microcompetency", is_primary: true }],
+        primary_microcompetency_label: "Pré-eclâmpsia grave",
         selection_reason: { selected_because: ["erro recente", "alta recorrencia"] },
         source: { institution: "USP - SP", board_code: "USP", year: 2024 },
         selected_option: answered ? "A" : null,
@@ -601,7 +601,7 @@ async function mockApi(page) {
         recommendation_id: "today-design",
         generated_at: NOW,
         policy_version: "design-test",
-        primary_action: trainerAction("question_block", "Resolver bloco clinico de GO", "/banco-de-questoes", "today-1"),
+        primary_action: trainerAction("question_block", "Resolver bloco clínico de GO", "/banco-de-questoes", "today-1"),
         secondary_actions: [],
         state_summary: { headline: "Dia sustentavel", detail: null },
         signals: [],
@@ -648,8 +648,8 @@ async function mockApi(page) {
       return fulfillJson(route, {
         kind: "weak_area",
         title: "Bloco curto de pre-eclampsia",
-        subtitle: "Use se quiser acelerar este recorte; a montagem manual continua como foco da pagina.",
-        meta: "12 questoes · ~25 min",
+        subtitle: "Use se quiser acelerar este recorte; a montagem manual continua como foco da página.",
+        meta: "12 questões · ~25 min",
         cta_label: "Usar sugestao",
         rationale: "Erro recente e alta cobranca em banca paulista.",
         area: "GO",
@@ -662,7 +662,7 @@ async function mockApi(page) {
     if (method === "GET" && path === "/api/question-bank/performance") {
       return fulfillJson(route, {
         areas: [{ area: "GO", label: "GO", questions_seen: 72, accuracy: 0.64, wrong_count: 26, practice_count: 26, readiness: 0.58, level: "atencao", next_action: "Treinar pre-eclampsia" }],
-        exam: { simulation_count: 2, accuracy: 0.71, avg_time_ms: 94000, slow_rate: 0.18 },
+        exam: { simulation_count: 2, question_count: 100, accuracy: 0.71, avg_time_ms: 94000, slow_rate: 0.18 },
         unique_questions: 72,
         total_attempts: 94,
         first_attempt_correct: 46,
@@ -692,7 +692,7 @@ async function mockApi(page) {
           classification_confidence: 0.94,
           content_grade: "reviewed",
           knowledge_nodes: [qbankTopic()],
-          primary_microcompetency_label: "Pre-eclampsia grave",
+          primary_microcompetency_label: "Pré-eclâmpsia grave",
           source: { institution: "USP", board_code: "USP-SP", year: 2025 },
           metadata: { state_code: "SP" },
         },

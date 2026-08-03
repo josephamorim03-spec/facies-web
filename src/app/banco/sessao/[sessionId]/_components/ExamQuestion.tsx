@@ -291,7 +291,7 @@ export default function ExamQuestion({
                   <span>A-E ou 1-5 respondem</span>
                   <span>Setas navegam</span>
                   <span>Enter avanca</span>
-                  <span>M marca revisao</span>
+                  <span>M marca revisão</span>
                 </div>
               </div>
             </div>

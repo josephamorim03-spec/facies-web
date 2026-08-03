@@ -40,7 +40,7 @@ type CorrectionTabProps = {
   analyzingSingleDots: string;
   onAnalyzeQuestion: (
     wq: WrongQuestionSummary,
-    opts?: { forceReanalyze?: boolean; minRecordId?: number },
+    opt?: { forceReanalyze?: boolean; minRecordId?: number },
   ) => void | Promise<void>;
   onGoToAnalysisTab: () => void;
   onViewAnalysis: (questionId: string) => void;
@@ -221,7 +221,7 @@ export function CorrectionTab(props: CorrectionTabProps) {
       {navDrawerOpen && (
         <Portal>
           <div className="fixed inset-0 z-[200]">
-            <button type="button" aria-label="Fechar navegacao" onClick={onCloseNavDrawer} className="absolute inset-0 bg-black/40" />
+            <button type="button" aria-label="Fechar navegação" onClick={onCloseNavDrawer} className="absolute inset-0 bg-black/40" />
             <aside className="absolute right-0 top-0 h-full w-[min(88vw,22rem)] bg-paper border-l border-edge p-3 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <h2 className="font-serif text-sm">Questões</h2>
@@ -364,7 +364,7 @@ export function CorrectionTab(props: CorrectionTabProps) {
                         <div className="mt-1 text-xs">
                           {isCorrect && <span className="text-green-800">(gabarito)</span>}
                           {isMarked && !isCorrect && <span className="text-red-800">(sua resposta)</span>}
-                          {!question.marked_option && isCorrect && <span className="text-ink ml-1">(voce deixou em branco)</span>}
+                          {!question.marked_option && isCorrect && <span className="text-ink ml-1">(você deixou em branco)</span>}
                         </div>
                       )}
                     </div>

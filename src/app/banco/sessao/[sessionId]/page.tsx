@@ -80,13 +80,13 @@ function safeAttemptErrorMessage(err: unknown): string {
   if (message) return requestId ? `${message} (req ${requestId})` : message;
   if (code === "question_bank_schema_drift" || code === "schema_contract_invalid") {
     const columns = missingColumns.length > 0 ? ` Colunas ausentes: ${missingColumns.join(", ")}.` : "";
-    return `O banco transacional esta com schema incompativel para registrar respostas.${columns}${requestId ? ` Req ${requestId}.` : ""}`;
+    return `O banco transacional est? com schema incompatével para registrar respostas.${columns}${requestId ? ` Req ${requestId}.` : ""}`;
   }
-  if (code) return `Nao foi possivel registrar a resposta (${code}).${requestId ? ` Req ${requestId}.` : ""}`;
+  if (code) return `Não foi possível registrar a resposta (${code}).${requestId ? ` Req ${requestId}.` : ""}`;
   if (err instanceof Error && err.message && !/traceback|stack trace|undefinedcolumn/i.test(err.message)) {
     return err.message;
   }
-  return "Nao foi possivel registrar a resposta. Tente novamente em instantes.";
+  return "Não foi possível registrar a resposta. Tente novamente em instantes.";
 }
 
 export default function SessionPage() {
@@ -604,7 +604,7 @@ export default function SessionPage() {
       );
     } catch (err) {
       setSession(previous);
-      setError(err instanceof Error ? err.message : "Nao foi possivel salvar favorito.");
+      setError(err instanceof Error ? err.message : "Não foi possível salvar favorito.");
       throw err;
     }
   }
@@ -644,7 +644,7 @@ export default function SessionPage() {
       });
       patchQuestionHighlights(questionId, (highlights) => [...highlights, highlight]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nao foi possivel salvar o grifo.");
+      setError(err instanceof Error ? err.message : "Não foi possível salvar o grifo.");
       throw err;
     }
   }
@@ -656,7 +656,7 @@ export default function SessionPage() {
         highlights.filter((highlight) => highlight.highlight_id !== highlightId),
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nao foi possivel limpar o grifo.");
+      setError(err instanceof Error ? err.message : "Não foi possível limpar o grifo.");
       throw err;
     }
   }
@@ -673,7 +673,7 @@ export default function SessionPage() {
         post_answer_reflection: reflection,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nao foi possivel salvar a reflexao.");
+      setError(err instanceof Error ? err.message : "Não foi possível salvar a reflexão.");
     } finally {
       setReflectionBusyByPosition((prev) => ({ ...prev, [position]: false }));
     }
@@ -827,7 +827,7 @@ export default function SessionPage() {
       }
       await loadAiRequestPreview(questionId);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Nao foi possivel solicitar a IA canonica.";
+      const message = err instanceof Error ? err.message : "Não foi possível solicitar a IA canônica.";
       setError(message);
     } finally {
       setAiCorrectionRequesting((prev) => ({ ...prev, [questionId]: false }));
@@ -906,7 +906,7 @@ export default function SessionPage() {
   const currentIndex = session.items.findIndex((i) => i.position === currentPosition);
   const displayPosition = currentIndex >= 0 ? currentIndex + 1 : currentPosition;
   const primaryNode = currentItem.knowledge_nodes.find((node) => node.is_primary) ?? currentItem.knowledge_nodes[0];
-  const quickNoteTheme = primaryNode?.node_name ?? sessionDisplayLabel ?? "Questao do banco";
+  const quickNoteTheme = primaryNode?.node_name ?? sessionDisplayLabel ?? "Questão do banco";
   const quickNoteOutcome: OperationalQuestionOutcome | null =
     currentItem.is_correct === null ? null : currentItem.is_correct ? "correct" : "incorrect";
   const sessionKindLabel = session.study_kind === "full_exam" ? "Prova" : "Simulado";

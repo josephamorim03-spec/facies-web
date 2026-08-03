@@ -44,7 +44,7 @@ function todayISO(): string {
 
 function getStreakFetchErrorInfo(err: unknown): { status: number | null; message: string } {
   const status =
-    typeof (err as { status?: unknown })?.status === "number"
+    typeof (err as { status: unknown })?.status === "number"
       ? (err as { status: number }).status
       : null;
   const message =

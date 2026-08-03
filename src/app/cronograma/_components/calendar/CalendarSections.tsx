@@ -266,7 +266,7 @@ function EventPopupContent({
           </button>
         </div>
       ) : (
-        <p className="text-xs text-muted">Compromissos passados ficam somente como historico.</p>
+        <p className="text-xs text-muted">Compromissos passados ficam somente como histórico.</p>
       )}
     </>
   );
@@ -471,7 +471,7 @@ export function CalendarStudyDeleteConfirmModal({
       await deleteDirectedStudy(token, selectedStudy.study_id);
       onDeleted();
     } catch {
-      setError("Nao foi possivel apagar o registro.");
+      setError("Não foi possível apagar o registro.");
       setDeleting(false);
     }
   }
@@ -540,7 +540,7 @@ export function CalendarEventRescheduleSheet({
       await onReschedule(selectedEvent, selectedSourceISO, selectedIconType, date);
       onClose();
     } catch {
-      setError("Nao foi possivel reagendar. Tente novamente.");
+      setError("Não foi possível reagendar. Tente novamente.");
       setSaving(false);
     }
   }

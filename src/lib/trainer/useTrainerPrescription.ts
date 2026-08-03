@@ -17,8 +17,8 @@ type UseTrainerPrescription = {
  * - Degrades to `null` on any failure so pages never break.
  * - Never records `shown` (that stays exclusive to `/hoje`).
  */
-export function useTrainerPrescription(options?: { enabled?: boolean }): UseTrainerPrescription {
-  const enabled = options?.enabled ?? true;
+export function useTrainerPrescription(option: { enabled?: boolean } = {}): UseTrainerPrescription {
+  const enabled = option.enabled ?? true;
   const [prescription, setPrescription] = useState<TrainerPrescription | null>(null);
   // `loading` is derived (never set synchronously in the effect body); the async
   // callbacks flip `ready` when the fetch settles.

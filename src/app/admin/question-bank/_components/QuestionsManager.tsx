@@ -78,12 +78,12 @@ function objectKeys(value: unknown): string[] {
 }
 
 function reportDiagnosisSummary(report: QuestionBankReport): string | null {
-  const summary = report.ai_diagnosis?.summary;
+  const summary = report.ai_diagnosis.summary;
   return typeof summary === "string" && summary.trim() ? summary.trim() : null;
 }
 
 function reportRecommendedAction(report: QuestionBankReport): string | null {
-  const action = report.ai_diagnosis?.recommended_action;
+  const action = report.ai_diagnosis.recommended_action;
   return typeof action === "string" && action.trim() ? action.trim() : null;
 }
 
@@ -200,7 +200,7 @@ export default function QuestionsManager() {
       setReports(res.items);
     } catch (err) {
       setReports([]);
-      const status = typeof err === "object" && err !== null ? Number((err as { status?: unknown }).status) : NaN;
+      const status = typeof err === "object" && err !== null ? Number((err as { status: unknown }).status) : NaN;
       if (status === 404) {
         setReportsError("Painel de reports indisponivel neste ambiente.");
       } else {
@@ -227,7 +227,7 @@ export default function QuestionsManager() {
       const detail = await getQuestionBankAdminQuestion(report.question_id);
       setReportDetailsByQuestionId((prev) => ({ ...prev, [report.question_id]: detail }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao carregar a questao completa.");
+      setError(err instanceof Error ? err.message : "Falha ao carregar a questão completa.");
       setExpandedReportIds((prev) => {
         const next = new Set(prev);
         next.delete(report.id);
@@ -277,7 +277,7 @@ export default function QuestionsManager() {
           ? "Patch aplicado pelo admin."
           : action === "reanalyze_question"
             ? "Reanalise enfileirada."
-            : "Questao bloqueada.",
+            : "Questão bloqueada.",
       );
       await refreshReports();
       void search(offset);
@@ -490,7 +490,7 @@ export default function QuestionsManager() {
   async function enqueueMissingDnaPageAnalysis() {
     setError(null);
     if (missingDnaPageItems.length === 0) {
-      setNotice("Nenhuma questao sem DNA nesta pagina.");
+      setNotice("Nenhuma questão sem DNA nesta página.");
       return;
     }
     setBulkAnalyzing(true);
@@ -501,7 +501,7 @@ export default function QuestionsManager() {
         await enqueueQuestionBankQuestionAnalysis(item.id);
         queued += 1;
       }
-      setNotice(`${queued} analise(s) de DNA enfileirada(s) nesta pagina.`);
+      setNotice(`${queued} análise(s) de DNA enfileirada(s) nesta página.`);
       void search(offset);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao enfileirar analises de DNA.");
@@ -513,7 +513,7 @@ export default function QuestionsManager() {
   async function enqueueMissingTopicPageAnalysis() {
     setError(null);
     if (missingTopicPageItems.length === 0) {
-      setNotice("Nenhuma questao sem topico nesta pagina.");
+      setNotice("Nenhuma questão sem tópico nesta página.");
       return;
     }
     setBulkAnalyzing(true);
@@ -523,7 +523,7 @@ export default function QuestionsManager() {
         await enqueueQuestionBankQuestionAnalysis(item.id);
         queued += 1;
       }
-      setNotice(`${queued} reanalise(s) por IA enfileirada(s) nesta pagina.`);
+      setNotice(`${queued} reanálise(s) por IA enfileirada(s) nesta página.`);
       void search(offset);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao enfileirar analises.");
@@ -652,9 +652,9 @@ export default function QuestionsManager() {
                       <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-200">
                         {report.source_issue_kind || report.report_type ? <span>{report.source_issue_kind || report.report_type}</span> : null}
                         {report.severity ? <span>{report.severity}</span> : null}
-                        <span>IA: {report.ai_triage_status || "nao solicitada"}</span>
-                        <span>reparo: {report.repair_status || "nao solicitado"}</span>
-                        <span>{report.question.status || "questao sem status"}</span>
+                        <span>IA: {report.ai_triage_status || "não solicitada"}</span>
+                        <span>reparo: {report.repair_status || "não solicitado"}</span>
+                        <span>{report.question.status || "questão sem status"}</span>
                       </div>
                       <div className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
                         {reportSourceLabel(report)}
@@ -672,7 +672,7 @@ export default function QuestionsManager() {
                       {diagnosis ? (
                         <div className="mt-2 rounded-lg border border-amber-100 bg-amber-50/60 p-2 text-xs text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-100">
                           <p>{diagnosis}</p>
-                          {recommendedAction ? <p className="mt-1 font-semibold">Acao sugerida: {recommendedAction}</p> : null}
+                          {recommendedAction ? <p className="mt-1 font-semibold">Ação sugerida: {recommendedAction}</p> : null}
                           {patchFields.length > 0 ? (
                             <p className="mt-1">Patch: {patchFields.slice(0, 5).join(", ")}</p>
                           ) : null}
@@ -684,12 +684,12 @@ export default function QuestionsManager() {
                         disabled={isQuestionLoading}
                         className="mt-2 rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:text-amber-200 dark:hover:bg-amber-950/40"
                       >
-                        {isQuestionLoading ? "Carregando questao..." : isQuestionExpanded ? "Ocultar questao completa" : "Ver questao completa"}
+                        {isQuestionLoading ? "Carregando questão..." : isQuestionExpanded ? "Ocultar questão completa" : "Ver questão completa"}
                       </button>
                       {isQuestionExpanded ? (
                         reportDetail ? (
                           <QuestionFullContext
-                            eyebrow="Questao denunciada"
+                            eyebrow="Questão denunciada"
                             stem={reportDetail.stem}
                             alternatives={reportDetail.alternatives}
                             imageRefs={reportDetail.image_refs}
@@ -701,7 +701,7 @@ export default function QuestionsManager() {
                           />
                         ) : (
                           <div className="mt-3 rounded-lg border border-dashed border-amber-300 px-3 py-2 text-xs text-amber-800 dark:border-amber-800 dark:text-amber-200">
-                            Carregando questao completa...
+                            Carregando questão completa...
                           </div>
                         )
                       ) : null}
@@ -851,7 +851,7 @@ export default function QuestionsManager() {
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300">
         <span>
-          {missingTopicPageItems.length} sem topico · {missingDnaPageItems.length} sem DNA nesta pagina
+          {missingTopicPageItems.length} sem tópico · {missingDnaPageItems.length} sem DNA nesta página
         </span>
         <div className="flex flex-wrap gap-2">
           <button
@@ -859,14 +859,14 @@ export default function QuestionsManager() {
             disabled={loading || bulkAnalyzing || missingDnaPageItems.length === 0}
             className="rounded-lg border border-violet-300 px-3 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-violet-800 dark:text-violet-300 dark:hover:bg-violet-950/30"
           >
-            {bulkAnalyzing ? "Enfileirando..." : "Analisar DNA desta pagina"}
+            {bulkAnalyzing ? "Enfileirando..." : "Analisar DNA desta página"}
           </button>
           <button
             onClick={() => void enqueueMissingTopicPageAnalysis()}
             disabled={loading || bulkAnalyzing || missingTopicPageItems.length === 0}
             className="rounded-lg border border-blue-300 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/30"
           >
-            {bulkAnalyzing ? "Enfileirando..." : "Analisar IA das sem topico desta pagina"}
+            {bulkAnalyzing ? "Enfileirando..." : "Analisar IA das sem tópico desta página"}
           </button>
         </div>
       </div>
@@ -1122,7 +1122,7 @@ export default function QuestionsManager() {
                     </div>
                   ) : null}
                   <div className="mt-3 grid gap-1 text-xs sm:grid-cols-2">
-                    <span><span className="font-semibold">Acao:</span> {summary.suggested_action}</span>
+                    <span><span className="font-semibold">Ação:</span> {summary.suggested_action}</span>
                     <span><span className="font-semibold">Impacto:</span> {summary.adaptive_impact}</span>
                     {classification.charge_pattern ? <span><span className="font-semibold">Cobranca:</span> {classification.charge_pattern}</span> : null}
                     {summary.open_reports ? <span><span className="font-semibold">Reports:</span> {summary.open_reports}</span> : null}

@@ -471,7 +471,7 @@ function BancoDeQuestoesContent() {
 
   // ─── Filter params factory ───────────────────────────────────────────────
 
-  const filterParams = useCallback((overrides?: { limit?: number }) => ({
+  const filterParams = useCallback((override: { limit?: number } = {}) => ({
     knowledge_node_ids: selectedTopics.length > 0 ? selectedTopics.map((t) => t.knowledge_node_id) : undefined,
     area: area || undefined,
     board_codes: boardCodes.length > 0 ? boardCodes : undefined,
@@ -484,7 +484,7 @@ function BancoDeQuestoesContent() {
     answer_status: answerStatus,
     only_unanswered: answerStatus === "unanswered",
     correction_status: correctionStatus,
-    limit: overrides?.limit,
+    limit: override.limit,
   }), [answerStatus, area, boardCodes, correctionStatus, examCodes, includeNoYear, institutions, normalizedSearch, selectedTopics, selectedYears, stateCodes]);
 
   // ─── Data fetching ───────────────────────────────────────────────────────

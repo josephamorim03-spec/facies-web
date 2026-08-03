@@ -12,10 +12,11 @@ import { getBlockedRedirectSessionKey, getWelcomeToastSessionKey } from "@/lib/s
 import { getErrorMessage } from "@/lib/error-utils";
 import {
   AdaptiveScheduleGenerate,
-  getAdaptiveSchedule,
+  getCapabilities,
   getProfile,
   updateProfile,
   getWorkload,
+  listPlanActivities,
   listEvents,
   createEvent,
   deleteEvent,
@@ -159,8 +160,60 @@ export function usePerfilPageState() {
     try {
       const start = isoWeekStart();
       const days = Array.from({ length: 7 }, (_, idx) => addIsoDays(start, idx));
-      const plans = await Promise.all(days.map((day) => getAdaptiveSchedule(authToken, day)));
-      setAdaptiveWeek(plans);
+      const capabilities = await getCapabilities(authToken);
+      const planCapability = capabilities.capabilities.find(
+        (capability) => capability.key === "adaptive_study_plan",
+      );
+      if (planCapability?.enabled) {
+        const response = await listPlanActivities(authToken, {
+          date_from: days[0],
+          date_to: days[days.length - 1],
+        });
+        setAdaptiveWeek(
+          days.map((day) => {
+            const activities = response.items.filter((item) => item.scheduled_date === day);
+            const focusMinutes = activities.reduce(
+              (total, item) => total + Math.max(0, item.estimated_minutes),
+              0,
+            );
+            return {
+              mode: focusMinutes > 0 ? "PLAN" : "REST",
+              date: day,
+              focus_minutes: focusMinutes,
+              buffer_minutes: 0,
+              total_planned_minutes: focusMinutes,
+              recovery_mode: false,
+              rebalance_required: false,
+              reason: null,
+              blocks: activities.map((item) => ({
+                area: "",
+                theme: item.title,
+                minutes: item.estimated_minutes,
+                score: Number(item.rationale.priority_score ?? 0),
+              })),
+            };
+          }),
+        );
+        return;
+      }
+      const workload = await getWorkload(authToken, start);
+      setAdaptiveWeek(
+        days.map((day) => {
+          const item = workload.find((entry) => entry.date === day);
+          const focusMinutes = Math.max(0, Number(item?.load ?? 0)) * 2;
+          return {
+            mode: focusMinutes > 0 ? "WORKLOAD" : "REST",
+            date: day,
+            focus_minutes: focusMinutes,
+            buffer_minutes: 0,
+            total_planned_minutes: focusMinutes,
+            recovery_mode: false,
+            rebalance_required: false,
+            reason: null,
+            blocks: [],
+          };
+        }),
+      );
     } catch {
       setAdaptiveWeek([]);
     }

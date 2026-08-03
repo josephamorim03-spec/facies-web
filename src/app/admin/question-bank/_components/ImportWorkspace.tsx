@@ -192,7 +192,7 @@ export default function ImportWorkspace({
               <MetadataPill label="instituicao" value={previewSummary.detected_metadata.institution} />
               <MetadataPill label="acesso" value={previewSummary.detected_metadata.access_type} />
               <MetadataPill label="OCR" value={previewSummary.quality_summary?.ocr_summary?.used ? "usado" : previewSummary.quality_summary?.ocr_summary?.attempted ? "tentado" : null} />
-              <MetadataPill label="paginas OCR" value={previewSummary.quality_summary?.ocr_summary?.pages_used} />
+              <MetadataPill label="páginas OCR" value={previewSummary.quality_summary?.ocr_summary?.pages_used} />
             </div>
             {readiness ? (
               <div className={`rounded-lg border p-4 text-sm ${readinessTone}`}>
@@ -217,7 +217,7 @@ export default function ImportWorkspace({
                     ))}
                   </div>
                 ) : null}
-                {readiness.pipeline_warnings?.length ? (
+                {readiness.pipeline_warnings.length ? (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {readiness.pipeline_warnings.map((warning) => (
                       <span key={warning} className="rounded-md bg-white/50 px-2 py-0.5 text-[11px] font-semibold dark:bg-black/20">
@@ -243,7 +243,7 @@ export default function ImportWorkspace({
             {questions.length ? (
               <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
                 <div className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Overrides por questao</h4>
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Overrides por questão</h4>
                 </div>
                 <div className="overflow-auto">
                   <table className="min-w-[1180px] w-full text-left text-xs">
@@ -373,7 +373,7 @@ export default function ImportWorkspace({
                                         </div>
                                       );
                                     })}
-                                    {!question.options || Object.keys(question.options).length === 0 ? (
+                                    {Object.keys(question.options ?? {}).length === 0 ? (
                                       <p className="text-xs text-gray-400">Sem alternativas.</p>
                                     ) : null}
                                   </div>
@@ -478,8 +478,8 @@ export default function ImportWorkspace({
                       </div>
                     </td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                      <div>P {item.pipeline_counts?.pending ?? 0} / R {item.pipeline_counts?.processing ?? 0}</div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500">F {item.pipeline_counts?.failed ?? 0} / D {item.pipeline_counts?.done ?? 0}</div>
+                      <div>P {item.pipeline_counts.pending ?? 0} / R {item.pipeline_counts.processing ?? 0}</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500">F {item.pipeline_counts.failed ?? 0} / D {item.pipeline_counts.done ?? 0}</div>
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-400 dark:text-gray-500">{item.created_at ? formatRelativeTime(item.created_at) : "-"}</td>
                   </tr>

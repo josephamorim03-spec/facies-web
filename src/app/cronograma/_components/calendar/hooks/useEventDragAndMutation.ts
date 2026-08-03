@@ -9,7 +9,15 @@ import {
   todayISO,
 } from "../../../_lib/cronogramaShared";
 import { CalendarEventDeleteConfirm } from "../CalendarSections";
-import { EVENT_DELETE_ZONE_DELAY_MS, TOUCH_DRAG_START_PX, TOUCH_EDGE_HOLD_MS, TOUCH_EDGE_ZONE_PX } from "../constants";
+import {
+  EVENT_DELETE_ZONE_DELAY_MS,
+  TOUCH_DRAG_LONG_PRESS_CANCEL_PX,
+  TOUCH_DRAG_LONG_PRESS_MS,
+  TOUCH_DRAG_START_PX,
+  TOUCH_EDGE_HOLD_MS,
+  TOUCH_EDGE_ZONE_PX,
+} from "../constants";
+import { vibrateLongPress } from "../touchFeedback";
 import {
   CalendarDragEventMeta,
   getDailyHoursOverflowMessage,
@@ -57,6 +65,7 @@ export function useEventDragAndMutation({
   const eventDropActionTriggered = useRef(false);
   const eventMoveInFlight = useRef(false);
   const eventMoveErrorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const eventTouchLongPressCleanupRef = useRef<(() => void) | null>(null);
   const touchEdgeTurnTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchMarginHold = useRef<{ side: "left" | "right"; targetISO: string; sinceMs: number } | null>(null);
   const touchLastCellISO = useRef<string | null>(null);
@@ -195,6 +204,7 @@ export function useEventDragAndMutation({
 
   function clearEventDragState() {
     clearTouchEdgeTurnTimer();
+    cancelEventTouchLongPress();
     touchMarginHold.current = null;
     touchLastCellISO.current = null;
     setDragEventMeta(null);
@@ -391,7 +401,7 @@ export function useEventDragAndMutation({
         await Promise.resolve(onRefresh());
       }
     } catch (error: any) {
-      showEventMoveError(error?.message ?? "Nao foi possivel mover o compromisso.");
+      showEventMoveError(error?.message ?? "Não foi possível mover o compromisso.");
     } finally {
       eventMoveInFlight.current = false;
       clearEventDragState();
@@ -425,7 +435,7 @@ export function useEventDragAndMutation({
         await Promise.resolve(onRefresh());
       }
     } catch (error: any) {
-      showEventMoveError(error?.message ?? "Nao foi possivel reagendar o compromisso.");
+      showEventMoveError(error?.message ?? "Não foi possível reagendar o compromisso.");
       throw error;
     } finally {
       eventMoveInFlight.current = false;
@@ -471,6 +481,16 @@ export function useEventDragAndMutation({
     }
   }
 
+  function cancelEventTouchLongPress() {
+    if (eventTouchLongPressCleanupRef.current) {
+      eventTouchLongPressCleanupRef.current();
+      eventTouchLongPressCleanupRef.current = null;
+    }
+  }
+
+  // Mesmo gesto do arrasto de sessao de estudo: o arrasto so arma depois de um
+  // long-press. Armar no touchstart fazia qualquer encostar no icone virar arrasto,
+  // com zona de exclusao e fantasma aparecendo no meio de uma rolagem da pagina.
   function startTouchEventDrag(
     e: React.TouchEvent<HTMLElement>,
     ev: CalendarEventOut,
@@ -480,13 +500,50 @@ export function useEventDragAndMutation({
     if (sourceISO < todayISO()) return;
     const touch = e.touches[0];
     if (!touch) return;
-    e.stopPropagation();
-    setTouchDraggingEventId(ev.event_id);
-    beginEventDrag(ev, sourceISO, iconType, {
-      touchId: touch.identifier,
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-    });
+    cancelEventTouchLongPress();
+
+    const touchId = touch.identifier;
+    const start = { x: touch.clientX, y: touch.clientY };
+    let started = false;
+
+    const timer = window.setTimeout(() => {
+      started = true;
+      setTouchDraggingEventId(ev.event_id);
+      vibrateLongPress();
+      beginEventDrag(ev, sourceISO, iconType, {
+        touchId,
+        clientX: start.x,
+        clientY: start.y,
+      });
+    }, TOUCH_DRAG_LONG_PRESS_MS);
+
+    function cleanup() {
+      window.clearTimeout(timer);
+      window.removeEventListener("touchmove", onMove, true);
+      window.removeEventListener("touchend", onFinish, true);
+      window.removeEventListener("touchcancel", onFinish, true);
+    }
+    function onMove(event: TouchEvent) {
+      const active = getTouchById(event.touches, touchId);
+      if (!active) return;
+      const dx = Math.abs(active.clientX - start.x);
+      const dy = Math.abs(active.clientY - start.y);
+      if (!started && Math.max(dx, dy) > TOUCH_DRAG_LONG_PRESS_CANCEL_PX) {
+        cleanup();
+        eventTouchLongPressCleanupRef.current = null;
+      }
+    }
+    function onFinish() {
+      if (!started) {
+        cleanup();
+        eventTouchLongPressCleanupRef.current = null;
+      }
+    }
+
+    window.addEventListener("touchmove", onMove, { capture: true, passive: true });
+    window.addEventListener("touchend", onFinish, true);
+    window.addEventListener("touchcancel", onFinish, true);
+    eventTouchLongPressCleanupRef.current = cleanup;
   }
 
   function isDeleteDropTargetPoint(clientX: number, clientY: number): boolean {
@@ -662,6 +719,10 @@ export function useEventDragAndMutation({
       if (touchEdgeTurnTimer.current) {
         clearTimeout(touchEdgeTurnTimer.current);
         touchEdgeTurnTimer.current = null;
+      }
+      if (eventTouchLongPressCleanupRef.current) {
+        eventTouchLongPressCleanupRef.current();
+        eventTouchLongPressCleanupRef.current = null;
       }
     };
   }, []);

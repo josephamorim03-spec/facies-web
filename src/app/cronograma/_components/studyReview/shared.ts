@@ -36,19 +36,19 @@ export function parseStudyEditImpactPreview(err: unknown): DirectedStudyEditImpa
 }
 
 export function resolveImportSessionErrorMessage(err: unknown): string {
-  const fallback = "Nao foi possivel iniciar o simulado agora. Tente novamente em alguns segundos.";
+  const fallback = "Não foi possível iniciar o simulado agora. Tente novamente em alguns segundos.";
   const code = getAPIErrorCode(err);
   if (code === "rate_limited") {
     return "Muitas tentativas em pouco tempo. Aguarde alguns segundos e tente novamente.";
   }
   if (code === "import_overloaded") {
-    return "Importacao em alta demanda. Tente novamente em instantes.";
+    return "Importação em alta demanda. Tente novamente em instantes.";
   }
   if (code === "parser_unavailable" || code === "upstream_unavailable") {
-    return "Servico de importacao temporariamente indisponivel. Tente novamente em instantes.";
+    return "Serviço de importação temporariamente indisponível. Tente novamente em instantes.";
   }
   if (code === "upstream_timeout") {
-    return "A importacao demorou mais do que o esperado. Tente novamente em instantes.";
+    return "A importação demorou mais do que o esperado. Tente novamente em instantes.";
   }
   if (err instanceof Error) {
     const message = String(err.message ?? "").trim();

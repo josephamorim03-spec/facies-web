@@ -32,5 +32,5 @@ test("admin reports can expand to the full question detail before repair actions
   const source = read("src/app/admin/question-bank/_components/QuestionsManager.tsx");
   assert.match(source, /toggleReportQuestion/);
   assert.match(source, /getQuestionBankAdminQuestion\(report\.question_id\)/);
-  assert.match(source, /Ver questao completa/);
+  assert.match(source, /Ver questão completa/);
 });

@@ -16,11 +16,11 @@ import {
 function turboStartFeedback(error: unknown): string {
   const apiError = (error ?? {}) as APIError;
   const rawDetails = (apiError.details ?? {}) as Record<string, unknown>;
-  const detail = (rawDetails?.detail ?? rawDetails ?? null) as Record<string, unknown> | null;
+  const detail = (rawDetails.detail ?? rawDetails ?? null) as Record<string, unknown> | null;
   const code =
     typeof detail?.code === "string"
       ? detail.code
-      : typeof rawDetails?.code === "string"
+      : typeof rawDetails.code === "string"
         ? rawDetails.code
         : "";
 
@@ -31,7 +31,7 @@ function turboStartFeedback(error: unknown): string {
   }
 
   if (apiError.status === 500 || code === "turbo_session_start_failed") {
-    return "Nao foi possivel iniciar o Turbo agora. Tente novamente em alguns segundos.";
+    return "Não foi possível iniciar o Turbo agora. Tente novamente em alguns segundos.";
   }
 
   return (error as Error)?.message ?? "Erro no turbo.";
@@ -114,7 +114,7 @@ export function useTurboSession({ token, onPostActionSync }: UseTurboSessionArgs
   }, []);
 
   const startSession = useCallback(async (
-    noteIds?: string[],
+    noteIds: string[] = [],
     targetCards?: number,
     area?: OperationalAreaCode,
     trainer?: { recommendationId: string; actionId: string },
@@ -129,9 +129,9 @@ export function useTurboSession({ token, onPostActionSync }: UseTurboSessionArgs
     try {
       const snapshot = await startOperationalTurboSession(
         token,
-        noteIds?.length || typeof targetCards === "number" || area
+        noteIds.length || typeof targetCards === "number" || area
           ? {
-            ...(noteIds?.length ? { noteIds } : {}),
+            ...(noteIds.length ? { noteIds } : {}),
             ...(typeof targetCards === "number" ? { targetCards } : {}),
             ...(area ? { area } : {}),
             ...(trainer?.recommendationId ? { recommendationId: trainer.recommendationId } : {}),

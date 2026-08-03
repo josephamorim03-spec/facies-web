@@ -5,14 +5,14 @@ import { parseSessionsTab } from "@/lib/sessionsPanel";
 export const dynamic = "force-dynamic";
 
 type RevisoesPageProps = {
-  searchParams?: Promise<{
+  searchParams: Promise<{
     tipo?: string | string[];
   }>;
 };
 
 export default async function RevisoesPage({ searchParams }: RevisoesPageProps) {
   const params = await searchParams;
-  const rawTipo = Array.isArray(params?.tipo) ? params.tipo[0] : params?.tipo;
+  const rawTipo = Array.isArray(params.tipo) ? params.tipo[0] : params.tipo;
   const initialTab = parseSessionsTab(rawTipo);
 
   return (

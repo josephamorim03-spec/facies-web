@@ -47,7 +47,7 @@ type WrongQuestionPayload = {
   theme?: string | null;
   source_exam?: string | null;
   instruction?: string | null;
-  image_attachment_refs?: string[] | null;
+  image_attachment_refs: string[] | null;
 };
 
 type UseProgressiveAnalysisParams = {
@@ -74,7 +74,7 @@ export type UseProgressiveAnalysisReturn = {
   analyzingSingleDots: string;
   handleAnalyzeQuestion: (
     wq: WrongQuestionSummary,
-    opts?: { forceReanalyze?: boolean; minRecordId?: number },
+    opt: { forceReanalyze?: boolean; minRecordId?: number },
   ) => Promise<void>;
   allDrafts: Array<{ draft: CadernoDraft; questionId: string }>;
   allExistingDrafts: Array<{ draft: ExistingCadernoDraft; questionId: string }>;
@@ -204,7 +204,7 @@ export function useProgressiveAnalysis(params: UseProgressiveAnalysisParams): Us
   const startSingleProgressiveAnalyze = useCallback(
     async (
       questionInput: AnalysisQuestionInput,
-      opts?: { forceReanalyze?: boolean; minRecordId?: number },
+      opt: { forceReanalyze?: boolean; minRecordId?: number },
     ): Promise<void> => {
       if (token === null || !userId || !sessionId) return;
       const questionId = questionInput.question_id;
@@ -221,7 +221,7 @@ export function useProgressiveAnalysis(params: UseProgressiveAnalysisParams): Us
         || Boolean(analyzingQuestionId)
       ) return;
 
-      const forceReanalyze = Boolean(opts?.forceReanalyze);
+      const forceReanalyze = Boolean(opt.forceReanalyze);
       const optimisticPending: AnalyzeSimulationErrorsProgressiveStatusItem = {
         record_id: 0,
         question_id: questionId,
@@ -325,7 +325,7 @@ export function useProgressiveAnalysis(params: UseProgressiveAnalysisParams): Us
             token,
             sessionId,
             questionId,
-            forceReanalyze ? opts?.minRecordId : undefined,
+            forceReanalyze ? opt.minRecordId : undefined,
             ANALYSIS_SINGLE_FALLBACK_POLL_ATTEMPTS,
             ANALYSIS_SINGLE_FALLBACK_POLL_INTERVAL_MS,
           );
@@ -371,10 +371,10 @@ export function useProgressiveAnalysis(params: UseProgressiveAnalysisParams): Us
   const handleAnalyzeQuestion = useCallback(
     async (
       wq: WrongQuestionSummary,
-      opts?: { forceReanalyze?: boolean; minRecordId?: number },
+      opt: { forceReanalyze?: boolean; minRecordId?: number },
     ) => {
       const questionInput = buildAnalysisQuestionInput(wq);
-      await startSingleProgressiveAnalyze(questionInput, opts);
+      await startSingleProgressiveAnalyze(questionInput, opt);
     },
     [buildAnalysisQuestionInput, startSingleProgressiveAnalyze],
   );

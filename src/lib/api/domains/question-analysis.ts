@@ -109,7 +109,7 @@ export type QuestionCognitiveAnalysis = {
   golden_rule: string;
   reasoning_ladder: string[];
   concept_graph?: QuestionAnalysisConceptGraph;
-  learning_targets?: QuestionAnalysisLearningTarget[];
+  learning_target: QuestionAnalysisLearningTarget[];
   flashcards: Array<{
     kind: "basic" | "cloze";
     front: string | null;
@@ -153,7 +153,7 @@ export type CadernoDraft = {
     | "exam_core"
     | null;
   retrieval_difficulty?: number | null;
-  source_concept_ids?: string[];
+  source_concept_id: string[];
   note_payload: CadernoDraftNotePayload;
 };
 
@@ -286,7 +286,7 @@ export async function analyzeSimulationErrors(
       theme?: string | null;
       source_exam?: string | null;
       instruction?: string | null;
-      image_attachment_refs?: string[] | null;
+      image_attachment_refs: string[] | null;
     }>;
   },
 ): Promise<AnalyzeSimulationErrorsResponse> {
@@ -317,7 +317,7 @@ export async function startProgressiveSimulationErrors(
       theme?: string | null;
       source_exam?: string | null;
       instruction?: string | null;
-      image_attachment_refs?: string[] | null;
+      image_attachment_refs: string[] | null;
     }>;
   },
 ): Promise<AnalyzeSimulationErrorsProgressiveStartResponse> {
@@ -451,7 +451,7 @@ export async function analyzeQuestion(
       theme?: string | null;
       source_exam?: string | null;
       instruction?: string | null;
-      image_attachment_refs?: string[] | null;
+      image_attachment_refs: string[] | null;
     };
   },
 ): Promise<QuestionAnalysisResult> {

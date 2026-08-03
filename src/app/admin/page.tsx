@@ -349,7 +349,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     adminGetStats()
       .then(setStats)
-      .catch((err: { status?: number; message?: string; details?: unknown }) => {
+      .catch((err: { status: number; message?: string; details?: unknown }) => {
         if (err?.status === 401 || err?.status === 403) {
           router.replace("/");
           return;

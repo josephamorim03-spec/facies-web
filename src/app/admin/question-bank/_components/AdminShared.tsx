@@ -49,6 +49,7 @@ export function WarningBox({ warning }: { warning: QuestionBankAdminWarning }) {
     warning.severity === "critical"
       ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200"
       : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200";
+  const samples = warning.samples ?? warning.sample ?? [];
   return (
     <div className={`rounded-lg border p-3 ${toneClasses}`}>
       <div className="text-xs font-semibold uppercase">{warning.code}</div>
@@ -61,9 +62,9 @@ export function WarningBox({ warning }: { warning: QuestionBankAdminWarning }) {
       {warning.years_detected?.length ? (
         <div className="mt-2 text-xs">Anos: {warning.years_detected.join(", ")}</div>
       ) : null}
-      {warning.samples?.length ? (
+      {samples.length ? (
         <div className="mt-2 space-y-2 text-xs">
-          {warning.samples.map((sample) => (
+          {samples.map((sample) => (
             <div key={`${sample.question_number}-${sample.sample}`} className="rounded-lg bg-black/5 px-3 py-2 dark:bg-white/5">
               <span className="font-semibold">Q{sample.question_number ?? "?"}</span>: {sample.sample}
             </div>
@@ -84,7 +85,7 @@ export function CandidateRow({ item }: { item: QuestionBankAdminCandidate }) {
       <td className="px-3 py-3 text-gray-500 dark:text-gray-400">{item.original_page ?? "-"}</td>
       <td className="px-3 py-3">
         <div className="font-medium text-gray-900 dark:text-gray-100">{item.status || "-"}</div>
-        <div className="text-xs text-gray-500 dark:text-gray-400">{item.question_status || "sem questao"}</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400">{item.question_status || "sem questão"}</div>
       </td>
       <td className="px-3 py-3 text-gray-600 dark:text-gray-300">{item.year ?? "-"}</td>
       <td className="px-3 py-3 text-gray-600 dark:text-gray-300">{item.institution || "-"}</td>

@@ -1,7 +1,7 @@
 import CronogramaClientPage from "./CronogramaClientPage";
 
 type PageProps = {
-  searchParams?: Promise<{ day?: string | string[] }>;
+  searchParams: Promise<{ day?: string | string[] }>;
 };
 
 function validIsoDay(value: string | string[] | undefined): string | null {

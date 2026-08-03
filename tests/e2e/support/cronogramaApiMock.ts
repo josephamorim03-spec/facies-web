@@ -375,7 +375,7 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
       });
     }
     if (method === "PATCH" && path === "/api/profile") {
-      const payload = request.postDataJSON() as { weekly_goal_questions?: number };
+      const payload = request.postDataJSON() as { weekly_goal_questions: number };
       if (typeof payload.weekly_goal_questions === "number") {
         db.weeklyGoal = payload.weekly_goal_questions;
       }
@@ -410,7 +410,7 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
         estimated_minutes: 2,
         reason_counts: [
           { reason: "overdue", label: "Esta atrasado e pode comecar a enfraquecer.", count: 2 },
-          { reason: "wrong_question", label: "Nasceu de uma questao errada.", count: 1 },
+          { reason: "wrong_question", label: "Nasceu de uma questão errada.", count: 1 },
         ],
         by_area: [
           { area: "CM", due_count: 3, new_count: 1, overdue_count: 2, total_eligible: 10 },
@@ -511,7 +511,7 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
       const taskId = path.split("/").pop() as string;
       const task = findTask(db, taskId);
       if (!task) return json(route, { detail: "Task not found" }, 404);
-      const payload = request.postDataJSON() as { status?: "pending" | "done"; due_date?: string };
+      const payload = request.postDataJSON() as { status: "pending" | "done"; due_date?: string };
       if (payload.due_date) {
         task.due_date = payload.due_date;
         task.due_at = toDateTimeFromISO(payload.due_date);
@@ -671,7 +671,7 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
       const studyId = path.split("/").pop() as string;
       const study = db.studies.find((s) => s.study_id === studyId);
       if (!study) return json(route, { detail: "Study not found" }, 404);
-      const payload = request.postDataJSON() as { total_questions?: number; correct_questions?: number };
+      const payload = request.postDataJSON() as { total_questions: number; correct_questions: number };
       if (typeof payload.total_questions === "number") study.total_questions = payload.total_questions;
       if (typeof payload.correct_questions === "number") study.correct_questions = payload.correct_questions;
       study.accuracy = study.total_questions > 0 ? (study.correct_questions / study.total_questions) * 100 : 0;

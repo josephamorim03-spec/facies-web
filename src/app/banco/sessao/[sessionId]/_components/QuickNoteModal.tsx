@@ -29,7 +29,7 @@ type QuickNoteModalProps = {
   noteIntent?: "rule" | "card";
   selectedOption?: QuestionBankOption | null;
   correctAnswer?: QuestionBankOption | null;
-  errorHypothesis?: string | null;
+  errorHypothesis: string | null;
   highlightContext?: QuestionTextHighlight[];
   onClose: () => void;
 };
@@ -48,11 +48,11 @@ export default function QuickNoteModal({
 }: QuickNoteModalProps) {
   const { token } = useAuthToken();
   const trimmedHypothesis = (errorHypothesis ?? "").trim();
-  const theme = (defaultTheme ?? "").trim().slice(0, 120) || "Questao do banco";
+  const theme = (defaultTheme ?? "").trim().slice(0, 120) || "Questão do banco";
   const isError = questionOutcome === "incorrect";
   const isCardIntent = noteIntent === "card" || (!isError && noteIntent !== "rule");
   const primaryLabel = isCardIntent ? "Criar card" : "Salvar regra";
-  const insightLabel = isCardIntent ? "Pergunta curta para revisar depois" : "Regra curta para nao errar de novo";
+  const insightLabel = isCardIntent ? "Pergunta curta para revisar depois" : "Regra curta para não errar de novo";
   const trapHighlight = highlightContext.find((highlight) => highlight.kind === "pegadinha");
   const keyHighlight = highlightContext.find((highlight) => highlight.kind === "ponto_chave");
   const trapText = compactText(trapHighlight?.selected_text);

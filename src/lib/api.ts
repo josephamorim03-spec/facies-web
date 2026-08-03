@@ -374,6 +374,18 @@ export type {
   LearningActionStartResult,
 } from "./api/domains/integration";
 
+export {
+  getCurrentPlan,
+  regeneratePlan,
+  listPlanActivities,
+  startPlanActivity,
+} from "./api/domains/study-plan";
+export type {
+  StudyPlan,
+  StudyPlanActivity,
+  StudyPlanActivityLaunch,
+} from "./api/domains/study-plan";
+
 // Calendar domain
 export {
   listEvents,

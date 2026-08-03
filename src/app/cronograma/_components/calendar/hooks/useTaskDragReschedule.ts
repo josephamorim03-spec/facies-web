@@ -10,6 +10,7 @@ import {
   TOUCH_GRID_TOLERANCE_PX,
   TOUCH_NEAREST_CELL_TOLERANCE_PX,
 } from "../constants";
+import { vibrateLongPress } from "../touchFeedback";
 
 const RESCHEDULE_NO_DISTURB_KEY = "cronograma_reschedule_no_disturb";
 const RESCHEDULE_WARN_COUNT_KEY = "cronograma_reschedule_warn_count";
@@ -28,7 +29,7 @@ export function useTaskDragReschedule({
   onRefresh: () => void;
   prevMonth: () => void;
   nextMonth: () => void;
-  onRescheduleSuccess?: (task: ReviewTask, fromISO: string, toISO: string) => void;
+  onRescheduleSuccess: (task: ReviewTask, fromISO: string, toISO: string) => void;
   onRescheduleError?: (task: ReviewTask, fromISO: string, toISO: string) => void;
 }) {
   const [dragTaskId, setDragTaskId] = useState<string | null>(null);
@@ -37,9 +38,6 @@ export function useTaskDragReschedule({
   const [taskInitialDates, setTaskInitialDates] = useState<Record<string, string>>({});
   const [touchDraggingTaskId, setTouchDraggingTaskId] = useState<string | null>(null);
   const [touchDragGhost, setTouchDragGhost] = useState<{ x: number; y: number; color: string; label: string } | null>(null);
-  const [isTouchDevice] = useState(() => (
-    typeof window === "undefined" ? true : (navigator.maxTouchPoints ?? 0) > 0
-  ));
   const [warnTask, setWarnTask] = useState<CalendarWarnTask>(null);
   const [noDisturb, setNoDisturb] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -434,13 +432,24 @@ export function useTaskDragReschedule({
           touchDragLastPoint.current = point;
           queueFinalize(point, moved);
         }
+        // preventDefault em pointermove nao segura o scroll nativo; so touch-action ou um
+        // touchmove nao-passivo seguram. Como a barra fica com touch-action: pan-y (para a
+        // pagina continuar rolando quando nao ha arrasto), um movimento vertical durante o
+        // arrasto viraria scroll e o navegador emitiria pointercancel, matando o arrasto no
+        // meio. Este listener existe so para cancelar esse scroll enquanto arrastamos.
+        function suppressNativeScroll(e: TouchEvent) {
+          if (touchDragTouchId.current === null) return;
+          if (e.cancelable) e.preventDefault();
+        }
         window.addEventListener("pointermove", onPointerMove, { passive: false });
         window.addEventListener("pointerup", onPointerFinish, true);
         window.addEventListener("pointercancel", onPointerFinish, true);
+        window.addEventListener("touchmove", suppressNativeScroll, { passive: false });
         touchDragHandlersRef.current = () => {
           window.removeEventListener("pointermove", onPointerMove);
           window.removeEventListener("pointerup", onPointerFinish, true);
           window.removeEventListener("pointercancel", onPointerFinish, true);
+          window.removeEventListener("touchmove", suppressNativeScroll);
           if (captureEl) {
             try {
               if (captureEl.hasPointerCapture(pointerId)) captureEl.releasePointerCapture(pointerId);
@@ -524,15 +533,6 @@ export function useTaskDragReschedule({
       void doReschedule(task, dragFromISO, iso);
     }
     clearDragState();
-  }
-
-  function vibrateLongPress() {
-    if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
-    try {
-      navigator.vibrate(12);
-    } catch {
-      // ignore
-    }
   }
 
   function cancelTouchLongPress() {
@@ -682,7 +682,6 @@ export function useTaskDragReschedule({
     touchDragGhost,
     taskDragOrigin,
     touchDragTouchId,
-    isTouchDevice,
     warnTask,
     warnCount,
     noDisturb,

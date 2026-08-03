@@ -91,6 +91,8 @@ export const STUDENT_ROUTES: StudentRouteConfig[] = [
     route(item.path, item.title, item.icon),
   ),
   route("/preferencias", "Preferências", "planning"),
+  route("/trilha", "Trilha", "planning"),
+  route("/onboarding", "Começar", "planning"),
   ...Object.entries(LEGACY_PATHS).flatMap(([intent, paths]) =>
     paths.map((path) => route(path, INTENTS[intent as StudentIntent].title, intent as StudentIntent)),
   ),

@@ -123,7 +123,7 @@ export function TodayDaySummarySection({
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
           <div className="min-w-0 flex-1">
             <h2 className="font-serif text-lg font-semibold text-ink">Atividades de hoje</h2>
-            <p className="mt-1 text-sm text-muted">Nao foi possivel carregar o resumo do dia.</p>
+            <p className="mt-1 text-sm text-muted">Não foi possível carregar o resumo do dia.</p>
           </div>
           <Link href={planningHref} className="shrink-0 text-xs font-semibold text-primary hover:underline">
             Planejamento

@@ -215,9 +215,9 @@ export default function CardsAdaptativosClientPage() {
     setError((overviewQuery.error as Error)?.message ?? "Erro ao carregar notas.");
   }, [overviewQuery.error, overviewQuery.isError]);
 
-  const refreshOverview = useCallback(async (options?: { final?: boolean; loading?: boolean }) => {
+  const refreshOverview = useCallback(async (option: { final?: boolean; loading?: boolean } = {}) => {
     if (!authReady) return;
-    if (options?.loading !== false) setFetchLoading(true);
+    if (option.loading !== false) setFetchLoading(true);
     try {
       const overview = await queryClient.fetchQuery({
         queryKey: queryKeys.cardsOverview(selectedAreaCode),
@@ -228,7 +228,7 @@ export default function CardsAdaptativosClientPage() {
         staleTime: 0,
       });
       setAvailableCount(overview.due_count);
-      if (options?.final) {
+      if (option.final) {
         setFinalTurboOverview(overview);
       } else {
         setTurboOverview(overview);
@@ -237,11 +237,11 @@ export default function CardsAdaptativosClientPage() {
       }
       setError("");
     } catch (e) {
-      if (!options?.final) {
+      if (!option.final) {
         setError((e as Error)?.message ?? "Erro ao carregar notas.");
       }
     } finally {
-      if (options?.loading !== false) setFetchLoading(false);
+      if (option.loading !== false) setFetchLoading(false);
     }
   }, [authReady, queryClient, selectedAreaCode, token]);
 

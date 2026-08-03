@@ -67,6 +67,13 @@ export type StudentTodayAction = {
   confidence: "low" | "medium" | "high";
   /** Grande area, quando a origem sabe qual e. Nulo = nao ha area. */
   area: string | null;
+  execution?: {
+    kind: "trainer_action" | "resume_session" | "href";
+    recommendation_id: string | null;
+    action_id: string | null;
+    session_id: string | null;
+    href: string | null;
+  } | null;
 };
 
 export type StudentToday = {

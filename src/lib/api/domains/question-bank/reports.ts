@@ -50,8 +50,8 @@ export async function reportQuestionProblem(
   token: string,
   questionId: string,
   payload: QuestionBankReportPayload,
-): Promise<{ result?: string; question_id?: string; open_reports?: number; flagged?: boolean }> {
-  return api<{ result?: string; question_id?: string; open_reports?: number; flagged?: boolean }>(
+): Promise<{ result?: string; question_id?: string; open_reports: number; flagged?: boolean }> {
+  return api<{ result?: string; question_id?: string; open_reports: number; flagged?: boolean }>(
     `/api/question-bank/questions/${encodeURIComponent(questionId)}/report`,
     { method: "POST", headers: authHeader(token), body: JSON.stringify(payload) },
   );

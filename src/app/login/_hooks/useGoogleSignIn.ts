@@ -100,7 +100,7 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
 
       function initGoogleButton() {
         try {
-          const gsi = window.google?.accounts?.id;
+          const gsi = window.google?.account.id;
           const container = googleButtonRef.current;
           if (!gsi || !container) return;
           if (!gsiConfigured) {
@@ -133,7 +133,7 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
       // populated synchronously by the onload event (common on slow connections).
       const waitForGoogle = () => {
         if (cancelled) return;
-        if (window.google?.accounts?.id) {
+        if (window.google?.account.id) {
           initGoogleButton();
           return;
         }
@@ -171,7 +171,7 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
         const stale = !iframe || iframe.getBoundingClientRect().width === 0;
         if (stale) {
           gsiLog("gsi_button_stale_on_focus");
-          if (window.google?.accounts?.id) initGoogleButton();
+          if (window.google?.account.id) initGoogleButton();
           else waitForGoogle();
         }
       };
@@ -187,7 +187,7 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
         window.removeEventListener("focus", revalidateOnFocus);
       };
 
-      if (window.google?.accounts?.id) {
+      if (window.google?.account.id) {
         initGoogleButton();
         return cleanup;
       }

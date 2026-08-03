@@ -278,13 +278,13 @@ const ADAPTIVE_SCHEDULE_RESPONSE = {
 
 async function mockDadosRelatoriosApi(
   page: Page,
-  overrides?: {
+  override: {
     directedStudiesResponse?: unknown;
     weeklyTimelineResponse?: unknown;
-  },
+  } = {},
 ) {
-  const directedStudiesResponse = overrides?.directedStudiesResponse ?? DIRECTED_STUDIES_RESPONSE;
-  const weeklyTimelineResponse = overrides?.weeklyTimelineResponse ?? WEEKLY_TIMELINE_RESPONSE;
+  const directedStudiesResponse = override.directedStudiesResponse ?? DIRECTED_STUDIES_RESPONSE;
+  const weeklyTimelineResponse = override.weeklyTimelineResponse ?? WEEKLY_TIMELINE_RESPONSE;
 
   await page.route("**/api/**", async (route) => {
     const request = route.request();

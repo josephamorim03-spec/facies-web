@@ -17,7 +17,7 @@ import { extractQuestionNumberFromQuestionId } from "./_lib/resultadosHelpers";
 
 export default function ResultadosPage() {
   const params = useParams<{ sessionId: string }>();
-  const sessionId = String(params?.sessionId ?? "");
+  const sessionId = String(params.sessionId ?? "");
   const [activeTab, setActiveTab] = useState<"correcao" | "analise">("correcao");
 
   const questionRefs = useRef<Record<number, HTMLElement | null>>({});
@@ -116,11 +116,11 @@ export default function ResultadosPage() {
 
   const handleAnalyzeQuestion = useCallback(async (
     wrongQuestion: WrongQuestionSummary,
-    opts?: { forceReanalyze?: boolean; minRecordId?: number },
+    opt: { forceReanalyze?: boolean; minRecordId?: number } = {},
   ) => {
     scrollToAnalysisRef.current = `${sessionId}_q${wrongQuestion.question_number}`;
     setActiveTab("analise");
-    await analysisFlow.handleAnalyzeQuestion(wrongQuestion, opts);
+    await analysisFlow.handleAnalyzeQuestion(wrongQuestion, opt);
   }, [analysisFlow, sessionId]);
 
   const handleGoToCorrection = useCallback((questionId: string) => {

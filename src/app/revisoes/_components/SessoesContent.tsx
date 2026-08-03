@@ -58,7 +58,7 @@ export function SessoesContent({ initialTab = "inacabadas" }: { initialTab?: Ses
       window.history.replaceState(
         window.history.state,
         "",
-        `/revisoes?${currentParams.toString()}${window.location.hash}`,
+        `/revisoesó${currentParams.toString()}${window.location.hash}`,
       );
     };
 

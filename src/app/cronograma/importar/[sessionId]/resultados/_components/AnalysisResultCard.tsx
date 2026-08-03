@@ -32,7 +32,7 @@ type AnalysisResultCardProps = {
   toggleDraftBody: (key: string) => void;
   onSaveDraftsForQuestion: (result: QuestionAnalysisResult) => Promise<void>;
   onGoToCorrection: (questionId: string) => void;
-  onReanalyze: (questionSummary: WrongQuestionSummary, opts?: { forceReanalyze?: boolean; minRecordId?: number }) => void;
+  onReanalyze: (questionSummary: WrongQuestionSummary, opt: { forceReanalyze?: boolean; minRecordId?: number }) => void;
   existingOverride: "aceitar_ia" | "anulada" | undefined;
   isLoadingOverride: boolean;
   onApplyOverride: (type: "aceitar_ia" | "anulada") => Promise<void>;
@@ -46,7 +46,7 @@ const EXISTING_MATCH_ORIGIN_LABEL: Record<string, string> = {
 };
 
 const EXISTING_SOURCE_ORIGIN_LABEL: Record<string, string> = {
-  analise_questao: "Via analise",
+  analise_questao: "Via análise",
   manual_caderno: "Manual",
 };
 

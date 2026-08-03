@@ -92,7 +92,7 @@ export function usePostExamReviewData({
       setReportingPosition(null);
       setReportReason("");
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Nao foi possivel denunciar a questao.");
+      setActionError(err instanceof Error ? err.message : "Não foi possível denunciar a questão.");
     } finally {
       setLocalBusy(false);
     }
@@ -114,7 +114,7 @@ export function usePostExamReviewData({
       );
       onSessionChange?.(updated);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Nao foi possivel atualizar o descarte.");
+      setActionError(err instanceof Error ? err.message : "Não foi possível atualizar o descarte.");
     } finally {
       setLocalBusy(false);
     }

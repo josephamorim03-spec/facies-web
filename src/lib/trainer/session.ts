@@ -24,7 +24,7 @@ type SessionStartFields = {
  */
 export function buildSessionCreateFromTrainerPayload(
   startPayload: SessionStartFields | null | undefined,
-  opts?: { performedAt?: string },
+  opt: { performedAt?: string },
 ): QuestionBankSessionCreatePayload {
   const sp = startPayload ?? {};
   const payload: QuestionBankSessionCreatePayload = {
@@ -42,7 +42,7 @@ export function buildSessionCreateFromTrainerPayload(
   if (sp.knowledge_node_ids && sp.knowledge_node_ids.length > 0) {
     payload.knowledge_node_ids = sp.knowledge_node_ids;
   }
-  if (opts?.performedAt) payload.performed_at = opts.performedAt;
+  if (opt.performedAt) payload.performed_at = opt.performedAt;
   return payload;
 }
 

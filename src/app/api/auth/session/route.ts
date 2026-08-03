@@ -92,7 +92,7 @@ async function tokenFromRequest(request: NextRequest): Promise<string> {
 
 function jsonError(code: string, status: number, requestId: string): NextResponse {
   return NextResponse.json(
-    { code, message: "Sessao invalida.", request_id: requestId },
+    { code, message: "Sessão inválida.", request_id: requestId },
     { status, headers: { "X-Request-Id": requestId } },
   );
 }

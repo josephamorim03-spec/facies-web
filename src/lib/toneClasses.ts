@@ -1,7 +1,7 @@
 /**
  * Fonte única do vocabulário de "tom" semântico da identidade KrosMed.
  * Cinco tons canônicos; dois presets de forma (pílula tonalizada e bloco de mensagem).
- * StatusBadge, Alert (e futuramente Toast) consomem daqui — um mapa só.
+ * StatusBadge, Alert (e futuramente Toast) consomem daqui — um mapa .
  */
 export type Tone = "neutral" | "info" | "positive" | "attention" | "critical";
 

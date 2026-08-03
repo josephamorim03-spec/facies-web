@@ -31,7 +31,7 @@ const GUIDED_REVIEW_OPTIONS: Array<[QuestionBankGuidedReviewValue, string]> = [
   ["yes", "Sim"],
   ["partial", "Parcial"],
   ["no", "Nao"],
-  ["unsure", "Nao sei"],
+  ["unsure", "Não sei"],
 ];
 
 const REPORT_LABELS: Record<QuestionBankReportType, string> = {
@@ -40,7 +40,7 @@ const REPORT_LABELS: Record<QuestionBankReportType, string> = {
   wrong_answer: "Gabarito errado",
   bad_structure: "Enunciado cortado",
   missing_options: "Alternativas quebradas",
-  truncated_or_merged_stem: "Questoes misturadas",
+  truncated_or_merged_stem: "Questões misturadas",
   missing_media: "Imagem/tabela faltando",
   wrong_metadata: "Metadados errados",
   outdated: "Desatualizada",
@@ -1008,7 +1008,7 @@ export default function FocusedQuestion({
                     hasPostAnswerReflection ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:text-ink",
                   )}
                 >
-                  {canNext ? "Proxima questao" : finalizeLabel ?? "Finalizar"}
+                  {canNext ? "Próxima questão" : finalizeLabel ?? "Finalizar"}
                 </button>
               )}
               <div className="flex flex-wrap gap-2">
@@ -1062,7 +1062,7 @@ export default function FocusedQuestion({
                       hasRuleComposerContent ? "text-ink" : "text-muted",
                     )}
                   >
-                    {ruleComposerOpen ? "Ocultar revisao" : "Revisao guiada"}
+                    {ruleComposerOpen ? "Ocultar revisão" : "Revisão guiada"}
                   </button>
                 )}
                 {onShowHistory && (
@@ -1081,7 +1081,7 @@ export default function FocusedQuestion({
             {item.needs_correction && ruleComposerOpen && (
               <div className="mt-4 rounded-lg border border-edge bg-paper p-3">
                 {guidedReviewError && !guidedReview && (
-                  <p className="mb-2 text-xs text-muted">Nao foi possivel carregar a revisao guiada. Voce ainda pode salvar uma regra.</p>
+                  <p className="mb-2 text-xs text-muted">Não foi possível carregar a revisão guiada. Você ainda pode salvar uma regra.</p>
                 )}
                 {guidedReview?.eligible && guidedReview.checkpoints.length > 0 && (
                   <div className="mb-3 space-y-2">
@@ -1111,7 +1111,7 @@ export default function FocusedQuestion({
                   </div>
                 )}
                 <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-muted" htmlFor="focused-question-correction">
-                  Regra para nao errar de novo
+                  Regra para não errar de novo
                 </label>
                 <textarea
                   id="focused-question-correction"
@@ -1354,7 +1354,7 @@ export default function FocusedQuestion({
                 <input type="checkbox" checked={prefs.timerVisible} onChange={(e) => updatePrefs({ timerVisible: e.target.checked })} className="h-4 w-4 accent-ink" />
               </label>
               <label className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-surface px-3 py-2">
-                <span>Fonte da questao</span>
+                <span>Fonte da questão</span>
                 <input type="checkbox" checked={prefs.sourceVisible} onChange={(e) => updatePrefs({ sourceVisible: e.target.checked })} className="h-4 w-4 accent-ink" />
               </label>
               <label className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-surface px-3 py-2">
@@ -1377,7 +1377,7 @@ export default function FocusedQuestion({
                 onClick={() => updatePrefs({ presentationMode: defaultPresentationMode, timerVisible: true, sourceVisible: false, autoReveal: false })}
                 className="w-full rounded-lg border border-edge bg-surface px-3 py-2 text-left text-muted hover:text-ink"
               >
-                Restaurar padrao
+                Restaurar padrão
               </button>
             </div>
           </aside>
@@ -1391,7 +1391,7 @@ export default function FocusedQuestion({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Contexto</p>
-                <h2 className="mt-1 font-serif text-xl font-semibold text-ink">Por que esta questao?</h2>
+                <h2 className="mt-1 font-serif text-xl font-semibold text-ink">Por que esta questão?</h2>
               </div>
               <button type="button" onClick={closeWhy} className="rounded-lg border border-edge px-2 py-1 text-xs text-muted hover:text-ink">
                 Fechar

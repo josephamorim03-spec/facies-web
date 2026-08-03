@@ -56,7 +56,7 @@ export type AnalysisQuestionInput = {
   theme?: string;
   source_exam?: string;
   instruction?: string;
-  image_attachment_refs?: string[];
+  image_attachment_refs: string[];
   has_image: boolean;
 };
 

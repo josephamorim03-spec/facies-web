@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
-
 import { AreaIcon } from "@/components/AreaIcon";
 import { displayAreaLabel, resolveDisplayArea } from "@/lib/areaDisplay";
 import type { StudentTodayAction } from "@/lib/api";
+import { TodayActionCTA } from "./TodayActionCTA";
 
 function sourceLabel(source: string): string {
   const labels: Record<string, string> = {
@@ -25,7 +24,7 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
 
   return (
     <section
-      aria-label="Proxima acao"
+      aria-label="Próxima ação"
       className="overflow-hidden rounded-surface border border-edge bg-paper"
     >
       <div className="flex flex-col sm:flex-row sm:items-stretch">
@@ -36,7 +35,7 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
         <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 py-5 sm:px-6 sm:py-6 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0 space-y-3">
             <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-              <span>Sua proxima acao</span>
+              <span>Sua próxima ação</span>
               <span aria-hidden="true">/</span>
               <span>{sourceLabel(action.source)}</span>
               {action.estimated_minutes !== null && action.estimated_minutes > 0 ? (
@@ -55,12 +54,12 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
               </p>
             </div>
           </div>
-          <Link
-            href={action.href}
+          <TodayActionCTA
+            action={action}
             className="inline-flex min-h-12 w-full shrink-0 items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:w-auto"
           >
             {action.cta_label}
-          </Link>
+          </TodayActionCTA>
         </div>
       </div>
     </section>

@@ -13,9 +13,9 @@ const LANE_LABELS: Record<string, string> = {
   structure_answer: "Estrutura/gabarito",
   student_report: "Reports de estudantes",
   image_ocr: "Imagem/OCR",
-  topic_conflict: "Conflito de topico",
+  topic_conflict: "Conflito de tópico",
   pipeline_failure: "Falha de pipeline",
-  editorial_review: "Revisao editorial",
+  editorial_review: "Revisão editorial",
 };
 
 type Props = {
@@ -26,7 +26,7 @@ type Props = {
   onResolve: (
     questionId: string,
     action: QuestionBankReviewResolutionAction,
-    options?: QuestionBankReviewResolutionOptions,
+    option: QuestionBankReviewResolutionOptions,
   ) => Promise<void>;
 };
 
@@ -85,7 +85,7 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
   return (
     <div className="mt-4 space-y-3 rounded-lg border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-800/40 dark:bg-amber-950/20">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200">Revisao humana ({total})</h3>
+        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200">Revisão humana ({total})</h3>
         <div className="flex items-center gap-2">
           <button onClick={() => void onRefresh()} className="text-xs font-semibold text-amber-700 hover:text-amber-900 dark:text-amber-300">
             Atualizar
@@ -102,7 +102,7 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
 
       {items.length === 0 ? (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-          Nenhuma questao em revisao.
+          Nenhuma questão em revisão.
         </div>
       ) : null}
 
@@ -135,7 +135,7 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
                 </div>
                 {item.suggested_action || item.ai_read_summary?.adaptive_impact ? (
                   <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300">
-                    {item.suggested_action ? <div><span className="font-semibold">Acao:</span> {item.suggested_action}</div> : null}
+                    {item.suggested_action ? <div><span className="font-semibold">Ação:</span> {item.suggested_action}</div> : null}
                     {item.ai_read_summary?.adaptive_impact ? <div className="mt-1"><span className="font-semibold">Impacto:</span> {item.ai_read_summary.adaptive_impact}</div> : null}
                   </div>
                 ) : null}
@@ -175,7 +175,7 @@ export default function ReviewQueuePanel({ items, total, onClose, onRefresh, onR
                 ) : null}
 
                 <QuestionFullContext
-                  eyebrow="Questao em revisao"
+                  eyebrow="Questão em revisão"
                   stem={item.stem}
                   alternatives={alternatives}
                   correctAnswer={item.answer}

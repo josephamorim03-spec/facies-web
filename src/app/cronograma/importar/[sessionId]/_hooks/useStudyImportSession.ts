@@ -81,7 +81,7 @@ export type StudyImportSessionRefs = {
 export type StudyImportSessionActions = {
   refreshSession: () => Promise<void>;
   loadQuestions: () => Promise<void>;
-  goToPage: (nextPage: number, options?: { targetQuestionNumber?: number | null }) => void;
+  goToPage: (nextPage: number, option?: { targetQuestionNumber?: number | null }) => void;
   jumpToQuestionNumber: (questionNumber: number, closeDrawer?: boolean) => void;
   handleSelectOption: (question: StudyImportQuestion, letter: OptionLetter) => Promise<void>;
   handleToggleEliminate: (question: StudyImportQuestion, letter: OptionLetter) => Promise<void>;
@@ -119,7 +119,7 @@ export function useStudyImportSession(): [
 ] {
   const router = useRouter();
   const params = useParams<{ sessionId: string }>();
-  const sessionId = String(params?.sessionId ?? "");
+  const sessionId = String(params.sessionId ?? "");
 
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -503,10 +503,10 @@ export function useStudyImportSession(): [
     }
   }, [currentAnchorNumber, scrollQuestionIntoView]);
 
-  function goToPage(nextPage: number, options?: { targetQuestionNumber?: number | null }) {
+  function goToPage(nextPage: number, option: { targetQuestionNumber?: number | null } = {}) {
     const totalPages = Math.max(1, questionPage?.total_pages ?? 1);
     const boundedPage = Math.max(1, Math.min(totalPages, nextPage));
-    const targetQuestionNumber = options?.targetQuestionNumber ?? null;
+    const targetQuestionNumber = option.targetQuestionNumber ?? null;
     if (boundedPage === page) {
       const node =
         targetQuestionNumber !== null

@@ -193,7 +193,7 @@ export async function mockStudyImportApi(page: Page): Promise<ImportMockState> {
       if (!question) return json(route, { detail: "Question not found" }, 404);
       const payload = request.postDataJSON() as {
         selected_option?: ImportOption | null;
-        eliminated_options?: ImportOption[] | null;
+        eliminated_options: ImportOption[] | null;
         doubtful?: boolean;
       };
       if ("selected_option" in payload) {

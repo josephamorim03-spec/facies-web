@@ -51,11 +51,11 @@ export function normalizeQuestionResult(result: QuestionAnalysisResult): Questio
   const dedupExisting: ExistingCadernoDraft[] = [];
   const seenExisting = new Set<string>();
   for (const existing of result.existing_caderno_drafts ?? []) {
-    const noteId = String(existing.note_id || "").trim();
+    const noteIds = String(existing.note_id || "").trim();
     const signature = String(existing.concept_signature || "").trim().toLowerCase();
     const conceptKey = String(existing.concept_key || "").trim().toLowerCase();
-    const dedupKey = noteId
-      ? `note:${noteId}`
+    const dedupKey = noteIds
+      ? `note:${noteIds}`
       : signature
         ? `sig:${signature}`
         : conceptKey
@@ -80,12 +80,12 @@ export function shouldReplaceAnalysisResult(current: QuestionAnalysisResult, can
   if (candidate.status === "completed" && current.status === "completed") {
     const currentHasPayload = Boolean(current.analysis)
       || Boolean(current.usage)
-      || (current.caderno_drafts?.length ?? 0) > 0
-      || (current.existing_caderno_drafts?.length ?? 0) > 0;
+      || (current.caderno_drafts.length ?? 0) > 0
+      || (current.existing_caderno_drafts.length ?? 0) > 0;
     const candidateHasPayload = Boolean(candidate.analysis)
       || Boolean(candidate.usage)
-      || (candidate.caderno_drafts?.length ?? 0) > 0
-      || (candidate.existing_caderno_drafts?.length ?? 0) > 0;
+      || (candidate.caderno_drafts.length ?? 0) > 0
+      || (candidate.existing_caderno_drafts.length ?? 0) > 0;
     if (candidateHasPayload && !currentHasPayload) return true;
   }
   return false;

@@ -127,7 +127,7 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
                   <p className="text-xs font-semibold text-ink">{block.label}</p>
                   <p className="mt-1 text-xs text-muted">{block.why_now}</p>
                   <p className="mt-2 text-xs text-primary">
-                    {block.recommended_question_count} questoes · ~{block.estimated_minutes} min
+                    {block.recommended_question_count} questões · ~{block.estimated_minutes} min
                   </p>
                 </Link>
               ))}
@@ -212,7 +212,7 @@ export function BancoDeQuestoesInsights({ longitudinal, loading }: BancoDeQuesto
               ].filter(Boolean);
 
               return (
-                <li key={w.trap_pattern} className="border border-edge p-3">
+                <li key={w.trap_patterns} className="border border-edge p-3">
                   <p className="truncate text-xs font-semibold text-ink">{w.label}</p>
                   <p className="mt-1 text-xs text-muted">{meta.join(" · ")}</p>
                   {mastery !== null && (

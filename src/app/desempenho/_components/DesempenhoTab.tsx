@@ -144,7 +144,7 @@ type Props = {
   handleBarClick: (area: Area) => void;
   diagnosis: StudyPerformanceSummary["diagnosis"];
   fullExamBanks: FullExamBankSummary[];
-  showDiagnosis?: boolean;
+  showDiagnosis: boolean;
   healthScore?: number | null;
 };
 

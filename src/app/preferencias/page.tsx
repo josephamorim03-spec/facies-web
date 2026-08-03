@@ -279,7 +279,7 @@ export default function PreferenciasPage() {
       if (eventCadence === "event") setEventDate("");
       setEvents(await listEvents(token));
     } catch (cause) {
-      setEventError(getErrorMessage(cause, "Nao foi possivel adicionar o compromisso."));
+      setEventError(getErrorMessage(cause, "Não foi possível adicionar o compromisso."));
     } finally {
       setEventSaving(false);
     }
@@ -292,7 +292,7 @@ export default function PreferenciasPage() {
       await deleteEvent(token, id, { scope: "future", effective_from: currentTodayISO });
       setEvents(await listEvents(token));
     } catch (cause) {
-      setEventError(getErrorMessage(cause, "Nao foi possivel remover o compromisso."));
+      setEventError(getErrorMessage(cause, "Não foi possível remover o compromisso."));
     }
   }
 
@@ -382,7 +382,7 @@ export default function PreferenciasPage() {
                       placeholder="?"
                       className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none"
                     />
-                    <span className="text-xs text-muted">questoes</span>
+                    <span className="text-xs text-muted">questões</span>
                   </div>
                 </label>
               </div>

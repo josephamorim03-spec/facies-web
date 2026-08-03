@@ -26,7 +26,6 @@ export function CalendarGrid({
   taskDragOrigin,
   touchDragTouchId,
   touchDraggingTaskId,
-  isTouchDevice,
   onMonthGridTouchStart,
   onMonthGridTouchMove,
   onMonthGridTouchEnd,
@@ -65,7 +64,6 @@ export function CalendarGrid({
   taskDragOrigin: MutableRefObject<"touch" | "mouse" | null>;
   touchDragTouchId: MutableRefObject<number | null>;
   touchDraggingTaskId: string | null;
-  isTouchDevice: boolean;
   onMonthGridTouchStart: (e: React.TouchEvent<HTMLDivElement>) => void;
   onMonthGridTouchMove: (e: React.TouchEvent<HTMLDivElement>) => void;
   onMonthGridTouchEnd: () => void;
@@ -351,6 +349,7 @@ export function CalendarGrid({
                     data-testid="calendar-event-work-icon"
                     data-cell-iso={iso}
                     data-event-status={isWorkCompleted ? "completed" : "active"}
+                    data-calendar-swipe-ignore={canDragWorkEvent ? "true" : undefined}
                     role="button"
                     tabIndex={interactive ? 0 : -1}
                     draggable={interactive && canDragWorkEvent}
@@ -387,6 +386,7 @@ export function CalendarGrid({
                     data-testid="calendar-event-other-icon"
                     data-cell-iso={iso}
                     data-event-status={isOtherCompleted ? "completed" : "active"}
+                    data-calendar-swipe-ignore={canDragOtherEvent ? "true" : undefined}
                     role="button"
                     tabIndex={interactive ? 0 : -1}
                     draggable={interactive && canDragOtherEvent}
@@ -514,26 +514,30 @@ export function CalendarGrid({
                   const fontSize = showDayDetail ? "9px" : "10px";
                   const chipFontSize = showDayDetail ? "8px" : "9px";
                   const revNum = dot.task ? (taskRevisionMap?.get(dot.task.task_id) ?? 1) : 1;
+                  const canDragTask = interactive && !showDayDetail && isPending && Boolean(dot.task);
                   return (
                     <div
                       key={dot.key}
                       data-testid="calendar-day-dot"
                       data-dot-kind={dot.kind}
                       data-calendar-task-item={dot.task ? "true" : undefined}
-                      draggable={interactive && !showDayDetail && isPending && !!dot.task && !isTouchDevice}
+                      // Um gesto que comeca sobre uma barra arrastavel nunca pode virar swipe de mes:
+                      // sem isto o touchstart borbulha ate a grade e o mes inteiro desliza junto.
+                      data-calendar-swipe-ignore={canDragTask ? "true" : undefined}
+                      draggable={canDragTask}
                       title={dot.tooltip}
                       onClick={interactive && dot.popupTarget ? (e) => {
                         e.stopPropagation();
                         onBarClick?.(dot.popupTarget!, (e.currentTarget as HTMLElement).getBoundingClientRect());
                       } : undefined}
                       onContextMenu={dot.task ? (e) => e.preventDefault() : undefined}
-                      onTouchStart={interactive && !showDayDetail && isPending && dot.task ? (e) => {
+                      onTouchStart={canDragTask ? (e) => {
                         startTouchDrag(e, dot.task!, iso, dot.color);
                       } : undefined}
-                      onPointerDown={interactive && !showDayDetail && isPending && dot.task ? (e) => {
+                      onPointerDown={canDragTask ? (e) => {
                         startPointerTouchDrag(e, dot.task!, iso, dot.color);
                       } : undefined}
-                      onDragStart={interactive && !showDayDetail && isPending && dot.task ? (e) => {
+                      onDragStart={canDragTask ? (e) => {
                         if (touchDragTouchId.current !== null || taskDragOrigin.current === "touch") {
                           e.preventDefault();
                           return;
@@ -541,7 +545,7 @@ export function CalendarGrid({
                         e.stopPropagation();
                         beginTaskDrag(dot.task!, iso);
                       } : undefined}
-                      onDragEnd={interactive && !showDayDetail && isPending && dot.task ? () => {
+                      onDragEnd={canDragTask ? () => {
                         if (taskDragOrigin.current === "touch" || touchDragTouchId.current !== null) return;
                         clearDragState();
                       } : undefined}

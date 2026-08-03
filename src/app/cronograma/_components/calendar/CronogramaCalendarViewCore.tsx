@@ -250,7 +250,6 @@ export function CronogramaCalendarView({
     touchDragGhost,
     taskDragOrigin,
     touchDragTouchId,
-    isTouchDevice,
     warnTask,
     warnCount,
     noDisturb,
@@ -584,7 +583,6 @@ export function CronogramaCalendarView({
                 taskDragOrigin={taskDragOrigin}
                 touchDragTouchId={touchDragTouchId}
                 touchDraggingTaskId={touchDraggingTaskId}
-                isTouchDevice={isTouchDevice}
                 onMonthGridTouchStart={handleMonthGridTouchStart}
                 onMonthGridTouchMove={handleMonthGridTouchMove}
                 onMonthGridTouchEnd={handleMonthGridTouchEnd}
@@ -632,7 +630,6 @@ export function CronogramaCalendarView({
                   taskDragOrigin={taskDragOrigin}
                   touchDragTouchId={touchDragTouchId}
                   touchDraggingTaskId={null}
-                  isTouchDevice={isTouchDevice}
                   onMonthGridTouchStart={handleMonthGridTouchStart}
                   onMonthGridTouchMove={handleMonthGridTouchMove}
                   onMonthGridTouchEnd={handleMonthGridTouchEnd}

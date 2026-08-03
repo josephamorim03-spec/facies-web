@@ -54,7 +54,7 @@ type AnalysisTabProps = {
   wrongByNumber: Map<number, WrongQuestionSummary>;
   fullQuestionByNumber: Map<number, StudyImportQuestion>;
   onGoToCorrection: (questionId: string) => void;
-  onAnalyzeQuestion: (wq: WrongQuestionSummary, opts?: { forceReanalyze?: boolean; minRecordId?: number }) => void | Promise<void>;
+  onAnalyzeQuestion: (wq: WrongQuestionSummary, opt: { forceReanalyze?: boolean; minRecordId?: number }) => void | Promise<void>;
   selectedDrafts: Set<string>;
   savedDrafts: Set<string>;
   expandedDraftBodies: Set<string>;

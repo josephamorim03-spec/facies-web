@@ -26,6 +26,8 @@ export type LearningActionStartResult = {
   review_task_id: string | null;
   event_id: string | null;
   blocked_reason: string | null;
+  launch_status: string | null;
+  fallback_reason: string | null;
 };
 
 export async function getCapabilities(token: string): Promise<CapabilitiesResponse> {

@@ -288,7 +288,7 @@ export default function ImportSessionPage() {
       {/* Loading / Error / Empty */}
       {loading && <p className="text-sm text-muted">Carregando...</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
-      {!loading && (questionPage?.items?.length ?? 0) === 0 && (
+      {!loading && (questionPage?.items.length ?? 0) === 0 && (
         <p className="text-sm text-muted">Nenhuma questão encontrada.</p>
       )}
 

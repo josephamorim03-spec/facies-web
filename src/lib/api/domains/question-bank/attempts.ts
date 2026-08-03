@@ -17,7 +17,7 @@ export async function recordQuestionBankAttempt(
     time_ms?: number | null;
     doubtful?: boolean;
     confidence_self_rating?: number | null;
-    eliminated_options?: QuestionBankOption[] | null;
+    eliminated_options: QuestionBankOption[] | null;
   },
 ): Promise<QuestionBankSession> {
   return api<QuestionBankSession>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/attempt`, { method: "PUT", headers: authHeader(token), body: JSON.stringify(payload) });

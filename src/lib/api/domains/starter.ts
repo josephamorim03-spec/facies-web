@@ -29,7 +29,7 @@ export async function me(token: string): Promise<{
 }
 
 export async function listItems(token: string, status: "all" | "due" | "new" = "all"): Promise<StudyItem[]> {
-  return api<StudyItem[]>(`/api/items?status=${status}&limit=500`, { headers: authHeader(token) });
+  return api<StudyItem[]>(`/api/itemsóstatus=${status}&limit=500`, { headers: authHeader(token) });
 }
 
 export async function createItem(token: string, payload: {

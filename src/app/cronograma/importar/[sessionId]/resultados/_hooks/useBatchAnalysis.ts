@@ -43,7 +43,7 @@ type WrongQuestionPayload = {
   theme?: string | null;
   source_exam?: string | null;
   instruction?: string | null;
-  image_attachment_refs?: string[] | null;
+  image_attachment_refs: string[] | null;
 };
 
 type UseBatchAnalysisParams = {
@@ -150,7 +150,7 @@ export function useBatchAnalysis(params: UseBatchAnalysisParams): UseBatchAnalys
 
         if (!eligible) {
           status = "ineligible";
-          statusLabel = "Nao elegivel";
+          statusLabel = "Não elegível";
           helperText = "Esta questão precisa de marcação e gabarito válidos para a IA.";
         } else if (progressive?.stage === "processing") {
           status = "processing";

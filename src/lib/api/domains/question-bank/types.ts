@@ -136,8 +136,8 @@ export type QuestionBankAvailability = {
   unanswered_count: number;
   available_count: number;
   max_selectable: number;
-  answer_status: QuestionBankAnswerStatus;
-  correction_status: QuestionBankCorrectionStatus;
+  answer_status?: QuestionBankAnswerStatus;
+  correction_status?: QuestionBankCorrectionStatus;
 };
 
 export type QuestionBankAttemptStats = {
@@ -269,6 +269,7 @@ export type QuestionBankAreaReadiness = {
 
 export type QuestionBankExamState = {
   simulation_count: number;
+  question_count: number;
   accuracy: number | null;
   avg_time_ms: number | null;
   slow_rate: number | null;
@@ -394,7 +395,7 @@ export type QuestionBankQuestion = {
   metadata: Record<string, unknown>;
   source: Record<string, unknown>;
   knowledge_nodes: QuestionBankNode[];
-  attempt_stats?: QuestionBankAttemptStats | null;
+  attempt_stats: QuestionBankAttemptStats | null;
   bookmarked?: boolean;
 };
 
@@ -431,7 +432,7 @@ export type QuestionBankSessionItem = {
   needs_correction: boolean;
   correct_answer: QuestionBankOption | null;
   is_correct: boolean | null;
-  distractor_diagnosis?: Record<string, string>;
+  distractor_diagnosis: Record<string, string>;
   cognitive_signal?: QuestionBankCognitiveSignal | null;
   difficulty_estimate?: number | null;
   pedagogical_profile?: Record<string, unknown>;
@@ -442,7 +443,7 @@ export type QuestionBankSessionItem = {
   student_trust_weight?: number | null;
   primary_microcompetency_label?: string | null;
   anchor_objective_label?: string | null;
-  ai_request_status?: "idle" | "cached" | "queued" | "running" | "blocked_by_quality" | "completed";
+  ai_request_status: "idle" | "cached" | "queued" | "running" | "blocked_by_quality" | "completed";
   ai_request_capability?: QuestionBankAiRequestCapability | null;
   adaptive_explanation?: { title: string; reasons: string[] } | null;
   editorial_quality?: { badge: string; message: string | null } | null;
@@ -455,8 +456,8 @@ export type QuestionBankSessionItem = {
   exclusion_reason: string | null;
   exclusion_note: string | null;
   excluded_at: string | null;
-  attempt_stats?: QuestionBankAttemptStats | null;
-  text_highlights?: QuestionTextHighlight[];
+  attempt_stats: QuestionBankAttemptStats | null;
+  text_highlights: QuestionTextHighlight[];
   post_answer_reflection?: QuestionPostAnswerReflection | null;
 };
 
@@ -465,6 +466,8 @@ export type QuestionBankSession = {
   status: QuestionBankSessionStatus;
   mode: QuestionBankMode;
   resolution_mode: QuestionBankResolutionMode;
+  session_purpose: QuestionBankSessionPurpose;
+  session_purpose_inferred: boolean;
   session_kind: QuestionBankSessionKind;
   feedback_timing: QuestionBankFeedbackTiming;
   scoring_mode: QuestionBankScoringMode;
@@ -514,7 +517,7 @@ export type QuestionBankLongitudinalNode = {
   retention_score: number;
   days_since_last_seen: number | null;
   last_error_at: string | null;
-  recommended_block?: QuestionBankRecommendedBlock | null;
+  recommended_blocks?: QuestionBankRecommendedBlock | null;
 };
 
 export type QuestionBankRecommendedBlock = {
@@ -534,7 +537,7 @@ export type QuestionBankRecommendedBlock = {
 };
 
 export type QuestionBankAnchorObjectiveWeakness = {
-  trap_pattern: string;
+  trap_patterns: string;
   label: string;
   error_count: number;
   knowledge_node_id?: string | null;
@@ -556,8 +559,8 @@ export type QuestionBankLongitudinalDiagnosis = {
   trap_sensitivity: number;
   overconfidence_score: number;
   impulsive_rate: number;
-  anchor_objective_weaknesses?: QuestionBankAnchorObjectiveWeakness[];
-  recommended_blocks?: QuestionBankRecommendedBlock[];
+  anchor_objective_weaknesses: QuestionBankAnchorObjectiveWeakness[];
+  recommended_blocks: QuestionBankRecommendedBlock[];
 };
 
 export type QuestionBankCorrectionItem = {
@@ -573,7 +576,7 @@ export type QuestionBankCorrectionItem = {
 export type QuestionBankFinalizeResult = FinalizationResult & {
   created_tasks: ReviewTask[];
   session: QuestionBankSession;
-  recommended_topics?: string[];
+  recommended_topics: string[];
 };
 
 export type QuestionBankAiRequestPreview = {
@@ -699,7 +702,17 @@ export type QuestionBankSessionCreatePayload = {
   correction_status?: QuestionBankCorrectionStatus;
   performed_at?: string;
   review_task_id?: string;
+  session_purpose?: "diagnostic";
+  diagnostic_area_quota?: Record<string, number>;
+  diagnostic_area_counts?: Record<string, number>;
+  time_limit_minutes?: number;
 };
+
+export type QuestionBankSessionPurpose =
+  | "diagnostic"
+  | "adaptive_practice"
+  | "adaptive_simulation"
+  | "institutional_exam";
 
 export type QuestionBankSessionKind =
   | "kros"

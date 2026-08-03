@@ -237,7 +237,7 @@ export default function PipelineDiagnosticsPanel({
     }
   }
 
-  const formatAge = (seconds?: number | null) => {
+  const formatAge = (seconds: number | null) => {
     if (!seconds || seconds <= 0) return "-";
     if (seconds < 60) return `${seconds}s`;
     const minutes = Math.floor(seconds / 60);
@@ -246,6 +246,8 @@ export default function PipelineDiagnosticsPanel({
     const remainder = minutes % 60;
     return remainder ? `${hours}h ${remainder}min` : `${hours}h`;
   };
+
+  if (!pipelineStatus || !readiness) return null;
 
   return (
     <div className="space-y-5">
@@ -536,18 +538,18 @@ export default function PipelineDiagnosticsPanel({
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
             <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Readiness</div>
             <div className="mt-3 text-sm text-gray-700 dark:text-gray-200">
-              <div>Status: <span className="font-semibold">{readiness?.status || "-"}</span></div>
-              <div>Banco: <span className="font-semibold">{readiness?.database || "-"}</span></div>
-              <div>LLM: <span className="font-semibold">{readiness?.llm_enabled ? "on" : "off"}</span></div>
-              <div>Auto: <span className="font-semibold">{readiness?.auto_pipeline_enabled ? "on" : "off"}</span></div>
-              <div>Workers: <span className="font-semibold">{readiness?.pipeline_workers ?? "-"}</span></div>
+              <div>Status: <span className="font-semibold">{readiness.status || "-"}</span></div>
+              <div>Banco: <span className="font-semibold">{readiness.database || "-"}</span></div>
+              <div>LLM: <span className="font-semibold">{readiness.llm_enabled ? "on" : "off"}</span></div>
+              <div>Auto: <span className="font-semibold">{readiness.auto_pipeline_enabled ? "on" : "off"}</span></div>
+              <div>Workers: <span className="font-semibold">{readiness.pipeline_workers ?? "-"}</span></div>
             </div>
           </div>
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
             <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Providers</div>
             <div className="mt-3 space-y-2 text-sm text-gray-700 dark:text-gray-200">
-              <div>Cheap: <span className="font-semibold">{readiness?.providers.cheap.model || "-"}</span></div>
-              <div>Strong: <span className="font-semibold">{readiness?.providers.strong.model || "-"}</span></div>
+              <div>Cheap: <span className="font-semibold">{readiness.providers.cheap.model || "-"}</span></div>
+              <div>Strong: <span className="font-semibold">{readiness.providers.strong.model || "-"}</span></div>
             </div>
           </div>
         </div>

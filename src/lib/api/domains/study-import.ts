@@ -320,7 +320,7 @@ export async function createStudyImportSession(
     full_exam_type?: FullExamType;
     user_weight?: number;
     performed_at?: string;
-    attachment_ref: string;
+    attachment_refs: string;
     review_task_id?: string;
   },
 ): Promise<StudyImportSessionCreateResult> {
@@ -375,17 +375,17 @@ export async function waitForStudyImportSessionJob(
     if (job.status === "succeeded") {
       const session = job.result?.session;
       if (isStudyImportSession(session)) return session;
-      throw new Error("Importacao concluida sem sessao valida.");
+      throw new Error("Importação concluída sem sessão válida.");
     }
     if (job.status === "failed") {
-      throw new Error(job.error || "Importacao falhou durante o processamento.");
+      throw new Error(job.error || "Importação falhou durante o processamento.");
     }
 
     const remainingMs = timeoutMs - (Date.now() - startedAt);
     await waitForPollInterval(Math.min(pollIntervalMs, Math.max(0, remainingMs)), options?.signal);
   }
 
-  throw new Error("Importacao ainda esta em processamento. Tente novamente em instantes.");
+  throw new Error("Importação ainda est? em processamento. Tente novamente em instantes.");
 }
 
 export async function getStudyImportSession(
@@ -408,7 +408,7 @@ export async function listStudyImportSessionQuestions(
   });
   if (params.only_unanswered) q.set("only_unanswered", "true");
   return api<StudyImportQuestionPage>(
-    `/api/studies/import/sessions/${sessionId}/questions?${q.toString()}`,
+    `/api/studies/import/sessions/${sessionId}/questionsó${q.toString()}`,
     { headers: authHeader(token) },
   );
 }

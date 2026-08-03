@@ -120,13 +120,13 @@ export function resolveIndexFromClientX(
   element: HTMLDivElement | null,
   count: number,
   mode: "point" | "band",
-  insets?: { left?: number; right?: number },
+  inset: { left?: number; right?: number },
 ): number | null {
   if (!element || count <= 0) return null;
   const rect = element.getBoundingClientRect();
   if (rect.width <= 0) return null;
-  const leftInset = Math.max(0, Number(insets?.left ?? 0));
-  const rightInset = Math.max(0, Number(insets?.right ?? 0));
+  const leftInset = Math.max(0, Number(inset.left ?? 0));
+  const rightInset = Math.max(0, Number(inset.right ?? 0));
   const interactiveWidth = Math.max(1, rect.width - leftInset - rightInset);
   const rawX = clientX - rect.left - leftInset;
   const relativeX = Math.max(0, Math.min(interactiveWidth, rawX));
@@ -492,13 +492,13 @@ export function computeExplodedLabelPlacement(frame: ChartFrame, point: ChartPoi
 export function renderWeekTickLabel(
   props: WeekTickProps,
   weekIndexByLabel: Map<string, number>,
-  options?: { activeWeekIndex?: number | null; activeFill?: string; defaultFill?: string },
+  option: { activeWeekIndex?: number | null; activeFill?: string; defaultFill?: string },
 ) {
-  const tickLabel = typeof props?.payload?.value === "string" ? props.payload.value : "";
+  const tickLabel = typeof props.payload?.value === "string" ? props.payload.value : "";
   const mappedWeekIndex = tickLabel ? weekIndexByLabel.get(tickLabel) : undefined;
-  const fallbackIndex = typeof props?.payload?.index === "number" ? props.payload.index : -1;
+  const fallbackIndex = typeof props.payload?.index === "number" ? props.payload.index : -1;
   const weekIndex = typeof mappedWeekIndex === "number" ? mappedWeekIndex : fallbackIndex;
-  const isActive = typeof options?.activeWeekIndex === "number" && weekIndex === options.activeWeekIndex;
+  const isActive = typeof option.activeWeekIndex === "number" && weekIndex === option.activeWeekIndex;
   const tickX = Number(props.x);
   const tickY = Number(props.y);
   if (!Number.isFinite(tickX) || !Number.isFinite(tickY)) return null;
@@ -510,7 +510,7 @@ export function renderWeekTickLabel(
       y={tickY + 2}
       textAnchor="middle"
       dominantBaseline="hanging"
-      fill={isActive ? (options?.activeFill ?? "#ffffff") : (options?.defaultFill ?? CHART_MUTED)}
+      fill={isActive ? (option.activeFill ?? "#ffffff") : (option.defaultFill ?? CHART_MUTED)}
       fontSize={10}
       fontWeight={isActive ? 700 : 400}
     >

@@ -7,7 +7,8 @@ export type TrainerActionKind =
   | "scheduled_topic_practice"
   | "flashcard_review"
   | "simulation"
-  | "manual_study";
+  | "manual_study"
+  | "rest";
 
 export type TrainerOutcomeTarget = "retention" | "transfer" | "speed" | "calibration";
 export type TrainerSignalSeverity = "info" | "warning" | "critical";
@@ -41,11 +42,11 @@ export type TrainerStartPayload = {
   mode?: string | null;
   resolution_mode?: string | null;
   area?: string | null;
-  answer_status?: string | null;
+  answer_status: string | null;
   only_unanswered?: boolean | null;
   limit?: number | null;
   review_task_id?: string | null;
-  knowledge_node_ids?: string[] | null;
+  knowledge_node_id: string[] | null;
   selection_intent?: string | null;
   selection_policy?: string | null;
   reason_code?: string | null;
@@ -59,7 +60,7 @@ export type TrainerAction = {
   priority_score: number;
   estimated_minutes: number;
   source_module?: string | null;
-  required_capabilities?: string[];
+  required_capabilitie: string[];
   blocked_reason?: string | null;
   handoff?: Record<string, unknown> | null;
   why_factors: TrainerWhyFactor[];
@@ -68,6 +69,12 @@ export type TrainerAction = {
   start_payload: TrainerStartPayload | null;
   href: string | null;
   pedagogical_confidence?: TrainerPedagogicalConfidence | null;
+  plan_activity_id?: string | null;
+  plan_activity_kind?: string | null;
+  plan_id?: string | null;
+  plan_revision?: number | null;
+  plan_policy_version?: string | null;
+  selection_policy_version?: string | null;
 };
 
 export type TrainerClosedLoop = {
@@ -125,6 +132,9 @@ export type TrainerPrescription = {
   recommendation_id: string;
   generated_at: string;
   policy_version: string;
+  authority_mode: "legacy" | "study_plan";
+  plan_id: string | null;
+  plan_revision: number | null;
   primary_action: TrainerAction;
   secondary_actions: TrainerAction[];
   state_summary: TrainerStateSummary;

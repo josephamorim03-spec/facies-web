@@ -31,7 +31,7 @@ export type SessionDiagnosis = {
   metacognitive_accuracy: number | null;
   impulsive_count: number;
   overconfident_count: number;
-  recommended_blocks?: Array<{
+  recommended_blocks: Array<{
     node_id: string;
     node_name: string;
     label: string;

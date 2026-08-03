@@ -160,7 +160,7 @@ export default function AdminKeysPage() {
       const res = await adminListKeys(filterLabel || undefined);
       setKeys(res.keys);
     } catch (err: unknown) {
-      const status = (err as { status?: number })?.status;
+      const status = (err as { status: number })?.status;
       if (status === 401 || status === 403) {
         router.replace("/");
         return;

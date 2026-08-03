@@ -147,7 +147,7 @@ export function DataFreshness({
 }: {
   status: "complete" | "partial" | "stale";
   generatedAt: string;
-  missingSources?: string[];
+  missingSources: string[];
 }) {
   const label = status === "complete" ? "Dados atualizados" : status === "stale" ? "Último retrato disponível" : "Retrato parcial";
   return (

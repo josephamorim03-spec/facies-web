@@ -5,7 +5,7 @@ type StudyActionCardProps = {
   eyebrow: string;
   title: string;
   reason: string;
-  minutes?: number | null;
+  minutes: number | null;
   expectedResult?: string | null;
   metadata?: ReactNode;
   action: ReactNode;

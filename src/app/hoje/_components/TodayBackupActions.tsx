@@ -1,19 +1,18 @@
 "use client";
 
-import Link from "next/link";
-
 import type { StudentTodayAction } from "@/lib/api";
+import { TodayActionCTA } from "./TodayActionCTA";
 
 export function TodayBackupActions({ actions }: { actions: StudentTodayAction[] }) {
   if (actions.length === 0) return null;
   return (
     <section aria-label="Acoes secundarias" className="space-y-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Se nao couber agora</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Se não couber agora</p>
       <div className="divide-y divide-edge border-y border-edge md:grid md:grid-cols-2 md:divide-x md:divide-y-0">
         {actions.slice(0, 2).map((action) => (
-          <Link
+          <TodayActionCTA
             key={`${action.kind}:${action.href}`}
-            href={action.href}
+            action={action}
             className="group px-1 py-3 transition hover:bg-surfaceMuted md:px-4"
           >
             <div className="flex items-start justify-between gap-3">
@@ -23,7 +22,7 @@ export function TodayBackupActions({ actions }: { actions: StudentTodayAction[] 
               </div>
               <span className="shrink-0 text-sm text-muted transition group-hover:text-ink">Ir</span>
             </div>
-          </Link>
+          </TodayActionCTA>
         ))}
       </div>
     </section>

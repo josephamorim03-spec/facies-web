@@ -79,7 +79,7 @@ const COGNITIVE_AUTOPSY: Record<string, CognitiveAutopsyCopy> = {
   fine_discrimination_gap: {
     label: "Faltou discriminação fina",
     phrase: "Você chegou perto, mas faltou separar duas alternativas parecidas.",
-    forcingQuestion: "Qual diferença mínima separava as duas finalistas?",
+    forcingQuestion: "Qual diferença mínima separava as duas finalistasó",
     rule: "Nomeie o critério que desempata antes de marcar.",
     tone: "attention",
   },

@@ -26,7 +26,7 @@ interface GoogleGSI {
 
 interface Window {
   google?: {
-    accounts?: {
+    account: {
       id?: GoogleGSI;
     };
   };

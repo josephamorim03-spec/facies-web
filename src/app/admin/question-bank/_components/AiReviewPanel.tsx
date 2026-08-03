@@ -450,21 +450,21 @@ export default function AiReviewPanel() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="text-xs text-muted">Custo real 30d</div>
-            <strong>{moneyBrl(aiCosts.rollouts?.reduce((sum, rollout) => sum + Number(rollout.cost_state?.actual_brl ?? 0), 0) ?? 0)}</strong>
+            <strong>{moneyBrl(aiCosts.rollout.reduce((sum, rollout) => sum + Number(rollout.cost_state?.actual_brl ?? 0), 0) ?? 0)}</strong>
           </div>
           <div>
             <div className="text-xs text-muted">Reservado agora</div>
-            <strong>{moneyBrl(aiCosts.rollouts?.reduce((sum, rollout) => sum + Number(rollout.cost_state?.reserved_brl ?? 0), 0) ?? 0)}</strong>
+            <strong>{moneyBrl(aiCosts.rollout.reduce((sum, rollout) => sum + Number(rollout.cost_state?.reserved_brl ?? 0), 0) ?? 0)}</strong>
           </div>
           <div>
             <div className="text-xs text-muted">Último rollout</div>
-            <strong>{aiCosts.rollouts?.[0]?.status ?? "sem lote"}</strong>
-            <div className="mt-1 truncate text-xs text-muted">{aiCosts.rollouts?.[0]?.scope ?? "nenhum escopo recente"}</div>
+            <strong>{aiCosts.rollout?.[0]?.status ?? "sem lote"}</strong>
+            <div className="mt-1 truncate text-xs text-muted">{aiCosts.rollout?.[0]?.scope ?? "nenhum escopo recente"}</div>
           </div>
           <div>
             <div className="text-xs text-muted">Stop-loss do último</div>
-            <strong>{moneyBrl(aiCosts.rollouts?.[0]?.cost_state?.stop_brl)}</strong>
-            <div className="mt-1 text-xs text-muted">{aiCosts.rollouts?.[0]?.cost_state?.allowed === false ? "pausado ou bloqueado" : "liberado pelo orçamento"}</div>
+            <strong>{moneyBrl(aiCosts.rollout?.[0]?.cost_state?.stop_brl)}</strong>
+            <div className="mt-1 text-xs text-muted">{aiCosts.rollout?.[0]?.cost_state?.allowed === false ? "pausado ou bloqueado" : "liberado pelo orçamento"}</div>
           </div>
         </div>
       </section> : null}

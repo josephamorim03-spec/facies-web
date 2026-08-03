@@ -38,11 +38,11 @@ export async function createEvent(
 export async function deleteEvent(
   token: string,
   eventId: string,
-  options?: { scope?: "future" | "all"; effective_from?: string }
+  option: { scope?: "future" | "all"; effective_from?: string }
 ): Promise<void> {
   const q = new URLSearchParams();
-  if (options?.scope) q.set("scope", options.scope);
-  if (options?.effective_from) q.set("effective_from", options.effective_from);
+  if (option.scope) q.set("scope", option.scope);
+  if (option.effective_from) q.set("effective_from", option.effective_from);
   const qs = q.toString();
   return api<void>(`/api/events/${eventId}${qs ? `?${qs}` : ""}`, {
     method: "DELETE",

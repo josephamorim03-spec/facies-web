@@ -62,10 +62,11 @@ export default function AdminOverview({
   stemReclassResult: QuestionBankStemIncompleteReclassification | null;
   onPreviewStemReclassification: () => void;
 }) {
-  const editorialHealth = pipelineStatus?.editorial_health;
-  const summary = pipelineStatus?.summary;
-  const hotspots = pipelineStatus?.backlog_hotspots;
-  const taxonomyAudit = pipelineStatus?.taxonomy_audit;
+  if (!pipelineStatus) return null;
+  const editorialHealth = pipelineStatus.editorial_health;
+  const summary = pipelineStatus.summary;
+  const hotspots = pipelineStatus.backlog_hotspots;
+  const taxonomyAudit = pipelineStatus.taxonomy_audit;
   const healthTone =
     editorialHealth?.state === "blocked"
       ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200"
@@ -77,7 +78,7 @@ export default function AdminOverview({
       <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Banco de Questoes</p>
+            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Banco de Questões</p>
             <h1 className="mt-1 text-3xl font-semibold text-gray-900 dark:text-gray-100">Operacao KrosBank</h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Ingestao, fila tecnica e curadoria editorial.</p>
           </div>
@@ -203,8 +204,8 @@ export default function AdminOverview({
             Conversao media:{" "}
             <span className="font-semibold">
               {summary?.imported_files
-                ? `${((summary.published_questions ?? 0) / Math.max(summary.imported_files, 1)).toFixed(1)} questoes/import`
-                : "0.0 questoes/import"}
+                ? `${((summary.published_questions ?? 0) / Math.max(summary.imported_files, 1)).toFixed(1)} questões/import`
+                : "0.0 questões/import"}
             </span>
             {" "}e{" "}
             <span className="font-semibold">
@@ -229,7 +230,7 @@ export default function AdminOverview({
             </div>
           ) : null}
 
-          {editorialHealth?.top_actions?.length ? (
+          {editorialHealth?.top_actions.length ? (
             <div className="mt-4 flex flex-wrap gap-2">
               {editorialHealth.top_actions.map((action) => (
                 <span key={action} className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-600 dark:border-gray-800 dark:text-gray-300">
@@ -262,9 +263,9 @@ export default function AdminOverview({
           </div>
           <div className="mt-4 space-y-4">
             {([
-              ["Muitos candidatos, zero publicadas", hotspots?.many_candidates_zero_published ?? []],
-              ["Baixo rendimento (1-2 candidatas)", hotspots?.low_yield_candidates ?? []],
-              ["Artefatos tecnicos", hotspots?.technical_artifacts ?? []],
+              ["Muitos candidatos, zero publicadas", hotspots.many_candidates_zero_published ?? []],
+              ["Baixo rendimento (1-2 candidatas)", hotspots.low_yield_candidates ?? []],
+              ["Artefatos tecnicos", hotspots.technical_artifacts ?? []],
             ] as const).map(([label, items]) => (
               <div key={label} className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
                 <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{label}</div>

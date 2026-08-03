@@ -50,7 +50,7 @@ function overview(dueCount = 2) {
     estimated_minutes: 1,
     reason_counts: [
       { reason: "overdue", label: "Esta atrasado e pode comecar a enfraquecer.", count: 1 },
-      { reason: "wrong_question", label: "Nasceu de uma questao errada.", count: 1 },
+      { reason: "wrong_question", label: "Nasceu de uma questão errada.", count: 1 },
     ],
     by_area: [
       { area: "CM", due_count: dueCount, new_count: 1, overdue_count: 1, total_eligible: 2 },
@@ -93,7 +93,7 @@ function activeSnapshot() {
       note_id: turboNote.note_id,
       reasons: ["overdue", "wrong_question"],
       primary_reason: "overdue",
-      label: "Card prioritario da revisao.",
+      label: "Card prioritário da revisão.",
     },
     last_review_change: null,
   };
