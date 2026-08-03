@@ -98,20 +98,13 @@ test.describe("Cronograma smoke", () => {
     await page.getByLabel(previousMonthLabel).click();
     await expectCenteredOnX(monthNav, monthTitle, 64);
 
-    const compactSummary = page.locator("[data-weekly-compact-summary='true']").first();
-    await expect(compactSummary).toBeVisible();
-    await expect(compactSummary).toHaveAttribute("data-compact-layout", "centered");
-    await expect(compactSummary.getByText("Meta")).toBeVisible();
-    await expect(compactSummary.getByText("Ritmo")).toBeVisible();
-    await expect(compactSummary.getByText("Risco")).toHaveCount(0);
-    await expect(compactSummary.locator("[data-warning-tone]")).toHaveAttribute("data-warning-tone", /(none|yellow|orange|red)/);
-    await expect(compactSummary.locator("[data-risk-level]")).toHaveAttribute("data-risk-level", /(low|medium|high)/);
-    await expect(compactSummary.locator("[data-compact-meta='true']")).toBeVisible();
-    await expect(compactSummary.locator("[data-compact-rhythm='true']")).toBeVisible();
-
-    const compactDivider = compactSummary.locator("[data-compact-divider='true']");
-    await expect(compactDivider).toBeVisible();
-    await expectCenteredOnX(compactSummary, compactDivider);
+    // O resumo semanal desta tela e' o WeeklyGoalControl, no rodape. O antigo
+    // `data-weekly-compact-summary` vinha do WeeklyOpsCards, que ninguem
+    // importava havia tempo -- este bloco cobrava um componente morto.
+    const weeklyGoal = page.getByRole("region", { name: "Progresso da meta semanal" });
+    await expect(weeklyGoal).toBeVisible();
+    await expect(weeklyGoal.getByText("Meta semanal")).toBeVisible();
+    await expect(weeklyGoal.getByRole("button", { name: "Editar meta semanal" }).first()).toBeVisible();
 
     const draggableEventIcon = page
       .locator(`[data-calendar-layer='active'] [data-cell-iso="${today}"] [draggable="true"]`)
@@ -133,7 +126,7 @@ test.describe("Cronograma smoke", () => {
 
       if (deleteZoneVisible) {
         const deleteZoneBox = await deleteZone.boundingBox();
-        const summaryBoxWithDeleteZone = await compactSummary.boundingBox();
+        const summaryBoxWithDeleteZone = await weeklyGoal.boundingBox();
         expect(deleteZoneBox).not.toBeNull();
         expect(summaryBoxWithDeleteZone).not.toBeNull();
         if (deleteZoneBox && summaryBoxWithDeleteZone) {

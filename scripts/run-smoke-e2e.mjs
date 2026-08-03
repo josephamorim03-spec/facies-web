@@ -12,7 +12,7 @@ const readinessTimeoutMs = 120_000;
 const smokeTimeoutMs = 300_000;
 const smokeSpecs = [
   "navigation.shell.spec.ts",
-  "revisoes.sessions.spec.ts",
+  "evolucao.historico.spec.ts",
   "auth.proxy-cookie.spec.ts",
   "cronograma.smoke.spec.ts",
   "caderno.header-toggle.spec.ts",
