@@ -3,6 +3,8 @@ export const queryKeys = {
   questionBankPerformance: ["question-bank", "performance"] as const,
   questionBankSessions: (status?: string) =>
     ["question-bank", "sessions", status ?? "all"] as const,
+  // Dado de referência: muda quando ingerimos uma banca nova, não por sessão.
+  questionBankBoards: ["question-bank", "boards"] as const,
   cardsOverview: (area?: string) => ["cards", "overview", area ?? "all"] as const,
   planning: ["planning"] as const,
 };

@@ -20,6 +20,7 @@ import { getAuthToken } from "@/lib/auth";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { BoardPicker } from "./_components/BoardPicker";
 import { WeekdayPicker } from "./_components/WeekdayPicker";
 
 const STEPS: { key: OnboardingStep; label: string; title: string; help: string }[] = [
@@ -255,14 +256,12 @@ export default function OnboardingPage() {
           <>
             {objectives.map((objective, index) => (
               <div key={index} className="space-y-3 rounded-control border border-edge bg-surface p-4">
-                <Input
-                  label="Banca"
-                  placeholder="ENARE, USP, UNIFESP…"
+                <BoardPicker
                   value={objective.board_code}
-                  onChange={(event) =>
+                  onChange={(next) =>
                     setObjectives((previous) =>
                       previous.map((item, i) =>
-                        i === index ? { ...item, board_code: event.target.value } : item,
+                        i === index ? { ...item, board_code: next } : item,
                       ),
                     )
                   }
