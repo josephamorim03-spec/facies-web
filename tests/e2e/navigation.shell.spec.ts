@@ -276,20 +276,29 @@ test.describe("Navigation shell", () => {
     expect(results.violations).toEqual([]);
   });
 
+  // Rotas antigas continuam entrando pelo link de alguem; o que importa e' que
+  // o menu acuse a intencao de DESTINO. `activeHref` e' o `intentPath` para onde
+  // o 308 do next.config leva (ou, quando a rota e' real, o intent que
+  // LEGACY_PATHS lhe atribui em navConfig.ts).
   const desktopCases = [
     { path: "/hoje", activeHref: "/hoje" },
-    { path: "/calendario", activeHref: "/planejar" },
-    { path: "/caderno", activeHref: "/revisar" },
-    { path: "/revisoes", activeHref: "/acompanhar" },
-    { path: "/dados-e-relatorios/graficos", activeHref: "/acompanhar" },
-    { path: "/estatisticas/relatorio", activeHref: "/acompanhar" },
-    { path: "/desempenho", activeHref: "/planejar" },
+    { path: "/calendario", activeHref: "/planejamento" }, // 308 -> /planejamento
+    { path: "/caderno", activeHref: "/cards" }, // 308 -> /cards/registros
+    { path: "/revisoes", activeHref: "/evolucao" }, // 308 -> /evolucao
+    { path: "/dados-e-relatorios/graficos", activeHref: "/evolucao" }, // 308 -> /evolucao
+    { path: "/estatisticas/relatorio", activeHref: "/evolucao" }, // rota real, intent evolution
+    // `/desempenho` encadeia DOIS saltos: `redirect("/cronograma")` no servidor
+    // e depois o 308 do next.config para `/planejamento`.
+    { path: "/desempenho", activeHref: "/planejamento", landsOn: "/planejamento" },
   ];
 
-  for (const { path, activeHref } of desktopCases) {
+  for (const { path, activeHref, landsOn } of desktopCases) {
     test(`keeps sidebar active for ${path}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(path);
+      // Sem ancorar a URL final, a assercao podia rodar no meio da cadeia de
+      // redirect e ver a sidebar ainda sem item ativo -- falha intermitente.
+      if (landsOn) await page.waitForURL(`**${landsOn}`);
 
       const sidebar = navSidebar(page);
       await expect(sidebar).toBeVisible();
@@ -320,12 +329,14 @@ test.describe("Navigation shell", () => {
     await page.goto("/hoje");
     await navSidebar(page).hover();
 
-    const acompanharItem = page.locator("aside [data-nav-item-href='/acompanhar']");
-    const acompanharLabel = acompanharItem.locator("span");
-    await expect(acompanharItem).toBeVisible();
-    await expect(acompanharLabel).toHaveText("Acompanhar");
+    // "Planejamento" e' o rotulo mais longo do menu atual -- se algum couber
+    // errado no container, e' este.
+    const longestItem = page.locator("aside [data-nav-item-href='/planejamento']");
+    const longestLabel = longestItem.locator("span");
+    await expect(longestItem).toBeVisible();
+    await expect(longestLabel).toHaveText("Planejamento");
 
-    const [itemBox, labelBox] = await Promise.all([acompanharItem.boundingBox(), acompanharLabel.boundingBox()]);
+    const [itemBox, labelBox] = await Promise.all([longestItem.boundingBox(), longestLabel.boundingBox()]);
     expect(itemBox).not.toBeNull();
     expect(labelBox).not.toBeNull();
     if (!itemBox || !labelBox) return;
@@ -348,7 +359,7 @@ test.describe("Navigation shell", () => {
     await page.setViewportSize({ width: 1280, height: 900 });
 
     await page.goto("/caderno");
-    await expect(page.getByRole("link", { name: "Cards" })).toHaveAttribute("href", "/cards-adaptativos");
+    await expect(page.getByRole("link", { name: "Cards" })).toHaveAttribute("href", "/cards");
 
     await page.goto("/calendario");
     await expect(page.getByRole("link", { name: "Hoje" }).first()).toHaveAttribute("href", "/hoje");
@@ -367,21 +378,28 @@ test.describe("Navigation shell mobile drawer", () => {
   });
 
   test("keeps grouped mobile drawer item active", async ({ page }) => {
-    await page.goto("/desempenho");
+    // Rota FILHA de um grupo (`isNavItemActive` casa por prefixo `/cards/`).
+    // `/desempenho` nao serve: redireciona ao cronograma, que tem cabecalho
+    // proprio. `/preferencias` tambem nao: apesar da intencao `planning`, ela
+    // fica fora de `groupPaths`, entao nao acende item nenhum.
+    await page.goto("/cards/registros");
     await page.getByLabel("Menu").click();
 
     const activeItems = page.locator("[data-nav-surface='drawer'][data-nav-active='true']");
     await expect(activeItems).toHaveCount(1);
-    await expect(activeItems).toHaveAttribute("data-nav-item-href", "/planejar");
+    await expect(activeItems).toHaveAttribute("data-nav-item-href", "/cards");
     await expect(activeItems).toHaveAttribute("aria-current", "page");
   });
 
-  test("shows all five intentions without horizontal overflow", async ({ page }) => {
+  test("mostra as seis intencoes no drawer sem estouro horizontal", async ({ page }) => {
+    // No mobile a navegacao e' o drawer, nao uma barra inferior: o `aria-label`
+    // "Navegação principal" pertence a sidebar, que fica oculta neste viewport.
     await page.goto("/hoje");
-    const bottomNav = page.getByRole("navigation", { name: "Navegação principal" });
-    await expect(bottomNav).toBeVisible();
-    for (const label of ["Hoje", "Praticar", "Revisar", "Acompanhar", "Planejar"]) {
-      await expect(bottomNav.getByText(label, { exact: true })).toBeVisible();
+    await page.getByLabel("Menu").click();
+
+    const drawerItems = page.locator("[data-nav-surface='drawer']");
+    for (const label of ["Kros", "Hoje", "Banco", "Cards", "Evolução", "Planejamento"]) {
+      await expect(drawerItems.getByText(label, { exact: true })).toBeVisible();
     }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
@@ -391,24 +409,29 @@ test.describe("Navigation shell mobile drawer", () => {
     await page.goto("/hoje");
     await page.getByLabel("Menu").click();
 
+    // Ancora obrigatoria: sem ela as duas contagens abaixo dariam 0 com o drawer
+    // FECHADO e o teste passaria sem testar nada.
+    await expect(page.locator("[data-nav-surface='drawer']").first()).toBeVisible();
+
     await expect(page.locator("[data-nav-surface='drawer'][data-nav-item-href='/cronograma']")).toHaveCount(0);
     await expect(page.locator("[data-nav-surface='drawer'][data-nav-item-href='/caderno']")).toHaveCount(0);
   });
 
-  test("keeps reciprocal top-right links on mobile pairs", async ({ page }) => {
+  test("mantem os atalhos entre paginas irmas no mobile", async ({ page }) => {
+    // O par Hoje<->Planejamento deixou de ser "Calendário" no topo. O rotulo
+    // agora depende do estado do dia ("Ver plano completo" com plano, "Abrir
+    // planejamento" vazio), entao o contrato verificado e' o destino, nao o
+    // texto: de /hoje sempre se alcanca o planejamento.
     await page.goto("/hoje");
-    await expect(page.getByRole("link", { name: "Calendário" })).toHaveAttribute("href", "/calendario");
+    await expect(page.locator('main a[href^="/planejamento"]').first()).toBeVisible();
 
-    await page.goto("/calendario");
-    await expect(page.getByRole("link", { name: "Hoje" })).toHaveAttribute("href", "/hoje");
-
+    // O cabecalho do mobile nao repete os atalhos do desktop (que a suite ja
+    // cobre em "shows reciprocal top-right links on desktop child pages"); o que
+    // precisa valer aqui e' que a filha continue oferecendo volta ao pai.
     await page.goto("/caderno");
-    await expect(page.getByRole("link", { name: "Cards" })).toHaveAttribute("href", "/cards-adaptativos");
-
-    await page.goto("/estatisticas");
-    await expect(page.getByRole("link", { name: "Relatórios" })).toHaveAttribute("href", "/estatisticas/relatorio");
+    await expect(page.locator('a[href^="/cards"]').first()).toBeVisible();
 
     await page.goto("/estatisticas/relatorio");
-    await expect(page.getByRole("link", { name: "Desempenho" })).toHaveAttribute("href", "/estatisticas");
+    await expect(page.locator('a[href^="/estatisticas"]').first()).toBeVisible();
   });
 });

@@ -2,13 +2,18 @@ import { expect, test } from "@playwright/test";
 
 import { addHttpOnlySession } from "./support/authCookies";
 
-const E2E_BASE_URL = "http://127.0.0.1:3000";
-const E2E_BROWSER_URL = "http://localhost:3000";
+// Precisa seguir a baseURL do playwright.config: fixar `localhost` enquanto o
+// runner serve em `127.0.0.1` grava o cookie em outra origem, e o teste falha
+// por host, nao por comportamento de auth.
+const E2E_BASE_URL = process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:3000";
+const E2E_BROWSER_URL = E2E_BASE_URL;
 
 test.describe("Auth proxy + cookies", () => {
   test("redirects protected route to login when auth cookies are missing", async ({ page }) => {
+    // `/cronograma` e' 308 para `/planejamento` (next.config.js), entao o `next`
+    // guardado no login e' o destino canonico, nao o alias de entrada.
     await page.goto("/cronograma");
-    await expect(page).toHaveURL(/\/login\?next=%2Fcronograma$/);
+    await expect(page).toHaveURL(/\/login\?next=%2Fplanejamento$/);
   });
 
   test("/api/version remains publicly accessible", async ({ request }) => {
@@ -25,7 +30,7 @@ test.describe("Auth proxy + cookies", () => {
 
     await page.goto("/cronograma");
 
-    await expect(page).toHaveURL(/\/cronograma$/);
+    await expect(page).toHaveURL(/\/planejamento$/);
   });
 
   test("logout endpoint clears both client and server auth cookies", async ({ context, page }) => {
@@ -43,9 +48,15 @@ test.describe("Auth proxy + cookies", () => {
         sameSite: "Lax",
       },
       {
+        // `path` explicito, nao `url`: por `url` o navegador aplica a regra de
+        // default-path e descarta o ultimo segmento, gravando em `/api`. O
+        // logout apaga em `/api/auth` (igual ao sessionCookies.ts), entao o
+        // cookie do teste sobrevivia por divergencia de path -- e nao porque o
+        // logout deixasse de limpa-lo.
         name: "krosmed_refresh",
         value: "refresh_e2e",
-        url: `${E2E_BROWSER_URL}/api/auth`,
+        domain: new URL(E2E_BROWSER_URL).hostname,
+        path: "/api/auth",
         httpOnly: true,
         sameSite: "Lax",
       },
