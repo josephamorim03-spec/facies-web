@@ -91,25 +91,78 @@ function calendarCoachCopy(step: CalendarCoachStep): string {
   return "Arrastar e soltar é um atalho para dispositivos touchscreen: toque e segure uma revisão ou compromisso e leve para outro dia. No desktop, use o botão Reagendar.";
 }
 
+const COACH_ORDER: CalendarCoachStep[] = ["month", "manage", "reschedule"];
+
+const COACH_TITLES: Record<CalendarCoachStep, string> = {
+  month: "Navegar entre os meses",
+  manage: "Selecionar um dia e adicionar",
+  reschedule: "Reagendar o que já existe",
+};
+
+/** Dica ancorada no proprio assunto, com lugar na sequencia.
+ *
+ * Antes era um passo linear so: `nextCoachStep` devolvia o primeiro pendente e
+ * a tela renderizava "month" e "reschedule". "manage" nao tinha JSX e ninguem
+ * chamava `completeCoachStep("manage")`, entao a sequencia TRAVAVA nele --
+ * invisivel e permanente -- e a terceira dica nunca chegava a aparecer.
+ */
 function CalendarCoachmark({
   step,
-  onDismiss,
+  onNext,
+  onBack,
+  onSkip,
 }: {
   step: CalendarCoachStep;
-  onDismiss: () => void;
+  onNext: () => void;
+  onBack: () => void;
+  onSkip: () => void;
 }) {
+  const index = COACH_ORDER.indexOf(step);
+  const isFirst = index === 0;
+  const isLast = index === COACH_ORDER.length - 1;
+
   return (
-    <div className="flex items-start gap-2 rounded-md border border-edge bg-surfaceMuted px-3 py-2 text-xs text-muted">
+    <div
+      role="note"
+      aria-label={`Dica ${index + 1} de ${COACH_ORDER.length}: ${COACH_TITLES[step]}`}
+      data-calendar-coach={step}
+      className="paper-dashed flex items-start gap-2 border-primary/35 bg-primary/5 px-3 py-2 text-xs text-muted"
+    >
       <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-      <p className="min-w-0 flex-1">{calendarCoachCopy(step)}</p>
-      <button
-        type="button"
-        onClick={onDismiss}
-        className="-mr-1 shrink-0 px-1 font-semibold text-ink hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        aria-label="Dispensar dica"
-      >
-        OK
-      </button>
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold text-ink">
+          {COACH_TITLES[step]}{" "}
+          <span className="font-normal text-muted">
+            ({index + 1} de {COACH_ORDER.length})
+          </span>
+        </p>
+        <p className="mt-0.5">{calendarCoachCopy(step)}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          {!isFirst && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="font-semibold text-ink hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Voltar
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onNext}
+            className="font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            {isLast ? "Concluir" : "Avançar"}
+          </button>
+          <button
+            type="button"
+            onClick={onSkip}
+            className="text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Pular dicas
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -264,7 +317,11 @@ export default function CronogramaPage({
   const [coachState, setCoachState] = useState<CalendarCoachState>(() =>
     readCalendarCoachState("cronograma_calendar_coach_v2"),
   );
-  const coachStep = nextCoachStep(coachState);
+  // A dica ativa e' navegavel (avancar/voltar/pular); `coachState` guarda o que
+  // ja foi visto, para a sequencia aparecer uma vez por usuario.
+  const [coachStep, setCoachStep] = useState<CalendarCoachStep | null>(() =>
+    nextCoachStep(readCalendarCoachState("cronograma_calendar_coach_v2")),
+  );
 
   useEffect(() => {
     function updateMobilePortraitMode() {
@@ -284,15 +341,37 @@ export default function CronogramaPage({
       const next = { ...coachState, [step]: true };
       writeCalendarCoachState(coachStorageKey, next);
       setCoachState(next);
+      setCoachStep((current) => (current === step ? null : current));
     },
     [coachState, coachStorageKey],
   );
 
-  const restartCalendarCoach = useCallback(() => {
-    const next = { month: false, manage: false, reschedule: false };
-    writeCalendarCoachState(coachStorageKey, next);
-    setCoachState(next);
+  const goToCoachStep = useCallback(
+    (delta: 1 | -1) => {
+      setCoachStep((current) => {
+        if (!current) return null;
+        const target = COACH_ORDER[COACH_ORDER.indexOf(current) + delta];
+        const seen = { ...coachState, [current]: true };
+        writeCalendarCoachState(coachStorageKey, seen);
+        setCoachState(seen);
+        return target ?? null;
+      });
+    },
+    [coachState, coachStorageKey],
+  );
+
+  const skipCalendarCoach = useCallback(() => {
+    const seen = { month: true, manage: true, reschedule: true };
+    writeCalendarCoachState(coachStorageKey, seen);
+    setCoachState(seen);
+    setCoachStep(null);
   }, [coachStorageKey]);
+
+  // Reabre pelo link textual, sem apagar o que ja foi visto: quem procura ajuda
+  // quer rever, nao recomecar um tutorial.
+  const restartCalendarCoach = useCallback(() => {
+    setCoachStep("month");
+  }, []);
 
   const openMonthPicker = useCallback(() => {
     setMonthPickerYear(calendarYear);
@@ -342,14 +421,6 @@ export default function CronogramaPage({
           aria-label="Buscar tema"
         >
           <IconSearch className="h-5 w-5" />
-        </button>
-        <button
-          type="button"
-          onClick={restartCalendarCoach}
-          className="flex h-7 w-7 shrink-0 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          aria-label="Mostrar dica do calendário"
-        >
-          <HelpCircle className="h-5 w-5" aria-hidden="true" />
         </button>
       </>,
     );
@@ -451,14 +522,6 @@ export default function CronogramaPage({
             >
               <IconSearch className="h-5 w-5" />
             </button>
-            <button
-              type="button"
-              onClick={restartCalendarCoach}
-              className="flex h-8 w-8 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-label="Mostrar dica do calendário"
-            >
-              <HelpCircle className="h-5 w-5" aria-hidden="true" />
-            </button>
           </div>
         </div>
       ) : null}
@@ -471,8 +534,14 @@ export default function CronogramaPage({
 
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 
+      {/* Ancorada no controle de mes, logo acima do calendario. */}
       {coachStep === "month" ? (
-        <CalendarCoachmark step="month" onDismiss={() => completeCoachStep("month")} />
+        <CalendarCoachmark
+          step="month"
+          onNext={() => goToCoachStep(1)}
+          onBack={() => goToCoachStep(-1)}
+          onSkip={skipCalendarCoach}
+        />
       ) : null}
 
       <div data-calendar-summary-stack="true" aria-label="Calendário mensal" className="-mx-4 md:-mx-6">
@@ -506,9 +575,34 @@ export default function CronogramaPage({
         />
       </div>
 
-      {coachStep === "reschedule" ? (
-        <CalendarCoachmark step="reschedule" onDismiss={() => completeCoachStep("reschedule")} />
+      {/* Ancoradas logo abaixo do calendario: "manage" fala de selecionar dia e
+          adicionar, "reschedule" de arrastar o que ja existe -- as duas acoes
+          acontecem na grade acima. */}
+      {coachStep === "manage" ? (
+        <CalendarCoachmark
+          step="manage"
+          onNext={() => goToCoachStep(1)}
+          onBack={() => goToCoachStep(-1)}
+          onSkip={skipCalendarCoach}
+        />
       ) : null}
+
+      {coachStep === "reschedule" ? (
+        <CalendarCoachmark
+          step="reschedule"
+          onNext={() => goToCoachStep(1)}
+          onBack={() => goToCoachStep(-1)}
+          onSkip={skipCalendarCoach}
+        />
+      ) : null}
+
+      <button
+        type="button"
+        onClick={restartCalendarCoach}
+        className="self-start text-xs font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        Como usar o Cronograma
+      </button>
 
       {!loading && calendarRecommendationsEnabled ? (
         <section aria-labelledby="routine-suggestions-title">
