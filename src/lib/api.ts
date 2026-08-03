@@ -379,11 +379,17 @@ export {
   regeneratePlan,
   listPlanActivities,
   startPlanActivity,
+  getMyObjectives,
+  replaceMyObjectives,
 } from "./api/domains/study-plan";
 export type {
   StudyPlan,
   StudyPlanActivity,
   StudyPlanActivityLaunch,
+  ObjectiveDateStatus,
+  StudentObjective,
+  StudentObjectiveInput,
+  StudentObjectives,
 } from "./api/domains/study-plan";
 
 // Calendar domain

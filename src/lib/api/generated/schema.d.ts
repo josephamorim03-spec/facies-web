@@ -2836,6 +2836,19 @@ export interface components {
             /** Deleted */
             deleted: boolean;
         };
+        /** AdaptiveModelContext */
+        AdaptiveModelContext: {
+            /** Projection Run Id */
+            projection_run_id?: string | null;
+            /** Decision Id */
+            decision_id?: string | null;
+            /** Factor Schema Version */
+            factor_schema_version?: string | null;
+            /** Signal Schema Version */
+            signal_schema_version?: string | null;
+            /** Retention Days */
+            retention_days?: number | null;
+        };
         /** AnalyzeQuestionIn */
         AnalyzeQuestionIn: {
             /** User Id */
@@ -4634,8 +4647,6 @@ export interface components {
             shift_24h_capacity?: number | null;
             /** Display Name */
             display_name?: string | null;
-            /** Priority Boards */
-            priority_boards?: string[] | null;
             /** Weekly Goal Notifications Enabled */
             weekly_goal_notifications_enabled?: boolean | null;
             /** Calendar Change Alerts Enabled */
@@ -7666,6 +7677,12 @@ export interface components {
             factors?: {
                 [key: string]: unknown;
             };
+            /** Decision Id */
+            decision_id?: string | null;
+            /** Projection Run Id */
+            projection_run_id?: string | null;
+            /** Factor Schema Version */
+            factor_schema_version?: string | null;
         };
         /**
          * StudyPlanActivityLaunchOut
@@ -7822,6 +7839,7 @@ export interface components {
             explanation?: {
                 [key: string]: unknown;
             };
+            model_context?: components["schemas"]["AdaptiveModelContext"];
             /** Activities */
             activities?: components["schemas"]["StudyPlanActivityOut"][];
         };
