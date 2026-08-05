@@ -48,6 +48,49 @@ export async function replaceMyObjectives(
   });
 }
 
+// ------------------------------------------------------ metas adaptativas
+
+export type AdaptiveTargetKind = "institution" | "organizer" | "selection_process";
+
+export type AdaptiveTarget = {
+  target_preference_id: string;
+  priority: number;
+  entity_id: string;
+  entity_kind: AdaptiveTargetKind;
+  canonical_key: string;
+  label: string;
+  catalog_contract_version: string;
+  catalog_release: string | null;
+  status: "active" | "unavailable";
+};
+
+export type AdaptiveTargets = {
+  contract_version: "student-adaptive-targets-v1";
+  selection_revision: number;
+  items: AdaptiveTarget[];
+};
+
+export async function getMyAdaptiveTargets(token: string): Promise<AdaptiveTargets> {
+  return api<AdaptiveTargets>("/api/adaptive-targets/mine", {
+    headers: authHeader(token),
+  });
+}
+
+export async function replaceMyAdaptiveTargets(
+  token: string,
+  entityIds: string[],
+  expectedRevision: number | null,
+): Promise<AdaptiveTargets> {
+  return api<AdaptiveTargets>("/api/adaptive-targets/mine", {
+    method: "PUT",
+    headers: { ...authHeader(token), "Content-Type": "application/json" },
+    body: JSON.stringify({
+      items: entityIds.map((entity_id) => ({ entity_id })),
+      expected_revision: expectedRevision,
+    }),
+  });
+}
+
 // --------------------------------------------------------------- onboarding
 
 export type OnboardingStep = "objectives" | "routine" | "capacity" | "ready";

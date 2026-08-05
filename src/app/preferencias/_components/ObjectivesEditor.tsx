@@ -39,10 +39,9 @@ type Props = {
  * É a única superfície de edição fora do onboarding — antes desta tela o aluno
  * não conseguia trocar a prova-alvo sem refazer o questionário inicial.
  *
- * A ordem da lista É a prioridade (1..3), e dela o backend projeta
- * `priority_boards`, o peso de banca do ranking de questões. Por isso não existe
- * aqui um segundo controle de bancas: seriam duas verdades para a mesma
- * pergunta, que foi exatamente o problema que esta tela resolve.
+ * A ordem da lista É a prioridade (1..3). Objetivos orientam horizonte e plano;
+ * eles não alteram `priority_boards`, que continua sendo uma preferência
+ * operacional independente do Banco de Questões (KROS-002).
  */
 export function ObjectivesEditor({ token, boards }: Props) {
   const [drafts, setDrafts] = useState<Draft[]>([]);
@@ -89,17 +88,6 @@ export function ObjectivesEditor({ token, boards }: Props) {
     const taken = new Set(drafts.map((d) => d.board_code).filter(Boolean));
     return boards.filter((b) => !taken.has(b.board_code));
   }, [boards, drafts]);
-
-  // O que o backend vai projetar em `priority_boards`: mesma regra (ordem de
-  // prioridade, sem repetir banca). Mostrado como consequência, não como campo.
-  const derivedBoards = useMemo(() => {
-    const seen: string[] = [];
-    for (const draft of drafts) {
-      const code = draft.board_code.trim().toUpperCase();
-      if (code && !seen.includes(code)) seen.push(code);
-    }
-    return seen;
-  }, [drafts]);
 
   function mutate(next: Draft[]) {
     setDrafts(next);
@@ -320,15 +308,6 @@ export function ObjectivesEditor({ token, boards }: Props) {
         ) : null}
       </div>
 
-      {derivedBoards.length > 0 ? (
-        <p className="mt-4 text-xs leading-5 text-muted">
-          Nesta ordem, o Banco de Questões também vai priorizar{" "}
-          <strong className="font-medium text-ink">
-            {derivedBoards.map(boardName).join(", ")}
-          </strong>{" "}
-          na seleção de questões.
-        </p>
-      ) : null}
     </div>
   );
 }

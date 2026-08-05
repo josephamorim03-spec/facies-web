@@ -60,6 +60,24 @@ export type QuestionBankSourceOption = {
   last_year?: number | null;
 };
 
+export type QuestionBankSourceEntity = {
+  entity_id: string;
+  canonical_key: string;
+  label: string;
+  entity_kind: "institution" | "organizer" | "selection_process";
+  status: "active";
+  aliases: string[];
+  question_count: number;
+  first_year?: number | null;
+  last_year?: number | null;
+};
+
+export type QuestionBankSourceEntities = {
+  contract_version: "question-source-entities-v1";
+  catalog_release: string | null;
+  items: QuestionBankSourceEntity[];
+};
+
 export type QuestionBankStateOption = {
   state_code: string;
   label: string;

@@ -185,6 +185,7 @@ export {
   getQuestionBankBootstrap,
   listQuestionBankBoards,
   listQuestionBankSources,
+  listQuestionBankSourceEntities,
   listQuestionBankYears,
   listQuestionBankFacets,
   previewQuestionBankAvailability,
@@ -228,6 +229,8 @@ export type {
   QuestionBankTopic,
   QuestionBankBoard,
   QuestionBankSourceOption,
+  QuestionBankSourceEntity,
+  QuestionBankSourceEntities,
   QuestionBankStateOption,
   QuestionBankYearStat,
   QuestionBankFacets,
@@ -381,6 +384,8 @@ export {
   startPlanActivity,
   getMyObjectives,
   replaceMyObjectives,
+  getMyAdaptiveTargets,
+  replaceMyAdaptiveTargets,
 } from "./api/domains/study-plan";
 export type {
   StudyPlan,
@@ -390,6 +395,9 @@ export type {
   StudentObjective,
   StudentObjectiveInput,
   StudentObjectives,
+  AdaptiveTargetKind,
+  AdaptiveTarget,
+  AdaptiveTargets,
 } from "./api/domains/study-plan";
 
 // Calendar domain

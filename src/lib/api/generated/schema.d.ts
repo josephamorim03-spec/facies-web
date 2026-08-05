@@ -983,6 +983,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/question-bank/source-entities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Question Bank Source Entities
+         * @description Entidades canônicas aptas a serem referenciadas por contratos do aluno.
+         */
+        get: operations["list_question_bank_source_entities_question_bank_source_entities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/question-bank/bootstrap": {
         parameters: {
             query?: never;
@@ -1784,6 +1804,24 @@ export interface paths {
         get: operations["get_my_objectives_objectives_mine_get"];
         /** Replace My Objectives */
         put: operations["replace_my_objectives_objectives_mine_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/adaptive-targets/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Adaptive Targets */
+        get: operations["get_my_adaptive_targets_adaptive_targets_mine_get"];
+        /** Replace My Adaptive Targets */
+        put: operations["replace_my_adaptive_targets_adaptive_targets_mine_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2848,6 +2886,62 @@ export interface components {
             signal_schema_version?: string | null;
             /** Retention Days */
             retention_days?: number | null;
+        };
+        /** AdaptiveTargetInput */
+        AdaptiveTargetInput: {
+            /** Entity Id */
+            entity_id: string;
+        };
+        /** AdaptiveTargetOut */
+        AdaptiveTargetOut: {
+            /** Target Preference Id */
+            target_preference_id: string;
+            /** Priority */
+            priority: number;
+            /** Entity Id */
+            entity_id: string;
+            /**
+             * Entity Kind
+             * @enum {string}
+             */
+            entity_kind: "institution" | "organizer" | "selection_process";
+            /** Canonical Key */
+            canonical_key: string;
+            /** Label */
+            label: string;
+            /** Catalog Contract Version */
+            catalog_contract_version: string;
+            /** Catalog Release */
+            catalog_release?: string | null;
+            /**
+             * Status
+             * @default active
+             * @enum {string}
+             */
+            status: "active" | "unavailable";
+        };
+        /** AdaptiveTargetsOut */
+        AdaptiveTargetsOut: {
+            /**
+             * Contract Version
+             * @default student-adaptive-targets-v1
+             * @constant
+             */
+            contract_version: "student-adaptive-targets-v1";
+            /**
+             * Selection Revision
+             * @default 0
+             */
+            selection_revision: number;
+            /** Items */
+            items?: components["schemas"]["AdaptiveTargetOut"][];
+        };
+        /** AdaptiveTargetsReplaceIn */
+        AdaptiveTargetsReplaceIn: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Items */
+            items?: components["schemas"]["AdaptiveTargetInput"][];
         };
         /** AnalyzeQuestionIn */
         AnalyzeQuestionIn: {
@@ -4647,6 +4741,8 @@ export interface components {
             shift_24h_capacity?: number | null;
             /** Display Name */
             display_name?: string | null;
+            /** Priority Boards */
+            priority_boards?: string[] | null;
             /** Weekly Goal Notifications Enabled */
             weekly_goal_notifications_enabled?: boolean | null;
             /** Calendar Change Alerts Enabled */
@@ -6386,6 +6482,47 @@ export interface components {
              * @default 0
              */
             scorable_question_count: number;
+        };
+        /** QuestionBankSourceEntitiesOut */
+        QuestionBankSourceEntitiesOut: {
+            /**
+             * Contract Version
+             * @default question-source-entities-v1
+             * @constant
+             */
+            contract_version: "question-source-entities-v1";
+            /** Catalog Release */
+            catalog_release?: string | null;
+            /** Items */
+            items?: components["schemas"]["QuestionBankSourceEntityOut"][];
+        };
+        /** QuestionBankSourceEntityOut */
+        QuestionBankSourceEntityOut: {
+            /** Entity Id */
+            entity_id: string;
+            /** Canonical Key */
+            canonical_key: string;
+            /** Label */
+            label: string;
+            /**
+             * Entity Kind
+             * @enum {string}
+             */
+            entity_kind: "institution" | "organizer" | "selection_process";
+            /**
+             * Status
+             * @default active
+             * @constant
+             */
+            status: "active";
+            /** Aliases */
+            aliases?: string[];
+            /** Question Count */
+            question_count: number;
+            /** First Year */
+            first_year?: number | null;
+            /** Last Year */
+            last_year?: number | null;
         };
         /** QuestionBankSourceOptionOut */
         QuestionBankSourceOptionOut: {
@@ -10473,6 +10610,37 @@ export interface operations {
             };
         };
     };
+    list_question_bank_source_entities_question_bank_source_entities_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionBankSourceEntitiesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     bootstrap_question_bank_question_bank_bootstrap_get: {
         parameters: {
             query?: never;
@@ -12258,6 +12426,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentObjectivesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_adaptive_targets_adaptive_targets_mine_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdaptiveTargetsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_my_adaptive_targets_adaptive_targets_mine_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdaptiveTargetsReplaceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdaptiveTargetsOut"];
                 };
             };
             /** @description Validation Error */

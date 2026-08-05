@@ -4,6 +4,7 @@ import type {
   QuestionBankCorrectionStatus,
   QuestionBankBootstrap,
   QuestionBankFacets,
+  QuestionBankSourceEntities,
   QuestionBankSourceOption,
   QuestionBankYearStat,
 } from "./types";
@@ -16,6 +17,14 @@ export async function getQuestionBankBootstrap(token: string): Promise<QuestionB
 
 export async function listQuestionBankSources(token: string): Promise<QuestionBankSourceOption[]> {
   return api<QuestionBankSourceOption[]>("/api/question-bank/sources", {
+    headers: authHeader(token),
+  });
+}
+
+export async function listQuestionBankSourceEntities(
+  token: string,
+): Promise<QuestionBankSourceEntities> {
+  return api<QuestionBankSourceEntities>("/api/question-bank/source-entities", {
     headers: authHeader(token),
   });
 }

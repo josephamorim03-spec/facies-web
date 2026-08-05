@@ -224,7 +224,11 @@ function defaultClientCachePolicy(pathname: string): ResolvedClientCachePolicy |
     // Reference data (exam boards + counts) that only grows — cache generously.
     return { ttlMs: 10 * 60_000, swrMs: 60 * 60_000, tags: ["question-bank", "question-bank-boards"] };
   }
-  if (pathname === "/api/question-bank/sources" || pathname === "/api/question-bank/years") {
+  if (
+    pathname === "/api/question-bank/sources" ||
+    pathname === "/api/question-bank/source-entities" ||
+    pathname === "/api/question-bank/years"
+  ) {
     return { ttlMs: 10 * 60_000, swrMs: 60 * 60_000, tags: ["question-bank", "question-bank-sources"] };
   }
   if (pathname === "/api/question-bank/availability") {
