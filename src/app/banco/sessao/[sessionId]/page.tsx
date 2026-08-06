@@ -323,9 +323,17 @@ export default function SessionPage() {
     });
   };
 
-  // Begin/end a visit as the current question changes (simulation only).
+  // Begin/end a visit as the current question changes.
+  //
+  // KROS-022: era `resolution_mode === "simulation"` apenas. O treino diario --
+  // que e' a maior parte do estudo -- ficava sem `visible_ms`, e o unico numero
+  // disponivel para ele era `time_ms`: wall-clock cru, sem pausa em aba oculta e
+  // sem teto. Minutos observados por dia precisam da MESMA medida honesta nos
+  // dois modos, senao a leitura de rotina compara tempo visivel com tempo de aba
+  // aberta. O custo e' ~2 eventos por questao, o mesmo volume que o simulado ja
+  // produz pela mesma fila com debounce.
   useEffect(() => {
-    if (!session || session.resolution_mode !== "simulation" || session.status !== "active") return;
+    if (!session || session.status !== "active") return;
     const position = currentPosition;
     const now = Date.now();
     const idx = visitIndexByPosRef.current[position] ?? 0;
@@ -353,11 +361,11 @@ export default function SessionPage() {
     });
     return () => endVisitRef.current("navigate");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPosition, session?.session_id, session?.resolution_mode, session?.status]);
+  }, [currentPosition, session?.session_id, session?.status]);
 
-  // Visibility / focus / activity / pagehide listeners (simulation only).
+  // Visibility / focus / activity / pagehide listeners.
   useEffect(() => {
-    if (!session || session.resolution_mode !== "simulation") return;
+    if (!session) return;
     if (typeof document === "undefined") return;
     const onVisibility = () => {
       const v = visitRef.current;
