@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useNavbar } from "@/lib/NavbarContext";
+import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import AreaDot from "@/components/AreaDot";
 import { Button } from "@/components/ui/Button";
 import { ProgressRing } from "@/components/ui/ProgressRing";
@@ -279,6 +280,7 @@ export default function LegacyTodayPage() {
   const queryClient = useQueryClient();
   const { tokenResolved } = useAuthToken();
   const { setTitle, setActions } = useNavbar();
+  const isDesktopNavigation = useDesktopNavigationMode();
   const { showToast } = useToast();
   const { enabled: experienceEnabled, experience } = useStudentExperience();
   const [tasks, setTasks] = useState<ReviewTask[]>([]);
@@ -632,12 +634,14 @@ export default function LegacyTodayPage() {
   useEffect(() => {
     setTitle("Hoje");
     setActions(
-      <TopBarActionLink href={planningTodayHref} label="Abrir planejamento de hoje" title="Abrir planejamento de hoje">
-        <CalendarDays className="h-5 w-5" aria-hidden="true" />
-      </TopBarActionLink>,
+      isDesktopNavigation ? (
+        <TopBarActionLink href={planningTodayHref} label="Abrir planejamento de hoje" title="Abrir planejamento de hoje">
+          <CalendarDays className="h-5 w-5" aria-hidden="true" />
+        </TopBarActionLink>
+      ) : null,
     );
     return () => { setTitle(null); setActions(null); };
-  }, [planningTodayHref, setTitle, setActions]);
+  }, [isDesktopNavigation, planningTodayHref, setTitle, setActions]);
 
   // Mesmo skeleton que o `loading.tsx` da rota ja renderizou: a troca rota ->
   // cliente nao muda de forma. Antes eram duas copias quase identicas que ja

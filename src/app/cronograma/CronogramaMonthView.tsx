@@ -17,7 +17,7 @@ import { buildStudyImportRuntimePath, readActiveStudyImportSessionId } from "@/l
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 
 import { CronogramaCalendarView } from "./_components/CronogramaCalendarView";
-import { IconSearch, IconX } from "./_components/CronogramaIcons";
+import { IconSearch, IconWeekRow, IconX } from "./_components/CronogramaIcons";
 import { CronogramaStreakCard } from "./_components/CronogramaStreakCard";
 import { RescheduleSuggestionDialog } from "./_components/RescheduleSuggestionDialog";
 import { WeeklyGoalControl } from "./_components/WeeklyGoalControl";
@@ -222,8 +222,10 @@ function MonthControl({
 
 export default function CronogramaMonthView({
   initialSelectedDay = null,
+  showWeekSwitch = false,
 }: {
   initialSelectedDay?: string | null;
+  showWeekSwitch?: boolean;
 }) {
   const router = useRouter();
   const isDesktopNavigation = useDesktopNavigationMode();
@@ -422,13 +424,23 @@ export default function CronogramaMonthView({
         >
           <IconSearch className="h-5 w-5" />
         </button>
+        {showWeekSwitch ? (
+          <Link
+            href={`/cronograma?view=week&anchor=${today}&day=${today}`}
+            data-testid="schedule-view-week"
+            aria-label="Ver calendário semanal"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <IconWeekRow className="h-5 w-5" />
+          </Link>
+        ) : null}
       </>,
     );
     return () => {
       setTitle(null);
       setActions(null);
     };
-  }, [isDesktopNavigation, renderMonthControl, restartCalendarCoach, searchOpen, setActions, setTitle]);
+  }, [isDesktopNavigation, renderMonthControl, restartCalendarCoach, searchOpen, setActions, setTitle, showWeekSwitch, today]);
 
   function closeSearch() {
     setSearchOpen(false);

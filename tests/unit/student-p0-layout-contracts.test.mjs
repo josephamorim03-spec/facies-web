@@ -46,6 +46,12 @@ test("Cronograma abre na semana e preserva o calendario mensal como modo secunda
   assert.match(month, /aria-label="Calendário mensal"/);
   assert.match(week, /data-week-strip="true"/, "a semana deve ser uma faixa horizontal do calendario");
   assert.match(week, /grid-cols-7/, "os sete dias devem ocupar uma unica linha");
+  assert.match(week, /resolveDisplayArea/, "as bolinhas da semana devem usar a area canonica");
+  assert.match(week, /AREA_BG_CLASS/, "as bolinhas da semana devem reutilizar a paleta de areas");
+  assert.match(week, /activityCount > 5/, "o excesso deve comecar acima de cinco atividades");
+  assert.match(week, /items\.slice\(0, 4\)/, "o excesso deve reservar a quinta posicao para reticencias");
+  assert.match(week, /items\.slice\(0, 5\)/, "dias sem excesso devem mostrar ate cinco bolinhas");
+  assert.match(week, /data-week-day-overflow="true"/, "o excesso deve ter marcador testavel");
   assert.match(week, /data-week-detail="true"/, "o dia selecionado deve abrir detalhes abaixo da faixa");
   assert.match(week, /<CronogramaStreakCard/, "a constancia do aluno deve permanecer visivel na semana");
   assert.match(week, /<WeeklyGoalControl/, "a meta semanal deve permanecer editavel na semana");
@@ -58,6 +64,9 @@ test("Cronograma abre na semana e preserva o calendario mensal como modo secunda
   );
   assert.match(viewTabs, /TAB_LIST_CLASS/);
   assert.match(viewTabs, /TAB_TRIGGER_CLASS/);
+  assert.match(source, /isDesktopNavigation \? <ScheduleViewTabs/, "o seletor textual deve ficar restrito ao desktop");
+  assert.match(week, /data-testid="schedule-view-month"/, "a semana mobile deve oferecer o icone do mes");
+  assert.match(month, /data-testid="schedule-view-week"/, "o mes mobile deve oferecer o icone da semana");
 });
 
 test("Acompanhar comeca por graficos e nao duplica CTA dominante", () => {

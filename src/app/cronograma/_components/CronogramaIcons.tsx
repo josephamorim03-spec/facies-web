@@ -95,6 +95,27 @@ export function IconSearch({ className }: { className?: string }) {
   );
 }
 
+export function IconMonthGrid({ className }: { className?: string }) {
+  const positions = [3, 10, 17];
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className={className} aria-hidden="true">
+      {positions.flatMap((y) => positions.map((x) => (
+        <rect key={`${x}-${y}`} x={x} y={y} width="4" height="4" rx="0.7" />
+      )))}
+    </svg>
+  );
+}
+
+export function IconWeekRow({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className={className} aria-hidden="true">
+      {[2, 7.5, 13, 18.5].map((x) => (
+        <rect key={x} x={x} y="10" width="3.5" height="4" rx="0.7" />
+      ))}
+    </svg>
+  );
+}
+
 export function IconClipboardCheck({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
