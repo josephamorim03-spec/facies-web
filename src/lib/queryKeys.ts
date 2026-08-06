@@ -1,5 +1,8 @@
 export const queryKeys = {
   studentToday: ["student", "today"] as const,
+  studentAgendaAll: ["student", "agenda"] as const,
+  studentAgenda: (dateFrom: string, dateTo: string) =>
+    ["student", "agenda", dateFrom, dateTo] as const,
   questionBankPerformance: ["question-bank", "performance"] as const,
   questionBankSessions: (status?: string) =>
     ["question-bank", "sessions", status ?? "all"] as const,
@@ -11,6 +14,7 @@ export const queryKeys = {
 
 export const questionBankInvalidationKeys = [
   queryKeys.studentToday,
+  queryKeys.studentAgendaAll,
   queryKeys.questionBankPerformance,
   queryKeys.questionBankSessions(),
   queryKeys.questionBankSessions("active"),

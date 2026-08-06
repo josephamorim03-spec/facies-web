@@ -18,24 +18,30 @@ function assertComesBefore(source, firstNeedle, secondNeedle, message) {
   assert.ok(firstIndex < secondIndex, message);
 }
 
-test("Cronograma coloca o calendario mensal antes dos paineis auxiliares", () => {
+test("Cronograma abre na semana e preserva o calendario mensal como modo secundario", () => {
+  const page = read("src/app/cronograma/page.tsx");
   const source = read("src/app/cronograma/CronogramaClientPage.tsx");
+  const month = read("src/app/cronograma/CronogramaMonthView.tsx");
 
   assert.equal(
     source.includes("<StudentPrimaryAction"),
     false,
     "calendario nao deve renderizar CTA redundante do proprio plano",
   );
-  assert.match(source, /<CronogramaCalendarView/);
+  assert.match(page, /initialView=\{view\}/);
+  assert.match(source, /initialView = "week"/);
+  assert.match(source, /<CronogramaWeekView/);
+  assert.match(source, /<CronogramaMonthView/);
+  assert.match(month, /<CronogramaCalendarView/);
   // A meta semanal voltou, mas como painel auxiliar: o calendario continua
   // sendo o heroi da tela, entao ela so pode aparecer depois dele.
   assertComesBefore(
-    source,
+    month,
     "<CronogramaCalendarView",
     "<WeeklyGoalControl",
     "a meta semanal nao pode competir com o calendario pelo topo da tela",
   );
-  assert.match(source, /aria-label="Calendário mensal"/);
+  assert.match(month, /aria-label="Calendário mensal"/);
 });
 
 test("Acompanhar comeca por graficos e nao duplica CTA dominante", () => {
@@ -67,15 +73,22 @@ test("Acompanhar comeca por graficos e nao duplica CTA dominante", () => {
   );
 });
 
-test("Hoje mantem uma acao dominante e no maximo duas alternativas", () => {
-  const page = read("src/app/hoje/page.tsx");
+test("Hoje mantem uma acao dominante, uma lista unica e no maximo duas alternativas", () => {
+  const page = read("src/app/hoje/_components/CanonicalTodayDashboard.tsx");
   const backupActions = read("src/app/hoje/_components/TodayBackupActions.tsx");
 
   assertComesBefore(
     page,
     "<TodayPrimaryAction",
-    "<TodayBackupActions",
-    "a acao protagonista deve preceder as alternativas",
+    'aria-labelledby="today-after-title"',
+    "a acao protagonista deve preceder a lista restante",
   );
+  assertComesBefore(
+    page,
+    'aria-labelledby="today-after-title"',
+    "<TodayBackupActions",
+    "as alternativas devem permanecer em detalhe progressivo depois da agenda do dia",
+  );
+  assert.match(page, /uniqueAgendaItems\(/);
   assert.match(backupActions, /actions\.slice\(0,\s*2\)/);
 });

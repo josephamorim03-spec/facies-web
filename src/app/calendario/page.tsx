@@ -1,1 +1,5 @@
-export { default } from "../agenda-operacional/page";
+import { redirect } from "next/navigation";
+
+export default function Page() {
+  redirect("/cronograma?view=month");
+}

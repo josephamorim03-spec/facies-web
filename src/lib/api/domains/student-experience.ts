@@ -74,6 +74,73 @@ export type StudentTodayAction = {
     session_id: string | null;
     href: string | null;
   } | null;
+  agenda_occurrence_id?: string | null;
+};
+
+export type StudentAgendaItem = {
+  occurrence_id: string;
+  date: string;
+  source: "study_plan" | "review_queue" | "study_history" | "calendar" | "question_bank" | "flashcards";
+  kind:
+    | "plan_activity"
+    | "review_task"
+    | "directed_study"
+    | "calendar_event"
+    | "question_session"
+    | "flashcard_review";
+  status: "scheduled" | "pending" | "in_progress" | "done" | "overdue" | "skipped";
+  title: string;
+  area: string | null;
+  rationale: string | null;
+  href: string | null;
+  estimated_minutes: number;
+  expected_questions: number;
+  completed_questions: number;
+  plan_activity_id: string | null;
+  review_task_id: string | null;
+  directed_study_id: string | null;
+  session_id: string | null;
+  event_id: string | null;
+  capabilities: {
+    can_start: boolean;
+    can_reschedule: boolean;
+    can_edit: boolean;
+    can_delete: boolean;
+  };
+};
+
+export type StudentAgendaDay = {
+  date: string;
+  is_today: boolean;
+  planned_minutes: number;
+  planned_questions: number;
+  recommended_questions: number | null;
+  completed_items: number;
+  total_items: number;
+  overdue_items: number;
+  overloaded: boolean;
+  items: StudentAgendaItem[];
+};
+
+export type StudentAgenda = {
+  contract_version: "student-agenda-v1";
+  generated_at: string;
+  status: "complete" | "partial" | "stale";
+  timezone: string;
+  today: string;
+  date_from: string;
+  date_to: string;
+  summary: {
+    completed_items: number;
+    total_items: number;
+    overdue_items: number;
+    questions_done_week: number;
+    weekly_goal_questions: number;
+    weekly_progress_pct: number | null;
+  };
+  overdue: StudentAgendaItem[];
+  days: StudentAgendaDay[];
+  missing_sources: string[];
 };
 
 export type StudentToday = {
@@ -176,6 +243,8 @@ let cached: { tokenKey: string; period: string; at: number; value: StudentExperi
 const inflight = new Map<string, Promise<StudentExperience>>();
 let todayCached: { tokenKey: string; at: number; value: StudentToday } | null = null;
 const todayInflight = new Map<string, Promise<StudentToday>>();
+const agendaCache = new Map<string, { at: number; value: StudentAgenda }>();
+const agendaInflight = new Map<string, Promise<StudentAgenda>>();
 
 export const STUDENT_EXPERIENCE_INVALIDATED_EVENT = "kros:student-experience-invalidated";
 
@@ -184,6 +253,8 @@ export function invalidateStudentExperienceCache(): void {
   todayCached = null;
   inflight.clear();
   todayInflight.clear();
+  agendaCache.clear();
+  agendaInflight.clear();
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(STUDENT_EXPERIENCE_INVALIDATED_EVENT));
   }
@@ -234,6 +305,31 @@ export async function getStudentToday(token: string): Promise<StudentToday> {
       todayInflight.delete(tokenKey);
     });
   todayInflight.set(tokenKey, request);
+  return request;
+}
+
+export async function getStudentAgenda(
+  token: string,
+  dateFrom: string,
+  dateTo: string,
+): Promise<StudentAgenda> {
+  const tokenKey = token.slice(0, 12);
+  const requestKey = `${tokenKey}:${dateFrom}:${dateTo}`;
+  const cachedAgenda = agendaCache.get(requestKey);
+  if (cachedAgenda && Date.now() - cachedAgenda.at < CACHE_MS) return cachedAgenda.value;
+  const active = agendaInflight.get(requestKey);
+  if (active) return active;
+  const params = new URLSearchParams({ date_from: dateFrom, date_to: dateTo });
+  const request = api<StudentAgenda>(`/api/student/agenda?${params.toString()}`, {
+    headers: authHeader(token),
+    cache: "no-store",
+  })
+    .then((value) => {
+      agendaCache.set(requestKey, { at: Date.now(), value });
+      return value;
+    })
+    .finally(() => agendaInflight.delete(requestKey));
+  agendaInflight.set(requestKey, request);
   return request;
 }
 

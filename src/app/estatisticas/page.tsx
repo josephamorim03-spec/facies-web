@@ -1,5 +1,5 @@
-import EstatisticasClientPage from "./EstatisticasClientPage";
+import { redirect } from "next/navigation";
 
 export default function EstatisticasPage() {
-  return <EstatisticasClientPage />;
+  redirect("/evolucao");
 }
