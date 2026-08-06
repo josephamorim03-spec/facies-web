@@ -8,6 +8,7 @@ import { CalendarDays } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
 import { useNavbar } from "@/lib/NavbarContext";
+import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { getStudentToday } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
@@ -46,6 +47,7 @@ function TodayDashboardSkeleton() {
 
 export function CanonicalTodayDashboard() {
   const { setTitle, setActions } = useNavbar();
+  const isDesktopNavigation = useDesktopNavigationMode();
   const { token, tokenResolved } = useAuthToken();
   const todayQuery = useQuery({
     queryKey: queryKeys.studentToday,
@@ -64,7 +66,7 @@ export function CanonicalTodayDashboard() {
   useEffect(() => {
     setTitle("Hoje");
     setActions(
-      localDate ? (
+      isDesktopNavigation && localDate ? (
         <Link
           href={`/cronograma?view=week&anchor=${localDate}`}
           aria-label="Abrir cronograma da semana"
@@ -78,7 +80,7 @@ export function CanonicalTodayDashboard() {
       setTitle(null);
       setActions(null);
     };
-  }, [localDate, setActions, setTitle]);
+  }, [isDesktopNavigation, localDate, setActions, setTitle]);
 
   if (todayQuery.isPending || (localDate && agendaQuery.isPending)) {
     return <TodayDashboardSkeleton />;

@@ -80,8 +80,9 @@ test.describe("student agenda alignment", () => {
           (new Date(`${requestedTo}T12:00:00`).getTime() - new Date(`${requestedFrom}T12:00:00`).getTime()) /
             86_400_000,
         ) + 1;
-        const days = Array.from({ length: dayCount }, (_, index) => {
-          const date = shiftISO(requestedFrom, index);
+        const dates = Array.from({ length: dayCount }, (_, index) => shiftISO(requestedFrom, index));
+        const nonTodayDates = dates.filter((date) => date !== today);
+        const days = dates.map((date) => {
           const primary = {
             occurrence_id: "review_task:primary",
             date,
@@ -103,7 +104,22 @@ test.describe("student agenda alignment", () => {
             capabilities,
           };
           const secondary = { ...primary, occurrence_id: "review_task:secondary", review_task_id: "secondary", title: "Revisar Asma" };
-          const items = date === today ? [primary, secondary, secondary] : [];
+          const denseCount = date === nonTodayDates[0]
+            ? 1
+            : date === nonTodayDates[1]
+              ? 5
+              : date === nonTodayDates[2]
+                ? 6
+                : 0;
+          const denseAreas = ["GO", "PD", null, "CG", "MP", "CM"] as const;
+          const denseItems = Array.from({ length: denseCount }, (_, itemIndex) => ({
+            ...primary,
+            occurrence_id: `review_task:dense-${itemIndex}`,
+            review_task_id: `dense-${itemIndex}`,
+            title: `Atividade ${itemIndex + 1}`,
+            area: denseAreas[itemIndex] ?? null,
+          }));
+          const items = date === today ? [primary, secondary, secondary] : denseItems;
           return { date, is_today: date === today, planned_minutes: items.length * 20, planned_questions: items.length * 10, recommended_questions: 20, completed_items: 0, total_items: items.length, overdue_items: 0, overloaded: false, items };
         });
         await route.fulfill({
@@ -155,5 +171,60 @@ test.describe("student agenda alignment", () => {
     await page.getByRole("link", { name: "Mês" }).click();
     await expect(page).toHaveURL(/view=month/);
     await expect(page.locator("[data-calendar-summary-stack='true']")).toBeVisible();
+  });
+
+  test("Week dots use area colors and only show count when activities overflow", async ({ page }) => {
+    await page.goto("/cronograma");
+
+    const freeDay = page.locator("[data-week-day][data-activity-count='0']").first();
+    const singleDay = page.locator("[data-week-day][data-activity-count='1']").first();
+    const fiveDay = page.locator("[data-week-day][data-activity-count='5']").first();
+    const overflowDay = page.locator("[data-week-day][data-activity-count='6']").first();
+
+    await expect(freeDay).toContainText("livre");
+    await expect(singleDay.locator("[data-week-day-dot='true']")).toHaveCount(1);
+    await expect(singleDay).not.toContainText("1 ativ.");
+    await expect(fiveDay.locator("[data-week-day-dot='true']")).toHaveCount(5);
+    await expect(fiveDay.locator("[data-week-day-overflow='true']")).toHaveCount(0);
+    await expect(fiveDay).not.toContainText("5 ativ.");
+    await expect(overflowDay.locator("[data-week-day-dot='true']")).toHaveCount(4);
+    await expect(overflowDay.locator("[data-week-day-overflow='true']")).toHaveText("...");
+    await expect(overflowDay).toContainText("6 ativ.");
+
+    const areas = await fiveDay.locator("[data-week-day-dot='true']").evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute("data-area")),
+    );
+    const colors = await fiveDay.locator("[data-week-day-dot='true']").evaluateAll((nodes) =>
+      nodes.map((node) => getComputedStyle(node).backgroundColor),
+    );
+    expect(areas).toEqual(["GO", "PD", "OU", "CG", "MP"]);
+    expect(new Set(colors).size).toBe(5);
+  });
+
+  test("Mobile uses compact view icons, switches to today, and hides the Today shortcut", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const today = currentTodayISO();
+
+    await page.goto("/hoje");
+    await expect(page.getByRole("link", { name: "Abrir cronograma da semana" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Semana", exact: true })).toBeVisible();
+
+    await page.goto(`/cronograma?view=week&anchor=${shiftISO(today, -7)}&day=${shiftISO(today, -7)}`);
+    await expect(page.getByRole("navigation", { name: "Visão do cronograma" })).toHaveCount(0);
+    const monthSwitch = page.getByTestId("schedule-view-month");
+    await expect(monthSwitch).toBeVisible();
+    await monthSwitch.click();
+    await expect(page).toHaveURL(new RegExp(`view=month&anchor=${today}&day=${today}`));
+
+    const searchButton = page.getByLabel("Buscar tema");
+    await expect(searchButton).toBeVisible();
+    const weekSwitch = page.getByTestId("schedule-view-week");
+    await expect(weekSwitch).toBeVisible();
+    await searchButton.click();
+    await expect(page.getByPlaceholder("Buscar tema...")).toBeVisible();
+    await page.getByTestId("cronograma-search-action").click();
+    await expect(weekSwitch).toBeVisible();
+    await weekSwitch.click();
+    await expect(page).toHaveURL(new RegExp(`view=week&anchor=${today}&day=${today}`));
   });
 });

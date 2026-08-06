@@ -9,8 +9,12 @@ import { CalendarPlus2, ChevronLeft, ChevronRight, SlidersHorizontal } from "luc
 import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
 import { useNavbar } from "@/lib/NavbarContext";
+import { AREA_BG_CLASS } from "@/lib/areaIdentity";
+import { resolveDisplayArea } from "@/lib/areaDisplay";
 import { getOperationalStreak, invalidateStudentExperienceCache } from "@/lib/api";
+import type { StudentAgendaItem } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
+import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { AgendaItemRow } from "@/features/student-agenda/AgendaItemRow";
 import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
 import { useStudentAgenda } from "@/features/student-agenda/useStudentAgenda";
@@ -24,6 +28,7 @@ import {
 
 import { CronogramaStreakCard } from "./CronogramaStreakCard";
 import { WeeklyGoalControl } from "./WeeklyGoalControl";
+import { IconMonthGrid } from "./CronogramaIcons";
 import { writeCronogramaViewModeSession } from "../_lib/viewModeSession";
 
 function isInsideRange(date: string | null | undefined, start: string, end: string): date is string {
@@ -60,11 +65,9 @@ function dayNumber(iso: string): number {
   return new Date(`${iso}T12:00:00`).getDate();
 }
 
-function itemDotTone(status: string): string {
-  if (status === "done") return "bg-success";
-  if (status === "overdue") return "bg-warning";
-  if (status === "in_progress") return "bg-primary";
-  return "bg-muted/55";
+function itemDotArea(item: Pick<StudentAgendaItem, "area" | "title" | "rationale">) {
+  const area = resolveDisplayArea(item.area, item.title, item.rationale);
+  return { area, className: AREA_BG_CLASS[area] };
 }
 
 export function CronogramaWeekView({
@@ -75,6 +78,7 @@ export function CronogramaWeekView({
   initialSelectedDay?: string | null;
 }) {
   const router = useRouter();
+  const isDesktopNavigation = useDesktopNavigationMode();
   const { setTitle, setActions } = useNavbar();
   const { token, tokenResolved } = useAuthToken();
   const range = useMemo(() => weekRange(anchor), [anchor]);
@@ -104,12 +108,23 @@ export function CronogramaWeekView({
 
   useEffect(() => {
     setTitle("Cronograma");
-    setActions(null);
+    setActions(
+      isDesktopNavigation ? null : (
+        <Link
+          href={`/cronograma?view=month&anchor=${today}&day=${today}`}
+          data-testid="schedule-view-month"
+          aria-label="Ver calendário mensal"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <IconMonthGrid className="h-5 w-5" />
+        </Link>
+      ),
+    );
     return () => {
       setTitle(null);
       setActions(null);
     };
-  }, [setActions, setTitle]);
+  }, [isDesktopNavigation, setActions, setTitle, today]);
 
   useEffect(() => {
     writeCronogramaViewModeSession("week");
@@ -192,14 +207,18 @@ export function CronogramaWeekView({
             const current = day.date === today;
             const selected = day.date === selectedDay?.date;
             const items = uniqueAgendaItems(day.items);
+            const activityCount = items.length;
+            const hasOverflow = activityCount > 5;
+            const visibleItems = hasOverflow ? items.slice(0, 4) : items.slice(0, 5);
             return (
               <li key={day.date} className="min-w-0 border-r border-edge bg-paper last:border-r-0">
                 <button
                   type="button"
                   onClick={() => selectDay(day.date)}
-                  aria-label={`${formatWeekday(day.date)} ${formatShortDate(day.date)}${current ? ", hoje" : ""}, ${day.total_items} atividade${day.total_items === 1 ? "" : "s"}`}
+                  aria-label={`${formatWeekday(day.date)} ${formatShortDate(day.date)}${current ? ", hoje" : ""}, ${activityCount} atividade${activityCount === 1 ? "" : "s"}`}
                   aria-pressed={selected}
                   data-week-day={day.date}
+                  data-activity-count={activityCount}
                   data-current-day={current ? "true" : undefined}
                   data-selected-day={selected ? "true" : undefined}
                   className="flex min-h-[5.5rem] w-full min-w-0 flex-col items-center justify-start gap-1 px-0.5 py-2 text-center transition-colors hover:bg-surfaceMuted focus-visible:relative focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
@@ -218,12 +237,23 @@ export function CronogramaWeekView({
                     {dayNumber(day.date)}
                   </span>
                   <span className="flex min-h-2 items-center justify-center gap-0.5" aria-hidden="true">
-                    {items.slice(0, 3).map((item) => (
-                      <span key={item.occurrence_id} className={`h-1.5 w-1.5 rounded-full ${itemDotTone(item.status)}`} />
-                    ))}
+                    {visibleItems.map((item) => {
+                      const dot = itemDotArea(item);
+                      return (
+                        <span
+                          key={item.occurrence_id}
+                          data-week-day-dot="true"
+                          data-area={dot.area}
+                          className={`h-1.5 w-1.5 rounded-full ${dot.className}`}
+                        />
+                      );
+                    })}
+                    {hasOverflow ? (
+                      <span data-week-day-overflow="true" className="text-[9px] font-semibold leading-none text-muted">...</span>
+                    ) : null}
                   </span>
-                  <span className="truncate text-[9px] font-medium text-muted sm:text-[10px]">
-                    {day.total_items > 0 ? `${day.total_items} ativ.` : "livre"}
+                  <span className="min-h-3 truncate text-[9px] font-medium text-muted sm:text-[10px]">
+                    {activityCount === 0 ? "livre" : hasOverflow ? `${activityCount} ativ.` : null}
                   </span>
                 </button>
               </li>
