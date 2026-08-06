@@ -332,6 +332,7 @@ export {
 
 // Canonical student experience snapshot
 export {
+  getStudentAgenda,
   getStudentExperience,
   getStudentPlan,
   getStudentReviewHome,
@@ -340,6 +341,9 @@ export {
   invalidateStudentExperienceCache,
 } from "./api/domains/student-experience";
 export type {
+  StudentAgenda,
+  StudentAgendaDay,
+  StudentAgendaItem,
   StudentExperience,
   StudentMetric,
   StudentSurfaceHome,
@@ -383,7 +387,11 @@ export {
   listPlanActivities,
   startPlanActivity,
   getMyObjectives,
+  getMyObjectivesV2,
   replaceMyObjectives,
+  replaceMyObjectivesV2,
+  requestObjectiveCatalogItem,
+  searchObjectiveCatalogV2,
   getMyAdaptiveTargets,
   replaceMyAdaptiveTargets,
 } from "./api/domains/study-plan";
@@ -395,6 +403,12 @@ export type {
   StudentObjective,
   StudentObjectiveInput,
   StudentObjectives,
+  ObjectiveCatalogItemV2,
+  ObjectiveCatalogSearchV2,
+  ObjectivePlanningDateV2,
+  StudentObjectiveV2,
+  StudentObjectiveV2Input,
+  StudentObjectivesV2,
   AdaptiveTargetKind,
   AdaptiveTarget,
   AdaptiveTargets,

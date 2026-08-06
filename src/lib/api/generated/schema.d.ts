@@ -1793,6 +1793,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/objectives/catalog/v2/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search Catalog V2 */
+        get: operations["search_catalog_v2_objectives_catalog_v2_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/objectives/catalog/v2/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request Missing Catalog Item */
+        post: operations["request_missing_catalog_item_objectives_catalog_v2_requests_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/objectives/editorial/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Manifest */
+        post: operations["import_manifest_admin_objectives_editorial_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/objectives/editorial/sources/{source_id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify Source */
+        post: operations["verify_source_admin_objectives_editorial_sources__source_id__verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/objectives/editorial/revisions/{revision_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish Revision */
+        post: operations["publish_revision_admin_objectives_editorial_revisions__revision_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/objectives/editorial/revisions/{revision_id}/retract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retract Revision */
+        post: operations["retract_revision_admin_objectives_editorial_revisions__revision_id__retract_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/objectives/mine": {
         parameters: {
             query?: never;
@@ -1804,6 +1906,24 @@ export interface paths {
         get: operations["get_my_objectives_objectives_mine_get"];
         /** Replace My Objectives */
         put: operations["replace_my_objectives_objectives_mine_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/objectives/v2/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Objectives V2 */
+        get: operations["get_my_objectives_v2_objectives_v2_mine_get"];
+        /** Replace My Objectives V2 */
+        put: operations["replace_my_objectives_v2_objectives_v2_mine_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1856,13 +1976,26 @@ export interface paths {
         get?: never;
         /**
          * Save Onboarding Objectives
-         * @description Etapa de objetivos do wizard.
-         *
-         *     Diferente de `PUT /objectives/mine`: aqui a origem é `onboarding`, o que
-         *     semeia `priority_boards` a partir das bancas escolhidas para o ranking já
-         *     ter peso de banca no primeiro simulado.
+         * @description Etapa legada v1; mantida por uma versão para rollback/export.
          */
         put: operations["save_onboarding_objectives_onboarding_objectives_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/onboarding/objectives/v2": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Onboarding Objectives V2 */
+        put: operations["save_onboarding_objectives_v2_onboarding_objectives_v2_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2058,6 +2191,23 @@ export interface paths {
         };
         /** Get Student Today */
         get: operations["get_student_today_student_today_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/student/agenda": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Student Agenda */
+        get: operations["get_student_agenda_student_agenda_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4072,6 +4222,79 @@ export interface components {
             /** Is Active */
             is_active: boolean;
         };
+        /** ObjectiveCatalogItemV2Out */
+        ObjectiveCatalogItemV2Out: {
+            planning_focus: components["schemas"]["ObjectivePlanningFocusV2Out"];
+            destination: components["schemas"]["ObjectiveDestinationV2Out"];
+            participation: components["schemas"]["ObjectiveParticipationV2Out"];
+            /**
+             * Availability
+             * @enum {string}
+             */
+            availability: "available" | "estimated" | "past" | "withdrawn" | "unavailable";
+            /** Selectable */
+            selectable: boolean;
+            planning_date: components["schemas"]["ObjectivePlanningDateOut"];
+            source: components["schemas"]["ObjectiveCatalogSourceV2Out"];
+            /**
+             * Editorial State
+             * @default published
+             * @constant
+             */
+            editorial_state: "published";
+        };
+        /** ObjectiveCatalogRequestIn */
+        ObjectiveCatalogRequestIn: {
+            /** Requested Label */
+            requested_label: string;
+        };
+        /** ObjectiveCatalogRequestOut */
+        ObjectiveCatalogRequestOut: {
+            /** Request Id */
+            request_id: string;
+            /**
+             * Status
+             * @default open
+             * @constant
+             */
+            status: "open";
+        };
+        /** ObjectiveCatalogSearchV2Out */
+        ObjectiveCatalogSearchV2Out: {
+            /**
+             * Contract Version
+             * @default objective-catalog-v2
+             * @constant
+             */
+            contract_version: "objective-catalog-v2";
+            /**
+             * Catalog Status
+             * @enum {string}
+             */
+            catalog_status: "ready" | "empty" | "stale";
+            /** Items */
+            items?: components["schemas"]["ObjectiveCatalogItemV2Out"][];
+        };
+        /** ObjectiveCatalogSourceV2Out */
+        ObjectiveCatalogSourceV2Out: {
+            /** Source Id */
+            source_id: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string;
+            /** Verified At */
+            verified_at: string;
+            /**
+             * Freshness
+             * @enum {string}
+             */
+            freshness: "fresh" | "stale";
+            /** Revision Id */
+            revision_id: string;
+            /** Revision Version */
+            revision_version: number;
+        };
         /** ObjectiveDestinationOut */
         ObjectiveDestinationOut: {
             /** Institution Id */
@@ -4090,6 +4313,112 @@ export interface components {
              */
             access_modality: "direct" | "prerequisite" | "mixed" | "unknown";
         };
+        /** ObjectiveDestinationV2Out */
+        ObjectiveDestinationV2Out: {
+            /** Institution Id */
+            institution_id: string;
+            /** Institution Name */
+            institution_name: string;
+            /** Program Id */
+            program_id: string;
+            /** Program Name */
+            program_name: string;
+            /** Specialty Name */
+            specialty_name: string;
+            /**
+             * Access Modality
+             * @enum {string}
+             */
+            access_modality: "direct" | "prerequisite" | "mixed" | "unknown";
+        };
+        /** ObjectiveEditorialRevisionOut */
+        ObjectiveEditorialRevisionOut: {
+            /** Revision Id */
+            revision_id?: string | null;
+            /** Manifest Id */
+            manifest_id: string;
+            /** Version */
+            version?: number | null;
+            /** Status */
+            status: string;
+            /** Content Hash */
+            content_hash: string;
+            /**
+             * Dry Run
+             * @default false
+             */
+            dry_run: boolean;
+        };
+        /** ObjectiveManifestImportIn */
+        ObjectiveManifestImportIn: {
+            /** Manifest */
+            manifest: {
+                [key: string]: unknown;
+            };
+            /**
+             * Dry Run
+             * @default false
+             */
+            dry_run: boolean;
+        };
+        /** ObjectiveParticipationV2Out */
+        ObjectiveParticipationV2Out: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "estimated" | "confirmed" | "not_participating" | "withdrawn";
+            /** Requires Acceptance */
+            requires_acceptance: boolean;
+        };
+        /** ObjectivePlanningDateOut */
+        ObjectivePlanningDateOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "confirmed" | "estimated" | "retracted" | "not_published";
+            /** Precision */
+            precision?: ("exact" | "window") | null;
+            /** Exact Date */
+            exact_date?: string | null;
+            /** Window Start */
+            window_start?: string | null;
+            /** Window End */
+            window_end?: string | null;
+            /** Days Remaining */
+            days_remaining?: number | null;
+            /** Days Remaining Min */
+            days_remaining_min?: number | null;
+            /** Days Remaining Max */
+            days_remaining_max?: number | null;
+            /** Explanation */
+            explanation: string;
+        };
+        /** ObjectivePlanningFocusV2Out */
+        ObjectivePlanningFocusV2Out: {
+            /**
+             * Kind
+             * @default selection_process
+             * @constant
+             */
+            kind: "selection_process";
+            /** Selection Process Id */
+            selection_process_id: string;
+            /** Selection Process Name */
+            selection_process_name: string;
+            /** Edition Id */
+            edition_id: string;
+            /** Edition Label */
+            edition_label: string;
+            /** Label */
+            label: string;
+        };
+        /** ObjectiveRetractionIn */
+        ObjectiveRetractionIn: {
+            /** Reason */
+            reason: string;
+        };
         /** ObjectiveSourceOut */
         ObjectiveSourceOut: {
             /** Source Id */
@@ -4098,6 +4427,13 @@ export interface components {
             url: string;
             /** Verified At */
             verified_at: string;
+        };
+        /** ObjectiveSourceVerificationIn */
+        ObjectiveSourceVerificationIn: {
+            /** Evidence */
+            evidence?: {
+                [key: string]: unknown;
+            };
         };
         /** OnboardingCapacityIn */
         OnboardingCapacityIn: {
@@ -7084,6 +7420,190 @@ export interface components {
             /** Verification Expires At */
             verification_expires_at: string;
         };
+        /** StudentAgendaCapabilitiesOut */
+        StudentAgendaCapabilitiesOut: {
+            /**
+             * Can Start
+             * @default false
+             */
+            can_start: boolean;
+            /**
+             * Can Reschedule
+             * @default false
+             */
+            can_reschedule: boolean;
+            /**
+             * Can Edit
+             * @default false
+             */
+            can_edit: boolean;
+            /**
+             * Can Delete
+             * @default false
+             */
+            can_delete: boolean;
+        };
+        /** StudentAgendaDayOut */
+        StudentAgendaDayOut: {
+            /** Date */
+            date: string;
+            /**
+             * Is Today
+             * @default false
+             */
+            is_today: boolean;
+            /**
+             * Planned Minutes
+             * @default 0
+             */
+            planned_minutes: number;
+            /**
+             * Planned Questions
+             * @default 0
+             */
+            planned_questions: number;
+            /** Recommended Questions */
+            recommended_questions?: number | null;
+            /**
+             * Completed Items
+             * @default 0
+             */
+            completed_items: number;
+            /**
+             * Total Items
+             * @default 0
+             */
+            total_items: number;
+            /**
+             * Overdue Items
+             * @default 0
+             */
+            overdue_items: number;
+            /**
+             * Overloaded
+             * @default false
+             */
+            overloaded: boolean;
+            /** Items */
+            items?: components["schemas"]["StudentAgendaItemOut"][];
+        };
+        /** StudentAgendaItemOut */
+        StudentAgendaItemOut: {
+            /** Occurrence Id */
+            occurrence_id: string;
+            /** Date */
+            date: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "study_plan" | "review_queue" | "study_history" | "calendar" | "question_bank" | "flashcards";
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "plan_activity" | "review_task" | "directed_study" | "calendar_event" | "question_session" | "flashcard_review";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "scheduled" | "pending" | "in_progress" | "done" | "overdue" | "skipped";
+            /** Title */
+            title: string;
+            /** Area */
+            area?: string | null;
+            /** Rationale */
+            rationale?: string | null;
+            /** Href */
+            href?: string | null;
+            /**
+             * Estimated Minutes
+             * @default 0
+             */
+            estimated_minutes: number;
+            /**
+             * Expected Questions
+             * @default 0
+             */
+            expected_questions: number;
+            /**
+             * Completed Questions
+             * @default 0
+             */
+            completed_questions: number;
+            /** Plan Activity Id */
+            plan_activity_id?: string | null;
+            /** Review Task Id */
+            review_task_id?: string | null;
+            /** Directed Study Id */
+            directed_study_id?: string | null;
+            /** Session Id */
+            session_id?: string | null;
+            /** Event Id */
+            event_id?: string | null;
+            capabilities?: components["schemas"]["StudentAgendaCapabilitiesOut"];
+        };
+        /** StudentAgendaOut */
+        StudentAgendaOut: {
+            /**
+             * Contract Version
+             * @default student-agenda-v1
+             * @constant
+             */
+            contract_version: "student-agenda-v1";
+            /** Generated At */
+            generated_at: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "complete" | "partial" | "stale";
+            /** Timezone */
+            timezone: string;
+            /** Today */
+            today: string;
+            /** Date From */
+            date_from: string;
+            /** Date To */
+            date_to: string;
+            summary: components["schemas"]["StudentAgendaSummaryOut"];
+            /** Overdue */
+            overdue?: components["schemas"]["StudentAgendaItemOut"][];
+            /** Days */
+            days?: components["schemas"]["StudentAgendaDayOut"][];
+            /** Missing Sources */
+            missing_sources?: string[];
+        };
+        /** StudentAgendaSummaryOut */
+        StudentAgendaSummaryOut: {
+            /**
+             * Completed Items
+             * @default 0
+             */
+            completed_items: number;
+            /**
+             * Total Items
+             * @default 0
+             */
+            total_items: number;
+            /**
+             * Overdue Items
+             * @default 0
+             */
+            overdue_items: number;
+            /**
+             * Questions Done Week
+             * @default 0
+             */
+            questions_done_week: number;
+            /**
+             * Weekly Goal Questions
+             * @default 0
+             */
+            weekly_goal_questions: number;
+            /** Weekly Progress Pct */
+            weekly_progress_pct?: number | null;
+        };
         /** StudentExperienceActiveSessionOut */
         StudentExperienceActiveSessionOut: {
             /** Session Id */
@@ -7268,6 +7788,44 @@ export interface components {
             /** Edition Id */
             edition_id?: string | null;
         };
+        /** StudentObjectiveV2In */
+        StudentObjectiveV2In: {
+            /** Program Id */
+            program_id: string;
+            /** Edition Id */
+            edition_id: string;
+            /**
+             * Accept Estimated Participation
+             * @default false
+             */
+            accept_estimated_participation: boolean;
+            /**
+             * Accept Estimated Date
+             * @default false
+             */
+            accept_estimated_date: boolean;
+        };
+        /** StudentObjectiveV2Out */
+        StudentObjectiveV2Out: {
+            /** Student Objective Id */
+            student_objective_id: string;
+            /** Priority */
+            priority: number;
+            /** Program Id */
+            program_id: string;
+            /** Edition Id */
+            edition_id: string;
+            /** Accept Estimated Participation */
+            accept_estimated_participation: boolean;
+            /** Accept Estimated Date */
+            accept_estimated_date: boolean;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "unavailable" | "retracted";
+            resolved?: components["schemas"]["ObjectiveCatalogItemV2Out"] | null;
+        };
         /** StudentObjectivesOut */
         StudentObjectivesOut: {
             /**
@@ -7293,6 +7851,41 @@ export interface components {
         StudentObjectivesReplaceIn: {
             /** Items */
             items: components["schemas"]["StudentObjectiveIn"][];
+            /** Expected Revision */
+            expected_revision?: number | null;
+        };
+        /** StudentObjectivesV2Out */
+        StudentObjectivesV2Out: {
+            /**
+             * Contract Version
+             * @default student-objectives-v2
+             * @constant
+             */
+            contract_version: "student-objectives-v2";
+            /**
+             * Selection Revision
+             * @default 0
+             */
+            selection_revision: number;
+            /**
+             * Has Selected Objectives
+             * @default false
+             */
+            has_selected_objectives: boolean;
+            /** Primary Planning Date */
+            primary_planning_date?: string | null;
+            /**
+             * Planning Horizon Mode
+             * @enum {string}
+             */
+            planning_horizon_mode: "exact" | "estimated_window" | "rolling_four_weeks";
+            /** Items */
+            items?: components["schemas"]["StudentObjectiveV2Out"][];
+        };
+        /** StudentObjectivesV2ReplaceIn */
+        StudentObjectivesV2ReplaceIn: {
+            /** Items */
+            items: components["schemas"]["StudentObjectiveV2In"][];
             /** Expected Revision */
             expected_revision?: number | null;
         };
@@ -7435,6 +8028,11 @@ export interface components {
             /** Area */
             area?: string | null;
             execution?: components["schemas"]["StudentTodayExecutionOut"] | null;
+            /**
+             * Agenda Occurrence Id
+             * @description Stable occurrence rendered by student-agenda-v1 when this action belongs to the agenda.
+             */
+            agenda_occurrence_id?: string | null;
         };
         /** StudentTodayDetailsOut */
         StudentTodayDetailsOut: {
@@ -7597,7 +8195,11 @@ export interface components {
         StudentTodaySchedulePreviewOut: {
             /** Date */
             date: string;
-            /** Items */
+            /**
+             * Items
+             * @deprecated
+             * @description Deprecated compatibility preview; use GET /student/agenda.
+             */
             items?: components["schemas"]["StudentTodayScheduleItemOut"][];
             /**
              * Overdue Count
@@ -12373,6 +12975,219 @@ export interface operations {
             };
         };
     };
+    search_catalog_v2_objectives_catalog_v2_search_get: {
+        parameters: {
+            query?: {
+                query?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ObjectiveCatalogSearchV2Out"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_missing_catalog_item_objectives_catalog_v2_requests_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ObjectiveCatalogRequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ObjectiveCatalogRequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_manifest_admin_objectives_editorial_import_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ObjectiveManifestImportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ObjectiveEditorialRevisionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_source_admin_objectives_editorial_sources__source_id__verify_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ObjectiveSourceVerificationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_revision_admin_objectives_editorial_revisions__revision_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                revision_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ObjectiveEditorialRevisionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retract_revision_admin_objectives_editorial_revisions__revision_id__retract_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                revision_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ObjectiveRetractionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ObjectiveEditorialRevisionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_my_objectives_objectives_mine_get: {
         parameters: {
             query?: never;
@@ -12426,6 +13241,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentObjectivesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_objectives_v2_objectives_v2_mine_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentObjectivesV2Out"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_my_objectives_v2_objectives_v2_mine_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentObjectivesV2ReplaceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentObjectivesV2Out"];
                 };
             };
             /** @description Validation Error */
@@ -12548,6 +13429,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["StudentObjectivesReplaceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_onboarding_objectives_v2_onboarding_objectives_v2_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentObjectivesV2ReplaceIn"];
             };
         };
         responses: {
@@ -12922,6 +13838,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentTodayOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_student_agenda_student_agenda_get: {
+        parameters: {
+            query: {
+                date_from: string;
+                date_to: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentAgendaOut"];
                 };
             };
             /** @description Validation Error */
