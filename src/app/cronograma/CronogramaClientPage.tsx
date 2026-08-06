@@ -25,7 +25,7 @@ export default function CronogramaClientPage({
       {initialView === "month" ? (
         <CronogramaMonthView initialSelectedDay={initialSelectedDay ?? anchor} />
       ) : (
-        <CronogramaWeekView anchor={anchor} />
+        <CronogramaWeekView anchor={anchor} initialSelectedDay={initialSelectedDay} />
       )}
     </div>
   );
