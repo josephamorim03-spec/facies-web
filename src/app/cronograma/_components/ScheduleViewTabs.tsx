@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS } from "@/components/ui/Tabs";
+
 export function ScheduleViewTabs({
   active,
   anchor,
@@ -8,15 +10,13 @@ export function ScheduleViewTabs({
   anchor: string;
 }) {
   return (
-    <nav aria-label="Visão do cronograma" className="mx-auto grid w-full max-w-xs grid-cols-2 border border-edge bg-paper p-1">
+    <nav aria-label="Visão do cronograma" className={`${TAB_LIST_CLASS} mx-auto w-full max-w-xs`}>
       {(["week", "month"] as const).map((view) => (
         <Link
           key={view}
           href={`/cronograma?view=${view}&anchor=${anchor}`}
           aria-current={active === view ? "page" : undefined}
-          className={`flex min-h-9 items-center justify-center px-4 text-sm font-semibold transition ${
-            active === view ? "bg-ink text-paper" : "text-muted hover:text-ink"
-          }`}
+          className={`${TAB_TRIGGER_CLASS} flex-1 justify-center text-sm`}
         >
           {view === "week" ? "Semana" : "Mês"}
         </Link>

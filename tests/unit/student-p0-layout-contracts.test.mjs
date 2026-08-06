@@ -22,6 +22,8 @@ test("Cronograma abre na semana e preserva o calendario mensal como modo secunda
   const page = read("src/app/cronograma/page.tsx");
   const source = read("src/app/cronograma/CronogramaClientPage.tsx");
   const month = read("src/app/cronograma/CronogramaMonthView.tsx");
+  const week = read("src/app/cronograma/_components/CronogramaWeekView.tsx");
+  const viewTabs = read("src/app/cronograma/_components/ScheduleViewTabs.tsx");
 
   assert.equal(
     source.includes("<StudentPrimaryAction"),
@@ -42,6 +44,20 @@ test("Cronograma abre na semana e preserva o calendario mensal como modo secunda
     "a meta semanal nao pode competir com o calendario pelo topo da tela",
   );
   assert.match(month, /aria-label="Calendário mensal"/);
+  assert.match(week, /data-week-strip="true"/, "a semana deve ser uma faixa horizontal do calendario");
+  assert.match(week, /grid-cols-7/, "os sete dias devem ocupar uma unica linha");
+  assert.match(week, /data-week-detail="true"/, "o dia selecionado deve abrir detalhes abaixo da faixa");
+  assert.match(week, /<CronogramaStreakCard/, "a constancia do aluno deve permanecer visivel na semana");
+  assert.match(week, /<WeeklyGoalControl/, "a meta semanal deve permanecer editavel na semana");
+  assert.match(week, /href="\/preferencias"/, "a semana deve levar as preferencias de meta e capacidade");
+  assertComesBefore(
+    week,
+    'data-week-strip="true"',
+    "<WeeklyGoalControl",
+    "a faixa e o detalhe diario devem continuar protagonistas antes da meta auxiliar",
+  );
+  assert.match(viewTabs, /TAB_LIST_CLASS/);
+  assert.match(viewTabs, /TAB_TRIGGER_CLASS/);
 });
 
 test("Acompanhar comeca por graficos e nao duplica CTA dominante", () => {

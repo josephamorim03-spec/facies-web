@@ -140,7 +140,18 @@ test.describe("student agenda alignment", () => {
   test("Cronograma opens in Week, highlights today, and switches to Month", async ({ page }) => {
     await page.goto("/cronograma");
     await expect(page.locator("[data-cronograma-week='true']")).toBeVisible();
+    await expect(page.locator("[data-week-strip='true'] [data-week-day]")).toHaveCount(7);
     await expect(page.locator("[data-current-day='true']")).toBeVisible();
+    await expect(page.locator("[data-week-detail='true']")).toHaveAttribute("data-detail-date", currentTodayISO());
+    await expect(page.getByText("12 dias seguidos")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Abrir preferências" })).toBeVisible();
+
+    const anotherDay = page.locator("[data-week-day]:not([data-current-day='true'])").first();
+    const anotherDate = await anotherDay.getAttribute("data-week-day");
+    await anotherDay.click();
+    await expect(anotherDay).toHaveAttribute("data-selected-day", "true");
+    await expect(page.locator("[data-week-detail='true']")).toHaveAttribute("data-detail-date", anotherDate ?? "");
+
     await page.getByRole("link", { name: "Mês" }).click();
     await expect(page).toHaveURL(/view=month/);
     await expect(page.locator("[data-calendar-summary-stack='true']")).toBeVisible();
