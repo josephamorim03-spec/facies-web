@@ -2,31 +2,27 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowDown,
-  ArrowUp,
   Bell,
   CalendarClock,
   CalendarPlus,
   Check,
   Layers3,
   Save,
-  SlidersHorizontal,
   Target,
   Trash2,
-  X,
 } from "lucide-react";
 
 import {
   createEvent,
   deleteEvent,
+  getCapabilities,
   getFsrsConfig,
   getProfile,
   listEvents,
-  listQuestionBankBoards,
   putFsrsConfig,
   updateProfile,
   type CalendarEventOut,
-  type QuestionBankBoard,
+  type CapabilityStatus,
   type UserProfile,
 } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
@@ -39,6 +35,7 @@ import {
 import { getErrorMessage } from "@/lib/error-utils";
 import { BottomActionBar, BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
 import { Button } from "@/components/ui/Button";
+import { ObjectiveSelector } from "@/components/objectives/ObjectiveSelector";
 import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
 import {
   displayEventLabel,
@@ -50,8 +47,6 @@ import {
   toDisplayDate,
   WEEKDAYS,
 } from "@/app/desempenho/_lib/perfilShared";
-import { AdaptiveTargetsEditor } from "./_components/AdaptiveTargetsEditor";
-import { ObjectivesEditor } from "./_components/ObjectivesEditor";
 
 type ToggleProps = {
   checked: boolean;
@@ -123,7 +118,7 @@ function SectionTitle({
 export default function PreferenciasPage() {
   const token = getAuthToken();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [boards, setBoards] = useState<QuestionBankBoard[]>([]);
+  const [objectivesCapability, setObjectivesCapability] = useState<CapabilityStatus | null>(null);
   const [events, setEvents] = useState<CalendarEventOut[]>([]);
   const [weeklyGoalInput, setWeeklyGoalInput] = useState("200");
   const [shift12hInput, setShift12hInput] = useState("");
@@ -144,14 +139,16 @@ export default function PreferenciasPage() {
   useEffect(() => {
     Promise.all([
       getProfile(token),
-      listQuestionBankBoards(token).catch(() => []),
       listEvents(token).catch(() => []),
       getFsrsConfig(token),
+      getCapabilities(token).catch(() => ({ capabilities: [] })),
     ])
-      .then(([nextProfile, nextBoards, nextEvents, fsrs]) => {
+      .then(([nextProfile, nextEvents, fsrs, capabilities]) => {
         setProfile(nextProfile);
-        setBoards(nextBoards);
         setEvents(nextEvents);
+        setObjectivesCapability(
+          capabilities.capabilities.find((item) => item.key === "student_objectives_v2") ?? null,
+        );
         setWeeklyGoalInput(String(nextProfile.weekly_goal_questions));
         setShift12hInput(nextProfile.shift_12h_capacity == null ? "" : String(nextProfile.shift_12h_capacity));
         setRetention(fsrs.desired_retention);
@@ -165,11 +162,6 @@ export default function PreferenciasPage() {
       })
       .finally(() => setLoading(false));
   }, [token]);
-
-  const availableBoards = useMemo(() => {
-    const selected = new Set(profile?.priority_boards ?? []);
-    return boards.filter((board) => !selected.has(board.board_code));
-  }, [boards, profile?.priority_boards]);
 
   const currentTodayISO = useMemo(() => todayISO(), []);
 
@@ -219,27 +211,6 @@ export default function PreferenciasPage() {
     const digitsOnly = rawValue.replace(/\D/g, "");
     setShift12hInput(digitsOnly);
     patchLocal({ shift_12h_capacity: digitsOnly ? Number.parseInt(digitsOnly, 10) : null });
-  }
-
-  function addBoard(code: string) {
-    if (!profile || !code || profile.priority_boards.length >= 3) return;
-    patchLocal({ priority_boards: [...profile.priority_boards, code] });
-  }
-
-  function removeBoard(code: string) {
-    if (!profile) return;
-    patchLocal({
-      priority_boards: profile.priority_boards.filter((item) => item !== code),
-    });
-  }
-
-  function moveBoard(index: number, direction: -1 | 1) {
-    if (!profile) return;
-    const nextIndex = index + direction;
-    if (nextIndex < 0 || nextIndex >= profile.priority_boards.length) return;
-    const next = [...profile.priority_boards];
-    [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
-    patchLocal({ priority_boards: next });
   }
 
   async function addEvent() {
@@ -308,7 +279,6 @@ export default function PreferenciasPage() {
         weekly_goal_questions: profile.weekly_goal_questions,
         shift_12h_capacity: profile.shift_12h_capacity,
         reschedule_mode: profile.reschedule_mode,
-        priority_boards: profile.priority_boards,
         weekly_goal_notifications_enabled:
           profile.weekly_goal_notifications_enabled,
         calendar_change_alerts_enabled:
@@ -565,84 +535,16 @@ export default function PreferenciasPage() {
         <section className="py-7">
           <SectionTitle
             icon={Target}
-            title="Provas-alvo"
-            description="Quais provas você quer prestar, em ordem de prioridade. O cronograma usa esses dados para organizar horizonte e carga."
+            title="Objetivo de residência"
+            description="Escolha instituição e programa; o processo, a edição e a data vêm do catálogo editorial verificado."
           />
-          <ObjectivesEditor token={token} boards={boards} />
-        </section>
-
-        <AdaptiveTargetsEditor token={token} />
-
-        <section className="py-7">
-          <SectionTitle
-            icon={SlidersHorizontal}
-            title="Preferências do Banco de Questões"
-            description="Filtro operacional independente das suas provas-alvo. A ordem influencia apenas a seleção atual do Banco."
+          <ObjectiveSelector
+            token={token}
+            mode="preferences"
+            capabilityEnabled={objectivesCapability?.enabled ?? false}
+            capabilityReady={objectivesCapability?.can_start_action ?? false}
+            unavailableReason={objectivesCapability?.reason}
           />
-          <ol className="mt-4 divide-y divide-edge" aria-label="Preferências de banca selecionadas">
-            {profile.priority_boards.map((code, index) => {
-              const label =
-                boards.find((board) => board.board_code === code)?.board_name ?? code;
-              return (
-                <li key={code} className="flex min-h-12 items-center gap-3 py-2">
-                  <span className="w-6 text-sm font-semibold text-muted">
-                    {index + 1}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">
-                    {label}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => moveBoard(index, -1)}
-                    disabled={index === 0}
-                    className="p-2 text-muted hover:text-ink disabled:opacity-25"
-                    aria-label={`Subir preferência de ${label}`}
-                  >
-                    <ArrowUp className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveBoard(index, 1)}
-                    disabled={index === profile.priority_boards.length - 1}
-                    className="p-2 text-muted hover:text-ink disabled:opacity-25"
-                    aria-label={`Descer preferência de ${label}`}
-                  >
-                    <ArrowDown className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeBoard(code)}
-                    className="p-2 text-muted hover:text-danger"
-                    aria-label={`Remover preferência de ${label}`}
-                  >
-                    <X className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-          {profile.priority_boards.length === 0 ? (
-            <p className="mt-4 text-sm text-muted">
-              Nenhuma banca definida para o filtro operacional do Banco.
-            </p>
-          ) : null}
-          {profile.priority_boards.length < 3 ? (
-            <label className="mt-4 block max-w-md">
-              <span className="sr-only">Adicionar preferência de banca</span>
-              <select
-                value=""
-                onChange={(event) => addBoard(event.target.value)}
-                className="paper-control min-h-11 w-full border border-edge bg-surface px-3 text-sm text-ink"
-              >
-                <option value="">Adicionar instituição ou banca</option>
-                {availableBoards.map((board) => (
-                  <option key={board.board_code} value={board.board_code}>
-                    {board.board_name} ({board.question_count})
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
         </section>
 
         <section className="py-7">

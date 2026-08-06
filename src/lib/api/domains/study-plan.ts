@@ -48,6 +48,124 @@ export async function replaceMyObjectives(
   });
 }
 
+export type ObjectivePlanningDateV2 = {
+  status: "confirmed" | "estimated" | "retracted" | "not_published";
+  precision: "exact" | "window" | null;
+  exact_date: string | null;
+  window_start: string | null;
+  window_end: string | null;
+  days_remaining: number | null;
+  days_remaining_min: number | null;
+  days_remaining_max: number | null;
+  explanation: string;
+};
+
+export type ObjectiveCatalogItemV2 = {
+  planning_focus: {
+    kind: "selection_process";
+    selection_process_id: string;
+    selection_process_name: string;
+    edition_id: string;
+    edition_label: string;
+    label: string;
+  };
+  destination: {
+    institution_id: string;
+    institution_name: string;
+    program_id: string;
+    program_name: string;
+    specialty_name: string;
+    access_modality: "direct" | "prerequisite" | "mixed" | "unknown";
+  };
+  participation: {
+    status: "estimated" | "confirmed" | "not_participating" | "withdrawn";
+    requires_acceptance: boolean;
+  };
+  availability: "available" | "estimated" | "past" | "withdrawn" | "unavailable";
+  selectable: boolean;
+  planning_date: ObjectivePlanningDateV2;
+  source: {
+    source_id: string;
+    title: string;
+    url: string;
+    verified_at: string;
+    freshness: "fresh" | "stale";
+    revision_id: string;
+    revision_version: number;
+  };
+  editorial_state: "published";
+};
+
+export type ObjectiveCatalogSearchV2 = {
+  contract_version: "objective-catalog-v2";
+  catalog_status: "ready" | "empty" | "stale";
+  items: ObjectiveCatalogItemV2[];
+};
+
+export type StudentObjectiveV2Input = {
+  program_id: string;
+  edition_id: string;
+  accept_estimated_participation: boolean;
+  accept_estimated_date: boolean;
+};
+
+export type StudentObjectiveV2 = StudentObjectiveV2Input & {
+  student_objective_id: string;
+  priority: number;
+  status: "active" | "unavailable" | "retracted";
+  resolved: ObjectiveCatalogItemV2 | null;
+};
+
+export type StudentObjectivesV2 = {
+  contract_version: "student-objectives-v2";
+  selection_revision: number;
+  has_selected_objectives: boolean;
+  primary_planning_date: string | null;
+  planning_horizon_mode: "exact" | "estimated_window" | "rolling_four_weeks";
+  items: StudentObjectiveV2[];
+};
+
+export async function searchObjectiveCatalogV2(
+  token: string,
+  query = "",
+  limit = 20,
+): Promise<ObjectiveCatalogSearchV2> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (query.trim()) params.set("query", query.trim());
+  return api<ObjectiveCatalogSearchV2>(`/api/objectives/catalog/v2/search?${params}`, {
+    headers: authHeader(token),
+  });
+}
+
+export async function requestObjectiveCatalogItem(
+  token: string,
+  requestedLabel: string,
+): Promise<{ request_id: string; status: "open" }> {
+  return api("/api/objectives/catalog/v2/requests", {
+    method: "POST",
+    headers: { ...authHeader(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ requested_label: requestedLabel }),
+  });
+}
+
+export async function getMyObjectivesV2(token: string): Promise<StudentObjectivesV2> {
+  return api<StudentObjectivesV2>("/api/objectives/v2/mine", {
+    headers: authHeader(token),
+  });
+}
+
+export async function replaceMyObjectivesV2(
+  token: string,
+  items: StudentObjectiveV2Input[],
+  expectedRevision: number | null,
+): Promise<StudentObjectivesV2> {
+  return api<StudentObjectivesV2>("/api/objectives/v2/mine", {
+    method: "PUT",
+    headers: { ...authHeader(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ items, expected_revision: expectedRevision }),
+  });
+}
+
 // ------------------------------------------------------ metas adaptativas
 
 export type AdaptiveTargetKind = "institution" | "organizer" | "selection_process";
@@ -128,6 +246,18 @@ export async function saveOnboardingObjectives(
   expectedRevision: number | null,
 ): Promise<OnboardingState> {
   return api<OnboardingState>("/api/onboarding/objectives", {
+    method: "PUT",
+    headers: { ...authHeader(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ items, expected_revision: expectedRevision }),
+  });
+}
+
+export async function saveOnboardingObjectivesV2(
+  token: string,
+  items: StudentObjectiveV2Input[],
+  expectedRevision: number | null,
+): Promise<OnboardingState> {
+  return api<OnboardingState>("/api/onboarding/objectives/v2", {
     method: "PUT",
     headers: { ...authHeader(token), "Content-Type": "application/json" },
     body: JSON.stringify({ items, expected_revision: expectedRevision }),

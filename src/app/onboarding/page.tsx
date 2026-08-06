@@ -8,27 +8,24 @@ import {
   completeOnboarding,
   getOnboarding,
   saveOnboardingCapacity,
-  saveOnboardingObjectives,
   saveOnboardingRoutine,
   type OnboardingState,
   type OnboardingStep,
   type RoutineDayInput,
-  type StudentObjectiveInput,
 } from "@/lib/api/domains/study-plan";
-import { getAPIErrorDetail } from "@/lib/api";
+import { getAPIErrorDetail, getCapabilities, type CapabilityStatus } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { BoardPicker } from "./_components/BoardPicker";
+import { ObjectiveSelector } from "@/components/objectives/ObjectiveSelector";
 import { WeekdayPicker } from "./_components/WeekdayPicker";
 
 const STEPS: { key: OnboardingStep; label: string; title: string; help: string }[] = [
   {
     key: "objectives",
     label: "Objetivo",
-    title: "Para qual prova você está estudando?",
-    help: "Até 3 provas. A data define o horizonte do seu cronograma; a banca define o que mais cai.",
+    title: "Qual é seu objetivo de residência?",
+    help: "Escolha até 3 destinos. Processo, edição e data vêm de fontes editoriais verificadas.",
   },
   {
     key: "routine",
@@ -50,7 +47,6 @@ const STEPS: { key: OnboardingStep; label: string; title: string; help: string }
   },
 ];
 
-type ObjectiveDraft = { board_code: string; exam_name: string; exam_date: string };
 type RoutineDraft = { weekday: number; kind: "shift" | "work" | "other"; duration_hours: number };
 
 const DEFAULT_MINUTES = 120;
@@ -71,10 +67,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [objectives, setObjectives] = useState<ObjectiveDraft[]>([
-    { board_code: "", exam_name: "", exam_date: "" },
-  ]);
+  const [objectivesCapability, setObjectivesCapability] = useState<CapabilityStatus | null>(null);
   const [routine, setRoutine] = useState<RoutineDraft[]>([]);
   const [availability, setAvailability] = useState<Record<number, number>>({
     0: DEFAULT_MINUTES,
@@ -88,11 +81,18 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     let cancelled = false;
-    getOnboarding(getAuthToken())
-      .then((result) => {
+    const token = getAuthToken();
+    Promise.all([
+      getOnboarding(token),
+      getCapabilities(token).catch(() => ({ capabilities: [] })),
+    ])
+      .then(([result, capabilities]) => {
         if (cancelled) return;
         setState(result);
         setStep(result.next_step);
+        setObjectivesCapability(
+          capabilities.capabilities.find((item) => item.key === "student_objectives_v2") ?? null,
+        );
         if (Object.keys(result.study_availability).length > 0) {
           const parsed: Record<number, number> = {};
           for (const [key, minutes] of Object.entries(result.study_availability)) {
@@ -114,36 +114,6 @@ export default function OnboardingPage() {
 
   const stepIndex = useMemo(() => STEPS.findIndex((s) => s.key === step), [step]);
   const current = STEPS[stepIndex] ?? STEPS[0];
-
-  const submitObjectives = useCallback(async () => {
-    const items: StudentObjectiveInput[] = objectives
-      .filter((item) => item.board_code.trim())
-      .map((item) => ({
-        board_code: item.board_code.trim().toUpperCase(),
-        exam_name: item.exam_name.trim() || null,
-        exam_date: item.exam_date || null,
-        date_status: item.exam_date ? "confirmed" : "estimated",
-      }));
-    if (items.length === 0) {
-      setError("Informe pelo menos uma banca.");
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    try {
-      const next = await saveOnboardingObjectives(
-        getAuthToken(),
-        items,
-        state?.objectives_revision ?? null,
-      );
-      setState(next);
-      setStep("routine");
-    } catch (err) {
-      setError(errorMessage(err, "Não foi possível salvar seus objetivos."));
-    } finally {
-      setBusy(false);
-    }
-  }, [objectives, state]);
 
   const submitRoutine = useCallback(async () => {
     setBusy(true);
@@ -253,71 +223,17 @@ export default function OnboardingPage() {
 
       <div className="mt-6 space-y-4">
         {step === "objectives" && (
-          <>
-            {objectives.map((objective, index) => (
-              <div key={index} className="space-y-3 rounded-control border border-edge bg-surface p-4">
-                <BoardPicker
-                  value={objective.board_code}
-                  onChange={(next) =>
-                    setObjectives((previous) =>
-                      previous.map((item, i) =>
-                        i === index ? { ...item, board_code: next } : item,
-                      ),
-                    )
-                  }
-                />
-                <Input
-                  label="Nome da prova (opcional)"
-                  placeholder="ENARE 2026/2027"
-                  value={objective.exam_name}
-                  onChange={(event) =>
-                    setObjectives((previous) =>
-                      previous.map((item, i) =>
-                        i === index ? { ...item, exam_name: event.target.value } : item,
-                      ),
-                    )
-                  }
-                />
-                <Input
-                  label="Data da prova (opcional)"
-                  type="date"
-                  hint="Sem data, seu plano usa uma janela de 4 semanas."
-                  value={objective.exam_date}
-                  onChange={(event) =>
-                    setObjectives((previous) =>
-                      previous.map((item, i) =>
-                        i === index ? { ...item, exam_date: event.target.value } : item,
-                      ),
-                    )
-                  }
-                />
-                {objectives.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() =>
-                      setObjectives((previous) => previous.filter((_, i) => i !== index))
-                    }
-                  >
-                    Remover
-                  </Button>
-                )}
-              </div>
-            ))}
-            {objectives.length < 3 && (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  setObjectives((previous) => [
-                    ...previous,
-                    { board_code: "", exam_name: "", exam_date: "" },
-                  ])
-                }
-              >
-                Adicionar outra prova
-              </Button>
-            )}
-          </>
+          <ObjectiveSelector
+            token={getAuthToken()}
+            mode="onboarding"
+            capabilityEnabled={objectivesCapability?.enabled ?? false}
+            capabilityReady={objectivesCapability?.can_start_action ?? false}
+            unavailableReason={objectivesCapability?.reason}
+            onOnboardingSaved={(next) => {
+              setState(next);
+              setStep("routine");
+            }}
+          />
         )}
 
         {step === "routine" && (
@@ -465,21 +381,22 @@ export default function OnboardingPage() {
         >
           Voltar
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          loading={busy}
-          disabled={busy}
-          onClick={() => {
-            if (step === "objectives") return void submitObjectives();
-            if (step === "routine") return void submitRoutine();
-            if (step === "capacity") return void submitCapacity();
-            return void finish();
-          }}
-        >
-          {step === "ready" ? "Gerar minha trilha" : "Continuar"}
-          <ArrowRight aria-hidden className="h-4 w-4" />
-        </Button>
+        {step !== "objectives" ? (
+          <Button
+            variant="primary"
+            size="md"
+            loading={busy}
+            disabled={busy}
+            onClick={() => {
+              if (step === "routine") return void submitRoutine();
+              if (step === "capacity") return void submitCapacity();
+              return void finish();
+            }}
+          >
+            {step === "ready" ? "Concluir configuração" : "Continuar"}
+            <ArrowRight aria-hidden className="h-4 w-4" />
+          </Button>
+        ) : <span />}
       </div>
     </main>
   );
