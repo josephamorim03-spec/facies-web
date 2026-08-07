@@ -2206,6 +2206,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/student/evolution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Student Evolution
+         * @description Rotina e execução no mesmo eixo, com a amostra declarada.
+         *
+         *     Vive sob `/student` de propósito: o KROS-019 declarou `student-experience` a
+         *     autoridade da Evolução, e um prefixo `/evolution` próprio seria o QUARTO
+         *     namespace de analytics do produto.
+         */
+        get: operations["get_student_evolution_student_evolution_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/student/today": {
         parameters: {
             query?: never;
@@ -3789,6 +3813,117 @@ export interface components {
              * @default false
              */
             confirm_impact: boolean;
+        };
+        /**
+         * EvolutionAssociationOut
+         * @description Associação observada, sempre como intervalo.
+         *
+         *     Não há campo para o valor pontual de propósito: exibir ρ sozinho convida a
+         *     ler precisão que a amostra não sustenta. `conclusive` só é verdadeiro quando
+         *     o intervalo inteiro exclui zero.
+         */
+        EvolutionAssociationOut: {
+            /** Routine Metric */
+            routine_metric: string;
+            /** Outcome Metric */
+            outcome_metric: string;
+            /** N */
+            n: number;
+            /** Ci Low */
+            ci_low?: number | null;
+            /** Ci High */
+            ci_high?: number | null;
+            /**
+             * Conclusive
+             * @default false
+             */
+            conclusive: boolean;
+            /**
+             * Days Missing
+             * @default 0
+             */
+            days_missing: number;
+            /**
+             * Bands
+             * @default []
+             */
+            bands: components["schemas"]["EvolutionBandOut"][];
+        };
+        /** EvolutionBandOut */
+        EvolutionBandOut: {
+            /**
+             * Label
+             * @enum {string}
+             */
+            label: "menor_volume" | "maior_volume";
+            /** N */
+            n: number;
+            /** Ci Low */
+            ci_low?: number | null;
+            /** Ci High */
+            ci_high?: number | null;
+        };
+        /** EvolutionOut */
+        EvolutionOut: {
+            /**
+             * Contract Version
+             * @default student-evolution-v1
+             * @constant
+             */
+            contract_version: "student-evolution-v1";
+            window: components["schemas"]["EvolutionWindowOut"];
+            /**
+             * Points
+             * @default []
+             */
+            points: components["schemas"]["EvolutionPointOut"][];
+            /**
+             * Associations
+             * @default []
+             */
+            associations: components["schemas"]["EvolutionAssociationOut"][];
+        };
+        /**
+         * EvolutionPointOut
+         * @description Um balde do eixo. Campo ausente é ``null`` — nunca zero.
+         */
+        EvolutionPointOut: {
+            /** Bucket */
+            bucket: string;
+            /** Observed Minutes */
+            observed_minutes?: number | null;
+            /** Sleep Minutes */
+            sleep_minutes?: number | null;
+            /** Sleep Quality */
+            sleep_quality?: number | null;
+            /** Energy */
+            energy?: number | null;
+            /**
+             * On Call Days
+             * @default 0
+             */
+            on_call_days: number;
+            /**
+             * Covered Days
+             * @default 0
+             */
+            covered_days: number;
+        };
+        /** EvolutionWindowOut */
+        EvolutionWindowOut: {
+            /** Range Key */
+            range_key: string;
+            /** Date From */
+            date_from: string;
+            /** Date To */
+            date_to: string;
+            /**
+             * Granularity
+             * @enum {string}
+             */
+            granularity: "daily" | "weekly" | "monthly";
+            /** Timezone */
+            timezone: string;
         };
         /** ExamDebriefBlockOut */
         ExamDebriefBlockOut: {
@@ -14141,6 +14276,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentExperienceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_student_evolution_student_evolution_get: {
+        parameters: {
+            query?: {
+                range?: string;
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvolutionOut"];
                 };
             };
             /** @description Validation Error */
