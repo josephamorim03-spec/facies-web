@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getStudentEvolution, type EvolutionAssociation } from "@/lib/api/domains/evolution";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { Alert } from "@/components/ui/Alert";
+import { CheckinCard } from "./CheckinCard";
 
 const ROUTINE_LABELS: Record<string, string> = {
   sleep_minutes: "Sono",
@@ -111,19 +112,23 @@ export function ContextoSection({ range }: { range: string }) {
 
   if (withData.length === 0) {
     return (
-      <div className="py-8">
-        <h2 className="text-lg font-semibold text-ink">Ainda sem contexto registrado</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-          Registre como foi o dia — sono, energia e plantão — e esta aba passa a
-          comparar sua rotina com o que você de fato estudou. O registro é opcional
-          e leva alguns segundos.
-        </p>
+      <div className="space-y-6 pt-5">
+        <CheckinCard />
+        <div>
+          <h2 className="text-lg font-semibold text-ink">Ainda sem contexto registrado</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+            Registre como foi o dia — sono, energia e plantão — e esta aba passa a
+            comparar sua rotina com o que você de fato estudou. O registro é opcional
+            e leva alguns segundos.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-8 pt-5">
+      <CheckinCard />
       <section aria-labelledby="contexto-serie-title">
         <h2 id="contexto-serie-title" className="text-lg font-semibold text-ink">
           Rotina e estudo lado a lado
