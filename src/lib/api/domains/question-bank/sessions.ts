@@ -1,5 +1,6 @@
 import { api, authHeader } from "../../shared/http";
 import type {
+  KrosPreview,
   QuestionBankFinalizeResult,
   QuestionPostAnswerReflection,
   QuestionBankSession,
@@ -11,6 +12,25 @@ import { invalidateStudentExperienceCache } from "../student-experience";
 
 export async function createQuestionBankSession(token: string, payload: QuestionBankSessionCreatePayload): Promise<QuestionBankSession> {
   return api<QuestionBankSession>("/api/question-bank/sessions", { method: "POST", headers: authHeader(token), body: JSON.stringify(payload) });
+}
+
+/**
+ * Monta a prova no servidor, devolve só a composição agregada e descarta a
+ * seleção. Roda a mesma pipeline do create — é o que garante que a prévia não
+ * minta sobre a prova. Aceita `signal` porque o lobby refaz a chamada a cada
+ * ajuste da barra e precisa abortar a anterior.
+ */
+export async function previewKros(
+  token: string,
+  payload: QuestionBankSessionCreatePayload,
+  signal?: AbortSignal,
+): Promise<KrosPreview> {
+  return api<KrosPreview>("/api/question-bank/kros/preview", {
+    method: "POST",
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+    signal,
+  });
 }
 
 export async function listQuestionBankSessions(

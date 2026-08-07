@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Clock3, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Clock3, Sparkles } from "lucide-react";
 
 import {
   createQuestionBankSession,
   getQuestionBankPerformance,
+  type KrosMode,
   type QuestionBankPerformance,
 } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
@@ -15,19 +16,28 @@ import { BottomActionBar, BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/u
 import { Button } from "@/components/ui/Button";
 import { KrosGlyph } from "@/components/KrosGlyph";
 import { KrosBaseline } from "./_components/KrosBaseline";
-import {
-  KrosSizeChooser,
-  estimatedMinutes,
-  type KrosSize,
-} from "./_components/KrosSizeChooser";
+import { KrosComposition } from "./_components/KrosComposition";
+import { KROS_MODE_OPTIONS, KrosModeChooser } from "./_components/KrosModeChooser";
+import { KrosSizeSlider, estimatedMinutes } from "./_components/KrosSizeSlider";
+import { useKrosPreview } from "./_hooks/useKrosPreview";
+
+// Espelham `app/domain/kros_modes.py`. Servem só até a primeira prévia chegar —
+// a partir dela a faixa vem do servidor, que é quem valida.
+const FALLBACK_MIN_SIZE = 20;
+const FALLBACK_MAX_SIZE = 120;
+const FALLBACK_STEP = 5;
+const FALLBACK_ANCHORS = [50, 100];
+const DEFAULT_SIZE = 50;
 
 export default function KrosPage() {
   const router = useRouter();
-  const [size, setSize] = useState<KrosSize>(50);
+  const [mode, setMode] = useState<KrosMode>("equilibrado");
+  const [size, setSize] = useState<number>(DEFAULT_SIZE);
   const [performance, setPerformance] = useState<QuestionBankPerformance | null>(null);
   const [loadingPerformance, setLoadingPerformance] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { preview, loading: loadingPreview, refresh } = useKrosPreview();
 
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +55,26 @@ export default function KrosPage() {
     };
   }, []);
 
+  // Trocar de modo remonta a prova inteira, então a prévia refaz sempre. O
+  // tamanho entra como dependência só via `refresh` no commit da barra — daí
+  // `size` ficar de fora: arrastar não pode disparar uma chamada por pixel.
+  useEffect(() => {
+    refresh(mode, size);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, refresh]);
+
+  const minSize = preview?.min_size ?? FALLBACK_MIN_SIZE;
+  const step = preview?.size_step ?? FALLBACK_STEP;
+  const anchors = preview?.size_anchors ?? FALLBACK_ANCHORS;
+  const ceiling = Math.min(preview?.max_size ?? FALLBACK_MAX_SIZE, preview?.max_available ?? FALLBACK_MAX_SIZE);
+  const poolTooSmall = preview != null && preview.max_available < minSize;
+  // A barra pode ter parado acima do teto que a prévia acabou de revelar.
+  const effectiveSize = Math.min(size, Math.max(ceiling, minSize));
+
+  function handleSizeCommit(next: number) {
+    refresh(mode, next);
+  }
+
   async function startKros() {
     const token = getAuthToken();
     if (busy) return;
@@ -54,7 +84,8 @@ export default function KrosPage() {
       const session = await createQuestionBankSession(token, {
         session_kind: "kros",
         feedback_timing: "post_result",
-        limit: size,
+        kros_mode: mode,
+        limit: effectiveSize,
       });
       router.push(`/banco/sessao/${session.session_id}`);
     } catch (cause) {
@@ -71,7 +102,7 @@ export default function KrosPage() {
       variant="primary"
       size="md"
       onClick={startKros}
-      disabled={busy}
+      disabled={busy || poolTooSmall}
       aria-busy={busy}
       className={`w-full sm:w-auto ${busy ? "" : "hover-lift"}`}
     >
@@ -82,12 +113,15 @@ export default function KrosPage() {
         </>
       ) : (
         <>
-          {`Iniciar Kros de ${size}`}
+          {`Iniciar Kros · ${effectiveSize} questões`}
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </>
       )}
     </Button>
   );
+
+  const modeLabel =
+    KROS_MODE_OPTIONS.find((option) => option.value === mode)?.label ?? "Adaptativo";
 
   return (
     <div className={`space-y-5 md:space-y-6 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
@@ -108,48 +142,82 @@ export default function KrosPage() {
             motion={busy ? "busy" : "ambient"}
           />
         </div>
+        {/* A promessa de "instituições prioritárias" agora vale só no modo
+            "Foco na banca" — é ele que passa o `priority_boards` do perfil ao
+            motor de seleção. Prometer isso no cabeçalho descrevia um
+            comportamento que os outros modos não têm. */}
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
-          Montado com base nas suas necessidades de aprendizado e instituições prioritárias
+          Você escolhe como treinar e o tamanho da prova. O resto é montado a partir das
+          suas necessidades de aprendizado.
         </p>
       </header>
 
       <KrosBaseline performance={performance} loading={loadingPerformance} />
 
-      <section aria-labelledby="kros-size-title" className="border-y border-edge py-4">
+      <section aria-labelledby="kros-mode-title" className="border-y border-edge py-4">
+        <h2 id="kros-mode-title" className="font-serif text-xl font-semibold text-ink">
+          Modo
+        </h2>
+        <KrosModeChooser value={mode} onChange={setMode} disabled={busy} />
+      </section>
+
+      <section aria-labelledby="kros-size-title" className="border-b border-edge pb-4">
         <h2 id="kros-size-title" className="font-serif text-xl font-semibold text-ink">
           Tamanho da prova
         </h2>
 
-        <KrosSizeChooser value={size} onChange={setSize} disabled={busy} />
+        {poolTooSmall ? (
+          // Sem `EmptyState`: ele traz `paper-surface` e seria o único painel
+          // arredondado numa página que usa réguas. Mesmo idioma do KrosBaseline.
+          <div className="mt-4">
+            <p className="text-sm font-semibold text-ink">
+              Ainda não há questões suficientes para este modo
+            </p>
+            <p className="mt-1 text-sm leading-6 text-muted">
+              Encontramos {preview?.max_available ?? 0} questões elegíveis. Troque de modo ou
+              resolva mais algumas no banco para liberar o Kros.
+            </p>
+          </div>
+        ) : (
+          <>
+            <KrosSizeSlider
+              value={effectiveSize}
+              onChange={setSize}
+              onCommit={handleSizeCommit}
+              min={minSize}
+              max={Math.max(ceiling, minSize)}
+              step={step}
+              anchors={anchors}
+              disabled={busy}
+            />
 
-        {/* Uma linha discreta no lugar de três caixas: as informações são
-            as mesmas, mas param de competir com a escolha acima. */}
-        <dl className="mt-6 flex flex-wrap gap-x-7 gap-y-3 border-t border-edge pt-5">
-          <div className="flex items-center gap-2.5">
-            <Clock3 className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-            <dt className="sr-only">Tempo sugerido</dt>
-            <dd className="text-sm text-muted">
-              <span className="font-semibold text-ink">{estimatedMinutes(size)} min</span>
-              {" · tempo sugerido"}
-            </dd>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-            <dt className="sr-only">Seleção</dt>
-            <dd className="text-sm text-muted">
-              <span className="font-semibold text-ink">Adaptativo</span>
-              {" · seleção personalizada"}
-            </dd>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <ShieldCheck className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-            <dt className="sr-only">Gabarito</dt>
-            <dd className="text-sm text-muted">
-              <span className="font-semibold text-ink">Pós-resultado</span>
-              {" · gabarito ao enviar"}
-            </dd>
-          </div>
-        </dl>
+            <KrosComposition
+              composition={preview?.composition ?? null}
+              loading={loadingPreview}
+            />
+
+            <dl className="mt-6 flex flex-wrap gap-x-7 gap-y-3 border-t border-edge pt-5">
+              <div className="flex items-center gap-2.5">
+                <Clock3 className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                <dt className="sr-only">Tempo sugerido</dt>
+                <dd className="text-sm text-muted">
+                  <span className="font-semibold tabular-nums text-ink">
+                    {estimatedMinutes(effectiveSize)} min
+                  </span>
+                  {" · tempo sugerido"}
+                </dd>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                <dt className="sr-only">Modo</dt>
+                <dd className="text-sm text-muted">
+                  <span className="font-semibold text-ink">{modeLabel}</span>
+                  {" · gabarito ao enviar"}
+                </dd>
+              </div>
+            </dl>
+          </>
+        )}
       </section>
 
       <section aria-label="Iniciar">

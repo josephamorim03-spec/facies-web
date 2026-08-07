@@ -1197,6 +1197,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/question-bank/kros/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Kros Session
+         * @description Monta a prova, devolve so a composicao agregada e descarta a selecao.
+         *
+         *     Roda a mesma pipeline do `POST /sessions` — e o que garante que a previa
+         *     nao minta sobre a prova. Sem efeito colateral: nada e persistido e o ciclo
+         *     de vida da acao de aprendizado nao e iniciado.
+         */
+        post: operations["preview_kros_session_question_bank_kros_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/question-bank/sessions/{session_id}": {
         parameters: {
             query?: never;
@@ -2182,6 +2206,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/student/evolution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Student Evolution
+         * @description Rotina e execução no mesmo eixo, com a amostra declarada.
+         *
+         *     Vive sob `/student` de propósito: o KROS-019 declarou `student-experience` a
+         *     autoridade da Evolução, e um prefixo `/evolution` próprio seria o QUARTO
+         *     namespace de analytics do produto.
+         */
+        get: operations["get_student_evolution_student_evolution_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/student/today": {
         parameters: {
             query?: never;
@@ -2337,6 +2385,105 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/routine/check-ins/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Today Checkin
+         * @description Atalho para o dia local do aluno — o cliente não precisa saber o fuso.
+         */
+        get: operations["get_today_checkin_routine_check_ins_today_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/routine/check-ins/{local_date}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Checkin */
+        get: operations["get_checkin_routine_check_ins__local_date__get"];
+        /**
+         * Upsert Checkin
+         * @description Upsert parcial e idempotente.
+         *
+         *     Só as chaves presentes no corpo são gravadas — `exclude_unset` é o que
+         *     distingue "não mandei" de "mandei null". Sem isso, um cliente que edita só a
+         *     energia apagaria o sono.
+         */
+        put: operations["upsert_checkin_routine_check_ins__local_date__put"];
+        post?: never;
+        /** Delete Checkin */
+        delete: operations["delete_checkin_routine_check_ins__local_date__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/routine/check-ins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Checkins */
+        get: operations["list_checkins_routine_check_ins_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/routine/study-time/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Study Time Entries */
+        get: operations["list_study_time_entries_routine_study_time_entries_get"];
+        put?: never;
+        /** Create Study Time Entry */
+        post: operations["create_study_time_entry_routine_study_time_entries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/routine/study-time/entries/{entry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Study Time Entry */
+        delete: operations["delete_study_time_entry_routine_study_time_entries__entry_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Study Time Entry */
+        patch: operations["update_study_time_entry_routine_study_time_entries__entry_id__patch"];
         trace?: never;
     };
     "/events": {
@@ -3667,6 +3814,117 @@ export interface components {
              */
             confirm_impact: boolean;
         };
+        /**
+         * EvolutionAssociationOut
+         * @description Associação observada, sempre como intervalo.
+         *
+         *     Não há campo para o valor pontual de propósito: exibir ρ sozinho convida a
+         *     ler precisão que a amostra não sustenta. `conclusive` só é verdadeiro quando
+         *     o intervalo inteiro exclui zero.
+         */
+        EvolutionAssociationOut: {
+            /** Routine Metric */
+            routine_metric: string;
+            /** Outcome Metric */
+            outcome_metric: string;
+            /** N */
+            n: number;
+            /** Ci Low */
+            ci_low?: number | null;
+            /** Ci High */
+            ci_high?: number | null;
+            /**
+             * Conclusive
+             * @default false
+             */
+            conclusive: boolean;
+            /**
+             * Days Missing
+             * @default 0
+             */
+            days_missing: number;
+            /**
+             * Bands
+             * @default []
+             */
+            bands: components["schemas"]["EvolutionBandOut"][];
+        };
+        /** EvolutionBandOut */
+        EvolutionBandOut: {
+            /**
+             * Label
+             * @enum {string}
+             */
+            label: "menor_volume" | "maior_volume";
+            /** N */
+            n: number;
+            /** Ci Low */
+            ci_low?: number | null;
+            /** Ci High */
+            ci_high?: number | null;
+        };
+        /** EvolutionOut */
+        EvolutionOut: {
+            /**
+             * Contract Version
+             * @default student-evolution-v1
+             * @constant
+             */
+            contract_version: "student-evolution-v1";
+            window: components["schemas"]["EvolutionWindowOut"];
+            /**
+             * Points
+             * @default []
+             */
+            points: components["schemas"]["EvolutionPointOut"][];
+            /**
+             * Associations
+             * @default []
+             */
+            associations: components["schemas"]["EvolutionAssociationOut"][];
+        };
+        /**
+         * EvolutionPointOut
+         * @description Um balde do eixo. Campo ausente é ``null`` — nunca zero.
+         */
+        EvolutionPointOut: {
+            /** Bucket */
+            bucket: string;
+            /** Observed Minutes */
+            observed_minutes?: number | null;
+            /** Sleep Minutes */
+            sleep_minutes?: number | null;
+            /** Sleep Quality */
+            sleep_quality?: number | null;
+            /** Energy */
+            energy?: number | null;
+            /**
+             * On Call Days
+             * @default 0
+             */
+            on_call_days: number;
+            /**
+             * Covered Days
+             * @default 0
+             */
+            covered_days: number;
+        };
+        /** EvolutionWindowOut */
+        EvolutionWindowOut: {
+            /** Range Key */
+            range_key: string;
+            /** Date From */
+            date_from: string;
+            /** Date To */
+            date_to: string;
+            /**
+             * Granularity
+             * @enum {string}
+             */
+            granularity: "daily" | "weekly" | "monthly";
+            /** Timezone */
+            timezone: string;
+        };
         /** ExamDebriefBlockOut */
         ExamDebriefBlockOut: {
             /** Label */
@@ -4121,6 +4379,46 @@ export interface components {
             items_analyzed: number;
             /** Items */
             items?: components["schemas"]["ItemTelemetryExportItemOut"][];
+        };
+        /**
+         * KrosPreviewOut
+         * @description Previa da composicao de um Kros, sem criar sessao.
+         *
+         *     Roda exatamente a mesma pipeline de selecao que o `POST /sessions` — e a
+         *     unica forma de a previa nao mentir sobre a prova que o aluno vai receber.
+         *     Carrega tambem a faixa da barra, para o cliente nao precisar manter uma
+         *     copia das constantes que o servidor valida.
+         */
+        KrosPreviewOut: {
+            /** Kros Mode */
+            kros_mode: string;
+            /** Requested Limit */
+            requested_limit: number;
+            /** Max Available */
+            max_available: number;
+            /** Estimated Minutes */
+            estimated_minutes: number;
+            /**
+             * Min Size
+             * @default 20
+             */
+            min_size: number;
+            /**
+             * Max Size
+             * @default 120
+             */
+            max_size: number;
+            /**
+             * Size Step
+             * @default 5
+             */
+            size_step: number;
+            /** Size Anchors */
+            size_anchors?: number[];
+            /** Composition */
+            composition?: {
+                [key: string]: unknown;
+            };
         };
         /** LearningActionStartIn */
         LearningActionStartIn: {
@@ -6505,6 +6803,8 @@ export interface components {
             review_task_id?: string | null;
             /** Session Purpose */
             session_purpose?: "diagnostic" | null;
+            /** Kros Mode */
+            kros_mode?: ("equilibrado" | "prioridade_erros" | "terreno_novo" | "foco_banca") | null;
             /** Diagnostic Area Quota */
             diagnostic_area_quota?: {
                 [key: string]: number;
@@ -6760,6 +7060,12 @@ export interface components {
             performed_at: string;
             /** Filters */
             filters?: {
+                [key: string]: unknown;
+            };
+            /** Kros Mode */
+            kros_mode?: string | null;
+            /** Kros Composition */
+            kros_composition?: {
                 [key: string]: unknown;
             };
             /** Total Questions */
@@ -7324,6 +7630,72 @@ export interface components {
             /** Due Date */
             due_date?: string | null;
         };
+        /**
+         * RoutineCheckinDayOut
+         * @description Resposta de um dia: o registro (se houver) e o que o calendário prevê.
+         */
+        RoutineCheckinDayOut: {
+            /** Local Date */
+            local_date: string;
+            checkin?: components["schemas"]["RoutineCheckinOut"] | null;
+            prefill: components["schemas"]["RoutinePrefillOut"];
+        };
+        /**
+         * RoutineCheckinIn
+         * @description Corpo do upsert parcial.
+         *
+         *     `extra="forbid"` é deliberado: um campo com nome errado precisa falhar alto,
+         *     não ser silenciosamente ignorado — o aluno acharia que registrou o sono.
+         *
+         *     Todo campo é opcional e todo campo aceita ``null``. Ausência da chave
+         *     preserva o valor gravado; ``null`` explícito limpa. Ausência NUNCA vira zero.
+         */
+        RoutineCheckinIn: {
+            /** Sleep Minutes */
+            sleep_minutes?: number | null;
+            /** Sleep Quality */
+            sleep_quality?: number | null;
+            /** Energy */
+            energy?: number | null;
+            /** On Call Confirmed */
+            on_call_confirmed?: boolean | null;
+            /** On Call Unplanned */
+            on_call_unplanned?: boolean | null;
+        };
+        /** RoutineCheckinListOut */
+        RoutineCheckinListOut: {
+            /** Date From */
+            date_from: string;
+            /** Date To */
+            date_to: string;
+            /** Items */
+            items: components["schemas"]["RoutineCheckinOut"][];
+        };
+        /** RoutineCheckinOut */
+        RoutineCheckinOut: {
+            /** Local Date */
+            local_date: string;
+            /** Sleep Minutes */
+            sleep_minutes?: number | null;
+            /** Sleep Quality */
+            sleep_quality?: number | null;
+            /** Energy */
+            energy?: number | null;
+            /** On Call Confirmed */
+            on_call_confirmed?: boolean | null;
+            /**
+             * On Call Unplanned
+             * @default false
+             */
+            on_call_unplanned: boolean;
+            /**
+             * Source
+             * @default student
+             */
+            source: string;
+            /** Updated At */
+            updated_at?: string | null;
+        };
         /** RoutineDayIn */
         RoutineDayIn: {
             /**
@@ -7344,6 +7716,18 @@ export interface components {
              * @enum {string}
              */
             kind: "shift" | "work" | "other";
+        };
+        /**
+         * RoutinePrefillOut
+         * @description O que o calendário prevê para o dia. Previsão, não registro.
+         */
+        RoutinePrefillOut: {
+            /** On Call Expected */
+            on_call_expected: boolean;
+            /** Blocked Hours */
+            blocked_hours: number;
+            /** Post 48H Recovery */
+            post_48h_recovery: boolean;
         };
         /** ScheduleBlockOut */
         ScheduleBlockOut: {
@@ -8581,6 +8965,56 @@ export interface components {
             model_context?: components["schemas"]["AdaptiveModelContext"];
             /** Activities */
             activities?: components["schemas"]["StudyPlanActivityOut"][];
+        };
+        /** StudyTimeEntryIn */
+        StudyTimeEntryIn: {
+            /** Local Date */
+            local_date: string;
+            /** Minutes */
+            minutes: number;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "teoria" | "flashcards" | "outro";
+            /** Note */
+            note?: string | null;
+        };
+        /** StudyTimeEntryListOut */
+        StudyTimeEntryListOut: {
+            /** Date From */
+            date_from: string;
+            /** Date To */
+            date_to: string;
+            /** Items */
+            items: components["schemas"]["StudyTimeEntryOut"][];
+        };
+        /** StudyTimeEntryOut */
+        StudyTimeEntryOut: {
+            /** Entry Id */
+            entry_id: string;
+            /** Local Date */
+            local_date: string;
+            /** Minutes */
+            minutes: number;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "teoria" | "flashcards" | "outro";
+            /** Note */
+            note?: string | null;
+        };
+        /** StudyTimeEntryPatchIn */
+        StudyTimeEntryPatchIn: {
+            /** Local Date */
+            local_date?: string | null;
+            /** Minutes */
+            minutes?: number | null;
+            /** Category */
+            category?: ("teoria" | "flashcards" | "outro") | null;
+            /** Note */
+            note?: string | null;
         };
         /** SubscribeBody */
         SubscribeBody: {
@@ -11750,6 +12184,41 @@ export interface operations {
             };
         };
     };
+    preview_kros_session_question_bank_kros_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionBankSessionCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KrosPreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_question_bank_session_question_bank_sessions__session_id__get: {
         parameters: {
             query?: never;
@@ -13820,6 +14289,41 @@ export interface operations {
             };
         };
     };
+    get_student_evolution_student_evolution_get: {
+        parameters: {
+            query?: {
+                range?: string;
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvolutionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_student_today_student_today_get: {
         parameters: {
             query?: never;
@@ -14103,6 +14607,309 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReviewTaskOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_today_checkin_routine_check_ins_today_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoutineCheckinDayOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_checkin_routine_check_ins__local_date__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                local_date: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoutineCheckinDayOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upsert_checkin_routine_check_ins__local_date__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                local_date: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RoutineCheckinIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoutineCheckinDayOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_checkin_routine_check_ins__local_date__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                local_date: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_checkins_routine_check_ins_get: {
+        parameters: {
+            query: {
+                date_from: string;
+                date_to: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoutineCheckinListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_study_time_entries_routine_study_time_entries_get: {
+        parameters: {
+            query: {
+                date_from: string;
+                date_to: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyTimeEntryListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_study_time_entry_routine_study_time_entries_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudyTimeEntryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyTimeEntryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_study_time_entry_routine_study_time_entries__entry_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_study_time_entry_routine_study_time_entries__entry_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudyTimeEntryPatchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyTimeEntryOut"];
                 };
             };
             /** @description Validation Error */

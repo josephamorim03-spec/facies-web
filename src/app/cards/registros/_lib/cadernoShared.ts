@@ -44,9 +44,6 @@ export function weightBadgeColor(weight: number): string {
   return "#aab0b8";
 }
 
-export function rangeStyle(value: number, min: number, max: number): React.CSSProperties {
-  const pct = ((value - min) / (max - min)) * 100;
-  return {
-    "--track-bg": `linear-gradient(to right, var(--range-fill, #1A1A1A) 0%, var(--range-fill, #1A1A1A) ${pct}%, var(--range-rest, #E2E2DC) ${pct}%, var(--range-rest, #E2E2DC) 100%)`,
-  } as React.CSSProperties;
-}
+// Passou a morar junto do `RangeSlider`, o componente de barra do sistema.
+// Reexportado aqui para os cards seguirem importando do mesmo lugar.
+export { rangeStyle } from "@/components/ui/RangeSlider";

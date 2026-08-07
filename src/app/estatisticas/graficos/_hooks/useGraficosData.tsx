@@ -107,9 +107,25 @@ export type GraficosActions = {
   renderVolumeBar: (props: any) => ReactNode;
 };
 
-export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions] {
+/**
+ * KROS-022: `weeks` era o literal 12 dentro do efeito, então a Evolução não tinha
+ * seletor de período nenhum — e o rótulo "Últimas 12 semanas" era texto fixo em
+ * dois lugares. Vira parâmetro; os memos derivados já dependiam do TAMANHO do
+ * array de semanas, não do número 12, então nada abaixo daqui precisou mudar.
+ */
+export function useGraficosData(
+  { weeks: rangeWeeks = 12 }: { weeks?: number } = {},
+): [GraficosState, GraficosRefs, GraficosActions] {
   const [timeline, setTimeline] = useState<WeeklyTimeline | null>(null);
   const [loading, setLoading] = useState(true);
+  /**
+   * Período a que o `timeline` em memória pertence. Trocar de período mantém os
+   * dados anteriores na tela por um instante; sem isto o aluno veria os números
+   * do intervalo antigo sob o rótulo do novo. Derivar a obsolescência (em vez de
+   * chamar `setLoading(true)` dentro do efeito) também respeita a regra
+   * `react-hooks/set-state-in-effect`.
+   */
+  const [loadedWeeks, setLoadedWeeks] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [reloadVersion, setReloadVersion] = useState(0);
   const [turboAreaStats, setTurboAreaStats] = useState<OperationalTurboAreaStats | null>(null);
@@ -151,9 +167,10 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
 
   useEffect(() => {
     const token = getAuthToken();
-    getWeeklyTimeline(token, 12)
+    getWeeklyTimeline(token, rangeWeeks)
       .then((tl) => {
         setTimeline(tl);
+        setLoadedWeeks(rangeWeeks);
       })
       .catch((e: unknown) => {
         const err = e as { message?: string } | Error | null;
@@ -166,7 +183,7 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
         setError(msg);
       })
       .finally(() => setLoading(false));
-  }, [reloadVersion]);
+  }, [reloadVersion, rangeWeeks]);
 
   useEffect(() => {
     const token = getAuthToken();
@@ -551,7 +568,7 @@ export function useGraficosData(): [GraficosState, GraficosRefs, GraficosActions
 
   const state: GraficosState = {
     timeline,
-    loading,
+    loading: loading || (timeline !== null && loadedWeeks !== rangeWeeks),
     error,
     turboAreaStats,
     turboAreaLoading,
