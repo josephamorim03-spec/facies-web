@@ -24,8 +24,21 @@ function ChartCard({
   );
 }
 
-export function GraficosSection({ performance = null }: { performance?: QuestionBankPerformance | null } = {}) {
-  const [state, refs, actions] = useGraficosData();
+/** Rótulo do período, derivado das semanas — antes era o texto fixo
+ * "Últimas 12 semanas" em dois lugares, que mentiria assim que o seletor
+ * existisse. */
+function periodLabel(weeks: number): string {
+  if (weeks <= 4) return `Últimas ${weeks} semanas`;
+  if (weeks % 52 === 0) return weeks === 52 ? "Último ano" : `Últimos ${weeks / 52} anos`;
+  return `Últimas ${weeks} semanas`;
+}
+
+export function GraficosSection({
+  performance = null,
+  weeks = 12,
+}: { performance?: QuestionBankPerformance | null; weeks?: number } = {}) {
+  const [state, refs, actions] = useGraficosData({ weeks });
+  const rangeLabel = periodLabel(weeks);
 
   if (state.loading) {
     return (
@@ -64,7 +77,7 @@ export function GraficosSection({ performance = null }: { performance?: Question
   if (!state.hasData) {
     return (
       <ChartCard>
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Últimas 12 semanas</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{rangeLabel}</p>
         <p className="mt-2 text-sm leading-6 text-muted">
           Ainda não há questões suficientes neste período para gerar os gráficos. Conclua uma sessão para começar sua leitura de evolução.
         </p>
@@ -76,7 +89,7 @@ export function GraficosSection({ performance = null }: { performance?: Question
     <div className="grid gap-4 lg:grid-cols-2">
       <div className="lg:col-span-2">
         <ChartCard>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Últimas 12 semanas</p>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted">{rangeLabel}</p>
           <AccuracyChart state={state} refs={refs} actions={actions} />
         </ChartCard>
       </div>

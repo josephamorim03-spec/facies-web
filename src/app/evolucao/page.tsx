@@ -4,7 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, FileText, HelpCircle, History } from "lucide-react";
+import { BarChart3, FileText, HelpCircle, History, Moon } from "lucide-react";
 import { Popover } from "radix-ui";
 
 import {
@@ -16,6 +16,8 @@ import { useAuthToken } from "@/lib/useAuthToken";
 import { queryKeys } from "@/lib/queryKeys";
 import { Alert } from "@/components/ui/Alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
+import { ContextoSection } from "./_components/ContextoSection";
 
 const GraficosSection = dynamic(
   () => import("@/app/estatisticas/graficos/GraficosSection").then((mod) => mod.GraficosSection),
@@ -30,7 +32,23 @@ const GraficosSection = dynamic(
   },
 );
 
-type EvolutionTab = "charts" | "reports" | "history";
+type EvolutionTab = "charts" | "context" | "reports" | "history";
+
+/**
+ * KROS-022. Chamada "Contexto", e não "Rotina", de propósito: já existe uma aba
+ * "Metas e rotina" em /desempenho, e ela é sobre PLANEJAR a rotina. Esta é sobre
+ * a rotina VIVIDA versus desempenho. Dois "Rotina" no app é exatamente a
+ * confusão que o programa de design mandou eliminar — no vocabulário por verbos,
+ * aquela pertence a Planejar e esta a Acompanhar.
+ */
+const RANGE_OPTIONS = [
+  { value: "4w", label: "4 semanas", weeks: 4 },
+  { value: "12w", label: "12 semanas", weeks: 12 },
+  { value: "6m", label: "6 meses", weeks: 26 },
+  { value: "1y", label: "1 ano", weeks: 52 },
+] as const;
+
+type RangeValue = (typeof RANGE_OPTIONS)[number]["value"];
 
 const SESSION_LABELS: Record<QuestionBankSession["session_kind"], string> = {
   kros: "Kros",
@@ -119,6 +137,8 @@ function SummaryMetric({
 
 export default function EvolucaoPage() {
   const [tab, setTab] = useState<EvolutionTab>("charts");
+  const [range, setRange] = useState<RangeValue>("12w");
+  const rangeWeeks = RANGE_OPTIONS.find((option) => option.value === range)?.weeks ?? 12;
   const { token, tokenResolved } = useAuthToken();
   const performanceQuery = useQuery({
     queryKey: queryKeys.questionBankPerformance,
@@ -145,6 +165,7 @@ export default function EvolucaoPage() {
 
   const tabs: Array<{ id: EvolutionTab; label: string; icon: typeof BarChart3 }> = [
     { id: "charts", label: "Gráficos", icon: BarChart3 },
+    { id: "context", label: "Contexto", icon: Moon },
     { id: "reports", label: "Relatórios", icon: FileText },
     { id: "history", label: "Histórico", icon: History },
   ];
@@ -152,7 +173,7 @@ export default function EvolucaoPage() {
   return (
     <div className="mx-auto max-w-6xl pb-12">
       <Tabs value={tab} onValueChange={(value) => setTab(value as EvolutionTab)}>
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-3">
           <TabsList aria-label="Visões de evolução">
             {tabs.map(({ id, label, icon: Icon }) => (
               <TabsTrigger key={id} value={id}>
@@ -161,6 +182,14 @@ export default function EvolucaoPage() {
               </TabsTrigger>
             ))}
           </TabsList>
+          {tab === "charts" || tab === "context" ? (
+            <SegmentedToggle
+              value={range}
+              onChange={setRange}
+              options={RANGE_OPTIONS.map(({ value, label }) => ({ value, label }))}
+              ariaLabel="Período da leitura"
+            />
+          ) : null}
         </div>
 
         {loading && (
@@ -217,8 +246,12 @@ export default function EvolucaoPage() {
                   <h2 id="evolution-charts-title" className="text-lg font-semibold text-ink">Leitura ao longo do tempo</h2>
                   <p className="mt-1 text-sm text-muted">Toque, clique ou use o teclado nas séries para comparar períodos e áreas.</p>
                 </div>
-                <GraficosSection performance={performance} />
+                <GraficosSection performance={performance} weeks={rangeWeeks} />
               </section>
+            </TabsContent>
+
+            <TabsContent value="context">
+              <ContextoSection range={range} />
             </TabsContent>
 
             <TabsContent value="reports" className="divide-y divide-edge">
