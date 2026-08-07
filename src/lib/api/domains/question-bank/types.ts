@@ -503,6 +503,8 @@ export type QuestionBankSession = {
   adaptive_weight_factors: Record<string, number>;
   performed_at: string;
   filters: Record<string, unknown>;
+  kros_mode: KrosMode | null;
+  kros_composition: KrosComposition | Record<string, never>;
   total_questions: number;
   answered_count: number;
   unanswered_count: number;
@@ -721,9 +723,64 @@ export type QuestionBankSessionCreatePayload = {
   performed_at?: string;
   review_task_id?: string;
   session_purpose?: "diagnostic";
+  /** Preset de seleção do Kros. Só aceito com `session_kind: "kros"`. */
+  kros_mode?: KrosMode;
   diagnostic_area_quota?: Record<string, number>;
   diagnostic_area_counts?: Record<string, number>;
   time_limit_minutes?: number;
+};
+
+/**
+ * Presets de seleção do Kros. Espelha `app/domain/kros_modes.py` — a tabela lá
+ * é a fonte de verdade do comportamento; aqui só existe o vocabulário.
+ */
+export type KrosMode = "equilibrado" | "prioridade_erros" | "terreno_novo" | "foco_banca";
+
+/** Linha rotulada de uma contagem agregada (intervenção, categoria, dificuldade). */
+export type KrosCompositionCount = {
+  key: string;
+  label: string;
+  count: number;
+};
+
+export type KrosCompositionMicro = {
+  node_id: string;
+  label: string;
+  node_type: string | null;
+  count: number;
+  /** 0–1, média dos itens do nó. `null` quando o aluno ainda não tem histórico. */
+  mastery: number | null;
+  performance: number | null;
+};
+
+/**
+ * Composição AGREGADA da prova: como ela foi montada, sem dizer nada sobre uma
+ * questão específica. É o que alimenta o "ver mais" do lobby.
+ */
+export type KrosComposition = {
+  kros_mode: string;
+  ranking_policy_version: string;
+  total: number;
+  by_novelty: { new_count: number; revisited_count: number };
+  by_intervention: KrosCompositionCount[];
+  by_category: KrosCompositionCount[];
+  by_difficulty: KrosCompositionCount[];
+  by_area: { area: string; count: number }[];
+  by_board: { board_code: string; count: number }[];
+  top_microcompetencies: KrosCompositionMicro[];
+};
+
+export type KrosPreview = {
+  kros_mode: KrosMode;
+  requested_limit: number;
+  /** Teto real do pool. A barra trava aqui em vez de deixar o aluno tomar 409. */
+  max_available: number;
+  estimated_minutes: number;
+  min_size: number;
+  max_size: number;
+  size_step: number;
+  size_anchors: number[];
+  composition: KrosComposition;
 };
 
 export type QuestionBankSessionPurpose =

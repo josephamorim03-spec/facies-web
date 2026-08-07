@@ -25,17 +25,29 @@ export default function KrosLoading() {
         </div>
       </div>
 
-      {/* Tamanho da prova. */}
+      {/* Modo: quatro cartoes em grade 2x2. */}
       <div className="border-y border-edge py-4">
-        <Skeleton className="h-5 w-40 rounded-control" />
-        <div className="mt-4 grid grid-cols-2 gap-1 rounded-control border border-edge bg-paper p-1">
-          <Skeleton className="min-h-24 rounded-control" />
-          <Skeleton className="min-h-24 rounded-control" />
+        <Skeleton className="h-5 w-20 rounded-control" />
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Skeleton className="h-[5.5rem] rounded-control" />
+          <Skeleton className="h-[5.5rem] rounded-control" />
+          <Skeleton className="h-[5.5rem] rounded-control" />
+          <Skeleton className="h-[5.5rem] rounded-control" />
         </div>
+      </div>
+
+      {/* Tamanho da prova: numero grande, barra e o resumo da composicao. */}
+      <div className="border-b border-edge pb-4">
+        <Skeleton className="h-5 w-40 rounded-control" />
+        <div className="mt-4 flex items-baseline gap-3">
+          <Skeleton className="h-9 w-16 rounded-control" />
+          <Skeleton className="h-3.5 w-40 rounded-control" />
+        </div>
+        <Skeleton className="mt-3 h-4 w-full rounded-control" />
+        <Skeleton className="mt-5 h-11 w-full rounded-control" />
         <div className="mt-6 flex flex-wrap gap-x-7 gap-y-3 border-t border-edge pt-5">
           <Skeleton className="h-3.5 w-40 rounded-control" />
           <Skeleton className="h-3.5 w-48 rounded-control" />
-          <Skeleton className="h-3.5 w-44 rounded-control" />
         </div>
       </div>
 
