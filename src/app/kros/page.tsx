@@ -55,14 +55,6 @@ export default function KrosPage() {
     };
   }, []);
 
-  // Trocar de modo remonta a prova inteira, então a prévia refaz sempre. O
-  // tamanho entra como dependência só via `refresh` no commit da barra — daí
-  // `size` ficar de fora: arrastar não pode disparar uma chamada por pixel.
-  useEffect(() => {
-    refresh(mode, size);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, refresh]);
-
   const minSize = preview?.min_size ?? FALLBACK_MIN_SIZE;
   const step = preview?.size_step ?? FALLBACK_STEP;
   const anchors = preview?.size_anchors ?? FALLBACK_ANCHORS;
@@ -71,9 +63,16 @@ export default function KrosPage() {
   // A barra pode ter parado acima do teto que a prévia acabou de revelar.
   const effectiveSize = Math.min(size, Math.max(ceiling, minSize));
 
-  function handleSizeCommit(next: number) {
-    refresh(mode, next);
-  }
+  // A prévia segue o que está NA TELA. Antes o efeito dependia só do modo e lia
+  // o `size` cru: com a barra clampada, trocar de modo pedia uma prova de 120
+  // embaixo de uma barra mostrando 50.
+  //
+  // `effectiveSize` como dependência dispensa o `onCommit` — arrastar não gera
+  // uma chamada por pixel porque `refresh` já tem debounce de 450ms, e some de
+  // quebra a chamada redundante que `blur`/`keyup` disparavam sem mudança.
+  useEffect(() => {
+    refresh(mode, effectiveSize);
+  }, [mode, effectiveSize, refresh]);
 
   async function startKros() {
     const token = getAuthToken();
@@ -183,9 +182,9 @@ export default function KrosPage() {
             <KrosSizeSlider
               value={effectiveSize}
               onChange={setSize}
-              onCommit={handleSizeCommit}
               min={minSize}
               max={Math.max(ceiling, minSize)}
+              hardMax={preview?.max_size ?? FALLBACK_MAX_SIZE}
               step={step}
               anchors={anchors}
               disabled={busy}

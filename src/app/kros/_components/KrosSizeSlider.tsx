@@ -10,9 +10,13 @@ export function estimatedMinutes(size: number): number {
 type KrosSizeSliderProps = {
   value: number;
   onChange: (size: number) => void;
-  onCommit: (size: number) => void;
+  /** Opcional: a página pede a prévia a partir do valor exibido, não do commit. */
+  onCommit?: (size: number) => void;
   min: number;
   max: number;
+  /** Teto do produto (`preview.max_size`), para distinguir "acabou o banco" de
+   *  "chegou no limite do Kros". */
+  hardMax: number;
   step: number;
   anchors: number[];
   disabled?: boolean;
@@ -33,12 +37,17 @@ export function KrosSizeSlider({
   onCommit,
   min,
   max,
+  hardMax,
   step,
   anchors,
   disabled = false,
 }: KrosSizeSliderProps) {
   const minutes = estimatedMinutes(value);
-  const atCeiling = max < 120 && value >= max;
+  // `hardMax` é o teto do produto (`preview.max_size`), não um 120 fixo: com o
+  // literal, qualquer teto abaixo de 120 acionava a frase — e como o teto ecoava
+  // o tamanho pedido, ela aparecia em QUALQUER posição da barra, dizendo ao
+  // aluno que o banco acabou quando não tinha acabado.
+  const atCeiling = max < hardMax && value >= max;
 
   return (
     <div className="mt-4">
