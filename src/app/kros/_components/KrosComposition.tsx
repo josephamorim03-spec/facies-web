@@ -22,6 +22,31 @@ function areaFill(area: string): string {
 }
 
 /** "38 novas · 12 reexpostas · 5 áreas" — a linha que fica visível fechada. */
+/**
+ * Rótulo é decisão de interface, não do motor de ranking.
+ *
+ * O backend manda a CHAVE (`sem_calibracao`, `mais_faceis`) e um `label` sem
+ * acento, escrito para log. Renderizar esse label cru colocava "sem calibracao"
+ * em caixa baixa e sem acento ao lado de "Pediatria" e "Imunizações". A área já
+ * era traduzida no cliente; dificuldade e banca não eram.
+ */
+const DIFFICULTY_LABELS: Record<string, string> = {
+  mais_facil: "Mais fáceis",
+  intermediaria: "Intermediárias",
+  mais_dificil: "Mais difíceis",
+  sem_calibracao: "Sem calibração",
+};
+
+function difficultyLabel(key: string, fallback: string): string {
+  return DIFFICULTY_LABELS[key] ?? fallback;
+}
+
+/** `OUTRAS` é o balde do backend para questão sem banca identificada. Em caixa
+ *  alta ele se disfarça de sigla de banca real, ao lado de ENARE e USP. */
+function boardLabel(boardCode: string): string {
+  return boardCode === "OUTRAS" ? "Outras bancas" : boardCode;
+}
+
 function summaryLine(composition: KrosCompositionData): string {
   const parts = [`${composition.by_novelty.new_count} novas`];
   if (composition.by_novelty.revisited_count > 0) {
@@ -146,7 +171,8 @@ export function KrosComposition({ composition, loading }: KrosCompositionProps) 
           <div className="flex flex-wrap gap-1.5">
             {composition.by_difficulty.map((row) => (
               <span key={row.key} className="km-chip">
-                {row.label} <span className="tabular-nums">{row.count}</span>
+                {difficultyLabel(row.key, row.label)}{" "}
+                <span className="tabular-nums">{row.count}</span>
               </span>
             ))}
           </div>
@@ -154,7 +180,8 @@ export function KrosComposition({ composition, loading }: KrosCompositionProps) 
             <div className="flex flex-wrap gap-1.5 pt-1">
               {composition.by_board.map((row) => (
                 <span key={row.board_code} className="km-chip">
-                  {row.board_code} <span className="tabular-nums">{row.count}</span>
+                  {boardLabel(row.board_code)}{" "}
+                  <span className="tabular-nums">{row.count}</span>
                 </span>
               ))}
             </div>
