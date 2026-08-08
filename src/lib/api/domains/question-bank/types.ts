@@ -781,6 +781,11 @@ export type KrosPreview = {
   size_step: number;
   size_anchors: number[];
   composition: KrosComposition;
+  /**
+   * Bancas alvo do aluno, na ordem de prioridade dele. Vazio quando ele não
+   * declarou prova alvo — e aí o modo "foco na banca" não tem o que priorizar.
+   */
+  target_boards: string[];
 };
 
 export type QuestionBankSessionPurpose =

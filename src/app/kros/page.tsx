@@ -63,6 +63,18 @@ export default function KrosPage() {
   // A barra pode ter parado acima do teto que a prévia acabou de revelar.
   const effectiveSize = Math.min(size, Math.max(ceiling, minSize));
 
+  // `target_boards` é resolvido em qualquer modo, então o cartão do "foco na
+  // banca" já nasce desabilitado para quem não tem prova alvo e o aluno
+  // normalmente nem consegue escolhê-lo. Se o objetivo sumir noutra aba, porém,
+  // ele ficaria preso num modo desabilitado.
+  //
+  // Derivado, não sincronizado por efeito: um `setMode` dentro de `useEffect`
+  // dispara render em cascata (e o lint recusa, com razão). O modo escolhido
+  // continua sendo do aluno; o que muda é qual vale enquanto não há banca.
+  const noTargetBoards = preview != null && preview.target_boards.length === 0;
+  const effectiveMode: KrosMode =
+    mode === "foco_banca" && noTargetBoards ? "equilibrado" : mode;
+
   // A prévia segue o que está NA TELA. Antes o efeito dependia só do modo e lia
   // o `size` cru: com a barra clampada, trocar de modo pedia uma prova de 120
   // embaixo de uma barra mostrando 50.
@@ -71,8 +83,8 @@ export default function KrosPage() {
   // uma chamada por pixel porque `refresh` já tem debounce de 450ms, e some de
   // quebra a chamada redundante que `blur`/`keyup` disparavam sem mudança.
   useEffect(() => {
-    refresh(mode, effectiveSize);
-  }, [mode, effectiveSize, refresh]);
+    refresh(effectiveMode, effectiveSize);
+  }, [effectiveMode, effectiveSize, refresh]);
 
   async function startKros() {
     const token = getAuthToken();
@@ -83,7 +95,7 @@ export default function KrosPage() {
       const session = await createQuestionBankSession(token, {
         session_kind: "kros",
         feedback_timing: "post_result",
-        kros_mode: mode,
+        kros_mode: effectiveMode,
         limit: effectiveSize,
       });
       router.push(`/banco/sessao/${session.session_id}`);
@@ -120,7 +132,7 @@ export default function KrosPage() {
   );
 
   const modeLabel =
-    KROS_MODE_OPTIONS.find((option) => option.value === mode)?.label ?? "Adaptativo";
+    KROS_MODE_OPTIONS.find((option) => option.value === effectiveMode)?.label ?? "Adaptativo";
 
   return (
     <div className={`space-y-5 md:space-y-6 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
@@ -141,9 +153,11 @@ export default function KrosPage() {
             motion={busy ? "busy" : "ambient"}
           />
         </div>
-        {/* A promessa de "instituições prioritárias" agora vale só no modo
-            "Foco na banca" — é ele que passa o `priority_boards` do perfil ao
-            motor de seleção. Prometer isso no cabeçalho descrevia um
+        {/* A promessa de "instituições prioritárias" vale só no modo "Foco na
+            banca", e agora vale de verdade: a fonte deixou de ser
+            `profile.priority_boards` — campo sem tela que nada escrevia — e
+            passou a ser a prova alvo que o aluno declara nos objetivos. O
+            cartão daquele modo nomeia a banca; prometer aqui descreveria um
             comportamento que os outros modos não têm. */}
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
           Você escolhe como treinar e o tamanho da prova. O resto é montado a partir das
@@ -157,7 +171,12 @@ export default function KrosPage() {
         <h2 id="kros-mode-title" className="font-serif text-xl font-semibold text-ink">
           Modo
         </h2>
-        <KrosModeChooser value={mode} onChange={setMode} disabled={busy} />
+        <KrosModeChooser
+          value={effectiveMode}
+          onChange={setMode}
+          disabled={busy}
+          targetBoards={preview?.target_boards ?? []}
+        />
       </section>
 
       <section aria-labelledby="kros-size-title" className="border-b border-edge pb-4">

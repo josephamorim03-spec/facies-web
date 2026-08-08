@@ -36,10 +36,31 @@ export const KROS_MODE_OPTIONS: KrosModeOption[] = [
   },
 ];
 
+/**
+ * O modo "foco na banca" só tem o que priorizar se o aluno declarou uma prova
+ * alvo. Sem objetivo, a lista de bancas volta vazia e o modo não faz nada — que
+ * é exatamente o defeito que este trabalho corrige. Oferecê-lo assim seria
+ * repetir a promessa vazia numa camada acima; aqui ele se desabilita e diz por
+ * quê. Com objetivo, o cartão nomeia a banca em vez de prometer no genérico.
+ */
+function bancaCopy(targetBoards: string[]): { help: string; unavailable: boolean } {
+  if (targetBoards.length === 0) {
+    return {
+      help: "Defina sua prova alvo no perfil para liberar este modo.",
+      unavailable: true,
+    };
+  }
+  const [first, ...rest] = targetBoards;
+  const others = rest.length > 0 ? ` (depois ${rest.join(", ")})` : "";
+  return { help: `Prioriza questões de ${first}${others}.`, unavailable: false };
+}
+
 type KrosModeChooserProps = {
   value: KrosMode;
   onChange: (mode: KrosMode) => void;
   disabled?: boolean;
+  /** Bancas alvo do aluno, na ordem de prioridade. Vem da prévia. */
+  targetBoards?: string[];
 };
 
 /**
@@ -48,23 +69,33 @@ type KrosModeChooserProps = {
  * 2×2 o deslize atravessaria a diagonal e viraria ruído — borda e fundo dizem
  * a mesma coisa sem movimento.
  */
-export function KrosModeChooser({ value, onChange, disabled = false }: KrosModeChooserProps) {
+export function KrosModeChooser({
+  value,
+  onChange,
+  disabled = false,
+  targetBoards = [],
+}: KrosModeChooserProps) {
+  const banca = bancaCopy(targetBoards);
+
   return (
     <div className="mt-4 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Modo do Kros">
       {KROS_MODE_OPTIONS.map((option) => {
+        const isBanca = option.value === "foco_banca";
+        const unavailable = isBanca && banca.unavailable;
         const active = option.value === value;
+        const help = isBanca ? banca.help : option.help;
         return (
           <button
             key={option.value}
             type="button"
             role="radio"
             aria-checked={active}
-            disabled={disabled}
+            disabled={disabled || unavailable}
             onClick={() => onChange(option.value)}
             className={`rounded-control border px-4 py-3 text-left transition-colors disabled:opacity-60 ${
               active
                 ? "border-primary bg-surfaceMuted"
-                : "border-edge bg-paper hover:bg-surfaceMuted"
+                : "border-edge bg-paper enabled:hover:bg-surfaceMuted"
             }`}
           >
             <span
@@ -72,7 +103,7 @@ export function KrosModeChooser({ value, onChange, disabled = false }: KrosModeC
             >
               {option.label}
             </span>
-            <span className="mt-1 block text-xs leading-5 text-muted">{option.help}</span>
+            <span className="mt-1 block text-xs leading-5 text-muted">{help}</span>
           </button>
         );
       })}

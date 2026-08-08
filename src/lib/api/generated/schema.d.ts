@@ -4419,6 +4419,8 @@ export interface components {
             composition?: {
                 [key: string]: unknown;
             };
+            /** Target Boards */
+            target_boards?: string[];
         };
         /** LearningActionStartIn */
         LearningActionStartIn: {
