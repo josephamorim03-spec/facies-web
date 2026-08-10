@@ -60,8 +60,22 @@ export default function KrosPage() {
   const anchors = preview?.size_anchors ?? FALLBACK_ANCHORS;
   const ceiling = Math.min(preview?.max_size ?? FALLBACK_MAX_SIZE, preview?.max_available ?? FALLBACK_MAX_SIZE);
   const poolTooSmall = preview != null && preview.max_available < minSize;
-  // A barra pode ter parado acima do teto que a prévia acabou de revelar.
-  const effectiveSize = Math.min(size, Math.max(ceiling, minSize));
+
+  // `size` é o único valor da barra. Antes o `<input>` era controlado por um
+  // `effectiveSize` derivado do teto enquanto o arraste escrevia em `size`: dois
+  // estados para um controle. Quando divergiam, o cursor voltava sozinho — o
+  // "a seleção some" do relato.
+  //
+  // O teto agora é ponto fixo (ver `_kros_ceiling`), então em uso normal a barra
+  // nunca sai da faixa. O clamp abaixo é rede de segurança para a única janela
+  // em que ainda pode sair: o teto mudar por troca de modo. Ele acontece na
+  // ESCRITA, não na renderização, para o input jamais ser controlado para um
+  // valor diferente do que o aluno acabou de escolher.
+  const maxSize = Math.max(ceiling, minSize);
+
+  function chooseSize(next: number) {
+    setSize(Math.min(Math.max(next, minSize), maxSize));
+  }
 
   // `target_boards` é resolvido em qualquer modo, então o cartão do "foco na
   // banca" já nasce desabilitado para quem não tem prova alvo e o aluno
@@ -75,19 +89,9 @@ export default function KrosPage() {
   const effectiveMode: KrosMode =
     mode === "foco_banca" && noTargetBoards ? "equilibrado" : mode;
 
-  // Pede com `size` — a intenção crua do aluno —, nunca com `effectiveSize`.
-  //
-  // `effectiveSize` é DERIVADO da prévia (via `ceiling`), e a prévia é o que
-  // este efeito produz. Usá-lo como dependência fecha um ciclo: resposta muda o
-  // teto, teto muda o tamanho efetivo, tamanho efetivo dispara outra busca. Só
-  // convergiria se `max_available` fosse independente do tamanho pedido — e nos
-  // modos que reexpõem ele não é, porque o orçamento de reexposição é fração do
-  // pedido. O sintoma era o número se "atualizando" sozinho, sem ninguém tocar.
-  //
-  // Pedir mais do que existe não é problema: o servidor devolve `max_available`
-  // com o que dá para preencher e a composição já descreve essa prova. A barra
-  // mostra o teto, o botão inicia com ele, e a consulta continua função apenas
-  // do que o aluno escolheu.
+  // A consulta depende só do que o aluno escolheu. Nada derivado da resposta
+  // entra aqui: alimentar a busca com a própria saída foi o laço que fez o
+  // número se "atualizar" sozinho.
   useEffect(() => {
     refresh(effectiveMode, size);
   }, [effectiveMode, size, refresh]);
@@ -102,7 +106,7 @@ export default function KrosPage() {
         session_kind: "kros",
         feedback_timing: "post_result",
         kros_mode: effectiveMode,
-        limit: effectiveSize,
+        limit: size,
       });
       router.push(`/banco/sessao/${session.session_id}`);
     } catch (cause) {
@@ -130,7 +134,7 @@ export default function KrosPage() {
         </>
       ) : (
         <>
-          {`Iniciar Kros · ${effectiveSize} questões`}
+          {`Iniciar Kros · ${size} questões`}
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </>
       )}
@@ -205,10 +209,10 @@ export default function KrosPage() {
         ) : (
           <>
             <KrosSizeSlider
-              value={effectiveSize}
-              onChange={setSize}
+              value={size}
+              onChange={chooseSize}
               min={minSize}
-              max={Math.max(ceiling, minSize)}
+              max={maxSize}
               hardMax={preview?.max_size ?? FALLBACK_MAX_SIZE}
               step={step}
               anchors={anchors}
@@ -226,7 +230,7 @@ export default function KrosPage() {
                 <dt className="sr-only">Tempo sugerido</dt>
                 <dd className="text-sm text-muted">
                   <span className="font-semibold tabular-nums text-ink">
-                    {estimatedMinutes(effectiveSize)} min
+                    {estimatedMinutes(size)} min
                   </span>
                   {" · tempo sugerido"}
                 </dd>
