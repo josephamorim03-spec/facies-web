@@ -14,9 +14,12 @@ type KrosSizeSliderProps = {
   onCommit?: (size: number) => void;
   min: number;
   max: number;
-  /** Teto do produto (`preview.max_size`), para distinguir "acabou o banco" de
-   *  "chegou no limite do Kros". */
-  hardMax: number;
+  /**
+   * Quantas questões o banco consegue entregar agora. É **informação, não
+   * limite**: se for menor que o valor escolhido, a prova sai com este número e
+   * a frase abaixo da barra avisa. `null` enquanto a prévia não chegou.
+   */
+  available: number | null;
   step: number;
   anchors: number[];
   disabled?: boolean;
@@ -37,17 +40,17 @@ export function KrosSizeSlider({
   onCommit,
   min,
   max,
-  hardMax,
+  available,
   step,
   anchors,
   disabled = false,
 }: KrosSizeSliderProps) {
-  const minutes = estimatedMinutes(value);
-  // `hardMax` é o teto do produto (`preview.max_size`), não um 120 fixo: com o
-  // literal, qualquer teto abaixo de 120 acionava a frase — e como o teto ecoava
-  // o tamanho pedido, ela aparecia em QUALQUER posição da barra, dizendo ao
-  // aluno que o banco acabou quando não tinha acabado.
-  const atCeiling = max < hardMax && value >= max;
+  // O aluno escolhe `value`; a prova sai com `delivered`. Quando o banco não
+  // alcança o pedido, a diferença é dita em texto — antes ela era imposta
+  // encolhendo o `max` da barra, e o controle se mexia sozinho.
+  const short = available != null && available < value;
+  const delivered = short ? available : value;
+  const minutes = estimatedMinutes(delivered);
 
   return (
     <div className="mt-4">
@@ -72,10 +75,13 @@ export function KrosSizeSlider({
         ariaValueText={`${value} questões, cerca de ${minutes} minutos`}
       />
 
-      {atCeiling ? (
+      {short ? (
+        // Diz o número real antes de começar, em vez de mexer na barra. O aluno
+        // continua livre para pedir o que quiser; quem ajusta é o servidor.
         <p className="mt-3 text-xs text-muted">
-          É o máximo disponível para este modo agora. Resolva mais questões no banco para
-          liberar provas maiores.
+          O banco tem <span className="font-semibold tabular-nums text-ink">{available}</span>{" "}
+          questões para este modo agora, então a prova sai com esse tamanho. Resolva mais
+          questões no banco para liberar provas maiores.
         </p>
       ) : null}
     </div>

@@ -58,24 +58,26 @@ export default function KrosPage() {
   const minSize = preview?.min_size ?? FALLBACK_MIN_SIZE;
   const step = preview?.size_step ?? FALLBACK_STEP;
   const anchors = preview?.size_anchors ?? FALLBACK_ANCHORS;
-  const ceiling = Math.min(preview?.max_size ?? FALLBACK_MAX_SIZE, preview?.max_available ?? FALLBACK_MAX_SIZE);
+  // A faixa da barra é do PRODUTO e não se move: 20–120, passo 5. `max_size`
+  // vem da prévia só para o cliente não guardar cópia da constante.
+  //
+  // `max_available` deliberadamente NÃO entra aqui. Amarrar o `max` do input ao
+  // que o banco tem hoje fazia os limites do controle mudarem debaixo do dedo do
+  // aluno: quando o teto chegava abaixo do valor atual, o navegador limitava o
+  // DOM e o React reafirmava a prop, e a barra andava sozinha. Reproduzido no
+  // navegador: começa em 50, a prévia responde 30, e o valor vira 30 sem
+  // ninguém tocar (`kros.size-slider.spec.ts`).
+  //
+  // O que o banco tem vira INFORMAÇÃO, não limite: o texto abaixo da barra diz
+  // o máximo disponível, e o servidor já entrega o preenchível — a composição
+  // descreve a prova que o aluno vai receber, não o pool.
+  const maxSize = preview?.max_size ?? FALLBACK_MAX_SIZE;
+  const available = preview?.max_available ?? null;
   const poolTooSmall = preview != null && preview.max_available < minSize;
 
-  // `size` é o único valor da barra. Antes o `<input>` era controlado por um
-  // `effectiveSize` derivado do teto enquanto o arraste escrevia em `size`: dois
-  // estados para um controle. Quando divergiam, o cursor voltava sozinho — o
-  // "a seleção some" do relato.
-  //
-  // O teto agora é ponto fixo (ver `_kros_ceiling`), então em uso normal a barra
-  // nunca sai da faixa. O clamp abaixo é rede de segurança para a única janela
-  // em que ainda pode sair: o teto mudar por troca de modo. Ele acontece na
-  // ESCRITA, não na renderização, para o input jamais ser controlado para um
-  // valor diferente do que o aluno acabou de escolher.
-  const maxSize = Math.max(ceiling, minSize);
-
-  function chooseSize(next: number) {
-    setSize(Math.min(Math.max(next, minSize), maxSize));
-  }
+  // O tamanho que a prova vai ter de fato. O aluno pede; o banco entrega o que
+  // consegue. É este número que vai no botão e na criação da sessão.
+  const deliveredSize = available == null ? size : Math.min(size, available);
 
   // `target_boards` é resolvido em qualquer modo, então o cartão do "foco na
   // banca" já nasce desabilitado para quem não tem prova alvo e o aluno
@@ -106,7 +108,7 @@ export default function KrosPage() {
         session_kind: "kros",
         feedback_timing: "post_result",
         kros_mode: effectiveMode,
-        limit: size,
+        limit: deliveredSize,
       });
       router.push(`/banco/sessao/${session.session_id}`);
     } catch (cause) {
@@ -134,7 +136,7 @@ export default function KrosPage() {
         </>
       ) : (
         <>
-          {`Iniciar Kros · ${size} questões`}
+          {`Iniciar Kros · ${deliveredSize} questões`}
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </>
       )}
@@ -210,10 +212,10 @@ export default function KrosPage() {
           <>
             <KrosSizeSlider
               value={size}
-              onChange={chooseSize}
+              onChange={setSize}
               min={minSize}
               max={maxSize}
-              hardMax={preview?.max_size ?? FALLBACK_MAX_SIZE}
+              available={available}
               step={step}
               anchors={anchors}
               disabled={busy}
@@ -230,7 +232,7 @@ export default function KrosPage() {
                 <dt className="sr-only">Tempo sugerido</dt>
                 <dd className="text-sm text-muted">
                   <span className="font-semibold tabular-nums text-ink">
-                    {estimatedMinutes(size)} min
+                    {estimatedMinutes(deliveredSize)} min
                   </span>
                   {" · tempo sugerido"}
                 </dd>
