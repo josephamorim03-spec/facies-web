@@ -75,16 +75,22 @@ export default function KrosPage() {
   const effectiveMode: KrosMode =
     mode === "foco_banca" && noTargetBoards ? "equilibrado" : mode;
 
-  // A prévia segue o que está NA TELA. Antes o efeito dependia só do modo e lia
-  // o `size` cru: com a barra clampada, trocar de modo pedia uma prova de 120
-  // embaixo de uma barra mostrando 50.
+  // Pede com `size` — a intenção crua do aluno —, nunca com `effectiveSize`.
   //
-  // `effectiveSize` como dependência dispensa o `onCommit` — arrastar não gera
-  // uma chamada por pixel porque `refresh` já tem debounce de 450ms, e some de
-  // quebra a chamada redundante que `blur`/`keyup` disparavam sem mudança.
+  // `effectiveSize` é DERIVADO da prévia (via `ceiling`), e a prévia é o que
+  // este efeito produz. Usá-lo como dependência fecha um ciclo: resposta muda o
+  // teto, teto muda o tamanho efetivo, tamanho efetivo dispara outra busca. Só
+  // convergiria se `max_available` fosse independente do tamanho pedido — e nos
+  // modos que reexpõem ele não é, porque o orçamento de reexposição é fração do
+  // pedido. O sintoma era o número se "atualizando" sozinho, sem ninguém tocar.
+  //
+  // Pedir mais do que existe não é problema: o servidor devolve `max_available`
+  // com o que dá para preencher e a composição já descreve essa prova. A barra
+  // mostra o teto, o botão inicia com ele, e a consulta continua função apenas
+  // do que o aluno escolheu.
   useEffect(() => {
-    refresh(effectiveMode, effectiveSize);
-  }, [effectiveMode, effectiveSize, refresh]);
+    refresh(effectiveMode, size);
+  }, [effectiveMode, size, refresh]);
 
   async function startKros() {
     const token = getAuthToken();
