@@ -105,6 +105,48 @@ test("prévia com teto abaixo do valor atual não move a barra", async ({ page }
   expect(await bar.inputValue()).toBe(inicial);
 });
 
+test("teto que muda a cada resposta não move a barra", async ({ page }) => {
+  // A combinação que os outros casos NÃO cobrem, e que é a que quebrava de
+  // verdade: antes do `f0fb8bf` o servidor devolvia `max_available` em função do
+  // tamanho pedido, porque a amostra de candidatos escalava com o pedido. Um
+  // mock de teto constante prova que o cliente é estável diante de um servidor
+  // estável — foi exatamente essa a validação que me deu confiança errada três
+  // vezes seguidas.
+  //
+  // Aqui o teto muda a cada requisição, como o servidor real fazia. O cliente
+  // corrigido não repassa isso para o controle: a barra é a intenção do aluno,
+  // e o teto é informação.
+  const tetos = [100, 30, 75, 45];
+  let i = 0;
+
+  await addHttpOnlySessionForPage(page);
+  await page.route("**/api/question-bank/performance", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ first_attempt_accuracy: 0.5, repeat_attempts: 0 }),
+    });
+  });
+  await page.route(PREVIEW_ROUTE, async (route) => {
+    const maxAvailable = tetos[i % tetos.length];
+    i += 1;
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify(previewBody({ max_available: maxAvailable })),
+    });
+  });
+
+  await page.goto("/kros");
+  const bar = slider(page);
+  await expect(bar).toBeVisible();
+
+  await bar.fill("90");
+  await expect(bar).toHaveValue("90");
+
+  // Várias respostas com tetos diferentes chegam. Nenhuma pode mexer na barra.
+  await page.waitForTimeout(2500);
+  await expect(bar).toHaveValue("90");
+});
+
 test("a prévia assenta e nenhuma requisição sai sem interação", async ({ page }) => {
   const limits = await setupKros(page, 120);
   await page.goto("/kros");
