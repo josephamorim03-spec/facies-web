@@ -639,6 +639,84 @@ export type QuestionBankAiRequestStatusResult = {
   budget_usage_summary: Record<string, unknown>;
 };
 
+export type LearningPackageRequestStatus =
+  | "queued"
+  | "submitted"
+  | "resolving_cheap"
+  | "validating"
+  | "repairing_cheap"
+  | "resolving_strong"
+  | "enriching_package"
+  | "needs_review"
+  | "partial"
+  | "ready"
+  | "failed"
+  | "superseded";
+
+export type LearningPackageRequest = {
+  request_id: string;
+  session_id: string;
+  position: number;
+  attempt_id: string;
+  question_id: string;
+  question_version: number | null;
+  outcome: "correct" | "wrong";
+  priority: "high" | "normal";
+  status: LearningPackageRequestStatus;
+  workflow_id: string | null;
+  delivery_source: string | null;
+  error: string | null;
+  request_kind: "learning_package";
+  schema_version: string;
+  artifact_states: Record<string, string>;
+  last_reconciled_at: string | null;
+  next_reconcile_at: string | null;
+  reconcile_step: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type LearningPackageArtifact = {
+  artifact_id: string;
+  schema_version: string;
+  pipeline_version: string;
+  payload: unknown;
+  approved_at: string | null;
+  resolution_id?: string | null;
+};
+
+export type LearningPackage = {
+  question_id: string;
+  question_version: number;
+  schema_version: "learning-package.v1";
+  status: "partial" | "ready";
+  artifacts: Record<string, LearningPackageArtifact>;
+  missing_artifacts: string[];
+  updated_at: string | null;
+  delivery_source: "canonical";
+};
+
+export type LearningPackageResult = {
+  request: LearningPackageRequest;
+  result: LearningPackage | null;
+  refresh_pending: boolean;
+};
+
+export type CanonicalFlashcardNote = {
+  note_id: string;
+  question_id: string | null;
+  question_version: number | null;
+  source_artifact_id: string | null;
+  source_artifact_schema_version: string | null;
+  source_template_id: string;
+  front: string;
+  back: string;
+  srs_enrollment_state: "enrolled" | "not_enrolled";
+  turbo_due_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type QuestionBankStudentEventType =
   | "question_presented"
   | "question_view_ended"

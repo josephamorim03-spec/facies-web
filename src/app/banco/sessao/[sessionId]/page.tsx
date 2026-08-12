@@ -48,6 +48,7 @@ import ExamMap from "./_components/ExamMap";
 import PostExamReview from "./_components/PostExamReview";
 import { ConfidenceReviewStep } from "./_components/ConfidenceReviewStep";
 import AttemptHistoryModal from "../../_components/AttemptHistoryModal";
+import LearningPackagePanel from "./_components/LearningPackagePanel";
 
 type QuickNoteTarget = {
   questionId: string;
@@ -1081,6 +1082,16 @@ export default function SessionPage() {
             currentItem.question_id
               ? () => void requestAiCorrection(currentItem.question_id)
               : undefined
+          }
+          learningPackagePanel={
+            revealedPositions[currentPosition] && currentItem.question_id
+              ? <LearningPackagePanel
+                  key={`${session.session_id}:${currentPosition}`}
+                  token={token}
+                  sessionId={session.session_id}
+                  position={currentPosition}
+                />
+              : null
           }
         />
         {quickNoteTarget && (

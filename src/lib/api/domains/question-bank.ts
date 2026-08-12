@@ -7,3 +7,4 @@ export * from "./question-bank/sessions";
 export * from "./question-bank/attempts";
 export * from "./question-bank/review";
 export * from "./question-bank/reports";
+export * from "./question-bank/learning-packages";

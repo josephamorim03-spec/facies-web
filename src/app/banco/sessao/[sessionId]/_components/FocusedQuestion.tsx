@@ -144,6 +144,7 @@ type FocusedQuestionProps = {
   onBookmarkChange?: (bookmarked: boolean) => void | Promise<void>;
   fixacaoCount?: number;
   onFixar?: () => void;
+  learningPackagePanel?: ReactNode;
 };
 
 function cx(...classes: Array<string | false | null | undefined>) {
@@ -396,6 +397,7 @@ export default function FocusedQuestion({
   onBookmarkChange,
   fixacaoCount,
   onFixar,
+  learningPackagePanel,
 }: FocusedQuestionProps) {
   const finalized = sessionStatus === "finalized";
   const [prefs, setPrefs] = useState(() => readPreferences(defaultPresentationMode));
@@ -1151,6 +1153,8 @@ export default function FocusedQuestion({
             )}
           </section>
         )}
+
+        {canUsePostAnswerActions && learningPackagePanel}
 
         {reportOpen && !reportDone && canShowLearning && item.answered && (
           <section className="mt-5 rounded-lg border border-edge bg-surface p-3">

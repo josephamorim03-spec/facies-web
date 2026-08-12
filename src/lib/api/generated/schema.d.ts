@@ -579,6 +579,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/admin/operational-metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Background Job Operational Metrics */
+        get: operations["get_background_job_operational_metrics_jobs_admin_operational_metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/admin-requeue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Requeue Failed Background Job */
+        post: operations["requeue_failed_background_job_jobs__job_id__admin_requeue_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/reviews": {
         parameters: {
             query?: never;
@@ -1324,6 +1358,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/question-bank/sessions/{session_id}/items/{position}/learning-package-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request Canonical Learning Package */
+        post: operations["request_canonical_learning_package_question_bank_sessions__session_id__items__position__learning_package_requests_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/sessions/{session_id}/items/{position}/learning-package-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Canonical Learning Package Request For Item */
+        get: operations["get_canonical_learning_package_request_for_item_question_bank_sessions__session_id__items__position__learning_package_request_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/question-bank/resolution-requests/{request_id}": {
         parameters: {
             query?: never;
@@ -1335,6 +1403,91 @@ export interface paths {
         get: operations["get_canonical_question_resolution_request_question_bank_resolution_requests__request_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/learning-package-requests/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Canonical Learning Package Request */
+        get: operations["get_canonical_learning_package_request_question_bank_learning_package_requests__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/learning-package-requests/{request_id}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Canonical Learning Package Result */
+        get: operations["get_canonical_learning_package_result_question_bank_learning_package_requests__request_id__result_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/learning-package-requests/{request_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record Canonical Learning Package Interaction */
+        post: operations["record_canonical_learning_package_interaction_question_bank_learning_package_requests__request_id__events_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/learning-package-requests/{request_id}/flashcards/{template_id}/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save Canonical Flashcard Suggestion */
+        post: operations["save_canonical_flashcard_suggestion_question_bank_learning_package_requests__request_id__flashcards__template_id__save_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/canonical-flashcards/{note_id}/srs-enrollment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enroll Canonical Flashcard In Srs */
+        post: operations["enroll_canonical_flashcard_in_srs_question_bank_canonical_flashcards__note_id__srs_enrollment_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3598,6 +3751,262 @@ export interface components {
             /** Duration Hours */
             duration_hours: number;
         };
+        /** CanonicalClinicalResolutionPayloadOut */
+        CanonicalClinicalResolutionPayloadOut: {
+            /** Selected Option */
+            selected_option: string;
+            /** Confidence */
+            confidence: number;
+            /** Central Concept */
+            central_concept: string;
+            /** Decisive Clues */
+            decisive_clues: string[];
+            /** Option Analysis */
+            option_analysis: {
+                [key: string]: string;
+            };
+            /** Pedagogical Justification */
+            pedagogical_justification: string;
+            /** Risk Flags */
+            risk_flags: string[];
+        };
+        /** CanonicalFlashcardNoteOut */
+        CanonicalFlashcardNoteOut: {
+            /** Note Id */
+            note_id: string;
+            /** Question Id */
+            question_id?: string | null;
+            /** Question Version */
+            question_version?: number | null;
+            /** Source Artifact Id */
+            source_artifact_id?: string | null;
+            /** Source Artifact Schema Version */
+            source_artifact_schema_version?: string | null;
+            /** Source Template Id */
+            source_template_id: string;
+            /** Front */
+            front: string;
+            /** Back */
+            back: string;
+            /**
+             * Srs Enrollment State
+             * @enum {string}
+             */
+            srs_enrollment_state: "enrolled" | "not_enrolled";
+            /** Turbo Due At */
+            turbo_due_at?: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+        };
+        /** CanonicalFlashcardSaveIn */
+        CanonicalFlashcardSaveIn: {
+            /** Front */
+            front?: string | null;
+            /** Back */
+            back?: string | null;
+        };
+        /** CanonicalFlashcardTemplateOut */
+        CanonicalFlashcardTemplateOut: {
+            /** Template Id */
+            template_id: string;
+            /** Front */
+            front: string;
+            /** Back */
+            back: string;
+            /** Rationale */
+            rationale: string;
+        };
+        /** CanonicalFlashcardTemplatePayloadOut */
+        CanonicalFlashcardTemplatePayloadOut: {
+            /** Cards */
+            cards: components["schemas"]["CanonicalFlashcardTemplateOut"][];
+        };
+        /** CanonicalLearningPackageArtifactOut[CanonicalClinicalResolutionPayloadOut] */
+        CanonicalLearningPackageArtifactOut_CanonicalClinicalResolutionPayloadOut_: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Schema Version */
+            schema_version: string;
+            /** Pipeline Version */
+            pipeline_version: string;
+            payload: components["schemas"]["CanonicalClinicalResolutionPayloadOut"];
+            /** Approved At */
+            approved_at?: string | null;
+            /** Resolution Id */
+            resolution_id?: string | null;
+        };
+        /** CanonicalLearningPackageArtifactOut[CanonicalFlashcardTemplatePayloadOut] */
+        CanonicalLearningPackageArtifactOut_CanonicalFlashcardTemplatePayloadOut_: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Schema Version */
+            schema_version: string;
+            /** Pipeline Version */
+            pipeline_version: string;
+            payload: components["schemas"]["CanonicalFlashcardTemplatePayloadOut"];
+            /** Approved At */
+            approved_at?: string | null;
+            /** Resolution Id */
+            resolution_id?: string | null;
+        };
+        /** CanonicalLearningPackageArtifactOut[CanonicalPedagogicalProfilePayloadOut] */
+        CanonicalLearningPackageArtifactOut_CanonicalPedagogicalProfilePayloadOut_: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Schema Version */
+            schema_version: string;
+            /** Pipeline Version */
+            pipeline_version: string;
+            payload: components["schemas"]["CanonicalPedagogicalProfilePayloadOut"];
+            /** Approved At */
+            approved_at?: string | null;
+            /** Resolution Id */
+            resolution_id?: string | null;
+        };
+        /** CanonicalLearningPackageArtifactOut[CanonicalQuestionDnaPayloadOut] */
+        CanonicalLearningPackageArtifactOut_CanonicalQuestionDnaPayloadOut_: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Schema Version */
+            schema_version: string;
+            /** Pipeline Version */
+            pipeline_version: string;
+            payload: components["schemas"]["CanonicalQuestionDnaPayloadOut"];
+            /** Approved At */
+            approved_at?: string | null;
+            /** Resolution Id */
+            resolution_id?: string | null;
+        };
+        /** CanonicalLearningPackageArtifactOut[CanonicalQuestionRelationshipsPayloadOut] */
+        CanonicalLearningPackageArtifactOut_CanonicalQuestionRelationshipsPayloadOut_: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Schema Version */
+            schema_version: string;
+            /** Pipeline Version */
+            pipeline_version: string;
+            payload: components["schemas"]["CanonicalQuestionRelationshipsPayloadOut"];
+            /** Approved At */
+            approved_at?: string | null;
+            /** Resolution Id */
+            resolution_id?: string | null;
+        };
+        /** CanonicalLearningPackageArtifactOut[list[CanonicalMicrocompetencyOut]] */
+        CanonicalLearningPackageArtifactOut_list_CanonicalMicrocompetencyOut__: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Schema Version */
+            schema_version: string;
+            /** Pipeline Version */
+            pipeline_version: string;
+            /** Payload */
+            payload: components["schemas"]["CanonicalMicrocompetencyOut"][];
+            /** Approved At */
+            approved_at?: string | null;
+            /** Resolution Id */
+            resolution_id?: string | null;
+        };
+        /** CanonicalLearningPackageArtifactsOut */
+        CanonicalLearningPackageArtifactsOut: {
+            clinical_resolution?: components["schemas"]["CanonicalLearningPackageArtifactOut_CanonicalClinicalResolutionPayloadOut_"] | null;
+            microcompetencies?: components["schemas"]["CanonicalLearningPackageArtifactOut_list_CanonicalMicrocompetencyOut__"] | null;
+            flashcard_template?: components["schemas"]["CanonicalLearningPackageArtifactOut_CanonicalFlashcardTemplatePayloadOut_"] | null;
+            pedagogical_profile?: components["schemas"]["CanonicalLearningPackageArtifactOut_CanonicalPedagogicalProfilePayloadOut_"] | null;
+            question_dna?: components["schemas"]["CanonicalLearningPackageArtifactOut_CanonicalQuestionDnaPayloadOut_"] | null;
+            question_relationships?: components["schemas"]["CanonicalLearningPackageArtifactOut_CanonicalQuestionRelationshipsPayloadOut_"] | null;
+        };
+        /**
+         * CanonicalLearningPackageOut
+         * @description Pinned copy of KrosBank learning-package.v1.
+         */
+        CanonicalLearningPackageOut: {
+            /** Question Id */
+            question_id: string;
+            /** Question Version */
+            question_version: number;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "learning-package.v1";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "partial" | "ready";
+            artifacts: components["schemas"]["CanonicalLearningPackageArtifactsOut"];
+            /** Missing Artifacts */
+            missing_artifacts: ("microcompetencies" | "flashcard_template" | "pedagogical_profile" | "question_dna" | "question_relationships")[];
+            /** Updated At */
+            updated_at?: string | null;
+            /**
+             * Delivery Source
+             * @constant
+             */
+            delivery_source: "canonical";
+        };
+        /** CanonicalMicrocompetencyOut */
+        CanonicalMicrocompetencyOut: {
+            /** Name */
+            name: string;
+            /** Evidence */
+            evidence: string;
+            /** Confidence */
+            confidence: number;
+        };
+        /** CanonicalPedagogicalProfilePayloadOut */
+        CanonicalPedagogicalProfilePayloadOut: {
+            /** Learning Objective */
+            learning_objective: string;
+            /** Common Error */
+            common_error: string;
+            /** Cognitive Level */
+            cognitive_level: string;
+        };
+        /** CanonicalQuestionDnaPayloadOut */
+        CanonicalQuestionDnaPayloadOut: {
+            /** Complexity */
+            complexity: string;
+            /** Reasoning Pattern */
+            reasoning_pattern: string;
+            /** Discriminators */
+            discriminators: string[];
+            /** Prerequisites */
+            prerequisites: string[];
+        };
+        /** CanonicalQuestionRelationshipOut */
+        CanonicalQuestionRelationshipOut: {
+            /** Related Question Id */
+            related_question_id: string;
+            /** Relationship Type */
+            relationship_type: string;
+            /** Confidence */
+            confidence: number;
+            /** Source */
+            source: string;
+            /** Evidence */
+            evidence?: {
+                [key: string]: unknown;
+            } | unknown[] | string | null;
+        };
+        /** CanonicalQuestionRelationshipsPayloadOut */
+        CanonicalQuestionRelationshipsPayloadOut: {
+            /**
+             * Derived By
+             * @constant
+             */
+            derived_by: "compute_question_similarity";
+            /** Question Version */
+            question_version: number;
+            /** Relationships */
+            relationships: components["schemas"]["CanonicalQuestionRelationshipOut"][];
+            /** Summary */
+            summary: {
+                [key: string]: unknown;
+            };
+        };
         /**
          * CanonicalQuestionResolutionOut
          * @description Opaque v1 payload owned and versioned by KrosBank.
@@ -4465,6 +4874,35 @@ export interface components {
             launch_status?: string | null;
             /** Fallback Reason */
             fallback_reason?: string | null;
+        };
+        /** LearningPackageInteractionIn */
+        LearningPackageInteractionIn: {
+            /**
+             * Event Type
+             * @enum {string}
+             */
+            event_type: "artifact_viewed" | "flashcard_template_presented" | "dismissed";
+            /** Artifact Type */
+            artifact_type?: string | null;
+            /** Template Id */
+            template_id?: string | null;
+        };
+        /** LearningPackageInteractionOut */
+        LearningPackageInteractionOut: {
+            /** Recorded */
+            recorded: boolean;
+            /** Event Type */
+            event_type: string;
+        };
+        /** LearningPackageRequestResultOut */
+        LearningPackageRequestResultOut: {
+            request: components["schemas"]["QuestionResolutionRequestOut"];
+            result?: components["schemas"]["CanonicalLearningPackageOut"] | null;
+            /**
+             * Refresh Pending
+             * @default false
+             */
+            refresh_pending: boolean;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -7322,7 +7760,7 @@ export interface components {
             recommendation_reason: "knowledge_gap" | "high_yield" | "under_covered" | "scheduled";
             /**
              * Ranking Policy Version
-             * @default question-ranking-2
+             * @default question-ranking-3-canonical-metadata-zero
              */
             ranking_policy_version: string;
         };
@@ -7390,13 +7828,37 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "queued" | "submitted" | "resolving_cheap" | "validating" | "repairing_cheap" | "resolving_strong" | "needs_review" | "ready" | "failed" | "superseded";
+            status: "queued" | "submitted" | "resolving_cheap" | "validating" | "repairing_cheap" | "resolving_strong" | "enriching_package" | "needs_review" | "partial" | "ready" | "failed" | "superseded";
             /** Workflow Id */
             workflow_id?: string | null;
             /** Delivery Source */
             delivery_source?: string | null;
             /** Error */
             error?: string | null;
+            /**
+             * Request Kind
+             * @default resolution
+             * @enum {string}
+             */
+            request_kind: "resolution" | "learning_package";
+            /**
+             * Schema Version
+             * @default resolution.v1
+             */
+            schema_version: string;
+            /** Artifact States */
+            artifact_states?: {
+                [key: string]: string;
+            };
+            /** Last Reconciled At */
+            last_reconciled_at?: string | null;
+            /** Next Reconcile At */
+            next_reconcile_at?: string | null;
+            /**
+             * Reconcile Step
+             * @default 0
+             */
+            reconcile_step: number;
             /** Created At */
             created_at: string;
             /** Updated At */
@@ -10851,6 +11313,80 @@ export interface operations {
             };
         };
     };
+    get_background_job_operational_metrics_jobs_admin_operational_metrics_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    requeue_failed_background_job_jobs__job_id__admin_requeue_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     submit_review_reviews_post: {
         parameters: {
             query?: never;
@@ -12457,6 +12993,75 @@ export interface operations {
             };
         };
     };
+    request_canonical_learning_package_question_bank_sessions__session_id__items__position__learning_package_requests_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                position: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionResolutionRequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_canonical_learning_package_request_for_item_question_bank_sessions__session_id__items__position__learning_package_request_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                position: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionResolutionRequestOut"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_canonical_question_resolution_request_question_bank_resolution_requests__request_id__get: {
         parameters: {
             query?: never;
@@ -12477,6 +13082,180 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["QuestionResolutionRequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_canonical_learning_package_request_question_bank_learning_package_requests__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionResolutionRequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_canonical_learning_package_result_question_bank_learning_package_requests__request_id__result_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LearningPackageRequestResultOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_canonical_learning_package_interaction_question_bank_learning_package_requests__request_id__events_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LearningPackageInteractionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LearningPackageInteractionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_canonical_flashcard_suggestion_question_bank_learning_package_requests__request_id__flashcards__template_id__save_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                request_id: string;
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CanonicalFlashcardSaveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CanonicalFlashcardNoteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enroll_canonical_flashcard_in_srs_question_bank_canonical_flashcards__note_id__srs_enrollment_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                note_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CanonicalFlashcardNoteOut"];
                 };
             };
             /** @description Validation Error */

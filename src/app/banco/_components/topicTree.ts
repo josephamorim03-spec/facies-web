@@ -124,7 +124,7 @@ function makeSyntheticGroup(label: string, code: string | null): TopicTreeNode {
     answer_types: {},
     recommendation_rank: Number.MAX_SAFE_INTEGER,
     recommendation_reason: "under_covered",
-    ranking_policy_version: "question-ranking-2",
+    ranking_policy_version: "question-ranking-3-canonical-metadata-zero",
     children: [],
     treeDepth: 0,
     synthetic: true,
