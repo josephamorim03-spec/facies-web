@@ -48,6 +48,54 @@ export async function replaceMyObjectives(
   });
 }
 
+// ------------------------------------------------------------- prova alvo v1
+//
+// Caminho paralelo ao objetivo por edital: o aluno escolhe entre as bancas que
+// o banco de questões realmente tem. É o que liga "Foco na banca" enquanto não
+// existe edição editorial publicada.
+
+export type StudentTargetExamItem = {
+  student_objective_id: string;
+  priority: number;
+  label: string;
+  board_code: string;
+  exam_name: string | null;
+  exam_date: string | null;
+};
+
+export type StudentTargetExam = {
+  contract_version: "student-target-exam-v1";
+  selection_revision: number;
+  has_target_exam: boolean;
+  items: StudentTargetExamItem[];
+};
+
+export type StudentTargetExamInput = {
+  board_code: string;
+  exam_name?: string | null;
+  exam_date?: string | null;
+};
+
+export async function getMyTargetExam(token: string): Promise<StudentTargetExam> {
+  return api<StudentTargetExam>("/api/objectives/target-exam", {
+    headers: authHeader(token),
+    cache: "no-store",
+    clientCache: false,
+  });
+}
+
+export async function replaceMyTargetExam(
+  token: string,
+  items: StudentTargetExamInput[],
+  expectedRevision: number | null,
+): Promise<StudentTargetExam> {
+  return api<StudentTargetExam>("/api/objectives/target-exam", {
+    method: "PUT",
+    headers: { ...authHeader(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ items, expected_revision: expectedRevision }),
+  });
+}
+
 export type ObjectivePlanningDateV2 = {
   status: "confirmed" | "estimated" | "retracted" | "not_published";
   precision: "exact" | "window" | null;

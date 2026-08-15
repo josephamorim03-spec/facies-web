@@ -301,7 +301,7 @@ function BancoDeQuestoesContent() {
   const [correctionStatus, setCorrectionStatus] = useState<QuestionBankCorrectionStatus>("all");
   const [limit, setLimit] = useState(() => clampQuestionLimit(initialContext.expectedQuestions ?? 10));
   const [resolutionMode, setResolutionMode] = useState<QuestionBankResolutionMode>(
-    () => (initialContext.reviewTaskId ? "training" : "simulation"),
+    "simulation",
   );
   const [studyKind, setStudyKind] = useState<StudyKind>("topic");
   const [fullExamName, setFullExamName] = useState("");
@@ -401,7 +401,7 @@ function BancoDeQuestoesContent() {
     setCommittedSearch(context.source ? "" : (context.theme ?? "").trim());
     setCorrectionStatus("all");
     setLimit(clampQuestionLimit(context.expectedQuestions ?? 10));
-    setResolutionMode(context.reviewTaskId ? "training" : "simulation");
+    setResolutionMode("simulation");
     setStudyKind(opensInstitutionalExam ? "full_exam" : "topic");
     setStateCodes([]);
     setSelectedTopics([]);
@@ -421,14 +421,14 @@ function BancoDeQuestoesContent() {
     getProfile(token)
       .then((profile) => {
         setHasChosenFeedbackDefault(profile.has_chosen_feedback_default);
-        if (!entryContext.reviewTaskId) {
-          setResolutionMode(
-            profile.default_feedback_timing === "immediate" ? "training" : "simulation",
-          );
-        }
+        setResolutionMode(
+          profile.default_feedback_reveal_policy === "reveal_all"
+            ? "training"
+            : "simulation",
+        );
       })
       .catch(() => setHasChosenFeedbackDefault(true));
-  }, [entryContext.reviewTaskId, token, tokenResolved]);
+  }, [token, tokenResolved]);
 
   useEffect(() => {
     if (!routeSearchKey) {
@@ -843,9 +843,11 @@ function BancoDeQuestoesContent() {
           : selectedTopics.length > 1
             ? "bank_combined"
             : "bank_topic",
-      feedback_timing: resolutionMode === "simulation" ? "post_result" : "immediate",
+      feedback_timing: "post_result",
+      feedback_reveal_policy:
+        resolutionMode === "training" ? "reveal_all" : "guided_choice",
       mode: studyKind === "full_exam" ? "by_exam" : "by_topic",
-      resolution_mode: studyKind === "full_exam" ? "simulation" : resolutionMode,
+      resolution_mode: "simulation",
       study_kind: studyKind,
       ...filterParams({ limit: clampedLimit }),
       performed_at: localNoonISO(entryContext.dateISO),
@@ -884,7 +886,9 @@ function BancoDeQuestoesContent() {
       try {
         await updateProfile(token, {
           default_feedback_timing:
-            resolutionMode === "training" ? "immediate" : "post_result",
+            "post_result",
+          default_feedback_reveal_policy:
+            resolutionMode === "training" ? "reveal_all" : "guided_choice",
           has_chosen_feedback_default: true,
         });
       } catch (cause) {
@@ -1093,7 +1097,9 @@ function BancoDeQuestoesContent() {
         open={feedbackDefaultPromptOpen}
         title="Usar esta correção como padrão?"
         message={`Você escolheu ${
-          resolutionMode === "training" ? "correção imediata" : "correção pós-resultado"
+          resolutionMode === "training"
+            ? "revelar tudo ao finalizar"
+            : "escolher o feedback por questão"
         }. Esta preferência pode ser alterada depois.`}
         cancelLabel="Só nesta sessão"
         confirmLabel="Usar como padrão"

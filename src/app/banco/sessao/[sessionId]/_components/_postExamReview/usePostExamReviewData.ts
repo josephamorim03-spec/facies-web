@@ -18,12 +18,14 @@ import type { SessionDiagnosis } from "./types";
 type UsePostExamReviewDataParams = {
   session: QuestionBankSession;
   activeReview: boolean;
+  detailedFeedbackAvailable: boolean;
   onSessionChange?: (session: QuestionBankSession) => void;
 };
 
 export function usePostExamReviewData({
   session,
   activeReview,
+  detailedFeedbackAvailable,
   onSessionChange,
 }: UsePostExamReviewDataParams) {
   const { token } = useAuthToken();
@@ -39,7 +41,7 @@ export function usePostExamReviewData({
   const [reportReason, setReportReason] = useState("");
 
   useEffect(() => {
-    if (!token || !session.session_id) return;
+    if (!session.session_id || !detailedFeedbackAvailable) return;
     setDiagnosisError(false);
     api<SessionDiagnosis>(
       `/api/question-bank/sessions/${encodeURIComponent(session.session_id)}/diagnosis`,
@@ -47,14 +49,14 @@ export function usePostExamReviewData({
     )
       .then(setDiagnosis)
       .catch(() => setDiagnosisError(true));
-  }, [token, session.session_id]);
+  }, [token, session.session_id, detailedFeedbackAvailable]);
 
   useEffect(() => {
-    if (!token || !session.session_id) return;
+    if (!session.session_id || !detailedFeedbackAvailable) return;
     getSessionCorrections(token, session.session_id)
       .then(setCorrections)
       .catch(() => {});
-  }, [token, session.session_id]);
+  }, [token, session.session_id, detailedFeedbackAvailable]);
 
   const correctionByQuestionId = useMemo(
     () => new Map(corrections.map((correction) => [correction.question_id, correction])),
@@ -62,7 +64,6 @@ export function usePostExamReviewData({
   );
 
   async function submitSessionReport(item: QuestionBankSessionItem) {
-    if (!token) return;
     setLocalBusy(true);
     setActionError(null);
     try {
@@ -99,7 +100,7 @@ export function usePostExamReviewData({
   }
 
   async function toggleExclusion(item: QuestionBankSessionItem) {
-    if (!token || !activeReview || !item.reported_problem) return;
+    if (!activeReview || !item.reported_problem) return;
     setLocalBusy(true);
     setActionError(null);
     try {

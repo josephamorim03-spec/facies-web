@@ -215,6 +215,7 @@ export type UserProfile = {
   calendar_change_alerts_enabled: boolean;
   calendar_recommendations_enabled: boolean;
   default_feedback_timing: "immediate" | "post_result";
+  default_feedback_reveal_policy: "guided_choice" | "reveal_all";
   has_chosen_feedback_default: boolean;
   has_completed_initial_goal_setup: boolean;
   access_status: "active" | "expired" | "pending_key";
@@ -238,6 +239,7 @@ export async function updateProfile(
     calendar_change_alerts_enabled?: boolean;
     calendar_recommendations_enabled?: boolean;
     default_feedback_timing?: "immediate" | "post_result";
+    default_feedback_reveal_policy?: "guided_choice" | "reveal_all";
     has_chosen_feedback_default?: boolean;
   }
 ): Promise<UserProfile> {

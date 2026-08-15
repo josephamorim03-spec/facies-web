@@ -104,8 +104,8 @@ export default function CreateSessionPanel({
   onRetry,
 }: CreateSessionPanelProps) {
   const canStart = !busy && canStartSession && !!availability && availability.available_count > 0;
-  const estimatedMinutes = Math.max(10, Math.ceil(clampedLimit * (resolutionMode === "simulation" || studyKind === "full_exam" ? 1.5 : 2)));
-  const modeLabel = resolutionMode === "simulation" ? "Correção pós-resultado" : "Correção imediata";
+  const estimatedMinutes = Math.max(10, Math.ceil(clampedLimit * 1.5));
+  const modeLabel = resolutionMode === "simulation" ? "Escolher feedback por questão" : "Revelar tudo ao finalizar";
   const displayModeLabel = studyKind === "full_exam" ? "Prova institucional" : modeLabel;
   const distribution = availability
     ? `${availability.unanswered_count} novas · ${availability.answered_count} respondidas`

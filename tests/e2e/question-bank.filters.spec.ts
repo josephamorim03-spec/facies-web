@@ -50,6 +50,7 @@ const otherAreaTopic = {
 
 const item = {
   question_id: "q1",
+  question_version: 1,
   position: 1,
   stem: "Gestante com sangramento no terceiro trimestre.",
   alternatives: { A: "Placenta previa", B: "Abortamento", C: "ITU", D: "Asma", E: "DM" },
@@ -65,6 +66,9 @@ const item = {
   doubtful: false,
   confidence_self_rating: null,
   answered: false,
+  result_state: "unanswered",
+  feedback_state: "concealed",
+  reasoning_review_eligible: false,
   needs_correction: false,
   correct_answer: null,
   is_correct: null,
@@ -166,8 +170,14 @@ function sessionPayload(answered = false) {
     session_id: "session_qb_e2e",
     status: "active",
     mode: "adaptive",
-    resolution_mode: "training",
-    scoring_mode: "immediate",
+    resolution_mode: "simulation",
+    session_purpose: "assessment",
+    session_purpose_inferred: false,
+    session_kind: "bank_topic",
+    feedback_timing: "post_result",
+    feedback_reveal_policy: "guided_choice",
+    all_feedback_revealed: false,
+    scoring_mode: "deferred",
     study_kind: "topic",
     full_exam_name: null,
     full_exam_year: null,
@@ -197,8 +207,10 @@ function sessionPayload(answered = false) {
             selected_option: "A",
             answer_state: "draft",
             answered: true,
-            correct_answer: "A",
-            is_correct: true,
+            result_state: "unanswered",
+            feedback_state: "concealed",
+            correct_answer: null,
+            is_correct: null,
           }
         : item,
     ],
@@ -291,15 +303,15 @@ test("question bank applies filters, calendar review context, and gated correcti
   await expect(page.getByText(/12 .*dispon/i)).toBeVisible();
   await expect(page.getByText("Obstetricia").first()).toBeVisible();
   await expect(page.getByTestId("question-bank-top-filters")).not.toContainText("Medicina");
-  await expect(page.getByRole("button", { name: /1 filtro ativo: Obstetricia/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /filtros ativos/i })).toBeVisible();
 
   const quantityInput = page.getByRole("spinbutton", { name: /Questões/i });
   await quantityInput.fill("99");
   await quantityInput.blur();
   await expect(quantityInput).toHaveValue("12");
 
-  await page.getByRole("button", { name: /Começar 12 questões.*correção imediata/i }).click();
-  await page.waitForURL("**/banco-de-questoes/sessao/session_qb_e2e**");
+  await page.getByRole("button", { name: /Começar 12 questões.*feedback por questão/i }).click();
+  await page.waitForURL("**/banco/sessao/session_qb_e2e**");
 
   const payload = createPayloads[0];
   expect(payload).toBeTruthy();
@@ -309,7 +321,9 @@ test("question bank applies filters, calendar review context, and gated correcti
     knowledge_node_ids: ["go-node"],
     exam_codes: ["ACESSO-DIRETO"],
     limit: 12,
-    resolution_mode: "training",
+    resolution_mode: "simulation",
+    feedback_timing: "post_result",
+    feedback_reveal_policy: "guided_choice",
     answer_status: "unanswered",
     only_unanswered: true,
     review_task_id: "rt_e2e",
@@ -318,10 +332,8 @@ test("question bank applies filters, calendar review context, and gated correcti
 
   await page.getByRole("button", { name: /^A\s+Placenta/ }).click();
   await expect(page.getByText("Gabarito A")).toHaveCount(0);
-  await page.getByRole("button", { name: "Ver gabarito" }).click();
-  await expect(page.getByText("Gabarito A")).toBeVisible();
-  await expect(page.getByText("Momento de aprendizagem")).toBeVisible();
-  await expect(page.getByRole("button", { name: /Próxima/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ver gabarito" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Corrigir simulado" })).toBeVisible();
 });
 
 test("manual search becomes an active session filter and clears selected topics", async ({ page }) => {

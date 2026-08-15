@@ -18,14 +18,15 @@ import { getAuthToken } from "@/lib/auth";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { ObjectiveSelector } from "@/components/objectives/ObjectiveSelector";
+import { TargetExamSelector } from "@/components/objectives/TargetExamSelector";
 import { WeekdayPicker } from "./_components/WeekdayPicker";
 
 const STEPS: { key: OnboardingStep; label: string; title: string; help: string }[] = [
   {
     key: "objectives",
     label: "Objetivo",
-    title: "Qual é seu objetivo de residência?",
-    help: "Escolha até 3 destinos. Processo, edição e data vêm de fontes editoriais verificadas.",
+    title: "Para qual prova você estuda?",
+    help: "Escolha até 3. Suas sessões passam a priorizar essas provas, e a data ancora o cronograma.",
   },
   {
     key: "routine",
@@ -68,6 +69,7 @@ export default function OnboardingPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [objectivesCapability, setObjectivesCapability] = useState<CapabilityStatus | null>(null);
+  const [targetExamCapability, setTargetExamCapability] = useState<CapabilityStatus | null>(null);
   const [routine, setRoutine] = useState<RoutineDraft[]>([]);
   const [availability, setAvailability] = useState<Record<number, number>>({
     0: DEFAULT_MINUTES,
@@ -92,6 +94,9 @@ export default function OnboardingPage() {
         setStep(result.next_step);
         setObjectivesCapability(
           capabilities.capabilities.find((item) => item.key === "student_objectives_v2") ?? null,
+        );
+        setTargetExamCapability(
+          capabilities.capabilities.find((item) => item.key === "target_exam_v1") ?? null,
         );
         if (Object.keys(result.study_availability).length > 0) {
           const parsed: Record<number, number> = {};
@@ -222,19 +227,49 @@ export default function OnboardingPage() {
       )}
 
       <div className="mt-6 space-y-4">
-        {step === "objectives" && (
-          <ObjectiveSelector
-            token={getAuthToken()}
-            mode="onboarding"
-            capabilityEnabled={objectivesCapability?.enabled ?? false}
-            capabilityReady={objectivesCapability?.can_start_action ?? false}
-            unavailableReason={objectivesCapability?.reason}
-            onOnboardingSaved={(next) => {
-              setState(next);
-              setStep("routine");
-            }}
-          />
-        )}
+        {/* O seletor canônico só avança a etapa quando consegue salvar, e ele
+            não consegue enquanto o catálogo editorial não tem edição publicada.
+            Sem a alternativa por banca, esta etapa vira um beco sem saída: não
+            há botão "Continuar" para `objectives`. */}
+        {step === "objectives" &&
+          (objectivesCapability?.can_start_action ? (
+            <ObjectiveSelector
+              token={getAuthToken()}
+              mode="onboarding"
+              capabilityEnabled={objectivesCapability?.enabled ?? false}
+              capabilityReady={objectivesCapability?.can_start_action ?? false}
+              unavailableReason={objectivesCapability?.reason}
+              onOnboardingSaved={(next) => {
+                setState(next);
+                setStep("routine");
+              }}
+            />
+          ) : !targetExamCapability?.can_start_action ? (
+            <div className="space-y-4">
+              <Alert variant="info">
+                A seleção de prova alvo está indisponível no momento. Você pode seguir e
+                defini-la depois em Perfil.
+              </Alert>
+              <Button variant="primary" onClick={() => setStep("routine")}>
+                Continuar
+                <ArrowRight aria-hidden className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <TargetExamSelector
+              token={getAuthToken()}
+              mode="onboarding"
+              onSaved={() => {
+                // A prova alvo grava em `student_objectives`, que é a origem de
+                // `has_selected_objectives`; reler mantém o passo derivado dos
+                // dados em vez de um contador de tela.
+                void getOnboarding(getAuthToken())
+                  .then(setState)
+                  .catch(() => undefined)
+                  .finally(() => setStep("routine"));
+              }}
+            />
+          ))}
 
         {step === "routine" && (
           <div className="space-y-4 rounded-control border border-edge bg-surface p-4">

@@ -11,8 +11,10 @@ import {
   requestLearningPackage,
   saveCanonicalFlashcard,
 } from "@/lib/api/domains/question-bank/learning-packages";
+import { reportQuestionProblem } from "@/lib/api/domains/question-bank/reports";
 import type {
   CanonicalFlashcardNote,
+  ClinicalResolutionPayload,
   LearningPackage,
   LearningPackageRequest,
 } from "@/lib/api/domains/question-bank/types";
@@ -56,6 +58,7 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
   const [saved, setSaved] = useState<Record<string, CanonicalFlashcardNote>>({});
   const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
   const [message, setMessage] = useState<string | null>(null);
+  const [reported, setReported] = useState(false);
 
   const loadResult = useCallback(async (current: LearningPackageRequest) => {
     if (["failed", "superseded"].includes(current.status)) return;
@@ -96,13 +99,21 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
   }, [loadResult, request, token]);
 
   const artifacts = learningPackage?.artifacts ?? {};
-  const clinical = objectValue(artifacts.clinical_resolution?.payload);
-  const optionAnalysis = objectValue(clinical.option_analysis);
+  const clinical: ClinicalResolutionPayload = artifacts.clinical_resolution?.payload ?? {};
+  const optionAnalysis = clinical.option_analysis ?? {};
+  const decisiveClues = strings(clinical.decisive_clues);
+  const riskFlags = strings(clinical.risk_flags);
+  // Presença do artefato, não de um campo específico: um pacote parcial pode
+  // trazer só o `option_analysis`, e ainda assim é a correção que o aluno pediu.
+  const hasClinicalResolution =
+    Boolean(clinical.pedagogical_justification) ||
+    Boolean(clinical.central_concept) ||
+    Object.keys(optionAnalysis).length > 0;
   const microcompetencies = Array.isArray(artifacts.microcompetencies?.payload)
     ? artifacts.microcompetencies.payload as Array<Record<string, unknown>>
     : [];
   const profile = objectValue(artifacts.pedagogical_profile?.payload);
-  const dna = objectValue(artifacts.question_dna?.payload);
+  const dna = objectValue(artifacts.reasoning_blueprint?.payload);
   const flashcardPayload = objectValue(artifacts.flashcard_template?.payload);
   const flashcards = Array.isArray(flashcardPayload.cards)
     ? flashcardPayload.cards.map(objectValue)
@@ -180,6 +191,27 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
     }
   }
 
+  async function reportPackage() {
+    if (!learningPackage) return;
+    setBusy(true);
+    try {
+      await reportQuestionProblem(token, learningPackage.question_id, {
+        report_type: "ai_correction_error",
+        report_reason: "Aluno reportou erro na correção gerada por IA.",
+        report_context: {
+          surface: "learning_package_panel",
+          question_version: learningPackage.question_version,
+        },
+      });
+      setReported(true);
+      setLearningPackage(null);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Não foi possível enviar o report.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function dismissCard(templateId: string) {
     if (!request) return;
     setDismissed((current) => new Set(current).add(templateId));
@@ -214,15 +246,44 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
         {learningPackage?.status === "partial" && <span className="rounded-full border border-edge px-2.5 py-1 text-xs text-muted">Parcial</span>}
       </div>
 
-      {Boolean(clinical.explanation) && (
+      {/* O gate era `clinical.explanation`, campo que não existe em
+          `learning-package.v1` — o contrato traz `pedagogical_justification`.
+          Como `undefined` é sempre falso, este bloco inteiro nunca renderizava,
+          e com ele o `option_analysis`: o único lugar do produto onde aparece
+          comentário por alternativa, inclusive o da correta. */}
+      {hasClinicalResolution && (
         <div className="rounded-lg border border-edge bg-paper p-3">
           <h3 className="text-sm font-semibold text-ink">Correção revisada</h3>
-          <p className="mt-2 whitespace-pre-wrap text-sm text-muted">{String(clinical.explanation)}</p>
+          {Boolean(clinical.central_concept) && (
+            <p className="mt-2 text-sm font-semibold text-ink">{String(clinical.central_concept)}</p>
+          )}
+          {Boolean(clinical.pedagogical_justification) && (
+            <p className="mt-2 whitespace-pre-wrap text-sm text-muted">
+              {String(clinical.pedagogical_justification)}
+            </p>
+          )}
+          {decisiveClues.length > 0 && (
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted">
+              {decisiveClues.map((clue, index) => (
+                <li key={`${clue}-${index}`}>{clue}</li>
+              ))}
+            </ul>
+          )}
           {Object.keys(optionAnalysis).length > 0 && (
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-2 border-t border-edge pt-3">
               {Object.entries(optionAnalysis).map(([option, comment]) => (
                 <p key={option} className="text-sm text-muted"><strong className="text-ink">{option}:</strong> {String(comment)}</p>
               ))}
+            </div>
+          )}
+          {riskFlags.length > 0 && (
+            <div className="mt-3 rounded-lg border border-warning/40 bg-[var(--amber-tint)] p-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Atenção clínica</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted">
+                {riskFlags.map((flag, index) => (
+                  <li key={`${flag}-${index}`}>{flag}</li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
@@ -260,6 +321,27 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
 
       {!learningPackage && <p className="text-sm text-muted">O pedido continuará sendo atualizado após a revisão médica.</p>}
       {learningPackage && missing.size > 0 && <p className="text-xs text-muted">Ainda em revisão: {Array.from(missing).join(", ")}.</p>}
+
+      {/* Todo artefato entregue passou por revisão humana. O reporte cria uma
+          trilha editorial sem desfazer silenciosamente a decisão do revisor. */}
+      {learningPackage && (
+        <div className="border-t border-edge pt-3">
+          {reported ? (
+            <p className="text-xs text-muted" role="status">
+              Obrigado. O reporte foi enviado para triagem editorial.
+            </p>
+          ) : (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void reportPackage()}
+              className="text-xs font-semibold text-muted underline underline-offset-2 hover:text-danger disabled:opacity-50"
+            >
+              Reportar erro nesta correção
+            </button>
+          )}
+        </div>
+      )}
     </section>
   );
 }

@@ -118,5 +118,5 @@ export function getActiveFilters(params: {
 
 export function questionBankCtaLabel(limit: number, resolutionMode: "training" | "simulation", studyKind: string): string {
   if (studyKind === "full_exam") return `Começar prova · ${limit} questões`;
-  return `Começar ${limit} questões · ${resolutionMode === "training" ? "correção imediata" : "pós-resultado"}`;
+  return `Começar ${limit} questões · ${resolutionMode === "training" ? "revelar ao final" : "feedback por questão"}`;
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type {
   QuestionBankGuidedReview,
   QuestionBankGuidedReviewValue,
+  QuestionBankFeedbackRevealPolicy,
   QuestionBankOption,
   QuestionPostAnswerReflection,
   QuestionBankReportType,
@@ -44,6 +45,7 @@ const REPORT_LABELS: Record<QuestionBankReportType, string> = {
   missing_media: "Imagem/tabela faltando",
   wrong_metadata: "Metadados errados",
   outdated: "Desatualizada",
+  ai_correction_error: "Erro na correção por IA",
   other: "Outro",
 };
 
@@ -145,6 +147,9 @@ type FocusedQuestionProps = {
   fixacaoCount?: number;
   onFixar?: () => void;
   learningPackagePanel?: ReactNode;
+  feedbackRevealPolicy?: QuestionBankFeedbackRevealPolicy;
+  onFeedbackRevealPolicyChange?: (policy: QuestionBankFeedbackRevealPolicy) => void | Promise<void>;
+  onSaveFeedbackRevealPolicyDefault?: () => void | Promise<void>;
 };
 
 function cx(...classes: Array<string | false | null | undefined>) {
@@ -398,6 +403,9 @@ export default function FocusedQuestion({
   fixacaoCount,
   onFixar,
   learningPackagePanel,
+  feedbackRevealPolicy,
+  onFeedbackRevealPolicyChange,
+  onSaveFeedbackRevealPolicyDefault,
 }: FocusedQuestionProps) {
   const finalized = sessionStatus === "finalized";
   const [prefs, setPrefs] = useState(() => readPreferences(defaultPresentationMode));
@@ -1342,6 +1350,48 @@ export default function FocusedQuestion({
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+              {!isTrainingFlow && feedbackRevealPolicy && onFeedbackRevealPolicyChange && (
+                <div className="rounded-lg border border-edge bg-surface p-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+                    Feedback ao finalizar
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted">
+                    Esta escolha vale somente para esta prova.
+                  </p>
+                  <div className="mt-3 grid gap-2">
+                    {([
+                      ["guided_choice", "Escolher por questão"],
+                      ["reveal_all", "Revelar tudo ao finalizar"],
+                    ] as const).map(([policy, label]) => (
+                      <button
+                        key={policy}
+                        type="button"
+                        disabled={busy}
+                        onClick={() => void onFeedbackRevealPolicyChange(policy)}
+                        aria-pressed={feedbackRevealPolicy === policy}
+                        className={cx(
+                          "rounded-lg border px-3 py-2 text-left text-sm font-semibold disabled:opacity-50",
+                          feedbackRevealPolicy === policy
+                            ? "border-ink bg-ink text-paper"
+                            : "border-edge bg-paper text-muted hover:text-ink",
+                        )}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {onSaveFeedbackRevealPolicyDefault && (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void onSaveFeedbackRevealPolicyDefault()}
+                      className="mt-3 text-xs font-semibold text-primary underline-offset-4 hover:underline disabled:opacity-50"
+                    >
+                      Salvar esta escolha como padrão
+                    </button>
+                  )}
                 </div>
               )}
               <div className="rounded-lg border border-edge bg-surface p-3">

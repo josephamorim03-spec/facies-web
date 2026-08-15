@@ -20,6 +20,8 @@ import {
   requestQuestionBankAICorrection,
   submitQuestionBankGuidedReview,
   setQuestionBankBookmark,
+  setQuestionBankSessionFeedbackPolicy,
+  updateProfile,
   type OperationalQuestionOutcome,
   type QuestionBankFinalizeResult,
   type QuestionBankAiRequestPreview,
@@ -31,6 +33,7 @@ import {
   type QuestionPostAnswerReflection,
   type QuestionBankReportType,
   type QuestionBankSession,
+  type QuestionBankFeedbackRevealPolicy,
   type QuestionTextHighlight,
   type QuestionTextHighlightKind,
   type QuestionTextHighlightTarget,
@@ -762,6 +765,41 @@ export default function SessionPage() {
     }
   }
 
+  async function applyFeedbackRevealPolicy(policy: QuestionBankFeedbackRevealPolicy) {
+    if (!session || session.status !== "active") return;
+    setBusy(true);
+    setError(null);
+    try {
+      const updated = await setQuestionBankSessionFeedbackPolicy(
+        token,
+        session.session_id,
+        policy,
+      );
+      setSession(updated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível alterar o feedback desta prova.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveFeedbackRevealPolicyDefault() {
+    if (!session) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await updateProfile(token, {
+        default_feedback_timing: "post_result",
+        default_feedback_reveal_policy: session.feedback_reveal_policy,
+        has_chosen_feedback_default: true,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível salvar a preferência padrão.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   // Submit first, then show the result. Confidence remains optional.
   async function proceedReveal() {
     if (!session) return;
@@ -1196,6 +1234,9 @@ export default function SessionPage() {
         onCreateHighlight={(input) => addTextHighlight(currentItem.question_id, input)}
         onDeleteHighlight={(highlightId) => removeTextHighlight(currentItem.question_id, highlightId)}
         finalizeLabel={`Corrigir ${sessionKindLabel.toLowerCase()}`}
+        feedbackRevealPolicy={session.feedback_reveal_policy}
+        onFeedbackRevealPolicyChange={applyFeedbackRevealPolicy}
+        onSaveFeedbackRevealPolicyDefault={saveFeedbackRevealPolicyDefault}
       />
       <ConfirmDialog
         open={simExitConfirmOpen}

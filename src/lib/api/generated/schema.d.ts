@@ -1273,6 +1273,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/question-bank/sessions/{session_id}/feedback-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Set Question Bank Session Feedback Policy */
+        patch: operations["set_question_bank_session_feedback_policy_question_bank_sessions__session_id__feedback_policy_patch"];
+        trace?: never;
+    };
     "/question-bank/sessions/{session_id}/diagnosis": {
         parameters: {
             query?: never;
@@ -1562,6 +1579,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/question-bank/sessions/{session_id}/feedback/reveal-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reveal All Question Bank Feedback */
+        post: operations["reveal_all_question_bank_feedback_question_bank_sessions__session_id__feedback_reveal_all_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/sessions/{session_id}/items/{position}/feedback/reveal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reveal Question Bank Item Feedback */
+        post: operations["reveal_question_bank_item_feedback_question_bank_sessions__session_id__items__position__feedback_reveal_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/question-bank/sessions/{session_id}/items/{position}/report": {
         parameters: {
             query?: never;
@@ -1607,6 +1658,57 @@ export interface paths {
         put?: never;
         /** Record Question Bank Student Events */
         post: operations["record_question_bank_student_events_question_bank_sessions__session_id__items__position__events_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/sessions/{session_id}/items/{position}/reasoning-review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Question Bank Reasoning Review */
+        get: operations["get_question_bank_reasoning_review_question_bank_sessions__session_id__items__position__reasoning_review_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/sessions/{session_id}/items/{position}/reasoning-review/responses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer Question Bank Reasoning Checkpoint */
+        post: operations["answer_question_bank_reasoning_checkpoint_question_bank_sessions__session_id__items__position__reasoning_review_responses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/sessions/{session_id}/items/{position}/reasoning-review/attribution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Attribute Question Bank Reasoning Review */
+        post: operations["attribute_question_bank_reasoning_review_question_bank_sessions__session_id__items__position__reasoning_review_attribution_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2083,6 +2185,24 @@ export interface paths {
         get: operations["get_my_objectives_objectives_mine_get"];
         /** Replace My Objectives */
         put: operations["replace_my_objectives_objectives_mine_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/objectives/target-exam": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Target Exam */
+        get: operations["get_my_target_exam_objectives_target_exam_get"];
+        /** Replace My Target Exam */
+        put: operations["replace_my_target_exam_objectives_target_exam_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -3851,34 +3971,6 @@ export interface components {
             /** Resolution Id */
             resolution_id?: string | null;
         };
-        /** CanonicalLearningPackageArtifactOut[CanonicalPedagogicalProfilePayloadOut] */
-        CanonicalLearningPackageArtifactOut_CanonicalPedagogicalProfilePayloadOut_: {
-            /** Artifact Id */
-            artifact_id: string;
-            /** Schema Version */
-            schema_version: string;
-            /** Pipeline Version */
-            pipeline_version: string;
-            payload: components["schemas"]["CanonicalPedagogicalProfilePayloadOut"];
-            /** Approved At */
-            approved_at?: string | null;
-            /** Resolution Id */
-            resolution_id?: string | null;
-        };
-        /** CanonicalLearningPackageArtifactOut[CanonicalQuestionDnaPayloadOut] */
-        CanonicalLearningPackageArtifactOut_CanonicalQuestionDnaPayloadOut_: {
-            /** Artifact Id */
-            artifact_id: string;
-            /** Schema Version */
-            schema_version: string;
-            /** Pipeline Version */
-            pipeline_version: string;
-            payload: components["schemas"]["CanonicalQuestionDnaPayloadOut"];
-            /** Approved At */
-            approved_at?: string | null;
-            /** Resolution Id */
-            resolution_id?: string | null;
-        };
         /** CanonicalLearningPackageArtifactOut[CanonicalQuestionRelationshipsPayloadOut] */
         CanonicalLearningPackageArtifactOut_CanonicalQuestionRelationshipsPayloadOut_: {
             /** Artifact Id */
@@ -3913,8 +4005,8 @@ export interface components {
             clinical_resolution?: components["schemas"]["CanonicalLearningPackageArtifactOut_CanonicalClinicalResolutionPayloadOut_"] | null;
             microcompetencies?: components["schemas"]["CanonicalLearningPackageArtifactOut_list_CanonicalMicrocompetencyOut__"] | null;
             flashcard_template?: components["schemas"]["CanonicalLearningPackageArtifactOut_CanonicalFlashcardTemplatePayloadOut_"] | null;
-            pedagogical_profile?: components["schemas"]["CanonicalLearningPackageArtifactOut_CanonicalPedagogicalProfilePayloadOut_"] | null;
-            question_dna?: components["schemas"]["CanonicalLearningPackageArtifactOut_CanonicalQuestionDnaPayloadOut_"] | null;
+            pedagogical_profile?: components["schemas"]["CanonicalPedagogicalProfileArtifactOut"] | null;
+            reasoning_blueprint?: components["schemas"]["CanonicalReasoningBlueprintArtifactOut"] | null;
             question_relationships?: components["schemas"]["CanonicalLearningPackageArtifactOut_CanonicalQuestionRelationshipsPayloadOut_"] | null;
         };
         /**
@@ -3938,7 +4030,7 @@ export interface components {
             status: "partial" | "ready";
             artifacts: components["schemas"]["CanonicalLearningPackageArtifactsOut"];
             /** Missing Artifacts */
-            missing_artifacts: ("microcompetencies" | "flashcard_template" | "pedagogical_profile" | "question_dna" | "question_relationships")[];
+            missing_artifacts: ("microcompetencies" | "flashcard_template" | "pedagogical_profile" | "reasoning_blueprint" | "question_relationships")[];
             /** Updated At */
             updated_at?: string | null;
             /**
@@ -3956,6 +4048,43 @@ export interface components {
             /** Confidence */
             confidence: number;
         };
+        /** CanonicalPedagogicalCheckpointOut */
+        CanonicalPedagogicalCheckpointOut: {
+            /** Checkpoint Key */
+            checkpoint_key: string;
+            /** Step Order */
+            step_order: number;
+            /** Prompt */
+            prompt: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "problem_representation" | "interpretation" | "diagnosis" | "risk_stratification" | "management" | "safety";
+            /** Knowledge Node Id */
+            knowledge_node_id: string;
+            /** High Value Reason */
+            high_value_reason: string;
+            /** Gap Feedback */
+            gap_feedback: string;
+        };
+        /** CanonicalPedagogicalProfileArtifactOut */
+        CanonicalPedagogicalProfileArtifactOut: {
+            /** Artifact Id */
+            artifact_id: string;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "pedagogical-profile.v2";
+            /** Pipeline Version */
+            pipeline_version: string;
+            payload: components["schemas"]["CanonicalPedagogicalProfilePayloadOut"];
+            /** Approved At */
+            approved_at?: string | null;
+            /** Resolution Id */
+            resolution_id?: string | null;
+        };
         /** CanonicalPedagogicalProfilePayloadOut */
         CanonicalPedagogicalProfilePayloadOut: {
             /** Learning Objective */
@@ -3964,17 +4093,8 @@ export interface components {
             common_error: string;
             /** Cognitive Level */
             cognitive_level: string;
-        };
-        /** CanonicalQuestionDnaPayloadOut */
-        CanonicalQuestionDnaPayloadOut: {
-            /** Complexity */
-            complexity: string;
-            /** Reasoning Pattern */
-            reasoning_pattern: string;
-            /** Discriminators */
-            discriminators: string[];
-            /** Prerequisites */
-            prerequisites: string[];
+            /** Checkpoints */
+            checkpoints: components["schemas"]["CanonicalPedagogicalCheckpointOut"][];
         };
         /** CanonicalQuestionRelationshipOut */
         CanonicalQuestionRelationshipOut: {
@@ -4009,29 +4129,58 @@ export interface components {
         };
         /**
          * CanonicalQuestionResolutionOut
-         * @description Opaque v1 payload owned and versioned by KrosBank.
+         * @description Pinned copy of KrosBank resolution.v1.
          */
         CanonicalQuestionResolutionOut: {
+            /** Resolution Id */
+            resolution_id: string;
             /** Question Id */
             question_id: string;
             /** Question Version */
-            question_version?: number | null;
-            /** Schema Version */
-            schema_version: string;
+            question_version: number;
             /**
-             * Status
-             * @default ready
+             * Schema Version
              * @constant
              */
-            status: "ready";
-            /** Delivery Source */
-            delivery_source?: string | null;
-            /** Resolution */
-            resolution: {
-                [key: string]: unknown;
-            };
-        } & {
-            [key: string]: unknown;
+            schema_version: "resolution.v1";
+            /** Pipeline Version */
+            pipeline_version: string;
+            resolution: components["schemas"]["CanonicalClinicalResolutionPayloadOut"];
+            /** Approved At */
+            approved_at?: string | null;
+            /**
+             * Delivery Source
+             * @constant
+             */
+            delivery_source: "canonical";
+        };
+        /** CanonicalReasoningBlueprintArtifactOut */
+        CanonicalReasoningBlueprintArtifactOut: {
+            /** Artifact Id */
+            artifact_id: string;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "reasoning-blueprint.v1";
+            /** Pipeline Version */
+            pipeline_version: string;
+            payload: components["schemas"]["CanonicalReasoningBlueprintPayloadOut"];
+            /** Approved At */
+            approved_at?: string | null;
+            /** Resolution Id */
+            resolution_id?: string | null;
+        };
+        /** CanonicalReasoningBlueprintPayloadOut */
+        CanonicalReasoningBlueprintPayloadOut: {
+            /** Complexity */
+            complexity: string;
+            /** Reasoning Pattern */
+            reasoning_pattern: string;
+            /** Discriminators */
+            discriminators: string[];
+            /** Prerequisites */
+            prerequisites: string[];
         };
         /** CapabilitiesOut */
         CapabilitiesOut: {
@@ -5786,6 +5935,11 @@ export interface components {
              */
             default_feedback_timing: string;
             /**
+             * Default Feedback Reveal Policy
+             * @default guided_choice
+             */
+            default_feedback_reveal_policy: string;
+            /**
              * Has Chosen Feedback Default
              * @default false
              */
@@ -5825,6 +5979,8 @@ export interface components {
             calendar_recommendations_enabled?: boolean | null;
             /** Default Feedback Timing */
             default_feedback_timing?: string | null;
+            /** Default Feedback Reveal Policy */
+            default_feedback_reveal_policy?: string | null;
             /** Has Chosen Feedback Default */
             has_chosen_feedback_default?: boolean | null;
         };
@@ -6674,6 +6830,14 @@ export interface components {
             /** States */
             states?: components["schemas"]["QuestionBankStateOptionOut"][];
         };
+        /** QuestionBankFeedbackRevealPolicyInModel */
+        QuestionBankFeedbackRevealPolicyInModel: {
+            /**
+             * Feedback Reveal Policy
+             * @enum {string}
+             */
+            feedback_reveal_policy: "guided_choice" | "reveal_all";
+        };
         /** QuestionBankFinalizeOut */
         QuestionBankFinalizeOut: {
             /** Study Id */
@@ -7056,7 +7220,22 @@ export interface components {
             /** Attempts */
             attempts?: components["schemas"]["QuestionBankQuestionAttemptOut"][];
         };
-        /** QuestionBankQuestionOut */
+        /**
+         * QuestionBankQuestionOut
+         * @description Questão na navegação do Banco — antes de qualquer tentativa.
+         *
+         *     **Não existe campo `metadata` aqui, e a ausência é o ponto.** O `metadata`
+         *     canônico carrega `distractor_diagnosis`, que por construção descarta a
+         *     alternativa correta (`normalize_distractor_diagnosis` no KBank). Devolvê-lo
+         *     cru entregava o gabarito por omissão: numa questão A–E com diagnóstico
+         *     completo, a letra que falta é a resposta — sem precisar nem abrir sessão,
+         *     contornando o gate `answer_visible` inteiro. Junto iam `question_dna`,
+         *     `pedagogical_profile`, `quality_lint` e `candidate_metadata`.
+         *
+         *     O que o aluno precisa ver aqui já tem campo próprio e sanitizado:
+         *     `charge_profile`, `difficulty_estimate`, `content_grade`, `source`,
+         *     `knowledge_nodes` e `attempt_stats`.
+         */
         QuestionBankQuestionOut: {
             /** Id */
             id: string;
@@ -7076,16 +7255,20 @@ export interface components {
             image_refs?: string[];
             /** Table Refs */
             table_refs?: unknown[];
-            /** Metadata */
-            metadata?: {
-                [key: string]: unknown;
-            };
-            /** Source */
-            source?: {
-                [key: string]: unknown;
-            };
+            source?: components["schemas"]["QuestionBankSourceOut"];
             /** Knowledge Nodes */
             knowledge_nodes?: components["schemas"]["QuestionBankNodeOut"][];
+            /** Structural Fingerprint */
+            structural_fingerprint?: {
+                [key: string]: unknown;
+            } | null;
+            /** Microcompetencies */
+            microcompetencies?: components["schemas"]["QuestionBankNodeOut"][];
+            primary_knowledge_node?: components["schemas"]["QuestionBankNodeOut"] | null;
+            /** Adaptive Capabilities */
+            adaptive_capabilities?: {
+                [key: string]: boolean;
+            };
             attempt_stats?: components["schemas"]["QuestionBankAttemptStatsOut"] | null;
             /**
              * Bookmarked
@@ -7112,6 +7295,87 @@ export interface components {
             status: "legacy" | "ready" | "stale";
             /** Projected Count */
             projected_count?: number | null;
+        };
+        /** QuestionBankReasoningAttributionIn */
+        QuestionBankReasoningAttributionIn: {
+            /**
+             * Attribution
+             * @enum {string}
+             */
+            attribution: "inattention_to_command" | "marking_error" | "changed_correct_answer" | "guess" | "unsure";
+        };
+        /** QuestionBankReasoningCheckpointOut */
+        QuestionBankReasoningCheckpointOut: {
+            /** Checkpoint Key */
+            checkpoint_key: string;
+            /** Step Order */
+            step_order: number;
+            /** Prompt */
+            prompt: string;
+            /** Kind */
+            kind: string;
+            /** Knowledge Node Id */
+            knowledge_node_id: string;
+        };
+        /** QuestionBankReasoningGapOut */
+        QuestionBankReasoningGapOut: {
+            /** Checkpoint Key */
+            checkpoint_key: string;
+            /** Knowledge Node Id */
+            knowledge_node_id: string;
+            /** Knowledge Node Name */
+            knowledge_node_name?: string | null;
+            /**
+             * Response Value
+             * @enum {string}
+             */
+            response_value: "partial" | "no" | "unsure";
+            /** Feedback */
+            feedback: string;
+        };
+        /** QuestionBankReasoningResponseIn */
+        QuestionBankReasoningResponseIn: {
+            /** Checkpoint Key */
+            checkpoint_key: string;
+            /**
+             * Response Value
+             * @enum {string}
+             */
+            response_value: "yes" | "partial" | "no" | "unsure";
+        };
+        /** QuestionBankReasoningReviewOut */
+        QuestionBankReasoningReviewOut: {
+            /** Run Id */
+            run_id?: string | null;
+            /** Question Id */
+            question_id: string;
+            /** Question Version */
+            question_version: number;
+            /** Position */
+            position: number;
+            /**
+             * Eligible
+             * @default false
+             */
+            eligible: boolean;
+            /**
+             * Status
+             * @default unavailable
+             * @enum {string}
+             */
+            status: "unavailable" | "active" | "gap_identified" | "awaiting_attribution" | "completed" | "abandoned_by_reveal";
+            current_checkpoint?: components["schemas"]["QuestionBankReasoningCheckpointOut"] | null;
+            first_gap?: components["schemas"]["QuestionBankReasoningGapOut"] | null;
+            /** Attribution Options */
+            attribution_options?: {
+                [key: string]: string;
+            };
+            /**
+             * Feedback State
+             * @default concealed
+             * @enum {string}
+             */
+            feedback_state: "concealed" | "revealed" | "unavailable";
         };
         /** QuestionBankRecommendedBlockOut */
         QuestionBankRecommendedBlockOut: {
@@ -7153,6 +7417,48 @@ export interface components {
                 [key: string]: unknown;
             }[];
         };
+        /**
+         * QuestionBankSelectionReasonOut
+         * @description Por que esta questão foi escolhida — em rótulos, nunca em números.
+         *
+         *     O dict interno do ranking carrega `question_selection_score` e os 14 fatores
+         *     do modelo (`mastery`, `target_difficulty`, `difficulty_fit`, `deficit`…) mais
+         *     `ranking_policy_version`. Devolvê-lo cru deixava o aluno ler o próprio modelo
+         *     de maestria e o alvo de dificuldade e, com poucas sessões, inferir a função
+         *     de score por regressão — bastando responder de um jeito para o banco passar a
+         *     servir item fácil e inflar a maestria.
+         *
+         *     Não adiantava esconder só durante a sessão: esses números descrevem o estado
+         *     que decide as **sessões seguintes**.
+         *
+         *     Fica aqui só o que a interface de fato usa (`selected_because`, lido em
+         *     `FocusedQuestion.tsx`) e os rótulos categóricos de revisão. O dict completo
+         *     continua no estado interno e na auditoria.
+         */
+        QuestionBankSelectionReasonOut: {
+            /** Selected Because */
+            selected_because?: string[];
+            /** Intervention */
+            intervention?: string | null;
+            /** Intervention Label */
+            intervention_label?: string | null;
+            /** Selection Category */
+            selection_category?: string | null;
+            /** Review Target Type */
+            review_target_type?: string | null;
+            /** Review Relation */
+            review_relation?: string | null;
+            /** Review Trigger Question Id */
+            review_trigger_question_id?: string | null;
+            /** Selection Node Name */
+            selection_node_name?: string | null;
+            /** Selection Node Type */
+            selection_node_type?: string | null;
+            /** Editorial Notice */
+            editorial_notice?: string | null;
+            /** Editorial Warning */
+            editorial_warning?: string | null;
+        };
         /** QuestionBankSessionCreateIn */
         QuestionBankSessionCreateIn: {
             /**
@@ -7171,6 +7477,8 @@ export interface components {
             session_kind?: ("kros" | "bank_topic" | "bank_combined" | "institutional_exam") | null;
             /** Feedback Timing */
             feedback_timing?: ("immediate" | "post_result") | null;
+            /** Feedback Reveal Policy */
+            feedback_reveal_policy?: ("guided_choice" | "reveal_all") | null;
             /**
              * Study Kind
              * @default topic
@@ -7293,14 +7601,8 @@ export interface components {
             table_refs?: unknown[];
             /** Knowledge Nodes */
             knowledge_nodes?: components["schemas"]["QuestionBankNodeOut"][];
-            /** Selection Reason */
-            selection_reason?: {
-                [key: string]: unknown;
-            };
-            /** Source */
-            source?: {
-                [key: string]: unknown;
-            };
+            selection_reason?: components["schemas"]["QuestionBankSelectionReasonOut"];
+            source?: components["schemas"]["QuestionBankSourceOut"];
             /** Selected Option */
             selected_option?: ("A" | "B" | "C" | "D" | "E") | null;
             /** Eliminated Options */
@@ -7333,6 +7635,23 @@ export interface components {
              * @default false
              */
             answered: boolean;
+            /**
+             * Result State
+             * @default unanswered
+             * @enum {string}
+             */
+            result_state: "correct" | "incorrect" | "unanswered" | "excluded" | "annulled";
+            /**
+             * Feedback State
+             * @default concealed
+             * @enum {string}
+             */
+            feedback_state: "concealed" | "revealed" | "unavailable";
+            /**
+             * Reasoning Review Eligible
+             * @default false
+             */
+            reasoning_review_eligible: boolean;
             /**
              * Needs Correction
              * @default false
@@ -7454,6 +7773,17 @@ export interface components {
              * @enum {string}
              */
             feedback_timing: "immediate" | "post_result";
+            /**
+             * Feedback Reveal Policy
+             * @default guided_choice
+             * @enum {string}
+             */
+            feedback_reveal_policy: "guided_choice" | "reveal_all";
+            /**
+             * All Feedback Revealed
+             * @default false
+             */
+            all_feedback_revealed: boolean;
             /**
              * Scoring Mode
              * @default immediate
@@ -7623,6 +7953,33 @@ export interface components {
             first_year?: number | null;
             /** Last Year */
             last_year?: number | null;
+        };
+        /**
+         * QuestionBankSourceOut
+         * @description Procedência da questão, com allowlist explícita.
+         *
+         *     Existe como modelo e não como `dict[str, Any]` pelo mesmo motivo que
+         *     `metadata` saiu do contrato: campo aberto é porta de reintrodução. Os dois
+         *     produtores (`question_bank_repository._row` e o catálogo SQLite) já montam
+         *     exatamente estas sete chaves e passam por `_redact_blocked_source_labels`;
+         *     tipar aqui garante que um terceiro produtor não amplie o payload sem que o
+         *     contrato mude junto.
+         */
+        QuestionBankSourceOut: {
+            /** Exam Name */
+            exam_name?: string | null;
+            /** Year */
+            year?: number | null;
+            /** Year Min */
+            year_min?: number | null;
+            /** Year Max */
+            year_max?: number | null;
+            /** Institution */
+            institution?: string | null;
+            /** Board Name */
+            board_name?: string | null;
+            /** Board Code */
+            board_code?: string | null;
         };
         /** QuestionBankStateOptionOut */
         QuestionBankStateOptionOut: {
@@ -7844,8 +8201,9 @@ export interface components {
             /**
              * Schema Version
              * @default resolution.v1
+             * @enum {string}
              */
-            schema_version: string;
+            schema_version: "resolution.v1" | "learning-package.v1";
             /** Artifact States */
             artifact_states?: {
                 [key: string]: string;
@@ -8848,6 +9206,58 @@ export interface components {
             source: string;
             /** Interpretation */
             interpretation: string;
+        };
+        /** StudentTargetExamIn */
+        StudentTargetExamIn: {
+            /** Board Code */
+            board_code: string;
+            /** Exam Name */
+            exam_name?: string | null;
+            /** Exam Date */
+            exam_date?: string | null;
+        };
+        /** StudentTargetExamItemOut */
+        StudentTargetExamItemOut: {
+            /** Student Objective Id */
+            student_objective_id: string;
+            /** Priority */
+            priority: number;
+            /** Label */
+            label: string;
+            /** Board Code */
+            board_code: string;
+            /** Exam Name */
+            exam_name?: string | null;
+            /** Exam Date */
+            exam_date?: string | null;
+        };
+        /** StudentTargetExamOut */
+        StudentTargetExamOut: {
+            /**
+             * Contract Version
+             * @default student-target-exam-v1
+             * @constant
+             */
+            contract_version: "student-target-exam-v1";
+            /**
+             * Selection Revision
+             * @default 0
+             */
+            selection_revision: number;
+            /**
+             * Has Target Exam
+             * @default false
+             */
+            has_target_exam: boolean;
+            /** Items */
+            items?: components["schemas"]["StudentTargetExamItemOut"][];
+        };
+        /** StudentTargetExamReplaceIn */
+        StudentTargetExamReplaceIn: {
+            /** Items */
+            items: components["schemas"]["StudentTargetExamIn"][];
+            /** Expected Revision */
+            expected_revision?: number | null;
         };
         /** StudentTodayActionOut */
         StudentTodayActionOut: {
@@ -12823,6 +13233,43 @@ export interface operations {
             };
         };
     };
+    set_question_bank_session_feedback_policy_question_bank_sessions__session_id__feedback_policy_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionBankFeedbackRevealPolicyInModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionBankSessionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_question_bank_session_diagnosis_question_bank_sessions__session_id__diagnosis_get: {
         parameters: {
             query?: never;
@@ -13410,6 +13857,73 @@ export interface operations {
             };
         };
     };
+    reveal_all_question_bank_feedback_question_bank_sessions__session_id__feedback_reveal_all_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionBankSessionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reveal_question_bank_item_feedback_question_bank_sessions__session_id__items__position__feedback_reveal_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                position: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionBankSessionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     report_question_bank_session_item_problem_question_bank_sessions__session_id__items__position__report_post: {
         parameters: {
             query?: never;
@@ -13511,6 +14025,118 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["QuestionBankStudentQuestionEventBatchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_question_bank_reasoning_review_question_bank_sessions__session_id__items__position__reasoning_review_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                position: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionBankReasoningReviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    answer_question_bank_reasoning_checkpoint_question_bank_sessions__session_id__items__position__reasoning_review_responses_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                position: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionBankReasoningResponseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionBankReasoningReviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    attribute_question_bank_reasoning_review_question_bank_sessions__session_id__items__position__reasoning_review_attribution_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                position: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionBankReasoningAttributionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionBankSessionOut"];
                 };
             };
             /** @description Validation Error */
@@ -14491,6 +15117,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentObjectivesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_target_exam_objectives_target_exam_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentTargetExamOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_my_target_exam_objectives_target_exam_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentTargetExamReplaceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentTargetExamOut"];
                 };
             };
             /** @description Validation Error */

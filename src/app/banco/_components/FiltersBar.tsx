@@ -73,8 +73,8 @@ function deriveRealizacaoLabel(s: RealizacaoState): string {
 }
 
 const MODO_OPTIONS: { value: QuestionBankResolutionMode | "full_exam"; label: string; help: string }[] = [
-  { value: "training", label: "Correção imediata", help: "Exibe o gabarito após cada resposta." },
-  { value: "simulation", label: "Pós-resultado", help: "Exibe o gabarito depois de concluir." },
+  { value: "simulation", label: "Escolher por questão", help: "Depois do resultado, revise o raciocínio ou revele cada feedback." },
+  { value: "training", label: "Revelar tudo ao finalizar", help: "Mostra gabarito e comentários de todas após concluir." },
   { value: "full_exam", label: "Prova institucional", help: "Uma instituição e um ano." },
 ];
 
@@ -306,8 +306,8 @@ export default function FiltersBar(props: FiltersBarProps) {
   const modeLabel = studyKind === "full_exam"
     ? "Prova institucional"
     : resolutionMode === "simulation"
-      ? "Correção pós-resultado"
-      : "Correção imediata";
+      ? "Feedback por questão"
+      : "Revelação ao finalizar";
   const statusLabel = deriveRealizacaoLabel(realizacaoState);
   const selectedSourceCount = boardCodes.length + examCodes.length + institutions.length;
   const selectedStateCount = stateCodes.length;

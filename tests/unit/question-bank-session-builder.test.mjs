@@ -65,5 +65,5 @@ test("filter count includes the default access-direct choice and quantity is cla
     search: "",
     defaultExamCodes: ["ACESSO-DIRETO"],
   }).map((filter) => filter.label), ["Puericultura", "Acesso Direto"]);
-  assert.equal(questionBankCtaLabel(10, "simulation", "topic"), "Começar 10 questões · pós-resultado");
+  assert.equal(questionBankCtaLabel(10, "simulation", "topic"), "Começar 10 questões · feedback por questão");
 });

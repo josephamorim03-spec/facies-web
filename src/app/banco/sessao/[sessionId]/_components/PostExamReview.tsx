@@ -9,6 +9,7 @@ import type {
   QuestionBankReportType,
   QuestionTextHighlight,
 } from "@/lib/api";
+import { revealAllQuestionBankFeedback } from "@/lib/api";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { QuestionFullContext } from "@/app/banco/_components/QuestionFullContext";
 import { cognitivePatternSummary } from "@/lib/guidanceCopy";
@@ -21,6 +22,8 @@ import { ReportedItemsPanel } from "./_postExamReview/ReportedItemsPanel";
 import { usePostExamReviewData } from "./_postExamReview/usePostExamReviewData";
 import type { PostExamReviewProps, PostExamReviewTab } from "./_postExamReview/types";
 import { accuracyColor, cx, formatAccuracy, microNodes } from "./_postExamReview/utils";
+import { ReasoningReviewPanel } from "./ReasoningReviewPanel";
+import LearningPackagePanel from "./LearningPackagePanel";
 
 const ExamDebrief = dynamic(() => import("./ExamDebrief"), {
   ssr: false,
@@ -62,12 +65,16 @@ export default function PostExamReview({
   onSessionChange,
 }: PostExamReviewProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<PostExamReviewTab>("resumo");
+  const [activeTab, setActiveTab] = useState<PostExamReviewTab>(
+    session.all_feedback_revealed ? "resumo" : "erros",
+  );
   const [dismissedInsights, setDismissedInsights] = useState(false);
   const [dismissedDiagnosisError, setDismissedDiagnosisError] = useState(false);
   const [quickNoteTarget, setQuickNoteTarget] = useState<QuickNoteTarget | null>(null);
+  const [revealBusy, setRevealBusy] = useState(false);
   const items = session.items;
   const activeReview = session.status === "active" && Boolean(session.results_revealed_at);
+  const detailedFeedbackAvailable = session.all_feedback_revealed;
   const {
     token,
     diagnosis,
@@ -88,8 +95,13 @@ export default function PostExamReview({
     setReportReason,
     submitSessionReport,
     toggleExclusion,
-  } = usePostExamReviewData({ session, activeReview, onSessionChange });
-  const isWorking = busy || localBusy;
+  } = usePostExamReviewData({
+    session,
+    activeReview,
+    detailedFeedbackAvailable,
+    onSessionChange,
+  });
+  const isWorking = busy || localBusy || revealBusy;
   const reportedItems = items.filter((i) => i.reported_problem);
   const excludedItems = items.filter((i) => i.excluded_from_scoring);
   const scoredItems = items.filter((i) => !i.excluded_from_scoring && !i.is_annulled);
@@ -108,7 +120,9 @@ export default function PostExamReview({
     : session.resolution_mode === "simulation"
       ? "Revisão pós-simulado"
       : "Resultado da sessão";
-  const gainTitle =
+  const gainTitle = !detailedFeedbackAvailable
+    ? "Resultado calculado; feedback ainda protegido"
+    :
     wrongItems.length > 0
       ? wrongItems.length === 1
         ? "1 erro virou material de estudo"
@@ -116,7 +130,9 @@ export default function PostExamReview({
       : correctItems.length === scoredItems.length
         ? "Sessão limpa: bom desempenho observado"
         : "Sessão concluída com mapa mais claro";
-  const gainDetail =
+  const gainDetail = !detailedFeedbackAvailable
+    ? "Escolha por questão entre reconstruir o raciocínio ou revelar diretamente."
+    :
     wrongItems.length > 0
       ? `${diagnosedWrongCount} com hipótese de armadilha, ${savedCorrectionCount} reparo${savedCorrectionCount === 1 ? "" : "s"} salvo${savedCorrectionCount === 1 ? "" : "s"} e ${scheduledCount} ${scheduledCount === 1 ? "revisão programada" : "revisões programadas"}.`
       : markedItems.length > 0
@@ -174,11 +190,23 @@ export default function PostExamReview({
 
   const examLike = isFullExam || session.resolution_mode === "simulation";
 
+  async function revealAll() {
+    if (!window.confirm("Revelar agora as respostas e comentários de todas as questões?")) return;
+    setRevealBusy(true);
+    try {
+      onSessionChange?.(
+        await revealAllQuestionBankFeedback(token, session.session_id),
+      );
+    } finally {
+      setRevealBusy(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-paper px-4 py-6 text-ink md:px-6 md:py-8">
       <div className="mx-auto max-w-4xl space-y-6">
 
-        {examLike && <ExamDebrief sessionId={session.session_id} />}
+        {examLike && detailedFeedbackAvailable && <ExamDebrief sessionId={session.session_id} />}
 
         <header className="rounded-lg border border-edge bg-surface p-5">
           <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
@@ -222,6 +250,19 @@ export default function PostExamReview({
             </div>
             </div>
           </details>
+          {!detailedFeedbackAvailable && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-edge pt-4">
+              <p className="text-sm text-muted">Prefere conferir tudo de uma vez?</p>
+              <button
+                type="button"
+                disabled={isWorking}
+                onClick={() => void revealAll()}
+                className="rounded-lg border border-edge bg-surface px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
+              >
+                Revelar todas
+              </button>
+            </div>
+          )}
         </header>
 
         {activeReview && (
@@ -258,7 +299,7 @@ export default function PostExamReview({
           />
         )}
 
-        <section className="rounded-lg border border-primary bg-surface p-4">
+        {detailedFeedbackAvailable && <section className="rounded-lg border border-primary bg-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">O que vale fazer agora</p>
@@ -328,12 +369,12 @@ export default function PostExamReview({
               </button>
             )}
           </div>
-        </section>
+        </section>}
 
         <PostExamTabs tabs={TABS} activeTab={activeTab} onSelect={setActiveTab} />
 
         {/* Tab content */}
-        {activeTab === "resumo" && (
+        {activeTab === "resumo" && detailedFeedbackAvailable && (
           <div className="grid gap-6 md:grid-cols-2">
             {/* Performance by node — or error fallback */}
             {diagnosisError && !diagnosis && !dismissedDiagnosisError && (
@@ -467,7 +508,7 @@ export default function PostExamReview({
               </div>
             )}
 
-            {session.resolution_mode === "simulation" && wrongItems.length > 0 && token && (
+            {session.resolution_mode === "simulation" && wrongItems.length > 0 && (
               <ErrorFlashcardsPanel token={token} session={session} wrongItems={wrongItems} />
             )}
           </div>
@@ -515,9 +556,18 @@ export default function PostExamReview({
                       selectedOption={item.selected_option}
                       correctAnswer={item.correct_answer}
                       isCorrect={item.is_correct}
-                      showCorrectAnswer
+                      showCorrectAnswer={item.feedback_state === "revealed"}
                       className="rounded-lg border border-edge bg-paper p-3"
                     />
+
+                    {item.feedback_state !== "revealed" && (
+                      <ReasoningReviewPanel
+                        token={token}
+                        session={session}
+                        item={item}
+                        onSessionChange={onSessionChange}
+                      />
+                    )}
 
                     {activeReview && (
                       <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -627,7 +677,7 @@ export default function PostExamReview({
                       </div>
                     )}
 
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                    {item.feedback_state === "revealed" && <div className="mt-3 flex flex-wrap items-center gap-3">
                       <PostExamItemActions
                         activeTab={activeTab}
                         activeReview={activeReview}
@@ -692,12 +742,20 @@ export default function PostExamReview({
                           Minha correção
                         </button>
                       )}
-                    </div>
+                    </div>}
 
-                    {activeTab === "erros" && correction && isExpanded && (
+                    {item.feedback_state === "revealed" && activeTab === "erros" && correction && isExpanded && (
                       <blockquote className="mt-3 whitespace-pre-wrap border-l-2 border-primary pl-3 text-xs leading-relaxed text-ink/80">
                         {correction.response_value}
                       </blockquote>
+                    )}
+
+                    {item.feedback_state === "revealed" && (
+                      <LearningPackagePanel
+                        token={token}
+                        sessionId={session.session_id}
+                        position={item.position}
+                      />
                     )}
                   </article>
                 );

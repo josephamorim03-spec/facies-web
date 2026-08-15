@@ -169,8 +169,12 @@ const REPORT_LABELS: Record<QuestionBankReportType, string> = {
   missing_media: "Imagem/tabela faltando",
   wrong_metadata: "Metadados errados",
   outdated: "Desatualizada",
+  ai_correction_error: "Erro na correção por IA",
   other: "Outro",
 };
+// `ai_correction_error` fica fora desta lista de propósito: ele é oferecido
+// junto do pacote pedagógico (`LearningPackagePanel`), onde o aluno está
+// olhando a correção — não no menu de problemas do enunciado.
 const REPORT_OPTIONS: QuestionBankReportType[] = [
   "wrong_answer",
   "bad_structure",

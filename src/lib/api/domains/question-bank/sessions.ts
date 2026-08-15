@@ -2,6 +2,8 @@ import { api, authHeader } from "../../shared/http";
 import type {
   KrosPreview,
   QuestionBankFinalizeResult,
+  QuestionBankReasoningReview,
+  QuestionBankFeedbackRevealPolicy,
   QuestionPostAnswerReflection,
   QuestionBankSession,
   QuestionBankSessionCreatePayload,
@@ -50,6 +52,21 @@ export async function getQuestionBankSession(token: string, sessionId: string): 
   return api<QuestionBankSession>(`/api/question-bank/sessions/${encodeURIComponent(sessionId)}`, { headers: authHeader(token) });
 }
 
+export async function setQuestionBankSessionFeedbackPolicy(
+  token: string,
+  sessionId: string,
+  feedbackRevealPolicy: QuestionBankFeedbackRevealPolicy,
+): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/feedback-policy`,
+    {
+      method: "PATCH",
+      headers: authHeader(token),
+      body: JSON.stringify({ feedback_reveal_policy: feedbackRevealPolicy }),
+    },
+  );
+}
+
 export async function deleteQuestionBankSession(
   token: string,
   sessionId: string,
@@ -69,6 +86,72 @@ export async function revealQuestionBankSessionResults(
   return api<QuestionBankSession>(
     `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/reveal-results`,
     { method: "POST", headers: authHeader(token) },
+  );
+}
+
+export async function revealAllQuestionBankFeedback(
+  token: string,
+  sessionId: string,
+): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/feedback/reveal-all`,
+    { method: "POST", headers: authHeader(token) },
+  );
+}
+
+export async function revealQuestionBankItemFeedback(
+  token: string,
+  sessionId: string,
+  position: number,
+): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/feedback/reveal`,
+    { method: "POST", headers: authHeader(token) },
+  );
+}
+
+export async function getQuestionBankReasoningReview(
+  token: string,
+  sessionId: string,
+  position: number,
+): Promise<QuestionBankReasoningReview> {
+  return api<QuestionBankReasoningReview>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/reasoning-review`,
+    { headers: authHeader(token), cache: "no-store", clientCache: false },
+  );
+}
+
+export async function answerQuestionBankReasoningCheckpoint(
+  token: string,
+  sessionId: string,
+  position: number,
+  body: { checkpoint_key: string; response_value: "yes" | "partial" | "no" | "unsure" },
+  idempotencyKey: string,
+): Promise<QuestionBankReasoningReview> {
+  return api<QuestionBankReasoningReview>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/reasoning-review/responses`,
+    {
+      method: "POST",
+      headers: { ...authHeader(token), "Idempotency-Key": idempotencyKey },
+      body: JSON.stringify(body),
+    },
+  );
+}
+
+export async function attributeQuestionBankReasoningReview(
+  token: string,
+  sessionId: string,
+  position: number,
+  attribution: "inattention_to_command" | "marking_error" | "changed_correct_answer" | "guess" | "unsure",
+  idempotencyKey: string,
+): Promise<QuestionBankSession> {
+  return api<QuestionBankSession>(
+    `/api/question-bank/sessions/${encodeURIComponent(sessionId)}/items/${position}/reasoning-review/attribution`,
+    {
+      method: "POST",
+      headers: { ...authHeader(token), "Idempotency-Key": idempotencyKey },
+      body: JSON.stringify({ attribution }),
+    },
   );
 }
 

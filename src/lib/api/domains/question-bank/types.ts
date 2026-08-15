@@ -401,6 +401,37 @@ export type QuestionBankExamDebrief = {
   generated_at: string;
 };
 
+/** Procedência da questão — allowlist, espelhando `QuestionBankSourceOut`. */
+export type QuestionBankSource = {
+  exam_name?: string | null;
+  year?: number | null;
+  year_min?: number | null;
+  year_max?: number | null;
+  institution?: string | null;
+  board_name?: string | null;
+  board_code?: string | null;
+};
+
+/** Por que a questão foi escolhida — só rótulos.
+ *
+ * Os 14 fatores numéricos do modelo (`mastery`, `target_difficulty`, o score)
+ * ficaram no backend: expostos, deixavam inferir a função de seleção e forçar o
+ * banco a servir item fácil. Ver `QuestionBankSelectionReasonOut`.
+ */
+export type QuestionBankSelectionReason = {
+  selected_because: string[];
+  intervention?: string | null;
+  intervention_label?: string | null;
+  selection_category?: string | null;
+  review_target_type?: string | null;
+  review_relation?: string | null;
+  review_trigger_question_id?: string | null;
+  selection_node_name?: string | null;
+  selection_node_type?: string | null;
+  editorial_notice?: string | null;
+  editorial_warning?: string | null;
+};
+
 export type QuestionBankQuestion = {
   id: string;
   stem: string;
@@ -410,8 +441,10 @@ export type QuestionBankQuestion = {
   content_grade: string | null;
   image_refs: string[];
   table_refs: unknown[];
-  metadata: Record<string, unknown>;
-  source: Record<string, unknown>;
+  // Sem `metadata` de propósito: o dict canônico carrega `distractor_diagnosis`,
+  // que omite a alternativa correta — a letra que falta é o gabarito. Ver o
+  // docstring de `QuestionBankQuestionOut` no backend.
+  source: QuestionBankSource;
   knowledge_nodes: QuestionBankNode[];
   attempt_stats: QuestionBankAttemptStats | null;
   bookmarked?: boolean;
@@ -427,18 +460,22 @@ export type QuestionBankReportType =
   | "missing_options"
   | "truncated_or_merged_stem"
   | "missing_media"
-  | "wrong_metadata";
+  | "wrong_metadata"
+  // Aponta para o pacote pedagógico, não para o enunciado. Único tipo que
+  // despromove o artefato aprovado na hora, sem esperar triagem.
+  | "ai_correction_error";
 
 export type QuestionBankSessionItem = {
   question_id: string;
+  question_version: number | null;
   position: number;
   stem: string;
   alternatives: Record<string, string>;
   image_refs: string[];
   table_refs: unknown[];
   knowledge_nodes: QuestionBankNode[];
-  selection_reason: Record<string, unknown>;
-  source: Record<string, unknown>;
+  selection_reason: QuestionBankSelectionReason;
+  source: QuestionBankSource;
   selected_option: QuestionBankOption | null;
   eliminated_options: QuestionBankOption[];
   answer_state: "unanswered" | "draft" | "committed";
@@ -447,6 +484,9 @@ export type QuestionBankSessionItem = {
   bookmarked?: boolean;
   confidence_self_rating: number | null;
   answered: boolean;
+  result_state: "correct" | "incorrect" | "unanswered" | "excluded" | "annulled";
+  feedback_state: "concealed" | "revealed" | "unavailable";
+  reasoning_review_eligible: boolean;
   needs_correction: boolean;
   correct_answer: QuestionBankOption | null;
   is_correct: boolean | null;
@@ -488,6 +528,8 @@ export type QuestionBankSession = {
   session_purpose_inferred: boolean;
   session_kind: QuestionBankSessionKind;
   feedback_timing: QuestionBankFeedbackTiming;
+  feedback_reveal_policy: QuestionBankFeedbackRevealPolicy;
+  all_feedback_revealed: boolean;
   scoring_mode: QuestionBankScoringMode;
   study_kind: StudyKind;
   full_exam_name: string | null;
@@ -685,12 +727,62 @@ export type LearningPackageArtifact = {
   resolution_id?: string | null;
 };
 
+/** Payload de `clinical_resolution`, espelhando `learning-package.v1`.
+ *
+ * Tipado de propósito: com `payload: unknown` o painel leu por um ano um campo
+ * `explanation` que o contrato nunca teve, e o bloco inteiro de correção
+ * comentada — incluindo `option_analysis` — nunca renderizou sem nenhum erro
+ * de compilação. Campos opcionais porque um pacote `partial` chega incompleto.
+ */
+export type ClinicalResolutionPayload = {
+  selected_option?: string;
+  confidence?: number;
+  central_concept?: string;
+  decisive_clues?: string[];
+  option_analysis?: Record<string, string>;
+  pedagogical_justification?: string;
+  risk_flags?: string[];
+};
+
+export type PedagogicalProfileCheckpoint = {
+  checkpoint_key: string;
+  step_order: number;
+  prompt: string;
+  kind:
+    | "problem_representation"
+    | "interpretation"
+    | "diagnosis"
+    | "risk_stratification"
+    | "management"
+    | "safety";
+  knowledge_node_id: string;
+  high_value_reason: string;
+  gap_feedback: string;
+};
+
+export type PedagogicalProfileV2Payload = {
+  learning_objective: string;
+  common_error: string;
+  cognitive_level: string;
+  checkpoints: PedagogicalProfileCheckpoint[];
+};
+
+export type LearningPackageArtifacts = Record<string, LearningPackageArtifact> & {
+  clinical_resolution?: (LearningPackageArtifact & {
+    payload: ClinicalResolutionPayload;
+  }) | null;
+  pedagogical_profile?: (LearningPackageArtifact & {
+    schema_version: "pedagogical-profile.v2";
+    payload: PedagogicalProfileV2Payload;
+  }) | null;
+};
+
 export type LearningPackage = {
   question_id: string;
   question_version: number;
   schema_version: "learning-package.v1";
   status: "partial" | "ready";
-  artifacts: Record<string, LearningPackageArtifact>;
+  artifacts: LearningPackageArtifacts;
   missing_artifacts: string[];
   updated_at: string | null;
   delivery_source: "canonical";
@@ -775,6 +867,7 @@ export type QuestionBankSessionCreatePayload = {
   resolution_mode?: QuestionBankResolutionMode;
   session_kind?: QuestionBankSessionKind;
   feedback_timing?: QuestionBankFeedbackTiming;
+  feedback_reveal_policy?: QuestionBankFeedbackRevealPolicy;
   study_kind?: StudyKind;
   full_exam_name?: string | null;
   full_exam_year?: number | null;
@@ -879,6 +972,38 @@ export type QuestionBankSessionKind =
   | "institutional_exam";
 
 export type QuestionBankFeedbackTiming = "immediate" | "post_result";
+export type QuestionBankFeedbackRevealPolicy = "guided_choice" | "reveal_all";
+
+export type QuestionBankReasoningReview = {
+  run_id: string | null;
+  question_id: string;
+  question_version: number;
+  position: number;
+  eligible: boolean;
+  status:
+    | "unavailable"
+    | "active"
+    | "gap_identified"
+    | "awaiting_attribution"
+    | "completed"
+    | "abandoned_by_reveal";
+  current_checkpoint: {
+    checkpoint_key: string;
+    step_order: number;
+    prompt: string;
+    kind: string;
+    knowledge_node_id: string;
+  } | null;
+  first_gap: {
+    checkpoint_key: string;
+    knowledge_node_id: string;
+    knowledge_node_name: string | null;
+    response_value: "partial" | "no" | "unsure";
+    feedback: string;
+  } | null;
+  attribution_options: Record<string, string>;
+  feedback_state: "concealed" | "revealed" | "unavailable";
+};
 
 export type QuestionBankSessionDeleteResult = {
   session_id: string;

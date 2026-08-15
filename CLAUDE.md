@@ -1,7 +1,6 @@
 # Frontend Rules
 
 ## Scope
-- This directory is the Next.js 16 / React 19 web app.
 - Keep UI changes consistent with existing App Router, Tailwind, and local component patterns.
 - Do not change backend contracts from the frontend. If an API shape must change, update backend schemas, clients, tests, and contract docs together.
 - Prefer small client components, hooks, and domain API helpers over giant page components.

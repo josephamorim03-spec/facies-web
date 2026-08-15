@@ -6,6 +6,7 @@ import {
   CalendarClock,
   CalendarPlus,
   Check,
+  Crosshair,
   Layers3,
   Save,
   Target,
@@ -36,6 +37,7 @@ import { getErrorMessage } from "@/lib/error-utils";
 import { BottomActionBar, BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
 import { Button } from "@/components/ui/Button";
 import { ObjectiveSelector } from "@/components/objectives/ObjectiveSelector";
+import { TargetExamSelector } from "@/components/objectives/TargetExamSelector";
 import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
 import {
   displayEventLabel,
@@ -119,6 +121,7 @@ export default function PreferenciasPage() {
   const token = getAuthToken();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [objectivesCapability, setObjectivesCapability] = useState<CapabilityStatus | null>(null);
+  const [targetExamCapability, setTargetExamCapability] = useState<CapabilityStatus | null>(null);
   const [events, setEvents] = useState<CalendarEventOut[]>([]);
   const [weeklyGoalInput, setWeeklyGoalInput] = useState("200");
   const [shift12hInput, setShift12hInput] = useState("");
@@ -148,6 +151,9 @@ export default function PreferenciasPage() {
         setEvents(nextEvents);
         setObjectivesCapability(
           capabilities.capabilities.find((item) => item.key === "student_objectives_v2") ?? null,
+        );
+        setTargetExamCapability(
+          capabilities.capabilities.find((item) => item.key === "target_exam_v1") ?? null,
         );
         setWeeklyGoalInput(String(nextProfile.weekly_goal_questions));
         setShift12hInput(nextProfile.shift_12h_capacity == null ? "" : String(nextProfile.shift_12h_capacity));
@@ -286,6 +292,7 @@ export default function PreferenciasPage() {
         calendar_recommendations_enabled:
           profile.calendar_recommendations_enabled,
         default_feedback_timing: profile.default_feedback_timing,
+        default_feedback_reveal_policy: profile.default_feedback_reveal_policy,
         has_chosen_feedback_default: true,
       });
       await putFsrsConfig(token, { desired_retention: retention });
@@ -532,20 +539,36 @@ export default function PreferenciasPage() {
           </div>
         </section>
 
-        <section className="py-7">
-          <SectionTitle
-            icon={Target}
-            title="Objetivo de residência"
-            description="Escolha instituição e programa; o processo, a edição e a data vêm do catálogo editorial verificado."
-          />
-          <ObjectiveSelector
-            token={token}
-            mode="preferences"
-            capabilityEnabled={objectivesCapability?.enabled ?? false}
-            capabilityReady={objectivesCapability?.can_start_action ?? false}
-            unavailableReason={objectivesCapability?.reason}
-          />
-        </section>
+        {targetExamCapability?.enabled ? (
+          <section className="py-7">
+            <SectionTitle
+              icon={Crosshair}
+              title="Prova alvo"
+              description="Escolha até três provas entre as que o banco de questões tem. Suas sessões passam a priorizar essas bancas, e a data ancora o cronograma."
+            />
+            <TargetExamSelector token={token} mode="preferences" />
+          </section>
+        ) : null}
+
+        {/* Caminho canônico: só aparece quando existe edição editorial publicada.
+            Antes disso, renderizar a seção mostrava um aviso de indisponibilidade
+            sobre o qual o aluno não pode agir — ruído, não informação. */}
+        {objectivesCapability?.enabled ? (
+          <section className="py-7">
+            <SectionTitle
+              icon={Target}
+              title="Objetivo de residência"
+              description="Escolha instituição e programa; o processo, a edição e a data vêm do catálogo editorial verificado."
+            />
+            <ObjectiveSelector
+              token={token}
+              mode="preferences"
+              capabilityEnabled={objectivesCapability?.enabled ?? false}
+              capabilityReady={objectivesCapability?.can_start_action ?? false}
+              unavailableReason={objectivesCapability?.reason}
+            />
+          </section>
+        ) : null}
 
         <section className="py-7">
           <SectionTitle
@@ -591,30 +614,30 @@ export default function PreferenciasPage() {
           </div>
           <fieldset className="mt-5">
             <legend className="text-sm font-semibold text-ink">
-              Correção padrão no Banco
+              Feedback padrão após o resultado
             </legend>
             <div className="mt-3 grid grid-cols-2 gap-1 rounded-control border border-edge bg-paper p-1">
               {(
                 [
-                  ["post_result", "Após o resultado"],
-                  ["immediate", "Após cada questão"],
+                  ["guided_choice", "Escolher por questão"],
+                  ["reveal_all", "Revelar tudo ao finalizar"],
                 ] as const
               ).map(([value, label]) => (
                 <label
                   key={value}
                   className={`paper-control cursor-pointer px-3 py-3 text-center text-sm font-semibold transition-colors ${
-                    profile.default_feedback_timing === value
+                    profile.default_feedback_reveal_policy === value
                       ? "bg-primary text-primaryInk"
                       : "text-muted hover:bg-surfaceMuted hover:text-ink"
                   }`}
                 >
                   <input
                     type="radio"
-                    name="feedback-timing"
+                    name="feedback-reveal-policy"
                     value={value}
-                    checked={profile.default_feedback_timing === value}
+                    checked={profile.default_feedback_reveal_policy === value}
                     onChange={() =>
-                      patchLocal({ default_feedback_timing: value })
+                      patchLocal({ default_feedback_reveal_policy: value })
                     }
                     className="sr-only"
                   />
