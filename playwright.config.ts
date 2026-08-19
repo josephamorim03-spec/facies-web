@@ -7,6 +7,14 @@ const webServer = skipManagedWebServer
   ? undefined
   : {
       command: "node ./node_modules/next/dist/bin/next start --hostname 0.0.0.0 --port 3000",
+      // Producao serve o `/hoje` CANONICO: `web/vercel.json` define
+      // `NEXT_PUBLIC_STUDENT_AGENDA_V1: "1"`. Sem repetir aqui, o e2e exercia a
+      // `LegacyTodayPage` — uma tela que nenhum aluno ve — e a que produção
+      // entrega ficava sem cobertura nenhuma.
+      //
+      // `NEXT_PUBLIC_*` e' inlined em BUILD, entao esta env so tem efeito se o
+      // `next build` tambem a tiver. Ver `scripts/run-smoke-e2e.mjs` e o CI.
+      env: { NEXT_PUBLIC_STUDENT_AGENDA_V1: "1" },
       url: "http://127.0.0.1:3000/api/version",
       reuseExistingServer,
       gracefulShutdown: { signal: "SIGTERM" as const, timeout: 1_000 },

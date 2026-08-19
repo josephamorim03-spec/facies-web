@@ -1,5 +1,34 @@
 "use client";
 
+/**
+ * TELA LEGADA — marcada para remoção. Nenhum aluno a vê.
+ *
+ * `web/vercel.json` e `web/.env.production` definem
+ * `NEXT_PUBLIC_STUDENT_AGENDA_V1=1`, então `/hoje` renderiza
+ * `CanonicalTodayDashboard` em produção. Esta página só aparece se a flag for
+ * desligada, o que não acontece em lugar nenhum hoje.
+ *
+ * Por muito tempo a build de e2e NÃO definia a flag, então os testes de `/hoje`
+ * exercitavam esta tela e a canônica ficava sem cobertura nenhuma. Ao alinhar a
+ * build (agosto/2026), dois specs caíram porque cobriam comportamento que só
+ * existe aqui, e foram aposentados:
+ *
+ * - `today.reschedule.spec.ts` — atalho de reagendar atrasadas em massa. A
+ *   CAPACIDADE não se perdeu: ela vive em `/cronograma`
+ *   (`RescheduleSuggestionDialog`) e é coberta por `cronograma.reschedule.spec.ts`.
+ *   O que saiu foi o atalho, coerente com "função dominante por tela" — Hoje é
+ *   o próximo passo, reagendar pertence a Planejar.
+ * - `today.weekly-goal-warning.spec.ts` — aviso forte de atraso na meta semanal
+ *   e o popup "Status da meta semanal" (`TodayDetails`). A tela canônica mostra
+ *   o progresso da semana como estatística, sem o alerta.
+ *
+ * Componentes usados SÓ por esta página, e que morrem com ela:
+ * `TodayDetails`, `TodaySchedulePreview`, `TodayLoadNote`, `TodayDaySummary`.
+ *
+ * Se a decisão mudar e algum desses avisos precisar voltar, ele deve ser
+ * reconstruído no `CanonicalTodayDashboard` — não revivendo esta tela.
+ */
+
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";

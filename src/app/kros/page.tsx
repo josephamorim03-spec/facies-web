@@ -188,6 +188,7 @@ export default function KrosPage() {
           onChange={setMode}
           disabled={busy}
           targetBoards={preview?.target_boards ?? []}
+          unsatisfiedTargetBoards={preview?.unsatisfied_target_boards ?? []}
         />
       </section>
 

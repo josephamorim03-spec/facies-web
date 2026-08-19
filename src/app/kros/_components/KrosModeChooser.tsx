@@ -43,16 +43,32 @@ export const KROS_MODE_OPTIONS: KrosModeOption[] = [
  * repetir a promessa vazia numa camada acima; aqui ele se desabilita e diz por
  * quê. Com objetivo, o cartão nomeia a banca em vez de prometer no genérico.
  */
-function bancaCopy(targetBoards: string[]): { help: string; unavailable: boolean } {
+function bancaCopy(
+  targetBoards: string[],
+  unsatisfied: string[],
+): { help: string; unavailable: boolean } {
   if (targetBoards.length === 0) {
     return {
       help: "Defina sua prova alvo no perfil para liberar este modo.",
       unavailable: true,
     };
   }
-  const [first, ...rest] = targetBoards;
+  // O aluno declarou, e o banco não tem nada daquela banca. Antes esse caso era
+  // indistinguível de sucesso: a prova saía igual à de quem não declarou nada e
+  // o motivo ficava só no log do servidor. Dizer isso é melhor do que entregar
+  // uma cota que não se formou.
+  const covered = targetBoards.filter((board) => !unsatisfied.includes(board));
+  if (covered.length === 0) {
+    return {
+      help: `Ainda não há questões de ${targetBoards.join(", ")} no banco.`,
+      unavailable: true,
+    };
+  }
+  const [first, ...rest] = covered;
   const others = rest.length > 0 ? ` (depois ${rest.join(", ")})` : "";
-  return { help: `Prioriza questões de ${first}${others}.`, unavailable: false };
+  const gap =
+    unsatisfied.length > 0 ? ` Sem questões de ${unsatisfied.join(", ")} por enquanto.` : "";
+  return { help: `Prioriza questões de ${first}${others}.${gap}`, unavailable: false };
 }
 
 type KrosModeChooserProps = {
@@ -61,6 +77,8 @@ type KrosModeChooserProps = {
   disabled?: boolean;
   /** Bancas alvo do aluno, na ordem de prioridade. Vem da prévia. */
   targetBoards?: string[];
+  /** As declaradas que o pool não cobre. Vem da prévia. */
+  unsatisfiedTargetBoards?: string[];
 };
 
 /**
@@ -74,8 +92,9 @@ export function KrosModeChooser({
   onChange,
   disabled = false,
   targetBoards = [],
+  unsatisfiedTargetBoards = [],
 }: KrosModeChooserProps) {
-  const banca = bancaCopy(targetBoards);
+  const banca = bancaCopy(targetBoards, unsatisfiedTargetBoards);
 
   return (
     <div className="mt-4 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Modo do Kros">

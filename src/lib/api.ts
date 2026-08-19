@@ -383,6 +383,21 @@ export type {
   TrainerDebrief,
 } from "./api/domains/trainer";
 
+// Navigation domain — o Navigator ("tenho 45 minutos e estou cansado" -> rota)
+export {
+  getNavigationPrompt,
+  buildNavigationRoute,
+  resolveNavigationRoute,
+} from "./api/domains/navigation";
+export type {
+  NavigationEnergy,
+  NavigationCognitiveLoad,
+  NavigationPrompt,
+  NavigationRoute,
+  NavigationRouteAction,
+  NavigationRouteStatus,
+} from "./api/domains/navigation";
+
 // Integration domain
 export {
   getCapabilities,
@@ -406,8 +421,6 @@ export {
   replaceMyObjectivesV2,
   requestObjectiveCatalogItem,
   searchObjectiveCatalogV2,
-  getMyAdaptiveTargets,
-  replaceMyAdaptiveTargets,
 } from "./api/domains/study-plan";
 export type {
   StudyPlan,
@@ -423,9 +436,6 @@ export type {
   StudentObjectiveV2,
   StudentObjectiveV2Input,
   StudentObjectivesV2,
-  AdaptiveTargetKind,
-  AdaptiveTarget,
-  AdaptiveTargets,
 } from "./api/domains/study-plan";
 
 // Calendar domain

@@ -2021,6 +2021,113 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/navigation/prompt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Navigation Prompt
+         * @description Presets e valores sugeridos para a pergunta de tempo e energia.
+         *
+         *     Não é a resposta: a tela ainda pergunta os dois. Isto é o que torna a
+         *     pergunta barata — presets vindos da rotina do aluno e energia já
+         *     pré-selecionada pelo check-in do dia.
+         */
+        get: operations["get_navigation_prompt_navigation_prompt_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/navigation/route": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Build Navigation Route
+         * @description A melhor combinação de ações que cabe no tempo declarado agora.
+         */
+        post: operations["build_navigation_route_navigation_route_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/navigation/{route_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Navigation Route
+         * @description O aluno começou a rota como ela veio.
+         */
+        post: operations["accept_navigation_route_navigation__route_id__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/navigation/{route_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject Navigation Route
+         * @description O aluno recusou a rota.
+         *
+         *     Recusa é sinal, não falha: uma rota consistentemente recusada é a evidência
+         *     mais direta de que o montador está errando, e é metade do kill criterion.
+         */
+        post: operations["reject_navigation_route_navigation__route_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/navigation/{route_id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete Navigation Route
+         * @description O aluno terminou. `action_outcomes` detalha item a item quando existe.
+         */
+        post: operations["complete_navigation_route_navigation__route_id__complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/objectives/catalog/institutions": {
         parameters: {
             query?: never;
@@ -2221,24 +2328,6 @@ export interface paths {
         get: operations["get_my_objectives_v2_objectives_v2_mine_get"];
         /** Replace My Objectives V2 */
         put: operations["replace_my_objectives_v2_objectives_v2_mine_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/adaptive-targets/mine": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get My Adaptive Targets */
-        get: operations["get_my_adaptive_targets_adaptive_targets_mine_get"];
-        /** Replace My Adaptive Targets */
-        put: operations["replace_my_adaptive_targets_adaptive_targets_mine_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -3456,62 +3545,6 @@ export interface components {
             signal_schema_version?: string | null;
             /** Retention Days */
             retention_days?: number | null;
-        };
-        /** AdaptiveTargetInput */
-        AdaptiveTargetInput: {
-            /** Entity Id */
-            entity_id: string;
-        };
-        /** AdaptiveTargetOut */
-        AdaptiveTargetOut: {
-            /** Target Preference Id */
-            target_preference_id: string;
-            /** Priority */
-            priority: number;
-            /** Entity Id */
-            entity_id: string;
-            /**
-             * Entity Kind
-             * @enum {string}
-             */
-            entity_kind: "institution" | "organizer" | "selection_process";
-            /** Canonical Key */
-            canonical_key: string;
-            /** Label */
-            label: string;
-            /** Catalog Contract Version */
-            catalog_contract_version: string;
-            /** Catalog Release */
-            catalog_release?: string | null;
-            /**
-             * Status
-             * @default active
-             * @enum {string}
-             */
-            status: "active" | "unavailable";
-        };
-        /** AdaptiveTargetsOut */
-        AdaptiveTargetsOut: {
-            /**
-             * Contract Version
-             * @default student-adaptive-targets-v1
-             * @constant
-             */
-            contract_version: "student-adaptive-targets-v1";
-            /**
-             * Selection Revision
-             * @default 0
-             */
-            selection_revision: number;
-            /** Items */
-            items?: components["schemas"]["AdaptiveTargetOut"][];
-        };
-        /** AdaptiveTargetsReplaceIn */
-        AdaptiveTargetsReplaceIn: {
-            /** Expected Revision */
-            expected_revision?: number | null;
-            /** Items */
-            items?: components["schemas"]["AdaptiveTargetInput"][];
         };
         /** AnalyzeQuestionIn */
         AnalyzeQuestionIn: {
@@ -4979,6 +5012,8 @@ export interface components {
             };
             /** Target Boards */
             target_boards?: string[];
+            /** Unsatisfied Target Boards */
+            unsatisfied_target_boards?: string[];
         };
         /** LearningActionStartIn */
         LearningActionStartIn: {
@@ -5084,6 +5119,108 @@ export interface components {
         LogoutRequest: {
             /** Refresh Token */
             refresh_token?: string | null;
+        };
+        /**
+         * NavigationPromptOut
+         * @description O que a tela precisa para perguntar sem cobrar digitação.
+         *
+         *     Tempo e energia continuam sendo **sempre** perguntados. A rotina do aluno
+         *     não substitui a pergunta: ela fornece os presets e o valor pré-selecionado,
+         *     para a resposta custar um toque.
+         */
+        NavigationPromptOut: {
+            /** Presets */
+            presets?: number[];
+            /** Suggested Minutes */
+            suggested_minutes: number;
+            /**
+             * Suggested Energy
+             * @enum {string}
+             */
+            suggested_energy: "low" | "normal" | "high";
+            /**
+             * Energy Source
+             * @enum {string}
+             */
+            energy_source: "daily_checkin" | "assumed";
+            /**
+             * Interruption Risk
+             * @default false
+             */
+            interruption_risk: boolean;
+            /** Interruption Reason */
+            interruption_reason?: string | null;
+        };
+        /** NavigationRouteActionOut */
+        NavigationRouteActionOut: {
+            action: components["schemas"]["TrainerActionOut"];
+            /** Estimated Minutes */
+            estimated_minutes: number;
+            /**
+             * Cognitive Load
+             * @enum {string}
+             */
+            cognitive_load: "low" | "moderate" | "high";
+            /** Reason Codes */
+            reason_codes?: string[];
+        };
+        /** NavigationRouteIn */
+        NavigationRouteIn: {
+            /** Available Minutes */
+            available_minutes: number;
+            /**
+             * Energy
+             * @default normal
+             * @enum {string}
+             */
+            energy: "low" | "normal" | "high";
+            /** Interruption Override */
+            interruption_override?: boolean | null;
+        };
+        /** NavigationRouteOut */
+        NavigationRouteOut: {
+            /** Route Id */
+            route_id?: string | null;
+            /** Actions */
+            actions?: components["schemas"]["NavigationRouteActionOut"][];
+            /** Total Minutes */
+            total_minutes: number;
+            /** Available Minutes */
+            available_minutes: number;
+            /**
+             * Energy
+             * @enum {string}
+             */
+            energy: "low" | "normal" | "high";
+            /** Interruption Risk */
+            interruption_risk: boolean;
+            /** Policy Version */
+            policy_version: string;
+            /** Reason Codes */
+            reason_codes?: string[];
+        };
+        /**
+         * NavigationRouteResolveIn
+         * @description Desfecho por ação. Chave é `action_id`, valor é `done` ou `skipped`.
+         *
+         *     Opcional: `complete` sem corpo marca a rota concluída sem detalhar item a
+         *     item, que é o caso comum de quem só clicou "terminei".
+         */
+        NavigationRouteResolveIn: {
+            /** Action Outcomes */
+            action_outcomes?: {
+                [key: string]: "done" | "skipped";
+            };
+        };
+        /** NavigationRouteResolveOut */
+        NavigationRouteResolveOut: {
+            /** Route Id */
+            route_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "accepted" | "rejected" | "completed";
         };
         /** NotificationSettingsBody */
         NotificationSettingsBody: {
@@ -14750,6 +14887,175 @@ export interface operations {
             };
         };
     };
+    get_navigation_prompt_navigation_prompt_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NavigationPromptOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    build_navigation_route_navigation_route_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NavigationRouteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NavigationRouteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_navigation_route_navigation__route_id__accept_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                route_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NavigationRouteResolveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reject_navigation_route_navigation__route_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                route_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NavigationRouteResolveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    complete_navigation_route_navigation__route_id__complete_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                route_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["NavigationRouteResolveIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NavigationRouteResolveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_institutions_objectives_catalog_institutions_get: {
         parameters: {
             query?: {
@@ -15249,72 +15555,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentObjectivesV2Out"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_my_adaptive_targets_adaptive_targets_mine_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdaptiveTargetsOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    replace_my_adaptive_targets_adaptive_targets_mine_put: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdaptiveTargetsReplaceIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdaptiveTargetsOut"];
                 };
             };
             /** @description Validation Error */

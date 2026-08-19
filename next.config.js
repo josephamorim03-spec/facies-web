@@ -38,6 +38,23 @@ const securityHeaders = [
 
 const nextConfig = {
   poweredByHeader: false,
+  // `NEXT_PUBLIC_*` e' inlined em BUILD, nao lido em runtime. Ate agosto/2026 o
+  // unico lugar que definia esta flag era `vercel.json` (`build.env`), o que
+  // fazia a build da Vercel divergir de toda build local e de CI: producao
+  // servia o `/hoje` CANONICO enquanto qualquer outra build servia a
+  // `LegacyTodayPage`.
+  //
+  // O efeito era um buraco de cobertura: os specs de e2e de `/hoje` exercitavam
+  // uma tela que nenhum aluno ve, e a que producao entrega nao era testada por
+  // ninguem. Um `.env.production` resolveria, mas `.gitignore` engole `.env.*`
+  // (controle de seguranca legitimo) e o arquivo nunca chegaria ao repositorio.
+  //
+  // Declarar aqui faz local, CI e Vercel construirem a mesma coisa, que e' a
+  // unica forma de um teste de `/hoje` significar alguma coisa. O override
+  // explicito continua possivel por env.
+  env: {
+    NEXT_PUBLIC_STUDENT_AGENDA_V1: process.env.NEXT_PUBLIC_STUDENT_AGENDA_V1 ?? "1",
+  },
   outputFileTracingRoot: __dirname,
   turbopack: {
     root: __dirname,

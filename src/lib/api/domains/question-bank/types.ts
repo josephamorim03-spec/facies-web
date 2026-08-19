@@ -957,6 +957,14 @@ export type KrosPreview = {
    * declarou prova alvo — e aí o modo "foco na banca" não tem o que priorizar.
    */
   target_boards: string[];
+  /**
+   * Subconjunto de `target_boards` que o pool de candidatos não cobre.
+   *
+   * Este era o modo de falha real da preferência de banca: o aluno declarava a
+   * prova alvo, nada casava, e ele recebia uma prova idêntica à de quem não
+   * declarou nada — sem nunca saber. O sintoma só existia em log de servidor.
+   */
+  unsatisfied_target_boards: string[];
 };
 
 export type QuestionBankSessionPurpose =

@@ -1,20 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { CalendarDays } from "lucide-react";
 
 import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
-import { getStudentToday } from "@/lib/api";
+import {
+  buildNavigationRoute,
+  getNavigationPrompt,
+  getStudentToday,
+  resolveNavigationRoute,
+  type NavigationRoute,
+  type NavigationRouteStatus,
+} from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentAgenda } from "@/features/student-agenda/useStudentAgenda";
 import { AgendaItemRow } from "@/features/student-agenda/AgendaItemRow";
 import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
+import { NavigatorContextCard } from "./NavigatorContextCard";
+import { NavigatorRoute } from "./NavigatorRoute";
 import { TodayBackupActions } from "./TodayBackupActions";
 import { TodayEmptyState } from "./TodayEmptyState";
 import { TodayPrimaryAction } from "./TodayPrimaryAction";
@@ -56,6 +65,32 @@ export function CanonicalTodayDashboard() {
     staleTime: 10_000,
   });
   const today = todayQuery.data;
+  // O Navigator: o aluno diz quanto tempo tem e como está AGORA, e a rota é
+  // montada para esse orçamento. Enquanto ele não pede, `/hoje` segue mostrando
+  // a próxima ação do dia — a rota substitui o herói, não o precede.
+  const [route, setRoute] = useState<NavigationRoute | null>(null);
+  const promptQuery = useQuery({
+    queryKey: ["navigation", "prompt"],
+    queryFn: () => getNavigationPrompt(token),
+    enabled: tokenResolved,
+    staleTime: 60_000,
+  });
+  const [resolved, setResolved] = useState<NavigationRouteStatus | null>(null);
+  const routeMutation = useMutation({
+    mutationFn: (input: Parameters<typeof buildNavigationRoute>[1]) =>
+      buildNavigationRoute(token, input),
+    onSuccess: (next) => {
+      setRoute(next);
+      setResolved(null);
+    },
+  });
+  // O desfecho e' o que torna o kill criterion do Navigator avaliavel: sem ele,
+  // "a rota montada faz o aluno terminar mais?" nao tem dado.
+  const resolveMutation = useMutation({
+    mutationFn: (status: NavigationRouteStatus) =>
+      resolveNavigationRoute(token, route?.route_id ?? "", status),
+    onSuccess: (result) => setResolved(result.status),
+  });
   // The compatibility field still owns the learner-local date until the Today
   // contract itself gains a timezone-aware date. Its item list is never read.
   const localDate = today?.schedule_preview.date ?? "";
@@ -125,7 +160,30 @@ export function CanonicalTodayDashboard() {
         </Alert>
       ) : null}
 
-      {isRest ? <TodayEmptyState /> : <TodayPrimaryAction action={today.primary_action} />}
+      <NavigatorContextCard
+        prompt={promptQuery.data ?? null}
+        busy={routeMutation.isPending}
+        onCalculate={(input) => routeMutation.mutate(input)}
+      />
+
+      {routeMutation.isError ? (
+        <Alert variant="warning">
+          Não foi possível calcular sua rota agora. Sua próxima ação continua abaixo.
+        </Alert>
+      ) : null}
+
+      {route ? (
+        <NavigatorRoute
+          route={route}
+          onResolve={(status) => resolveMutation.mutate(status)}
+          resolving={resolveMutation.isPending}
+          resolved={resolved}
+        />
+      ) : isRest ? (
+        <TodayEmptyState />
+      ) : (
+        <TodayPrimaryAction action={today.primary_action} />
+      )}
 
       <section aria-label="Resumo de hoje" className="grid grid-cols-3 divide-x divide-edge border-y border-edge py-3">
         <div className="px-2 text-center sm:px-4">
