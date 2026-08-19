@@ -64,5 +64,29 @@ async function proxy(
   });
 }
 
+// Esta rota SOMBREIA o proxy generico `api/[...path]/route.ts` para todo
+// `/api/question-bank/*`: o segmento estatico `question-bank` e mais especifico
+// que o catch-all, entao o Next resolve aqui e nunca la.
+//
+// Sombreamento e por caminho, e o 405 e decidido pelo ROTEAMENTO — antes de
+// cookie, CSRF ou handler. Enquanto so `GET` e `POST` eram exportados, cinco
+// chamadas vivas batiam em 405, incluindo a acao central do aluno:
+//
+//   PUT    /question-bank/sessions/{id}/items/{pos}/attempt   (responder questao)
+//   PUT    /question-bank/sessions/{id}/items/{pos}/exclusion
+//   PATCH  /question-bank/sessions/{id}/feedback-policy
+//   DELETE /question-bank/sessions/{id}
+//   DELETE /question-bank/questions/{id}/highlights/{hid}
+//
+// Verificado em runtime: `PUT` aqui devolvia 405 enquanto o mesmo `PUT` no
+// proxy generico chegava ao handler. O e2e nao pegava porque mocka
+// `/api/question-bank/**` com `page.route`.
+//
+// Ao acrescentar metodo ao cliente, exporte-o aqui tambem — ou remova esta rota
+// e deixe o generico atender, o que exige antes migrar o encaminhamento de
+// `Idempotency-Key` e a reescrita de `Location` que so existem neste arquivo.
 export const GET = proxy;
 export const POST = proxy;
+export const PUT = proxy;
+export const PATCH = proxy;
+export const DELETE = proxy;

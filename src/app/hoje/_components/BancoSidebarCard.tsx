@@ -39,7 +39,8 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
     <section className="space-y-3 rounded-surface border border-edge bg-surface p-5 shadow-soft">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-ink">Banco de questões</h2>
-        <Link href="/revisoes" className="text-xs text-muted hover:text-primary">
+        {/* `/revisoes` nao existe como pagina: era so um 308 para `/evolucao`. */}
+        <Link href="/evolucao" className="text-xs text-muted hover:text-primary">
           Ver tudo
         </Link>
       </div>

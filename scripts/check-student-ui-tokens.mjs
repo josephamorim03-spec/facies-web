@@ -37,7 +37,6 @@ const PAPER_SURFACES = [
   "src/app/hoje/_components/TodayPrimaryAction.tsx",
   "src/app/hoje/_components/TodayPageSkeleton.tsx",
   "src/app/hoje/_components/TodaySchedulePreview.tsx",
-  "src/app/revisar/_components/ReviewQueueClient.tsx",
   "src/app/admin/question-bank/_components/AiReviewPanel.tsx",
 ];
 

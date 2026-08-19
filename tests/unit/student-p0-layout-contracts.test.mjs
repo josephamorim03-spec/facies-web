@@ -69,17 +69,20 @@ test("Cronograma abre na semana e preserva o calendario mensal como modo secunda
   assert.match(month, /data-testid="schedule-view-week"/, "o mes mobile deve oferecer o icone da semana");
 });
 
-test("Acompanhar comeca por graficos e nao duplica CTA dominante", () => {
-  const source = read("src/app/estatisticas/EstatisticasClientPage.tsx");
-  const graphUses = source.match(/<GraficosSection \/>/g) ?? [];
+// Le `/evolucao`, que e a tela do Acompanhar que o aluno realmente ve.
+// Antes lia `estatisticas/EstatisticasClientPage.tsx`, uma pagina sem `page.tsx`
+// e com 308 na raiz: o contrato era verificado sobre uma tela inalcancavel
+// enquanto a viva passava sem guarda nenhuma.
+//
+// As duas asserções de ORDEM sairam por nao terem contraparte aqui:
+// `<StudentSurfaceInsight>` e `<DesempenhoTab>` nao existem em `/evolucao`, que
+// organiza o conteudo em abas em vez de secoes empilhadas. Afirmar ordem entre
+// componentes ausentes passaria por vacuidade, que e' pior que nao afirmar.
+test("Acompanhar renderiza graficos uma vez e nao duplica CTA dominante", () => {
+  const source = read("src/app/evolucao/page.tsx");
+  const graphUses = source.match(/<GraficosSection[\s/>]/g) ?? [];
 
   assert.equal(graphUses.length, 1, "a tela deve renderizar a secao de graficos uma unica vez");
-  assertComesBefore(
-    source,
-    "<GraficosSection />",
-    "<StudentSurfaceInsight",
-    "os graficos devem vir antes do insight textual",
-  );
   assert.equal(
     source.includes("<StudentPrimaryAction"),
     false,
@@ -89,12 +92,6 @@ test("Acompanhar comeca por graficos e nao duplica CTA dominante", () => {
     source.includes("<TrainerContextStrip"),
     false,
     "Acompanhar nao deve duplicar a acao do dia",
-  );
-  assertComesBefore(
-    source,
-    "<GraficosSection />",
-    "<DesempenhoTab",
-    "os graficos devem abrir a tela antes da grade detalhada",
   );
 });
 

@@ -32,6 +32,15 @@ const patterns = [
     label: "Acento onde se espera pontuacao de codigo (`?`/`&`) antes de ${...}",
     regex: /[\u00E0-\u00FC]\$\{/u,
   },
+  // O padrao acima so pega o acento COLADO em `${`. Quando o primeiro parametro
+  // e' literal, o acento fica antes do nome dele e escapa:
+  // `/api/items?status=` digitado como `/api/items\u00F3status=` passou por aqui.
+  // A chamada nao casa com rota nenhuma -- a query inteira vira caminho -- e
+  // responde 404 sempre, sem erro de tipo e sem erro de lint.
+  {
+    label: "Acento onde se espera `?`/`&` numa URL (`/api/...acentoparam=`)",
+    regex: /\/api\/[^\s"'`]*[\u00E0-\u00FC][A-Za-z_]*=/u,
+  },
 ];
 
 function walk(dir) {

@@ -62,25 +62,27 @@ const INTENTS: Record<
   },
 };
 
+//: Caminhos legados que ainda precisam casar com o estado ativo da navegacao.
+//:
+//: So entra aqui caminho que o navegador consegue RENDERIZAR. Um 308 declarado em
+//: `next.config.js` resolve antes do roteamento de arquivos, entao o aluno nunca
+//: para nessa URL e a entrada correspondente nunca casa com nada — era o caso de
+//: `/praticar`, `/revisar`, `/acompanhar`, `/planejar`, `/calendario`, `/perfil`,
+//: `/banco-de-questoes`, `/revisoes`, `/cards-adaptativos`, `/revisao-turbo`,
+//: `/caderno` e `/planejamento`, nenhum deles com diretorio em `src/app`.
+//:
+//: `/estatisticas` fica: apesar de a raiz ser 308, `/estatisticas/relatorio` e
+//: `/estatisticas/graficos` sao paginas reais e dependem do grupo para o estado
+//: ativo.
 const LEGACY_PATHS: Record<StudentIntent, string[]> = {
   today: ["/today", "/semana"],
   kros: ["/provas"],
-  bank: ["/praticar", "/banco", "/banco-de-questoes", "/revisoes"],
-  cards: ["/revisar", "/cards", "/cards-adaptativos", "/revisao-turbo", "/caderno", "/cards/registros"],
-  evolution: [
-    "/acompanhar",
-    "/estatisticas",
-    "/dados-e-relatorios",
-  ],
-  planning: [
-    "/planejar",
-    "/planejamento",
-    "/calendario",
-    "/agenda-operacional",
-    "/desempenho",
-  ],
+  bank: ["/banco"],
+  cards: ["/cards", "/cards/registros"],
+  evolution: ["/estatisticas"],
+  planning: ["/agenda-operacional", "/desempenho"],
   // `/rotina-e-metas` e' 308 para `/preferencias`, entao pertence ao Perfil.
-  profile: ["/rotina-e-metas", "/perfil"],
+  profile: ["/rotina-e-metas"],
 };
 
 function route(path: string, title: string, intent: StudentIntent): StudentRouteConfig {

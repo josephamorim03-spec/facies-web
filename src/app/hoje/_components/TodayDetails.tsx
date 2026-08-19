@@ -45,7 +45,9 @@ export function TodayDetails({
             <p className="mt-1 text-lg font-semibold text-ink">
               {formatPct(today.progress_snapshot.accuracy_pct)}
             </p>
-            <Link href="/dados-e-relatorios" className="text-xs font-semibold text-muted hover:text-ink">
+            {/* Aponta direto para o destino real: `/dados-e-relatorios` nao tem
+                pagina propria, so um 308 para `/evolucao` em next.config.js. */}
+            <Link href="/evolucao" className="text-xs font-semibold text-muted hover:text-ink">
               Ver relatorio
             </Link>
           </div>

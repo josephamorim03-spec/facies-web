@@ -22,11 +22,11 @@ test("confidence review shows full item context without revealing the answer", (
   assert.doesNotMatch(source, /line-clamp-2/);
 });
 
-test("admin review queue does not truncate the question under editorial actions", () => {
-  const source = read("src/app/admin/question-bank/_components/ReviewQueuePanel.tsx");
-  assert.match(source, /QuestionFullContext/);
-  assert.doesNotMatch(source, /truncateText/);
-});
+// O contrato do `ReviewQueuePanel` saiu junto com o componente: ele nao era
+// importado por nenhuma tela do admin (os irmaos `AiResolutionPanel`,
+// `CandidatesPanel` e `QuestionsManager` sao). Diferente dos contratos de
+// metacognicao, aqui nao havia superficie viva para onde mover a regra — o
+// painel simplesmente nao era montado. `QuestionsManager` mantem a sua abaixo.
 
 test("admin reports can expand to the full question detail before repair actions", () => {
   const source = read("src/app/admin/question-bank/_components/QuestionsManager.tsx");

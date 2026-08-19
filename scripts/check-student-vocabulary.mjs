@@ -3,8 +3,7 @@ import path from "node:path";
 
 const roots = [
   "src/app/hoje",
-  "src/app/banco-de-questoes",
-  "src/app/revisar",
+  "src/app/banco",
   "src/app/estatisticas",
   "src/app/desempenho",
   "src/components/student",

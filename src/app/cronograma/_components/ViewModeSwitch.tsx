@@ -35,8 +35,12 @@ function IconMonth({ className }: { className?: string }) {
 }
 
 function persistViewFromHref(href: string) {
-  if (href === "/hoje") writeCronogramaViewModeSession("week");
-  else if (href === "/agenda-operacional" || href === "/cronograma") {
+  // Compara so o caminho: os alvos passaram a carregar `?view=month`, e a
+  // comparacao exata deixaria de casar em silencio — a preferencia de visao
+  // simplesmente nao seria gravada.
+  const path = href.split("?")[0];
+  if (path === "/hoje") writeCronogramaViewModeSession("week");
+  else if (path === "/agenda-operacional" || path === "/cronograma") {
     writeCronogramaViewModeSession("month");
   }
 }
@@ -130,9 +134,12 @@ export function ViewModeSwitch({ activeView, hideOnMobile }: { activeView: ViewM
           <IconToday className="w-4 h-4" />
           <span className="font-serif">Hoje</span>
         </Link>
+        {/* Direto para a visao de mes: `/agenda-operacional` so redirecionava
+            de volta para ca, uma ida e volta por um alias legado para trocar um
+            parametro de query. */}
         <Link
-          href="/agenda-operacional"
-          onClick={() => persistViewFromHref("/agenda-operacional")}
+          href="/cronograma?view=month"
+          onClick={() => persistViewFromHref("/cronograma?view=month")}
           className={`flex items-center gap-1.5 text-sm transition-colors ${
             activeView === "month" ? "text-ink font-medium" : "text-muted hover:text-ink"
           }`}

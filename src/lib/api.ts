@@ -110,18 +110,13 @@ export {
 export type { NotificationSettings } from "./api/domains/notifications";
 
 // Starter domain
-export {
-  me,
-  listItems,
-  createItem,
-  submitReview,
-  seedDemo,
-} from "./api/domains/starter";
-export type {
-  ItemKind,
-  StudyItem,
-  Rating,
-} from "./api/domains/starter";
+//
+// `listItems`, `createItem`, `submitReview` e `seedDemo` sairam: nenhum call
+// site em `web/src`, `web/tests` ou `web/scripts`. Eram o andaime do starter
+// (`/items`, `/reviews`, `/demo/seed`), e a URL de `listItems` tinha o `?`
+// trocado por um `o` acentuado — quebrada havia tempo bastante para provar que
+// ninguem a chamava. Ver `scripts/check-mojibake.mjs`, que hoje pega a classe.
+export { me } from "./api/domains/starter";
 
 // Study Import domain
 export {
