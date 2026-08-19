@@ -7,9 +7,6 @@ export {
   authHeader,
   getAPIErrorCode,
   getAPIErrorDetail,
-  toAPIError,
-  fetchRaw,
-  invalidateClientCache,
 } from "./api/shared/http";
 export type { APIError, ClientCachePolicy } from "./api/shared/http";
 
@@ -41,8 +38,6 @@ export {
   getTurboAreaStats,
   getOperationalTurboOverview,
   getOperationalStreak,
-  getOperationalTurboNext,
-  submitOperationalTurboReview,
   fetchTurboIntervalPreview,
   startOperationalTurboSession,
   submitOperationalTurboSessionAction,
@@ -51,9 +46,6 @@ export {
   getOperationalTurboSessionDailyCompletedCards,
   presignOperationalAttachment,
   putOperationalAttachmentBinary,
-  getOperationalAttachmentDownloadUrl,
-  isProtectedOperationalAttachmentUrl,
-  fetchProtectedOperationalAttachmentBlob,
   resolveOperationalAttachmentDisplayUrl,
   deleteOperationalNote,
   updateOperationalNote,
@@ -87,7 +79,6 @@ export type {
 
 // Misc domain
 export {
-  resetUserData,
   getFsrsConfig,
   putFsrsConfig,
   getWeeklyTimeline,
@@ -122,17 +113,12 @@ export { me } from "./api/domains/starter";
 export {
   getProfile,
   updateProfile,
-  createDirectedStudy,
   listDirectedStudies,
   updateDirectedStudy,
   deleteDirectedStudy,
-  createStudyImportSession,
-  getBackgroundJob,
   getStudyImportSession,
-  isBackgroundJobAccepted,
   listStudyImportSessionQuestions,
   updateStudyImportQuestionState,
-  waitForStudyImportSessionJob,
   finalizeStudyImportSession,
   getSessionOverrides,
   setQuestionOverride,
@@ -142,7 +128,6 @@ export {
   updateReviewTask,
   autoRescheduleReviewTask,
   previewAutoRescheduleReviewTask,
-  listStudyTopicConsistency,
 } from "./api/domains/study-import";
 export type {
   UserProfile,
@@ -172,16 +157,11 @@ export type {
 export {
   browseQuestionBankTopics,
   browseQuestionBankQuestions,
-  listQuestionBankBookmarks,
   setQuestionBankBookmark,
-  listQuestionTextHighlights,
   createQuestionTextHighlight,
   deleteQuestionTextHighlight,
   getQuestionBankBootstrap,
   listQuestionBankBoards,
-  listQuestionBankSources,
-  listQuestionBankSourceEntities,
-  listQuestionBankYears,
   listQuestionBankFacets,
   previewQuestionBankAvailability,
   createQuestionBankSession,
@@ -197,7 +177,6 @@ export {
   getQuestionBankGuidedReview,
   submitQuestionBankGuidedReview,
   recordQuestionBankCorrection,
-  revealQuestionBankSessionResults,
   revealAllQuestionBankFeedback,
   revealQuestionBankItemFeedback,
   getQuestionBankReasoningReview,
@@ -333,8 +312,6 @@ export type {
 
 // Trainer domain (single daily prescription)
 export {
-  createTrainerDebrief,
-  getTrainerReviewQueue,
   getTrainerPrescription,
   recordTrainerRecommendationEvent,
 } from "./api/domains/trainer";
@@ -343,9 +320,6 @@ export {
 export {
   getStudentAgenda,
   getStudentExperience,
-  getStudentPlan,
-  getStudentReviewHome,
-  getStudentTrack,
   getStudentToday,
   invalidateStudentExperienceCache,
 } from "./api/domains/student-experience";
@@ -408,11 +382,8 @@ export type {
 export {
   getCurrentPlan,
   regeneratePlan,
-  listPlanActivities,
   startPlanActivity,
-  getMyObjectives,
   getMyObjectivesV2,
-  replaceMyObjectives,
   replaceMyObjectivesV2,
   requestObjectiveCatalogItem,
   searchObjectiveCatalogV2,
@@ -438,13 +409,11 @@ export {
   listEvents,
   createEvent,
   deleteEvent,
-  getWorkload,
   listScheduleSuggestions,
   triggerScheduleSuggestion,
   acceptScheduleSuggestionItem,
   acceptScheduleSuggestionAll,
   rejectScheduleSuggestion,
-  getAdaptiveSchedule,
 } from "./api/domains/calendar";
 export type {
   CalendarEventOut,
