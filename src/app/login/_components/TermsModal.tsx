@@ -75,7 +75,7 @@ export function TermsModal({ show, onClose }: TermsModalProps) {
       <div
         role="dialog"
         aria-modal="true"
-        className="w-full max-w-2xl bg-paper border border-edge p-4 space-y-4 rounded-md shadow-xl"
+        className="w-full max-w-2xl bg-paper border border-edge p-4 space-y-4 rounded-control shadow-xl"
       >
         <div className="max-h-[65vh] overflow-y-auto whitespace-pre-line text-sm text-ink leading-relaxed">
           {TERMS_TEXT}

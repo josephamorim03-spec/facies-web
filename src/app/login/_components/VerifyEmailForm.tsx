@@ -38,8 +38,8 @@ export function VerifyEmailForm({
         value={verifyEmail}
         onChange={(event) => setVerifyEmail(event.target.value)}
       />
-      {verifyError && <p className="text-sm text-red-600">{verifyError}</p>}
-      {verifySuccess && <p className="text-sm text-emerald-700">{verifySuccess}</p>}
+      {verifyError && <p className="text-sm text-danger">{verifyError}</p>}
+      {verifySuccess && <p className="text-sm text-success">{verifySuccess}</p>}
       <Button variant="primary" size="md" loading={verifyBusy} onClick={onResendVerification} className="w-full">
         Reenviar e-mail de verificação
       </Button>

@@ -98,7 +98,7 @@ export function ConfidenceReviewStep({
           <button
             type="button"
             onClick={() => setAll(3)}
-            className="rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
+            className="rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
           >
             Marcar restantes como dúvida
           </button>
@@ -106,7 +106,7 @@ export function ConfidenceReviewStep({
 
         <ul className="space-y-2">
           {items.map((it) => (
-            <li key={it.position} className="rounded-xl border border-edge bg-surface p-3">
+            <li key={it.position} className="rounded-surface border border-edge bg-surface p-3">
               <QuestionFullContext
                 eyebrow={`Q${it.position}${it.doubtful ? " - marcada" : ""}`}
                 stem={it.stem}
@@ -117,7 +117,7 @@ export function ConfidenceReviewStep({
                 knowledgeNodes={it.knowledge_nodes}
                 selectedOption={it.selected_option}
                 showCorrectAnswer={false}
-                className="rounded-lg border border-edge bg-paper p-3"
+                className="rounded-surface border border-edge bg-paper p-3"
               />
               <div className="mt-2 flex gap-1.5">
                 {LEVELS.map((lvl) => {
@@ -127,7 +127,7 @@ export function ConfidenceReviewStep({
                       key={lvl.value}
                       type="button"
                       onClick={() => setRatings((prev) => ({ ...prev, [it.position]: lvl.value }))}
-                      className={`min-h-8 flex-1 rounded-lg border px-2 py-1.5 text-xs font-semibold transition ${
+                      className={`min-h-8 flex-1 rounded-surface border px-2 py-1.5 text-xs font-semibold transition ${
                         active
                           ? "border-primary bg-primary text-primaryInk"
                           : "border-edge text-muted hover:text-ink"
@@ -148,7 +148,7 @@ export function ConfidenceReviewStep({
             type="button"
             onClick={() => void saveAndProceed()}
             disabled={busy}
-            className="inline-flex items-center justify-center rounded-xl border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-surface border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk disabled:opacity-60"
           >
             {busy ? "Salvando…" : "Salvar e corrigir"}
           </button>
@@ -156,7 +156,7 @@ export function ConfidenceReviewStep({
             type="button"
             onClick={onProceed}
             disabled={busy}
-            className="inline-flex items-center justify-center rounded-xl border border-edge px-5 py-3 text-sm font-semibold text-muted hover:text-ink disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-surface border border-edge px-5 py-3 text-sm font-semibold text-muted hover:text-ink disabled:opacity-60"
           >
             Pular e corrigir
           </button>

@@ -68,13 +68,15 @@ export function AccuracyChart({ state, refs, actions }: Props) {
         )}
         <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={weeks} margin={WEEKLY_CHART_MARGIN}>
+            {/* O degradê saiu: área com desvanecimento é o oposto do traço
+                chapado. Virou hachura de 1px — diz "abaixo da linha" sem simular
+                profundidade, e sobrevive à impressão em tinta. */}
             <defs>
-              <linearGradient id="accuracyFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={CHART_INK} stopOpacity={0.24} />
-                <stop offset="100%" stopColor={CHART_INK} stopOpacity={0.02} />
-              </linearGradient>
+              <pattern id="accuracyFill" width="4" height="4" patternUnits="userSpaceOnUse">
+                <path d="M0 4L4 0" stroke={CHART_INK} strokeWidth={0.5} strokeOpacity={0.4} />
+              </pattern>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke={CHART_EDGE} />
+            <CartesianGrid strokeDasharray="1 3" stroke={CHART_EDGE} />
             <XAxis
               dataKey="week_label"
               type="category"
@@ -100,10 +102,14 @@ export function AccuracyChart({ state, refs, actions }: Props) {
               <ReferenceLine x={activeAccuracyWeekWithData.week_label} stroke={CHART_INK} strokeOpacity={0.28} />
             )}
             <Area
-              type="monotone"
+              // Reta, não suavizada. `monotone` desenha uma curva que INVENTA
+              // valores entre as semanas medidas — num gráfico de acurácia isso
+              // é leitura errada, não acabamento.
+              type="linear"
               dataKey="accuracy_pct"
               stroke={CHART_INK}
-              strokeWidth={2}
+              strokeWidth={1.5}
+              strokeLinecap="butt"
               fill="url(#accuracyFill)"
               connectNulls={false}
               isAnimationActive={entering}

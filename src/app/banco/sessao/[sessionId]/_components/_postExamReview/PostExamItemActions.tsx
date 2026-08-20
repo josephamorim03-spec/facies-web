@@ -28,14 +28,14 @@ export function PostExamItemActions({
       <button
         type="button"
         onClick={onSaveRule}
-        className="rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-ink hover:border-primary"
+        className="rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-ink hover:border-primary"
       >
         Salvar regra
       </button>
       <button
         type="button"
         onClick={onCreateCard}
-        className="rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
+        className="rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
       >
         Criar card
       </button>
@@ -43,7 +43,7 @@ export function PostExamItemActions({
         <button
           type="button"
           onClick={onReviewTrap}
-          className="rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
+          className="rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
         >
           Rever armadilha
         </button>
@@ -51,7 +51,7 @@ export function PostExamItemActions({
       <button
         type="button"
         onClick={onReport}
-        className="rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
+        className="rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
       >
         {activeReview ? "Reportar" : "Reportar item"}
       </button>

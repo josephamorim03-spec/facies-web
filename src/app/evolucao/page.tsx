@@ -22,7 +22,7 @@ const GraficosSection = dynamic(
     loading: () => (
       <div className="grid gap-4 md:grid-cols-2" aria-busy="true">
         {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="h-72 animate-pulse rounded-xl border border-edge bg-surface" />
+          <div key={index} className="h-72 animate-pulse rounded-surface border border-edge bg-surface" />
         ))}
       </div>
     ),
@@ -60,7 +60,7 @@ function MetricHelp({ text }: { text: string }) {
         <button
           type="button"
           aria-label="Entenda esta métrica"
-          className="rounded-md p-1 text-muted transition hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="rounded-control p-1 text-muted transition hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <HelpCircle className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -71,7 +71,7 @@ function MetricHelp({ text }: { text: string }) {
           side="bottom"
           align="start"
           sideOffset={8}
-          className="paper-overlay z-[100] max-w-72 rounded-lg border border-edge bg-ink px-3 py-2 text-xs leading-5 text-paper shadow-lg"
+          className="paper-overlay z-[100] max-w-72 rounded-surface border border-edge bg-ink px-3 py-2 text-xs leading-5 text-paper shadow-lg"
         >
           {text}
           <Popover.Arrow className="fill-ink" />
@@ -102,7 +102,7 @@ function SummaryMetric({
   }[tone];
 
   return (
-    <article className={`min-w-0 rounded-xl border p-4 ${toneClass}`}>
+    <article className={`min-w-0 rounded-surface border p-4 ${toneClass}`}>
       <div className="flex items-center gap-1">
         <p className="text-xs font-medium text-muted">{label}</p>
         {help ? <MetricHelp text={help} /> : null}

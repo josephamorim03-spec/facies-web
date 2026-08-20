@@ -105,7 +105,7 @@ export function WeeklyGoalControl({
             role="dialog"
             aria-modal="true"
             aria-label="Editar meta semanal"
-            className="w-full rounded-t-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-sm md:rounded-2xl"
+            className="w-full rounded-t-surface border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-sm md:rounded-surface"
             onClick={(event) => event.stopPropagation()}
           >
             <h3 className="text-base font-semibold text-ink">Meta semanal</h3>

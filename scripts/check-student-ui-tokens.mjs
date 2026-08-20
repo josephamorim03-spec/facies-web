@@ -41,6 +41,20 @@ const PAPER_SURFACES = [
   "src/app/hoje/_components/TodayPageSkeleton.tsx",
   "src/app/hoje/_components/TodaySchedulePreview.tsx",
   "src/app/admin/question-bank/_components/AiReviewPanel.tsx",
+  // O admin ficou 1500 cores literais fora de token justamente por estar fora
+  // desta lista: sem guarda, a paleta antiga sobreviveu ali enquanto o resto do
+  // app migrava. Entra agora para nao regredir de novo.
+  "src/app/admin/layout.tsx",
+  "src/app/admin/page.tsx",
+  "src/app/admin/keys/page.tsx",
+  "src/app/admin/audit/page.tsx",
+  "src/app/admin/question-bank/page.tsx",
+  "src/app/admin/question-bank/_components/AdminOverview.tsx",
+  "src/app/admin/question-bank/_components/QuestionsManager.tsx",
+  "src/app/admin/question-bank/_components/AiResolutionPanel.tsx",
+  "src/app/admin/question-bank/_components/PipelineDiagnosticsPanel.tsx",
+  "src/app/admin/question-bank/_components/ImportWorkspace.tsx",
+  "src/app/admin/question-bank/_components/CandidatesPanel.tsx",
 ];
 
 const rules = [

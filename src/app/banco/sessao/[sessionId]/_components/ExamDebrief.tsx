@@ -35,7 +35,7 @@ function pct(v: number | null | undefined): string {
 }
 
 function DebriefSkeleton() {
-  return <div className="paper-skeleton h-24 rounded-xl border border-edge bg-surface" aria-hidden="true" />;
+  return <div className="paper-skeleton h-24 rounded-surface border border-edge bg-surface" aria-hidden="true" />;
 }
 
 /**
@@ -89,7 +89,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
     .map((b) => ({ label: `${b.confidence}`, acerto: b.accuracy === null ? 0 : Math.round(b.accuracy * 100) }));
 
   return (
-    <details aria-label="Análise detalhada do simulado" className="rounded-xl border border-edge bg-surface p-4 sm:p-5">
+    <details aria-label="Análise detalhada do simulado" className="rounded-surface border border-edge bg-surface p-4 sm:p-5">
       <summary className="cursor-pointer font-serif text-lg font-semibold text-ink">Abrir análise detalhada do simulado</summary>
       <div className="mt-4">
       {/* First fold */}
@@ -108,7 +108,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
         {primary && (
           <Link
             href={primary.href}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-surface border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105"
           >
             {primary.title}
           </Link>
@@ -155,7 +155,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
             {timelineData.some((d) => d.acuracia !== null) ? (
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={timelineData} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-edge, #e5e7eb)" />
+                  <CartesianGrid strokeDasharray="1 3" stroke="var(--color-edge, #e5e7eb)" />
                   <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                   <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} />
                   <Tooltip
@@ -164,7 +164,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
                     cursor={studyChartTooltipCursor}
                     wrapperStyle={{ zIndex: 20 }}
                   />
-                  <Line type="monotone" dataKey="acuracia" stroke="var(--color-primary, #2563eb)" strokeWidth={2} connectNulls />
+                  <Line type="linear" dataKey="acuracia" stroke="var(--color-primary, #2563eb)" strokeWidth={2} connectNulls />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -186,7 +186,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
                 </p>
                 <ResponsiveContainer width="100%" height={180}>
                   <BarChart data={calibData} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-edge, #e5e7eb)" />
+                    <CartesianGrid strokeDasharray="1 3" stroke="var(--color-edge, #e5e7eb)" />
                     <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                     <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} />
                     <Tooltip
@@ -234,7 +234,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-edge bg-paper p-3">
+    <div className="rounded-surface border border-edge bg-paper p-3">
       <p className="text-[11px] uppercase tracking-wide text-muted">{label}</p>
       <p className="mt-0.5 font-serif text-lg text-ink">{value}</p>
     </div>

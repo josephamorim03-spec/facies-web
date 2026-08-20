@@ -65,7 +65,7 @@ export function CalendarEventMoveErrorToast({
 }) {
   if (!message) return null;
   return (
-    <div className="fixed left-1/2 top-3 -translate-x-1/2 z-[85] w-[min(92vw,30rem)] border border-edge rounded-xl bg-paper shadow-sm px-3 py-2">
+    <div className="fixed left-1/2 top-3 -translate-x-1/2 z-[85] w-[min(92vw,30rem)] border border-edge rounded-surface bg-paper shadow-sm px-3 py-2">
       <div className="flex items-start gap-2">
         <p className="text-xs text-ink flex-1 leading-snug">{message}</p>
         <button
@@ -105,7 +105,7 @@ export function CalendarActionButtons({
         <button
           type="button"
           onClick={onOpenCreateModal}
-          className={`flex items-center gap-1.5 rounded-xl border shadow-sm px-4 py-2.5 text-sm font-semibold transition-colors ${
+          className={`flex items-center gap-1.5 rounded-surface border shadow-sm px-4 py-2.5 text-sm font-semibold transition-colors ${
             modal === "create"
               ? "border-ink bg-ink text-paper"
               : "border-edge bg-paper text-ink hover:border-primary hover:text-primary"
@@ -189,17 +189,17 @@ function ReadonlyStudyPopupContent({
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-center">
-        <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+        <div className="rounded-surface border border-edge bg-surface px-2.5 py-2.5">
           <p className="text-[11px] text-muted leading-none">Registro</p>
           <p className="mt-1 text-sm font-bold text-ink">{recordType}</p>
         </div>
-        <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+        <div className="rounded-surface border border-edge bg-surface px-2.5 py-2.5">
           <p className="text-[11px] text-muted leading-none">Questões</p>
           <p className="mt-1 text-sm font-bold text-ink">
             {study.correct_questions}/{study.total_questions}
           </p>
         </div>
-        <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+        <div className="rounded-surface border border-edge bg-surface px-2.5 py-2.5">
           <p className="text-[11px] text-muted leading-none">Acurácia</p>
           <p className="mt-1 text-sm font-bold text-ink">{study.accuracy.toFixed(0)}%</p>
         </div>
@@ -209,7 +209,7 @@ function ReadonlyStudyPopupContent({
         <button
           type="button"
           onClick={() => onDeleteRequest?.(study)}
-          className="flex w-full items-center justify-center rounded-xl border border-danger/50 bg-paper py-2.5 text-xs font-semibold text-danger transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          className="flex w-full items-center justify-center rounded-surface border border-danger/50 bg-paper py-2.5 text-xs font-semibold text-danger transition-colors hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
         >
           Apagar registro
         </button>
@@ -253,14 +253,14 @@ function EventPopupContent({
           <button
             type="button"
             onClick={() => onRescheduleRequest?.(event, sourceISO, iconType)}
-            className="flex w-full items-center justify-center rounded-xl border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="flex w-full items-center justify-center rounded-surface border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Reagendar
           </button>
           <button
             type="button"
             onClick={() => onDeleteRequest?.(event, sourceISO)}
-            className="flex w-full items-center justify-center rounded-xl border border-danger/50 bg-paper py-2.5 text-xs font-semibold text-danger transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+            className="flex w-full items-center justify-center rounded-surface border border-danger/50 bg-paper py-2.5 text-xs font-semibold text-danger transition-colors hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
           >
             Apagar
           </button>
@@ -328,17 +328,17 @@ export function CalendarEntryPopup({
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-surface border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-[11px] text-muted leading-none">Revisão</p>
             <p className="mt-1 text-lg font-bold text-ink">#{revision}</p>
           </div>
-          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-surface border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-[11px] text-muted leading-none">Acerto</p>
             <p className="mt-1 text-lg font-bold text-ink">
               {accuracy !== null ? `${accuracy}%` : "—"}
             </p>
           </div>
-          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-surface border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-[11px] text-muted leading-none">Min. q</p>
             <p className="mt-1 text-lg font-bold text-ink">{task.expected_questions}</p>
           </div>
@@ -348,7 +348,7 @@ export function CalendarEntryPopup({
           href={bancoUrl}
           onClick={onClose}
           aria-label={sessionTitle}
-          className="flex w-full items-center justify-center rounded-xl border border-primary bg-primary py-2.5 text-xs font-semibold text-primaryInk transition-all hover:brightness-105"
+          className="flex w-full items-center justify-center rounded-surface border border-primary bg-primary py-2.5 text-xs font-semibold text-primaryInk transition-all hover:brightness-105"
         >
           Abrir revisão no banco
         </Link>
@@ -359,7 +359,7 @@ export function CalendarEntryPopup({
             onClose();
             onRescheduleRequest?.(task);
           }}
-          className="flex w-full items-center justify-center rounded-xl border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex w-full items-center justify-center rounded-surface border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Reagendar
         </button>
@@ -384,17 +384,17 @@ export function CalendarEntryPopup({
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-surface border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-[11px] text-muted leading-none">Registro</p>
             <p className="mt-1 text-sm font-bold text-ink">Revisão</p>
           </div>
-          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-surface border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-[11px] text-muted leading-none">Questões</p>
             <p className="mt-1 text-sm font-bold text-ink">
               {resolvedStudy ? `${resolvedStudy.correct_questions}/${resolvedStudy.total_questions}` : "—"}
             </p>
           </div>
-          <div className="rounded-xl border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-surface border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-[11px] text-muted leading-none">Acurácia</p>
             <p className="mt-1 text-sm font-bold text-ink">
               {resolvedStudy ? `${resolvedStudy.accuracy.toFixed(0)}%` : "—"}
@@ -436,7 +436,7 @@ export function CalendarEntryPopup({
     <>
       <div className="fixed inset-0 z-[60]" onClick={onClose} />
       <div
-        className="fixed z-[61] w-72 max-w-[calc(100vw-1rem)] space-y-3 rounded-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)]"
+        className="fixed z-[61] w-72 max-w-[calc(100vw-1rem)] space-y-3 rounded-surface border border-edge bg-paper p-4 shadow-[var(--soft-shadow)]"
         style={{ top: popupTop, left: popupLeft }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -482,7 +482,7 @@ export function CalendarStudyDeleteConfirmModal({
         role="dialog"
         aria-modal="true"
         aria-label="Apagar estudo"
-        className="w-full max-w-sm space-y-3 rounded-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)]"
+        className="w-full max-w-sm space-y-3 rounded-surface border border-edge bg-paper p-4 shadow-[var(--soft-shadow)]"
         onClick={(event) => event.stopPropagation()}
       >
         <h3 className="font-serif text-base">Apagar estudo</h3>
@@ -551,7 +551,7 @@ export function CalendarEventRescheduleSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Reagendar compromisso"
-        className="w-full rounded-t-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-sm md:rounded-2xl"
+        className="w-full rounded-t-surface border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-sm md:rounded-surface"
         onClick={(eventClick) => eventClick.stopPropagation()}
       >
         <div>
@@ -637,7 +637,7 @@ export function CalendarTaskRescheduleSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Reagendar atividade"
-        className="w-full rounded-t-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-sm md:rounded-2xl"
+        className="w-full rounded-t-surface border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-sm md:rounded-surface"
         onClick={(event) => event.stopPropagation()}
       >
         <div>
@@ -741,7 +741,7 @@ export function CalendarCreateStudyModal({
   if (!(modal === "create" && selectedDay)) return null;
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 modal-backdrop" onClick={onClose}>
-      <div className="bg-paper border border-edge rounded-2xl w-full max-w-sm p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-paper border border-edge rounded-surface w-full max-w-sm p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
         <NewStudyForm
           token={token}
           dateISO={selectedDay}
@@ -777,7 +777,7 @@ export function CalendarEventDeleteConfirmModal({
   if (!eventDeleteConfirm) return null;
   return (
     <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4 modal-backdrop">
-      <div className="w-full max-w-sm space-y-3 rounded-2xl border border-edge bg-paper p-4">
+      <div className="w-full max-w-sm space-y-3 rounded-surface border border-edge bg-paper p-4">
         <h3 className="font-serif text-base">Apagar compromisso</h3>
         <p className="text-sm text-muted">Você tem certeza que deseja apagar esse compromisso?</p>
         <div className="flex flex-col gap-2">
@@ -811,7 +811,7 @@ export function CalendarRescheduleWarningModal({
   if (!warnTask) return null;
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4 modal-backdrop">
-      <div className="w-full max-w-sm space-y-3 rounded-2xl border border-edge bg-paper p-4">
+      <div className="w-full max-w-sm space-y-3 rounded-surface border border-edge bg-paper p-4">
         <h3 className="font-serif text-base">Reagendamento longo</h3>
         <p className="text-sm text-muted">
           Esta revisão está <strong>{warnTask.days} dias</strong> fora do agendamento ideal. Deseja continuar?

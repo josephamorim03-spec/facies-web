@@ -132,7 +132,7 @@ export default function QuickNoteModal({
         <div
           role="dialog"
           aria-modal="true"
-          className="w-full max-w-sm rounded-lg border border-edge bg-paper p-6 text-center shadow-lg"
+          className="w-full max-w-sm rounded-surface border border-edge bg-paper p-6 text-center shadow-lg"
           onClick={(event) => event.stopPropagation()}
         >
           <p className="text-sm font-semibold text-ink">
@@ -141,7 +141,7 @@ export default function QuickNoteModal({
           <button
             type="button"
             onClick={onClose}
-            className="mt-4 rounded-lg border border-edge px-4 py-2 text-sm font-semibold text-ink hover:border-primary"
+            className="mt-4 rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink hover:border-primary"
           >
             Fechar
           </button>
@@ -158,7 +158,7 @@ export default function QuickNoteModal({
         aria-label={primaryLabel}
         onSubmit={(event) => void handleSubmit(event)}
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-md rounded-lg border border-edge bg-paper p-5 shadow-lg"
+        className="w-full max-w-md rounded-surface border border-edge bg-paper p-5 shadow-lg"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -168,7 +168,7 @@ export default function QuickNoteModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-edge px-2 py-1 text-xs text-muted hover:border-primary hover:text-ink"
+            className="rounded-surface border border-edge px-2 py-1 text-xs text-muted hover:border-primary hover:text-ink"
             aria-label="Fechar"
           >
             x
@@ -176,7 +176,7 @@ export default function QuickNoteModal({
         </div>
 
         {trimmedHypothesis && (
-          <div className="mt-4 rounded-lg border border-warning bg-[var(--amber-tint)] p-3">
+          <div className="mt-4 rounded-surface border border-warning bg-[var(--amber-tint)] p-3">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-warning">
               Hipotese do distrator
             </p>
@@ -202,19 +202,19 @@ export default function QuickNoteModal({
           maxLength={180}
           required
           placeholder="Min. 6 caracteres"
-          className="mt-1 w-full rounded-lg border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"
+          className="mt-1 w-full rounded-surface border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"
         />
 
         <button
           type="button"
           onClick={() => setAdvancedOpen((open) => !open)}
-          className="mt-4 rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
+          className="mt-4 rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
         >
           {advancedOpen ? "Ocultar detalhes" : "Editar card"}
         </button>
 
         {advancedOpen && (
-          <div className="mt-3 rounded-lg border border-edge bg-surface p-3">
+          <div className="mt-3 rounded-surface border border-edge bg-surface p-3">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Area</p>
             <div className="mb-3 flex flex-wrap gap-1.5">
               {AREAS.map((item) => (
@@ -222,7 +222,7 @@ export default function QuickNoteModal({
                   key={item}
                   type="button"
                   onClick={() => setArea(item)}
-                  className={`rounded-lg border px-2.5 py-1 text-xs font-semibold ${
+                  className={`rounded-surface border px-2.5 py-1 text-xs font-semibold ${
                     area === item ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary hover:text-ink"
                   }`}
                 >
@@ -239,7 +239,7 @@ export default function QuickNoteModal({
               onChange={(event) => setBody(event.target.value)}
               required
               placeholder="Escreva o conceito ou raciocinio correto"
-              className="mt-1 min-h-24 w-full resize-y rounded-lg border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"
+              className="mt-1 min-h-24 w-full resize-y rounded-surface border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"
             />
           </div>
         )}
@@ -249,7 +249,7 @@ export default function QuickNoteModal({
         <button
           type="submit"
           disabled={!canSubmit}
-          className="mt-4 w-full rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk disabled:opacity-50"
+          className="mt-4 w-full rounded-surface border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk disabled:opacity-50"
         >
           {busy ? "Salvando..." : primaryLabel}
         </button>

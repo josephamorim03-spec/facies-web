@@ -195,7 +195,7 @@ export function TrilhaNextActivity({ fallback = null }: Props) {
           {isToday ? "Sua trilha hoje" : `Próximo passo · ${next.scheduled_date}`}
         </p>
         <span
-          className="shrink-0 rounded-full border border-edge px-2 py-0.5 text-[11px] text-muted"
+          className="shrink-0 rounded-control border border-edge px-2 py-0.5 text-[11px] text-muted"
           title={evidence.note}
         >
           {evidence.label}

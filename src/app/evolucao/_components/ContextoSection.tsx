@@ -96,7 +96,7 @@ export function ContextoSection({ range }: { range: string }) {
   });
 
   if (!tokenResolved || query.isPending) {
-    return <div className="h-64 animate-pulse rounded-xl border border-edge bg-surface" />;
+    return <div className="h-64 animate-pulse rounded-surface border border-edge bg-surface" />;
   }
 
   if (query.isError || !query.data) {

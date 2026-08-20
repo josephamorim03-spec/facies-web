@@ -44,7 +44,7 @@ function VolumeLegend({ areas }: { areas: AreaKey[] }) {
     <ul className="flex flex-wrap gap-x-3 gap-y-1" aria-label="Áreas">
       {areas.map((area) => (
         <li key={area} className="flex items-center gap-1 text-[11px] font-medium leading-none text-muted">
-          <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: AREA_COLORS[area] }} />
+          <span className="inline-block h-2 w-2 shrink-0 rounded-control" style={{ backgroundColor: AREA_COLORS[area] }} />
           {area}
         </li>
       ))}
@@ -91,7 +91,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
           <div className="relative overflow-visible">
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={volumeData} margin={WEEKLY_CHART_MARGIN} barCategoryGap="7%" barGap={0}>
-                <CartesianGrid strokeDasharray="3 3" stroke={CHART_EDGE} />
+                <CartesianGrid strokeDasharray="1 3" stroke={CHART_EDGE} />
                 <XAxis
                   dataKey="week_label"
                   type="category"
@@ -174,7 +174,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
         <div className="overflow-visible">
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={volumeData} margin={WEEKLY_CHART_MARGIN} barCategoryGap="7%" barGap={0} stackOffset="expand">
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART_EDGE} />
+              <CartesianGrid strokeDasharray="1 3" stroke={CHART_EDGE} />
               <XAxis
                 dataKey="week_label"
                 type="category"

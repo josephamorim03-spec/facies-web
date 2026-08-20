@@ -7,13 +7,17 @@ import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, TabsScrollArea } from "@/components/
 import { getIntentChildren, isNavChildActive } from "@/lib/navConfig";
 
 /**
- * Abas de rota da intenção atual (Praticar, Revisar, Acompanhar, Planejar).
+ * Linha de filhos da aba atual, no desktop.
  *
- * O menu lateral expõe só os 5 verbos; sem esta camada, destinos reais como
- * Sessões, Cards, Caderno, Gráficos, Relatórios e Metas ficam inalcançáveis.
- * Reusa as classes do primitivo de abas para manter uma linguagem só — o
- * estado ativo vem de `aria-current="page"`, que o `TAB_TRIGGER_CLASS` estiliza
- * igual à aba de conteúdo.
+ * O menu expõe só as cinco abas; sem esta camada, destinos reais como
+ * Cronograma, Histórico, Pesquisar e Evolução ficam inalcançáveis. É a mesma
+ * taxonomia da barra inferior do mobile (`MobileTabBar`), com a mesma marcação
+ * de dados — `data-nav-surface="subrow-item"` — para que um contrato de
+ * navegação valha nas duas superfícies em vez de existir duplicado.
+ *
+ * Reusa as classes do primitivo de abas para manter uma linguagem só; o estado
+ * ativo vem de `aria-current="page"`, que o `TAB_TRIGGER_CLASS` estiliza igual
+ * à aba de conteúdo.
  */
 export function IntentSubNav() {
   const pathname = usePathname() ?? "";
@@ -35,9 +39,12 @@ export function IntentSubNav() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
+                data-nav-surface="subrow-item"
+                data-nav-item-href={item.href}
+                data-nav-active={active ? "true" : "false"}
                 className={TAB_TRIGGER_CLASS}
               >
-                {item.label}
+                <span>{item.label}</span>
               </Link>
             );
           })}

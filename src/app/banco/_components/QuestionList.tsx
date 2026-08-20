@@ -34,13 +34,13 @@ export default function QuestionList({
           const stats = question.attempt_stats;
           const ratio = stats && stats.attempt_count > 0 ? stats.correct_count / stats.attempt_count : null;
           return (
-            <article key={question.id} className="rounded-xl border border-edge bg-paper p-4">
+            <article key={question.id} className="rounded-surface border border-edge bg-paper p-4">
               <p className="line-clamp-4 text-sm leading-relaxed">{question.stem}</p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <p className="text-xs text-muted">{formatSourceLabel(question.source)}</p>
                 {stats && ratio !== null && (
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${accuracyChipClass(ratio)}`}
+                    className={`rounded-control border px-2 py-0.5 text-[11px] font-semibold ${accuracyChipClass(ratio)}`}
                   >
                     Você: {stats.correct_count}/{stats.attempt_count} · {Math.round(ratio * 100)}%
                   </span>

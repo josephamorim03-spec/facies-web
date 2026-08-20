@@ -45,9 +45,9 @@ export function SlopeComparison({ state, actions }: Props) {
               <span className="w-8 text-[10px] font-semibold shrink-0" style={{ color }}>{area}</span>
               <span className="w-10 text-right text-xs tabular-nums shrink-0">{first !== null ? `${first}%` : "—"}</span>
               <div className="flex-1 flex items-center">
-                <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color, opacity: first !== null ? 1 : 0.2 }} />
+                <div className="w-2 h-2 rounded-control shrink-0" style={{ backgroundColor: color, opacity: first !== null ? 1 : 0.2 }} />
                 <div className="flex-1 h-px" style={{ backgroundColor: color, opacity: isLocked ? 0.9 : 0.45 }} />
-                <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color, opacity: second !== null ? 1 : 0.2 }} />
+                <div className="w-2 h-2 rounded-control shrink-0" style={{ backgroundColor: color, opacity: second !== null ? 1 : 0.2 }} />
               </div>
               <span className="w-10 text-xs tabular-nums shrink-0">{second !== null ? `${second}%` : "—"}</span>
               <span className={`w-10 text-right text-[10px] font-semibold tabular-nums shrink-0 ${deltaClass}`}>

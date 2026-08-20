@@ -117,6 +117,11 @@ export function getActiveFilters(params: {
 }
 
 export function questionBankCtaLabel(limit: number, resolutionMode: "training" | "simulation", studyKind: string): string {
-  if (studyKind === "full_exam") return `Começar prova · ${limit} questões`;
-  return `Começar ${limit} questões · ${resolutionMode === "training" ? "revelar ao final" : "feedback por questão"}`;
+  // A correção aparece nos DOIS tipos. Antes a prova institucional retornava
+  // cedo e omitia como seria corrigida — e como escolher a prova sobrescrevia a
+  // correção em silêncio, o aluno não tinha nenhum lugar onde ver o que ia
+  // receber.
+  const correction = resolutionMode === "training" ? "revelar ao final" : "feedback por questão";
+  if (studyKind === "full_exam") return `Começar prova · ${limit} questões · ${correction}`;
+  return `Começar ${limit} questões · ${correction}`;
 }

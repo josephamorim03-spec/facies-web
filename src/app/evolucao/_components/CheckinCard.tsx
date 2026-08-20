@@ -84,7 +84,7 @@ export function CheckinCard() {
   });
 
   if (!tokenResolved || query.isPending) {
-    return <div className="h-28 animate-pulse rounded-xl border border-edge bg-surface" />;
+    return <div className="h-28 animate-pulse rounded-surface border border-edge bg-surface" />;
   }
 
   // Captura desligada (404) ou indisponível: a leitura abaixo continua valendo.
@@ -98,7 +98,7 @@ export function CheckinCard() {
   return (
     <section
       aria-labelledby="checkin-title"
-      className="rounded-xl border border-edge bg-surface p-4 sm:p-5"
+      className="rounded-surface border border-edge bg-surface p-4 sm:p-5"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="checkin-title" className="text-sm font-semibold text-ink">

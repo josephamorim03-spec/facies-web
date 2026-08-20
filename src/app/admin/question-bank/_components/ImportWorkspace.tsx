@@ -77,60 +77,60 @@ export default function ImportWorkspace({
   const readiness = previewSummary?.editorial_readiness;
   const readinessTone =
     readiness?.state === "blocked"
-      ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200"
+      ? "border-danger bg-surfaceMuted text-danger/40/30"
       : readiness?.state === "needs_review"
-        ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
-        : "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200";
+        ? "border-warning bg-surfaceMuted text-warning/40/30"
+        : "border-success bg-surfaceMuted text-success/40/30";
 
   return (
     <div className="space-y-5">
-      <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+      <section className="rounded-surface border border-edge bg-surface p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Ingestao</h2>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">PDF, metadados e preview editorial.</p>
+            <h2 className="text-xl font-semibold text-ink">Ingestao</h2>
+            <p className="mt-1 text-sm text-ink">PDF, metadados e preview editorial.</p>
           </div>
         </div>
         <div className="mt-4 grid gap-4">
-          <label className="grid gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+          <label className="grid gap-1 text-sm font-medium text-ink">
             PDF
             <input
               type="file"
               accept="application/pdf"
               onChange={(event) => onFileChange(event.target.files?.[0] ?? null)}
-              className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
+              className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
             />
           </label>
-          {file ? <div className="text-xs text-gray-500 dark:text-gray-400">{file.name}</div> : null}
+          {file ? <div className="text-xs text-muted">{file.name}</div> : null}
 
-          <div className="grid gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/60">
+          <div className="grid gap-4 rounded-surface border border-edge bg-surface p-4/60">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Prova</p>
+                <p className="text-xs font-semibold uppercase text-muted">Prova</p>
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
                   {SOURCE_METADATA_FIELDS.map(([key, label]) => (
-                    <label key={key} className="grid gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                    <label key={key} className="grid gap-1 text-sm font-medium text-ink">
                       {label}
                       <input
                         value={fieldText(metadataDraft[key])}
                         onChange={(event) => onMetadataFieldChange(key, event.target.value)}
-                        className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
+                        className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
                       />
                     </label>
                   ))}
                 </div>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Conteudo</p>
+                <p className="text-xs font-semibold uppercase text-muted">Conteudo</p>
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
                   {CONTENT_METADATA_FIELDS.map(([key, label]) => (
-                    <label key={key} className="grid gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                    <label key={key} className="grid gap-1 text-sm font-medium text-ink">
                       {label}
                       {key === "grande_area" ? (
                         <select
                           value={fieldText(metadataDraft[key])}
                           onChange={(event) => onMetadataFieldChange(key, event.target.value)}
-                          className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
+                          className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
                         >
                           <option value="">IA</option>
                           {GRANDE_AREA_OPTIONS.map((area) => (
@@ -141,7 +141,7 @@ export default function ImportWorkspace({
                         <input
                           value={fieldText(metadataDraft[key])}
                           onChange={(event) => onMetadataFieldChange(key, event.target.value)}
-                          className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
+                          className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
                         />
                       )}
                     </label>
@@ -150,40 +150,40 @@ export default function ImportWorkspace({
               </div>
             </div>
 
-            <details className="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
-              <summary className="cursor-pointer text-sm font-semibold text-gray-700 dark:text-gray-200">JSON</summary>
+            <details className="rounded-surface border border-edge bg-surface p-3">
+              <summary className="cursor-pointer text-sm font-semibold text-ink">JSON</summary>
               <textarea
                 value={metadataText}
                 onChange={(event) => onMetadataTextChange(event.target.value)}
-                className="mt-3 min-h-[160px] w-full rounded-xl border border-gray-300 bg-gray-50 px-3 py-3 font-mono text-xs leading-6 text-gray-800 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
+                className="mt-3 min-h-[160px] w-full rounded-surface border border-edge bg-surface px-3 py-3 font-mono text-xs leading-6 text-ink"
               />
             </details>
           </div>
 
-          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-ink">
             <input
               type="checkbox"
               checked={autoPipeline}
               onChange={(event) => onAutoPipelineChange(event.target.checked)}
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-edge"
             />
             Auto pipeline
           </label>
           <div className="flex flex-wrap gap-3">
-            <button onClick={onPreview} className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500">
+            <button onClick={onPreview} className="rounded-surface bg-info px-5 py-2 text-sm font-semibold text-ink transition hover:bg-info">
               Preview
             </button>
-            <button onClick={onImport} className="rounded-lg bg-gray-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white">
+            <button onClick={onImport} className="rounded-surface bg-paper px-5 py-2 text-sm font-semibold text-ink transition hover:bg-paper">
               Importar
             </button>
           </div>
         </div>
 
         {previewSummary ? (
-          <div className="mt-5 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/70">
+          <div className="mt-5 space-y-4 rounded-surface border border-edge bg-surface p-4/70">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Preview</h3>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Diagnostico antes de importar.</p>
+              <h3 className="text-lg font-semibold text-ink">Preview</h3>
+              <p className="mt-1 text-sm text-ink">Diagnostico antes de importar.</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <MetadataPill label="anos" value={previewSummary.years_detected} />
@@ -195,7 +195,7 @@ export default function ImportWorkspace({
               <MetadataPill label="páginas OCR" value={previewSummary.quality_summary?.ocr_summary?.pages_used} />
             </div>
             {readiness ? (
-              <div className={`rounded-lg border p-4 text-sm ${readinessTone}`}>
+              <div className={`rounded-surface border p-4 text-sm ${readinessTone}`}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="text-xs font-semibold uppercase opacity-70">Prontidao editorial</div>
@@ -211,7 +211,7 @@ export default function ImportWorkspace({
                 {readiness.blockers.length ? (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {readiness.blockers.map((blocker) => (
-                      <span key={blocker} className="rounded-md bg-white/50 px-2 py-0.5 text-[11px] font-semibold dark:bg-black/20">
+                      <span key={blocker} className="rounded-control bg-surface/50 px-2 py-0.5 text-[11px] font-semibold">
                         {blocker}
                       </span>
                     ))}
@@ -220,7 +220,7 @@ export default function ImportWorkspace({
                 {readiness.pipeline_warnings.length ? (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {readiness.pipeline_warnings.map((warning) => (
-                      <span key={warning} className="rounded-md bg-white/50 px-2 py-0.5 text-[11px] font-semibold dark:bg-black/20">
+                      <span key={warning} className="rounded-control bg-surface/50 px-2 py-0.5 text-[11px] font-semibold">
                         {warning}
                       </span>
                     ))}
@@ -235,19 +235,19 @@ export default function ImportWorkspace({
                 ))}
               </div>
             ) : (
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
+                <div className="rounded-surface border border-success bg-surfaceMuted px-4 py-3 text-sm text-success/40/30">
                   Sem alertas criticos.
                 </div>
             )}
 
             {questions.length ? (
-              <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                <div className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Overrides por questão</h4>
+              <div className="overflow-hidden rounded-surface border border-edge bg-surface">
+                <div className="border-b border-edge px-4 py-3">
+                  <h4 className="text-sm font-semibold text-ink">Overrides por questão</h4>
                 </div>
                 <div className="overflow-auto">
                   <table className="min-w-[1180px] w-full text-left text-xs">
-                    <thead className="bg-gray-50 text-gray-500 dark:bg-gray-950 dark:text-gray-400">
+                    <thead className="bg-surface text-muted">
                       <tr>
                         <th className="px-3 py-2 font-semibold">Q</th>
                         <th className="px-3 py-2 font-semibold">Enunciado</th>
@@ -273,8 +273,8 @@ export default function ImportWorkspace({
                         const isOpen = previewOpen.has(rowKey);
                         return (
                           <Fragment key={rowKey}>
-                            <tr className="border-t border-gray-100 align-top dark:border-gray-800">
-                              <td className="px-3 py-3 font-semibold text-gray-700 dark:text-gray-200">
+                            <tr className="border-t border-edge align-top">
+                              <td className="px-3 py-3 font-semibold text-ink">
                                 <div>{number || "-"}</div>
                                 <button
                                   type="button"
@@ -286,25 +286,25 @@ export default function ImportWorkspace({
                                       return next;
                                     })
                                   }
-                                  className="mt-1 rounded-md border border-gray-200 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                                  className="mt-1 rounded-control border border-edge px-1.5 py-0.5 text-[10px] font-semibold text-muted hover:bg-surface"
                                 >
                                   {isOpen ? "ocultar" : "ver"}
                                 </button>
                               </td>
-                              <td className="max-w-[260px] px-3 py-3 text-gray-600 dark:text-gray-300">
+                              <td className="max-w-[260px] px-3 py-3 text-ink">
                                 {question.stem ? question.stem.slice(0, 150) + (question.stem.length > 150 ? "..." : "") : "-"}
                               </td>
-                              <td className="px-3 py-3 text-gray-500 dark:text-gray-400">
+                              <td className="px-3 py-3 text-muted">
                                 <div>{extractionSource}</div>
-                                {ocrUsed ? <div className="mt-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">OCR</div> : null}
-                                {diagnostic?.requires_image ? <div className="mt-1 text-[10px] text-amber-600 dark:text-amber-300">imagem</div> : null}
+                                {ocrUsed ? <div className="mt-1 rounded-control border border-info bg-surfaceMuted px-2 py-0.5 text-[10px] font-semibold text-info/40/30">OCR</div> : null}
+                                {diagnostic?.requires_image ? <div className="mt-1 text-[10px] text-warning">imagem</div> : null}
                               </td>
-                              <td className="max-w-[220px] px-3 py-3 text-gray-500 dark:text-gray-400">
-                                {blockers ? <div className="font-semibold text-red-600 dark:text-red-300">{blockers}</div> : null}
-                                {warnings ? <div className="mt-1 text-amber-600 dark:text-amber-300">{warnings}</div> : null}
+                              <td className="max-w-[220px] px-3 py-3 text-muted">
+                                {blockers ? <div className="font-semibold text-danger">{blockers}</div> : null}
+                                {warnings ? <div className="mt-1 text-warning">{warnings}</div> : null}
                                 {!blockers && !warnings ? "-" : null}
                               </td>
-                              <td className="px-3 py-3 text-gray-500 dark:text-gray-400">
+                              <td className="px-3 py-3 text-muted">
                                 <div>{fieldText(resolved.year) || "-"}</div>
                                 <div>{fieldText(resolved.grande_area) || "-"}</div>
                                 <div>{fieldText(resolved.tema) || "-"}</div>
@@ -322,7 +322,7 @@ export default function ImportWorkspace({
                                             if (event.target.value) onQuestionOverrideChange(number, key, event.target.value);
                                             else onQuestionOverrideRemove(number, key);
                                           }}
-                                          className="w-full rounded-xl border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-700 dark:bg-gray-950"
+                                          className="w-full rounded-surface border border-edge bg-surface px-2 py-1.5 text-xs"
                                         >
                                           <option value="">{fieldText(resolved[key]) || "herda"}</option>
                                           {GRANDE_AREA_OPTIONS.map((area) => (
@@ -334,14 +334,14 @@ export default function ImportWorkspace({
                                           value={hasOverride ? fieldText(override[key]) : ""}
                                           placeholder={fieldText(resolved[key]) || "herda"}
                                           onChange={(event) => onQuestionOverrideChange(number, key, event.target.value)}
-                                          className="w-full rounded-xl border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-700 dark:bg-gray-950"
+                                          className="w-full rounded-surface border border-edge bg-surface px-2 py-1.5 text-xs"
                                         />
                                       )}
                                       {hasOverride ? (
                                         <button
                                           type="button"
                                           onClick={() => onQuestionOverrideRemove(number, key)}
-                                          className="rounded-lg border border-gray-200 px-1.5 py-1 text-[10px] font-semibold text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                                          className="rounded-surface border border-edge px-1.5 py-1 text-[10px] font-semibold text-muted hover:bg-surface"
                                         >
                                           herdar
                                         </button>
@@ -352,19 +352,19 @@ export default function ImportWorkspace({
                               })}
                             </tr>
                             {isOpen ? (
-                              <tr className="bg-gray-50/70 dark:bg-gray-950/40">
+                              <tr className="bg-surface/70/40">
                                 <td colSpan={5 + QUESTION_OVERRIDE_FIELDS.length} className="px-4 py-4">
-                                  <p className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-100">{question.stem || "-"}</p>
+                                  <p className="whitespace-pre-wrap text-sm text-ink">{question.stem || "-"}</p>
                                   <div className="mt-3 grid gap-1.5">
                                     {Object.entries(question.options ?? {}).map(([letter, text]) => {
                                       const isCorrect = String(question.correct_answer || "").toUpperCase() === letter.toUpperCase();
                                       return (
                                         <div
                                           key={letter}
-                                          className={`flex gap-2 rounded-lg px-2 py-1 text-sm ${
+                                          className={`flex gap-2 rounded-surface px-2 py-1 text-sm ${
                                             isCorrect
-                                              ? "bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-200"
-                                              : "text-gray-700 dark:text-gray-200"
+                                              ? "bg-surfaceMuted text-success/40"
+                                              : "text-ink"
                                           }`}
                                         >
                                           <span className="w-5 font-semibold">{letter}</span>
@@ -374,7 +374,7 @@ export default function ImportWorkspace({
                                       );
                                     })}
                                     {Object.keys(question.options ?? {}).length === 0 ? (
-                                      <p className="text-xs text-gray-400">Sem alternativas.</p>
+                                      <p className="text-xs text-muted">Sem alternativas.</p>
                                     ) : null}
                                   </div>
                                 </td>
@@ -401,26 +401,26 @@ export default function ImportWorkspace({
         ) : null}
       </section>
 
-      <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+      <section className="rounded-surface border border-edge bg-surface p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Historico</h2>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Imports operacionais, com rendimento e backlog por arquivo.</p>
+            <h2 className="text-xl font-semibold text-ink">Historico</h2>
+            <p className="mt-1 text-sm text-ink">Imports operacionais, com rendimento e backlog por arquivo.</p>
           </div>
-          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-ink">
             <input
               type="checkbox"
               checked={showArtifacts}
               onChange={(event) => onShowArtifactsChange(event.target.checked)}
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-edge"
             />
             Mostrar artefatos
           </label>
         </div>
-        <div className="mt-4 overflow-auto rounded-lg border border-gray-200 dark:border-gray-800">
+        <div className="mt-4 overflow-auto rounded-surface border border-edge">
           <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-950">
-              <tr className="text-gray-500 dark:text-gray-400">
+            <thead className="bg-surface">
+              <tr className="text-muted">
                 <th className="px-4 py-3 font-semibold">Arquivo</th>
                 <th className="px-4 py-3 font-semibold">Anos</th>
                 <th className="px-4 py-3 font-semibold">Saida</th>
@@ -434,54 +434,54 @@ export default function ImportWorkspace({
                 return (
                   <tr
                     key={item.id}
-                    className={`cursor-pointer border-t border-gray-100 transition hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-950 ${active ? "bg-blue-50/80 dark:bg-blue-950/20" : ""}`}
+                    className={`cursor-pointer border-t border-edge transition hover:bg-surface ${active ? "bg-surfaceMuted/80/20" : ""}`}
                     onClick={() => onSelectImport(item.id)}
                   >
                     <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                      <div className="font-medium text-ink">
                         {item.file_name || item.id}
                         {item.is_mixed_source ? (
-                          <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                          <span className="ml-2 rounded-control bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-warning/30">
                             misto
                           </span>
                         ) : null}
                       </div>
                       <div className="mt-1 flex flex-wrap gap-1.5">
                         {item.is_zero_ai_locked ? (
-                          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                          <span className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-semibold text-info/30">
                             zero-IA
                           </span>
                         ) : null}
                         {item.is_artifact ? (
-                          <span className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                          <span className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-semibold text-danger/30">
                             {formatArtifactReason(item.artifact_reason)}
                           </span>
                         ) : null}
                         {(item.candidate_count ?? 0) > 0 && (item.candidate_count ?? 0) <= 2 ? (
-                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                          <span className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-semibold text-warning/30">
                             baixo rendimento
                           </span>
                         ) : null}
                         {(item.published_question_count ?? 0) === 0 ? (
-                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                          <span className="rounded-control bg-surface px-2 py-0.5 text-[11px] font-semibold text-ink">
                             sem publicacao
                           </span>
                         ) : null}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{item.source.exam_name || item.source.institution || "sem fonte"}</div>
+                      <div className="text-xs text-muted">{item.source.exam_name || item.source.institution || "sem fonte"}</div>
                     </td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{item.years_detected.length ? item.years_detected.join(", ") : "-"}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                    <td className="px-4 py-3 text-ink">{item.years_detected.length ? item.years_detected.join(", ") : "-"}</td>
+                    <td className="px-4 py-3 text-ink">
                       <div>{item.published_question_count ?? 0} publicadas</div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500">
+                      <div className="text-xs text-muted">
                         {item.candidate_count ?? 0} candidatas / yield {Math.round((item.yield_ratio ?? 0) * 100)}%
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                    <td className="px-4 py-3 text-ink">
                       <div>P {item.pipeline_counts.pending ?? 0} / R {item.pipeline_counts.processing ?? 0}</div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500">F {item.pipeline_counts.failed ?? 0} / D {item.pipeline_counts.done ?? 0}</div>
+                      <div className="text-xs text-muted">F {item.pipeline_counts.failed ?? 0} / D {item.pipeline_counts.done ?? 0}</div>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-400 dark:text-gray-500">{item.created_at ? formatRelativeTime(item.created_at) : "-"}</td>
+                    <td className="px-4 py-3 text-xs text-muted">{item.created_at ? formatRelativeTime(item.created_at) : "-"}</td>
                   </tr>
                 );
               })}

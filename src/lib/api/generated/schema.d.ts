@@ -6081,6 +6081,11 @@ export interface components {
              */
             default_feedback_reveal_policy: string;
             /**
+             * Confidence Timing
+             * @default post_session
+             */
+            confidence_timing: string;
+            /**
              * Has Chosen Feedback Default
              * @default false
              */
@@ -6122,6 +6127,8 @@ export interface components {
             default_feedback_timing?: string | null;
             /** Default Feedback Reveal Policy */
             default_feedback_reveal_policy?: string | null;
+            /** Confidence Timing */
+            confidence_timing?: string | null;
             /** Has Chosen Feedback Default */
             has_chosen_feedback_default?: boolean | null;
         };

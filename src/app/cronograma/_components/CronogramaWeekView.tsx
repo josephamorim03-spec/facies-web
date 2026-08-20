@@ -133,7 +133,7 @@ export function CronogramaWeekView({
   if (agendaQuery.isPending) {
     return (
       <div className="space-y-4" aria-label="Semana carregando">
-        <Skeleton className="mx-auto h-6 w-40 rounded-full" />
+        <Skeleton className="mx-auto h-6 w-40 rounded-control" />
         <Skeleton className="h-24 w-full rounded-control" />
         <Skeleton className="h-52 w-full rounded-control" />
       </div>
@@ -233,7 +233,7 @@ export function CronogramaWeekView({
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-muted sm:text-xs">
                     {shortWeekday(day.date)}
                   </span>
-                  <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${current ? "bg-ink text-paper" : "text-ink"}`}>
+                  <span className={`flex h-6 w-6 items-center justify-center rounded-control text-xs font-semibold ${current ? "bg-ink text-paper" : "text-ink"}`}>
                     {dayNumber(day.date)}
                   </span>
                   <span className="flex min-h-2 items-center justify-center gap-0.5" aria-hidden="true">
@@ -244,7 +244,7 @@ export function CronogramaWeekView({
                           key={item.occurrence_id}
                           data-week-day-dot="true"
                           data-area={dot.area}
-                          className={`h-1.5 w-1.5 rounded-full ${dot.className}`}
+                          className={`h-1.5 w-1.5 rounded-control ${dot.className}`}
                         />
                       );
                     })}
@@ -276,7 +276,7 @@ export function CronogramaWeekView({
                   {formatWeekday(selectedDay.date)}
                 </h2>
                 {selectedDay.is_today ? (
-                  <span className="rounded-full border border-primary bg-primary/5 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary">
+                  <span className="rounded-control border border-primary bg-primary/5 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary">
                     Hoje
                   </span>
                 ) : null}
@@ -297,7 +297,11 @@ export function CronogramaWeekView({
               ["Atividades", `${selectedDay.completed_items}/${selectedDay.total_items}`],
               ["Tempo", selectedDay.planned_minutes > 0 ? `${selectedDay.planned_minutes} min` : "—"],
               ["Questões", selectedDay.planned_questions > 0 ? String(selectedDay.planned_questions) : "—"],
-              ["Recomendação", selectedDay.recommended_questions === null ? "—" : String(selectedDay.recommended_questions)],
+              // `== null` e nao `=== null`: o contrato declara `number | null`,
+              // mas o campo chega AUSENTE quando a projecao do dia nao calcula
+              // recomendacao — e `String(undefined)` pintava o texto "undefined"
+              // na tela, ao lado de vizinhos que mostravam "—" corretamente.
+              ["Recomendação", selectedDay.recommended_questions == null ? "—" : String(selectedDay.recommended_questions)],
             ].map(([label, value]) => (
               <div key={label} className="bg-paper px-3 py-2.5">
                 <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted">{label}</dt>

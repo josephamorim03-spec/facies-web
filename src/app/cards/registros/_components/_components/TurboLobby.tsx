@@ -55,7 +55,7 @@ export function TurboLobby({
       {/* Button — absolutely centered in the full container */}
       <div className="flex flex-1 flex-col justify-center gap-5 py-6">
         {effectiveAvailableCount <= 0 ? (
-          <div className="rounded-lg border border-edge bg-surface p-5 text-center shadow-sm">
+          <div className="rounded-surface border border-edge bg-surface p-5 text-center shadow-sm">
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-widest text-muted">Tudo em dia</p>
               <p className="text-2xl font-serif text-ink">Nenhum card para revisar agora.</p>
@@ -81,7 +81,7 @@ export function TurboLobby({
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
-              <div className="rounded-lg border border-edge bg-surface p-3 shadow-sm">
+              <div className="rounded-surface border border-edge bg-surface p-3 shadow-sm">
                 <p className="text-[10px] uppercase tracking-widest text-muted">Foco de agora</p>
                 <div className="mt-2 space-y-1.5">
                   {topReasons.length > 0 ? topReasons.map((reason) => (
@@ -94,7 +94,7 @@ export function TurboLobby({
                   )}
                 </div>
               </div>
-              <div className="rounded-lg border border-edge bg-surface p-3 shadow-sm">
+              <div className="rounded-surface border border-edge bg-surface p-3 shadow-sm">
                 <p className="text-[10px] uppercase tracking-widest text-muted">Distribuição por área</p>
                 <div className="mt-2 space-y-1.5">
                   {topAreas.length > 0 ? topAreas.map((item) => {
@@ -102,7 +102,7 @@ export function TurboLobby({
                     return (
                       <div key={item.area} className="flex items-center justify-between gap-3 text-sm">
                         <div className="flex items-center gap-1.5">
-                          <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: areaTone }} />
+                          <span className="inline-block w-2 h-2 rounded-control shrink-0" style={{ backgroundColor: areaTone }} />
                           <span className="font-semibold" style={{ color: areaTone }}>{item.area}</span>
                         </div>
                         <span className="text-xs tabular-nums text-muted">
@@ -125,10 +125,10 @@ export function TurboLobby({
                   {previewCards.map((card) => {
                     const cardAreaColor = AREA_COLORS[card.area as Area] ?? "#888";
                     return (
-                      <div key={card.note_id} className="rounded-lg border border-edge border-l-4 bg-surface px-3 py-2 text-sm shadow-sm" style={{ borderLeftColor: cardAreaColor }}>
+                      <div key={card.note_id} className="rounded-surface border border-edge border-l-4 bg-surface px-3 py-2 text-sm shadow-sm" style={{ borderLeftColor: cardAreaColor }}>
                         <div className="mb-1 flex items-center gap-1.5">
                           <span className="text-[9px] font-semibold leading-none" style={{ color: cardAreaColor }}>{card.area}</span>
-                          <span className="rounded-full border border-edge px-1.5 py-0.5 text-[9px] leading-none text-muted">{card.context.label}</span>
+                          <span className="rounded-control border border-edge px-1.5 py-0.5 text-[9px] leading-none text-muted">{card.context.label}</span>
                         </div>
                         <p className="line-clamp-1 text-ink">{card.insight_question}</p>
                       </div>

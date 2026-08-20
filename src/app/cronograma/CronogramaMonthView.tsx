@@ -476,7 +476,7 @@ export default function CronogramaMonthView({
                 autoFocus
               />
               {searchSuggestions.length > 0 && !searchQuery ? (
-                <ul className="absolute left-0 right-0 z-30 max-h-48 overflow-y-auto rounded-b-md border border-t-0 border-edge bg-paper shadow-sm">
+                <ul className="absolute left-0 right-0 z-30 max-h-48 overflow-y-auto rounded-b-control border border-t-0 border-edge bg-paper shadow-sm">
                   {searchSuggestions.map((theme) => (
                     <li key={theme}>
                       <button
@@ -696,7 +696,7 @@ export default function CronogramaMonthView({
             role="dialog"
             aria-modal="true"
             aria-label="Selecionar mês e ano"
-            className="w-full rounded-t-2xl border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-md md:rounded-2xl"
+            className="w-full rounded-t-surface border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-md md:rounded-surface"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-3">

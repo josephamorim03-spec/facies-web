@@ -40,8 +40,8 @@ export function ForgotPasswordForm({
         onChange={(event) => setForgotEmail(event.target.value)}
         onKeyDown={(event) => event.key === "Enter" && onForgot()}
       />
-      {forgotError && <p className="text-sm text-red-600">{forgotError}</p>}
-      {forgotSuccess && <p className="text-sm text-emerald-700">{forgotSuccess}</p>}
+      {forgotError && <p className="text-sm text-danger">{forgotError}</p>}
+      {forgotSuccess && <p className="text-sm text-success">{forgotSuccess}</p>}
       <Button variant="primary" size="md" loading={forgotBusy} onClick={onForgot} className="w-full">
         Enviar link
       </Button>

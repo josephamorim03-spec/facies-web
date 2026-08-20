@@ -71,7 +71,7 @@ export function CadernoNoteList({
           {notes.map((note) => (
             <li
               key={note.note_id}
-              className="rounded-xl border border-edge p-3 space-y-1"
+              className="rounded-surface border border-edge p-3 space-y-1"
               style={{ borderLeftWidth: "3px", borderLeftColor: AREA_COLORS[note.area as Area] ?? "#ccc" }}
             >
               {editingNote?.note_id === note.note_id ? (
@@ -87,7 +87,7 @@ export function CadernoNoteList({
                     <p className="text-sm">{note.insight_question}</p>
                     <div className="flex items-center gap-1 shrink-0">
                       <span
-                        className="text-xs font-semibold px-1 py-0.5 rounded-sm text-white"
+                        className="text-xs font-semibold px-1 py-0.5 rounded-control text-white"
                         style={{ backgroundColor: weightBadgeColor(note.weight) }}
                       >
                         {note.weight}
@@ -104,7 +104,7 @@ export function CadernoNoteList({
                         type="button"
                         onClick={() => onDeleteNote(note.note_id)}
                         disabled={deletingNoteId === note.note_id}
-                        className="text-xs text-red-600 underline hover:text-red-700 px-1"
+                        className="text-xs text-danger underline hover:text-danger px-1"
                         title="Apagar"
                       >
                         {deletingNoteId === note.note_id ? "..." : "Apagar"}

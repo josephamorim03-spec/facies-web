@@ -31,12 +31,12 @@ function SummaryItem({ item }: { item: DayActivitySummaryItem }) {
   const area = item.area ? resolveDisplayArea(item.area, item.title, null) : null;
   const content = (
     <div className="flex min-w-0 items-center gap-3 py-2.5">
-      {area ? <AreaDot area={area} size="md" /> : <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted" aria-hidden="true" />}
+      {area ? <AreaDot area={area} size="md" /> : <span className="h-2.5 w-2.5 shrink-0 rounded-control bg-muted" aria-hidden="true" />}
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-2">
           <p className="truncate text-sm font-semibold text-ink">{item.title}</p>
           {item.isNext ? (
-            <span className="shrink-0 rounded-full border border-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+            <span className="shrink-0 rounded-control border border-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary">
               Proxima
             </span>
           ) : null}
@@ -80,16 +80,16 @@ export function TodayDaySummarySkeleton() {
         <Skeleton className="h-7 w-24 rounded-control" />
       </div>
       <div className="mt-4 space-y-3">
-        <Skeleton className="h-2 w-full rounded-full" />
+        <Skeleton className="h-2 w-full rounded-control" />
         <div className="flex gap-2">
-          <Skeleton className="h-6 w-20 rounded-full" />
-          <Skeleton className="h-6 w-24 rounded-full" />
-          <Skeleton className="h-6 w-16 rounded-full" />
+          <Skeleton className="h-6 w-20 rounded-control" />
+          <Skeleton className="h-6 w-24 rounded-control" />
+          <Skeleton className="h-6 w-16 rounded-control" />
         </div>
         <div className="divide-y divide-edge border-y border-edge">
           {Array.from({ length: 3 }).map((_, index) => (
             <div key={index} className="flex items-center gap-3 py-3">
-              <Skeleton className="h-2.5 w-2.5 rounded-full" />
+              <Skeleton className="h-2.5 w-2.5 rounded-control" />
               <div className="min-w-0 flex-1 space-y-1.5">
                 <Skeleton className="h-3 w-3/5 rounded-control" />
                 <Skeleton className="h-2.5 w-32 rounded-control" />
@@ -171,30 +171,30 @@ export function TodayDaySummarySection({
       </div>
 
       <div className="mt-4">
-        <div className="h-2 overflow-hidden rounded-full bg-surfaceMuted" role="progressbar" aria-label="Progresso das atividades de hoje" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPct}>
-          <div className="h-full rounded-full bg-primary" style={{ width: `${progressPct}%` }} />
+        <div className="h-2 overflow-hidden rounded-control bg-surfaceMuted" role="progressbar" aria-label="Progresso das atividades de hoje" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPct}>
+          <div className="h-full rounded-control bg-primary" style={{ width: `${progressPct}%` }} />
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {allDone ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-success/40 px-2 py-1 text-xs font-semibold text-success">
+            <span className="inline-flex items-center gap-1.5 rounded-control border border-success/40 px-2 py-1 text-xs font-semibold text-success">
               <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
               Tudo concluido
             </span>
           ) : null}
           {summary.inProgress > 0 ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/50 px-2 py-1 text-xs font-semibold text-primary">
+            <span className="inline-flex items-center gap-1.5 rounded-control border border-primary/50 px-2 py-1 text-xs font-semibold text-primary">
               <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
               {summary.inProgress} em andamento
             </span>
           ) : null}
           {summary.overdue > 0 ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/50 px-2 py-1 text-xs font-semibold text-warning">
+            <span className="inline-flex items-center gap-1.5 rounded-control border border-warning/50 px-2 py-1 text-xs font-semibold text-warning">
               <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
               {summary.overdue} atrasada{summary.overdue === 1 ? "" : "s"}
             </span>
           ) : null}
           {summary.categories.filter((category) => category.key !== "session" || summary.inProgress === 0).map((category) => (
-            <span key={category.key} className="rounded-full border border-edge px-2 py-1 text-xs font-semibold text-muted">
+            <span key={category.key} className="rounded-control border border-edge px-2 py-1 text-xs font-semibold text-muted">
               {category.label}: {category.count}
             </span>
           ))}

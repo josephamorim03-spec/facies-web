@@ -114,7 +114,7 @@ export function SignupForm({
       />
 
       {signupPasswordsMismatch && (
-        <p className="text-sm text-red-600">Senhas incompatíveis, digite novamente</p>
+        <p className="text-sm text-danger">Senhas incompatíveis, digite novamente</p>
       )}
 
       <div className="flex items-center justify-center gap-2 text-sm text-ink">
@@ -145,10 +145,10 @@ export function SignupForm({
           />
         </div>
       ) : (
-        <p className="text-sm text-red-600">Cadastro indisponível no momento.</p>
+        <p className="text-sm text-danger">Cadastro indisponível no momento.</p>
       )}
 
-      {signupError && <p className="text-sm text-red-600">{signupError}</p>}
+      {signupError && <p className="text-sm text-danger">{signupError}</p>}
       <Button variant="primary" size="md" loading={signupBusy} disabled={!signupCanSubmit} onClick={onSignup} className="w-full">
         Criar conta
       </Button>

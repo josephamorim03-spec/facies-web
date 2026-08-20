@@ -105,6 +105,11 @@ export function MobileTabBar() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
+                // Superficie propria: distingue o filho da aba-pai em qualquer
+                // seletor, sem depender de aninhamento no DOM.
+                data-nav-surface="subrow-item"
+                data-nav-item-href={item.href}
+                data-nav-active={active ? "true" : "false"}
                 className={[
                   "flex min-h-10 flex-1 items-center justify-center border px-3 text-[10px] font-semibold uppercase tracking-[0.1em]",
                   active
@@ -133,6 +138,13 @@ export function MobileTabBar() {
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
+              // A superficie fica no ITEM, e nao so no `<nav>` que os envolve:
+              // um seletor de "aba ativa" precisa casar superficie e estado no
+              // mesmo elemento. Com a marca so no container,
+              // `[data-nav-surface='tabbar'][data-nav-active='true']` nunca
+              // casava — e o teste que existe para provar que uma rota filha
+              // acende a aba do pai passava a medir zero.
+              data-nav-surface="tabbar-item"
               data-nav-item-href={item.href}
               data-nav-active={active ? "true" : "false"}
               className={[

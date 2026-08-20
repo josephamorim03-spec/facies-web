@@ -27,7 +27,7 @@ export function PostExamTabs({ tabs, activeTab, onSelect }: PostExamTabsProps) {
           >
             {tab.label}
             {tab.count !== undefined && (
-              <span className="rounded-full bg-surfaceMuted px-1.5 py-0.5 text-xs">
+              <span className="rounded-control bg-surfaceMuted px-1.5 py-0.5 text-xs">
                 {tab.count}
               </span>
             )}

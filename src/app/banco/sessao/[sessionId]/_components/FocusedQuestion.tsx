@@ -284,8 +284,8 @@ function highlightsForTarget(
 
 function highlightClass(kind: QuestionTextHighlightKind) {
   return kind === "pegadinha"
-    ? "rounded-sm border-b border-warning/60 bg-[var(--amber-tint)] px-0.5"
-    : "rounded-sm border-b border-ink/40 bg-surfaceMuted px-0.5";
+    ? "rounded-control border-b border-warning/60 bg-[var(--amber-tint)] px-0.5"
+    : "rounded-control border-b border-ink/40 bg-surfaceMuted px-0.5";
 }
 
 function renderHighlightedText(
@@ -748,13 +748,13 @@ export default function FocusedQuestion({
               )}
               <span className="shrink-0 text-xs tabular-nums text-muted">{displayPosition}/{total}</span>
             </div>
-            <div className="mt-1 h-1 overflow-hidden rounded-full bg-surfaceMuted" aria-hidden="true">
-              <div className="h-full rounded-full bg-ink transition-all" style={{ width: `${progress}%` }} />
+            <div className="mt-1 h-1 overflow-hidden rounded-control bg-surfaceMuted" aria-hidden="true">
+              <div className="h-full rounded-control bg-ink transition-all" style={{ width: `${progress}%` }} />
             </div>
           </div>
           <div className="flex items-center gap-1.5">
             {isTrainingFlow ? (
-              <div className="inline-flex rounded-lg border border-edge bg-surface p-0.5">
+              <div className="inline-flex rounded-surface border border-edge bg-surface p-0.5">
                 {(["learning", "exam"] as const).map((mode) => (
                   <button
                     key={mode}
@@ -762,7 +762,7 @@ export default function FocusedQuestion({
                     onClick={() => updatePrefs({ presentationMode: mode })}
                     aria-pressed={presentationMode === mode}
                     className={cx(
-                      "rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors",
+                      "rounded-control px-2.5 py-1.5 text-xs font-semibold transition-colors",
                       presentationMode === mode ? "bg-ink text-paper" : "text-muted hover:text-ink",
                     )}
                   >
@@ -771,22 +771,22 @@ export default function FocusedQuestion({
                 ))}
               </div>
             ) : (
-              <span className="rounded-lg border border-edge bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink">
+              <span className="rounded-surface border border-edge bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink">
                 {sessionKindLabel}
               </span>
             )}
             {prefs.timerVisible && (
-              <span className="rounded-lg border border-edge px-2.5 py-1.5 font-mono text-sm tabular-nums text-ink">
+              <span className="rounded-surface border border-edge px-2.5 py-1.5 font-mono text-sm tabular-nums text-ink">
                 {formatClock(elapsedSeconds)}
               </span>
             )}
-            <button type="button" onClick={onOpenMap} className="rounded-lg border border-edge p-2 text-muted hover:text-ink" title="Mapa" aria-label="Mapa">
+            <button type="button" onClick={onOpenMap} className="rounded-surface border border-edge p-2 text-muted hover:text-ink" title="Mapa" aria-label="Mapa">
               <IconGrid />
             </button>
             <button
               type="button"
               onClick={() => toggleFocusMode(!focusActive)}
-              className={cx("rounded-lg border p-2 hover:text-ink", focusActive ? "border-ink text-ink" : "border-edge text-muted")}
+              className={cx("rounded-surface border p-2 hover:text-ink", focusActive ? "border-ink text-ink" : "border-edge text-muted")}
               title={focusActive ? "Sair do foco" : "Modo foco"}
               aria-label={focusActive ? "Sair do foco" : "Modo foco"}
               aria-pressed={focusActive}
@@ -799,7 +799,7 @@ export default function FocusedQuestion({
                 lastOverlayTriggerRef.current = event.currentTarget;
                 setSettingsOpen((open) => !open);
               }}
-              className="rounded-lg border border-edge p-2 text-muted hover:text-ink"
+              className="rounded-surface border border-edge p-2 text-muted hover:text-ink"
               title="Preferencias"
               aria-label="Preferencias"
               aria-expanded={settingsOpen}
@@ -826,12 +826,12 @@ export default function FocusedQuestion({
           window.setTimeout(captureTextSelection, 80);
         }}
       >
-        <section className={cx("rounded-lg bg-surface p-4 md:p-5", focusActive ? "border border-transparent" : "border border-edge")}>
+        <section className={cx("rounded-surface bg-surface p-4 md:p-5", focusActive ? "border border-transparent" : "border border-edge")}>
           {showStemMeta && (
             <div className={cx("flex flex-wrap items-center gap-3", prefs.sourceVisible ? "justify-between" : "justify-end")}>
               {prefs.sourceVisible && <p className="text-xs text-muted">{formatSourceLabel(item.source)}</p>}
               {item.selected_option && (
-                <span className="rounded-full border border-edge bg-paper px-2.5 py-1 text-xs font-semibold text-muted">
+                <span className="rounded-control border border-edge bg-paper px-2.5 py-1 text-xs font-semibold text-muted">
                   Resposta {item.selected_option}
                 </span>
               )}
@@ -862,7 +862,7 @@ export default function FocusedQuestion({
               <div
                 key={option}
                 className={cx(
-                  "flex items-stretch overflow-hidden rounded-lg border transition-colors",
+                  "flex items-stretch overflow-hidden rounded-surface border transition-colors",
                   fontScale.alternativeClass,
                   isCorrect
                     ? "border-success bg-surface text-success"
@@ -885,7 +885,7 @@ export default function FocusedQuestion({
                   className="flex min-w-0 flex-1 items-start gap-4 px-4 py-4 text-left disabled:cursor-not-allowed"
                 >
                   <span className={cx(
-                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-bold",
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-control border text-xs font-bold",
                     selected || isCorrect ? "border-current bg-paper" : "border-edge bg-paper text-ink",
                   )}>
                     {option}
@@ -901,7 +901,7 @@ export default function FocusedQuestion({
                     {renderHighlightedText(item.alternatives[option], highlightsForTarget(item, "alternative", option), openHighlightToolbar)}
                   </span>
                   {(isCorrect || isWrong) && (
-                    <span className="hidden shrink-0 rounded-full border border-current px-2 py-0.5 text-[10px] font-semibold sm:inline">
+                    <span className="hidden shrink-0 rounded-control border border-current px-2 py-0.5 text-[10px] font-semibold sm:inline">
                       {isCorrect ? "Gabarito" : "Sua escolha"}
                     </span>
                   )}
@@ -928,7 +928,7 @@ export default function FocusedQuestion({
         </section>
 
         {item.answered && presentationMode === "exam" && canUseLearningFeedback && (
-          <section className="mt-5 rounded-lg border border-edge bg-surface px-4 py-3 text-sm text-muted">
+          <section className="mt-5 rounded-surface border border-edge bg-surface px-4 py-3 text-sm text-muted">
             Feedback oculto no modo Prova.
           </section>
         )}
@@ -946,7 +946,7 @@ export default function FocusedQuestion({
         )}
 
         {canUsePostAnswerActions && (
-          <section className="mt-5 rounded-lg border border-edge bg-surface p-4">
+          <section className="mt-5 rounded-surface border border-edge bg-surface p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className={cx("text-xs font-semibold uppercase tracking-[0.14em]", item.is_correct ? "text-success" : "text-danger")}>
@@ -956,13 +956,13 @@ export default function FocusedQuestion({
                   {item.is_correct ? "Caminho validado" : "Erro capturado"}
                 </h2>
               </div>
-              <div className="rounded-lg border border-edge bg-paper px-3 py-2 text-center">
+              <div className="rounded-surface border border-edge bg-paper px-3 py-2 text-center">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Gabarito</p>
                 <p className="text-2xl font-bold text-ink">{item.correct_answer}</p>
               </div>
             </div>
             <div className={cx(
-              "mt-4 flex flex-wrap items-center gap-2 rounded-lg border bg-paper px-3 py-2",
+              "mt-4 flex flex-wrap items-center gap-2 rounded-surface border bg-paper px-3 py-2",
               hasPostAnswerReflection ? "border-edge" : "border-ink",
             )}>
               <span className="text-sm font-semibold text-ink">Como foi?</span>
@@ -974,7 +974,7 @@ export default function FocusedQuestion({
                   onClick={() => onReflect?.(reflection)}
                   aria-pressed={item.post_answer_reflection === reflection}
                   className={cx(
-                    "rounded-lg border font-semibold transition-colors disabled:opacity-50",
+                    "rounded-surface border font-semibold transition-colors disabled:opacity-50",
                     hasPostAnswerReflection ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm",
                     item.post_answer_reflection === reflection
                       ? "border-ink bg-ink text-paper"
@@ -1014,7 +1014,7 @@ export default function FocusedQuestion({
                   onClick={canNext ? onNext : onFinalize}
                   disabled={busy || (!canNext && finalized)}
                   className={cx(
-                    "rounded-lg border px-4 py-2 text-sm font-semibold disabled:opacity-50",
+                    "rounded-surface border px-4 py-2 text-sm font-semibold disabled:opacity-50",
                     hasPostAnswerReflection ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:text-ink",
                   )}
                 >
@@ -1027,7 +1027,7 @@ export default function FocusedQuestion({
                   onClick={toggleFavorite}
                   aria-pressed={localFavorite}
                   className={cx(
-                    "inline-flex items-center gap-1.5 rounded-lg border border-edge px-3 py-2 text-xs font-semibold hover:text-ink",
+                    "inline-flex items-center gap-1.5 rounded-surface border border-edge px-3 py-2 text-xs font-semibold hover:text-ink",
                     localFavorite ? "text-ink" : "text-muted",
                   )}
                 >
@@ -1039,7 +1039,7 @@ export default function FocusedQuestion({
                     type="button"
                     onClick={(event) => openWhy(event.currentTarget)}
                     className={cx(
-                      "rounded-lg border px-3 py-2 text-xs font-semibold hover:text-ink",
+                      "rounded-surface border px-3 py-2 text-xs font-semibold hover:text-ink",
                       emphasizeTrap ? "border-ink bg-paper text-ink" : "border-edge text-muted",
                     )}
                   >
@@ -1047,7 +1047,7 @@ export default function FocusedQuestion({
                   </button>
                 )}
                 {hasPostAnswerReflection && !hasDistractorDiagnosis && (
-                  <button type="button" onClick={(event) => openWhy(event.currentTarget)} className="rounded-lg border border-edge px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
+                  <button type="button" onClick={(event) => openWhy(event.currentTarget)} className="rounded-surface border border-edge px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
                     Por que esta?
                   </button>
                 )}
@@ -1056,7 +1056,7 @@ export default function FocusedQuestion({
                     type="button"
                     onClick={onQuickNote}
                     className={cx(
-                      "rounded-lg border px-3 py-2 text-xs font-semibold hover:text-ink",
+                      "rounded-surface border px-3 py-2 text-xs font-semibold hover:text-ink",
                       emphasizeQuickNote ? "border-ink bg-ink text-paper hover:text-paper" : "border-edge text-muted",
                     )}
                   >
@@ -1068,7 +1068,7 @@ export default function FocusedQuestion({
                     type="button"
                     onClick={() => setRuleComposerOpen((open) => !open)}
                     className={cx(
-                      "rounded-lg border border-edge px-3 py-2 text-xs font-semibold hover:text-ink",
+                      "rounded-surface border border-edge px-3 py-2 text-xs font-semibold hover:text-ink",
                       hasRuleComposerContent ? "text-ink" : "text-muted",
                     )}
                   >
@@ -1076,12 +1076,12 @@ export default function FocusedQuestion({
                   </button>
                 )}
                 {onShowHistory && (
-                  <button type="button" onClick={onShowHistory} className="rounded-lg border border-edge px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
+                  <button type="button" onClick={onShowHistory} className="rounded-surface border border-edge px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
                     Historico
                   </button>
                 )}
                 {!reportDone && (
-                  <button type="button" onClick={onToggleReport} className="rounded-lg border border-edge px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
+                  <button type="button" onClick={onToggleReport} className="rounded-surface border border-edge px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
                     Reportar
                   </button>
                 )}
@@ -1089,14 +1089,14 @@ export default function FocusedQuestion({
             </div>
 
             {item.needs_correction && ruleComposerOpen && (
-              <div className="mt-4 rounded-lg border border-edge bg-paper p-3">
+              <div className="mt-4 rounded-surface border border-edge bg-paper p-3">
                 {guidedReviewError && !guidedReview && (
                   <p className="mb-2 text-xs text-muted">Não foi possível carregar a revisão guiada. Você ainda pode salvar uma regra.</p>
                 )}
                 {guidedReview?.eligible && guidedReview.checkpoints.length > 0 && (
                   <div className="mb-3 space-y-2">
                     {guidedReview.checkpoints.map((checkpoint) => (
-                      <div key={checkpoint.checkpoint_key} className="rounded-lg border border-edge bg-surface p-3">
+                      <div key={checkpoint.checkpoint_key} className="rounded-surface border border-edge bg-surface p-3">
                         <p className="text-sm font-semibold text-ink">{checkpoint.prompt}</p>
                         {checkpoint.micro_question && <p className="mt-1 text-xs text-muted">{checkpoint.micro_question}</p>}
                         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -1106,7 +1106,7 @@ export default function FocusedQuestion({
                               type="button"
                               onClick={() => onGuidedResponseChange(checkpoint.checkpoint_key, value)}
                               className={cx(
-                                "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
+                                "rounded-surface border px-3 py-1.5 text-xs font-semibold transition",
                                 guidedResponses[checkpoint.checkpoint_key] === value
                                   ? "border-ink bg-ink text-paper"
                                   : "border-edge bg-paper text-muted hover:text-ink",
@@ -1138,7 +1138,7 @@ export default function FocusedQuestion({
                         type="button"
                         onClick={() => onCorrectionConfidenceChange(level)}
                         className={cx(
-                          "rounded-lg border px-3 py-1.5 text-xs font-semibold",
+                          "rounded-surface border px-3 py-1.5 text-xs font-semibold",
                           correctionConfidenceLevel === level ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:text-ink",
                         )}
                       >
@@ -1165,7 +1165,7 @@ export default function FocusedQuestion({
         {canUsePostAnswerActions && learningPackagePanel}
 
         {reportOpen && !reportDone && canShowLearning && item.answered && (
-          <section className="mt-5 rounded-lg border border-edge bg-surface p-3">
+          <section className="mt-5 rounded-surface border border-edge bg-surface p-3">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Qual o problema?</p>
             <div className="mb-2 flex flex-wrap gap-1.5">
               {REPORT_OPTIONS.map((type) => (
@@ -1189,7 +1189,7 @@ export default function FocusedQuestion({
               <button type="button" onClick={onSubmitReport} className="rounded-control border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                 Enviar
               </button>
-              <button type="button" onClick={onCancelReport} className="rounded-lg border border-edge px-3 py-1.5 text-xs text-muted hover:text-ink">
+              <button type="button" onClick={onCancelReport} className="rounded-surface border border-edge px-3 py-1.5 text-xs text-muted hover:text-ink">
                 Cancelar
               </button>
             </div>
@@ -1210,7 +1210,7 @@ export default function FocusedQuestion({
               onClick={onToggleDoubtful}
               aria-pressed={item.doubtful}
               className={cx(
-                "inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-semibold transition-colors",
+                "inline-flex items-center gap-1.5 rounded-surface border px-4 py-2 text-sm font-semibold transition-colors",
                 item.doubtful ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:text-ink",
               )}
             >
@@ -1222,7 +1222,7 @@ export default function FocusedQuestion({
                 type="button"
                 disabled={!canPrev}
                 onClick={onPrev}
-                className="rounded-lg border border-edge px-4 py-2 text-sm font-semibold text-muted hover:text-ink disabled:opacity-40"
+                className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-muted hover:text-ink disabled:opacity-40"
               >
                 Anterior
               </button>
@@ -1239,7 +1239,7 @@ export default function FocusedQuestion({
                   type="button"
                   disabled={busy}
                   onClick={onFixar}
-                  className="rounded-lg border border-edge px-4 py-2 text-sm font-semibold text-muted hover:text-ink disabled:opacity-50"
+                  className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-muted hover:text-ink disabled:opacity-50"
                 >
                   Fixar erros ({fixacaoCount})
                 </button>
@@ -1249,7 +1249,7 @@ export default function FocusedQuestion({
               type="button"
               onClick={onFinalize}
               disabled={busy}
-              className="rounded-lg border border-edge px-4 py-2 text-sm font-semibold text-muted hover:text-ink disabled:opacity-50"
+              className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-muted hover:text-ink disabled:opacity-50"
             >
               {finalizeLabel ?? "Finalizar"}
             </button>
@@ -1268,7 +1268,7 @@ export default function FocusedQuestion({
             }}
           />
           <div
-            className="fixed z-50 w-auto max-w-none rounded-lg border border-edge bg-paper p-2 shadow-xl md:max-w-sm md:-translate-x-1/2 md:-translate-y-full"
+            className="fixed z-50 w-auto max-w-none rounded-surface border border-edge bg-paper p-2 shadow-xl md:max-w-sm md:-translate-x-1/2 md:-translate-y-full"
             style={highlightToolbarStyle}
             role="toolbar"
             aria-label="Grifar texto"
@@ -1282,7 +1282,7 @@ export default function FocusedQuestion({
                 onClick={() => void applyHighlight("ponto_chave")}
                 aria-pressed={highlightSelection.kind === "ponto_chave"}
                 className={cx(
-                  "rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50",
+                  "rounded-surface border px-3 py-1.5 text-xs font-semibold disabled:opacity-50",
                   canUsePostAnswerActions && item.post_answer_reflection === "correct_guess"
                     ? "border-ink bg-ink text-paper"
                     : "border-edge text-muted hover:text-ink",
@@ -1296,7 +1296,7 @@ export default function FocusedQuestion({
                 onClick={() => void applyHighlight("pegadinha")}
                 aria-pressed={highlightSelection.kind === "pegadinha"}
                 className={cx(
-                  "rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50",
+                  "rounded-surface border px-3 py-1.5 text-xs font-semibold disabled:opacity-50",
                   canUsePostAnswerActions && item.post_answer_reflection === "wrong_distraction"
                     ? "border-ink bg-ink text-paper"
                     : "border-edge text-muted hover:text-ink",
@@ -1308,7 +1308,7 @@ export default function FocusedQuestion({
                 type="button"
                 disabled={highlightBusy}
                 onClick={() => void clearSelectedHighlight()}
-                className="rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink disabled:opacity-50"
+                className="rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink disabled:opacity-50"
               >
                 Limpar
               </button>
@@ -1326,15 +1326,15 @@ export default function FocusedQuestion({
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Preferencias</p>
                 <h2 className="mt-1 font-serif text-xl font-semibold text-ink">Resolver sem ruido</h2>
               </div>
-              <button type="button" onClick={closeSettings} className="rounded-lg border border-edge px-2 py-1 text-xs text-muted hover:text-ink">
+              <button type="button" onClick={closeSettings} className="rounded-surface border border-edge px-2 py-1 text-xs text-muted hover:text-ink">
                 Fechar
               </button>
             </div>
             <div className="mt-4 space-y-3 text-sm">
               {isTrainingFlow && (
-                <div className="rounded-lg border border-edge bg-surface p-3">
+                <div className="rounded-surface border border-edge bg-surface p-3">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Modo visual</p>
-                  <div className="inline-flex rounded-lg border border-edge bg-paper p-0.5">
+                  <div className="inline-flex rounded-surface border border-edge bg-paper p-0.5">
                     {(["learning", "exam"] as const).map((mode) => (
                       <button
                         key={mode}
@@ -1342,7 +1342,7 @@ export default function FocusedQuestion({
                         onClick={() => updatePrefs({ presentationMode: mode })}
                         aria-pressed={presentationMode === mode}
                         className={cx(
-                          "rounded-md px-3 py-1.5 text-xs font-semibold",
+                          "rounded-control px-3 py-1.5 text-xs font-semibold",
                           presentationMode === mode ? "bg-ink text-paper" : "text-muted hover:text-ink",
                         )}
                       >
@@ -1353,7 +1353,7 @@ export default function FocusedQuestion({
                 </div>
               )}
               {!isTrainingFlow && feedbackRevealPolicy && onFeedbackRevealPolicyChange && (
-                <div className="rounded-lg border border-edge bg-surface p-3">
+                <div className="rounded-surface border border-edge bg-surface p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
                     Feedback ao finalizar
                   </p>
@@ -1372,7 +1372,7 @@ export default function FocusedQuestion({
                         onClick={() => void onFeedbackRevealPolicyChange(policy)}
                         aria-pressed={feedbackRevealPolicy === policy}
                         className={cx(
-                          "rounded-lg border px-3 py-2 text-left text-sm font-semibold disabled:opacity-50",
+                          "rounded-surface border px-3 py-2 text-left text-sm font-semibold disabled:opacity-50",
                           feedbackRevealPolicy === policy
                             ? "border-ink bg-ink text-paper"
                             : "border-edge bg-paper text-muted hover:text-ink",
@@ -1394,7 +1394,7 @@ export default function FocusedQuestion({
                   )}
                 </div>
               )}
-              <div className="rounded-lg border border-edge bg-surface p-3">
+              <div className="rounded-surface border border-edge bg-surface p-3">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Fonte</p>
                 <FontScaleControl
                   increase={fontScale.increase}
@@ -1403,19 +1403,19 @@ export default function FocusedQuestion({
                   canDecrease={fontScale.canDecrease}
                 />
               </div>
-              <label className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-surface px-3 py-2">
+              <label className="flex items-center justify-between gap-3 rounded-surface border border-edge bg-surface px-3 py-2">
                 <span>Timer</span>
                 <input type="checkbox" checked={prefs.timerVisible} onChange={(e) => updatePrefs({ timerVisible: e.target.checked })} className="h-4 w-4 accent-ink" />
               </label>
-              <label className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-surface px-3 py-2">
+              <label className="flex items-center justify-between gap-3 rounded-surface border border-edge bg-surface px-3 py-2">
                 <span>Fonte da questão</span>
                 <input type="checkbox" checked={prefs.sourceVisible} onChange={(e) => updatePrefs({ sourceVisible: e.target.checked })} className="h-4 w-4 accent-ink" />
               </label>
-              <label className="flex items-center justify-between gap-3 rounded-lg border border-edge bg-surface px-3 py-2">
+              <label className="flex items-center justify-between gap-3 rounded-surface border border-edge bg-surface px-3 py-2">
                 <span>Revelar ao responder</span>
                 <input type="checkbox" checked={prefs.autoReveal} onChange={(e) => updatePrefs({ autoReveal: e.target.checked })} className="h-4 w-4 accent-ink" />
               </label>
-              <div className="rounded-lg border border-edge bg-surface p-3">
+              <div className="rounded-surface border border-edge bg-surface p-3">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Atalhos</p>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted">
                   <span>A-E / 1-5</span><span>Responder</span>
@@ -1429,7 +1429,7 @@ export default function FocusedQuestion({
               <button
                 type="button"
                 onClick={() => updatePrefs({ presentationMode: defaultPresentationMode, timerVisible: true, sourceVisible: false, autoReveal: false })}
-                className="w-full rounded-lg border border-edge bg-surface px-3 py-2 text-left text-muted hover:text-ink"
+                className="w-full rounded-surface border border-edge bg-surface px-3 py-2 text-left text-muted hover:text-ink"
               >
                 Restaurar padrão
               </button>
@@ -1447,35 +1447,35 @@ export default function FocusedQuestion({
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Contexto</p>
                 <h2 className="mt-1 font-serif text-xl font-semibold text-ink">Por que esta questão?</h2>
               </div>
-              <button type="button" onClick={closeWhy} className="rounded-lg border border-edge px-2 py-1 text-xs text-muted hover:text-ink">
+              <button type="button" onClick={closeWhy} className="rounded-surface border border-edge px-2 py-1 text-xs text-muted hover:text-ink">
                 Fechar
               </button>
             </div>
             <div className="mt-4 space-y-3 text-sm">
               {primaryNode?.node_name && (
-                <div className="rounded-lg border border-edge bg-surface p-3">
+                <div className="rounded-surface border border-edge bg-surface p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Tema</p>
                   <p className="mt-1 text-ink">{primaryNode.node_name}</p>
                 </div>
               )}
               {microLabel && (
-                <div className="rounded-lg border border-edge bg-surface p-3">
+                <div className="rounded-surface border border-edge bg-surface p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Microcompetencia</p>
                   <p className="mt-1 text-ink">{microLabel}</p>
                 </div>
               )}
               {difficultyLabel(item.difficulty_estimate) && (
-                <div className="rounded-lg border border-edge bg-surface p-3">
+                <div className="rounded-surface border border-edge bg-surface p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Dificuldade</p>
                   <p className="mt-1 text-ink">{difficultyLabel(item.difficulty_estimate)}</p>
                 </div>
               )}
               {reasonChips.length > 0 && (
-                <div className="rounded-lg border border-edge bg-surface p-3">
+                <div className="rounded-surface border border-edge bg-surface p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Selecao</p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {reasonChips.map((reason) => (
-                      <span key={reason} className="rounded-full border border-edge bg-paper px-2.5 py-1 text-xs text-muted">
+                      <span key={reason} className="rounded-control border border-edge bg-paper px-2.5 py-1 text-xs text-muted">
                         {reason}
                       </span>
                     ))}
@@ -1483,13 +1483,13 @@ export default function FocusedQuestion({
                 </div>
               )}
               {showFeedback && item.selected_option && item.distractor_diagnosis?.[item.selected_option] && (
-                <div className="rounded-lg border border-edge bg-surface p-3">
+                <div className="rounded-surface border border-edge bg-surface p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Armadilha</p>
                   <p className="mt-1 text-ink">{item.distractor_diagnosis[item.selected_option]}</p>
                 </div>
               )}
               {showFeedback && item.distractor_diagnosis && Object.keys(item.distractor_diagnosis).length > 0 && (
-                <div className="rounded-lg border border-edge bg-surface p-3">
+                <div className="rounded-surface border border-edge bg-surface p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Distratores</p>
                   <div className="mt-2 space-y-2">
                     {Object.entries(item.distractor_diagnosis).map(([letter, text]) => (
@@ -1499,7 +1499,7 @@ export default function FocusedQuestion({
                 </div>
               )}
               {onRequestAiCorrection && showFeedback && (
-                <button type="button" onClick={onRequestAiCorrection} className="w-full rounded-lg border border-edge px-3 py-2 text-sm font-semibold text-muted hover:text-ink">
+                <button type="button" onClick={onRequestAiCorrection} className="w-full rounded-surface border border-edge px-3 py-2 text-sm font-semibold text-muted hover:text-ink">
                   Solicitar leitura por IA
                 </button>
               )}

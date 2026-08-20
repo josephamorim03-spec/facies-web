@@ -183,7 +183,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
         {editableStudy?.import_session_id && (
           <p className="text-xs text-warning">Atenção: esta revisão possui uma correção salva que será perdida ao cancelar.</p>
         )}
-        {cancelErr && <p className="text-xs text-red-600">{cancelErr}</p>}
+        {cancelErr && <p className="text-xs text-danger">{cancelErr}</p>}
         <div className="flex gap-2">
           <Button type="button" variant="danger" size="sm" onClick={cancelRevision} loading={cancelingRevision}>
             {cancelingRevision ? "..." : "Confirmar"}
@@ -201,13 +201,13 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
       ? editableStudy.accuracy.toFixed(0)
       : accuracy !== null ? accuracy.toFixed(0) : null;
     return (
-      <div className="relative space-y-1 rounded-xl border border-edge bg-surface p-3 opacity-80">
-        <button type="button" onClick={() => setCancelConfirm(true)} className="absolute right-1.5 top-1.5 rounded-lg p-1 text-muted hover:bg-surfaceMuted hover:text-ink" title="Reabrir revisão">
+      <div className="relative space-y-1 rounded-surface border border-edge bg-surface p-3 opacity-80">
+        <button type="button" onClick={() => setCancelConfirm(true)} className="absolute right-1.5 top-1.5 rounded-surface p-1 text-muted hover:bg-surfaceMuted hover:text-ink" title="Reabrir revisão">
           <IconPencil className="w-3 h-3" />
         </button>
         <div className="flex items-center gap-2 pr-6">
           <div
-            className="shrink-0 w-2.5 h-2.5 rounded-full"
+            className="shrink-0 w-2.5 h-2.5 rounded-control"
             style={{ backgroundColor: AREA_COLORS[task.area] ?? "#ccc", opacity: 0.6 }}
           />
           <div className="flex-1 min-w-0">
@@ -254,15 +254,15 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
       <ReviewSignalChips task={task} className="pl-7" />
       <>
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-xl border border-edge bg-paper/70 px-2 py-2.5">
+            <div className="rounded-surface border border-edge bg-paper/70 px-2 py-2.5">
               <p className="text-[11px] leading-none text-muted">Acertos</p>
               <p className="mt-1 text-base font-semibold text-ink">{accuracy !== null ? `${accuracy.toFixed(0)}%` : "-"}</p>
             </div>
-            <div className="rounded-xl border border-edge bg-paper/70 px-2 py-2.5">
+            <div className="rounded-surface border border-edge bg-paper/70 px-2 py-2.5">
               <p className="text-[11px] leading-none text-muted">Revisão</p>
               <p className="mt-1 text-base font-semibold text-ink">#{revision}</p>
             </div>
-            <div className="rounded-xl border border-edge bg-paper/70 px-2 py-2.5">
+            <div className="rounded-surface border border-edge bg-paper/70 px-2 py-2.5">
               <p className="text-[11px] leading-none text-muted">Min. q.</p>
               <p className="mt-1 text-base font-semibold text-ink">{task.expected_questions}</p>
             </div>
@@ -270,7 +270,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
           <div className="flex gap-2">
             <Link
               href={studyReviewHref}
-              className="inline-flex flex-1 items-center justify-center rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-105"
+              className="inline-flex flex-1 items-center justify-center rounded-surface border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-105"
             >
               Estudar no banco
             </Link>
@@ -285,7 +285,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
             </Button>
           </div>
           {showReschedule && (
-            <div className="space-y-2 rounded-xl border border-edge bg-surface p-3">
+            <div className="space-y-2 rounded-surface border border-edge bg-surface p-3">
               {rescheduleControls === "auto_manual" && (
                 <div className="flex justify-center gap-1">
                   <Button type="button" variant={rescheduleMode === "auto" ? "primary" : "secondary"} size="xs" onClick={() => setRescheduleMode("auto")}>
@@ -343,14 +343,14 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
               {(rescheduleControls === "auto_manual" && rescheduleMode === "manual") && (
                 <div className="flex gap-2 items-center">
                   <input type="date" value={manualDueDate} onChange={(e) => setManualDueDate(e.target.value)}
-                    className="flex-1 rounded-xl border border-edge bg-paper px-2 py-1.5 text-xs" />
+                    className="flex-1 rounded-surface border border-edge bg-paper px-2 py-1.5 text-xs" />
                   <Button type="button" variant="secondary" size="sm" onClick={runManualReschedule} loading={manualSaving}>
                     {manualSaving ? "..." : "Confirmar"}
                   </Button>
                 </div>
               )}
-              {manualErr && <p className="text-xs text-red-600">{manualErr}</p>}
-              {rescheduleErr && <p className="text-xs text-red-600">{rescheduleErr}</p>}
+              {manualErr && <p className="text-xs text-danger">{manualErr}</p>}
+              {rescheduleErr && <p className="text-xs text-danger">{rescheduleErr}</p>}
               {rescheduleInfo && <p className="text-xs text-ink text-center leading-tight">{rescheduleInfo}</p>}
             </div>
           )}

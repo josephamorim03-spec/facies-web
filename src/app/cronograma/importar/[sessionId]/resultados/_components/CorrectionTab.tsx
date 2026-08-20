@@ -232,8 +232,8 @@ export function CorrectionTab(props: CorrectionTabProps) {
               <div className="grid grid-cols-6 gap-1 overflow-y-auto pr-1 py-px">
                 {filteredQuestions.map((question) => {
                   const visualClass = question.status === "correct"
-                    ? "border-green-700 bg-green-200 text-green-900"
-                    : "border-red-700 bg-red-200 text-red-900";
+                    ? "border-success bg-surfaceMuted text-success"
+                    : "border-danger bg-surfaceMuted text-danger";
                   return (
                     <button
                       key={question.question_number}
@@ -275,7 +275,7 @@ export function CorrectionTab(props: CorrectionTabProps) {
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-sm font-medium text-ink">Questão {question.question_number}</h2>
-                <span className={`shrink-0 text-xs px-2 py-0.5 border ${question.status === "correct" ? "border-green-700 bg-green-200 text-green-900" : "border-red-700 bg-red-200 text-red-900"}`}>
+                <span className={`shrink-0 text-xs px-2 py-0.5 border ${question.status === "correct" ? "border-success bg-surfaceMuted text-success" : "border-danger bg-surfaceMuted text-danger"}`}>
                   {question.status === "correct" ? "Certa" : "Errada"}
                 </span>
               </div>
@@ -330,11 +330,11 @@ export function CorrectionTab(props: CorrectionTabProps) {
 
                   let optionClass = "border-edge bg-paper text-ink";
                   if (question.status === "correct" && isMarked) {
-                    optionClass = "border-green-700 bg-green-200 text-green-950";
+                    optionClass = "border-success bg-surfaceMuted text-success";
                   } else if (question.status === "wrong" && isCorrect) {
-                    optionClass = "border-green-700 bg-green-200 text-green-950";
+                    optionClass = "border-success bg-surfaceMuted text-success";
                   } else if (question.status === "wrong" && isMarked) {
-                    optionClass = "border-red-700 bg-red-200 text-red-950";
+                    optionClass = "border-danger bg-surfaceMuted text-danger";
                   }
 
                   return (
@@ -362,8 +362,8 @@ export function CorrectionTab(props: CorrectionTabProps) {
                       </div>
                       {question.status === "wrong" && (
                         <div className="mt-1 text-xs">
-                          {isCorrect && <span className="text-green-800">(gabarito)</span>}
-                          {isMarked && !isCorrect && <span className="text-red-800">(sua resposta)</span>}
+                          {isCorrect && <span className="text-success">(gabarito)</span>}
+                          {isMarked && !isCorrect && <span className="text-danger">(sua resposta)</span>}
                           {!question.marked_option && isCorrect && <span className="text-ink ml-1">(você deixou em branco)</span>}
                         </div>
                       )}
@@ -390,7 +390,7 @@ export function CorrectionTab(props: CorrectionTabProps) {
 
               {progressiveResult && (progressiveResult.stage === "processing" || progressiveResult.stage === "analysis_ready") && (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span className={`text-xs px-2 py-0.5 border ${progressiveResult.stage === "analysis_ready" ? "border-sky-700 bg-sky-100 text-sky-900" : "border-amber-700 bg-amber-100 text-amber-900"}`}>
+                  <span className={`text-xs px-2 py-0.5 border ${progressiveResult.stage === "analysis_ready" ? "border-info bg-surfaceMuted text-info" : "border-warning bg-surfaceMuted text-warning"}`}>
                     {progressiveResult.stage === "analysis_ready" ? "Base pronta" : "Em análise"}
                   </span>
                   <button type="button" onClick={() => onViewAnalysis(qId)} className="text-xs underline text-ink">
@@ -401,7 +401,7 @@ export function CorrectionTab(props: CorrectionTabProps) {
 
               {resolvedResult?.status === "completed" && (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span className="text-xs px-2 py-0.5 border border-green-300 text-green-700">Analisada</span>
+                  <span className="text-xs px-2 py-0.5 border border-success text-success">Analisada</span>
                   <button type="button" onClick={() => onViewAnalysis(qId)} className="text-xs text-ink underline">
                     Ver análise
                   </button>
@@ -409,8 +409,8 @@ export function CorrectionTab(props: CorrectionTabProps) {
               )}
 
               {resolvedResult?.status === "failed" && (
-                <div className="border border-red-300 p-2 mt-2">
-                  <p className="text-xs text-red-700">
+                <div className="border border-danger p-2 mt-2">
+                  <p className="text-xs text-danger">
                     Falha na análise: {resolvedResult.error_message || "Erro desconhecido."}
                   </p>
                 </div>

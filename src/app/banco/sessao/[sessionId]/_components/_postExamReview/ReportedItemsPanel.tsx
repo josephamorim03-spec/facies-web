@@ -16,7 +16,7 @@ export function ReportedItemsPanel({
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-lg border border-warning/50 bg-[var(--amber-tint)] p-4 shadow-[var(--soft-shadow)]">
+    <section className="rounded-surface border border-warning/50 bg-[var(--amber-tint)] p-4 shadow-[var(--soft-shadow)]">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-warning">
         Questoes denunciadas
       </p>
@@ -24,7 +24,7 @@ export function ReportedItemsPanel({
         {items.map((item) => (
           <label
             key={item.question_id}
-            className="flex items-start justify-between gap-3 rounded-lg border border-warning/30 bg-surface px-3 py-2"
+            className="flex items-start justify-between gap-3 rounded-surface border border-warning/30 bg-surface px-3 py-2"
           >
             <span className="min-w-0">
               <span className="block text-sm font-semibold text-ink">

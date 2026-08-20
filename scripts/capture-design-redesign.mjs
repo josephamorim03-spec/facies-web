@@ -665,7 +665,10 @@ async function mockApi(page) {
           weekly_progress_pct: 62,
         },
         overdue: [],
-        days: [{ date: localDate, completed_items: 3, total_items: 8, overdue_items: 1, overloaded: false, items: [] }],
+        // `recommended_questions` entra explicitamente: sem ele o mock omitia o
+        // campo, a tela pintava o texto "undefined" e a captura registrava o
+        // defeito como se fosse o desenho normal da tela.
+        days: [{ date: localDate, completed_items: 3, total_items: 8, overdue_items: 1, overloaded: false, recommended_questions: 40, items: [] }],
         missing_sources: [],
       });
     }

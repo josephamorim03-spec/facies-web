@@ -259,11 +259,31 @@ test.describe("Navigation shell", () => {
     const sidebar = navSidebar(page);
     await expect(sidebar).toBeVisible();
     await expect(page.locator("[data-nav-surface='sidebar']").first()).toBeVisible();
+
+    // Este teste ficou intermitente (~1 em 4) DENTRO do smoke, e passa 6/6
+    // isolado. A diferenca nao e a fonte em si: e que ele e o primeiro teste do
+    // primeiro spec da fila, entao paga o servidor frio — primeira compilacao de
+    // rota, primeiro download de chunk, primeira carga da IBM Plex Mono. A
+    // captura saia com a fonte de fallback, cuja metrica e bem diferente da mono,
+    // e a diferenca estourava `maxDiffPixels` em texto que nao mudou.
+    //
+    // Recarrega uma vez para medir com tudo quente, e so entao espera a fonte.
+    // Afrouxar o limiar esconderia regressao de layout de verdade; esperar mais
+    // tempo no relogio nao sabe de fonte nenhuma.
+    await page.reload();
+    await expect(page.locator("[data-nav-surface='sidebar']").first()).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(500);
 
     await expect(page).toHaveScreenshot("sidebar-layout.png", {
       maxDiffPixels: 100,
       animations: "disabled",
+      // A saudacao muda com a HORA ("Bom dia" / "Boa tarde" / "Boa noite"), e a
+      // largura das tres palavras e diferente. Sem mascara, esta baseline
+      // quebrava duas vezes por dia — para qualquer pessoa, desde sempre — e a
+      // falha lia como regressao de layout, que e exatamente o que o teste
+      // deveria detectar. O contrato aqui e a GEOMETRIA do shell, nao o relogio.
+      mask: [page.getByRole("heading", { name: /Bom dia|Boa tarde|Boa noite/ })],
     });
   });
 
@@ -287,7 +307,7 @@ test.describe("Navigation shell", () => {
     { path: "/hoje", activeHref: "/hoje" },
     { path: "/calendario", activeHref: "/hoje" }, // 308 -> /cronograma, filho de Inicio
     { path: "/caderno", activeHref: "/cards" }, // 308 -> /cards/registros
-    { path: "/revisoes", activeHref: "/evolucao" }, // 308 -> /evolucao
+    { path: "/revisoes", activeHref: "/banco", landsOn: "/banco/historico" }, // o historico saiu de Evolucao
     { path: "/dados-e-relatorios/graficos", activeHref: "/evolucao" }, // 308 -> /evolucao
     { path: "/estatisticas/relatorio", activeHref: "/evolucao" }, // rota real, intent profile
     { path: "/banco/historico", activeHref: "/banco" }, // filho novo do Banco
@@ -328,15 +348,20 @@ test.describe("Navigation shell", () => {
     });
   }
 
-  test("keeps long sidebar labels inside their container", async ({ page }) => {
+  test("keeps long labels inside their container", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/hoje");
     await navSidebar(page).hover();
 
-    // "Cronograma" e' o rotulo mais longo do menu atual -- se algum couber
-    // errado no container, e' este.
-    const longestItem = page.locator("aside [data-nav-item-href='/cronograma']");
-    const longestLabel = longestItem.locator("span");
+    // "Cronograma" continua sendo o rotulo mais longo da navegacao, mas deixou
+    // de ser item da sidebar: virou FILHO de Inicio. O risco de estouro mudou de
+    // lugar junto com ele, entao o contrato mira a linha de secoes -- onde as
+    // cinco abas de agora ("Inicio", "Banco", "Rota", "Cards", "Perfil") sao
+    // curtas demais para exercitar o limite.
+    const longestItem = page
+      .getByLabel("Seções desta área")
+      .locator("[data-nav-item-href='/cronograma']");
+    const longestLabel = longestItem.locator("span").first();
     await expect(longestItem).toBeVisible();
     await expect(longestLabel).toHaveText("Cronograma");
 
@@ -408,7 +433,7 @@ test.describe("Navigation shell mobile tab bar", () => {
     // proprio. `isNavItemActive` casa por prefixo `/cards/`.
     await page.goto("/cards/registros");
 
-    const activeItems = page.locator("[data-nav-surface='tabbar'][data-nav-active='true']");
+    const activeItems = page.locator("[data-nav-surface='tabbar-item'][data-nav-active='true']");
     await expect(activeItems).toHaveCount(1);
     await expect(activeItems).toHaveAttribute("data-nav-item-href", "/cards");
     await expect(activeItems).toHaveAttribute("aria-current", "page");

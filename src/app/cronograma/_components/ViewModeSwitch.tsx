@@ -109,7 +109,7 @@ export function ViewModeSwitch({ activeView, hideOnMobile }: { activeView: ViewM
             bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)",
             width: open ? expandedWidth : "48px",
           }}
-          className="fixed left-4 z-40 h-12 flex items-center overflow-hidden rounded-full bg-ink text-paper shadow-lg transition-[width] duration-300 ease-in-out"
+          className="fixed left-4 z-40 h-12 flex items-center overflow-hidden rounded-control bg-ink text-paper shadow-lg transition-[width] duration-300 ease-in-out"
         >
           {/* Wrapper w-12 fixo: texto começa exatamente em 48px, zero sangramento */}
           <span className="w-12 h-12 flex items-center justify-center shrink-0">
@@ -206,7 +206,7 @@ export function ViewModeFabInline({ activeView }: { activeView: ViewMode }) {
         aria-label={open ? `Navegar para ${label}` : `Ir para ${label}`}
         aria-expanded={open}
         style={{ width: open ? expandedWidth : "48px" }}
-        className="h-12 flex items-center overflow-hidden rounded-full bg-ink text-paper shadow-lg transition-[width] duration-300 ease-in-out"
+        className="h-12 flex items-center overflow-hidden rounded-control bg-ink text-paper shadow-lg transition-[width] duration-300 ease-in-out"
       >
         <span className="w-12 h-12 flex items-center justify-center shrink-0">
           <Icon className="w-5 h-5" />
@@ -223,12 +223,12 @@ export function ViewModeSwitchSkeleton({ className: _ }: { className?: string })
   return (
     <div className="hidden md:flex items-center gap-5 border-t border-edge pt-3" aria-hidden="true">
       <div className="flex items-center gap-1.5">
-        <Skeleton className="w-4 h-4 rounded-sm" />
-        <Skeleton className="h-4 w-14 rounded-sm" />
+        <Skeleton className="w-4 h-4 rounded-control" />
+        <Skeleton className="h-4 w-14 rounded-control" />
       </div>
       <div className="flex items-center gap-1.5">
-        <Skeleton className="w-4 h-4 rounded-sm" />
-        <Skeleton className="h-4 w-10 rounded-sm" />
+        <Skeleton className="w-4 h-4 rounded-control" />
+        <Skeleton className="h-4 w-10 rounded-control" />
       </div>
     </div>
   );

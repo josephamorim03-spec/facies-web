@@ -75,7 +75,7 @@ export function QuestionFullContext({
   isCorrect,
   showCorrectAnswer = true,
   resultLabel,
-  className = "rounded-lg border border-edge bg-paper p-3",
+  className = "rounded-surface border border-edge bg-paper p-3",
   children,
 }: QuestionFullContextProps) {
   const selected = normalizedOption(selectedOption);
@@ -100,17 +100,17 @@ export function QuestionFullContext({
         </div>
         <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
           {resultLabel ? (
-            <span className="rounded-full border border-edge bg-surface px-2.5 py-1 text-xs font-semibold text-ink">
+            <span className="rounded-control border border-edge bg-surface px-2.5 py-1 text-xs font-semibold text-ink">
               {resultLabel}
             </span>
           ) : null}
           {showCorrectAnswer && correct ? (
-            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isCorrect === false ? "bg-danger text-white" : "bg-success text-white"}`}>
+            <span className={`rounded-control px-2.5 py-1 text-xs font-semibold ${isCorrect === false ? "bg-danger text-white" : "bg-success text-white"}`}>
               Gabarito {correct}
             </span>
           ) : null}
           {selected ? (
-            <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${selectedTone}`}>
+            <span className={`rounded-control border px-2.5 py-1 text-xs font-semibold ${selectedTone}`}>
               Sua resposta: {selected}
             </span>
           ) : null}
@@ -124,7 +124,7 @@ export function QuestionFullContext({
       ) : null}
 
       {tableCount > 0 ? (
-        <div className="mt-3 rounded-lg border border-edge bg-surface px-3 py-2 text-xs font-semibold text-muted">
+        <div className="mt-3 rounded-surface border border-edge bg-surface px-3 py-2 text-xs font-semibold text-muted">
           {tableCount === 1 ? "1 tabela vinculada" : `${tableCount} tabelas vinculadas`}
         </div>
       ) : null}
@@ -139,7 +139,7 @@ export function QuestionFullContext({
             return (
               <div
                 key={`${letterRaw}-${text}`}
-                className={`flex gap-3 rounded-lg border px-3 py-2 text-sm leading-relaxed ${
+                className={`flex gap-3 rounded-surface border px-3 py-2 text-sm leading-relaxed ${
                   optionIsCorrect
                     ? "border-success/40 bg-success/10 text-ink"
                     : optionIsWrong
@@ -172,7 +172,7 @@ export function QuestionFullContext({
           {visibleNodes.map((node, index) => (
             <span
               key={node.knowledge_node_id ?? `${nodeLabel(node)}-${index}`}
-              className="rounded-full border border-primary/30 bg-surface px-2 py-0.5 text-[10px] font-semibold text-primary"
+              className="rounded-control border border-primary/30 bg-surface px-2 py-0.5 text-[10px] font-semibold text-primary"
             >
               {nodeLabel(node)}
             </span>

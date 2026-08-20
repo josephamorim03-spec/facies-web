@@ -76,8 +76,8 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
                   </span>
                   <span className={`font-semibold ${toneClass}`}>{mastery}%</span>
                 </div>
-                <div className="h-1 w-full overflow-hidden rounded-full bg-edge">
-                  <div className={`h-full rounded-full ${barClass}`} style={{ width: `${mastery}%` }} />
+                <div className="h-1 w-full overflow-hidden rounded-control bg-edge">
+                  <div className={`h-full rounded-control ${barClass}`} style={{ width: `${mastery}%` }} />
                 </div>
               </Link>
             );
@@ -92,7 +92,7 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
           ? `/banco?theme=${encodeURIComponent(weakNodes[0].node_name ?? weakNodes[0].knowledge_node_id)}`
           : "/banco"
         }
-        className="block rounded-lg border border-edge px-3 py-2 text-center text-xs font-semibold transition-colors hover:border-primary hover:text-primary"
+        className="block rounded-surface border border-edge px-3 py-2 text-center text-xs font-semibold transition-colors hover:border-primary hover:text-primary"
       >
         {weakNodes.length > 0 ? `Treinar ${weakNodes[0].node_name ?? "tema frágil"}` : "Estudar agora"}
       </Link>

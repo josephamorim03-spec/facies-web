@@ -71,7 +71,7 @@ export function AreaSmallMultiples({ activeAreaLines, areaLineData }: Props) {
               : "";
 
           return (
-            <div key={area} className="rounded-lg border border-edge bg-paper px-2.5 py-2">
+            <div key={area} className="rounded-surface border border-edge bg-paper px-2.5 py-2">
               <div className="flex items-baseline justify-between gap-1">
                 <span className="text-[11px] font-bold tracking-wide" style={{ color }}>
                   {area}
@@ -96,7 +96,7 @@ export function AreaSmallMultiples({ activeAreaLines, areaLineData }: Props) {
                     stroke={color}
                     strokeWidth={1.8}
                     strokeLinejoin="round"
-                    strokeLinecap="round"
+                    strokeLinecap="butt"
                   />
                 )}
                 {current !== null && lastIdx >= 0 && (

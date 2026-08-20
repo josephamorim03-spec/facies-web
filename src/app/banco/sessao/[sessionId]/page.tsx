@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import {
+  getProfile,
   finalizeQuestionBankSession,
   createQuestionTextHighlight,
   deleteQuestionTextHighlight,
@@ -111,6 +112,12 @@ export default function SessionPage() {
   const [currentPosition, setCurrentPosition] = useState(1);
   const [showMap, setShowMap] = useState(false);
   const [confidenceStepOpen, setConfidenceStepOpen] = useState(false);
+  // Preferência do aluno, não do modo da sessão. `post_session` é o padrão e
+  // também o fallback quando o perfil não carrega: perguntar a mais é
+  // recuperável (o aluno pula a etapa), perder a captura não é.
+  const [confidenceTiming, setConfidenceTiming] = useState<"post_session" | "per_question">(
+    "post_session",
+  );
   // Sair do simulado pede confirmação (fica salvo, retomável); no treino sai direto.
   const [simExitConfirmOpen, setSimExitConfirmOpen] = useState(false);
 
@@ -256,6 +263,21 @@ export default function SessionPage() {
     }
     void loadAiRequestPreview(currentQuestionId);
   }, [currentQuestionId, aiRequestPreviewByQuestion, aiRequestPreviewLoadingByQuestion, loadAiRequestPreview]);
+
+  // Uma leitura só, na montagem: a preferência não muda no meio de uma sessão, e
+  // relê-la a cada render disputaria banda com o carregamento das questões.
+  // Falha silenciosa de propósito — o fallback já é o padrão do produto.
+  useEffect(() => {
+    let cancelled = false;
+    getProfile(token)
+      .then((profile) => {
+        if (!cancelled) setConfidenceTiming(profile.confidence_timing);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
   function enqueueStudentEvent(
     position: number,
@@ -739,9 +761,15 @@ export default function SessionPage() {
 
   async function finalize() {
     if (!session) return;
-    // Exam-like + active + not revealed: capture pre-reveal confidence first.
+    // A etapa de confianca vale para QUALQUER sessao, e nao so para simulado:
+    // calibracao e' a mesma habilidade num treino de 20 e numa prova de 100. O
+    // que decide agora e a preferencia do aluno (`confidence_timing`), nao o
+    // modo de resolucao da sessao.
+    //
+    // `per_question` ja capturou a confianca durante a resolucao, entao a etapa
+    // no fim seria a segunda pergunta sobre a mesma coisa.
     if (
-      session.resolution_mode === "simulation" &&
+      confidenceTiming === "post_session" &&
       session.status === "active" &&
       !session.results_revealed_at
     ) {
@@ -899,14 +927,14 @@ export default function SessionPage() {
           <button
             type="button"
             onClick={() => loadSession()}
-            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primaryInk hover:opacity-90"
+            className="rounded-surface bg-primary px-4 py-2 text-sm font-semibold text-primaryInk hover:opacity-90"
           >
             Tentar novamente
           </button>
           <button
             type="button"
             onClick={() => router.push("/banco")}
-            className="rounded-xl border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
+            className="rounded-surface border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
           >
             Voltar ao banco
           </button>
@@ -922,7 +950,7 @@ export default function SessionPage() {
         <button
           type="button"
           onClick={() => router.push("/banco")}
-          className="rounded-xl border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
+          className="rounded-surface border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
         >
           Voltar ao banco
         </button>

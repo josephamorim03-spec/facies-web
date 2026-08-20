@@ -13,5 +13,5 @@ export default function AreaDot({ area, size = "sm" }: AreaDotProps) {
   const dim = size === "md" ? "w-4 h-4" : "w-3 h-3";
   const color = AREA_BG_CLASS[displayArea as DisplayArea] ?? "bg-edge";
   const border = displayArea === "OU" ? "border border-edge" : "";
-  return <span className={`inline-block rounded-full ${dim} ${color} ${border}`} title={displayArea} />;
+  return <span className={`inline-block rounded-control ${dim} ${color} ${border}`} title={displayArea} />;
 }

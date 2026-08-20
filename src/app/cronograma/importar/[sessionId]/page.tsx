@@ -262,7 +262,7 @@ export default function ImportSessionPage() {
                 const answered = isQuestionAnswered(number);
                 const doubtful = isQuestionDoubtful(number);
                 const visualClass = doubtful
-                  ? "border-amber-600 bg-amber-200 text-amber-900"
+                  ? "border-warning bg-surfaceMuted text-warning"
                   : answered
                     ? "border-ink bg-ink text-paper"
                     : "border-edge bg-paper text-ink";
@@ -287,7 +287,7 @@ export default function ImportSessionPage() {
 
       {/* Loading / Error / Empty */}
       {loading && <p className="text-sm text-muted">Carregando...</p>}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       {!loading && (questionPage?.items.length ?? 0) === 0 && (
         <p className="text-sm text-muted">Nenhuma questão encontrada.</p>
       )}
@@ -317,7 +317,7 @@ export default function ImportSessionPage() {
                 title={question.state.doubtful ? "Dúvida marcada" : "Marcar dúvida"}
                 className={`h-8 w-8 border flex items-center justify-center ${
                   question.state.doubtful
-                    ? "border-amber-600 bg-amber-200 text-amber-900"
+                    ? "border-warning bg-surfaceMuted text-warning"
                     : "border-edge text-muted hover:border-ink hover:text-ink"
                 }`}
               >
@@ -586,7 +586,7 @@ export default function ImportSessionPage() {
               <button
                 type="button"
                 onClick={confirmExit}
-                className="text-xs border border-red-600 text-red-600 px-3 py-1.5 hover:bg-red-50"
+                className="text-xs border border-danger text-danger px-3 py-1.5 hover:bg-surfaceMuted"
               >
                 Sair da sessão
               </button>

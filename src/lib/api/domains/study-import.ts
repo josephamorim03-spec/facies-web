@@ -216,6 +216,8 @@ export type UserProfile = {
   calendar_recommendations_enabled: boolean;
   default_feedback_timing: "immediate" | "post_result";
   default_feedback_reveal_policy: "guided_choice" | "reveal_all";
+  /** Quando o aluno declara confiança: no fim da sessão ou a cada questão. */
+  confidence_timing: "post_session" | "per_question";
   has_chosen_feedback_default: boolean;
   has_completed_initial_goal_setup: boolean;
   access_status: "active" | "expired" | "pending_key";
@@ -240,6 +242,7 @@ export async function updateProfile(
     calendar_recommendations_enabled?: boolean;
     default_feedback_timing?: "immediate" | "post_result";
     default_feedback_reveal_policy?: "guided_choice" | "reveal_all";
+    confidence_timing?: "post_session" | "per_question";
     has_chosen_feedback_default?: boolean;
   }
 ): Promise<UserProfile> {

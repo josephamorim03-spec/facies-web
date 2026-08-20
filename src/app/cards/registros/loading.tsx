@@ -5,28 +5,28 @@ export default function CadernoLoading() {
     <div className="space-y-5">
       <div className="flex justify-center">
         <div className="flex gap-2 rounded-control border border-edge bg-surface p-1">
-          <Skeleton className="h-9 w-24 rounded-sm" />
-          <Skeleton className="h-9 w-24 rounded-sm" />
+          <Skeleton className="h-9 w-24 rounded-control" />
+          <Skeleton className="h-9 w-24 rounded-control" />
         </div>
       </div>
       <div className="space-y-4">
         <div className="flex flex-wrap justify-center gap-1.5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-8 w-16 rounded-sm" />
+            <Skeleton key={i} className="h-8 w-16 rounded-control" />
           ))}
         </div>
-        <Skeleton className="h-9 w-full rounded-sm" />
+        <Skeleton className="h-9 w-full rounded-control" />
         <div className="flex justify-center gap-2">
-          <Skeleton className="h-7 w-16 rounded-sm" />
-          <Skeleton className="h-7 w-16 rounded-sm" />
+          <Skeleton className="h-7 w-16 rounded-control" />
+          <Skeleton className="h-7 w-16 rounded-control" />
         </div>
-        <Skeleton className="h-9 w-full rounded-sm" />
-        <Skeleton className="h-24 w-full rounded-sm" />
+        <Skeleton className="h-9 w-full rounded-control" />
+        <Skeleton className="h-24 w-full rounded-control" />
         <div className="space-y-1">
-          <Skeleton className="h-3 w-12 rounded-sm" />
-          <Skeleton className="h-6 w-full rounded-sm" />
+          <Skeleton className="h-3 w-12 rounded-control" />
+          <Skeleton className="h-6 w-full rounded-control" />
         </div>
-        <Skeleton className="h-10 w-full rounded-sm" />
+        <Skeleton className="h-10 w-full rounded-control" />
       </div>
     </div>
   );

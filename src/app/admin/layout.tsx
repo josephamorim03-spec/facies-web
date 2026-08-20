@@ -15,12 +15,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+    <div className="min-h-screen bg-surface">
+      <header className="bg-surface border-b border-edge">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-2 px-4 py-3 sm:flex-nowrap sm:gap-6">
           <button
             onClick={() => router.push("/")}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1"
+            className="text-sm text-muted hover:text-ink flex items-center gap-1"
           >
             ← Voltar
           </button>
@@ -31,10 +31,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={href}
                   href={href}
-                  className={`shrink-0 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`shrink-0 px-3 py-1.5 rounded-control text-sm font-medium transition-colors ${
                     active
-                      ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                      : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      ? "bg-surface text-ink"
+                      : "text-muted hover:text-ink"
                   }`}
                 >
                   {label}
@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               );
             })}
           </nav>
-          <span className="ml-auto hidden text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-600 sm:inline">
+          <span className="ml-auto hidden text-xs font-medium uppercase tracking-wide text-muted sm:inline">
             Admin
           </span>
         </div>

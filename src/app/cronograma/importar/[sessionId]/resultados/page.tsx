@@ -143,7 +143,7 @@ export default function ResultadosPage() {
     return (
       <div className="space-y-3">
         <h1 className="font-serif text-lg">Resultados</h1>
-        <p className="text-sm text-red-600">{sessionData.error}</p>
+        <p className="text-sm text-danger">{sessionData.error}</p>
         <button
           type="button"
           onClick={() => sessionData.requestExitConfirmation("/agenda-operacional")}
@@ -202,7 +202,7 @@ export default function ResultadosPage() {
           />
         </div>
         {sessionData.wrongQuestions.length === 0 && (
-          <p className="text-sm text-green-700">Parabéns! Você acertou todas as questões.</p>
+          <p className="text-sm text-success">Parabéns! Você acertou todas as questões.</p>
         )}
       </div>
 

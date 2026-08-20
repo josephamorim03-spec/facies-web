@@ -18,14 +18,17 @@ import {
 
 // ─── Colors ────────────────────────────────────────────────────────────────
 
+// Hexes fixos não seguem o tema: os gráficos do admin ficavam com a paleta clara
+// desenhada sobre o fundo escuro. Apontando para as variáveis, o mesmo gráfico
+// serve os dois temas — e passa a obedecer o contraste que o gate verifica.
 const COLORS = {
-  green: "#22c55e",
-  blue: "#3b82f6",
-  gray: "#9ca3af",
-  red: "#ef4444",
-  ink: "#1f2937",
-  muted: "#6b7280",
-  edge: "#e5e7eb",
+  green: "var(--color-success)",
+  blue: "var(--color-info)",
+  gray: "var(--color-muted)",
+  red: "var(--color-danger)",
+  ink: "var(--color-ink)",
+  muted: "var(--color-muted)",
+  edge: "var(--color-edge)",
 };
 
 const PIE_COLORS = [COLORS.green, COLORS.blue, COLORS.gray, COLORS.red];
@@ -44,24 +47,24 @@ function StatCard({
   trend?: { direction: "up" | "down" | "neutral"; label: string };
 }) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+    <div className="bg-surface rounded-surface border border-edge p-5">
+      <p className="text-xs font-medium text-muted uppercase tracking-wide mb-1">
         {label}
       </p>
-      <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+      <p className="text-3xl font-bold text-ink">
         {value}
       </p>
       {sub && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{sub}</p>
+        <p className="text-sm text-muted mt-1">{sub}</p>
       )}
       {trend && (
         <p
           className={`text-xs mt-1.5 flex items-center gap-1 ${
             trend.direction === "up"
-              ? "text-green-600"
+              ? "text-success"
               : trend.direction === "down"
-                ? "text-red-500"
-                : "text-gray-400"
+                ? "text-danger"
+                : "text-muted"
           }`}
         >
           <span>
@@ -82,7 +85,7 @@ function StatCard({
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+    <h2 className="text-sm font-semibold text-muted uppercase tracking-wide mb-3">
       {children}
     </h2>
   );
@@ -97,7 +100,7 @@ function ReviewsChart({
 }) {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-48 text-sm text-gray-400">
+      <div className="flex items-center justify-center h-48 text-sm text-muted">
         Sem dados de revisão nos últimos 14 dias.
       </div>
     );
@@ -179,7 +182,7 @@ function KeyDistributionChart({
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-48 text-sm text-gray-400">
+      <div className="flex items-center justify-center h-48 text-sm text-muted">
         Nenhuma chave cadastrada.
       </div>
     );
@@ -230,7 +233,7 @@ function TopUsersTable({
 }) {
   if (users.length === 0) {
     return (
-      <div className="flex items-center justify-center h-32 text-sm text-gray-400">
+      <div className="flex items-center justify-center h-32 text-sm text-muted">
         Sem atividade nos últimos 30 dias.
       </div>
     );
@@ -240,14 +243,14 @@ function TopUsersTable({
     <div className="overflow-hidden">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-200 dark:border-gray-800 text-left">
-            <th className="pb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          <tr className="border-b border-edge text-left">
+            <th className="pb-2 text-xs font-semibold text-muted uppercase tracking-wide">
               #
             </th>
-            <th className="pb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            <th className="pb-2 text-xs font-semibold text-muted uppercase tracking-wide">
               Usuário
             </th>
-            <th className="pb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-right">
+            <th className="pb-2 text-xs font-semibold text-muted uppercase tracking-wide text-right">
               Revisões
             </th>
           </tr>
@@ -256,13 +259,13 @@ function TopUsersTable({
           {users.map((u, i) => (
             <tr
               key={u.user_id}
-              className="border-b border-gray-100 dark:border-gray-800/50 last:border-0"
+              className="border-b border-edge/50 last:border-0"
             >
-              <td className="py-2 pr-2 text-xs text-gray-400 w-6">{i + 1}</td>
-              <td className="py-2 text-xs text-gray-700 dark:text-gray-300 truncate max-w-[180px]">
+              <td className="py-2 pr-2 text-xs text-muted w-6">{i + 1}</td>
+              <td className="py-2 text-xs text-ink truncate max-w-[180px]">
                 {u.email || u.user_id.slice(0, 12) + "…"}
               </td>
-              <td className="py-2 text-xs text-gray-700 dark:text-gray-300 text-right font-medium">
+              <td className="py-2 text-xs text-ink text-right font-medium">
                 {u.reviews}
               </td>
             </tr>
@@ -282,7 +285,7 @@ function MentorBreakdown({
 }) {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-24 text-sm text-gray-400">
+      <div className="flex items-center justify-center h-24 text-sm text-muted">
         Nenhuma mentoria cadastrada.
       </div>
     );
@@ -292,20 +295,20 @@ function MentorBreakdown({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-200 dark:border-gray-800 text-left">
-            <th className="pb-2 pr-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          <tr className="border-b border-edge text-left">
+            <th className="pb-2 pr-3 text-xs font-semibold text-muted uppercase tracking-wide">
               Mentoria
             </th>
-            <th className="pb-2 pr-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-right">
+            <th className="pb-2 pr-3 text-xs font-semibold text-muted uppercase tracking-wide text-right">
               Total
             </th>
-            <th className="pb-2 pr-3 text-xs font-semibold text-green-600 uppercase tracking-wide text-right">
+            <th className="pb-2 pr-3 text-xs font-semibold text-success uppercase tracking-wide text-right">
               Disp.
             </th>
-            <th className="pb-2 pr-3 text-xs font-semibold text-blue-600 uppercase tracking-wide text-right">
+            <th className="pb-2 pr-3 text-xs font-semibold text-info uppercase tracking-wide text-right">
               Ativas
             </th>
-            <th className="pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wide text-right">
+            <th className="pb-2 text-xs font-semibold text-muted uppercase tracking-wide text-right">
               Inat.
             </th>
           </tr>
@@ -314,21 +317,21 @@ function MentorBreakdown({
           {data.map((m) => (
             <tr
               key={m.label}
-              className="border-b border-gray-100 dark:border-gray-800/50 last:border-0"
+              className="border-b border-edge/50 last:border-0"
             >
-              <td className="py-1.5 pr-3 text-xs text-gray-700 dark:text-gray-300">
+              <td className="py-1.5 pr-3 text-xs text-ink">
                 {m.label}
               </td>
-              <td className="py-1.5 pr-3 text-xs text-gray-700 dark:text-gray-300 text-right">
+              <td className="py-1.5 pr-3 text-xs text-ink text-right">
                 {m.total}
               </td>
-              <td className="py-1.5 pr-3 text-xs text-green-700 text-right">
+              <td className="py-1.5 pr-3 text-xs text-success text-right">
                 {m.available}
               </td>
-              <td className="py-1.5 pr-3 text-xs text-blue-700 text-right">
+              <td className="py-1.5 pr-3 text-xs text-info text-right">
                 {m.active}
               </td>
-              <td className="py-1.5 text-xs text-gray-400 text-right">
+              <td className="py-1.5 text-xs text-muted text-right">
                 {m.expired + m.revoked}
               </td>
             </tr>
@@ -364,8 +367,8 @@ export default function AdminDashboardPage() {
   if (error) {
     return (
       <div className="space-y-2">
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        <p className="text-xs text-gray-400">Verifique os logs do Railway para mais detalhes.</p>
+        <p className="text-sm text-danger">{error}</p>
+        <p className="text-xs text-muted">Verifique os logs do Railway para mais detalhes.</p>
       </div>
     );
   }
@@ -373,7 +376,7 @@ export default function AdminDashboardPage() {
   if (!stats) {
     return (
       <div className="flex items-center justify-center h-48">
-        <span className="text-sm text-gray-400 dark:text-gray-600 animate-pulse">
+        <span className="text-sm text-muted animate-pulse">
           Carregando métricas…
         </span>
       </div>
@@ -459,13 +462,13 @@ export default function AdminDashboardPage() {
       {/* ── Charts row ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Review activity chart */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+        <div className="bg-surface rounded-surface border border-edge p-5">
           <SectionTitle>Atividade de Revisões (14 dias)</SectionTitle>
           <ReviewsChart data={activity.daily_last_14_days} />
         </div>
 
         {/* Key distribution pie */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+        <div className="bg-surface rounded-surface border border-edge p-5">
           <SectionTitle>Distribuição de Chaves</SectionTitle>
           <KeyDistributionChart
             available={keys.available}
@@ -479,13 +482,13 @@ export default function AdminDashboardPage() {
       {/* ── Bottom row: Top users + Mentor breakdown ────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top users */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+        <div className="bg-surface rounded-surface border border-edge p-5">
           <SectionTitle>Top Alunos (30 dias)</SectionTitle>
           <TopUsersTable users={activity.top_users_last_30_days} />
         </div>
 
         {/* Mentor breakdown */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+        <div className="bg-surface rounded-surface border border-edge p-5">
           <SectionTitle>Chaves por Mentoria</SectionTitle>
           <MentorBreakdown data={keys.by_mentor_label} />
         </div>

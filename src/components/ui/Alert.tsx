@@ -25,7 +25,7 @@ type AlertProps = {
 
 /**
  * Theme-safe inline message box. Uses semantic border/text tokens over `bg-surface`
- * so it works in light and dark — replacing scattered `border-red-200 bg-red-50` patterns.
+ * so it works in light and dark — replacing scattered `border-danger bg-surfaceMuted` patterns.
  */
 export function Alert({ variant = "info", icon, action, onDismiss, children, className = "" }: AlertProps) {
   return (

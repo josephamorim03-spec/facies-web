@@ -27,32 +27,32 @@ function TurboLobbySkeleton() {
       {/* area filter row */}
       <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
         <span className="block h-7 w-7" />
-        <Skeleton className="mx-auto h-4 w-20 rounded-sm" />
+        <Skeleton className="mx-auto h-4 w-20 rounded-control" />
         <span className="block h-7 w-7" />
       </div>
       {/* hero card */}
-      <div className="rounded-xl border border-edge bg-surface p-6 text-center space-y-3">
-        <Skeleton className="mx-auto h-3 w-44 rounded-sm" />
-        <Skeleton className="mx-auto h-14 w-20 rounded-sm" />
-        <Skeleton className="mx-auto h-3 w-32 rounded-sm" />
+      <div className="rounded-surface border border-edge bg-surface p-6 text-center space-y-3">
+        <Skeleton className="mx-auto h-3 w-44 rounded-control" />
+        <Skeleton className="mx-auto h-14 w-20 rounded-control" />
+        <Skeleton className="mx-auto h-3 w-32 rounded-control" />
       </div>
       {/* 2-col info cards */}
       <div className="grid gap-2 sm:grid-cols-2">
-        <div className="rounded-lg border border-edge bg-surface p-3 space-y-2">
-          <Skeleton className="h-2.5 w-28 rounded-sm" />
+        <div className="rounded-surface border border-edge bg-surface p-3 space-y-2">
+          <Skeleton className="h-2.5 w-28 rounded-control" />
           {Array.from({ length: 2 }).map((_, i) => (
             <div key={`r-sk-${i}`} className="flex items-center justify-between gap-3">
-              <Skeleton className="h-3 flex-1 rounded-sm" />
-              <Skeleton className="h-3 w-8 shrink-0 rounded-sm" />
+              <Skeleton className="h-3 flex-1 rounded-control" />
+              <Skeleton className="h-3 w-8 shrink-0 rounded-control" />
             </div>
           ))}
         </div>
-        <div className="rounded-lg border border-edge bg-surface p-3 space-y-2">
-          <Skeleton className="h-2.5 w-32 rounded-sm" />
+        <div className="rounded-surface border border-edge bg-surface p-3 space-y-2">
+          <Skeleton className="h-2.5 w-32 rounded-control" />
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={`a-sk-${i}`} className="flex items-center justify-between gap-3">
-              <Skeleton className="h-3 w-10 rounded-sm" />
-              <Skeleton className="h-3 w-24 shrink-0 rounded-sm" />
+              <Skeleton className="h-3 w-10 rounded-control" />
+              <Skeleton className="h-3 w-24 shrink-0 rounded-control" />
             </div>
           ))}
         </div>
@@ -60,14 +60,14 @@ function TurboLobbySkeleton() {
       {/* preview cards */}
       <div className="space-y-1.5">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={`prev-sk-${i}`} className="rounded-lg border border-edge bg-surface px-3 py-2 space-y-1.5">
-            <Skeleton className="h-2.5 w-20 rounded-sm" />
-            <Skeleton className="h-3 w-4/5 rounded-sm" />
+          <div key={`prev-sk-${i}`} className="rounded-surface border border-edge bg-surface px-3 py-2 space-y-1.5">
+            <Skeleton className="h-2.5 w-20 rounded-control" />
+            <Skeleton className="h-3 w-4/5 rounded-control" />
           </div>
         ))}
       </div>
       {/* iniciar button */}
-      <Skeleton className="h-11 w-full rounded-lg" />
+      <Skeleton className="h-11 w-full rounded-surface" />
     </div>
   );
 }

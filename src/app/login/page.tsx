@@ -10,7 +10,8 @@ import { useInstallPrompt } from "./_hooks/useInstallPrompt";
 import { LoginForm } from "./_components/LoginForm";
 import { GoogleSection } from "./_components/GoogleSection";
 import { InstallBanner } from "./_components/InstallBanner";
-import { KrosIntro } from "./_components/KrosIntro";
+import { KrosWordmark } from "@/components/KrosWordmark";
+import { BootSequence } from "./_components/BootSequence";
 import styles from "./LoginPremium.module.css";
 
 function safeInternalNext(value: string): string | null {
@@ -27,6 +28,9 @@ function safeInternalNext(value: string): string | null {
 
 function LoginPageContent() {
   const router = useRouter();
+  // O boot e overlay, nao gate: o formulario ja esta montado atras dele, entao
+  // quem digita rapido nem ve a sequencia e nada bloqueia a autenticacao.
+  const [booting, setBooting] = useState(true);
   const searchParams = useSearchParams();
   const sessionExpired = searchParams.get("reason") === "expired";
   const nextParam = searchParams.get("next") ?? "";
@@ -104,21 +108,17 @@ function LoginPageContent() {
 
   return (
     <main className={`${styles.screen} w-full text-ink`}>
+      {booting ? <BootSequence onDone={() => setBooting(false)} /> : null}
       <div className={`${styles.shell}${installState !== "hidden" ? " pb-28 sm:pb-10" : ""}`}>
         <section className={styles.composition}>
-          <div className={styles.brandBlock}>
-            <div className={styles.logoField}>
-              <KrosIntro />
-            </div>
-
-            <div className={styles.wordmark}>
-              <h1
-                className={`${styles.wordmarkText} font-serif text-[2rem] font-semibold leading-none text-ink sm:text-[2.25rem]`}
-              >
-                KROSMED
+            {/* Havia DUAS marcas empilhadas: o sprite animado de 75 quadros e um
+                wordmark em serifa logo abaixo. Sobrou uma, mono e estática — o
+                `<h1>` já era o lugar semanticamente certo para o nome. */}
+            <div className={styles.brandBlock}>
+              <h1 className="leading-none">
+                <KrosWordmark />
               </h1>
             </div>
-          </div>
 
           <div className={styles.accessPanel}>
             {isDevMode ? (
@@ -129,7 +129,7 @@ function LoginPageContent() {
               {sessionExpired && (
                 <div
                   role="alert"
-                  className="rounded-lg bg-[var(--amber-tint)] px-4 py-3 text-center text-sm text-ink shadow-sm"
+                  className="rounded-surface bg-[var(--amber-tint)] px-4 py-3 text-center text-sm text-ink shadow-sm"
                 >
                   Sessão expirada. Entre novamente.
                 </div>

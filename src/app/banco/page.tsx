@@ -190,7 +190,7 @@ function RecommendedTopicsPanel({
           : "Priorizadas pelo seu histórico.";
 
   return (
-    <section className="rounded-lg border border-edge bg-surface p-4" aria-label="Microcompetências recomendadas">
+    <section className="rounded-surface border border-edge bg-surface p-4" aria-label="Microcompetências recomendadas">
       <div>
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Sugestões do sistema</p>
@@ -210,7 +210,7 @@ function RecommendedTopicsPanel({
               aria-pressed={selected}
               title={topic.node_code ? `${topic.node_code} - ${topic.node_name}` : topic.node_name}
               className={cx(
-                "w-full rounded-lg border p-3 text-left transition-colors",
+                "w-full rounded-surface border p-3 text-left transition-colors",
                 selected ? "border-primary bg-[var(--amber-tint)]" : "border-edge bg-paper hover:border-primary",
               )}
             >
@@ -221,7 +221,7 @@ function RecommendedTopicsPanel({
                   </p>
                   <p className="mt-0.5 line-clamp-2 break-words text-sm font-semibold leading-snug text-ink [overflow-wrap:anywhere]">{topic.node_name}</p>
                 </div>
-                <span className={cx("shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold", selected ? "bg-primary text-primaryInk" : "bg-surfaceMuted text-ink")}>
+                <span className={cx("shrink-0 whitespace-nowrap rounded-control px-2 py-0.5 text-[11px] font-semibold", selected ? "bg-primary text-primaryInk" : "bg-surfaceMuted text-ink")}>
                   #{topic.recommendation_rank}
                 </span>
               </div>
@@ -954,12 +954,12 @@ function BancoDeQuestoesContent() {
                     }
                     setFilterMenuOpen((open) => !open);
                   }}
-                  className="min-h-11 rounded-full bg-surfaceMuted px-3 text-xs font-semibold text-muted transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  className="min-h-11 rounded-control bg-surfaceMuted px-3 text-xs font-semibold text-muted transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                 >
                   {activeFilters.length === 1 ? activeFilters[0].label : activeFilters.length + " filtros"}
                 </button>
                 {filterMenuOpen && activeFilters.length > 1 && (
-                  <div id="question-bank-active-filters" role="dialog" aria-label="Filtros ativos" className="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-edge bg-surface p-2 shadow-[var(--soft-shadow)]">
+                  <div id="question-bank-active-filters" role="dialog" aria-label="Filtros ativos" className="absolute right-0 z-30 mt-2 w-72 rounded-surface border border-edge bg-surface p-2 shadow-[var(--soft-shadow)]">
                     {activeFilters.map((filter) => (
                       <button
                         key={filter.id}
@@ -968,7 +968,7 @@ function BancoDeQuestoesContent() {
                           setFilterMenuOpen(false);
                           locateActiveFilter(filter);
                         }}
-                        className="flex min-h-11 w-full items-center rounded-lg px-3 text-left text-sm font-medium text-ink hover:bg-surfaceMuted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        className="flex min-h-11 w-full items-center rounded-surface px-3 text-left text-sm font-medium text-ink hover:bg-surfaceMuted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                       >
                         {filter.label}
                       </button>

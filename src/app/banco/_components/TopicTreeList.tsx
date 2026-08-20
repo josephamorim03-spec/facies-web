@@ -42,7 +42,7 @@ function TopicTreeItem({
   return (
     <div id={`topic-node-${node.knowledge_node_id}`} style={{ paddingLeft: `${indent}px` }}>
       <div className={cx(
-        "flex min-w-0 items-start gap-2 rounded-lg border p-2.5 transition-colors",
+        "flex min-w-0 items-start gap-2 rounded-surface border p-2.5 transition-colors",
         checked ? "border-primary bg-[var(--amber-tint)]" : "border-transparent",
         highlightedId === node.knowledge_node_id && "ring-2 ring-primary ring-offset-2 ring-offset-paper",
         selectable ? "hover:border-edge hover:bg-surface" : "opacity-75",
@@ -51,7 +51,7 @@ function TopicTreeItem({
           <button
             type="button"
             onClick={() => onToggleExpand(node.knowledge_node_id)}
-            className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-edge bg-surface text-xs text-muted hover:border-primary hover:text-ink"
+            className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-surface border border-edge bg-surface text-xs text-muted hover:border-primary hover:text-ink"
             aria-label={expanded ? `Recolher ${node.node_name}` : `Expandir ${node.node_name}`}
             aria-expanded={expanded}
           >
@@ -79,7 +79,7 @@ function TopicTreeItem({
               <span className="mt-0.5 block text-xs text-muted">{node.question_count} questões nesse grupo</span>
             )}
             {!node.synthetic && node.question_count === 0 && (
-              <span className="mt-1 inline-block rounded-full border border-edge bg-surfaceMuted px-2 py-0.5 text-[11px] font-medium text-muted">
+              <span className="mt-1 inline-block rounded-control border border-edge bg-surfaceMuted px-2 py-0.5 text-[11px] font-medium text-muted">
                 0 questões · em curadoria
               </span>
             )}
@@ -118,7 +118,7 @@ export function TopicTreeList({
       return (
         <div className="space-y-1.5" aria-hidden="true">
           {Array.from({ length: 6 }, (_, index) => (
-            <Skeleton key={index} className="h-10 rounded-lg" />
+            <Skeleton key={index} className="h-10 rounded-surface" />
           ))}
         </div>
       );
@@ -131,7 +131,7 @@ export function TopicTreeList({
             <button
               type="button"
               onClick={onRetry}
-              className="mt-2 rounded-lg border border-edge px-3 py-1.5 text-xs font-semibold text-muted transition-colors hover:border-primary hover:text-ink"
+              className="mt-2 rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-muted transition-colors hover:border-primary hover:text-ink"
             >
               Tentar novamente
             </button>

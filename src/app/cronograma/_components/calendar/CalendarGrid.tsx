@@ -328,7 +328,7 @@ export function CalendarGrid({
           >
             <div className="absolute top-0.5 left-0 right-0 flex justify-center">
               {isToday ? (
-                <span className={`${showDayDetail ? "text-[9px] w-3.5 h-3.5" : "text-[10px] w-4 h-4"} leading-none bg-ink text-paper rounded-full flex items-center justify-center font-medium`}>
+                <span className={`${showDayDetail ? "text-[9px] w-3.5 h-3.5" : "text-[10px] w-4 h-4"} leading-none bg-ink text-paper rounded-control flex items-center justify-center font-medium`}>
                   {day}
                 </span>
               ) : (
@@ -474,7 +474,7 @@ export function CalendarGrid({
                           e.stopPropagation();
                           onBarClick?.(dot.popupTarget!, (e.currentTarget as HTMLElement).getBoundingClientRect());
                         } : undefined}
-                        className={`flex w-full items-center gap-1 rounded-md px-1 py-0.5 ${barH} overflow-hidden shadow-sm`}
+                        className={`flex w-full items-center gap-1 rounded-control px-1 py-0.5 ${barH} overflow-hidden shadow-sm`}
                         style={{ backgroundColor: dot.color, opacity: 0.7, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.14)" }}
                       >
                         <span
@@ -503,7 +503,7 @@ export function CalendarGrid({
                           e.stopPropagation();
                           onBarClick?.(dot.popupTarget!, (e.currentTarget as HTMLElement).getBoundingClientRect());
                         } : undefined}
-                        className={`w-full rounded-sm overflow-hidden ${showDayDetail ? "h-1.5" : "h-2"}`}
+                        className={`w-full rounded-control overflow-hidden ${showDayDetail ? "h-1.5" : "h-2"}`}
                         style={{ backgroundColor: dot.color }}
                       />
                     );
@@ -549,7 +549,7 @@ export function CalendarGrid({
                         if (taskDragOrigin.current === "touch" || touchDragTouchId.current !== null) return;
                         clearDragState();
                       } : undefined}
-                      className={`flex w-full items-center gap-1 rounded-md px-1 py-0.5 ${barH} overflow-hidden shadow-sm ${isPending && dot.task ? "select-none" : ""} ${
+                      className={`flex w-full items-center gap-1 rounded-control px-1 py-0.5 ${barH} overflow-hidden shadow-sm ${isPending && dot.task ? "select-none" : ""} ${
                         dot.task && touchDraggingTaskId === dot.task.task_id ? "ring-1 ring-white/60 scale-[1.02]" : ""
                       } ${dot.task && dragTaskId === dot.task.task_id ? "ring-1 ring-white/60" : ""}`}
                       style={{

@@ -9,13 +9,21 @@
   color-scheme: light;
   /* `paper` é o "desktop" atrás da janela; `surface` é o interior dela, e é
      onde a leitura acontece — por isso surface é mais claro que paper. */
-  --color-paper: #B8B8AE;
+  /* Medido: #B8B8AE reprovava 6 pares sobre ele (success, warning, area-mp,
+     area-cm, area-ou e a propria borda). Clarear o fundo conserta os seis de
+     uma vez, em vez de escurecer cada cor. E aproxima do cinza autentico do
+     Win95 (#C0C0C0) — acessibilidade e autenticidade puxando junto. */
+  --color-paper: #CACAC0;
   --color-surface: #EDEDE5;
   --color-surface-muted: #D8D8CE;
   /* Régua dura de 1px: no retrô a borda é definida, não um véu. */
   --color-edge: #6E6E64;
   --color-ink: #14140F;
-  --color-muted: #4A4A42;
+  /* Medido pelo axe, nao estimado: #4A4A42 dava 4.47:1 sobre o `paper` — 0.03
+     abaixo do minimo, em 22 nos de /hoje. O erro nao foi o valor, foi a
+     verificacao: o script de contraste conferia `muted/surface` e `ink/paper`,
+     mas nunca `muted/paper`. Agora ele cruza todos os pares. */
+  --color-muted: #42423C;
   --color-primary: #000080;
   --color-primary-ink: #FFFFFF;
   --color-accent: #3D3D33;
@@ -63,7 +71,7 @@
   --area-mp:  #6B4A00;
   --area-cg:  #8E1116;
   --area-cm:  #0B5B2E;
-  --area-ou:  #4A4A42;
+  --area-ou:  #42423C;
   --area-ob:  #4B2A8C;
   --area-full-exam: #123A6B;
 }
@@ -78,7 +86,10 @@
      despercebido enquanto a identidade tinha sombra e preenchimento; aqui a
      borda de 1px E a separacao, entao o chrome inteiro sumia no escuro.
      #666B55 = 3.32:1 sobre surface e 3.55:1 sobre paper. */
-  --color-edge: #666B55;
+  /* 3.21:1 sobre `surface-muted` e 3.57:1 sobre `surface`. O valor anterior
+     (#666B55) media 3.32 contra a surface mas so 2.98 contra a surface-muted,
+     que e mais clara — a borda sumia justamente nos paineis. */
+  --color-edge: #6B7059;
   /* O âmbar é ACENTO, não corpo de texto: prosa longa em #FFB000 puro cansa
      numa sessão de 100 questões. O texto fica num branco-quente. */
   --color-ink: #D8D3BE;

@@ -89,10 +89,10 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
             ? "Este registro será removido e não afetará a trilha de revisão."
             : "As revisões pendentes associadas serao marcadas como puladas."}
         </p>
-        {err && <p className="text-xs text-red-600">{err}</p>}
+        {err && <p className="text-xs text-danger">{err}</p>}
         <div className="flex gap-2">
           <button onClick={cancelRegistration} disabled={canceling}
-            className="text-xs border border-red-600 text-red-600 px-3 py-1 hover:bg-red-50 disabled:opacity-50">
+            className="text-xs border border-danger text-danger px-3 py-1 hover:bg-surfaceMuted disabled:opacity-50">
             {canceling ? "..." : "Confirmar"}
           </button>
           <button onClick={() => setCancelConfirm(false)} className="text-xs text-muted px-3 py-1">Voltar</button>
@@ -120,7 +120,7 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
           </label>
         </div>
         {impactPreview && (
-          <div className="border border-edge p-2 space-y-1 bg-amber-50">
+          <div className="border border-edge p-2 space-y-1 bg-surfaceMuted">
             <p className="text-xs font-medium">Confirmar edição</p>
             <p className="text-xs text-muted">
               Acurácia: {impactPreview.accuracy_before_pct.toFixed(1)}% -&gt; {impactPreview.accuracy_after_pct.toFixed(1)}%
@@ -150,12 +150,12 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
             </div>
           </div>
         )}
-        {err && <p className="text-xs text-red-600">{err}</p>}
+        {err && <p className="text-xs text-danger">{err}</p>}
         <div className="flex gap-2 flex-wrap">
           <button onClick={() => saveEdit()} disabled={saving} className="text-xs border border-ink px-3 py-1 disabled:opacity-50">
             {saving ? "..." : "Salvar"}
           </button>
-          <button onClick={() => setCancelConfirm(true)} className="text-xs text-red-600 border border-red-300 px-3 py-1 hover:border-red-500 hover:text-red-700">
+          <button onClick={() => setCancelConfirm(true)} className="text-xs text-danger border border-danger px-3 py-1 hover:border-danger hover:text-danger">
             Cancelar registro
           </button>
           <button onClick={() => setEditing(false)} className="text-xs text-muted px-2 py-1">Cancelar</button>
@@ -174,7 +174,7 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
           <div className="shrink-0 rounded-[2px]" style={{ width: 9, height: 9, backgroundColor: FULL_EXAM_COLOR }} />
         ) : study.is_review ? (
           <div
-            className="shrink-0 w-2.5 h-2.5 rounded-full"
+            className="shrink-0 w-2.5 h-2.5 rounded-control"
             style={{ backgroundColor: AREA_COLORS[study.area] ?? "#ccc", opacity: 0.6 }}
           />
         ) : (

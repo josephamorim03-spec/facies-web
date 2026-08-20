@@ -22,7 +22,7 @@ export function TodayPageSkeleton() {
       <section className="overflow-hidden rounded-surface border border-edge bg-paper">
         <div className="flex flex-col sm:flex-row sm:items-stretch">
           <div className="flex shrink-0 items-center justify-center border-b border-edge bg-surfaceMuted px-5 py-4 sm:w-24 sm:border-b-0 sm:border-r sm:py-5">
-            <Skeleton className="h-11 w-11 rounded-full" />
+            <Skeleton className="h-11 w-11 rounded-control" />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 py-5 sm:px-6 sm:py-6 md:flex-row md:items-end md:justify-between">
             <div className="min-w-0 space-y-3">

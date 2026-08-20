@@ -83,8 +83,8 @@ function trendArrow(trend: TrendDirection): string {
 }
 
 function trendArrowClass(trend: TrendDirection): string {
-  if (trend === "up") return "text-green-600";
-  if (trend === "down") return "text-red-600";
+  if (trend === "up") return "text-success";
+  if (trend === "down") return "text-danger";
   return "text-muted";
 }
 
@@ -99,9 +99,9 @@ function ChartIcon({ className }: { className?: string }) {
 }
 
 const HEALTH_STATUS_COLOR: Record<string, string> = {
-  Boa: "text-emerald-600 dark:text-emerald-400",
-  "Atenção": "text-amber-600 dark:text-amber-400",
-  "Crítica": "text-red-600 dark:text-red-400",
+  Boa: "text-success dark:text-success",
+  "Atenção": "text-warning dark:text-warning",
+  "Crítica": "text-danger dark:text-danger",
 };
 
 function formatPct(value: number | null | undefined): string {
@@ -130,7 +130,7 @@ function SectionCard({
     <section
       data-testid={testId}
       data-no-break={noBreak || undefined}
-      className={`space-y-3 rounded-2xl border border-edge px-4 py-4${emphasized ? " shadow-sm" : ""}`}
+      className={`space-y-3 rounded-surface border border-edge px-4 py-4${emphasized ? " shadow-sm" : ""}`}
     >
       <h2 className="text-center text-xs font-bold uppercase tracking-[0.14em] text-ink">
         {title}
@@ -144,16 +144,16 @@ function RelatorioSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
       <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
-        <div className="h-5 w-5 rounded-sm bg-edge" />
-        <div className="mx-auto h-3 w-20 rounded-sm bg-edge" />
-        <div className="ml-auto h-5 w-5 rounded-sm bg-edge" />
+        <div className="h-5 w-5 rounded-control bg-edge" />
+        <div className="mx-auto h-3 w-20 rounded-control bg-edge" />
+        <div className="ml-auto h-5 w-5 rounded-control bg-edge" />
       </div>
       {Array.from({ length: 5 }).map((_, idx) => (
-        <div key={`relatorio-skeleton-${idx}`} className="space-y-2 rounded-2xl border border-edge p-4">
-          <div className="h-3 w-28 rounded-sm bg-edge" />
-          <div className="h-2.5 w-full rounded-sm bg-edge" />
-          <div className="h-2.5 w-5/6 rounded-sm bg-edge" />
-          <div className="h-2.5 w-2/3 rounded-sm bg-edge" />
+        <div key={`relatorio-skeleton-${idx}`} className="space-y-2 rounded-surface border border-edge p-4">
+          <div className="h-3 w-28 rounded-control bg-edge" />
+          <div className="h-2.5 w-full rounded-control bg-edge" />
+          <div className="h-2.5 w-5/6 rounded-control bg-edge" />
+          <div className="h-2.5 w-2/3 rounded-control bg-edge" />
         </div>
       ))}
     </div>
@@ -164,9 +164,9 @@ function ChartSectionSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={`chart-section-skeleton-${index}`} className="space-y-3 rounded-sm border border-edge p-4">
-          <div className="h-4 w-32 rounded-sm bg-edge" />
-          <div className="h-56 w-full rounded-sm bg-edge" />
+        <div key={`chart-section-skeleton-${index}`} className="space-y-3 rounded-control border border-edge p-4">
+          <div className="h-4 w-32 rounded-control bg-edge" />
+          <div className="h-56 w-full rounded-control bg-edge" />
         </div>
       ))}
     </div>
@@ -304,8 +304,8 @@ export function RelatorioBody({
     retentionDelta === null || retentionDelta === 0
       ? "text-muted"
       : retentionDelta > 0
-        ? "text-green-600"
-        : "text-red-600";
+        ? "text-success"
+        : "text-danger";
 
   const volumeTrend = compareTrend(topicRecent.total, topicPrevious.total, 0.12);
   const accuracyRecent = topicRecent.total > 0 ? (topicRecent.correct / topicRecent.total) * 100 : null;
@@ -398,7 +398,7 @@ export function RelatorioBody({
       >
         {!diagnosis.ready && (
           <div className="space-y-3">
-            <div className="rounded-xl border border-edge bg-paper/70 p-3">
+            <div className="rounded-surface border border-edge bg-paper/70 p-3">
               <RelatorioParagraph>
                 {diagnosis.reason === "insufficient_total"
                   ? `Diagnóstico disponível a partir de ${DIAG_MIN_TOTAL_QUESTIONS} questões no total. Você tem ${diagnosis.total_questions} registradas.`
@@ -414,7 +414,7 @@ export function RelatorioBody({
                     : `Diagnóstico por área — maiores e menores médias por grande área. Ao concentrar questões nos temas principais, o diagnóstico por tema ativa automaticamente.`}
                 </RelatorioParagraph>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="space-y-2 rounded-xl border border-edge border-l-2 border-l-emerald-600/40 bg-paper/70 p-3">
+                  <div className="space-y-2 rounded-surface border border-edge border-l-2 border-l-emerald-600/40 bg-paper/70 p-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">Pontos fortes</p>
                     <ul className="space-y-1.5">
                       {preliminaryStrengths.map((item) => (
@@ -427,7 +427,7 @@ export function RelatorioBody({
                       ))}
                     </ul>
                   </div>
-                  <div className="space-y-2 rounded-xl border border-edge border-l-2 border-l-red-600/40 bg-paper/70 p-3">
+                  <div className="space-y-2 rounded-surface border border-edge border-l-2 border-l-red-600/40 bg-paper/70 p-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">Pontos fracos</p>
                     <ul className="space-y-1.5">
                       {preliminaryWeaknesses.map((item) => (
@@ -449,8 +449,8 @@ export function RelatorioBody({
         {diagnosis.ready && (
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-2 rounded-sm border border-emerald-700/40 bg-emerald-50/50 p-3 dark:border-emerald-600/40 dark:bg-emerald-950/20">
-                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">Pontos fortes</p>
+              <div className="space-y-2 rounded-control border border-success/40 bg-surfaceMuted/50 p-3 dark:border-success/40 dark:bg-success/20">
+                <p className="text-xs font-semibold uppercase tracking-wide text-success dark:text-success">Pontos fortes</p>
                 <ul className="space-y-3">
                   {diagnosis.strengths.length === 0 && (
                     <li className="text-xs text-muted">Nenhum ponto forte identificado ainda.</li>
@@ -486,8 +486,8 @@ export function RelatorioBody({
                 </ul>
               </div>
 
-              <div className="space-y-2 rounded-sm border border-red-700/40 bg-red-50/50 p-3 dark:border-red-600/40 dark:bg-red-950/20">
-                <p className="text-xs font-semibold uppercase tracking-wide text-red-800 dark:text-red-300">Pontos fracos</p>
+              <div className="space-y-2 rounded-control border border-danger/40 bg-surfaceMuted/50 p-3 dark:border-danger/40 dark:bg-danger/20">
+                <p className="text-xs font-semibold uppercase tracking-wide text-danger dark:text-danger">Pontos fracos</p>
                 <ul className="space-y-3">
                   {diagnosis.weaknesses.length === 0 && (
                     <li className="text-xs text-muted">Nenhum ponto fraco identificado ainda.</li>
@@ -636,7 +636,7 @@ export function RelatorioBody({
               <p className="text-xs text-muted">pendentes</p>
             </div>
             <div className="px-2">
-              <p className={`text-xl font-semibold tabular-nums ${overdueCount > 0 ? "text-amber-600 dark:text-amber-400" : ""}`}>{overdueCount}</p>
+              <p className={`text-xl font-semibold tabular-nums ${overdueCount > 0 ? "text-warning dark:text-warning" : ""}`}>{overdueCount}</p>
               <p className="text-xs text-muted">atrasadas</p>
             </div>
             <div className="px-2">
@@ -648,7 +648,7 @@ export function RelatorioBody({
         <RelatorioParagraph>{healthText}</RelatorioParagraph>
 
         {staleThemesCount > 0 && (
-          <div className="space-y-2 rounded-xl border border-edge bg-paper/70 p-3">
+          <div className="space-y-2 rounded-surface border border-edge bg-paper/70 p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Temas sem contato
@@ -717,7 +717,7 @@ export default function RelatorioClientPage() {
   }, [isDesktopNavigation, setActions]);
 
   if (loading) return <RelatorioSkeleton />;
-  if (error) return <p className="text-sm text-red-600">{error}</p>;
+  if (error) return <p className="text-sm text-danger">{error}</p>;
 
   return (
     <div className="space-y-0">

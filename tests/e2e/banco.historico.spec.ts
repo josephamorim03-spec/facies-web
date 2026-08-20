@@ -71,7 +71,7 @@ async function mockEvolucaoApi(page: Page) {
   });
 }
 
-test.describe("Histórico de sessões (aba de /evolucao)", () => {
+test.describe("Histórico de sessões (/banco/historico)", () => {
   test.beforeEach(async ({ context, page }) => {
     await forceDesktopNavigation(page);
     await addHttpOnlySession(context);
@@ -80,10 +80,11 @@ test.describe("Histórico de sessões (aba de /evolucao)", () => {
   });
 
   test("lista as sessões finalizadas com placar", async ({ page }) => {
-    await page.goto("/evolucao");
-    await page.getByRole("tab", { name: "Histórico" }).click();
+    // Rota propria sob o Banco: deixou de ser aba de /evolucao na reorganizacao
+    // para cinco abas, entao nao ha mais tabpanel para escopar.
+    await page.goto("/banco/historico");
 
-    const historico = page.getByRole("tabpanel");
+    const historico = page.getByRole("main");
     await expect(historico.getByText("Placenta prévia")).toBeVisible();
     await expect(historico.getByText("ENARE")).toBeVisible();
 
@@ -93,10 +94,11 @@ test.describe("Histórico de sessões (aba de /evolucao)", () => {
   });
 
   test("distingue prova de sessão de banco pelo rótulo", async ({ page }) => {
-    await page.goto("/evolucao");
-    await page.getByRole("tab", { name: "Histórico" }).click();
+    // Rota propria sob o Banco: deixou de ser aba de /evolucao na reorganizacao
+    // para cinco abas, entao nao ha mais tabpanel para escopar.
+    await page.goto("/banco/historico");
 
-    const historico = page.getByRole("tabpanel");
+    const historico = page.getByRole("main");
     await expect(historico.getByText("Banco", { exact: true })).toBeVisible();
     await expect(historico.getByText("Prova", { exact: true })).toBeVisible();
   });
@@ -106,9 +108,9 @@ test.describe("Histórico de sessões (aba de /evolucao)", () => {
     // produto. `/provas` prometia cair no historico "filtrado em Simulados" e
     // apontava para a pagina morta -- aterrissava na aba Graficos, calado.
     await page.goto("/revisoes");
-    await expect(page).toHaveURL(/\/evolucao$/);
+    await expect(page).toHaveURL(/\/banco\/historico$/);
 
     await page.goto("/provas");
-    await expect(page).toHaveURL(/\/evolucao$/);
+    await expect(page).toHaveURL(/\/banco\/historico$/);
   });
 });

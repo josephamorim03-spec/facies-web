@@ -41,7 +41,7 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-muted hover:bg-surfaceMuted hover:text-ink"
+            className="rounded-surface p-2 text-muted hover:bg-surfaceMuted hover:text-ink"
             aria-label="Fechar mapa"
           >
             <IconClose />
@@ -49,15 +49,15 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
         </div>
 
         <div className="mt-3 grid grid-cols-3 gap-1.5 text-center text-xs">
-          <div className="rounded-lg border border-edge bg-paper px-2 py-2">
+          <div className="rounded-surface border border-edge bg-paper px-2 py-2">
             <p className="font-semibold text-ink">{answered}</p>
             <p className="text-muted">feitas</p>
           </div>
-          <div className="rounded-lg border border-edge bg-paper px-2 py-2">
+          <div className="rounded-surface border border-edge bg-paper px-2 py-2">
             <p className="font-semibold text-ink">{open}</p>
             <p className="text-muted">abertas</p>
           </div>
-          <div className="rounded-lg border border-edge bg-paper px-2 py-2">
+          <div className="rounded-surface border border-edge bg-paper px-2 py-2">
             <p className="font-semibold text-warning">{marked}</p>
             <p className="text-muted">marcadas</p>
           </div>
@@ -98,7 +98,7 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
                 type="button"
                 onClick={() => onNavigateTo(item.position)}
                 className={cx(
-                  "flex h-10 w-full items-center justify-center rounded-lg border text-xs font-semibold transition-colors",
+                  "flex h-10 w-full items-center justify-center rounded-surface border text-xs font-semibold transition-colors",
                   isCurrent && "ring-2 ring-primary ring-offset-2 ring-offset-surface",
                   isDoubtful
                     ? "border-warning bg-warning text-white"

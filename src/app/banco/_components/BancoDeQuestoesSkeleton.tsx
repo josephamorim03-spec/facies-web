@@ -17,7 +17,7 @@ export function BancoDeQuestoesSkeleton() {
           <Skeleton className="h-3 w-32 rounded-control" />
           <Skeleton className="h-6 w-44 rounded-control" />
         </div>
-        <Skeleton className="h-11 w-24 shrink-0 rounded-full" />
+        <Skeleton className="h-11 w-24 shrink-0 rounded-control" />
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem]">
@@ -70,7 +70,7 @@ export function BancoDeQuestoesSkeleton() {
                   </div>
                   <Skeleton className="h-3 w-14 rounded-control" />
                 </div>
-                <Skeleton className="h-1 w-full rounded-full" />
+                <Skeleton className="h-1 w-full rounded-control" />
               </div>
             </div>
           </div>

@@ -160,14 +160,14 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
           <span
             className={`text-xs px-2 py-0.5 border ${
               result.status === "completed"
-                ? "border-green-300 text-green-700"
-                : "border-red-300 text-red-600"
+                ? "border-success text-success"
+                : "border-danger text-danger"
             }`}
           >
             {result.status === "completed" ? "Analisada" : "Falhou"}
           </span>
           {hasDivergence && (
-            <span className="text-xs px-2 py-0.5 border border-amber-400 text-amber-700">
+            <span className="text-xs px-2 py-0.5 border border-warning text-warning">
               Divergência
             </span>
           )}
@@ -175,11 +175,11 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
       </div>
 
       {hasDivergence && (
-        <div className="border border-amber-400 bg-amber-50 p-3 space-y-2">
+        <div className="border border-warning bg-surfaceMuted p-3 space-y-2">
           {divergenceResolution === "pending" && !dismissed && (
             <>
-              <p className="text-sm font-medium text-amber-900">Divergência detectada</p>
-              <p className="text-xs text-amber-800">
+              <p className="text-sm font-medium text-warning">Divergência detectada</p>
+              <p className="text-xs text-warning">
                 A IA aponta <strong>{aiGabarito}</strong> como gabarito correto, mas o gabarito oficial é{" "}
                 <strong>{officialCorrect}</strong>.
                 {aiAgreesWithUser && (
@@ -191,7 +191,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                   type="button"
                   onClick={() => setDismissed(true)}
                   disabled={isLoadingOverride}
-                  className="text-xs border border-amber-500 text-amber-800 px-2 py-1 hover:bg-amber-100 disabled:opacity-50"
+                  className="text-xs border border-warning text-warning px-2 py-1 hover:bg-surfaceMuted disabled:opacity-50"
                 >
                   Manter como erro
                 </button>
@@ -200,7 +200,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                     type="button"
                     onClick={() => void onApplyOverride("aceitar_ia")}
                     disabled={isLoadingOverride}
-                    className="text-xs border border-emerald-500 text-emerald-800 px-2 py-1 hover:bg-emerald-50 disabled:opacity-50"
+                    className="text-xs border border-success text-success px-2 py-1 hover:bg-surfaceMuted disabled:opacity-50"
                   >
                     {isLoadingOverride ? "Salvando..." : "Marcar como acerto (análise da IA)"}
                   </button>
@@ -218,7 +218,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
           )}
           {(divergenceResolution !== "pending" || dismissed) && (
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <p className="text-xs text-amber-800">
+              <p className="text-xs text-warning">
                 {divergenceResolution === "anulada" && "Questão anulada. Nenhum flashcard será gerado."}
                 {divergenceResolution === "aceitar_ia" && "Marcada como acerto pela análise da IA. Nenhum flashcard será gerado."}
                 {divergenceResolution === "pending" && dismissed && "Resultado mantido como erro. Flashcards gerados normalmente."}
@@ -233,7 +233,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                   }
                 }}
                 disabled={isLoadingOverride}
-                className="text-xs text-amber-700 underline whitespace-nowrap disabled:opacity-50"
+                className="text-xs text-warning underline whitespace-nowrap disabled:opacity-50"
               >
                 {isLoadingOverride ? "Salvando..." : "Desfazer"}
               </button>
@@ -243,7 +243,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
       )}
 
       {result.status === "failed" && result.error_message && (
-        <p className="text-xs text-red-600">{result.error_message}</p>
+        <p className="text-xs text-danger">{result.error_message}</p>
       )}
 
       {result.status === "completed" && result.analysis && (
@@ -269,13 +269,13 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                   ? ` Motivos não incluídos: ${Array.from(new Set(imageContext.itemReasons)).map((reason) => imageFallbackReasonLabel(reason)).join(", ")}.`
                   : "";
                 contextBanner = (
-                  <p className="text-xs border border-amber-300 bg-amber-50 text-amber-800 px-3 py-2">
+                  <p className="text-xs border border-warning bg-surfaceMuted text-warning px-3 py-2">
                     Análise parcial de imagem: {included}/{candidates} imagem(ns) considerada(s) pela IA.{reasonText}
                   </p>
                 );
               } else {
                 contextBanner = (
-                  <p className="text-xs border border-emerald-300 bg-emerald-50 text-emerald-800 px-3 py-2">
+                  <p className="text-xs border border-success bg-surfaceMuted text-success px-3 py-2">
                     Imagem(ns) considerada(s) pela IA: {included}/{candidates}.
                   </p>
                 );
@@ -283,7 +283,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
             } else {
               const reasonLabel = imageFallbackReasonLabel(imageContext.fallbackReason);
               contextBanner = (
-                <p className="text-xs border border-amber-300 bg-amber-50 text-amber-800 px-3 py-2">
+                <p className="text-xs border border-warning bg-surfaceMuted text-warning px-3 py-2">
                   Análise parcial (sem imagem): 0/{imageContext.candidateCount} imagem(ns) considerada(s). Motivo: {reasonLabel}.
                 </p>
               );
@@ -293,10 +293,10 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
               <>
                 {contextBanner}
                 {imageDescriptions.length > 0 && (
-                  <div className="border border-sky-200 bg-sky-50 px-3 py-2 space-y-1">
-                    <p className="text-xs text-sky-700 uppercase tracking-wide">Descrição da imagem (visão IA)</p>
+                  <div className="border border-info bg-surfaceMuted px-3 py-2 space-y-1">
+                    <p className="text-xs text-info uppercase tracking-wide">Descrição da imagem (visão IA)</p>
                     {imageDescriptions.map((desc, i) => (
-                      <p key={i} className="text-xs text-sky-900 break-words [overflow-wrap:anywhere]">{desc}</p>
+                      <p key={i} className="text-xs text-info break-words [overflow-wrap:anywhere]">{desc}</p>
                     ))}
                   </div>
                 )}
@@ -364,12 +364,12 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
               )}
 
               {atomicityQuality.atomicityOk === false && (
-                <div className="border border-amber-300 bg-amber-50 p-3">
-                  <p className="text-xs text-amber-800 uppercase tracking-wide">Granularidade atômica reduzida</p>
-                  <p className="mt-1.5 text-sm text-amber-900 break-words [overflow-wrap:anywhere]">
+                <div className="border border-warning bg-surfaceMuted p-3">
+                  <p className="text-xs text-warning uppercase tracking-wide">Granularidade atômica reduzida</p>
+                  <p className="mt-1.5 text-sm text-warning break-words [overflow-wrap:anywhere]">
                     {atomicityQuality.message || "A análise ficou com granularidade atômica abaixo do ideal."}
                   </p>
-                  <p className="mt-1 text-xs text-amber-800 break-words [overflow-wrap:anywhere]">
+                  <p className="mt-1 text-xs text-warning break-words [overflow-wrap:anywhere]">
                     Nós atômicos: {atomicityQuality.atomicNodesCount} | Alvos válidos: {atomicityQuality.learningTargetsCount}
                     {atomicityQuality.atomicRetryUsed ? " | Retry corretivo aplicado" : ""}
                   </p>
@@ -406,7 +406,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
           )}
 
           {hasDivergence && divergenceResolution === "pending" && (newDraftCount > 0 || existingDraftCount > 0) && (
-            <p className="text-xs border border-amber-300 bg-amber-50 text-amber-800 px-3 py-2">
+            <p className="text-xs border border-warning bg-surfaceMuted text-warning px-3 py-2">
               Selecione uma opção acima para definir se os flashcards serão utilizados.
             </p>
           )}
@@ -415,17 +415,17 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
             (newDraftCount > 0 || existingDraftCount > 0) && (
             <div className="space-y-2">
               {onlyExistingCoverage ? (
-                <div className="border border-amber-400 bg-amber-50 p-3">
-                  <p className="text-xs font-medium text-amber-900 break-words [overflow-wrap:anywhere]">
+                <div className="border border-warning bg-surfaceMuted p-3">
+                  <p className="text-xs font-medium text-warning break-words [overflow-wrap:anywhere]">
                     ⚠ Conceito já no seu caderno — e você errou.
                   </p>
-                  <p className="mt-1 text-xs text-amber-800 break-words [overflow-wrap:anywhere]">
+                  <p className="mt-1 text-xs text-warning break-words [overflow-wrap:anywhere]">
                     Você tem {existingDraftCount} flashcard(s) salvo(s) sobre este tema. Revise-os.
                   </p>
                 </div>
               ) : existingDraftCount > 0 ? (
-                <div className="border border-amber-300 bg-amber-50 p-3">
-                  <p className="text-xs text-amber-800 break-words [overflow-wrap:anywhere]">
+                <div className="border border-warning bg-surfaceMuted p-3">
+                  <p className="text-xs text-warning break-words [overflow-wrap:anywhere]">
                     Você já tem flashcard(s) sobre este conceito.
                   </p>
                 </div>
@@ -469,16 +469,16 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                           <div key={bodyKey} className="border border-edge bg-ink/5 p-2">
                             <div className="mb-1 flex flex-wrap items-center gap-1">
                               {matchOriginLabel && (
-                                <span className="text-xs px-2 py-0.5 border border-amber-300 text-amber-700 whitespace-nowrap">
+                                <span className="text-xs px-2 py-0.5 border border-warning text-warning whitespace-nowrap">
                                   {matchOriginLabel}
                                 </span>
                               )}
                               {sourceOriginLabel && (
-                                <span className="text-xs px-2 py-0.5 border border-sky-300 text-sky-700 whitespace-nowrap">
+                                <span className="text-xs px-2 py-0.5 border border-info text-info whitespace-nowrap">
                                   {sourceOriginLabel}
                                 </span>
                               )}
-                              <span className="text-xs px-2 py-0.5 border border-emerald-300 text-emerald-700 whitespace-nowrap">
+                              <span className="text-xs px-2 py-0.5 border border-success text-success whitespace-nowrap">
                                 Salvo
                               </span>
                             </div>
@@ -524,7 +524,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                       {selectedCountForQuestion > 0 && (
                         <div className="flex flex-wrap items-center justify-end gap-3">
                           {saveFeedbackByQuestion[result.question_id] && (
-                            <p className={`text-xs break-words [overflow-wrap:anywhere] ${saveFeedbackByQuestion[result.question_id].includes("falharam") ? "text-red-600" : "text-emerald-700"}`}>
+                            <p className={`text-xs break-words [overflow-wrap:anywhere] ${saveFeedbackByQuestion[result.question_id].includes("falharam") ? "text-danger" : "text-success"}`}>
                               {saveFeedbackByQuestion[result.question_id]}
                             </p>
                           )}
@@ -539,7 +539,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                         </div>
                       )}
                       {!saveFeedbackByQuestion[result.question_id] && savedCountForQuestion > 0 && selectedCountForQuestion === 0 && (
-                        <p className="text-xs text-emerald-700 break-words [overflow-wrap:anywhere]">
+                        <p className="text-xs text-success break-words [overflow-wrap:anywhere]">
                           {savedCountForQuestion} flashcard{savedCountForQuestion !== 1 ? "s" : ""} salvo{savedCountForQuestion !== 1 ? "s" : ""} desta questão.
                         </p>
                       )}
@@ -565,7 +565,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                             >
                               <div className="flex items-start gap-2">
                                 {isSaved ? (
-                                  <span className="mt-0.5 flex-shrink-0 text-xs px-2 py-0.5 border border-emerald-300 text-emerald-700 whitespace-nowrap">Salvo</span>
+                                  <span className="mt-0.5 flex-shrink-0 text-xs px-2 py-0.5 border border-success text-success whitespace-nowrap">Salvo</span>
                                 ) : (
                                   <input
                                     type="checkbox"
@@ -583,10 +583,10 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                                       Dificuldade de recuperação:{" "}
                                       <span className={
                                         draft.retrieval_difficulty === 3
-                                          ? "text-red-600 font-medium"
+                                          ? "text-danger font-medium"
                                           : draft.retrieval_difficulty === 1
-                                            ? "text-emerald-700"
-                                            : "text-amber-700"
+                                            ? "text-success"
+                                            : "text-warning"
                                       }>
                                         {draft.retrieval_difficulty === 1
                                           ? "Direta (1)"

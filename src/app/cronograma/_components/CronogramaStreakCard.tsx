@@ -77,7 +77,7 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
   if (loading) {
     return (
       <div className="flex justify-center" data-testid="streak-skeleton">
-        <div className="h-3 w-40 animate-pulse rounded-full bg-edge" />
+        <div className="h-3 w-40 animate-pulse rounded-control bg-edge" />
       </div>
     );
   }
@@ -119,7 +119,7 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
       <span
         title={detailTitle}
         data-streak-days={days}
-        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${toneClass}`}
+        className={`inline-flex items-center gap-2 rounded-control px-3 py-1 text-xs font-medium ${toneClass}`}
         style={{ backgroundColor: `color-mix(in srgb, ${tint} 9%, transparent)` }}
       >
         <StreakRing days={days} />

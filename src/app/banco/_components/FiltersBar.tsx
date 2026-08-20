@@ -72,10 +72,26 @@ function deriveRealizacaoLabel(s: RealizacaoState): string {
   return parts.join(" + ");
 }
 
-const MODO_OPTIONS: { value: QuestionBankResolutionMode | "full_exam"; label: string; help: string }[] = [
+/**
+ * Dois eixos, e não um.
+ *
+ * Isto era uma lista só, com "Prova institucional" ao lado de duas opções de
+ * correção — e escolher a prova sobrescrevia a correção em silêncio
+ * (`onResolutionModeChange("simulation")`). O aluno cuja preferência era
+ * "revelar tudo ao finalizar" pedia uma prova institucional e recebia "escolher
+ * por questão", sem aviso.
+ *
+ * São perguntas independentes: O QUE estudar (tópico ou prova inteira) e COMO
+ * corrigir (por questão ou tudo no fim). Separadas, uma não apaga a outra.
+ */
+const TIPO_OPTIONS: { value: "topic" | "full_exam"; label: string; help: string }[] = [
+  { value: "topic", label: "Por tópico", help: "Você escolhe as áreas e os temas." },
+  { value: "full_exam", label: "Prova institucional", help: "Uma instituição e um ano." },
+];
+
+const CORRECAO_OPTIONS: { value: QuestionBankResolutionMode; label: string; help: string }[] = [
   { value: "simulation", label: "Escolher por questão", help: "Depois do resultado, revise o raciocínio ou revele cada feedback." },
   { value: "training", label: "Revelar tudo ao finalizar", help: "Mostra gabarito e comentários de todas após concluir." },
-  { value: "full_exam", label: "Prova institucional", help: "Uma instituição e um ano." },
 ];
 
 export type FiltersBarProps = {
@@ -303,11 +319,12 @@ export default function FiltersBar(props: FiltersBarProps) {
     setLimitDraft(String(next));
   }
 
-  const modeLabel = studyKind === "full_exam"
-    ? "Prova institucional"
-    : resolutionMode === "simulation"
-      ? "Feedback por questão"
-      : "Revelação ao finalizar";
+  // Os DOIS eixos no título. Antes "Prova institucional" engolia a correção, e o
+  // aluno não via como a prova seria corrigida até terminá-la.
+  const modeLabel = [
+    studyKind === "full_exam" ? "Prova institucional" : "Por tópico",
+    resolutionMode === "simulation" ? "feedback por questão" : "revelação ao finalizar",
+  ].join(" · ");
   const statusLabel = deriveRealizacaoLabel(realizacaoState);
   const selectedSourceCount = boardCodes.length + examCodes.length + institutions.length;
   const selectedStateCount = stateCodes.length;
@@ -350,7 +367,7 @@ export default function FiltersBar(props: FiltersBarProps) {
             className="w-full"
           />
           {suggestionsFocused && search.trim() && (
-            <ul className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-y-auto rounded-xl border border-edge bg-surface shadow-[var(--soft-shadow)]">
+            <ul className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-y-auto rounded-surface border border-edge bg-surface shadow-[var(--soft-shadow)]">
               {topicSuggestions.slice(0, 8).map((topic) => {
                 const selectable = topic.question_count > 0;
                 return (
@@ -383,7 +400,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
-          <div className="max-h-[32rem] overflow-y-auto rounded-xl border border-edge bg-paper p-2">
+          <div className="max-h-[32rem] overflow-y-auto rounded-surface border border-edge bg-paper p-2">
             <TopicTreeList
               nodes={topicTree}
               selectedIds={selectedTopicIds}
@@ -545,35 +562,56 @@ export default function FiltersBar(props: FiltersBarProps) {
           title={`${modeLabel}, ${clampedLimit} questões`}
         />
 
-        <div className="grid gap-3 md:grid-cols-3">
-          {MODO_OPTIONS.map((option) => {
-            const active = option.value === "full_exam"
-              ? studyKind === "full_exam"
-              : studyKind === "topic" && resolutionMode === option.value;
-            return (
+        <fieldset>
+          <legend className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
+            O que estudar
+          </legend>
+          <div className="mt-2 grid gap-3 md:grid-cols-2">
+            {TIPO_OPTIONS.map((option) => (
               <button
                 key={option.value}
                 type="button"
-                onClick={() => {
-                  if (option.value === "full_exam") {
-                    onStudyKindChange("full_exam");
-                    onResolutionModeChange("simulation");
-                  } else {
-                    onStudyKindChange("topic");
-                    onResolutionModeChange(option.value);
-                  }
-                }}
+                aria-pressed={studyKind === option.value}
+                // Só o tipo. A correção fica onde o aluno deixou.
+                onClick={() => onStudyKindChange(option.value)}
                 className={cx(
-                  "rounded-xl border p-4 text-left transition-colors",
-                  active ? "border-primary bg-surfaceMuted" : "border-edge bg-surface hover:border-primary",
+                  "rounded-surface border p-4 text-left transition-colors",
+                  studyKind === option.value
+                    ? "border-primary bg-surfaceMuted"
+                    : "border-edge bg-surface hover:border-primary",
                 )}
               >
                 <span className="block text-sm font-semibold text-ink">{option.label}</span>
                 <span className="mt-1 block text-xs text-muted">{option.help}</span>
               </button>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
+            Como corrigir
+          </legend>
+          <div className="mt-2 grid gap-3 md:grid-cols-2">
+            {CORRECAO_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={resolutionMode === option.value}
+                onClick={() => onResolutionModeChange(option.value)}
+                className={cx(
+                  "rounded-surface border p-4 text-left transition-colors",
+                  resolutionMode === option.value
+                    ? "border-primary bg-surfaceMuted"
+                    : "border-edge bg-surface hover:border-primary",
+                )}
+              >
+                <span className="block text-sm font-semibold text-ink">{option.label}</span>
+                <span className="mt-1 block text-xs text-muted">{option.help}</span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
 
         {studyKind === "full_exam" ? (
           <div className="grid gap-3 border-t border-edge pt-4 md:grid-cols-[1fr_7rem_11rem]">
@@ -602,7 +640,7 @@ export default function FiltersBar(props: FiltersBarProps) {
               <select
                 value={fullExamType}
                 onChange={(e) => onFullExamTypeChange(e.target.value as FullExamType)}
-                className="w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm text-ink"
+                className="w-full rounded-surface border border-edge bg-surface px-3 py-2 text-sm text-ink"
               >
                 <option value="acesso_direto">Acesso direto</option>
                 <option value="r_plus">R+</option>

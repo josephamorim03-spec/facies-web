@@ -84,7 +84,11 @@ const nextConfig = {
       { source: "/estatisticas", destination: "/evolucao", permanent: true },
       { source: "/dados-e-relatorios", destination: "/evolucao", permanent: true },
       { source: "/dados-e-relatorios/:path*", destination: "/evolucao", permanent: true },
-      { source: "/revisoes", destination: "/evolucao", permanent: true },
+      // O historico saiu de /evolucao e virou pagina propria sob o Banco. Estes
+      // dois aliases prometem o historico: apontados para /evolucao eles
+      // aterrissam nos Graficos, calados — que e exatamente o bug que
+      // `banco.historico.spec.ts` existe para impedir.
+      { source: "/revisoes", destination: "/banco/historico", permanent: true },
       // `/cronograma` e' a canonica: e' o nome que a tela usa com o aluno e o
       // diretorio real da pagina. O 308 estava invertido -- mandava a canonica
       // para o alias, e o proprio `app/planejamento/page.tsx` so reexportava

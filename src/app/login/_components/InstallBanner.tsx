@@ -22,14 +22,14 @@ export function InstallBanner({
     <div className="md:hidden fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] z-40 flex flex-col items-center px-4 pointer-events-none">
       <button
         type="button"
-        className="pointer-events-auto flex items-center gap-2 rounded-xl border border-edge bg-paper/95 px-3 py-2 shadow-sm backdrop-blur-[2px]"
+        className="pointer-events-auto flex items-center gap-2 rounded-surface border border-edge bg-paper/95 px-3 py-2 shadow-sm backdrop-blur-[2px]"
         onClick={onInstall}
         aria-label="Instale para melhor experiência"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14" />
         </svg>
-        <Image src="/apple-touch-icon.png" alt="KrosMed" width={24} height={24} className="w-6 h-6 rounded-md" />
+        <Image src="/apple-touch-icon.png" alt="KrosMed" width={24} height={24} className="w-6 h-6 rounded-control" />
         <span className="text-xs text-muted whitespace-nowrap">Instalar</span>
       </button>
 

@@ -76,7 +76,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
               className="flex items-center gap-1 text-[11px] font-medium transition-opacity"
               style={{ color: isOtherLocked ? CHART_MUTED : AREA_COLORS[area], opacity: isOtherLocked ? 0.4 : 1 }}
             >
-              <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: AREA_COLORS[area] }} />
+              <span className="inline-block w-2 h-2 rounded-control" style={{ backgroundColor: AREA_COLORS[area] }} />
               {area}
             </button>
           );
@@ -95,7 +95,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
       <div ref={refs.areaLinesFrameRef} className="relative overflow-visible">
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={areaLineData} margin={WEEKLY_CHART_MARGIN}>
-            <CartesianGrid strokeDasharray="3 3" stroke={CHART_EDGE} />
+            <CartesianGrid strokeDasharray="1 3" stroke={CHART_EDGE} />
             <XAxis
               dataKey="week_label"
               type="category"
@@ -117,7 +117,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
                 <Line
                   key={area}
                   dataKey={area}
-                  type="monotone"
+                  type="linear"
                   stroke={AREA_COLORS[area]}
                   strokeWidth={isLocked ? 2.8 : 1.8}
                   strokeOpacity={opacity}

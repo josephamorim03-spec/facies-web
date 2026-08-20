@@ -54,15 +54,15 @@ function dnaChips(tags: string[] | undefined): string[] {
 function statusTone(status: string | null): string {
   switch (status) {
     case "published":
-      return "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300";
+      return "bg-surfaceMuted text-success/40";
     case "blocked":
     case "deprecated":
-      return "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300";
+      return "bg-surfaceMuted text-danger/40";
     case "human_review_pending":
     case "human_reviewed":
-      return "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+      return "bg-surfaceMuted text-warning/40";
     default:
-      return "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300";
+      return "bg-surface text-ink";
   }
 }
 
@@ -608,29 +608,29 @@ export default function QuestionsManager() {
   }
 
   const inputCls =
-    "rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100";
+    "rounded-surface border border-edge bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-edge";
 
   return (
-    <section className="space-y-5 rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <section className="space-y-5 rounded-surface border border-edge bg-surface p-6 shadow-sm">
       <div>
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Questões</h2>
-        <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+        <h2 className="text-2xl font-semibold text-ink">Questões</h2>
+        <p className="mt-1 text-sm text-ink">
           Busque, edite e remova questões. Editar revalida o gate de qualidade; apagar é soft-delete
           (sai do banco do aluno, reversível).
         </p>
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+      <div className="rounded-surface border border-warning bg-surfaceMuted/70 p-4/40/20">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-100">Denuncias abertas</h3>
-            <p className="mt-1 text-xs text-amber-800/80 dark:text-amber-200/80">
+            <h3 className="text-sm font-semibold text-warning">Denuncias abertas</h3>
+            <p className="mt-1 text-xs text-warning/80/80">
               {reportsLoading ? "Carregando..." : `${reports.length} report(s) pendente(s)`}
             </p>
           </div>
           <button
             onClick={() => void refreshReports()}
-            className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-200 dark:hover:bg-amber-950/40"
+            className="rounded-surface border border-warning px-3 py-1.5 text-xs font-semibold text-warning hover:bg-surfaceMuted"
           >
             Atualizar reports
           </button>
@@ -646,20 +646,20 @@ export default function QuestionsManager() {
               const reportDetail = reportDetailsByQuestionId[report.question_id];
               const isQuestionLoading = reportDetailBusyId === report.id;
               return (
-                <div key={report.id} className="rounded-lg border border-amber-200 bg-white p-3 dark:border-amber-900/40 dark:bg-gray-900">
+                <div key={report.id} className="rounded-surface border border-warning bg-surface p-3/40">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-200">
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-warning">
                         {report.source_issue_kind || report.report_type ? <span>{report.source_issue_kind || report.report_type}</span> : null}
                         {report.severity ? <span>{report.severity}</span> : null}
                         <span>IA: {report.ai_triage_status || "não solicitada"}</span>
                         <span>reparo: {report.repair_status || "não solicitado"}</span>
                         <span>{report.question.status || "questão sem status"}</span>
                       </div>
-                      <div className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <div className="mt-1 text-sm font-medium text-ink">
                         {reportSourceLabel(report)}
                       </div>
-                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="mt-1 text-xs text-muted">
                         {[
                           report.question.source.institution,
                           report.question.source.exam_name,
@@ -667,10 +667,10 @@ export default function QuestionsManager() {
                         ].filter(Boolean).join(" - ") || "fonte sem metadados"}
                       </div>
                       {report.report_reason ? (
-                        <p className="mt-2 text-xs text-gray-700 dark:text-gray-300">{report.report_reason}</p>
+                        <p className="mt-2 text-xs text-ink">{report.report_reason}</p>
                       ) : null}
                       {diagnosis ? (
-                        <div className="mt-2 rounded-lg border border-amber-100 bg-amber-50/60 p-2 text-xs text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-100">
+                        <div className="mt-2 rounded-surface border border-warning bg-surfaceMuted/60 p-2 text-xs text-warning/40/20">
                           <p>{diagnosis}</p>
                           {recommendedAction ? <p className="mt-1 font-semibold">Ação sugerida: {recommendedAction}</p> : null}
                           {patchFields.length > 0 ? (
@@ -682,7 +682,7 @@ export default function QuestionsManager() {
                         type="button"
                         onClick={() => void toggleReportQuestion(report)}
                         disabled={isQuestionLoading}
-                        className="mt-2 rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:text-amber-200 dark:hover:bg-amber-950/40"
+                        className="mt-2 rounded-surface border border-warning px-3 py-1.5 text-xs font-semibold text-warning hover:bg-surfaceMuted disabled:opacity-50"
                       >
                         {isQuestionLoading ? "Carregando questão..." : isQuestionExpanded ? "Ocultar questão completa" : "Ver questão completa"}
                       </button>
@@ -697,15 +697,15 @@ export default function QuestionsManager() {
                             knowledgeNodes={reportDetail.nodes}
                             correctAnswer={reportDetail.answer}
                             showCorrectAnswer
-                            className="mt-3 rounded-lg border border-amber-200 bg-amber-50/30 p-3 dark:border-amber-900/40 dark:bg-amber-950/10"
+                            className="mt-3 rounded-surface border border-warning bg-surfaceMuted/30 p-3/40/10"
                           />
                         ) : (
-                          <div className="mt-3 rounded-lg border border-dashed border-amber-300 px-3 py-2 text-xs text-amber-800 dark:border-amber-800 dark:text-amber-200">
+                          <div className="mt-3 rounded-surface border border-dashed border-warning px-3 py-2 text-xs text-warning">
                             Carregando questão completa...
                           </div>
                         )
                       ) : null}
-                      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-gray-500 dark:text-gray-400">
+                      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-muted">
                         {report.candidate_id ? <span>candidate {report.candidate_id.slice(0, 8)}</span> : null}
                         {report.imported_file_id ? <span>import {report.imported_file_id.slice(0, 8)}</span> : null}
                       </div>
@@ -714,41 +714,41 @@ export default function QuestionsManager() {
                       <button
                         onClick={() => void triageReport(report.id)}
                         disabled={isReportBusy}
-                        className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:text-amber-200 dark:hover:bg-amber-950/40"
+                        className="rounded-surface border border-warning px-3 py-1.5 text-xs font-semibold text-warning hover:bg-surfaceMuted disabled:opacity-50"
                       >
                         Diagnosticar com IA
                       </button>
                       <button
                         onClick={() => void repairReport(report.id, "apply_patch")}
                         disabled={isReportBusy || patchFields.length === 0}
-                        className="rounded-lg border border-blue-300 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:opacity-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/30"
+                        className="rounded-surface border border-info px-3 py-1.5 text-xs font-semibold text-info hover:bg-surfaceMuted disabled:opacity-50"
                       >
                         Aplicar patch
                       </button>
                       <button
                         onClick={() => void repairReport(report.id, "reanalyze_question")}
                         disabled={isReportBusy}
-                        className="rounded-lg border border-purple-300 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-50 disabled:opacity-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-950/30"
+                        className="rounded-surface border border-accent px-3 py-1.5 text-xs font-semibold text-accent hover:bg-surfaceMuted disabled:opacity-50"
                       >
                         Reanalisar
                       </button>
                       <button
                         onClick={() => void repairReport(report.id, "block_question")}
                         disabled={isReportBusy}
-                        className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30"
+                        className="rounded-surface border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-surfaceMuted disabled:opacity-50"
                       >
                         Bloquear
                       </button>
                       <button
                         onClick={() => void openEditor(report.question_id)}
-                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                        className="rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-ink hover:bg-surface"
                       >
                         Editar
                       </button>
                       <button
                         onClick={() => void resolveReport(report.id)}
                         disabled={isReportBusy}
-                        className="rounded-lg border border-green-300 px-3 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-50 disabled:opacity-50 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-950/30"
+                        className="rounded-surface border border-success px-3 py-1.5 text-xs font-semibold text-success hover:bg-surfaceMuted disabled:opacity-50"
                       >
                         Resolver
                       </button>
@@ -760,7 +760,7 @@ export default function QuestionsManager() {
           </div>
         ) : null}
         {reportsError ? (
-          <p className="mt-3 text-xs text-amber-900/80 dark:text-amber-200/80">{reportsError}</p>
+          <p className="mt-3 text-xs text-warning/80/80">{reportsError}</p>
         ) : null}
       </div>
 
@@ -812,7 +812,7 @@ export default function QuestionsManager() {
 
       {/* Filas pré-definidas (atalhos de filtro) */}
       <div className="flex flex-wrap items-center gap-2 text-xs">
-        <span className="text-gray-500 dark:text-gray-400">Filas:</span>
+        <span className="text-muted">Filas:</span>
         {([
           ["Sem tópico", () => { setTopicFilter("missing"); setDnaFilter(""); setLowConfidence(false); setMissingSimilar(false); setNeedsReview(false); }],
           ["Reavaliar tópico", () => { setNeedsReview(true); setTopicFilter(""); setDnaFilter(""); setLowConfidence(false); setMissingSimilar(false); }],
@@ -823,7 +823,7 @@ export default function QuestionsManager() {
           <button
             key={label}
             onClick={apply}
-            className="rounded-full border border-gray-300 px-3 py-1 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="rounded-control border border-edge px-3 py-1 font-medium text-ink hover:bg-surface"
           >
             {label}
           </button>
@@ -831,7 +831,7 @@ export default function QuestionsManager() {
         {(topicFilter || dnaFilter || lowConfidence || missingSimilar || needsReview) && (
           <button
             onClick={() => { setTopicFilter(""); setDnaFilter(""); setLowConfidence(false); setMissingSimilar(false); setNeedsReview(false); }}
-            className="rounded-full border border-gray-200 px-3 py-1 text-gray-400 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800"
+            className="rounded-control border border-edge px-3 py-1 text-muted hover:bg-surface"
           >
             limpar
           </button>
@@ -839,17 +839,17 @@ export default function QuestionsManager() {
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200">
+        <div className="rounded-surface border border-danger bg-surfaceMuted px-4 py-3 text-sm text-danger/40/30">
           {error}
         </div>
       )}
       {notice && (
-        <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900/40 dark:bg-green-950/30 dark:text-green-200">
+        <div className="rounded-surface border border-success bg-surfaceMuted px-4 py-3 text-sm text-success/40/30">
           {notice}
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-surface border border-edge bg-surface px-4 py-3 text-sm text-ink">
         <span>
           {missingTopicPageItems.length} sem tópico · {missingDnaPageItems.length} sem DNA nesta página
         </span>
@@ -857,14 +857,14 @@ export default function QuestionsManager() {
           <button
             onClick={() => void enqueueMissingDnaPageAnalysis()}
             disabled={loading || bulkAnalyzing || missingDnaPageItems.length === 0}
-            className="rounded-lg border border-violet-300 px-3 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-violet-800 dark:text-violet-300 dark:hover:bg-violet-950/30"
+            className="rounded-surface border border-accent px-3 py-1.5 text-xs font-semibold text-accent hover:bg-surfaceMuted disabled:cursor-not-allowed disabled:opacity-40"
           >
             {bulkAnalyzing ? "Enfileirando..." : "Analisar DNA desta página"}
           </button>
           <button
             onClick={() => void enqueueMissingTopicPageAnalysis()}
             disabled={loading || bulkAnalyzing || missingTopicPageItems.length === 0}
-            className="rounded-lg border border-blue-300 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/30"
+            className="rounded-surface border border-info px-3 py-1.5 text-xs font-semibold text-info hover:bg-surfaceMuted disabled:cursor-not-allowed disabled:opacity-40"
           >
             {bulkAnalyzing ? "Enfileirando..." : "Analisar IA das sem tópico desta página"}
           </button>
@@ -872,27 +872,27 @@ export default function QuestionsManager() {
       </div>
 
       {selected.size > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-800 dark:border-violet-900/40 dark:bg-violet-950/30 dark:text-violet-200">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-surface border border-accent bg-surfaceMuted px-4 py-3 text-sm text-accent/40/30">
           <span className="font-semibold">{selected.size} selecionada(s)</span>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => void bulkChangeStatus("publish")}
               disabled={bulkBusy}
-              className="rounded-lg border border-green-300 px-3 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-950/30"
+              className="rounded-surface border border-success px-3 py-1.5 text-xs font-semibold text-success hover:bg-surfaceMuted disabled:cursor-not-allowed disabled:opacity-40"
             >
               {bulkBusy ? "Processando..." : "Publicar selecionadas"}
             </button>
             <button
               onClick={() => void bulkChangeStatus("unpublish")}
               disabled={bulkBusy}
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+              className="rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-ink hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
             >
               Enviar p/ revisão
             </button>
             <button
               onClick={() => void bulkDelete()}
               disabled={bulkBusy}
-              className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30"
+              className="rounded-surface border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-surfaceMuted disabled:cursor-not-allowed disabled:opacity-40"
             >
               Apagar selecionadas
             </button>
@@ -901,9 +901,9 @@ export default function QuestionsManager() {
       )}
 
       {/* Tabela */}
-      <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800">
+      <div className="overflow-x-auto rounded-surface border border-edge">
         <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-950 dark:text-gray-400">
+          <thead className="bg-surface text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3">
                 <input
@@ -922,7 +922,7 @@ export default function QuestionsManager() {
               <th className="px-4 py-3 text-right">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+          <tbody className="divide-y divide-edge">
             {items.map((item) => (
               <tr key={item.id} className="align-top">
                 <td className="px-4 py-3">
@@ -934,57 +934,57 @@ export default function QuestionsManager() {
                     className="h-4 w-4 cursor-pointer accent-violet-600"
                   />
                 </td>
-                <td className="max-w-md px-4 py-3 text-gray-900 dark:text-gray-100">
+                <td className="max-w-md px-4 py-3 text-ink">
                   <p className="line-clamp-2">{item.stem}</p>
                   <div className="mt-1 flex flex-wrap gap-1">
                     {item.needs_topic_review && (
-                      <span className="inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                      <span className="inline-block rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-medium text-warning/40">
                         reavaliar tópico
                       </span>
                     )}
                     {item.has_image && (
-                      <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                      <span className="inline-block rounded-control bg-surface px-2 py-0.5 text-[11px] text-muted">
                         imagem
                       </span>
                     )}
                     {dnaChips(item.question_fingerprint?.tags).map((label) => (
                       <span
                         key={label}
-                        className="inline-block rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700 dark:bg-violet-950/40 dark:text-violet-300"
+                        className="inline-block rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-medium text-accent/40"
                       >
                         {label}
                       </span>
                     ))}
                   </div>
                 </td>
-                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                <td className="px-4 py-3 text-ink">
                   {item.has_primary_node ? (
                     <div>
-                      <span className="font-semibold text-gray-800 dark:text-gray-100">{item.primary_node_code ?? ""}</span>
+                      <span className="font-semibold text-ink">{item.primary_node_code ?? ""}</span>
                       {item.primary_node_name ? <span className="ml-1">{item.primary_node_name}</span> : null}
                     </div>
                   ) : (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                    <span className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-semibold text-warning/40">
                       Sem tópico
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                <td className="px-4 py-3 text-ink">
                   {[item.board_code, item.year].filter(Boolean).join(" · ") || "—"}
                 </td>
-                <td className="px-4 py-3 font-semibold text-gray-900 dark:text-gray-100">{item.answer ?? "—"}</td>
+                <td className="px-4 py-3 font-semibold text-ink">{item.answer ?? "—"}</td>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusTone(item.status)}`}>
+                  <span className={`rounded-control px-2 py-0.5 text-[11px] font-semibold ${statusTone(item.status)}`}>
                     {item.status ?? "—"}
                   </span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
-                    <button onClick={() => void openEditor(item.id)} className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
+                    <button onClick={() => void openEditor(item.id)} className="rounded-surface border border-edge px-2.5 py-1 text-xs font-semibold text-ink hover:bg-surface">
                       Editar
                     </button>
                     {!item.has_primary_node ? (
-                      <button onClick={() => void enqueueAnalysis(item)} className="rounded-lg border border-blue-300 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/30">
+                      <button onClick={() => void enqueueAnalysis(item)} className="rounded-surface border border-info px-2.5 py-1 text-xs font-semibold text-info hover:bg-surfaceMuted">
                         Analisar IA
                       </button>
                     ) : null}
@@ -992,20 +992,20 @@ export default function QuestionsManager() {
                       onClick={() => void sendToEditorialCuration(item)}
                       disabled={anomalyCheckingId === item.id}
                       title="Cria um rascunho editorial para decisão humana na aba Curadoria"
-                      className="rounded-lg border border-amber-300 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-50 disabled:opacity-50 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-950/30"
+                      className="rounded-surface border border-warning px-2.5 py-1 text-xs font-semibold text-warning hover:bg-surfaceMuted disabled:opacity-50"
                     >
                       {anomalyCheckingId === item.id ? "Analisando…" : "Enviar à curadoria"}
                     </button>
                     {item.status === "published" ? (
-                      <button onClick={() => void changeStatus(item, "unpublish")} className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
+                      <button onClick={() => void changeStatus(item, "unpublish")} className="rounded-surface border border-edge px-2.5 py-1 text-xs font-semibold text-ink hover:bg-surface">
                         Despublicar
                       </button>
                     ) : (
-                      <button onClick={() => void changeStatus(item, "publish")} className="rounded-lg border border-green-300 px-2.5 py-1 text-xs font-semibold text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-950/30">
+                      <button onClick={() => void changeStatus(item, "publish")} className="rounded-surface border border-success px-2.5 py-1 text-xs font-semibold text-success hover:bg-surfaceMuted">
                         Publicar
                       </button>
                     )}
-                    <button onClick={() => void softDelete(item)} className="rounded-lg border border-red-300 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30">
+                    <button onClick={() => void softDelete(item)} className="rounded-surface border border-danger px-2.5 py-1 text-xs font-semibold text-danger hover:bg-surfaceMuted">
                       Apagar
                     </button>
                   </div>
@@ -1014,7 +1014,7 @@ export default function QuestionsManager() {
             ))}
             {!loading && items.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-muted">
                   Nenhuma questão encontrada.
                 </td>
               </tr>
@@ -1024,20 +1024,20 @@ export default function QuestionsManager() {
       </div>
 
       {/* Paginação */}
-      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
+      <div className="flex items-center justify-between text-sm text-ink">
         <span>{loading ? "Carregando…" : `${total} questão(ões)`}</span>
         <div className="flex gap-2">
           <button
             disabled={offset === 0 || loading}
             onClick={() => void search(Math.max(0, offset - LIMIT))}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-40 dark:border-gray-700"
+            className="rounded-surface border border-edge px-3 py-1.5 disabled:opacity-40"
           >
             Anterior
           </button>
           <button
             disabled={offset + LIMIT >= total || loading}
             onClick={() => void search(offset + LIMIT)}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-40 dark:border-gray-700"
+            className="rounded-surface border border-edge px-3 py-1.5 disabled:opacity-40"
           >
             Próxima
           </button>
@@ -1046,14 +1046,14 @@ export default function QuestionsManager() {
 
       {/* Modal de edição */}
       {detail && edit && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4" onClick={closeEditor}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-paper/40 p-4" onClick={closeEditor}>
           <div
-            className="my-8 w-full max-w-3xl rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900"
+            className="my-8 w-full max-w-3xl rounded-surface border border-edge bg-surface p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Editar questão</h3>
-              <button onClick={closeEditor} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" aria-label="Fechar">×</button>
+              <h3 className="text-lg font-semibold text-ink">Editar questão</h3>
+              <button onClick={closeEditor} className="text-muted hover:text-ink" aria-label="Fechar">×</button>
             </div>
 
             {detail.topic_review?.status === "pending" && (() => {
@@ -1063,7 +1063,7 @@ export default function QuestionsManager() {
                 ? [proposed.node_code, proposed.node_name].filter(Boolean).join(" · ")
                 : proposedId;
               return (
-                <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+                <div className="mt-4 rounded-surface border border-warning bg-surfaceMuted px-4 py-3 text-sm text-warning/40/30">
                   <p className="font-semibold">Reavaliar tópico primário</p>
                   <p className="mt-1">
                     Uma reimportação trouxe esta questão com uma área diferente do tópico primário atual
@@ -1075,7 +1075,7 @@ export default function QuestionsManager() {
                       <button
                         onClick={() => void resolveTopicReview({ primaryNodeId: proposedId })}
                         disabled={saving}
-                        className="rounded-lg bg-amber-600 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
+                        className="rounded-surface bg-warning px-3 py-1 text-xs font-semibold text-ink hover:bg-warning disabled:opacity-50"
                       >
                         Tornar primário
                       </button>
@@ -1083,7 +1083,7 @@ export default function QuestionsManager() {
                     <button
                       onClick={() => void resolveTopicReview({ dismiss: true })}
                       disabled={saving}
-                      className="rounded-lg border border-amber-300 px-3 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-950/40"
+                      className="rounded-surface border border-warning px-3 py-1 text-xs font-semibold text-warning hover:bg-surfaceMuted disabled:opacity-50"
                     >
                       Dispensar
                     </button>
@@ -1102,20 +1102,20 @@ export default function QuestionsManager() {
                 classification.microcompetencia,
               ].filter(Boolean);
               return (
-                <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-100">
+                <div className="mt-4 rounded-surface border border-info bg-surfaceMuted px-4 py-3 text-sm text-info/40/30">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide opacity-70">Leitura editorial da IA</p>
                       <p className="mt-1 font-semibold">{summary.route_label} · confiança {summary.confidence_label}</p>
                     </div>
-                    <span className="rounded-full bg-white/70 px-2 py-1 text-xs font-semibold dark:bg-black/20">
+                    <span className="rounded-control bg-surface/70 px-2 py-1 text-xs font-semibold">
                       {summary.review_lane}
                     </span>
                   </div>
                   {chips.length ? (
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {chips.map((chip) => (
-                        <span key={String(chip)} className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-medium dark:bg-black/20">
+                        <span key={String(chip)} className="rounded-control bg-surface/70 px-2 py-0.5 text-xs font-medium">
                           {chip}
                         </span>
                       ))}
@@ -1132,33 +1132,33 @@ export default function QuestionsManager() {
             })()}
 
             {detail.question_fingerprint && (
-              <div className="mt-4 flex flex-wrap items-center gap-1.5 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
-                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">DNA</span>
+              <div className="mt-4 flex flex-wrap items-center gap-1.5 rounded-surface border border-edge bg-surface px-4 py-3">
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted">DNA</span>
                 {dnaChips(detail.question_fingerprint.tags).map((label) => (
-                  <span key={label} className="rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700 dark:bg-violet-950/40 dark:text-violet-300">{label}</span>
+                  <span key={label} className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-medium text-accent/40">{label}</span>
                 ))}
                 {(detail.question_fingerprint.quality_flags ?? []).map((flag) => (
-                  <span key={flag} className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">{flag}</span>
+                  <span key={flag} className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-medium text-warning/40">{flag}</span>
                 ))}
               </div>
             )}
 
             {detail.question_quality_inspection && (
-              <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-100">
+              <div className="mt-4 rounded-surface border border-info bg-surfaceMuted px-4 py-3 text-sm text-info/40/30">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Inspeção editorial</span>
-                  <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-semibold dark:bg-black/20">
+                  <span className="rounded-control bg-surface/70 px-2 py-0.5 text-xs font-semibold">
                     {detail.question_quality_inspection.inspection_status}
                   </span>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {(detail.question_quality_inspection.blocking_flags ?? []).map((flag) => (
-                    <span key={flag.code} className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-950/40 dark:text-red-200">
+                    <span key={flag.code} className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-medium text-danger/40">
                       {flag.message}
                     </span>
                   ))}
                   {(detail.question_quality_inspection.warning_flags ?? []).slice(0, 3).map((flag) => (
-                    <span key={flag.code} className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
+                    <span key={flag.code} className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-medium text-warning/40">
                       {flag.message}
                     </span>
                   ))}
@@ -1167,26 +1167,26 @@ export default function QuestionsManager() {
             )}
 
             {detail.repair_draft?.summary && (
-              <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-200">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Repair draft</p>
+              <div className="mt-4 rounded-surface border border-edge bg-surface px-4 py-3 text-sm text-ink">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Repair draft</p>
                 <p className="mt-1">{detail.repair_draft.summary}</p>
               </div>
             )}
 
             {detail.similar_questions.length > 0 && (
               <div className="mt-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Questões similares (DNA)</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Questões similares (DNA)</p>
                 <ul className="mt-1 space-y-1">
                   {detail.similar_questions.map((s) => (
-                    <li key={s.id} className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 dark:border-gray-800 dark:text-gray-300">
+                    <li key={s.id} className="rounded-surface border border-edge px-3 py-2 text-sm text-ink">
                       <div className="flex items-center justify-between gap-2">
                         <span className="line-clamp-1 flex-1">{s.stem || s.id}</span>
-                        <span className="shrink-0 text-[11px] text-gray-500 dark:text-gray-400">
+                        <span className="shrink-0 text-[11px] text-muted">
                           {s.match_scope ?? "—"} · {s.confidence != null ? `${Math.round(s.confidence * 100)}%` : "—"}
                         </span>
                       </div>
                       {(s.primary_node_code || s.primary_node_name) && (
-                        <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                        <span className="text-[11px] text-muted">
                           {[s.primary_node_code, s.primary_node_name].filter(Boolean).join(" · ")}
                         </span>
                       )}
@@ -1197,7 +1197,7 @@ export default function QuestionsManager() {
             )}
 
             {blockers.length > 0 && (
-              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-200">
+              <div className="mt-4 rounded-surface border border-danger bg-surfaceMuted px-4 py-3 text-sm text-danger/40/30">
                 <p className="font-semibold">Não salvo — a edição falha no gate:</p>
                 <ul className="mt-1 list-disc pl-5">
                   {blockers.map((b) => <li key={b}>{b}</li>)}
@@ -1205,7 +1205,7 @@ export default function QuestionsManager() {
               </div>
             )}
 
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Enunciado</label>
+            <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-muted">Enunciado</label>
             <textarea
               value={edit.stem}
               onChange={(e) => setEdit({ ...edit, stem: e.target.value })}
@@ -1215,7 +1215,7 @@ export default function QuestionsManager() {
             <div className="mt-4 grid gap-2">
               {OPTION_LETTERS.map((letter) => (
                 <div key={letter} className="flex items-center gap-2">
-                  <span className="w-6 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">{letter}</span>
+                  <span className="w-6 text-center text-sm font-semibold text-ink">{letter}</span>
                   <input
                     value={edit.alternatives[letter] ?? ""}
                     onChange={(e) => setEdit({ ...edit, alternatives: { ...edit.alternatives, [letter]: e.target.value } })}
@@ -1227,14 +1227,14 @@ export default function QuestionsManager() {
 
             {/* Diagnóstico de erro por distrator — só para alternativas erradas (≠ gabarito). */}
             <div className="mt-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Diagnóstico de erro por alternativa
               </p>
               <div className="mt-1 grid gap-2">
                 {OPTION_LETTERS.filter((letter) => letter !== edit.answer && (edit.alternatives[letter] ?? "").trim()).map(
                   (letter) => (
                     <div key={letter} className="flex items-start gap-2">
-                      <span className="mt-2 w-6 text-center text-sm font-semibold text-violet-600 dark:text-violet-300">{letter}</span>
+                      <span className="mt-2 w-6 text-center text-sm font-semibold text-accent">{letter}</span>
                       <input
                         value={edit.distractorDiagnosis[letter] ?? ""}
                         onChange={(e) =>
@@ -1254,26 +1254,26 @@ export default function QuestionsManager() {
 
             <div className="mt-4 flex flex-wrap items-end gap-4">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Gabarito</label>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-muted">Gabarito</label>
                 <select value={edit.answer} onChange={(e) => setEdit({ ...edit, answer: e.target.value })} className={`${inputCls} mt-1`}>
                   <option value="">—</option>
                   {OPTION_LETTERS.map((l) => <option key={l} value={l}>{l}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Nível pretendido</label>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-muted">Nível pretendido</label>
                 <select value={edit.intendedLevel} onChange={(e) => setEdit({ ...edit, intendedLevel: e.target.value as EditState["intendedLevel"] })} className={`${inputCls} mt-1`}>
                   <option value="">Não definido</option><option value="easy">Fácil</option><option value="medium">Médio</option><option value="hard">Difícil</option><option value="very_hard">Muito difícil</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Demanda cognitiva</label>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-muted">Demanda cognitiva</label>
                 <select value={edit.cognitiveDemand} onChange={(e) => setEdit({ ...edit, cognitiveDemand: e.target.value as EditState["cognitiveDemand"] })} className={`${inputCls} mt-1`}>
                   <option value="">Não definida</option><option value="recall">Recordação</option><option value="application">Aplicação</option><option value="analysis">Análise</option>
                 </select>
               </div>
               <div className="relative min-w-[14rem] flex-1">
-                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Tópico primário</label>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-muted">Tópico primário</label>
                 <input
                   value={nodeQuery || edit.primaryNodeLabel}
                   onChange={(e) => { setNodeQuery(e.target.value); }}
@@ -1281,7 +1281,7 @@ export default function QuestionsManager() {
                   className={`${inputCls} mt-1 w-full`}
                 />
                 {nodeResults.length > 0 && (
-                  <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                  <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-surface border border-edge bg-surface shadow-lg">
                     {nodeResults.map((node) => (
                       <button
                         key={node.id}
@@ -1290,10 +1290,10 @@ export default function QuestionsManager() {
                           setNodeQuery("");
                           setNodeResults([]);
                         }}
-                        className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+                        className="block w-full px-3 py-2 text-left text-sm text-ink hover:bg-surface"
                       >
                         <span className="font-medium">{node.name}</span>
-                        <span className="ml-2 text-xs text-gray-400">{node.type}</span>
+                        <span className="ml-2 text-xs text-muted">{node.type}</span>
                       </button>
                     ))}
                   </div>
@@ -1302,15 +1302,15 @@ export default function QuestionsManager() {
             </div>
 
             <div className="mt-4">
-              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Justificativa do nível · origem humana</label>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-muted">Justificativa do nível · origem humana</label>
               <textarea value={edit.difficultyRationale} onChange={(e) => setEdit({ ...edit, difficultyRationale: e.target.value })} rows={2} placeholder="Que evidência do item sustenta este nível?" className={`${inputCls} mt-1 w-full`} />
             </div>
 
             <div className="mt-4">
-              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              <label className="block text-xs font-semibold uppercase tracking-wide text-muted">
                 Objetivo âncora
               </label>
-              <p className="mt-0.5 text-[11px] text-gray-400 dark:text-gray-500">
+              <p className="mt-0.5 text-[11px] text-muted">
                 O objetivo fino que a questão realmente testa (o que diferencia a correta das erradas).
               </p>
               <div className="relative mt-1">
@@ -1328,13 +1328,13 @@ export default function QuestionsManager() {
                       setObjectiveQuery("");
                       setObjectiveResults([]);
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-gray-200 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-control border border-edge px-1.5 py-0.5 text-[10px] font-semibold text-muted hover:bg-surface"
                   >
                     limpar
                   </button>
                 ) : null}
                 {objectiveResults.length > 0 && (
-                  <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                  <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-surface border border-edge bg-surface shadow-lg">
                     {objectiveResults.map((node) => (
                       <button
                         key={node.id}
@@ -1343,10 +1343,10 @@ export default function QuestionsManager() {
                           setObjectiveQuery("");
                           setObjectiveResults([]);
                         }}
-                        className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+                        className="block w-full px-3 py-2 text-left text-sm text-ink hover:bg-surface"
                       >
                         <span className="font-medium">{node.name}</span>
-                        {node.code ? <span className="ml-2 text-xs text-gray-400">{node.code}</span> : null}
+                        {node.code ? <span className="ml-2 text-xs text-muted">{node.code}</span> : null}
                       </button>
                     ))}
                   </div>
@@ -1356,16 +1356,16 @@ export default function QuestionsManager() {
 
             {detail.nodes.some((n) => !n.is_primary) && (
               <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Tópicos secundários</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Tópicos secundários</p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {detail.nodes.filter((n) => !n.is_primary).map((n) => (
                     <span
                       key={`${n.knowledge_node_id}-${n.role ?? ""}`}
-                      className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                      className="inline-flex items-center gap-1 rounded-control bg-surface px-2 py-0.5 text-[11px] text-ink"
                     >
                       {[n.node_code, n.node_name].filter(Boolean).join(" · ") || n.knowledge_node_id}
                       {n.source === "dedup_enrichment" ? (
-                        <span className="text-gray-400 dark:text-gray-500">· reimporte</span>
+                        <span className="text-muted">· reimporte</span>
                       ) : null}
                     </span>
                   ))}
@@ -1375,21 +1375,21 @@ export default function QuestionsManager() {
 
             {detail.image_refs.length > 0 && (
               <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Imagens</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Imagens</p>
                 <QuestionImageRefs
                   imageRefs={detail.image_refs}
                   className="mt-2 grid gap-2 md:grid-cols-3"
-                  imageClassName="rounded-lg border border-gray-200 dark:border-gray-700"
-                  placeholderClassName="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-5 text-center text-xs font-semibold text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400"
+                  imageClassName="rounded-surface border border-edge"
+                  placeholderClassName="flex min-h-24 items-center justify-center rounded-surface border border-dashed border-edge bg-surface px-3 py-5 text-center text-xs font-semibold text-muted"
                 />
               </div>
             )}
 
             <div className="mt-6 flex justify-end gap-3">
-              <button onClick={closeEditor} className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
+              <button onClick={closeEditor} className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink hover:bg-surface">
                 Cancelar
               </button>
-              <button onClick={() => void saveEdit()} disabled={saving} className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700 disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white">
+              <button onClick={() => void saveEdit()} disabled={saving} className="rounded-surface bg-paper px-4 py-2 text-sm font-semibold text-ink hover:bg-paper disabled:opacity-50">
                 {saving ? "Salvando…" : "Salvar"}
               </button>
             </div>

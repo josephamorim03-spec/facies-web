@@ -48,7 +48,7 @@ export function CronogramaTodayPanel({
 
   return (
     <section
-      className="rounded-xl border border-edge bg-surface px-3 py-3"
+      className="rounded-surface border border-edge bg-surface px-3 py-3"
       aria-label="Para revisar hoje"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -63,7 +63,7 @@ export function CronogramaTodayPanel({
         </div>
         <div className="flex items-start gap-2">
           {practiceCount > 0 && (
-            <div className="rounded-lg border border-primary bg-paper px-2.5 py-1 text-right">
+            <div className="rounded-surface border border-primary bg-paper px-2.5 py-1 text-right">
               <p className="text-sm font-semibold leading-none text-primary">{practiceCount}</p>
               <p className="mt-0.5 text-[9px] leading-none text-muted">prática</p>
             </div>
@@ -73,7 +73,7 @@ export function CronogramaTodayPanel({
             onClick={() => setPinned((value) => !value)}
             aria-expanded={open}
             aria-label={open ? "Recolher revisões de hoje" : "Expandir revisões de hoje"}
-            className="mt-0.5 shrink-0 rounded-md p-1 text-muted transition-colors hover:text-ink"
+            className="mt-0.5 shrink-0 rounded-control p-1 text-muted transition-colors hover:text-ink"
           >
             <svg
               viewBox="0 0 20 20"
@@ -116,7 +116,7 @@ export function CronogramaTodayPanel({
                           <span className="truncate text-xs">{item.theme}</span>
                           <span className="shrink-0 text-[9px] text-muted">{areaKey || "OU"}</span>
                           {item.label && (
-                            <span className="shrink-0 text-[9px] text-emerald-600">feito</span>
+                            <span className="shrink-0 text-[9px] text-success">feito</span>
                           )}
                         </div>
                         {item.task && <ReviewSignalChips task={item.task} compact className="mt-1" />}

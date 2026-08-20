@@ -246,11 +246,11 @@ export default function BancaPicker({
       {loading ? (
         <div className="space-y-2" aria-hidden="true">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-10 animate-pulse rounded-lg bg-surfaceMuted" />
+            <div key={i} className="h-10 animate-pulse rounded-surface bg-surfaceMuted" />
           ))}
         </div>
       ) : error ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-danger/40 bg-paper px-3 py-2 text-xs text-danger">
+        <div className="flex flex-wrap items-center gap-2 rounded-surface border border-danger/40 bg-paper px-3 py-2 text-xs text-danger">
           <span>Não foi possível carregar as fontes.</span>
           {onRetry && (
             <button
@@ -314,7 +314,7 @@ export default function BancaPicker({
                         <li key={optionId(source)}>
                           <label
                             className={cx(
-                              "flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm transition",
+                              "flex min-h-[44px] cursor-pointer items-center gap-3 rounded-surface border px-3 py-2 text-sm transition",
                               checked
                                 ? "border-primary bg-[var(--amber-tint)]"
                                 : "border-edge bg-paper hover:border-primary/50",

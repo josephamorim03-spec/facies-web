@@ -74,7 +74,7 @@ export function LoginForm({
         <span>Lembrar neste dispositivo</span>
       </label>
       {loginError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-700">
+        <div className="rounded-surface border border-danger bg-surfaceMuted px-4 py-3 text-center text-sm text-danger">
           {loginError}
         </div>
       )}

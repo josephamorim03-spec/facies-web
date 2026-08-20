@@ -16,9 +16,9 @@ export function CardsAnalysis({ state }: Props) {
       <h2 className="text-sm font-medium">Análise de cards</h2>
       {turboAreaLoading ? (
         <div className="space-y-2 animate-pulse">
-          <div className="h-3 w-44 rounded-sm bg-edge" />
-          <div className="h-2.5 w-full rounded-sm bg-edge" />
-          <div className="h-2.5 w-5/6 rounded-sm bg-edge" />
+          <div className="h-3 w-44 rounded-control bg-edge" />
+          <div className="h-2.5 w-full rounded-control bg-edge" />
+          <div className="h-2.5 w-5/6 rounded-control bg-edge" />
         </div>
       ) : turboAreaStats && turboAreaStats.total_reviews > 0 ? (
         <>

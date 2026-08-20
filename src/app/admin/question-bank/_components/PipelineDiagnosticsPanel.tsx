@@ -138,12 +138,12 @@ export default function PipelineDiagnosticsPanel({
   const storageGate = storageSummary?.storage_gate;
   const storageGateTone =
     storageGate?.state === "green"
-      ? "text-emerald-700 dark:text-emerald-300"
+      ? "text-success"
       : storageGate?.state === "yellow"
-        ? "text-amber-700 dark:text-amber-300"
+        ? "text-warning"
         : storageGate
-          ? "text-red-700 dark:text-red-300"
-          : "text-gray-500 dark:text-gray-400";
+          ? "text-danger"
+          : "text-muted";
   const pilot500Forecast = storageSummary?.ai_backfill_forecast?.pilot_500;
 
   // Recent async enrichment batches (Workstream C): load on mount, poll while any is running.
@@ -251,27 +251,27 @@ export default function PipelineDiagnosticsPanel({
 
   return (
     <div className="space-y-5">
-      <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+      <section className="rounded-surface border border-edge bg-surface p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Fila tecnica</h2>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Jobs por etapa e reprocessamento.</p>
+            <h2 className="text-xl font-semibold text-ink">Fila tecnica</h2>
+            <p className="mt-1 text-sm text-ink">Jobs por etapa e reprocessamento.</p>
           </div>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <label className="grid gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+          <label className="grid gap-1 text-sm font-medium text-ink">
             Etapa
             <select
               value={jobType}
               onChange={(event) => onJobTypeChange(event.target.value)}
-              className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
+              className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
             >
               {JOB_TYPES.map((type) => (
                 <option key={type} value={type}>{jobTypeLabel(type)}</option>
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+          <label className="grid gap-1 text-sm font-medium text-ink">
             Batch
             <input
               type="number"
@@ -279,10 +279,10 @@ export default function PipelineDiagnosticsPanel({
               max={50}
               value={batchSize}
               onChange={(event) => onBatchSizeChange(Math.min(50, Math.max(1, Number(event.target.value) || 1)))}
-              className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
+              className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
             />
           </label>
-          <label className="grid gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+          <label className="grid gap-1 text-sm font-medium text-ink">
             Workers
             <input
               type="number"
@@ -290,32 +290,32 @@ export default function PipelineDiagnosticsPanel({
               max={1}
               value={workers}
               onChange={() => onWorkersChange(1)}
-              className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
+              className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
             />
           </label>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             onClick={onRunBatch}
-            className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
+            className="rounded-surface bg-info px-5 py-2 text-sm font-semibold text-ink transition hover:bg-info"
           >
             Rodar lote
           </button>
-          <span className="text-xs text-gray-400 dark:text-gray-500">{selectedImportId ? "import selecionado" : "global"}</span>
+          <span className="text-xs text-muted">{selectedImportId ? "import selecionado" : "global"}</span>
           <button
             onClick={onRefresh}
-            className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+            className="rounded-surface border border-edge px-5 py-2 text-sm font-semibold text-ink transition hover:border-edge hover:bg-surface"
           >
             Recalcular
           </button>
         </div>
 
         {/* IA dirigida: seleção econômica de enriquecimento + custo em R$ + acompanhamento */}
-        <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50/40 p-4 dark:border-amber-900/40 dark:bg-amber-950/10">
+        <div className="mt-5 rounded-surface border border-warning bg-surfaceMuted/40 p-4/40/10">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">IA dirigida (enriquecimento econômico)</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-300">
+              <h3 className="text-sm font-semibold text-ink">IA dirigida (enriquecimento econômico)</h3>
+              <p className="text-xs text-ink">
                 Roda a IA nas melhores questões publicadas sem enriquecimento (microcompetência, perfil,
                 diagnóstico de distratores). Prévia é um <em>dry-run</em>; a execução enfileira até o limite.
               </p>
@@ -324,13 +324,13 @@ export default function PipelineDiagnosticsPanel({
               type="button"
               onClick={() => void previewAi()}
               disabled={aiBusy}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+              className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
             >
               Prever custo
             </button>
           </div>
           <div className="mt-3 flex flex-wrap items-end gap-3">
-            <label className="grid gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+            <label className="grid gap-1 text-sm font-medium text-ink">
               Máx. de questões
               <input
                 type="number"
@@ -338,10 +338,10 @@ export default function PipelineDiagnosticsPanel({
                 max={100}
                 value={aiMaxNewJobs}
                 onChange={(event) => setAiMaxNewJobs(Number(event.target.value))}
-                className="w-32 rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-950"
+                className="w-32 rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
               />
             </label>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+            <label className="flex items-center gap-2 text-sm font-medium text-ink">
               <input
                 type="checkbox"
                 checked={aiBatch}
@@ -353,47 +353,47 @@ export default function PipelineDiagnosticsPanel({
               type="button"
               onClick={() => void runAi()}
               disabled={aiBusy}
-              className="rounded-lg bg-amber-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-amber-500 disabled:opacity-50"
+              className="rounded-surface bg-warning px-5 py-2 text-sm font-semibold text-ink transition hover:bg-warning disabled:opacity-50"
             >
               {aiBusy ? "Processando…" : "Rodar IA"}
             </button>
           </div>
-          {aiError ? <p className="mt-2 text-sm text-red-600 dark:text-red-400">{aiError}</p> : null}
+          {aiError ? <p className="mt-2 text-sm text-danger">{aiError}</p> : null}
           {aiPreview?.cost_estimate ? (
-            <div className="mt-3 rounded-lg border border-amber-200/70 bg-white/60 p-3 text-sm dark:border-amber-900/40 dark:bg-gray-950/40">
-              <p className="text-gray-700 dark:text-gray-200">
+            <div className="mt-3 rounded-surface border border-warning/70 bg-surface/60 p-3 text-sm/40/40">
+              <p className="text-ink">
                 Selecionadas: <span className="font-semibold">{aiPreview.cost_estimate.selected}</span>
                 {" · "}chamadas estimadas: <span className="font-semibold">{aiPreview.cost_estimate.estimated_llm_calls}</span>
                 {" ("}
                 {aiPreview.cost_estimate.estimated_cheap_calls} barata + {aiPreview.cost_estimate.estimated_strong_calls} forte)
               </p>
-              <p className="mt-1 text-gray-900 dark:text-gray-100">
+              <p className="mt-1 text-ink">
                 Custo estimado:{" "}
-                <span className="font-semibold text-amber-700 dark:text-amber-300">
+                <span className="font-semibold text-warning">
                   {formatBRL(aiPreview.cost_estimate.estimated_cost_brl)}
                 </span>{" "}
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-muted">
                   (US$ {aiPreview.cost_estimate.estimated_cost_usd.toFixed(4)} · câmbio {aiPreview.cost_estimate.usd_brl_rate})
                 </span>
               </p>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-xs text-muted">
                 Tokens médios/questão — barata: {aiPreview.cost_estimate.avg_tokens_by_stage.cheap.prompt_tokens}↑/
                 {aiPreview.cost_estimate.avg_tokens_by_stage.cheap.completion_tokens}↓
                 {aiPreview.cost_estimate.avg_tokens_by_stage.cheap.sampled === 0 ? " (estimado)" : ""}
               </p>
               {(aiPreview.results || []).length > 0 ? (
-                <div className="mt-2 border-t border-amber-200/50 pt-2 dark:border-amber-900/30">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <div className="mt-2 border-t border-warning/50 pt-2/30">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                     O que a IA vai completar (top {Math.min(5, aiPreview.results.length)})
                   </p>
                   <ul className="mt-1.5 space-y-1">
                     {aiPreview.results.slice(0, 5).map((cand, idx) => (
-                      <li key={String(cand.question_id ?? idx)} className="flex flex-wrap items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
-                        <span className="font-mono text-gray-400 dark:text-gray-500">
+                      <li key={String(cand.question_id ?? idx)} className="flex flex-wrap items-center gap-1.5 text-xs text-ink">
+                        <span className="font-mono text-muted">
                           {String(cand.question_id ?? "?").slice(0, 8)}
                         </span>
                         {((cand.missing_capabilities as string[] | undefined) || []).map((cap) => (
-                          <span key={cap} className="rounded-full border border-gray-300 px-1.5 py-0.5 dark:border-gray-700">
+                          <span key={cap} className="rounded-control border border-edge px-1.5 py-0.5">
                             {cap === "microcompetency"
                               ? "microcompetência"
                               : cap === "pedagogical_profile"
@@ -404,7 +404,7 @@ export default function PipelineDiagnosticsPanel({
                           </span>
                         ))}
                         {typeof cand.priority_score === "number" ? (
-                          <span className="text-gray-400 dark:text-gray-500">prioridade {(cand.priority_score as number).toFixed(2)}</span>
+                          <span className="text-muted">prioridade {(cand.priority_score as number).toFixed(2)}</span>
                         ) : null}
                       </li>
                     ))}
@@ -414,7 +414,7 @@ export default function PipelineDiagnosticsPanel({
             </div>
           ) : null}
           {aiResult ? (
-            <p className="mt-2 text-sm text-emerald-700 dark:text-emerald-300">
+            <p className="mt-2 text-sm text-success">
               Enfileiradas {aiResult.enqueued} de {aiResult.selected} selecionada(s)
               {aiResult.cost_estimate
                 ? ` · custo estimado ${formatBRL(aiResult.cost_estimate.estimated_cost_brl)}`
@@ -423,31 +423,31 @@ export default function PipelineDiagnosticsPanel({
             </p>
           ) : null}
           {aiJobs.length > 0 ? (
-            <div className="mt-2 text-sm text-gray-700 dark:text-gray-200">
+            <div className="mt-2 text-sm text-ink">
               Acompanhamento: <span className="font-semibold">{aiJobsDone}</span>/{aiJobs.length} concluído(s)
               {aiJobsFailed > 0 ? (
-                <span className="text-red-600 dark:text-red-400"> · {aiJobsFailed} com falha</span>
+                <span className="text-danger"> · {aiJobsFailed} com falha</span>
               ) : null}
               {aiJobsDone < aiJobs.length ? (
-                <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">(atualizando…)</span>
+                <span className="ml-1 text-xs text-muted">(atualizando…)</span>
               ) : null}
             </div>
           ) : null}
           {aiBatches.length > 0 ? (
-            <div className="mt-3 border-t border-amber-200/60 pt-3 dark:border-amber-900/40">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div className="mt-3 border-t border-warning/60 pt-3/40">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Lotes assíncronos recentes
               </p>
               <ul className="mt-2 space-y-1">
                 {aiBatches.map((batch) => (
-                  <li key={batch.id} className="flex flex-wrap items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                  <li key={batch.id} className="flex flex-wrap items-center gap-2 text-sm text-ink">
                     <span
-                      className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
+                      className={`rounded-control px-2 py-0.5 text-xs font-semibold ${
                         batch.status === "completed"
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                          ? "bg-surfaceMuted text-success/40"
                           : batch.status === "failed"
-                            ? "bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-300"
-                            : "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                            ? "bg-surfaceMuted text-danger/40"
+                            : "bg-surfaceMuted text-info/40"
                       }`}
                     >
                       {batch.status}
@@ -456,11 +456,11 @@ export default function PipelineDiagnosticsPanel({
                       {batch.completed_count}/{batch.request_count} ok
                       {batch.failed_count > 0 ? ` · ${batch.failed_count} falha` : ""}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <span className="text-xs text-muted">
                       {batch.total_tokens} tokens · {formatBRL(batch.cost_brl)}
                     </span>
                     {!TERMINAL_JOB_STATUSES.has(batch.status) ? (
-                      <span className="text-xs text-gray-400 dark:text-gray-500">(atualizando…)</span>
+                      <span className="text-xs text-muted">(atualizando…)</span>
                     ) : null}
                   </li>
                 ))}
@@ -469,10 +469,10 @@ export default function PipelineDiagnosticsPanel({
           ) : null}
         </div>
 
-        <div className="mt-4 overflow-auto rounded-lg border border-gray-200 dark:border-gray-800">
+        <div className="mt-4 overflow-auto rounded-surface border border-edge">
           <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-950">
-              <tr className="text-gray-500 dark:text-gray-400">
+            <thead className="bg-surface">
+              <tr className="text-muted">
                 <th className="px-4 py-3 font-semibold">Etapa</th>
                 <th className="px-4 py-3 font-semibold">Jobs</th>
                 <th className="px-4 py-3 font-semibold">Mais antigo</th>
@@ -482,45 +482,45 @@ export default function PipelineDiagnosticsPanel({
             </thead>
             <tbody>
               {stages.map((stage) => (
-                <tr key={stage.job_type} className="border-t border-gray-100 dark:border-gray-800">
+                <tr key={stage.job_type} className="border-t border-edge">
                   <td className="px-4 py-3">
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{jobTypeLabel(stage.job_type)}</div>
-                    <div className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{stage.job_type}</div>
+                    <div className="font-medium text-ink">{jobTypeLabel(stage.job_type)}</div>
+                    <div className="mt-0.5 text-xs text-muted">{stage.job_type}</div>
                   </td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                  <td className="px-4 py-3 text-ink">
                     <div className="flex flex-wrap gap-1.5">
-                      <span className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">fila {stage.pending}</span>
-                      <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">rodando {stage.processing}</span>
-                      <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">ok {stage.done}</span>
+                      <span className="rounded-control bg-surface px-2 py-0.5 text-xs font-semibold text-ink">fila {stage.pending}</span>
+                      <span className="rounded-control bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-info/40">rodando {stage.processing}</span>
+                      <span className="rounded-control bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-success/40">ok {stage.done}</span>
                     </div>
                     {stage.failed > 0 ? (
                       <button
                         onClick={() => onRetryStage(stage.job_type)}
                         title={`Retry ${stage.failed} jobs falhos`}
-                        className="mt-2 rounded-md bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-600 hover:bg-red-200 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/60"
+                        className="mt-2 rounded-control bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-danger hover:bg-surfaceMuted/40"
                       >
                         retry {stage.failed}
                       </button>
                     ) : null}
                   </td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatAge(stage.oldest_pending_age_seconds)}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{stage.avg_duration_ms ? `${stage.avg_duration_ms} ms` : "-"}</td>
-                  <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
+                  <td className="px-4 py-3 text-ink">{formatAge(stage.oldest_pending_age_seconds)}</td>
+                  <td className="px-4 py-3 text-ink">{stage.avg_duration_ms ? `${stage.avg_duration_ms} ms` : "-"}</td>
+                  <td className="px-4 py-3 text-xs text-ink">
                     {stage.last_error ? (
                       <div>
                         <button
                           onClick={() => onExpandedErrorChange(expandedError === stage.job_type ? null : stage.job_type)}
-                          className="text-left text-red-500 underline decoration-dotted hover:text-red-700 dark:text-red-400"
+                          className="text-left text-danger underline decoration-dotted hover:text-danger"
                         >
                           {stage.last_error.length > 56 ? `${stage.last_error.slice(0, 56)}...` : stage.last_error}
                         </button>
                         {expandedError === stage.job_type ? (
-                          <pre className="mt-1 max-w-xs overflow-auto rounded-lg bg-red-50 p-2 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                          <pre className="mt-1 max-w-xs overflow-auto rounded-surface bg-surfaceMuted p-2 text-xs text-danger/40">
                             {stage.last_error}
                           </pre>
                         ) : null}
                         {stage.last_error_at ? (
-                          <span className="mt-0.5 block text-gray-400 dark:text-gray-500">{formatRelativeTime(stage.last_error_at)}</span>
+                          <span className="mt-0.5 block text-muted">{formatRelativeTime(stage.last_error_at)}</span>
                         ) : null}
                       </div>
                     ) : "-"}
@@ -532,12 +532,12 @@ export default function PipelineDiagnosticsPanel({
         </div>
       </section>
 
-      <section className="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Diagnostics</h2>
+      <section className="rounded-surface border border-edge bg-surface p-5">
+        <h2 className="text-xl font-semibold text-ink">Diagnostics</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
-            <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Readiness</div>
-            <div className="mt-3 text-sm text-gray-700 dark:text-gray-200">
+          <div className="rounded-surface border border-edge bg-surface p-4">
+            <div className="text-xs font-semibold uppercase text-muted">Readiness</div>
+            <div className="mt-3 text-sm text-ink">
               <div>Status: <span className="font-semibold">{readiness.status || "-"}</span></div>
               <div>Banco: <span className="font-semibold">{readiness.database || "-"}</span></div>
               <div>LLM: <span className="font-semibold">{readiness.llm_enabled ? "on" : "off"}</span></div>
@@ -545,19 +545,19 @@ export default function PipelineDiagnosticsPanel({
               <div>Workers: <span className="font-semibold">{readiness.pipeline_workers ?? "-"}</span></div>
             </div>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
-            <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Providers</div>
-            <div className="mt-3 space-y-2 text-sm text-gray-700 dark:text-gray-200">
+          <div className="rounded-surface border border-edge bg-surface p-4">
+            <div className="text-xs font-semibold uppercase text-muted">Providers</div>
+            <div className="mt-3 space-y-2 text-sm text-ink">
               <div>Cheap: <span className="font-semibold">{readiness.providers.cheap.model || "-"}</span></div>
               <div>Strong: <span className="font-semibold">{readiness.providers.strong.model || "-"}</span></div>
             </div>
           </div>
         </div>
-        <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950">
+        <div className="mt-4 rounded-surface border border-edge bg-surface p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Storage</div>
-              <div className="mt-2 grid gap-2 text-sm text-gray-700 dark:text-gray-200 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="text-xs font-semibold uppercase text-muted">Storage</div>
+              <div className="mt-2 grid gap-2 text-sm text-ink sm:grid-cols-2 lg:grid-cols-4">
                 <div>DB logico: <span className="font-semibold">{formatBytes(storageSummary?.pg_database_size)}</span></div>
                 <div>WAL: <span className="font-semibold">{formatBytes(storageSummary?.pg_wal_size)}</span></div>
                 <div>Uso efetivo: <span className="font-semibold">{formatBytes(storageSummary?.effective_used_bytes)}</span></div>
@@ -571,26 +571,26 @@ export default function PipelineDiagnosticsPanel({
                 <div>Piloto 500: <span className="font-semibold">{formatBytes(pilot500Forecast?.estimated_bytes)}</span></div>
               </div>
               {storageGate ? (
-                <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">
+                <p className="mt-2 text-sm text-ink">
                   Recomendacao: <span className="font-semibold">{storageGate.recommendation}</span>.
                   {" "}Pos-limpeza: {formatBytes(storageGate.cleanup.estimated_size_after_cleanup_bytes)}
                   {" "}({formatBytes(storageGate.cleanup.estimated_headroom_after_cleanup_bytes)} de folga).
                 </p>
               ) : null}
               {compactDryRun ? (
-                <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">
+                <p className="mt-2 text-sm text-ink">
                   Dry-run: {Object.entries(compactDryRun.counts || {}).map(([key, value]) => `${key} ${value}`).join(" / ") || "sem itens"}.
                   {" "}Estimado: {formatBytes(Object.values(compactDryRun.estimated_bytes || {}).reduce((sum, value) => sum + value, 0))}.
                 </p>
               ) : null}
-              {storageError ? <p className="mt-2 text-sm text-red-600 dark:text-red-400">{storageError}</p> : null}
+              {storageError ? <p className="mt-2 text-sm text-danger">{storageError}</p> : null}
             </div>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => void refreshStorageSummary()}
                 disabled={storageBusy}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
               >
                 Storage
               </button>
@@ -598,15 +598,15 @@ export default function PipelineDiagnosticsPanel({
                 type="button"
                 onClick={() => void runCompactDryRun()}
                 disabled={storageBusy || !selectedImportId}
-                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-700 disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white"
+                className="rounded-surface bg-paper px-4 py-2 text-sm font-semibold text-ink transition hover:bg-paper disabled:opacity-50"
               >
                 Dry-run compact
               </button>
             </div>
           </div>
         </div>
-        <details className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-950">
-          <summary className="cursor-pointer text-sm font-semibold text-gray-700 dark:text-gray-200">JSON bruto</summary>
+        <details className="mt-4 rounded-surface border border-edge bg-surface p-3">
+          <summary className="cursor-pointer text-sm font-semibold text-ink">JSON bruto</summary>
           <div className="mt-3 grid gap-4 xl:grid-cols-2">
             <JsonPanel title="Readiness raw" value={readiness} />
             <JsonPanel title="Pipeline raw" value={pipelineStatus} />

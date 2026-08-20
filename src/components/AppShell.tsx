@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import Nav, { SidebarNav } from "@/components/Nav";
 import { MobileTabBar, hasChildRow } from "@/components/MobileTabBar";
+import { CommandBar } from "@/components/CommandBar";
 import { IntentSubNav } from "@/components/student/IntentSubNav";
 import PwaRegister from "@/components/PwaRegister";
 import { ToastProvider } from "@/lib/useToast";
@@ -289,6 +290,10 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       {showMobileTabBar && <MobileTabBar />}
+      {/* Acelerador de teclado, e só. Fica fora das telas sem chrome (login,
+          sessão imersiva) pela mesma razão que o menu fica: lá o aluno tem uma
+          tarefa só, e navegar para outro lugar não é ela. */}
+      {!hideNavigationChrome && <CommandBar />}
       <Toast />
       <BuildVersionBadge />
       <ConfirmDialog

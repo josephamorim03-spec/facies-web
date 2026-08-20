@@ -18,7 +18,7 @@ export default function FontScaleControl({
 }: FontScaleControlProps) {
   return (
     <div
-      className={["inline-flex shrink-0 overflow-hidden rounded-lg border border-edge", className]
+      className={["inline-flex shrink-0 overflow-hidden rounded-surface border border-edge", className]
         .filter(Boolean)
         .join(" ")}
       role="group"

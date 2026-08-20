@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -9,13 +9,13 @@ import {
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { getCronogramaAgendaHref } from "@/app/cronograma/_lib/viewModeSession";
 import { NAV_GROUPS_CONFIG, isNavItemActive } from "@/lib/navConfig";
+import { KrosWordmark } from "@/components/KrosWordmark";
 import { ACTIVATE_ROUTE } from "@/lib/initialGoalSetup";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FastNavLink } from "@/components/FastNavLink";
 import { useSessionNavGuard } from "@/hooks/useSessionNavGuard";
 import { useEdgeSwipeSuppression } from "@/hooks/useEdgeSwipeSuppression";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { KrosGlyph, type KrosGlyphMotion } from "@/components/KrosGlyph";
 import {
   CalendarDays,
   ChartNoAxesCombined,
@@ -29,17 +29,6 @@ import {
 } from "lucide-react";
 
 
-function KrosmedIcon({ className }: { className?: string }) {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/brand/kros-logo-vector.svg"
-      alt=""
-      aria-hidden="true"
-      className={[className, "dark:invert dark:brightness-[1.08]"].filter(Boolean).join(" ")}
-    />
-  );
-}
 
 const ICON_MAP: Record<string, LucideIcon> = {
   today: House,
@@ -60,47 +49,19 @@ const ICON_MAP: Record<string, LucideIcon> = {
  * A Kros não usa ícone do Lucide: é o glifo próprio, que anima. Os demais
  * destinos seguem o mapa acima.
  */
-function NavIcon({
-  icon,
-  className,
-  krosMotion = "ambient",
-}: {
-  icon: string;
-  className?: string;
-  krosMotion?: KrosGlyphMotion;
-}) {
-  if (icon === "rota") return <KrosGlyph className={className} motion={krosMotion} />;
+function NavIcon({ icon, className }: { icon: string; className?: string }) {
+  // A aba ROTA usa a seta de GPS, a MESMA do `MobileTabBar`. Antes o desktop
+  // mostrava o glifo animado da Kros e o mobile a seta: dois icones para a mesma
+  // aba, e o unico movimento ambiente que sobrou num sistema cuja regra e zero
+  // animacao sem funcao.
+  //
+  // O glifo nao morreu: ele continua no estado `busy` da Rota, onde girar
+  // significa "montando a sessao" — animacao que comunica trabalho, nao enfeite.
   const Icon = ICON_MAP[icon] ?? LibraryBig;
   return <Icon className={className} />;
 }
 
 const NAV_GROUPS = NAV_GROUPS_CONFIG;
-
-/**
- * Dispara a animação de apresentação do glifo quando a superfície de navegação
- * abre (sidebar expandindo ou drawer). Volta ao loop ambiente ao terminar.
- */
-const KROS_WAKE_MS = 2000;
-
-function useKrosWake(open: boolean): KrosGlyphMotion {
-  const [motion, setMotion] = useState<KrosGlyphMotion>("ambient");
-  const [previousOpen, setPreviousOpen] = useState(open);
-
-  // Ajuste de estado durante a renderização — o padrão do React para reagir à
-  // mudança de uma prop, em vez de um efeito que dispara render em cascata.
-  if (open !== previousOpen) {
-    setPreviousOpen(open);
-    if (open) setMotion("wake");
-  }
-
-  useEffect(() => {
-    if (motion !== "wake") return;
-    const timer = window.setTimeout(() => setMotion("ambient"), KROS_WAKE_MS);
-    return () => window.clearTimeout(timer);
-  }, [motion]);
-
-  return motion;
-}
 
 export const NAV_OPEN_EVENT = "kros:open-nav";
 
@@ -131,11 +92,11 @@ function UserAvatar({ photoUrl, displayName, size = "sm" }: { photoUrl?: string 
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img src={photoUrl} alt={displayName ?? "Usuário"} referrerPolicy="no-referrer"
-        className={`${dim} rounded-full object-cover shrink-0 border border-edge`} />
+        className={`${dim} rounded-control object-cover shrink-0 border border-edge`} />
     );
   }
   return (
-    <span className={`${dim} rounded-full bg-primary flex items-center justify-center font-semibold text-primaryInk shrink-0`}>
+    <span className={`${dim} rounded-control bg-primary flex items-center justify-center font-semibold text-primaryInk shrink-0`}>
       {initial}
     </span>
   );
@@ -197,7 +158,6 @@ export function SidebarNav({
   const [hovered, setHovered] = useState(false);
   const [pinned, setPinned] = useState(false);
   const visible = hovered || pinned;
-  const krosMotion = useKrosWake(visible && !hideCompletely && isDesktopNavigation);
 
   const {
     exitConfirmOpen,
@@ -230,10 +190,15 @@ export function SidebarNav({
           style={{ padding: visible ? "1.25rem 1rem" : "0.875rem 0.625rem" }}
           aria-label="KrosMed — início"
         >
+          {/* Uma marca so em todo o app: login, sidebar, boot e status bar. O
+              <img> do logo vetor saiu junto com o hack de `dark:invert` que ele
+              exigia — o wordmark responde ao tema por token. Recolhida, a
+              sidebar mostra so a inicial. */}
           <div className={`flex items-center gap-2 ${!visible ? "justify-center" : ""}`}>
-            <KrosmedIcon className="w-6 h-6 shrink-0" />
-            {visible && (
-              <span className="font-serif text-base font-semibold tracking-[0.06em] uppercase whitespace-nowrap"><span className="text-ink">KROS</span><span className="text-primary dark:text-ink">MED</span></span>
+            {visible ? (
+              <KrosWordmark size="sm" />
+            ) : (
+              <span aria-hidden="true" className="text-sm font-semibold text-ink">K</span>
             )}
           </div>
         </Link>
@@ -279,7 +244,7 @@ export function SidebarNav({
                     }`}
                     aria-current={active ? "page" : undefined}
                   >
-                    <NavIcon icon={icon} className="w-5 h-5 shrink-0" krosMotion={krosMotion} />
+                    <NavIcon icon={icon} className="w-5 h-5 shrink-0" />
                     {visible && <span className="min-w-0 flex-1 truncate whitespace-nowrap" title={shortLabel}>{shortLabel}</span>}
                   </FastNavLink>
                 );
@@ -309,7 +274,7 @@ export function SidebarNav({
             {visible ? (
               <>
                 <button type="button" onClick={requestLogout}
-                  className="rounded-xl px-3 py-2 text-xs text-muted transition-colors hover:bg-surfaceMuted hover:text-ink">
+                  className="rounded-surface px-3 py-2 text-xs text-muted transition-colors hover:bg-surfaceMuted hover:text-ink">
                   Sair da conta
                 </button>
                 <ThemeToggle className="px-2 py-2" />

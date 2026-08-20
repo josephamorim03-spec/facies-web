@@ -73,9 +73,9 @@ type AnalysisTabProps = {
 };
 
 function questionChipClass(item: AnalysisSelectionItem): string {
-  if (item.status === "completed") return "border-green-700 bg-green-200 text-green-900 hover:bg-green-300";
-  if (item.status === "processing" || item.status === "analysis_ready") return "border-amber-600 bg-amber-100 text-amber-900";
-  if (item.status === "failed") return "border-red-600 bg-red-100 text-red-900 hover:bg-red-200";
+  if (item.status === "completed") return "border-success bg-surfaceMuted text-success hover:bg-success";
+  if (item.status === "processing" || item.status === "analysis_ready") return "border-warning bg-surfaceMuted text-warning";
+  if (item.status === "failed") return "border-danger bg-surfaceMuted text-danger hover:bg-surfaceMuted";
   if (item.status === "ineligible") return "border-edge text-muted opacity-40 cursor-default";
   if (item.selected) return "border-ink bg-ink text-paper";
   return "border-edge text-ink hover:border-ink";
@@ -245,7 +245,7 @@ export function AnalysisTab(props: AnalysisTabProps) {
           </button>
         </div>
 
-        {analysisError && <p className="text-xs text-red-700">{analysisError}</p>}
+        {analysisError && <p className="text-xs text-danger">{analysisError}</p>}
       </div>
 
       <ProgressivePendingList items={progressivePendingResults} onGoToCorrection={onGoToCorrection} />
@@ -259,7 +259,7 @@ export function AnalysisTab(props: AnalysisTabProps) {
             title="Navegar por análises"
             aria-label="Navegar por análises"
             style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
-            className="fixed left-4 z-40 h-12 w-12 rounded-full border border-ink bg-ink text-paper flex items-center justify-center shadow-lg"
+            className="fixed left-4 z-40 h-12 w-12 rounded-control border border-ink bg-ink text-paper flex items-center justify-center shadow-lg"
           >
             <IconAiSpark className="h-5 w-5" />
           </button>
@@ -297,9 +297,9 @@ export function AnalysisTab(props: AnalysisTabProps) {
                 const isNavigable = isCompleted || isProcessing;
 
                 const visualClass = isCompleted
-                  ? "border-green-700 bg-green-200 text-green-900"
+                  ? "border-success bg-surfaceMuted text-success"
                   : isProcessing
-                    ? "border-amber-600 bg-amber-100 text-amber-900"
+                    ? "border-warning bg-surfaceMuted text-warning"
                     : "border-edge text-muted opacity-50 cursor-default";
 
                 return (

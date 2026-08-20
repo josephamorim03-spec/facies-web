@@ -17,7 +17,7 @@ export function ToggleGroup<T extends string>({
           <button
             key={o.value}
             onClick={() => onChange(o.value)}
-            className={`text-xs rounded-xl px-2 py-0.5 border ${value === o.value ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
+            className={`text-xs rounded-surface px-2 py-0.5 border ${value === o.value ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
           >
             {o.label}
           </button>

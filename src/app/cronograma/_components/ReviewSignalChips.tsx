@@ -59,8 +59,8 @@ export function ReviewSignalChips({
   if (!memory && !mastery && !task.at_risk && questionPracticeCount <= 0) return null;
 
   const baseClass = compact
-    ? "rounded-full border px-1.5 py-0.5 text-[9px] font-medium leading-none"
-    : "rounded-full border px-2 py-0.5 text-[10px] font-medium leading-none";
+    ? "rounded-control border px-1.5 py-0.5 text-[9px] font-medium leading-none"
+    : "rounded-control border px-2 py-0.5 text-[10px] font-medium leading-none";
 
   return (
     <div className={`flex flex-wrap items-center gap-1 ${className}`}>

@@ -78,12 +78,15 @@ test.describe("Cronograma smoke", () => {
     await mockCronogramaApi(page);
   });
 
+  // `/cronograma` abre na SEMANA desde o commit f426e1d; a navegacao de mes
+  // so existe na visao de mes. Estes contratos descrevem o comportamento do mes,
+  // entao pedem a visao explicitamente em vez de depender do padrao da rota.
   test("abre cronograma, navega mes, abre detalhe e modal de estudo", async ({ page }) => {
     const today = currentTodayISO();
     const previousMonthLabel = /M.s anterior/i;
     const nextMonthLabel = /Pr.ximo m.s/i;
 
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
     await expect(page.getByLabel(previousMonthLabel)).toBeVisible();
     await expect(page.getByLabel(nextMonthLabel)).toBeVisible();
 
@@ -165,15 +168,18 @@ test.describe("Cronograma smoke", () => {
   });
 
   test("abre agenda operacional pela rota dedicada", async ({ page }) => {
+    // `/agenda-operacional` deixou de ser tela própria em f426e1d e virou atalho:
+    // o contrato agora é que o atalho ENTREGA a visão de mês, não que ele preserve
+    // a URL antiga.
     await page.goto("/agenda-operacional");
-    await expect(page).toHaveURL(/\/agenda-operacional$/);
+    await expect(page).toHaveURL(/\/cronograma\?view=month$/);
     await expect(page.getByLabel(/M.s anterior/i)).toBeVisible();
   });
 
   test("setas usam transicao continua e ajustam altura entre meses 6->5->6", async ({ page }) => {
     await mockBrowserClock(page, "2026-03-15T12:00:00-03:00");
 
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     const viewport = page.locator("[data-calendar-viewport='true']");
     const nextMonthLabel = /Pr.ximo m.s/i;

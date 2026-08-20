@@ -67,3 +67,25 @@ test("filter count includes the default access-direct choice and quantity is cla
   }).map((filter) => filter.label), ["Puericultura", "Acesso Direto"]);
   assert.equal(questionBankCtaLabel(10, "simulation", "topic"), "Começar 10 questões · feedback por questão");
 });
+
+test("o CTA diz como sera corrigido tambem na prova institucional", () => {
+  // A prova retornava cedo e omitia a correcao. Somado ao fato de que escolher a
+  // prova SOBRESCREVIA a correcao em silencio, o aluno nao tinha nenhum lugar
+  // onde ver o que ia receber. Os dois eixos aparecem sempre.
+  assert.equal(
+    questionBankCtaLabel(100, "training", "full_exam"),
+    "Começar prova · 100 questões · revelar ao final",
+  );
+  assert.equal(
+    questionBankCtaLabel(100, "simulation", "full_exam"),
+    "Começar prova · 100 questões · feedback por questão",
+  );
+});
+
+test("tipo de estudo e correcao sao eixos independentes no rotulo", () => {
+  const porTopico = questionBankCtaLabel(20, "training", "topic");
+  const prova = questionBankCtaLabel(20, "training", "full_exam");
+  assert.ok(porTopico.endsWith("revelar ao final"));
+  assert.ok(prova.endsWith("revelar ao final"));
+  assert.notEqual(porTopico, prova);
+});

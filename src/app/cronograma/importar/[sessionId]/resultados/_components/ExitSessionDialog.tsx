@@ -24,7 +24,7 @@ export function ExitSessionDialog(props: ExitSessionDialogProps) {
           <button
             type="button"
             onClick={onConfirm}
-            className="text-xs border border-red-600 text-red-600 px-3 py-1.5 hover:bg-red-50"
+            className="text-xs border border-danger text-danger px-3 py-1.5 hover:bg-surfaceMuted"
           >
             Sair da sessão
           </button>

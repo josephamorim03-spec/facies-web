@@ -43,7 +43,7 @@ export function ProgressivePendingList(props: ProgressivePendingListProps) {
               >
                 Q{item.question_id.split("_q").pop()}
               </button>
-              <span className="text-xs border px-2 py-0.5 border-amber-700 bg-amber-100 text-amber-900">
+              <span className="text-xs border px-2 py-0.5 border-warning bg-surfaceMuted text-warning">
                 Em processamento
               </span>
             </div>

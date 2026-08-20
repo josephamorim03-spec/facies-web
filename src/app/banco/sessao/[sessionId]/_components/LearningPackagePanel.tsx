@@ -224,7 +224,7 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
 
   if (!request) {
     return (
-      <section className="mt-5 rounded-lg border border-edge bg-surface p-4">
+      <section className="mt-5 rounded-surface border border-edge bg-surface p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Pacote pedagógico</p>
         <h2 className="mt-1 font-serif text-xl font-semibold text-ink">Aprofundar esta questão</h2>
         <p className="mt-2 text-sm text-muted">Solicite correção comentada, microcompetências e flashcards. O conteúdo só aparece após revisão editorial.</p>
@@ -237,13 +237,13 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
   }
 
   return (
-    <section className="mt-5 space-y-4 rounded-lg border border-edge bg-surface p-4" aria-live="polite">
+    <section className="mt-5 space-y-4 rounded-surface border border-edge bg-surface p-4" aria-live="polite">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Pacote pedagógico</p>
           <h2 className="mt-1 font-serif text-xl font-semibold text-ink">{STATUS_LABELS[request.status] ?? request.status}</h2>
         </div>
-        {learningPackage?.status === "partial" && <span className="rounded-full border border-edge px-2.5 py-1 text-xs text-muted">Parcial</span>}
+        {learningPackage?.status === "partial" && <span className="rounded-control border border-edge px-2.5 py-1 text-xs text-muted">Parcial</span>}
       </div>
 
       {/* O gate era `clinical.explanation`, campo que não existe em
@@ -252,7 +252,7 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
           e com ele o `option_analysis`: o único lugar do produto onde aparece
           comentário por alternativa, inclusive o da correta. */}
       {hasClinicalResolution && (
-        <div className="rounded-lg border border-edge bg-paper p-3">
+        <div className="rounded-surface border border-edge bg-paper p-3">
           <h3 className="text-sm font-semibold text-ink">Correção revisada</h3>
           {Boolean(clinical.central_concept) && (
             <p className="mt-2 text-sm font-semibold text-ink">{String(clinical.central_concept)}</p>
@@ -277,7 +277,7 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
             </div>
           )}
           {riskFlags.length > 0 && (
-            <div className="mt-3 rounded-lg border border-warning/40 bg-[var(--amber-tint)] p-2">
+            <div className="mt-3 rounded-surface border border-warning/40 bg-[var(--amber-tint)] p-2">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Atenção clínica</p>
               <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted">
                 {riskFlags.map((flag, index) => (
@@ -290,7 +290,7 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
       )}
 
       {microcompetencies.length > 0 && (
-        <div className="rounded-lg border border-edge bg-paper p-3">
+        <div className="rounded-surface border border-edge bg-paper p-3">
           <h3 className="text-sm font-semibold text-ink">Microcompetências</h3>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted">
             {microcompetencies.map((item, index) => <li key={`${String(item.name)}-${index}`}>{String(item.name || "")}</li>)}
@@ -300,8 +300,8 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
 
       {(Object.keys(profile).length > 0 || Object.keys(dna).length > 0) && (
         <div className="grid gap-3 md:grid-cols-2">
-          {Object.keys(profile).length > 0 && <div className="rounded-lg border border-edge bg-paper p-3"><h3 className="text-sm font-semibold text-ink">Perfil pedagógico</h3><p className="mt-2 text-sm text-muted">{String(profile.learning_objective || "")}</p><p className="mt-2 text-xs text-muted">Erro comum: {String(profile.common_error || "")}</p></div>}
-          {Object.keys(dna).length > 0 && <div className="rounded-lg border border-edge bg-paper p-3"><h3 className="text-sm font-semibold text-ink">DNA da questão</h3><p className="mt-2 text-sm text-muted">{String(dna.reasoning_pattern || "")}</p><p className="mt-2 text-xs text-muted">{strings(dna.discriminators).join(" · ")}</p></div>}
+          {Object.keys(profile).length > 0 && <div className="rounded-surface border border-edge bg-paper p-3"><h3 className="text-sm font-semibold text-ink">Perfil pedagógico</h3><p className="mt-2 text-sm text-muted">{String(profile.learning_objective || "")}</p><p className="mt-2 text-xs text-muted">Erro comum: {String(profile.common_error || "")}</p></div>}
+          {Object.keys(dna).length > 0 && <div className="rounded-surface border border-edge bg-paper p-3"><h3 className="text-sm font-semibold text-ink">DNA da questão</h3><p className="mt-2 text-sm text-muted">{String(dna.reasoning_pattern || "")}</p><p className="mt-2 text-xs text-muted">{strings(dna.discriminators).join(" · ")}</p></div>}
         </div>
       )}
 
@@ -313,7 +313,7 @@ export default function LearningPackagePanel({ token, sessionId, position }: Pro
               const templateId = String(card.template_id || "");
               if (dismissed.has(templateId)) return null;
               const note = saved[templateId];
-              return <article key={templateId} className="rounded-lg border border-edge bg-paper p-3"><p className="text-sm font-semibold text-ink">{String(card.front || "")}</p><p className="mt-2 text-sm text-muted">{String(card.back || "")}</p><div className="mt-3 flex gap-2">{!note ? <button type="button" disabled={busy} onClick={() => void saveCard(card)} className="rounded-lg border border-ink px-3 py-1.5 text-xs font-semibold text-ink disabled:opacity-50">Salvar</button> : note.srs_enrollment_state === "not_enrolled" ? <button type="button" disabled={busy} onClick={() => void enrollCard(templateId)} className="rounded-lg border border-primary px-3 py-1.5 text-xs font-semibold text-primary disabled:opacity-50">Adicionar ao Turbo</button> : <span className="text-xs font-semibold text-success">No Turbo</span>}<button type="button" onClick={() => dismissCard(templateId)} className="px-2 py-1.5 text-xs text-muted">Dispensar</button></div></article>;
+              return <article key={templateId} className="rounded-surface border border-edge bg-paper p-3"><p className="text-sm font-semibold text-ink">{String(card.front || "")}</p><p className="mt-2 text-sm text-muted">{String(card.back || "")}</p><div className="mt-3 flex gap-2">{!note ? <button type="button" disabled={busy} onClick={() => void saveCard(card)} className="rounded-surface border border-ink px-3 py-1.5 text-xs font-semibold text-ink disabled:opacity-50">Salvar</button> : note.srs_enrollment_state === "not_enrolled" ? <button type="button" disabled={busy} onClick={() => void enrollCard(templateId)} className="rounded-surface border border-primary px-3 py-1.5 text-xs font-semibold text-primary disabled:opacity-50">Adicionar ao Turbo</button> : <span className="text-xs font-semibold text-success">No Turbo</span>}<button type="button" onClick={() => dismissCard(templateId)} className="px-2 py-1.5 text-xs text-muted">Dispensar</button></div></article>;
             })}
           </div>
         </div>

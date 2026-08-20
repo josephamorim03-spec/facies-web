@@ -13,6 +13,17 @@ export function logThemesKey(area: string): string {
   return `themes_${area}`;
 }
 
+// ── sessionStorage ────────────────────────────────────────────────────────────
+
+/**
+ * O POST de boot já rodou nesta aba.
+ *
+ * `sessionStorage` e não `localStorage` de propósito: a sequência deve voltar
+ * quando o aluno abre o app de novo, e não sumir para sempre depois da primeira
+ * vez. Uma aba = uma vez.
+ */
+export const BOOT_SEQUENCE_SEEN_KEY = "kros:boot-seen";
+
 // ── sessionStorage (token-scoped) ─────────────────────────────────────────────
 export function getBlockedRedirectSessionKey(authToken: string): string {
   return `kros:initial-goal-blocked-session:${authToken.slice(0, 24)}`;

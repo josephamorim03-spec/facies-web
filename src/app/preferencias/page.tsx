@@ -91,9 +91,9 @@ function PreferenceToggle({
       />
       <span
         aria-hidden="true"
-        className="relative mt-0.5 h-6 w-11 shrink-0 rounded-full bg-edge transition-colors peer-checked:bg-primary peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
+        className="relative mt-0.5 h-6 w-11 shrink-0 rounded-control bg-edge transition-colors peer-checked:bg-primary peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
       >
-        <span className="absolute left-1 top-1 h-4 w-4 rounded-full bg-paper shadow-sm transition-transform peer-checked:translate-x-5" />
+        <span className="absolute left-1 top-1 h-4 w-4 rounded-control bg-paper shadow-sm transition-transform peer-checked:translate-x-5" />
       </span>
     </label>
   );
@@ -389,7 +389,7 @@ export default function PreferenciasPage() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-lg border border-edge bg-surface p-4">
+            <div className="space-y-4 rounded-surface border border-edge bg-surface p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-ink">Adicionar compromisso</p>
@@ -641,6 +641,46 @@ export default function PreferenciasPage() {
                     onChange={() =>
                       patchLocal({ default_feedback_reveal_policy: value })
                     }
+                    className="sr-only"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="mt-5">
+            <legend className="text-sm font-semibold text-ink">
+              Quando declarar confiança
+            </legend>
+            {/* Dois eixos independentes: QUANDO ver o gabarito (acima) e QUANDO
+                declarar confiança (aqui). Antes só existia o primeiro, e a etapa
+                de confiança ficava presa a sessões de simulado, sem escolha. */}
+            <p className="mt-1 max-w-[68ch] font-serif text-sm leading-6 text-muted">
+              No fim, com a sessão inteira fresca e antes de qualquer gabarito, mede o quanto você
+              sabe que sabe. A cada questão é outro ritmo: registra a dúvida no calor dela.
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-1 rounded-control border border-edge bg-paper p-1">
+              {(
+                [
+                  ["post_session", "No fim da sessão"],
+                  ["per_question", "A cada questão"],
+                ] as const
+              ).map(([value, label]) => (
+                <label
+                  key={value}
+                  className={`paper-control cursor-pointer px-3 py-3 text-center text-sm font-semibold transition-colors ${
+                    profile.confidence_timing === value
+                      ? "bg-primary text-primaryInk"
+                      : "text-muted hover:bg-surfaceMuted hover:text-ink"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="confidence-timing"
+                    value={value}
+                    checked={profile.confidence_timing === value}
+                    onChange={() => patchLocal({ confidence_timing: value })}
                     className="sr-only"
                   />
                   {label}

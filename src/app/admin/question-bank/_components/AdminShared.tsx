@@ -18,12 +18,12 @@ export function StatCard({
 }) {
   const toneClasses =
     tone === "danger"
-      ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-300"
+      ? "border-danger bg-surfaceMuted text-danger/40/40"
       : tone === "accent"
-        ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/40 dark:text-blue-300"
-        : "border-gray-200 bg-white text-gray-900 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100";
+        ? "border-info bg-surfaceMuted text-info/40/40"
+        : "border-edge bg-surface text-ink";
   return (
-    <div className={`rounded-lg border p-3 ${toneClasses}`}>
+    <div className={`rounded-surface border p-3 ${toneClasses}`}>
       <p className="text-xs font-semibold uppercase opacity-70">{label}</p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
       {helper ? <p className="mt-1 text-[11px] leading-4 opacity-70">{helper}</p> : null}
@@ -37,7 +37,7 @@ export function MetadataPill({ label, value }: { label: string; value: unknown }
   }
   const rendered = Array.isArray(value) ? value.join(", ") : String(value);
   return (
-    <div className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200">
+    <div className="rounded-surface border border-edge bg-surface px-3 py-1 text-xs font-medium text-ink">
       <span className="opacity-60">{label}: </span>
       <span>{rendered}</span>
     </div>
@@ -47,11 +47,11 @@ export function MetadataPill({ label, value }: { label: string; value: unknown }
 export function WarningBox({ warning }: { warning: QuestionBankAdminWarning }) {
   const toneClasses =
     warning.severity === "critical"
-      ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200"
-      : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200";
+      ? "border-danger bg-surfaceMuted text-danger/40/40"
+      : "border-warning bg-surfaceMuted text-warning/40/40";
   const samples = warning.samples ?? warning.sample ?? [];
   return (
-    <div className={`rounded-lg border p-3 ${toneClasses}`}>
+    <div className={`rounded-surface border p-3 ${toneClasses}`}>
       <div className="text-xs font-semibold uppercase">{warning.code}</div>
       <div className="mt-1 text-sm">{warning.message}</div>
       {warning.reason || warning.provider ? (
@@ -65,7 +65,7 @@ export function WarningBox({ warning }: { warning: QuestionBankAdminWarning }) {
       {samples.length ? (
         <div className="mt-2 space-y-2 text-xs">
           {samples.map((sample) => (
-            <div key={`${sample.question_number}-${sample.sample}`} className="rounded-lg bg-black/5 px-3 py-2 dark:bg-white/5">
+            <div key={`${sample.question_number}-${sample.sample}`} className="rounded-surface bg-paper/5 px-3 py-2/5">
               <span className="font-semibold">Q{sample.question_number ?? "?"}</span>: {sample.sample}
             </div>
           ))}
@@ -76,31 +76,31 @@ export function WarningBox({ warning }: { warning: QuestionBankAdminWarning }) {
 }
 
 export function CandidateRow({ item }: { item: QuestionBankAdminCandidate }) {
-  const gradeColor = item.content_grade === "usable" ? "text-green-600 dark:text-green-400"
-    : item.content_grade === "raw" ? "text-yellow-600 dark:text-yellow-400"
-    : "text-gray-400";
+  const gradeColor = item.content_grade === "usable" ? "text-success"
+    : item.content_grade === "raw" ? "text-warning"
+    : "text-muted";
   return (
-    <tr className="border-t border-gray-100 align-top text-sm dark:border-gray-800">
-      <td className="px-3 py-3 font-medium text-gray-700 dark:text-gray-200">{item.question_number ?? "-"}</td>
-      <td className="px-3 py-3 text-gray-500 dark:text-gray-400">{item.original_page ?? "-"}</td>
+    <tr className="border-t border-edge align-top text-sm">
+      <td className="px-3 py-3 font-medium text-ink">{item.question_number ?? "-"}</td>
+      <td className="px-3 py-3 text-muted">{item.original_page ?? "-"}</td>
       <td className="px-3 py-3">
-        <div className="font-medium text-gray-900 dark:text-gray-100">{item.status || "-"}</div>
-        <div className="text-xs text-gray-500 dark:text-gray-400">{item.question_status || "sem questão"}</div>
+        <div className="font-medium text-ink">{item.status || "-"}</div>
+        <div className="text-xs text-muted">{item.question_status || "sem questão"}</div>
       </td>
-      <td className="px-3 py-3 text-gray-600 dark:text-gray-300">{item.year ?? "-"}</td>
-      <td className="px-3 py-3 text-gray-600 dark:text-gray-300">{item.institution || "-"}</td>
-      <td className="px-3 py-3 text-gray-700 dark:text-gray-200">{truncateText(item.raw_stem, 120) || "-"}</td>
+      <td className="px-3 py-3 text-ink">{item.year ?? "-"}</td>
+      <td className="px-3 py-3 text-ink">{item.institution || "-"}</td>
+      <td className="px-3 py-3 text-ink">{truncateText(item.raw_stem, 120) || "-"}</td>
       <td className={`px-3 py-3 text-xs font-medium ${gradeColor}`}>
         {item.content_grade || "-"}
-        {item.has_image && <span className="ml-1 text-blue-400" title="Tem imagem">img</span>}
+        {item.has_image && <span className="ml-1 text-info" title="Tem imagem">img</span>}
       </td>
       <td className="px-3 py-3 text-right">
         {(() => {
           const conf = item.classification_confidence ?? item.extraction_confidence;
-          if (conf === null || conf === undefined) return <span className="text-gray-400">-</span>;
-          const cls = conf >= 0.85 ? "text-green-600 font-semibold dark:text-green-400"
-            : conf >= 0.60 ? "text-yellow-600 dark:text-yellow-400"
-            : "text-red-500 dark:text-red-400";
+          if (conf === null || conf === undefined) return <span className="text-muted">-</span>;
+          const cls = conf >= 0.85 ? "text-success font-semibold"
+            : conf >= 0.60 ? "text-warning"
+            : "text-danger";
           return <span className={cls}>{conf.toFixed(2)}</span>;
         })()}
       </td>
@@ -110,9 +110,9 @@ export function CandidateRow({ item }: { item: QuestionBankAdminCandidate }) {
 
 export function JsonPanel({ title, value }: { title: string; value: unknown }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-950/95 p-4 text-white dark:border-gray-800">
-      <div className="mb-2 text-xs font-semibold uppercase text-gray-400">{title}</div>
-      <pre className="overflow-auto text-xs leading-6 text-gray-100">{JSON.stringify(value, null, 2)}</pre>
+    <div className="rounded-surface border border-edge bg-paper/95 p-4 text-ink">
+      <div className="mb-2 text-xs font-semibold uppercase text-muted">{title}</div>
+      <pre className="overflow-auto text-xs leading-6 text-muted">{JSON.stringify(value, null, 2)}</pre>
     </div>
   );
 }
