@@ -7680,6 +7680,16 @@ export interface components {
              */
             limit: number;
             /**
+             * Include Annulled
+             * @default false
+             */
+            include_annulled: boolean;
+            /**
+             * Include Outdated
+             * @default false
+             */
+            include_outdated: boolean;
+            /**
              * Only Unanswered
              * @default true
              */
