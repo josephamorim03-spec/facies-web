@@ -433,7 +433,9 @@ test.describe("Dados e relatorios - graficos mobile", () => {
 
     await page.getByRole("link", { name: /Relat/i }).first().click();
     await expect(page).toHaveURL(/\/dados-e-relatorios\/relatorio$/);
-    await expect(page.getByLabel("Menu")).toHaveCount(1);
+    // Era `getByLabel("Menu")` (o hamburguer), aposentado junto com o drawer.
+    // A barra de topo continua existindo — ela carrega titulo e acoes de tela.
+    await expect(page.locator("[data-nav-surface='tabbar']")).toHaveCount(1);
 
     const diagnosticoSection = page.getByTestId("relatorio-section-diagnostico");
     const retencaoSection = page.getByTestId("relatorio-section-retencao");

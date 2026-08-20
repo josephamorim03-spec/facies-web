@@ -5,7 +5,7 @@ export type ButtonSize = "xs" | "sm" | "md";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: "border border-primary bg-primary text-primaryInk hover:brightness-[1.04]",
-  secondary: "border border-edge bg-surface text-muted hover:border-primary hover:text-ink hover:bg-surfaceMuted",
+  secondary: "border border-ink bg-surface text-ink hover:bg-surfaceMuted",
   outline: "border border-primary text-primary hover:bg-primary hover:text-primaryInk",
   ghost: "text-muted hover:bg-surfaceMuted hover:text-ink",
   danger: "border border-danger bg-danger text-primaryInk hover:brightness-[1.04]",
@@ -18,8 +18,14 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
   md: "min-h-11 text-sm px-4 py-2.5",
 };
 
+// Os colchetes sao `::before`/`::after` (ver `.chrome-bracket` em globals.css),
+// nunca texto: conteudo gerado nao entra no nome acessivel, entao o leitor de
+// tela continua anunciando "Iniciar" e nao "colchete Iniciar colchete".
+//
+// `ghost` fica de fora — e o tratamento para acao terciaria, onde o colchete
+// competiria com o botao primario ao lado.
 const BASE =
-  "paper-control inline-flex items-center justify-center gap-1.5 font-sans font-medium leading-none " +
+  "paper-control inline-flex items-center justify-center gap-1.5 font-sans font-semibold uppercase tracking-[0.11em] leading-none " +
   "disabled:cursor-not-allowed disabled:opacity-50 " +
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
@@ -45,7 +51,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
       ref={ref}
       {...rest}
       disabled={disabled || loading}
-      className={`${BASE} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
+      className={`${BASE} ${variant === "ghost" ? "" : "chrome-bracket"} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
     >
       {loading ? (
         <span className="opacity-60">...</span>

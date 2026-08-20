@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+
+import { ContaSection } from "./_components/ContaSection";
 import {
   Bell,
   CalendarClock,
@@ -336,9 +338,9 @@ export default function PreferenciasPage() {
             title="Rotina"
             description="Meta, capacidade e compromissos que bloqueiam ou reduzem a carga de estudo."
           />
-          <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+          <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
             <div className="space-y-5">
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2">
                 <label className="block">
                   <span className="text-sm font-semibold text-ink">Questões por semana</span>
                   <input
@@ -711,6 +713,8 @@ export default function PreferenciasPage() {
           {saving ? "Salvando..." : "Salvar"}
         </Button>
       </BottomActionBar>
+
+      <ContaSection />
     </div>
   );
 }

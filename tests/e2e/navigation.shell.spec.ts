@@ -280,16 +280,20 @@ test.describe("Navigation shell", () => {
   // o menu acuse a intencao de DESTINO. `activeHref` e' o `intentPath` para onde
   // o 308 do next.config leva (ou, quando a rota e' real, o intent que
   // LEGACY_PATHS lhe atribui em navConfig.ts).
+  // Com a taxonomia de cinco abas, o Cronograma virou FILHO de Inicio e a
+  // Evolucao virou filha de Perfil: quem acende e a aba pai, nao um item
+  // proprio. Por isso `/calendario` e `/desempenho` acendem `/hoje` agora.
   const desktopCases = [
     { path: "/hoje", activeHref: "/hoje" },
-    { path: "/calendario", activeHref: "/cronograma" }, // 308 -> /cronograma
+    { path: "/calendario", activeHref: "/hoje" }, // 308 -> /cronograma, filho de Inicio
     { path: "/caderno", activeHref: "/cards" }, // 308 -> /cards/registros
     { path: "/revisoes", activeHref: "/evolucao" }, // 308 -> /evolucao
     { path: "/dados-e-relatorios/graficos", activeHref: "/evolucao" }, // 308 -> /evolucao
-    { path: "/estatisticas/relatorio", activeHref: "/evolucao" }, // rota real, intent evolution
+    { path: "/estatisticas/relatorio", activeHref: "/evolucao" }, // rota real, intent profile
+    { path: "/banco/historico", activeHref: "/banco" }, // filho novo do Banco
     // `/desempenho` encadeia DOIS saltos: `redirect("/cronograma")` no servidor
-    // e o /cronograma agora e' a propria canonica.
-    { path: "/desempenho", activeHref: "/cronograma", landsOn: "/cronograma" },
+    // e o Cronograma agora e' filho de Inicio.
+    { path: "/desempenho", activeHref: "/hoje", landsOn: "/cronograma" },
   ];
 
   for (const { path, activeHref, landsOn } of desktopCases) {
@@ -345,14 +349,24 @@ test.describe("Navigation shell", () => {
     expect(labelBox.x + labelBox.width).toBeLessThanOrEqual(itemBox.x + itemBox.width + 1);
   });
 
-  test("mostra Cronograma e mantem Caderno fora da sidebar", async ({ page }) => {
+  test("a sidebar expoe as cinco abas, e o Cronograma vive na linha de filhos", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/hoje");
 
     const sidebar = navSidebar(page);
     await expect(sidebar).toBeVisible();
-    await expect(sidebar.locator("[data-nav-item-href='/cronograma']")).toHaveCount(1);
-    await expect(sidebar.locator("[data-nav-item-href='/caderno']")).toHaveCount(0);
+
+    // Cinco destinos, nem um a mais: Cronograma e Evolucao deixaram de ser itens
+    // proprios e viraram FILHOS de Inicio e Perfil.
+    for (const href of ["/hoje", "/banco", "/rota", "/cards", "/evolucao"]) {
+      await expect(sidebar.locator(`[data-nav-item-href='${href}']`)).toHaveCount(1);
+    }
+    for (const href of ["/cronograma", "/preferencias", "/kros", "/caderno"]) {
+      await expect(sidebar.locator(`[data-nav-item-href='${href}']`)).toHaveCount(0);
+    }
+
+    // E o Cronograma continua a um clique, pela linha de secoes.
+    await expect(page.getByLabel("Seções desta área").getByText("Cronograma", { exact: true })).toBeVisible();
   });
 
   test("shows reciprocal top-right links on desktop child pages", async ({ page }) => {
@@ -372,7 +386,10 @@ test.describe("Navigation shell", () => {
   });
 });
 
-test.describe("Navigation shell mobile drawer", () => {
+// Era "Navigation shell mobile drawer". O drawer e o hamburguer foram
+// aposentados: no mobile a navegacao agora e a barra inferior de cinco abas
+// (`data-nav-surface='tabbar'`), com a linha de filhos logo acima dela.
+test.describe("Navigation shell mobile tab bar", () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
   test.beforeEach(async ({ context, page }) => {
@@ -380,45 +397,59 @@ test.describe("Navigation shell mobile drawer", () => {
     await mockShellApi(page);
   });
 
-  test("keeps grouped mobile drawer item active", async ({ page }) => {
-    // Rota FILHA de um grupo (`isNavItemActive` casa por prefixo `/cards/`).
-    // `/desempenho` nao serve: redireciona ao cronograma, que tem cabecalho
-    // proprio. `/preferencias` tambem nao: apesar da intencao `planning`, ela
-    // fica fora de `groupPaths`, entao nao acende item nenhum.
-    await page.goto("/cards/registros");
-    await page.getByLabel("Menu").click();
+  test("o hamburguer nao existe mais", async ({ page }) => {
+    await page.goto("/hoje");
+    await expect(page.locator("[data-nav-surface='tabbar']")).toBeVisible();
+    await expect(page.getByLabel("Menu")).toHaveCount(0);
+  });
 
-    const activeItems = page.locator("[data-nav-surface='drawer'][data-nav-active='true']");
+  test("rota filha acende a aba do pai", async ({ page }) => {
+    // `/cards/registros` e filha de CARDS: a aba do pai acende, e nao um item
+    // proprio. `isNavItemActive` casa por prefixo `/cards/`.
+    await page.goto("/cards/registros");
+
+    const activeItems = page.locator("[data-nav-surface='tabbar'][data-nav-active='true']");
     await expect(activeItems).toHaveCount(1);
     await expect(activeItems).toHaveAttribute("data-nav-item-href", "/cards");
     await expect(activeItems).toHaveAttribute("aria-current", "page");
   });
 
-  test("mostra as sete intencoes no drawer sem estouro horizontal", async ({ page }) => {
-    // No mobile a navegacao e' o drawer, nao uma barra inferior: o `aria-label`
-    // "Navegação principal" pertence a sidebar, que fica oculta neste viewport.
+  test("mostra as cinco abas sem estouro horizontal", async ({ page }) => {
     await page.goto("/hoje");
-    await page.getByLabel("Menu").click();
 
-    const drawerItems = page.locator("[data-nav-surface='drawer']");
-    for (const label of ["Kros", "Hoje", "Cronograma", "Banco", "Cards", "Evolução", "Perfil"]) {
-      await expect(drawerItems.getByText(label, { exact: true })).toBeVisible();
+    const tabs = page.locator("[data-nav-surface='tabbar'] [data-nav-item-href]");
+    await expect(tabs).toHaveCount(5);
+    for (const label of ["Início", "Banco", "Rota", "Cards", "Perfil"]) {
+      await expect(tabs.getByText(label, { exact: true })).toBeVisible();
     }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
-  test("mostra Cronograma e mantem Caderno fora do drawer", async ({ page }) => {
+  test("Kros deixou de ser rotulo de menu", async ({ page }) => {
+    // Virou marca do motor. O destino se chama Rota, e `/kros` e 308.
     await page.goto("/hoje");
-    await page.getByLabel("Menu").click();
+    const tabbar = page.locator("[data-nav-surface='tabbar']");
+    await expect(tabbar.getByText("Kros", { exact: true })).toHaveCount(0);
+    await expect(tabbar.locator("[data-nav-item-href='/rota']")).toHaveCount(1);
+    await expect(tabbar.locator("[data-nav-item-href='/kros']")).toHaveCount(0);
+  });
 
-    // Ancora obrigatoria: sem ela as duas contagens abaixo dariam 0 com o drawer
-    // FECHADO e o teste passaria sem testar nada.
-    await expect(page.locator("[data-nav-surface='drawer']").first()).toBeVisible();
+  test("a linha de filhos aparece acima da barra e marca a secao atual", async ({ page }) => {
+    await page.goto("/cronograma");
+    const childRow = page.getByLabel("Seções desta área");
+    await expect(childRow).toBeVisible();
+    await expect(childRow.getByText("Hoje", { exact: true })).toBeVisible();
+    const active = childRow.locator("[aria-current='page']");
+    await expect(active).toHaveCount(1);
+    await expect(active).toHaveText("Cronograma");
+  });
 
-    // Cronograma deixou de ser rota escondida: virou item do menu, ao lado de Hoje.
-    await expect(page.locator("[data-nav-surface='drawer'][data-nav-item-href='/cronograma']")).toHaveCount(1);
-    await expect(page.locator("[data-nav-surface='drawer'][data-nav-item-href='/caderno']")).toHaveCount(0);
+  test("a barra some no modo imersivo da sessao", async ({ page }) => {
+    // `/banco/sessao/*` e imersivo: sem barra de topo e sem barra de abas, para
+    // a leitura do enunciado ficar com a tela inteira.
+    await page.goto("/banco/sessao/sessao-demo");
+    await expect(page.locator("[data-nav-surface='tabbar']")).toHaveCount(0);
   });
 
   test("mantem os atalhos entre paginas irmas no mobile", async ({ page }) => {

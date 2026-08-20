@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   isStudyImportImmersivePath,
 } from "@/lib/studyImportRuntime";
@@ -13,9 +13,8 @@ import { ACTIVATE_ROUTE } from "@/lib/initialGoalSetup";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FastNavLink } from "@/components/FastNavLink";
 import { useSessionNavGuard } from "@/hooks/useSessionNavGuard";
+import { useEdgeSwipeSuppression } from "@/hooks/useEdgeSwipeSuppression";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { getAuthToken } from "@/lib/auth";
-import { warmRoute, warmRouteData } from "@/lib/navigationWarmup";
 import { KrosGlyph, type KrosGlyphMotion } from "@/components/KrosGlyph";
 import {
   CalendarDays,
@@ -24,6 +23,7 @@ import {
   House,
   Layers3,
   LibraryBig,
+  Navigation,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -44,10 +44,15 @@ function KrosmedIcon({ className }: { className?: string }) {
 const ICON_MAP: Record<string, LucideIcon> = {
   today: House,
   bank: LibraryBig,
+  // A Rota e navegacao: a seta de GPS diz o que a tela faz melhor que o glifo
+  // da marca, que agora vive na status bar e no boot.
+  rota: Navigation,
   cards: Layers3,
+  profile: CircleUserRound,
+  // Chaves que a taxonomia de 5 abas absorveu: `evolution` e `planning`
+  // viraram FILHOS de Perfil e Inicio, nao abas proprias.
   evolution: ChartNoAxesCombined,
   planning: CalendarDays,
-  profile: CircleUserRound,
   settings: Settings,
 };
 
@@ -64,7 +69,7 @@ function NavIcon({
   className?: string;
   krosMotion?: KrosGlyphMotion;
 }) {
-  if (icon === "kros") return <KrosGlyph className={className} motion={krosMotion} />;
+  if (icon === "rota") return <KrosGlyph className={className} motion={krosMotion} />;
   const Icon = ICON_MAP[icon] ?? LibraryBig;
   return <Icon className={className} />;
 }
@@ -138,275 +143,41 @@ function UserAvatar({ photoUrl, displayName, size = "sm" }: { photoUrl?: string 
 
 // --- Main Nav (drawer + hamburger) -------------------------------------------
 
-export default function Nav({ displayName, photoUrl }: { displayName?: string | null; photoUrl?: string | null } = {}) {
+/**
+ * Guardas globais de navegacao + supressao do swipe de borda.
+ *
+ * O drawer mobile SAIU: a navegacao agora e `MobileTabBar` (barra inferior) no
+ * mobile e `SidebarNav` no desktop. O que sobrou aqui nunca foi menu — e o
+ * dialogo de "sair da sessao" (disparado pelo guard de rota) e o supressor de
+ * edge-swipe, que precisa continuar montado em toda tela com chrome.
+ *
+ * O botao de sair da conta e o seletor de tema, que so existiam dentro do
+ * drawer, mudaram para `/preferencias`: no mobile o drawer era o UNICO lugar
+ * onde eles apareciam, porque `SidebarNav` renderiza `null` sem desktop.
+ */
+export default function Nav() {
   const pathname = usePathname();
-  const router = useRouter();
-  const isDesktopNavigation = useDesktopNavigationMode();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const historyAnchorPathRef = useRef<string | null>(null);
   const hideCompletely = useNavHideCompletely(pathname);
-  const krosMotion = useKrosWake(drawerOpen && !isDesktopNavigation && !hideCompletely);
 
-  const {
-    exitConfirmOpen,
-    logoutConfirmOpen,
-    guardNavigation,
-    cancelExit,
-    confirmExit,
-    requestLogout,
-    cancelLogout,
-    confirmLogout,
-  } = useSessionNavGuard({ pathname, onCloseDrawer: () => setDrawerOpen(false) });
+  const { exitConfirmOpen, cancelExit, confirmExit } = useSessionNavGuard({ pathname });
 
-  // Allow other components to open the drawer via custom event
-  useEffect(() => {
-    const handler = () => {
-      if (!isDesktopNavigation) setDrawerOpen(true);
-    };
-    window.addEventListener(NAV_OPEN_EVENT, handler);
-    return () => window.removeEventListener(NAV_OPEN_EVENT, handler);
-  }, [isDesktopNavigation]);
-
-  useEffect(() => {
-    if (!drawerOpen || isDesktopNavigation || hideCompletely) return;
-    const token = getAuthToken();
-    for (const group of NAV_GROUPS) {
-      for (const item of group.items) {
-        const href = resolveNavHref(item.href);
-        warmRoute(href, router);
-        warmRouteData(href, token);
-      }
-    }
-  }, [drawerOpen, hideCompletely, isDesktopNavigation, router]);
-
-  useEffect(() => {
-    if (hideCompletely) return;
-    if ((navigator.maxTouchPoints ?? 0) <= 0) return;
-
-    const EDGE_ZONE_PX = 24;
-    const BROWSER_EDGE_PX = 16;
-    const HORIZONTAL_START_PX = 14;
-    const AXIS_MARGIN_PX = 8;
-    let tracking = false;
-    let suppressing = false;
-    let startX = 0;
-    let startY = 0;
-    let touchId: number | null = null;
-
-    function isAllowedHorizontalSwipeTarget(target: EventTarget | null): boolean {
-      if (!(target instanceof Element)) return false;
-      return Boolean(target.closest("[data-allow-horizontal-swipe='true']"));
-    }
-
-    function isInteractiveEdgeTarget(target: EventTarget | null): boolean {
-      if (!(target instanceof Element)) return false;
-      return Boolean(
-        target.closest("button, a, input, textarea, select, [role='button'], [contenteditable='true']"),
-      );
-    }
-
-    function getTrackedTouch(list: TouchList): Touch | null {
-      if (touchId !== null) {
-        for (let i = 0; i < list.length; i += 1) {
-          const touch = list.item(i);
-          if (touch && touch.identifier === touchId) return touch;
-        }
-      }
-      return list.length > 0 ? list.item(0) : null;
-    }
-
-    function clearGestureState() {
-      tracking = false;
-      suppressing = false;
-      touchId = null;
-    }
-
-    function onTouchStart(e: TouchEvent) {
-      if (e.touches.length !== 1) {
-        clearGestureState();
-        return;
-      }
-      const touch = e.touches.item(0);
-      if (!touch) {
-        clearGestureState();
-        return;
-      }
-      const viewportWidth = window.innerWidth;
-      const nearEdge = touch.clientX <= EDGE_ZONE_PX || touch.clientX >= viewportWidth - EDGE_ZONE_PX;
-      if (!nearEdge) {
-        clearGestureState();
-        return;
-      }
-      if (isInteractiveEdgeTarget(e.target)) {
-        clearGestureState();
-        return;
-      }
-      if (isAllowedHorizontalSwipeTarget(e.target)) {
-        const atBrowserEdge = touch.clientX <= BROWSER_EDGE_PX || touch.clientX >= viewportWidth - BROWSER_EDGE_PX;
-        if (atBrowserEdge && e.cancelable) e.preventDefault();
-        clearGestureState();
-        return;
-      }
-      tracking = true;
-      suppressing = false;
-      startX = touch.clientX;
-      startY = touch.clientY;
-      touchId = touch.identifier;
-
-      if (e.cancelable) e.preventDefault();
-    }
-
-    function onTouchMove(e: TouchEvent) {
-      if (!tracking) return;
-      const touch = getTrackedTouch(e.touches);
-      if (!touch) {
-        clearGestureState();
-        return;
-      }
-      const dx = touch.clientX - startX;
-      const dy = touch.clientY - startY;
-      const absX = Math.abs(dx);
-      const absY = Math.abs(dy);
-
-      if (!suppressing) {
-        if (absX < HORIZONTAL_START_PX && absY < HORIZONTAL_START_PX) return;
-        if (absX > absY + AXIS_MARGIN_PX) {
-          suppressing = true;
-        } else if (absY > absX + AXIS_MARGIN_PX) {
-          clearGestureState();
-          return;
-        } else {
-          return;
-        }
-      }
-
-      if (e.cancelable) e.preventDefault();
-    }
-
-    window.addEventListener("touchstart", onTouchStart, { capture: true, passive: false });
-    window.addEventListener("touchmove", onTouchMove, { capture: true, passive: false });
-    window.addEventListener("touchend", clearGestureState, { capture: true });
-    window.addEventListener("touchcancel", clearGestureState, { capture: true });
-
-    return () => {
-      window.removeEventListener("touchstart", onTouchStart, { capture: true });
-      window.removeEventListener("touchmove", onTouchMove, { capture: true });
-      window.removeEventListener("touchend", clearGestureState, { capture: true });
-      window.removeEventListener("touchcancel", clearGestureState, { capture: true });
-    };
-  }, [hideCompletely]);
-
-  useEffect(() => {
-    if (hideCompletely) return;
-    if (historyAnchorPathRef.current === pathname) return;
-    historyAnchorPathRef.current = pathname;
-    window.history.replaceState(
-      { ...(window.history.state ?? {}), krosMenuAnchor: true, path: pathname, at: Date.now() },
-      "",
-      pathname,
-    );
-  }, [hideCompletely, pathname]);
+  // Nao e gesto de menu: ver `hooks/useEdgeSwipeSuppression.ts`. E o que impede o
+  // swipe de borda do iOS/Android de sequestrar o gesto horizontal do TurboCard e
+  // do CalendarGrid.
+  useEdgeSwipeSuppression(!hideCompletely);
 
   if (hideCompletely) return null;
 
-  const drawerVisible = drawerOpen && !isDesktopNavigation;
-
   return (
-    <>
-      {/* Drawer overlay */}
-      {drawerVisible && (
-        <div className="fixed inset-0 z-50" onClick={() => setDrawerOpen(false)}>
-          <div className="absolute inset-0 bg-black/30" />
-          <nav
-            className="drawer-enter absolute left-0 top-0 flex h-full w-64 flex-col border-r border-edge bg-paper p-6 shadow-soft"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-6 flex items-center">
-              <div className="flex items-center gap-2">
-                <KrosmedIcon className="w-6 h-6 shrink-0" />
-                <span className="font-serif text-base font-semibold tracking-[0.06em] uppercase"><span className="text-ink">KROS</span><span className="text-primary dark:text-ink">MED</span></span>
-              </div>
-            </div>
-            <div className="flex-1 space-y-1">
-              {NAV_GROUPS.map((group, gi) => (
-                <div key={gi}>
-                  {gi > 0 && <hr className="border-edge my-3" />}
-                  {group.items.map((item) => {
-                    const { href, shortLabel, icon } = item;
-                    const active = isNavItemActive(pathname, item);
-                    // A Kros ganha uma superfície teal levíssima em repouso —
-                    // presente sem imitar o estado "selecionado".
-                    const restingClass =
-                      icon === "kros"
-                        ? "nav-kros-item"
-                        : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink";
-                    return (
-                      <FastNavLink
-                        key={href}
-                        href={resolveNavHref(href)}
-                        onNavigateGuard={guardNavigation}
-                        aria-current={active ? "page" : undefined}
-                        data-nav-surface="drawer"
-                        data-nav-item-href={href}
-                        data-nav-active={active ? "true" : "false"}
-                        className={`flex items-center gap-3 whitespace-nowrap rounded-xl border px-3 py-2.5 text-sm font-medium leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                          active ? "border-primary bg-surface text-ink shadow-sm" : restingClass
-                        }`}
-                      >
-                        <NavIcon icon={icon} className="w-5 h-5 shrink-0" krosMotion={krosMotion} />
-                        {shortLabel}
-                      </FastNavLink>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-            <div className="mt-auto border-t border-edge">
-              {(displayName || photoUrl) && (
-                // Identidade, não atalho: Perfil virou item do menu, e manter o
-                // avatar clicável para o mesmo destino obrigava a aprender dois
-                // caminhos para a mesma tela.
-                <div className="flex items-center gap-2.5 border-b border-edge px-4 py-3">
-                  <UserAvatar photoUrl={photoUrl} displayName={displayName} />
-                  <p className="min-w-0 flex-1 truncate text-sm font-medium text-ink">
-                    {displayName?.split(" ")[0] ?? ""}
-                  </p>
-                </div>
-              )}
-              <div className="flex items-center justify-between px-2 py-2">
-                <button
-                  type="button"
-                  onClick={requestLogout}
-                  className="rounded-xl px-2 py-2.5 text-xs text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:text-sm"
-                >
-                  Sair da conta
-                </button>
-                <ThemeToggle />
-              </div>
-            </div>
-          </nav>
-        </div>
-      )}
-
-      <ConfirmDialog
-        open={exitConfirmOpen}
-        title="Sair da sessão?"
-        message="O progresso será perdido."
-        cancelLabel="Continuar"
-        confirmLabel="Sair da sessão"
-        onCancel={cancelExit}
-        onConfirm={confirmExit}
-      />
-      <ConfirmDialog
-        open={logoutConfirmOpen}
-        title="Sair da conta?"
-        message="Encerrar a sessão neste dispositivo?"
-        cancelLabel="Cancelar"
-        confirmLabel="Sair"
-        onCancel={cancelLogout}
-        onConfirm={confirmLogout}
-      />
-    </>
+    <ConfirmDialog
+      open={exitConfirmOpen}
+      title="Sair da sessão?"
+      message="O progresso será perdido."
+      cancelLabel="Continuar"
+      confirmLabel="Sair da sessão"
+      onCancel={cancelExit}
+      onConfirm={confirmExit}
+    />
   );
 }
 
@@ -488,10 +259,10 @@ export function SidebarNav({
               {group.items.map((item) => {
                 const { href, shortLabel, icon } = item;
                 const active = isNavItemActive(pathname, item);
-                // A Kros ganha uma superfície teal levíssima em repouso —
-                // presente sem imitar o estado "selecionado".
+                // A Rota (ex-Kros) ganha uma superfície de acento levíssima em
+                // repouso — presente sem imitar o estado "selecionado".
                 const restingClass =
-                  icon === "kros"
+                  icon === "rota"
                     ? "nav-kros-item"
                     : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink";
                 return (

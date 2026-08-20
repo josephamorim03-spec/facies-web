@@ -10,9 +10,14 @@ import {
 import { useAuthToken } from "@/lib/useAuthToken";
 
 /**
- * Registro do dia, em três campos.
+ * Registro do dia: sono e plantão.
  *
- * Três, e não seis: prontidão-para-foco é quase colinear com energia, e esforço
+ * Eram três. A energia saiu porque mudou de dono — quem pergunta é a Rota, a
+ * cada sessão, e o dia recebe a média das rotas INICIADAS. Sono e plantão ficam
+ * aqui porque não mudam entre sessões do mesmo dia: são fatos do dia, não do
+ * momento.
+ *
+ * Nunca foram seis: prontidão-para-foco é quase colinear com energia, e esforço
  * percebido é medida PÓS-esforço — perguntá-la no registro do dia não mede nada.
  * O que sustenta "leva alguns segundos" é o número de perguntas.
  *
@@ -27,7 +32,6 @@ const SLEEP_OPTIONS = [
   { label: "mais de 8h", minutes: 540 },
 ] as const;
 
-const ENERGY_OPTIONS = [1, 2, 3, 4, 5] as const;
 
 function OptionButton({
   selected,
@@ -130,27 +134,15 @@ export function CheckinCard() {
           </div>
         </div>
 
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted">
-            Energia
-          </p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {ENERGY_OPTIONS.map((level) => (
-              <OptionButton
-                key={level}
-                selected={checkin?.energy === level}
-                ariaLabel={`Energia ${level} de 5`}
-                onClick={() =>
-                  mutation.mutate({ energy: checkin?.energy === level ? null : level })
-                }
-              >
-                {level}
-              </OptionButton>
-            ))}
-            <span className="text-xs text-muted">1 = exausto · 5 = ótimo</span>
-          </div>
-        </div>
+        {/* A energia saiu daqui: quem pergunta agora é a Rota, e a cada rota
+            INICIADA o dia recebe a média das declarações. Perguntar nos dois
+            lugares criaria duas fontes da mesma verdade — e a daqui seria a pior
+            das duas, porque um valor único do dia não descreve quem estuda de
+            manhã focado e à noite exausto.
 
+            `routine_daily_checkins.energy` continua sendo a autoridade e segue
+            alimentando as correlações desta mesma tela; só mudou quem escreve.
+            Sono e plantão ficam: esses não mudam entre sessões do mesmo dia. */}
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-muted">
             Plantão

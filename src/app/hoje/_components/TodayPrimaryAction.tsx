@@ -49,7 +49,10 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
               <h2 className="font-serif text-3xl font-semibold leading-tight text-ink sm:text-4xl">
                 {action.title}
               </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
+              {/* `font-serif` explicito: `--font-sans` aponta para a mono neste
+                  sistema, entao prosa que nao declara familia vira monoespacada.
+                  Esta e a segunda prosa mais lida do app depois do enunciado. */}
+              <p className="mt-3 max-w-2xl font-serif text-sm leading-6 text-muted sm:text-base">
                 {action.rationale}
               </p>
             </div>

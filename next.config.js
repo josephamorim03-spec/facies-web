@@ -94,6 +94,10 @@ const nextConfig = {
       { source: "/calendario", destination: "/cronograma", permanent: true },
       { source: "/rotina-e-metas", destination: "/preferencias", permanent: true },
       { source: "/perfil", destination: "/preferencias", permanent: true },
+      // A tela deixou de se chamar Kros e virou Rota: o rotulo do menu e a URL
+      // precisam dizer a mesma coisa. `Kros` continua sendo a marca do motor
+      // (status bar, boot), so nao e mais nome de destino.
+      { source: "/kros", destination: "/rota", permanent: true },
     ];
   },
 };

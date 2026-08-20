@@ -10,6 +10,8 @@ import {
   type QuestionBankSession,
   type QuestionBankSessionItem,
 } from "@/lib/api";
+import { ReasoningChain } from "./ReasoningChain";
+import { ReasoningClosing } from "./ReasoningClosing";
 
 type Props = {
   token: string;
@@ -176,18 +178,22 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
         </div>
       )}
 
+      <ReasoningChain chain={review.chain} />
+
       {review.first_gap && (
         <div className="mt-4 rounded-lg border border-warning/40 bg-[var(--amber-tint)] p-3">
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Primeira lacuna percebida</p>
           <p className="mt-1 text-sm font-semibold text-ink">
             {review.first_gap.knowledge_node_name ?? "Microcompetência associada"}
           </p>
-          <p className="mt-1 text-sm leading-relaxed text-muted">{review.first_gap.feedback}</p>
+          <p className="mt-1 font-serif text-sm leading-relaxed text-muted">{review.first_gap.feedback}</p>
           <button type="button" disabled={busy} onClick={() => void reveal()} className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primaryInk disabled:opacity-50">
             Ver resposta e comentários
           </button>
         </div>
       )}
+
+      <ReasoningClosing chain={review.chain} status={review.status} />
 
       {review.status === "awaiting_attribution" && (
         <div className="mt-4">

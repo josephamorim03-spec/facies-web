@@ -5,10 +5,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import type { NavigationEnergy, NavigationPrompt } from "@/lib/api";
 
+// "Fadigado/Normal/Focado" e nao "Baixa/Normal/Alta": o aluno descreve o proprio
+// estado, nao gradua uma escala abstrata. Os tres continuam mapeando exatamente
+// para low/normal/high do motor.
 const ENERGY_OPTIONS: { value: NavigationEnergy; label: string }[] = [
-  { value: "low", label: "Baixa" },
+  { value: "low", label: "Fadigado" },
   { value: "normal", label: "Normal" },
-  { value: "high", label: "Alta" },
+  { value: "high", label: "Focado" },
 ];
 
 type Props = {
@@ -29,7 +32,7 @@ type Props = {
  * é tornar a resposta barata: os presets saem da capacidade estimada do dia (e
  * não de uma lista fixa), e a energia já chega pré-selecionada pelo check-in.
  */
-export function NavigatorContextCard({ prompt, busy = false, onCalculate }: Props) {
+export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
   // O estado local guarda apenas o OVERRIDE do aluno. O valor sugerido é
   // derivado do prompt no render, e não copiado para o estado por efeito:
   // copiar criaria uma segunda fonte da mesma verdade, que fica velha quando o

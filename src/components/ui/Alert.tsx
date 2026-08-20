@@ -41,7 +41,7 @@ export function Alert({ variant = "info", icon, action, onDismiss, children, cla
           type="button"
           onClick={onDismiss}
           aria-label="Fechar"
-          className="-mr-1 -mt-0.5 shrink-0 rounded-md p-1 text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="-mr-1 -mt-0.5 shrink-0 rounded-control p-1 text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
             <path d="M5 5l10 10M15 5L5 15" />

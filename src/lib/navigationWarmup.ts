@@ -90,6 +90,11 @@ export function warmRouteData(href: string, token: string | null | undefined): v
   requests.push(getStudentExperience(token, "week"));
   const intent = getStudentWarmupIntent(pathname);
 
+  // As cinco abas absorveram os intents antigos: `planning` virou filho de
+  // INICIO (Hoje + Cronograma) e `evolution` virou filho de PERFIL (Evolucao +
+  // Preferencias). Os conjuntos de dados dos dois pais foram fundidos — quem
+  // toca a aba pode ir para qualquer um dos dois filhos, entao aquecer so metade
+  // deixaria o segundo destino frio exatamente na navegacao mais provavel.
   if (intent === "today") {
     const today = todayISO();
     requests.push(
@@ -100,8 +105,11 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       listEvents(token),
       getOperationalTurboOverview(token, { previewLimit: 4 }),
       getStudyPerformanceSummary(token),
+      // vindos do antigo intent `planning` (Cronograma)
+      getReviewAgenda(token),
+      listScheduleSuggestions(token),
     );
-  } else if (intent === "kros" || intent === "bank") {
+  } else if (intent === "rota" || intent === "bank") {
     requests.push(
       browseQuestionBankTopics(token, { limit: 40, include_empty: false }),
       previewQuestionBankAvailability(token),
@@ -113,7 +121,8 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       getOperationalStreak(token),
       getTurboAreaStats(token),
     );
-  } else if (intent === "evolution") {
+  } else if (intent === "profile") {
+    // vindos do antigo intent `evolution`
     requests.push(
       listDirectedStudies(token),
       listReviewTasks(token, { status: "pending" }),
@@ -121,14 +130,6 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       getStudyPerformanceSummary(token),
       getQuestionBankLongitudinalDiagnosis(token),
       getTurboAreaStats(token),
-    );
-  } else if (intent === "planning") {
-    requests.push(
-      getReviewAgenda(token),
-      listReviewTasks(token, { status: "pending" }),
-      listEvents(token),
-      listScheduleSuggestions(token),
-      getStudyPerformanceSummary(token),
     );
   }
 

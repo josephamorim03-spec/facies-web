@@ -65,9 +65,54 @@ type Props = {
   onResolve?: (status: NavigationRouteStatus) => void;
   resolving?: boolean;
   resolved?: NavigationRouteStatus | null;
+  /** Volta para a pergunta de tempo e energia. */
+  onBack?: () => void;
+  /** Segue para uma sessão de questões mesmo quando a rota sugeriu outra coisa. */
+  onWantQuestions?: () => void;
 };
 
-export function NavigatorRoute({ route, onResolve, resolving, resolved }: Props) {
+/**
+ * As duas saídas que o aluno sempre tem, mesmo quando a rota o contraria.
+ *
+ * A Rota pode responder "hoje o melhor é cards" — e essa resposta é honesta. Mas
+ * ela não pode ser um beco: quem discorda precisa poder responder de novo, e
+ * quem quer questões assim mesmo precisa poder pedir. Sem estas duas, a tela
+ * decide pelo aluno em vez de recomendar.
+ */
+function RotaEscapes({
+  onBack,
+  onWantQuestions,
+  disabled,
+}: {
+  onBack?: () => void;
+  onWantQuestions?: () => void;
+  disabled?: boolean;
+}) {
+  if (!onBack && !onWantQuestions) return null;
+  return (
+    <div className="mt-4 flex flex-wrap gap-2">
+      {onWantQuestions ? (
+        <Button type="button" variant="secondary" disabled={disabled} onClick={onWantQuestions}>
+          Fazer questões
+        </Button>
+      ) : null}
+      {onBack ? (
+        <Button type="button" variant="ghost" disabled={disabled} onClick={onBack}>
+          Voltar
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+export function RotaResultado({
+  route,
+  onResolve,
+  resolving,
+  resolved,
+  onBack,
+  onWantQuestions,
+}: Props) {
   const notes = translate(route.reason_codes, ROUTE_REASONS);
 
   if (route.actions.length === 0) {
@@ -76,7 +121,10 @@ export function NavigatorRoute({ route, onResolve, resolving, resolved }: Props)
     return (
       <section aria-label="Rota" className="border-y border-edge py-4">
         <p className="text-sm font-semibold text-ink">{copy.title}</p>
-        <p className="mt-1 text-sm leading-6 text-muted">{copy.detail}</p>
+        <p className="mt-1 font-serif text-sm leading-6 text-muted">{copy.detail}</p>
+        {/* Rota vazia e' onde as saidas MAIS importam: sem elas o aluno fica
+            olhando uma tela que so diz "nao". */}
+        <RotaEscapes onBack={onBack} onWantQuestions={onWantQuestions} disabled={resolving} />
       </section>
     );
   }
@@ -125,32 +173,41 @@ export function NavigatorRoute({ route, onResolve, resolving, resolved }: Props)
       {onResolve && route.route_id ? (
         resolved ? (
           <p className="mt-4 text-sm text-muted">
-            {resolved === "completed"
-              ? "Rota concluída. O próximo cálculo já considera isso."
-              : "Anotado. O próximo cálculo considera sua recusa."}
+            {resolved === "accepted"
+              ? "Rota iniciada. Sua energia de hoje entrou na conta do dia."
+              : resolved === "completed"
+                ? "Rota concluída. O próximo cálculo já considera isso."
+                : "Anotado. O próximo cálculo considera sua recusa."}
           </p>
         ) : (
-          // Recusar fica lado a lado com concluir, e não escondido: uma rota
-          // recusada com frequência é a evidência mais direta de que o montador
-          // está errando, e esconder o botão esconderia justamente esse sinal.
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="primary"
-              disabled={resolving}
-              onClick={() => onResolve("completed")}
-            >
-              Concluir rota
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={resolving}
-              onClick={() => onResolve("rejected")}
-            >
-              Não serve agora
-            </Button>
-          </div>
+          <>
+            {/* Iniciar e' o aceite: e' ele que marca a rota como `accepted` e,
+                so entao, faz a energia declarada contar para a media do dia.
+                Rota gerada e abandonada nao conta — pode ser so exploracao.
+
+                Recusar fica lado a lado, e nao escondido: uma rota recusada com
+                frequencia e a evidencia mais direta de que o montador esta
+                errando, e esconder o botao esconderia justamente esse sinal. */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="primary"
+                disabled={resolving}
+                onClick={() => onResolve("accepted")}
+              >
+                Iniciar rota
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={resolving}
+                onClick={() => onResolve("rejected")}
+              >
+                Não serve agora
+              </Button>
+            </div>
+            <RotaEscapes onBack={onBack} onWantQuestions={onWantQuestions} disabled={resolving} />
+          </>
         )
       ) : null}
     </section>

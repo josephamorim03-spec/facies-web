@@ -1,9 +1,12 @@
 import "./globals.css";
 import AppShell from "@/components/AppShell";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { IBM_Plex_Sans, Source_Serif_4 } from "next/font/google";
+import { THEME_KEY } from "@/lib/storage-keys";
+import { IBM_Plex_Mono, Source_Serif_4 } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 
+// Serifa da PROSA — inalterada. Enunciado, comentário e alternativas continuam
+// aqui; só o chrome virou mono.
 const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
   variable: "--font-serif",
@@ -12,9 +15,11 @@ const sourceSerif = Source_Serif_4({
   style: ["normal", "italic"],
 });
 
-const ibmPlexSans = IBM_Plex_Sans({
+// Mono do CHROME. Mesma superfamília do Plex Sans que saiu, então a métrica e o
+// desenho continuam familiares; `latin` cobre a acentuação pt-BR.
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-mono",
   display: "swap",
   weight: ["400", "500", "600"],
 });
@@ -43,19 +48,35 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f7f3ea",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#B8B8AE" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0C08" },
+  ],
   viewportFit: "cover",
   width: "device-width",
   initialScale: 1,
 };
+
+// Anti-FOUC. `ThemeProvider` so aplica a classe no `useEffect`, entao quem usa
+// tema escuro via a pagina nascer clara e piscar para escuro a cada entrada.
+// Este script roda antes da primeira pintura.
+//
+// A condicao e' a MESMA de `ThemeProvider` (`saved === "dark" || (!saved &&
+// prefersDark)`), e a chave vem da constante em vez de literal — foi assim que
+// a primeira versao disto saiu errada, apontando para uma chave inexistente e
+// piscando ao contrario.
+const THEME_BOOTSTRAP = `(function(){try{var s=localStorage.getItem(${JSON.stringify(THEME_KEY)});if(s==="dark"||(!s&&window.matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark")}}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${sourceSerif.variable} ${ibmPlexSans.variable}`}
+      className={`${sourceSerif.variable} ${ibmPlexMono.variable}`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+      </head>
       <body className="bg-paper">
         <ThemeProvider>
           <AppShell>{children}</AppShell>

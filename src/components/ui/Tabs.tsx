@@ -33,7 +33,7 @@ export function TabCount({ children }: { children: ReactNode }) {
   return (
     <span
       className={
-        "rounded-full bg-surfaceMuted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted " +
+        "rounded-control bg-surfaceMuted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted " +
         "group-data-[state=active]:bg-primaryInk/25 group-data-[state=active]:text-primaryInk " +
         "group-aria-[current=page]:bg-primaryInk/25 group-aria-[current=page]:text-primaryInk"
       }

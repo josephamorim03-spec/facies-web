@@ -16,9 +16,9 @@ export function Progress({ value, label, showValue = false, className = "" }: Pr
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={safeValue}
-          className="h-1.5 flex-1 overflow-hidden rounded-full bg-surfaceMuted"
+          className="h-1.5 flex-1 overflow-hidden bg-surfaceMuted"
         >
-          <div className="h-full rounded-full bg-primary transition-[width] duration-200 ease-out" style={{ width: `${safeValue}%` }} />
+          <div className="h-full bg-primary transition-[width] duration-200 ease-out" style={{ width: `${safeValue}%` }} />
         </div>
         {showValue ? <span className="w-10 text-right text-xs font-semibold tabular-nums text-muted">{safeValue}%</span> : null}
       </div>

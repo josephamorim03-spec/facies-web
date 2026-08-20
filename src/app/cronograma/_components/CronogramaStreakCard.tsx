@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { OperationalStreak } from "@/lib/api";
 
 type Props = {
@@ -10,9 +9,15 @@ type Props = {
 
 // Constância: o anel preenche até o próximo marco e muda de cor por tier,
 // reforçando o hábito diário sem virar um card que compete com o calendário.
+//
+// A constância é AUTORREFERENTE — você contra você, nunca contra outro aluno.
+// O aviso de "em risco" que existia aqui foi removido de propósito: um
+// `setInterval` vigiava o relógio para, passadas as 20h, pintar de vermelho e
+// dizer "estude hoje para manter". Isso é aversão à perda, e o produto se
+// posiciona explicitamente contra mecânica que gera ansiedade
+// (`docs/product/positioning.md`). O dado `streak_at_risk` continua existindo na
+// API; o que não existe mais é a interface transformá-lo em urgência.
 const STREAK_MILESTONES = [3, 7, 14, 30];
-const RISK_WARNING_HOUR = 20;
-const CLOCK_TICK_MS = 30000;
 
 function streakTier(days: number): number {
   let tier = 0;
@@ -22,21 +27,20 @@ function streakTier(days: number): number {
   return tier;
 }
 
-function tierColor(days: number, atRisk: boolean): string {
-  if (atRisk) return "var(--color-danger)";
+function tierColor(days: number): string {
   const tier = streakTier(days);
   if (tier === 0) return "var(--color-muted)";
   if (tier >= 3) return "var(--color-accent)";
   return "var(--color-primary)";
 }
 
-function StreakRing({ days, atRisk, size = 18 }: { days: number; atRisk: boolean; size?: number }) {
+function StreakRing({ days, size = 18 }: { days: number; size?: number }) {
   const tier = streakTier(days);
   const lo = tier === 0 ? 0 : STREAK_MILESTONES[tier - 1];
   const hi = STREAK_MILESTONES[tier] ?? STREAK_MILESTONES[STREAK_MILESTONES.length - 1];
   const frac =
     tier >= STREAK_MILESTONES.length ? 1 : Math.max(0.1, Math.min(1, (days - lo) / (hi - lo)));
-  const color = tierColor(days, atRisk);
+  const color = tierColor(days);
   const center = size / 2;
   const radius = size * 0.36;
   const circumference = 2 * Math.PI * radius;
@@ -70,15 +74,6 @@ function StreakRing({ days, atRisk, size = 18 }: { days: number; atRisk: boolean
 }
 
 export function CronogramaStreakCard({ streak, loading = false }: Props) {
-  const [afterRiskHour, setAfterRiskHour] = useState(false);
-
-  useEffect(() => {
-    const update = () => setAfterRiskHour(new Date().getHours() >= RISK_WARNING_HOUR);
-    update();
-    const timer = window.setInterval(update, CLOCK_TICK_MS);
-    return () => window.clearInterval(timer);
-  }, []);
-
   if (loading) {
     return (
       <div className="flex justify-center" data-testid="streak-skeleton">
@@ -92,7 +87,6 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
   const days = streak.streak_days;
   const best = streak.streak_max ?? 0;
   const protection = Boolean(streak.active_protection);
-  const atRisk = Boolean(streak.streak_at_risk) && afterRiskHour && !protection;
 
   if (days === 0) {
     return (
@@ -100,7 +94,7 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
         className="flex items-center justify-center gap-2 text-xs text-muted"
         data-streak-mode="empty"
       >
-        <StreakRing days={0} atRisk={false} />
+        <StreakRing days={0} />
         <span>Comece sua sequência hoje{best > 0 ? ` · recorde ${best}` : ""}</span>
       </div>
     );
@@ -113,27 +107,25 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
     `${streak.streak_reviews} revisões`,
     `${streak.streak_flashcards_seen} cards`,
     protection ? "sequência protegida" : "",
-    atRisk ? "em risco — estude hoje para manter" : "",
   ]
     .filter(Boolean)
     .join(" · ");
 
-  const toneClass = atRisk ? "text-danger" : protection ? "text-info" : "text-ink";
-  const tint = atRisk ? "var(--color-danger)" : protection ? "var(--color-info)" : "var(--color-primary)";
+  const toneClass = protection ? "text-info" : "text-ink";
+  const tint = protection ? "var(--color-info)" : "var(--color-primary)";
 
   return (
     <div className="flex justify-center" data-streak-mode="ring">
       <span
         title={detailTitle}
         data-streak-days={days}
-        data-streak-at-risk={atRisk ? "true" : undefined}
         className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${toneClass}`}
         style={{ backgroundColor: `color-mix(in srgb, ${tint} 9%, transparent)` }}
       >
-        <StreakRing days={days} atRisk={atRisk} />
+        <StreakRing days={days} />
         <span>
           <span className="font-semibold">{days}</span> {dayLabel}
-          {atRisk ? " · em risco" : protection ? " · protegida" : ""}
+          {protection ? " · protegida" : ""}
         </span>
       </span>
     </div>

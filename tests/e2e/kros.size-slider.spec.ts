@@ -74,7 +74,7 @@ function slider(page: Page) {
 
 test("o valor escolhido sobrevive à chegada da prévia", async ({ page }) => {
   const limits = await setupKros(page, 120);
-  await page.goto("/kros");
+  await page.goto("/rota");
 
   const bar = slider(page);
   await expect(bar).toBeVisible();
@@ -94,7 +94,7 @@ test("prévia com teto abaixo do valor atual não move a barra", async ({ page }
   // React reafirmava 50, e os dois brigavam a cada render — a barra "mudando
   // sozinha" sem ninguém tocar nela.
   await setupKros(page, 30);
-  await page.goto("/kros");
+  await page.goto("/rota");
 
   const bar = slider(page);
   await expect(bar).toBeVisible();
@@ -135,7 +135,7 @@ test("teto que muda a cada resposta não move a barra", async ({ page }) => {
     });
   });
 
-  await page.goto("/kros");
+  await page.goto("/rota");
   const bar = slider(page);
   await expect(bar).toBeVisible();
 
@@ -149,7 +149,7 @@ test("teto que muda a cada resposta não move a barra", async ({ page }) => {
 
 test("a prévia assenta e nenhuma requisição sai sem interação", async ({ page }) => {
   const limits = await setupKros(page, 120);
-  await page.goto("/kros");
+  await page.goto("/rota");
 
   await expect(slider(page)).toBeVisible();
   await page.waitForTimeout(2000);

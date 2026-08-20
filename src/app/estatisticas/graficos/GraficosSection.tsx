@@ -18,7 +18,7 @@ function ChartCard({
   className?: string;
 }) {
   return (
-    <article className={`surface-cozy p-4 sm:p-5 ${className}`}>
+    <article className={`paper-surface p-4 sm:p-5 ${className}`}>
       {children}
     </article>
   );

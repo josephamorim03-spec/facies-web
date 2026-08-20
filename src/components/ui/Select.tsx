@@ -31,14 +31,14 @@ export function Select({ value, onValueChange, options, label, placeholder, disa
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
-        <SelectPrimitive.Content position="popper" sideOffset={6} className="paper-overlay z-[100] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-edge bg-surface">
+        <SelectPrimitive.Content position="popper" sideOffset={6} className="paper-overlay z-[100] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-surface border border-edge bg-surface">
           <SelectPrimitive.Viewport className="p-1">
             {options.map((option) => (
               <SelectPrimitive.Item
                 key={option.value}
                 value={option.value}
                 disabled={option.disabled}
-                className="paper-control relative flex min-h-10 cursor-default select-none items-center rounded-md py-2 pl-8 pr-3 text-sm text-ink outline-none data-[disabled]:opacity-40 data-[highlighted]:bg-surfaceMuted"
+                className="paper-control relative flex min-h-10 cursor-default select-none items-center rounded-control py-2 pl-8 pr-3 text-sm text-ink outline-none data-[disabled]:opacity-40 data-[highlighted]:bg-surfaceMuted"
               >
                 <SelectPrimitive.ItemIndicator className="absolute left-2 text-primary">✓</SelectPrimitive.ItemIndicator>
                 <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>

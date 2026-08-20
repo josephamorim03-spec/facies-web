@@ -249,6 +249,7 @@ export type {
   KrosPreview,
   QuestionBankSessionKind,
   QuestionBankFeedbackRevealPolicy,
+  QuestionBankReasoningCheckpoint,
   QuestionBankReasoningReview,
   QuestionBankFeedbackTiming,
   QuestionBankReportType,

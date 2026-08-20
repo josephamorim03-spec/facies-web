@@ -334,22 +334,28 @@ test.describe("Cronograma mobile portrait UX", () => {
     await expect(page.getByText("Acesso Direto")).toBeVisible();
   });
 
-  test("streak em risco nao sinaliza antes de 20h", async ({ page }) => {
-    await mockBrowserClock(page, "2026-04-24T19:00:00-03:00");
-    const { db } = await mockCronogramaApi(page);
-    db.streak.streak_at_risk = true;
-    await page.goto("/cronograma");
-    await expect(page.locator("[data-streak-at-risk='true']")).toHaveCount(0);
-  });
+  // O contrato inverteu: antes o aviso de risco DEVIA aparecer depois das 20h.
+  // Agora ele nao existe em hora nenhuma. Vigiar o relogio para pintar a
+  // sequencia de vermelho e' aversao a perda, e o produto se posiciona contra
+  // mecanica que gera ansiedade (`docs/product/positioning.md`).
+  //
+  // O horario continua sendo variado de proposito: e' justamente depois das 20h
+  // que o aviso aparecia, entao esse e' o caso que prova a remocao.
+  for (const [rotulo, instante] of [
+    ["antes das 20h", "2026-04-24T19:00:00-03:00"],
+    ["depois das 20h", "2026-04-24T20:05:00-03:00"],
+  ] as const) {
+    test(`sequencia nunca sinaliza risco — ${rotulo}`, async ({ page }) => {
+      await mockBrowserClock(page, instante);
+      const { db } = await mockCronogramaApi(page);
+      db.streak.streak_at_risk = true;
+      await page.goto("/cronograma");
 
-  test("streak em risco sinaliza apos 20h", async ({ page }) => {
-    await mockBrowserClock(page, "2026-04-24T20:05:00-03:00");
-    const { db } = await mockCronogramaApi(page);
-    db.streak.streak_at_risk = true;
-    await page.goto("/cronograma");
-    await expect(page.locator("[data-streak-at-risk='true']")).toBeVisible();
-    await expect(page.locator("[data-streak-mode='ring']")).toContainText(/em risco/i);
-  });
+      await expect(page.locator("[data-streak-mode='ring']")).toBeVisible();
+      await expect(page.locator("[data-streak-at-risk='true']")).toHaveCount(0);
+      await expect(page.locator("[data-streak-mode='ring']")).not.toContainText(/em risco/i);
+    });
+  }
 
   test("acoes olho/+ e fluxo de compromisso no +", async ({ page }) => {
     const { db } = await mockCronogramaApi(page);

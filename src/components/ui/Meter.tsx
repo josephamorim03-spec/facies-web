@@ -17,7 +17,7 @@ type MeterProps = {
 /**
  * Shared "label · progress bar · value" row used across the stats/desempenho
  * surfaces. Centralizes the previously copy-pasted
- * `h-1.5 flex-1 rounded-full … + shrink-0 value` idiom so spacing and future
+ * `h-1.5 flex-1 … + shrink-0 value` idiom so spacing and future
  * responsive tweaks live in one place. Columns keep their fixed widths (bars
  * stay aligned across a list); tune the label/value width via the *ClassName
  * props.
@@ -35,8 +35,8 @@ export function Meter({
   return (
     <div className={`flex items-center gap-2 text-xs ${className}`}>
       <span className={`shrink-0 ${labelClassName}`}>{label}</span>
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-edge">
-        <div className={`h-full rounded-full ${fillClassName}`} style={{ width: `${width}%` }} />
+      <div className="h-1.5 flex-1 overflow-hidden bg-edge">
+        <div className={`h-full ${fillClassName}`} style={{ width: `${width}%` }} />
       </div>
       <span className={`shrink-0 ${valueClassName}`}>{value}</span>
     </div>

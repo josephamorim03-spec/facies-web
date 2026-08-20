@@ -22,8 +22,9 @@ import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentAgenda } from "@/features/student-agenda/useStudentAgenda";
 import { AgendaItemRow } from "@/features/student-agenda/AgendaItemRow";
 import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
-import { NavigatorContextCard } from "./NavigatorContextCard";
-import { NavigatorRoute } from "./NavigatorRoute";
+// O Navigator (pergunta de tempo/energia + rota) mudou para a aba ROTA, com
+// tela própria: perguntar aqui competia com a próxima ação logo abaixo — duas
+// superfícies dizendo "comece por aqui" na mesma tela.
 import { TodayBackupActions } from "./TodayBackupActions";
 import { TodayEmptyState } from "./TodayEmptyState";
 import { TodayPrimaryAction } from "./TodayPrimaryAction";
@@ -65,38 +66,15 @@ export function CanonicalTodayDashboard() {
     staleTime: 10_000,
   });
   const today = todayQuery.data;
-  // O Navigator: o aluno diz quanto tempo tem e como está AGORA, e a rota é
-  // montada para esse orçamento. Enquanto ele não pede, `/hoje` segue mostrando
-  // a próxima ação do dia — a rota substitui o herói, não o precede.
-  const [route, setRoute] = useState<NavigationRoute | null>(null);
-  const promptQuery = useQuery({
-    queryKey: ["navigation", "prompt"],
-    queryFn: () => getNavigationPrompt(token),
-    enabled: tokenResolved,
-    staleTime: 60_000,
-  });
-  const [resolved, setResolved] = useState<NavigationRouteStatus | null>(null);
-  const routeMutation = useMutation({
-    mutationFn: (input: Parameters<typeof buildNavigationRoute>[1]) =>
-      buildNavigationRoute(token, input),
-    onSuccess: (next) => {
-      setRoute(next);
-      setResolved(null);
-    },
-  });
-  // O desfecho e' o que torna o kill criterion do Navigator avaliavel: sem ele,
-  // "a rota montada faz o aluno terminar mais?" nao tem dado.
-  const resolveMutation = useMutation({
-    mutationFn: (status: NavigationRouteStatus) =>
-      resolveNavigationRoute(token, route?.route_id ?? "", status),
-    onSuccess: (result) => setResolved(result.status),
-  });
   // The compatibility field still owns the learner-local date until the Today
   // contract itself gains a timezone-aware date. Its item list is never read.
   const localDate = today?.schedule_preview.date ?? "";
   const agendaQuery = useStudentAgenda(localDate, localDate);
   const agenda = agendaQuery.data;
-  const day = agenda?.days[0] ?? null;
+  // `agenda?.days[0]` protegia so o `agenda`: uma resposta sem `days` estourava
+  // "Cannot read properties of undefined (reading '0')" e derrubava a tela
+  // inicial inteira para o error boundary.
+  const day = agenda?.days?.[0] ?? null;
 
   useEffect(() => {
     setTitle("Hoje");
@@ -160,30 +138,7 @@ export function CanonicalTodayDashboard() {
         </Alert>
       ) : null}
 
-      <NavigatorContextCard
-        prompt={promptQuery.data ?? null}
-        busy={routeMutation.isPending}
-        onCalculate={(input) => routeMutation.mutate(input)}
-      />
-
-      {routeMutation.isError ? (
-        <Alert variant="warning">
-          Não foi possível calcular sua rota agora. Sua próxima ação continua abaixo.
-        </Alert>
-      ) : null}
-
-      {route ? (
-        <NavigatorRoute
-          route={route}
-          onResolve={(status) => resolveMutation.mutate(status)}
-          resolving={resolveMutation.isPending}
-          resolved={resolved}
-        />
-      ) : isRest ? (
-        <TodayEmptyState />
-      ) : (
-        <TodayPrimaryAction action={today.primary_action} />
-      )}
+      {isRest ? <TodayEmptyState /> : <TodayPrimaryAction action={today.primary_action} />}
 
       <section aria-label="Resumo de hoje" className="grid grid-cols-3 divide-x divide-edge border-y border-edge py-3">
         <div className="px-2 text-center sm:px-4">
@@ -196,7 +151,7 @@ export function CanonicalTodayDashboard() {
         <div className="px-2 text-center sm:px-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Semana</p>
           <p className="mt-1 font-serif text-xl font-semibold text-ink">
-            {pct(agenda?.summary.weekly_progress_pct ?? today.progress_snapshot.weekly_progress_pct)}
+            {pct(agenda?.summary?.weekly_progress_pct ?? today.progress_snapshot.weekly_progress_pct)}
           </p>
           <p className="text-xs text-muted">da meta</p>
         </div>

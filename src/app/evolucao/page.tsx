@@ -1,16 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, FileText, HelpCircle, History, Moon } from "lucide-react";
+import { BarChart3, FileText, HelpCircle, Moon } from "lucide-react";
 import { Popover } from "radix-ui";
 
 import {
   getQuestionBankPerformance,
-  listQuestionBankSessions,
-  type QuestionBankSession,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { queryKeys } from "@/lib/queryKeys";
@@ -32,7 +29,7 @@ const GraficosSection = dynamic(
   },
 );
 
-type EvolutionTab = "charts" | "context" | "reports" | "history";
+type EvolutionTab = "charts" | "context" | "reports";
 
 /**
  * KROS-022. Chamada "Contexto", e não "Rotina", de propósito: já existe uma aba
@@ -50,30 +47,11 @@ const RANGE_OPTIONS = [
 
 type RangeValue = (typeof RANGE_OPTIONS)[number]["value"];
 
-const SESSION_LABELS: Record<QuestionBankSession["session_kind"], string> = {
-  kros: "Kros",
-  bank_topic: "Banco",
-  bank_combined: "Sessão combinada",
-  institutional_exam: "Prova",
-};
 
 function accuracy(value: number | null | undefined): string {
   return value == null ? "Sem base" : `${Math.round(value * 100)}%`;
 }
 
-function sessionScore(session: QuestionBankSession): {
-  correct: number;
-  total: number;
-  pct: number | null;
-} {
-  const scorable = session.items.filter((item) => !item.excluded_from_scoring);
-  const correct = scorable.filter((item) => item.is_correct === true).length;
-  return {
-    correct,
-    total: scorable.length,
-    pct: scorable.length ? Math.round((correct / scorable.length) * 100) : null,
-  };
-}
 
 function MetricHelp({ text }: { text: string }) {
   return (
@@ -145,16 +123,10 @@ export default function EvolucaoPage() {
     queryFn: () => getQuestionBankPerformance(token),
     enabled: tokenResolved,
   });
-  const sessionsQuery = useQuery({
-    queryKey: queryKeys.questionBankSessions("finalized"),
-    queryFn: () => listQuestionBankSessions(token, { status: "finalized", limit: 100 }),
-    enabled: tokenResolved,
-  });
 
   const performance = performanceQuery.data ?? null;
-  const sessions = sessionsQuery.data ?? [];
-  const loading = !tokenResolved || performanceQuery.isPending || sessionsQuery.isPending;
-  const loadFailed = performanceQuery.isError || sessionsQuery.isError;
+  const loading = !tokenResolved || performanceQuery.isPending;
+  const loadFailed = performanceQuery.isError;
 
   const areaSummary = useMemo(() => {
     const areas = (performance?.areas ?? []).filter((area) => area.questions_seen > 0 && area.accuracy !== null);
@@ -167,7 +139,6 @@ export default function EvolucaoPage() {
     { id: "charts", label: "Gráficos", icon: BarChart3 },
     { id: "context", label: "Contexto", icon: Moon },
     { id: "reports", label: "Relatórios", icon: FileText },
-    { id: "history", label: "Histórico", icon: History },
   ];
 
   return (
@@ -212,7 +183,7 @@ export default function EvolucaoPage() {
                 <div className="mb-3">
                   <h2 id="evolution-summary-title" className="text-sm font-semibold text-ink">Resumo do desempenho</h2>
                 </div>
-                <div className="student-stagger grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                   <SummaryMetric
                     label="Primeira tentativa"
                     value={accuracy(performance?.first_attempt_accuracy)}
@@ -280,37 +251,6 @@ export default function EvolucaoPage() {
               </section>
             </TabsContent>
 
-            <TabsContent value="history" className="py-2">
-              {sessions.length ? (
-                <ol className="divide-y divide-edge">
-                  {sessions.map((session) => {
-                    const score = sessionScore(session);
-                    return (
-                      <li key={session.session_id} className="grid gap-3 py-5 sm:grid-cols-[8rem_minmax(0,1fr)_8rem] sm:items-center">
-                        <div>
-                          <p className="text-sm font-semibold text-ink">{SESSION_LABELS[session.session_kind]}</p>
-                          <p className="mt-1 text-xs text-muted">
-                            {new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(session.finalized_at ?? session.updated_at))}
-                          </p>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm text-ink">
-                            {session.full_exam_name ?? session.theme ?? (session.session_kind === "bank_combined" ? "Conteúdos combinados" : "Sessão concluída")}
-                          </p>
-                          <p className="mt-1 text-xs text-muted">{score.correct}/{score.total} questões</p>
-                        </div>
-                        <div className="flex items-center justify-between gap-3 sm:justify-end">
-                          <span className="text-xl font-semibold text-ink">{score.pct == null ? "-" : `${score.pct}%`}</span>
-                          <Link href={`/banco/sessao/${session.session_id}`} className="text-xs font-semibold text-primary hover:underline">Resultado</Link>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ol>
-              ) : (
-                <p className="py-8 text-sm text-muted">Sessões finalizadas aparecerão aqui.</p>
-              )}
-            </TabsContent>
           </>
         )}
       </Tabs>

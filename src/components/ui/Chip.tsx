@@ -11,14 +11,14 @@ type Props = {
 };
 
 const BASE =
-  "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition " +
+  "inline-flex items-center gap-1.5 rounded-control border px-2.5 py-1 text-xs font-semibold transition " +
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 /** Chip único (neutro e selecionável). Unifica `.km-chip`/pills ad-hoc. */
 export function Chip({ selected = false, onClick, leftDot, ariaLabel, className = "", children }: Props) {
   const tone = selected ? "border-primary bg-primary text-primaryInk" : "border-edge bg-surface text-muted";
   const dot = leftDot ? (
-    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: leftDot }} aria-hidden="true" />
+    <span className="h-2 w-2 shrink-0" style={{ backgroundColor: leftDot }} aria-hidden="true" />
   ) : null;
 
   if (typeof onClick === "function") {

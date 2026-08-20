@@ -626,8 +626,48 @@ async function mockApi(page) {
     if (method === "GET" && path === "/api/reviews/tasks") {
       return fulfillJson(route, url.searchParams.get("status") === "done" ? cal.done : cal.pending);
     }
+    // A Rota pergunta tempo e energia antes de qualquer coisa. Sem este mock o
+    // `RotaPrompt` cai na guarda de `presets` vazio e renderiza null — a tela
+    // apareceria em branco na captura.
+    if (method === "GET" && path === "/api/navigation/prompt") {
+      return fulfillJson(route, {
+        presets: [20, 45, 90],
+        suggested_minutes: 45,
+        suggested_energy: "low",
+        energy_source: "daily_checkin",
+        interruption_risk: true,
+        interruption_reason: "plantao",
+      });
+    }
     if (method === "GET" && path === "/api/reviews/agenda") {
       return fulfillJson(route, { tasks: cal.pending, due_question_total: 38, struggling_question_total: 12, question_review_total: 38, generated_at: NOW });
+    }
+    // `/hoje` chama isto via `useStudentAgenda`. Sem o mock a query caia no
+    // fallback generico e o dashboard quebrava em `agenda.days[0]` e depois em
+    // `agenda.summary.weekly_progress_pct` — a captura do /hoje nunca chegava a
+    // tirar screenshot. Forma do contrato `student-agenda-v1`.
+    if (method === "GET" && path === "/api/student/agenda") {
+      const localDate = todayISO();
+      return fulfillJson(route, {
+        contract_version: "student-agenda-v1",
+        generated_at: NOW,
+        status: "complete",
+        timezone: "America/Sao_Paulo",
+        today: localDate,
+        date_from: localDate,
+        date_to: localDate,
+        summary: {
+          completed_items: 3,
+          total_items: 8,
+          overdue_items: 1,
+          questions_done_week: 248,
+          weekly_goal_questions: 400,
+          weekly_progress_pct: 62,
+        },
+        overdue: [],
+        days: [{ date: localDate, completed_items: 3, total_items: 8, overdue_items: 1, overloaded: false, items: [] }],
+        missing_sources: [],
+      });
     }
     if (method === "GET" && path === "/api/studies/directed") return fulfillJson(route, cal.studies);
     if (method === "GET" && path === "/api/events") return fulfillJson(route, cal.events);
@@ -758,8 +798,51 @@ async function axe(page) {
 }
 
 async function assertNoOverflow(page) {
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  if (overflow > 1) throw new Error(`Horizontal overflow: ${overflow}px`);
+  // Reporta QUEM estoura, nao so quantos pixels. "Horizontal overflow: 15px"
+  // sozinho obriga a caçar o elemento a mao em cada regressao.
+  const report = await page.evaluate(() => {
+    const root = document.documentElement;
+    const overflow = root.scrollWidth - root.clientWidth;
+    if (overflow <= 1) return { overflow, offenders: [] };
+    const viewportWidth = root.clientWidth;
+    const offenders = [];
+    for (const el of document.querySelectorAll("body *")) {
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) continue;
+      if (getComputedStyle(el).position === "fixed") continue;
+      if (rect.right <= viewportWidth + 1 && rect.left >= -1) continue;
+      offenders.push({
+        tag: el.tagName.toLowerCase(),
+        className: String(el.className || "").slice(0, 120),
+        left: Math.round(rect.left),
+        right: Math.round(rect.right),
+        width: Math.round(rect.width),
+        text: (el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 60),
+      });
+      if (offenders.length >= 6) break;
+    }
+    const box = (sel) => {
+      const el = document.querySelector(sel);
+      if (!el) return `${sel}: ausente`;
+      const r = el.getBoundingClientRect();
+      return `${sel}: w=${Math.round(r.width)} left=${Math.round(r.left)}`;
+    };
+    const roots = [
+      `html: scrollW=${root.scrollWidth} clientW=${root.clientWidth}`,
+      box("body"),
+      box("main"),
+      box("header"),
+    ];
+    return { overflow, offenders, roots };
+  });
+  if (report.overflow <= 1) return;
+  if (report.roots) console.error("  raizes: " + report.roots.join(" | "));
+  const detail = report.offenders.length
+    ? report.offenders
+        .map((o) => `\n  <${o.tag} class="${o.className}"> left=${o.left} right=${o.right} w=${o.width}${o.text ? `\n      texto: ${o.text}` : ""}`)
+        .join("")
+    : "\n  (nenhum elemento estatico fora da viewport — provavelmente margem ou transform)";
+  throw new Error(`Horizontal overflow: ${report.overflow}px${detail}`);
 }
 
 async function runViewport(browser, viewport) {
@@ -795,37 +878,55 @@ async function runViewport(browser, viewport) {
     await page.getByRole("link", { name: /Come/ }).waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
-  await visit("/kros", "kros", async () => {
-    await page.getByRole("heading", { name: "Simulador adaptativo" }).waitFor({ state: "visible", timeout: 30_000 });
+  await visit("/rota", "rota", async () => {
+    // A Rota abre na PERGUNTA (tempo e energia), nao numa tela de montagem:
+    // "Simulador adaptativo" era o titulo da tela antiga, que pedia o numero de
+    // questoes que o aluno nao tem como saber.
+    await page.getByRole("heading", { name: "Quanto tempo você tem?" }).waitFor({ state: "visible", timeout: 30_000 });
   });
 
   await visit("/cards", "cards", async () => {
-    await page.getByRole("heading", { name: "Revisão dinâmica" }).waitFor({ state: "visible", timeout: 30_000 });
+    // Era `getByRole("heading", { name: "Revisão dinâmica" })`: esse titulo nao
+    // existe mais no codigo, e a arvore de /cards nao tem NENHUM heading — a
+    // asserção nunca poderia passar. Alvo estavel enquanto /cards nao ganha
+    // estrutura de titulo. `getByText` casa com textContent, entao nao sofre
+    // com o `text-transform: uppercase` do chrome retro (ao contrario de
+    // `getByRole({name})`, que no Chromium aplica a transformacao).
+    await page.getByText("Cards para revisar agora").first().waitFor({ state: "visible", timeout: 30_000 });
   });
 
   await visit("/cards/registros", "cards-registros", async () => {
-    await page.getByRole("heading", { name: "Revisão dinâmica" }).waitFor({ state: "visible", timeout: 30_000 });
+    // O Caderno nao mostra a fila de revisao: o alvo estavel e o seletor de modo.
+    await page.getByText("Pesquisar registros").first().waitFor({ state: "visible", timeout: 30_000 });
   });
 
-  await visit("/planejamento", "planejamento", async () => {
-    await page.locator("[aria-label='Calendário mensal']").waitFor({ state: "visible", timeout: 30_000 });
-    await page.locator("[data-calendar-viewport='true']").waitFor({ state: "visible", timeout: 30_000 });
+  // Era `/planejamento` esperando o calendario MENSAL. `/planejamento` e 308
+  // para `/cronograma`, que abre na visao de SEMANA por padrao desde que
+  // `initialView = "week"` — a asserção nunca poderia passar.
+  await visit("/cronograma", "cronograma", async () => {
+    await page.locator("[data-cronograma-week='true']").waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
   await visit("/evolucao", "evolucao", async () => {
-    await page.getByRole("heading", { name: "Analise sua trajetória" }).waitFor({ state: "visible", timeout: 30_000 });
+    // Era `heading "Analise sua trajetória"`, string que nao existe no codigo.
+    // As abas de /evolucao sao o alvo estavel.
+    await page.getByText("Gráficos").first().waitFor({ state: "visible", timeout: 30_000 });
     await page.locator("svg.recharts-surface").first().waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
   await visit("/banco", "banco", async () => {
-    await page.getByText("Montar sessão").waitFor({ state: "visible", timeout: 30_000 });
+    // "Montar sessão" aparece duas vezes agora: no titulo do topo e na linha de
+    // filhos da barra de abas. Ambos sao sinal de que a nav funcionou; basta um.
+    await page.getByText("Montar sessão").first().waitFor({ state: "visible", timeout: 30_000 });
     await page.getByText("Banca, ano e histórico").click();
     await page.getByText("Estado da prova").waitFor({ state: "visible", timeout: 30_000 });
     await page.getByText("SP").first().waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
   await visit("/preferencias", "preferencias", async () => {
-    await page.getByRole("heading", { name: "Preferências" }).waitFor({ state: "visible", timeout: 30_000 });
+    // Nao existe heading "Preferências": esse e o titulo da PAGINA, que mora no
+    // topo como span. Os <h2> da tela sao os titulos de secao.
+    await page.getByRole("heading", { name: "Rotina" }).first().waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
   await context.close();

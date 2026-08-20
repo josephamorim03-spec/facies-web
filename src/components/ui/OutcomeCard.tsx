@@ -23,7 +23,7 @@ function EvidenceGroup({ title, items }: { title: string; items: OutcomeEvidence
       <p className="paper-eyebrow">{title}</p>
       <div className="mt-2 flex flex-wrap gap-2">
         {items.map((item) => (
-          <span key={item.key} className="rounded-lg border border-edge bg-paper px-3 py-2 text-xs text-muted">
+          <span key={item.key} className="rounded-surface border border-edge bg-paper px-3 py-2 text-xs text-muted">
             <strong className="font-semibold text-ink">{item.value}{item.unit ?? ""}</strong> · {item.label}
           </span>
         ))}

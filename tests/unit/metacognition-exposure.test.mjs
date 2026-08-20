@@ -43,11 +43,12 @@ test("Banco nao renderiza recomendacao automatica de questoes", () => {
 });
 
 test("Diagnostico de acompanhamento nao mostra confianca do sistema nem sinal dominante cru", () => {
-  const desempenho = read("src/app/desempenho/_components/DesempenhoTab.tsx");
+  // Lia tambem `desempenho/_components/DesempenhoTab.tsx`, orfa desde que
+  // `/desempenho` virou redirect para `/cronograma` — mesmo caso dos dois
+  // contratos acima. A regra vale para a tela que o aluno abre de verdade,
+  // entao ficou so no relatorio em vez de sumir junto com o componente morto.
   const relatorio = read("src/app/estatisticas/relatorio/RelatorioClientPage.tsx");
 
-  for (const source of [desempenho, relatorio]) {
-    assert.equal(source.includes("Confiança do sistema"), false);
-    assert.equal(source.includes("dominant_signal ??"), false);
-  }
+  assert.equal(relatorio.includes("Confiança do sistema"), false);
+  assert.equal(relatorio.includes("dominant_signal ??"), false);
 });

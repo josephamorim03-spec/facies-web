@@ -1,10 +1,8 @@
 export type StudentIntent =
   | "today"
-  | "kros"
   | "bank"
+  | "rota"
   | "cards"
-  | "evolution"
-  | "planning"
   | "profile";
 
 export type StudentNavIcon = StudentIntent;
@@ -31,61 +29,88 @@ export type NavItemConfig = {
 export type NavGroupConfig = { items: NavItemConfig[] };
 export type NavChildConfig = { href: string; label: string; matches: string[] };
 
+//: Cinco destinos. A Kros deixou de ser rotulo de menu e virou marca do motor —
+//: aparece na status bar e no boot, nao competindo com um verbo. `ROTA` e o nome
+//: da tela porque e o que ela entrega, e e o vocabulario que o backend ja usa
+//: (`navigation_route`, `build_route`, `NavigationRouteOut`).
 const INTENTS: Record<
   StudentIntent,
-  { path: string; label: string; title: string; icon: StudentNavIcon }
+  { path: string; label: string; icon: StudentNavIcon }
 > = {
-  today: { path: "/hoje", label: "Hoje", title: "Hoje", icon: "today" },
-  kros: { path: "/kros", label: "Kros", title: "Kros", icon: "kros" },
-  bank: { path: "/banco", label: "Banco", title: "Banco", icon: "bank" },
-  cards: { path: "/cards", label: "Cards", title: "Cards", icon: "cards" },
-  evolution: {
-    path: "/evolucao",
-    label: "Evolução",
-    title: "Evolução",
-    icon: "evolution",
-  },
-  // `/cronograma` e' a URL canonica: e' o nome que a tela usa com o aluno, e o
-  // diretorio real do codigo (`app/cronograma/`). `/planejamento` continua
-  // respondendo como alias compativel.
-  planning: {
-    path: "/cronograma",
-    label: "Cronograma",
-    title: "Cronograma",
-    icon: "planning",
-  },
-  profile: {
-    path: "/preferencias",
-    label: "Perfil",
-    title: "Perfil",
-    icon: "profile",
-  },
+  today: { path: "/hoje", label: "Início", icon: "today" },
+  bank: { path: "/banco", label: "Banco", icon: "bank" },
+  rota: { path: "/rota", label: "Rota", icon: "rota" },
+  cards: { path: "/cards", label: "Cards", icon: "cards" },
+  // A aba abre em Evolucao, nao em Preferencias: e a tela que o aluno consulta
+  // com frequencia. O rotulo diz "Perfil" porque nomeia a AREA (voce e seus
+  // dados), e a linha de filhos resolve a ambiguidade no mesmo olhar.
+  profile: { path: "/evolucao", label: "Perfil", icon: "profile" },
 };
 
-//: Caminhos legados que ainda precisam casar com o estado ativo da navegacao.
+//: Filhos de cada aba. Sao eles que dao titulo a pagina: com o Cronograma
+//: morando sob INICIO, o titulo nao pode mais vir do rotulo da aba pai.
 //:
-//: So entra aqui caminho que o navegador consegue RENDERIZAR. Um 308 declarado em
+//: `matches` so aceita caminho que o navegador consegue RENDERIZAR. Um 308 de
 //: `next.config.js` resolve antes do roteamento de arquivos, entao o aluno nunca
-//: para nessa URL e a entrada correspondente nunca casa com nada — era o caso de
-//: `/praticar`, `/revisar`, `/acompanhar`, `/planejar`, `/calendario`, `/perfil`,
-//: `/banco-de-questoes`, `/revisoes`, `/cards-adaptativos`, `/revisao-turbo`,
-//: `/caderno` e `/planejamento`, nenhum deles com diretorio em `src/app`.
-//:
-//: `/estatisticas` fica: apesar de a raiz ser 308, `/estatisticas/relatorio` e
-//: `/estatisticas/graficos` sao paginas reais e dependem do grupo para o estado
-//: ativo.
-const LEGACY_PATHS: Record<StudentIntent, string[]> = {
-  today: ["/today", "/semana"],
-  kros: ["/provas"],
-  bank: ["/banco"],
-  cards: ["/cards", "/cards/registros"],
-  evolution: ["/estatisticas"],
-  planning: ["/agenda-operacional", "/desempenho"],
-  // `/rotina-e-metas` e' 308 para `/preferencias`, entao pertence ao Perfil.
-  profile: ["/rotina-e-metas"],
+//: para nessas URLs e a entrada nunca casaria com nada.
+const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
+  today: [
+    { href: "/hoje", label: "Hoje", matches: ["/hoje", "/today", "/semana"] },
+    // Rotulo "Cronograma" e nao "Calendario": e o nome que a tela usa com o
+    // aluno e o diretorio real da rota. `/calendario` e 308 desde antes.
+    {
+      href: "/cronograma",
+      label: "Cronograma",
+      matches: ["/cronograma", "/agenda-operacional", "/desempenho", "/trilha"],
+    },
+  ],
+  bank: [
+    { href: "/banco", label: "Montar sessão", matches: ["/banco"] },
+    { href: "/banco/historico", label: "Histórico", matches: ["/banco/historico"] },
+  ],
+  rota: [],
+  cards: [
+    { href: "/cards", label: "Montar sessão", matches: ["/cards"] },
+    { href: "/cards/registros", label: "Pesquisar", matches: ["/cards/registros"] },
+  ],
+  profile: [
+    { href: "/evolucao", label: "Evolução", matches: ["/evolucao", "/estatisticas"] },
+    { href: "/preferencias", label: "Preferências", matches: ["/preferencias", "/rotina-e-metas"] },
+  ],
 };
 
-function route(path: string, title: string, intent: StudentIntent): StudentRouteConfig {
+//: Caminhos legados que o navegador ainda RENDERIZA e que precisam acender a
+//: aba certa. `/kros` NAO entra: virou 308 para `/rota`, entao ninguem para nele.
+//: `/provas` tambem sai — ele redireciona por conta propria para o historico.
+const LEGACY_PATHS: Record<StudentIntent, string[]> = {
+  today: ["/today", "/semana", "/agenda-operacional", "/desempenho", "/trilha", "/onboarding"],
+  bank: [],
+  rota: [],
+  cards: [],
+  profile: ["/estatisticas", "/rotina-e-metas"],
+};
+
+const INTENT_ORDER: StudentIntent[] = ["today", "bank", "rota", "cards", "profile"];
+
+function normalizePathname(pathname: string): string {
+  const [withoutHash] = pathname.split("#", 1);
+  const [withoutQuery] = withoutHash.split("?", 1);
+  if (!withoutQuery || withoutQuery === "/") return "/";
+  return withoutQuery.replace(/\/+$/, "");
+}
+
+function matchLength(pathname: string, candidate: string): number {
+  const normalized = normalizePathname(pathname);
+  const target = normalizePathname(candidate);
+  if (normalized === target || normalized.startsWith(`${target}/`)) return target.length;
+  return -1;
+}
+
+function route(
+  path: string,
+  title: string,
+  intent: StudentIntent,
+): StudentRouteConfig {
   const parent = INTENTS[intent];
   return {
     path,
@@ -100,22 +125,18 @@ function route(path: string, title: string, intent: StudentIntent): StudentRoute
 }
 
 export const STUDENT_ROUTES: StudentRouteConfig[] = [
-  ...Object.values(INTENTS).map((item) =>
-    route(item.path, item.title, item.icon),
+  // Um filho por rota real: o titulo vem do filho, nao do pai.
+  ...INTENT_ORDER.flatMap((intent) =>
+    CHILDREN[intent].map((child) => route(child.href, child.label, intent)),
   ),
-  route("/trilha", "Trilha", "planning"),
-  route("/onboarding", "Começar", "planning"),
-  ...Object.entries(LEGACY_PATHS).flatMap(([intent, paths]) =>
-    paths.map((path) => route(path, INTENTS[intent as StudentIntent].title, intent as StudentIntent)),
+  // Abas sem filho carregam o proprio rotulo.
+  ...INTENT_ORDER.filter((intent) => CHILDREN[intent].length === 0).map((intent) =>
+    route(INTENTS[intent].path, INTENTS[intent].label, intent),
+  ),
+  ...INTENT_ORDER.flatMap((intent) =>
+    LEGACY_PATHS[intent].map((path) => route(path, INTENTS[intent].label, intent)),
   ),
 ];
-
-function normalizePathname(pathname: string): string {
-  const [withoutHash] = pathname.split("#", 1);
-  const [withoutQuery] = withoutHash.split("?", 1);
-  if (!withoutQuery || withoutQuery === "/") return "/";
-  return withoutQuery.replace(/\/+$/, "");
-}
 
 export function getStudentRoute(pathname: string): StudentRouteConfig | null {
   const normalized = normalizePathname(pathname);
@@ -137,22 +158,60 @@ export function getStudentWarmupIntent(pathname: string): StudentIntent | null {
   return getStudentRoute(pathname)?.warmup ?? null;
 }
 
-// Content tabs belong to each destination. The global shell no longer creates
-// a second navigation hierarchy.
-export function getIntentChildren(_pathname: string): NavChildConfig[] {
-  return [];
+function intentForPathname(pathname: string): StudentIntent | null {
+  let best: StudentIntent | null = null;
+  let bestLen = -1;
+  for (const intent of INTENT_ORDER) {
+    const candidates = [
+      INTENTS[intent].path,
+      ...LEGACY_PATHS[intent],
+      ...CHILDREN[intent].flatMap((child) => child.matches),
+    ];
+    for (const candidate of candidates) {
+      const len = matchLength(pathname, candidate);
+      if (len > bestLen) {
+        bestLen = len;
+        best = intent;
+      }
+    }
+  }
+  return best;
+}
+
+export function getIntentChildren(pathname: string): NavChildConfig[] {
+  const intent = intentForPathname(pathname);
+  return intent ? CHILDREN[intent] : [];
+}
+
+/**
+ * Filho ativo por casamento MAIS ESPECIFICO.
+ *
+ * Prefixo simples nao serve aqui: `/banco/historico` casa com `/banco` e com
+ * `/banco/historico` ao mesmo tempo, e as duas abas acenderiam. Vence o alvo
+ * mais longo. Mesmo caso em `/cards` e `/cards/registros`.
+ */
+function activeChild(pathname: string): NavChildConfig | null {
+  const children = getIntentChildren(pathname);
+  let best: NavChildConfig | null = null;
+  let bestLen = -1;
+  for (const child of children) {
+    for (const candidate of child.matches) {
+      const len = matchLength(pathname, candidate);
+      if (len > bestLen) {
+        bestLen = len;
+        best = child;
+      }
+    }
+  }
+  return best;
 }
 
 export function isNavChildActive(pathname: string, item: NavChildConfig): boolean {
-  const normalized = normalizePathname(pathname);
-  return item.matches.some((candidate) => {
-    const target = normalizePathname(candidate);
-    return normalized === target || normalized.startsWith(`${target}/`);
-  });
+  return activeChild(pathname)?.href === item.href;
 }
 
-export function getActiveChildLabel(_pathname: string): string | null {
-  return null;
+export function getActiveChildLabel(pathname: string): string | null {
+  return activeChild(pathname)?.label ?? null;
 }
 
 export function isNavItemActive(pathname: string, item: NavItemConfig): boolean {
@@ -169,33 +228,23 @@ function navItem(intent: StudentIntent): NavItemConfig {
     href: config.path,
     label: config.label.toUpperCase(),
     shortLabel: config.label,
-    groupPaths: [config.path, ...LEGACY_PATHS[intent]],
+    groupPaths: [
+      config.path,
+      ...LEGACY_PATHS[intent],
+      ...CHILDREN[intent].map((child) => child.href),
+    ],
     icon: config.icon,
   };
 }
 
-// Quatro blocos, separados por divisória, agrupados por PERGUNTA e não por tipo
-// de tela: a Kros é o chamariz e fica sozinha; "o que faço agora" (Hoje) com
-// "quando" (Cronograma); depois onde o estudo acontece (Banco, Cards); por fim
-// olhar para trás e para si (Evolução, Perfil).
-//
-// Perfil é item de menu, não um botão solto ao lado da foto: uma área de
-// destino merece o mesmo peso das outras, e o atalho duplicado obrigava o aluno
-// a aprender dois caminhos para a mesma tela.
+// Uma barra so, sem divisorias: no mobile isto e a barra inferior de 5 abas e no
+// desktop e o menu bar horizontal. A taxonomia e a MESMA nos dois — menu, titulo
+// e URL dizem a mesma coisa.
 //
 // Alterar esta ordem exige atualizar `tests/unit/navConfig.test.mjs` e
 // `PRIMARY_NAV_ROUTES` em `components/AppShell.tsx`.
 export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
-  {
-    items: [navItem("kros")],
-  },
-  {
-    items: [navItem("today"), navItem("planning")],
-  },
-  {
-    items: [navItem("bank"), navItem("cards")],
-  },
-  {
-    items: [navItem("evolution"), navItem("profile")],
-  },
+  { items: INTENT_ORDER.map(navItem) },
 ];
+
+export const NAV_ITEMS: NavItemConfig[] = NAV_GROUPS_CONFIG[0].items;

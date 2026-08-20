@@ -2,33 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* KROS/DOS — terminal chapado com gramática Win95.
+   Tema claro = papel/tinta com seleção navy. Tema escuro = fósforo âmbar.
+   Os dois são autênticos: o Win95 não tem dark mode de verdade, o DOS tem. */
 :root {
   color-scheme: light;
-  --color-paper: #F5F2E9;
-  --color-surface: #FBF9F3;
-  --color-surface-muted: #ECE8DE;
-  --color-edge: #D4CEC1;
-  --color-ink: #1D211F;
-  --color-muted: #59635F;
-  --color-primary: #175A72;
-  --color-primary-ink: #FBFCF8;
-  --color-accent: #4F665D;
-  --color-accent-ink: #FBFCF8;
-  --color-success: #2E6B4D;
-  --color-danger: #9D313A;
-  --color-warning: #855B0A;
-  --color-info: #315F77;
-  --amber-tint: #F5EBD3;
-  --soft-shadow: 0 10px 28px rgba(29, 33, 31, 0.055);
-  --overlay-shadow: 0 18px 48px rgba(29, 33, 31, 0.16);
+  /* `paper` é o "desktop" atrás da janela; `surface` é o interior dela, e é
+     onde a leitura acontece — por isso surface é mais claro que paper. */
+  --color-paper: #B8B8AE;
+  --color-surface: #EDEDE5;
+  --color-surface-muted: #D8D8CE;
+  /* Régua dura de 1px: no retrô a borda é definida, não um véu. */
+  --color-edge: #6E6E64;
+  --color-ink: #14140F;
+  --color-muted: #4A4A42;
+  --color-primary: #000080;
+  --color-primary-ink: #FFFFFF;
+  --color-accent: #3D3D33;
+  --color-accent-ink: #EDEDE5;
+  --color-success: #0B5B2E;
+  --color-danger: #8E1116;
+  --color-warning: #6B4A00;
+  --color-info: #0B3D8C;
+  /* Apesar do nome, este token é o wash de "selecionado/atenção" — 25+ call
+     sites o usam com `border-primary` ou `border-warning`. O nome ficou; o
+     valor virou um pálido quente que ainda lê como realce sobre a surface. */
+  --amber-tint: #E8DFC0;
+  /* Sem sombra difusa no claro: a elevação retrô é offset duro, sem blur. */
+  --soft-shadow: none;
+  --overlay-shadow: 4px 4px 0 rgba(0, 0, 0, 0.45);
   --range-fill:  var(--color-primary);
-  --range-rest: #D4CEC1;
+  --range-rest: #9E9E93;
   --range-thumb: var(--color-primary);
-  --radius-control: 0.5rem;
-  --radius-surface: 0.5rem;
-  /* Único raio com curva: reservado a superfícies-herói (.surface-hero,
-     .surface-cozy). Controles e cards seguem chapados em 0.5rem. */
-  --radius-hero: 0.875rem;
+  /* Zero em tudo. Não existe canto arredondado neste sistema. */
+  --radius-control: 0;
+  --radius-surface: 0;
+  --radius-hero: 0;
   --reading-measure: 68ch;
   --content-wide: 72rem;
   --space-page: clamp(1rem, 2vw, 1.5rem);
@@ -45,51 +54,64 @@
   --bottom-action-bar-min-height: 5.25rem;
   --bottom-action-bar-space: calc(var(--bottom-action-bar-min-height) + env(safe-area-inset-bottom, 0px));
 
-  /* Area palette — matches tailwind.config.js area.* tokens */
-  --area-go:  #8F3F7D;
-  --area-ped: #1F6388;
-  --area-mp:  #7A560E;
-  --area-cg:  #963B40;
-  --area-cm:  #1F6B4C;
-  --area-ou:  #5F6762;
-  --area-ob:  #6F5797;
-  --area-full-exam: #0F4C5C;
+  /* Paleta de área — espelha os tokens area.* do tailwind.config.js.
+     Recortada para um EGA-adjacente: as 7 cores continuam load-bearing
+     (gráficos, filtros, dots, ícones), só ficaram mais saturadas e chapadas.
+     Todas miram >= 4.5:1 sobre a surface clara. */
+  --area-go:  #7B0F6B;
+  --area-ped: #0B3D8C;
+  --area-mp:  #6B4A00;
+  --area-cg:  #8E1116;
+  --area-cm:  #0B5B2E;
+  --area-ou:  #4A4A42;
+  --area-ob:  #4B2A8C;
+  --area-full-exam: #123A6B;
 }
 
 .dark {
   color-scheme: dark;
-  --color-paper: #151613;
-  --color-surface: #1B1C18;
-  --color-surface-muted: #24251F;
-  --color-edge: #383A32;
-  --color-ink: #F0EEE5;
-  --color-muted: #AAA79D;
-  --color-primary: #91C5D8;
-  --color-primary-ink: #0D191D;
-  --color-accent: #9EB9AB;
-  --color-accent-ink: #111915;
-  --color-success: #75C397;
-  --color-danger: #F07983;
-  --color-warning: #E3B85B;
-  --color-info: #79B8E6;
-  --amber-tint: #2A251A;
-  --soft-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
-  --overlay-shadow: 0 22px 56px rgba(0, 0, 0, 0.42);
+  --color-paper: #0B0C08;
+  --color-surface: #14150E;
+  --color-surface-muted: #1E2016;
+  /* Medido: #3E4232 (o valor do e-ink) dava 1.78:1 sobre a surface escura —
+     abaixo do minimo de 3:1 da WCAG 1.4.11 para limite de componente. Passava
+     despercebido enquanto a identidade tinha sombra e preenchimento; aqui a
+     borda de 1px E a separacao, entao o chrome inteiro sumia no escuro.
+     #666B55 = 3.32:1 sobre surface e 3.55:1 sobre paper. */
+  --color-edge: #666B55;
+  /* O âmbar é ACENTO, não corpo de texto: prosa longa em #FFB000 puro cansa
+     numa sessão de 100 questões. O texto fica num branco-quente. */
+  --color-ink: #D8D3BE;
+  --color-muted: #8E8B78;
+  --color-primary: #FFB000;
+  --color-primary-ink: #0B0C08;
+  --color-accent: #B5B2A0;
+  --color-accent-ink: #14150E;
+  --color-success: #6FD49A;
+  --color-danger: #F08A8A;
+  --color-warning: #E0B24A;
+  --color-info: #6FB8F0;
+  --amber-tint: #2A2410;
+  /* A sombra dura é dispositivo do tema CLARO. No escuro ela seria invisível
+     contra o preto — a separação vem de surface > paper mais a borda de 1px.
+     Terminal CRT não tem sombra projetada. */
+  --soft-shadow: none;
+  --overlay-shadow: none;
   --range-fill:  var(--color-primary);
   --range-rest:  #33362F;
   --range-thumb: var(--color-primary);
 
   /* Paleta de área no escuro. Sem estes overrides, os hexes saturados do
-     tema claro ficam ilegíveis sobre o papel #151613 — é o que acontecia
-     nos gráficos da Evolução. Versões claras, mirando >= 4.5:1. */
-  --area-go:  #D08CBE;
-  --area-ped: #7FB6D8;
-  --area-mp:  #D6AD52;
-  --area-cg:  #E08A8F;
-  --area-cm:  #7CC49F;
-  --area-ou:  #A9B2AC;
-  --area-ob:  #B6A2D8;
-  --area-full-exam: #6FAFC0;
+     tema claro ficam ilegíveis sobre o papel #0B0C08 — é o que acontecia
+     nos gráficos da Evolução. Brilhos compatíveis com fósforo, >= 4.5:1. */
+  --area-go:  #E88AD4;
+  --area-ped: #6FB8F0;
+  --area-mp:  #E0B24A;
+  --area-cg:  #F08A8A;
+  --area-cm:  #6FD49A;
+  --area-ou:  #A8A896;
+  --area-ob:  #B49CF0;
+  --area-full-exam: #7FA8E0;
 }
 
 @layer base {
@@ -118,10 +140,20 @@
     @apply border-edge;
   }
 
+  /* Campo "afundado" sem relevo: a borda é da cor da tinta e o fundo é o
+     `paper` (mais escuro que a surface). É assim que o chapado diz "entrada
+     de texto" sem recorrer a bevel 3D. */
   input,
   select,
   textarea {
-    @apply border border-edge bg-surface rounded-xl outline-none px-3 py-2 text-sm text-ink;
+    @apply border border-ink bg-paper outline-none px-3 py-2 text-sm text-ink;
+    border-radius: var(--radius-control);
+    /* Um input sem largura declarada dimensiona pela largura do CARACTERE, e a
+       mono e' bem mais larga que a proporcional que estava aqui antes — somada
+       ao `font-size: 16px !important` que evita o zoom de foco no iOS, ela
+       empurrava campos para fora da viewport de 390px. Isto e o teto que impede
+       qualquer campo de estourar o container, sem forcar largura total. */
+    max-width: 100%;
   }
 
   input:focus,
@@ -138,32 +170,27 @@
 }
 
 @layer components {
-  .km-card {
-    @apply border border-edge bg-surface;
-    border-radius: var(--radius-surface);
-  }
-
-  .km-panel {
-    @apply border border-edge bg-surface;
-    border-radius: var(--radius-surface);
-  }
-
+  /* Superfície canônica. Eram CINCO regras byte-a-byte idênticas
+     (.km-card, .km-panel, .surface-hero, .surface-panel, .paper-surface),
+     resultado de deriva histórica. Viraram uma regra com os seletores que
+     ainda têm call site; `.km-panel` e `.surface-panel` tinham zero usos e
+     foram embora. */
+  .paper-surface,
+  .km-card,
   .surface-hero {
     @apply border border-edge bg-surface;
     border-radius: var(--radius-surface);
   }
 
-  .surface-panel {
-    @apply border border-edge bg-surface;
+  .surface-quiet {
+    @apply bg-surfaceMuted;
     border-radius: var(--radius-surface);
   }
 
-  .surface-quiet {
-    @apply rounded-lg bg-surfaceMuted;
-  }
-
+  /* Sem `rounded-full`: a pílula era a geometria da identidade anterior. */
   .km-chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-edge bg-surface px-3 py-1 text-xs font-medium text-muted;
+    @apply inline-flex items-center gap-1.5 border border-edge bg-surface px-3 py-1 text-xs font-medium text-muted;
+    border-radius: var(--radius-control);
     transition: background-color var(--motion-fast) var(--ease-paper), border-color var(--motion-fast) var(--ease-paper), color var(--motion-fast) var(--ease-paper);
   }
 
@@ -199,9 +226,14 @@
     @apply rounded-surface border border-dashed border-edge;
   }
 
+  /* A superfície de leitura declara a serifa EXPLICITAMENTE. Sem isto ela
+     herdaria `--font-sans`, que neste sistema aponta para a mono — e o aluno
+     lê ~100 enunciados por sessão. O terminal é a moldura; o documento
+     dentro dela continua sendo um documento. */
   .paper-reading {
     width: 100%;
     max-width: var(--reading-measure);
+    font-family: var(--font-serif), Georgia, "Times New Roman", serif;
     text-align: left;
     line-height: 1.68;
     text-wrap: pretty;
@@ -234,51 +266,89 @@
     min-height: 5.5rem;
   }
 
-  /* Superficie-heroi: unica geometria com curva no sistema. Reservada a
-     cartoes que abrem uma tela (herois, cartoes de grafico). O realce de
-     1px no topo e o que da leitura de material, sem custar uma sombra. */
-  .surface-cozy {
+  /* ── Chrome KROS/DOS ─────────────────────────────────────────────────────
+     Moldura de janela, menu bar e status bar do Windows 95, desenhados
+     CHAPADOS: 1px de borda, zero relevo 3D, zero raio.
+
+     REGRA INEGOCIÁVEL: box-drawing (─ │ ┌) e blocos (▓ ░) são CSS, nunca
+     conteúdo de texto. Um leitor de tela anuncia "▓▓▓▓" como "sombreado
+     escuro" quatro vezes. Régua = border. Barra = role="progressbar" com
+     repeating-linear-gradient. Colchete de botão = ::before/::after. */
+
+  /* Janela. A sombra dura só existe no claro (no escuro o token é `none`). */
+  .chrome-window {
     @apply border border-edge bg-surface;
-    position: relative;
-    border-radius: var(--radius-hero);
-    box-shadow: var(--soft-shadow);
-  }
-
-  .surface-cozy::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 1px;
-    border-radius: var(--radius-hero) var(--radius-hero) 0 0;
-    background: color-mix(in srgb, var(--color-ink) 7%, transparent);
-    pointer-events: none;
-  }
-
-  /* Elevacao de 1px no hover. So para superficies clicaveis. */
-  .hover-lift {
-    transition:
-      transform var(--motion-fast) var(--ease-cozy),
-      box-shadow var(--motion-fast) var(--ease-cozy);
-  }
-
-  .hover-lift:hover {
-    transform: translateY(-1px);
     box-shadow: var(--overlay-shadow);
   }
 
-  /* Entrada em cascata leve para as secoes de primeiro nivel de uma pagina.
-     Teto em 6 filhos: acima disso a espera acumulada passa a ser percebida
-     como lentidao em vez de acabamento. */
-  .student-stagger > * {
-    animation: stagger-rise var(--motion-base) var(--ease-cozy) both;
+  .chrome-titlebar {
+    @apply flex items-center justify-between bg-primary px-2.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-primaryInk;
+    min-height: 1.625rem;
   }
-  .student-stagger > *:nth-child(1) { animation-delay: 0ms; }
-  .student-stagger > *:nth-child(2) { animation-delay: 45ms; }
-  .student-stagger > *:nth-child(3) { animation-delay: 90ms; }
-  .student-stagger > *:nth-child(4) { animation-delay: 135ms; }
-  .student-stagger > *:nth-child(5) { animation-delay: 180ms; }
-  .student-stagger > *:nth-child(6) { animation-delay: 225ms; }
-  .student-stagger > *:nth-child(n + 7) { animation-delay: 225ms; }
+
+  /* Substitui a pílula teal da identidade anterior: o item ativo é um bloco
+     preenchido, sem raio e sem transição de forma. */
+  .chrome-menubar {
+    @apply flex items-center border-b border-edge text-[11px] font-medium uppercase tracking-[0.13em];
+  }
+
+  .chrome-menubar-item {
+    @apply px-4 py-2.5 text-muted;
+  }
+
+  .chrome-menubar-item[aria-current="page"],
+  .chrome-menubar-item[data-active="true"] {
+    @apply bg-primary font-semibold text-primaryInk;
+  }
+
+  .chrome-statusbar {
+    @apply flex items-center border-t border-edge bg-surfaceMuted text-[10px] font-medium uppercase tracking-[0.13em] text-muted;
+  }
+
+  .chrome-statusbar > * {
+    @apply border-r border-edge px-3 py-1.5;
+  }
+
+  .chrome-rule {
+    @apply border-t border-edge;
+  }
+
+  /* Régua pontilhada de sumário (rótulo … valor). Substitui a fileira de
+     pontos que o DOS fazia com caractere. */
+  .chrome-leader {
+    @apply flex-1 border-b border-dotted border-edge;
+    margin: 0 0.625rem;
+    transform: translateY(-3px);
+  }
+
+  /* Colchetes de botão como decoração: geram conteúdo que o leitor de tela
+     ignora, em vez de poluir o rótulo acessível com "[" e "]". */
+  .chrome-bracket::before {
+    content: "[";
+    opacity: 0.55;
+    margin-right: 0.375rem;
+  }
+
+  .chrome-bracket::after {
+    content: "]";
+    opacity: 0.55;
+    margin-left: 0.375rem;
+  }
+
+  /* Barra de blocos. O preenchimento é gradiente, nunca caractere. */
+  .chrome-meter {
+    @apply border border-edge bg-paper;
+    padding: 1px;
+  }
+
+  .chrome-meter > * {
+    height: 100%;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--color-primary) 0 7px,
+      transparent 7px 10px
+    );
+  }
 
   /* Repouso do item Kros no menu. Classe propria em vez de `bg-primary/8`
      para nao depender de como o Tailwind resolve modificador de opacidade
@@ -293,11 +363,6 @@
     background: color-mix(in srgb, var(--color-primary) 14%, var(--color-paper));
     border-color: color-mix(in srgb, var(--color-primary) 46%, transparent);
   }
-}
-
-@keyframes stagger-rise {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Desenho de traco. Depende de `pathLength="100"` no SVG, o que dispensa
@@ -592,19 +657,21 @@ input[type="range"]:focus-visible {
     z-index: auto;
   }
 
-  /* Forçar modo claro — evita fundo preto no dark mode */
+  /* Forçar modo claro — evita fundo preto no dark mode. Papel de impressão
+     é branco, não o cinza do "desktop": um flood de #B8B8AE bebe tinta. */
   :root {
-    --color-paper: #F7F5EF;
-    --color-surface: #FFFCF7;
-    --color-surface-muted: #F0EDE6;
-    --color-edge:  #DED8CC;
-    --color-ink:   #202329;
-    --color-muted: #66707A;
+    --color-paper: #FFFFFF;
+    --color-surface: #FFFFFF;
+    --color-surface-muted: #F0EFE8;
+    --color-edge:  #6E6E64;
+    --color-ink:   #14140F;
+    --color-muted: #4A4A42;
+    --overlay-shadow: none;
   }
 
   body {
-    background: #F7F5EF !important;
-    color: #202329 !important;
+    background: #FFFFFF !important;
+    color: #14140F !important;
   }
 
   /* Esconder elementos de navegação e interação */

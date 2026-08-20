@@ -951,6 +951,17 @@ export type KrosPreview = {
   max_size: number;
   size_step: number;
   size_anchors: number[];
+  /**
+   * Tamanho que cabe no tempo declarado na Rota, e a faixa de ajuste fino em
+   * torno dele. `null`/vazio quando a chamada não declarou tempo — a prévia
+   * continua servindo o caminho antigo, de barra livre.
+   *
+   * Vêm do servidor, e não do cliente, pelo mesmo motivo dos campos acima:
+   * `KROS_MINUTES_PER_QUESTION` já está espelhado à mão aqui uma vez, e
+   * duplicar a regra de novo garantiria divergência.
+   */
+  suggested_size: number | null;
+  size_band: number[];
   composition: KrosComposition;
   /**
    * Bancas alvo do aluno, na ordem de prioridade dele. Vazio quando ele não
@@ -982,6 +993,20 @@ export type QuestionBankSessionKind =
 export type QuestionBankFeedbackTiming = "immediate" | "post_result";
 export type QuestionBankFeedbackRevealPolicy = "guided_choice" | "reveal_all";
 
+export type QuestionBankReasoningCheckpoint = {
+  checkpoint_key: string;
+  step_order: number;
+  prompt: string;
+  kind: string;
+  knowledge_node_id: string;
+  /**
+   * Preenchido só nos itens de `chain`. `not_asked` é o que dá sentido ao
+   * curto-circuito para o aluno: o elo aparece, com o enunciado, mas nunca foi
+   * perguntado.
+   */
+  state: "verified" | "current" | "gap" | "not_asked" | null;
+};
+
 export type QuestionBankReasoningReview = {
   run_id: string | null;
   question_id: string;
@@ -995,13 +1020,13 @@ export type QuestionBankReasoningReview = {
     | "awaiting_attribution"
     | "completed"
     | "abandoned_by_reveal";
-  current_checkpoint: {
-    checkpoint_key: string;
-    step_order: number;
-    prompt: string;
-    kind: string;
-    knowledge_node_id: string;
-  } | null;
+  current_checkpoint: QuestionBankReasoningCheckpoint | null;
+  /**
+   * A cadeia inteira, com o estado de cada elo. É o que permite mostrar o que
+   * vinha DEPOIS da lacuna sem perguntar — perguntar conduta a quem não fechou
+   * o diagnóstico mede chute, e chute contamina o perfil.
+   */
+  chain: QuestionBankReasoningCheckpoint[];
   first_gap: {
     checkpoint_key: string;
     knowledge_node_id: string;

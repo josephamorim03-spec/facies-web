@@ -630,7 +630,7 @@ export default function CronogramaMonthView({
           <div className="mt-2 space-y-2">
             {[
               {
-                href: "/kros",
+                href: "/rota",
                 title: "Reserve um Kros de 50 questões",
                 detail: "Escolha o melhor dia antes de iniciar.",
                 cta: "Escolher dia e adicionar",

@@ -11,8 +11,12 @@ const DEBOUNCE_MS = 450;
 type UseKrosPreviewResult = {
   preview: KrosPreview | null;
   loading: boolean;
-  /** Pede uma prévia agora, respeitando o debounce. */
-  refresh: (mode: KrosMode, size: number) => void;
+  /** Pede uma prévia agora, respeitando o debounce.
+   *
+   *  `minutes` e o tempo declarado na Rota: com ele o servidor devolve
+   *  `suggested_size` e `size_band`. Sem ele a previa segue servindo o caminho
+   *  antigo, de barra livre. */
+  refresh: (mode: KrosMode, size: number, minutes?: number | null) => void;
 };
 
 /**
@@ -45,7 +49,7 @@ export function useKrosPreview(): UseKrosPreviewResult {
     };
   }, []);
 
-  const refresh = useCallback((mode: KrosMode, size: number) => {
+  const refresh = useCallback((mode: KrosMode, size: number, minutes?: number | null) => {
     if (timerRef.current) clearTimeout(timerRef.current);
     setLoading(true);
     timerRef.current = setTimeout(() => {
@@ -55,7 +59,15 @@ export function useKrosPreview(): UseKrosPreviewResult {
 
       previewKros(
         getAuthToken(),
-        { session_kind: "kros", feedback_timing: "post_result", kros_mode: mode, limit: size },
+        {
+          session_kind: "kros",
+          feedback_timing: "post_result",
+          kros_mode: mode,
+          limit: size,
+          // Com o tempo declarado o servidor devolve `suggested_size` e
+          // `size_band`; sem ele a prévia segue no caminho de barra livre.
+          ...(minutes ? { time_limit_minutes: minutes } : {}),
+        },
         controller.signal,
       )
         .then((result) => {

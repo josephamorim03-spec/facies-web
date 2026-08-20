@@ -5006,6 +5006,10 @@ export interface components {
             size_step: number;
             /** Size Anchors */
             size_anchors?: number[];
+            /** Suggested Size */
+            suggested_size?: number | null;
+            /** Size Band */
+            size_band?: number[];
             /** Composition */
             composition?: {
                 [key: string]: unknown;
@@ -7453,6 +7457,8 @@ export interface components {
             kind: string;
             /** Knowledge Node Id */
             knowledge_node_id: string;
+            /** State */
+            state?: ("verified" | "current" | "gap" | "not_asked") | null;
         };
         /** QuestionBankReasoningGapOut */
         QuestionBankReasoningGapOut: {
@@ -7502,6 +7508,8 @@ export interface components {
              */
             status: "unavailable" | "active" | "gap_identified" | "awaiting_attribution" | "completed" | "abandoned_by_reveal";
             current_checkpoint?: components["schemas"]["QuestionBankReasoningCheckpointOut"] | null;
+            /** Chain */
+            chain?: components["schemas"]["QuestionBankReasoningCheckpointOut"][];
             first_gap?: components["schemas"]["QuestionBankReasoningGapOut"] | null;
             /** Attribution Options */
             attribution_options?: {
@@ -9515,6 +9523,8 @@ export interface components {
             review_snapshot: components["schemas"]["StudentTodayReviewSnapshotOut"];
             progress_snapshot: components["schemas"]["StudentTodayProgressSnapshotOut"];
             details: components["schemas"]["StudentTodayDetailsOut"];
+            effort_budget?: components["schemas"]["TrainerEffortBudgetOut"] | null;
+            viability?: components["schemas"]["TrainerViabilityOut"] | null;
             /** Missing Sources */
             missing_sources?: string[];
         };

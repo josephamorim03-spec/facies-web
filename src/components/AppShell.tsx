@@ -3,7 +3,8 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import Nav, { SidebarNav, NAV_OPEN_EVENT } from "@/components/Nav";
+import Nav, { SidebarNav } from "@/components/Nav";
+import { MobileTabBar, hasChildRow } from "@/components/MobileTabBar";
 import { IntentSubNav } from "@/components/student/IntentSubNav";
 import PwaRegister from "@/components/PwaRegister";
 import { ToastProvider } from "@/lib/useToast";
@@ -39,7 +40,7 @@ type BuildVersionPayload = {
 const SHOW_BUILD_BADGE = process.env.NEXT_PUBLIC_SHOW_BUILD_BADGE === "1";
 // Mesma ordem de NAV_GROUPS_CONFIG (lib/navConfig.ts) — define a prioridade do
 // warm-up ocioso, então segue a ordem em que os destinos aparecem no menu.
-const PRIMARY_NAV_ROUTES = ["/kros", "/hoje", "/banco", "/cards", "/evolucao", "/cronograma", "/preferencias"];
+const PRIMARY_NAV_ROUTES = ["/hoje", "/banco", "/rota", "/cards", "/evolucao"];
 
 type IdleCallbackHandle = number;
 type WindowWithIdleCallback = Window & {
@@ -82,35 +83,29 @@ function shouldShowMobileTopBar(pathname: string, hideChrome: boolean): boolean 
   return true;
 }
 
-function IconMenu({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <line x1="3" y1="18" x2="21" y2="18" />
-    </svg>
-  );
-}
 
+/**
+ * Barra de titulo do mobile.
+ *
+ * O hamburguer saiu — a navegacao agora e a barra inferior de abas. A barra de
+ * TOPO fica: `CronogramaMonthView` monta o seletor de mes como `title` (um
+ * ReactNode, nao string) e `banco/page.tsx` monta acoes aqui. Removendo ela
+ * junto, essas duas telas perderiam controles reais.
+ *
+ * Titulo em maiuscula por CSS, nunca na string: `text-transform` mantem o texto
+ * acentuado intacto no DOM (e o checker de copy pt-BR passa).
+ */
 function MobileTopBar({ pathname }: { pathname: string }) {
   const { title, actions } = useContext(NavbarContext);
   const displayTitle = title ?? fallbackTitle(pathname);
   return (
     <header
-      className="fixed inset-x-0 top-0 z-30 flex h-12 items-center border-b border-edge bg-paper px-3 md:hidden"
+      className="fixed inset-x-0 top-0 z-30 flex h-12 items-center border-b border-edge bg-surfaceMuted px-3 md:hidden"
       style={{ paddingTop: "env(safe-area-inset-top, 0px)", height: "calc(3rem + env(safe-area-inset-top, 0px))" }}
     >
-      <button
-        type="button"
-        onClick={() => window.dispatchEvent(new CustomEvent(NAV_OPEN_EVENT))}
-        className="relative z-10 -ml-0.5 shrink-0 p-1.5 text-ink"
-        aria-label="Menu"
-      >
-        <IconMenu className="h-5 w-5" />
-      </button>
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-14">
         {typeof displayTitle === "string" ? (
-          <span className="truncate font-serif text-sm font-semibold uppercase tracking-[0.1em] text-ink">
+          <span className="truncate text-xs font-semibold uppercase tracking-[0.13em] text-ink">
             {displayTitle}
           </span>
         ) : (
@@ -178,13 +173,25 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
   const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
   const showMobileTopBar = !isDesktopNavigation && shouldShowMobileTopBar(pathname, hideNavigationChrome);
+  // A barra de abas segue a mesma regra do topo: some no modo imersivo (sessao
+  // de questoes, runner de importacao). Tocar numa aba durante a revisao de
+  // cards dispararia o guard de `popstate` do Turbo.
+  const showMobileTabBar = showMobileTopBar;
+  // `--mobile-nav-height` (4rem) cobre so a fileira de abas. Quando a linha de
+  // filhos aparece a barra cresce ~2.75rem, e reservar so a fileira fazia a
+  // linha cobrir o fim do conteudo — foi o que a captura mobile mostrou.
+  const mobileBottomPad = !showMobileTabBar
+    ? "pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)]"
+    : hasChildRow(pathname)
+      ? "pb-[calc(env(safe-area-inset-bottom,0px)+var(--mobile-nav-height)+4rem)]"
+      : "pb-[calc(env(safe-area-inset-bottom,0px)+var(--mobile-nav-height)+1.25rem)]";
   const mainClassName = hideNavigationChrome
     ? "min-h-screen"
     : isDesktopNavigation
       ? "max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8"
       : showMobileTopBar
-        ? "max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)]"
-        : "max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)]";
+        ? `max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] ${mobileBottomPad}`
+        : `max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] ${mobileBottomPad}`;
 
   useEffect(() => {
     if (pathname === INITIAL_GOAL_SETUP_ROUTE) {
@@ -274,11 +281,14 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       {showMobileTopBar && <MobileTopBar pathname={pathname} />}
       <div className={hideNavigationChrome || !isDesktopNavigation ? "" : "ml-14"}>
         <main className={mainClassName}>
-          <Nav displayName={userDisplayName} photoUrl={userPhotoUrl} />
-          {!hideNavigationChrome && <IntentSubNav />}
+          <Nav />
+          {/* A linha de filhos so aparece no desktop: no mobile ela mora colada
+              na barra inferior, onde o polegar alcanca. */}
+          {!hideNavigationChrome && isDesktopNavigation && <IntentSubNav />}
           {children}
         </main>
       </div>
+      {showMobileTabBar && <MobileTabBar />}
       <Toast />
       <BuildVersionBadge />
       <ConfirmDialog
