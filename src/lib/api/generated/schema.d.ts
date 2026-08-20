@@ -10209,6 +10209,7 @@ export interface components {
             /** Overload Alert */
             overload_alert: boolean;
             review_load?: components["schemas"]["TrainerReviewLoadOut"] | null;
+            effort_budget?: components["schemas"]["TrainerEffortBudgetOut"] | null;
         };
         /** TrainerDebriefIn */
         TrainerDebriefIn: {
@@ -10242,6 +10243,24 @@ export interface components {
             /** Ai Disclosure */
             ai_disclosure: string;
         };
+        /**
+         * TrainerDroppedScopeOut
+         * @description Um nó que não coube até a prova. Existe para ser mostrado.
+         */
+        TrainerDroppedScopeOut: {
+            /** Node Id */
+            node_id: string;
+            /** Label */
+            label: string;
+            /** Priority */
+            priority: number;
+            /** Target Relevance */
+            target_relevance: number;
+            /** Estimated Questions */
+            estimated_questions: number;
+            /** Estimated Minutes */
+            estimated_minutes: number;
+        };
         /** TrainerEditorialQualityOut */
         TrainerEditorialQualityOut: {
             /**
@@ -10257,6 +10276,53 @@ export interface components {
             label: string;
             /** Coverage Pct */
             coverage_pct?: number | null;
+        };
+        /**
+         * TrainerEffortBudgetOut
+         * @description De onde veio o tamanho do dia, e o que foi preciso supor.
+         *
+         *     O número sozinho não explica nada: "45 minutos" pode ser o que o aluno
+         *     declarou, o que a rotina previa, ou o que sobrou depois do plantão e do
+         *     taper. `reason_codes` é o que a tela traduz para dizer por quê — nunca "a IA
+         *     decidiu".
+         */
+        TrainerEffortBudgetOut: {
+            /** Usable Minutes */
+            usable_minutes: number;
+            /** Question Capacity */
+            question_capacity: number;
+            /** Minutes Per Question */
+            minutes_per_question: number;
+            /**
+             * Pace Source
+             * @enum {string}
+             */
+            pace_source: "observed" | "constant";
+            /**
+             * Context Mode
+             * @enum {string}
+             */
+            context_mode: "normal" | "on_call" | "recovery" | "rest";
+            /**
+             * Exam Phase
+             * @enum {string}
+             */
+            exam_phase: "unknown" | "distant" | "building" | "consolidation" | "taper" | "exam_week";
+            /** Declared Minutes */
+            declared_minutes: number;
+            /** Spent Minutes Today */
+            spent_minutes_today: number;
+            /**
+             * Recommended Mode
+             * @default equilibrado
+             */
+            recommended_mode: string;
+            /** Days To Exam */
+            days_to_exam?: number | null;
+            /** Reason Codes */
+            reason_codes?: string[];
+            /** Policy Version */
+            policy_version?: string | null;
         };
         /** TrainerEvidenceOut */
         TrainerEvidenceOut: {
@@ -10391,6 +10457,7 @@ export interface components {
             signals?: components["schemas"]["TrainerSignalOut"][];
             closed_loop: components["schemas"]["TrainerClosedLoopOut"];
             daily_load: components["schemas"]["TrainerDailyLoadOut"];
+            viability?: components["schemas"]["TrainerViabilityOut"] | null;
             previous_outcome?: components["schemas"]["TrainerOutcomeOut"] | null;
             plan_progress?: components["schemas"]["TrainerPlanProgressOut"];
             /** Missing Sources */
@@ -10560,6 +10627,45 @@ export interface components {
             headline: string;
             /** Detail */
             detail?: string | null;
+        };
+        /**
+         * TrainerViabilityOut
+         * @description O que cabe até a prova — e o que não cabe, dito em voz alta.
+         *
+         *     Reduzir a carga na reta final sem reduzir o escopo é dar menos tempo para a
+         *     mesma dívida. Este bloco é o que torna o taper honesto: ele nomeia o que
+         *     ficou de fora em vez de descartar o excedente em silêncio.
+         *
+         *     `None` na prescrição significa "não há veredito" — sem data de prova não
+         *     existe denominador. Nunca significa "cabe tudo".
+         */
+        TrainerViabilityOut: {
+            /** Feasible */
+            feasible: boolean;
+            /** Required Minutes */
+            required_minutes: number;
+            /** Available Minutes */
+            available_minutes: number;
+            /** Coverage Ratio */
+            coverage_ratio: number;
+            /** Cut Line */
+            cut_line: number;
+            /** Days To Exam */
+            days_to_exam?: number | null;
+            /**
+             * Board Coverage Denominator
+             * @default 0
+             */
+            board_coverage_denominator: number;
+            /**
+             * Dropped Count
+             * @default 0
+             */
+            dropped_count: number;
+            /** Dropped Sample */
+            dropped_sample?: components["schemas"]["TrainerDroppedScopeOut"][];
+            /** Reason Codes */
+            reason_codes?: string[];
         };
         /** TrainerWhyFactorOut */
         TrainerWhyFactorOut: {
