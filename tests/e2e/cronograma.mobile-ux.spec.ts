@@ -83,7 +83,7 @@ test.describe("Cronograma mobile portrait UX", () => {
     await mockCronogramaApi(page);
     await page.goto("/cronograma");
 
-    const streak = page.locator("[data-streak-mode='ring']");
+    const streak = page.locator("[data-streak-mode='active']");
     await expect(streak).toBeVisible();
     await expect(streak).toContainText(/12\s+dias seguidos/i);
     // Detalhes (recorde/revisões/cards) ficam na dica do anel, sem competir com o mês.
@@ -351,9 +351,9 @@ test.describe("Cronograma mobile portrait UX", () => {
       db.streak.streak_at_risk = true;
       await page.goto("/cronograma");
 
-      await expect(page.locator("[data-streak-mode='ring']")).toBeVisible();
+      await expect(page.locator("[data-streak-mode='active']")).toBeVisible();
       await expect(page.locator("[data-streak-at-risk='true']")).toHaveCount(0);
-      await expect(page.locator("[data-streak-mode='ring']")).not.toContainText(/em risco/i);
+      await expect(page.locator("[data-streak-mode='active']")).not.toContainText(/em risco/i);
     });
   }
 
@@ -448,7 +448,7 @@ test.describe("Cronograma mobile landscape UX", () => {
   test("streak permanece como anel discreto no horizontal", async ({ page }) => {
     await page.goto("/cronograma");
 
-    const streak = page.locator("[data-streak-mode='ring']");
+    const streak = page.locator("[data-streak-mode='active']");
     await expect(streak).toBeVisible();
     await expect(streak).toContainText(/dias seguidos/i);
     // Recorde/revisões/cards seguem disponíveis na dica do anel.

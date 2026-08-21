@@ -32,7 +32,6 @@ const PAPER_SURFACES = [
   "src/components/student/StudentActionSurface.tsx",
   "src/components/student/StudentExperienceUI.tsx",
   "src/app/hoje/_components/BancoSidebarCard.tsx",
-  "src/app/hoje/_components/CardsDuePanel.tsx",
   "src/app/hoje/_components/TodayBackupActions.tsx",
   "src/app/hoje/_components/TodayDetails.tsx",
   "src/app/hoje/_components/TodayEmptyState.tsx",
@@ -66,7 +65,17 @@ const rules = [
 
 const failures = [];
 for (const relativePath of PAPER_SURFACES) {
-  const source = readFileSync(resolve(ROOT, relativePath), "utf8");
+  let source;
+  try {
+    source = readFileSync(resolve(ROOT, relativePath), "utf8");
+  } catch {
+    console.error(
+      `Paper UI: ${relativePath} esta em PAPER_SURFACES mas nao existe mais.\n` +
+        "Se a superficie foi removida, tire-a da lista; se foi movida, atualize o caminho.\n" +
+        "A lista e' fixa de proposito: sair dela e' sair da cobertura, e isso precisa ser deliberado.",
+    );
+    process.exit(1);
+  }
   for (const [index, line] of source.split(/\r?\n/).entries()) {
     for (const rule of rules) {
       if (rule.pattern.test(line)) failures.push(`${relativePath}:${index + 1} ${rule.label}`);

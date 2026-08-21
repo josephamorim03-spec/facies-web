@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/Button";
 import { KrosGlyph } from "@/components/KrosGlyph";
 import { KrosComposition } from "./_components/KrosComposition";
 import { KROS_MODE_OPTIONS, KrosModeChooser } from "./_components/KrosModeChooser";
-import { RotaPrompt } from "./_components/RotaPrompt";
+import { ENERGY_LABEL, RotaPrompt } from "./_components/RotaPrompt";
 import { RotaResultado } from "./_components/RotaResultado";
 import { RotaSizeBand } from "./_components/RotaSizeBand";
 import { useKrosPreview } from "./_hooks/useKrosPreview";
@@ -275,8 +275,3 @@ export default function RotaPage() {
   );
 }
 
-const ENERGY_LABEL: Record<NavigationEnergy, string> = {
-  low: "Fadigado",
-  normal: "Normal",
-  high: "Focado",
-};

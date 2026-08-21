@@ -19,6 +19,7 @@ import { ACTIVATE_ROUTE, INITIAL_GOAL_SETUP_ROUTE } from "@/lib/initialGoalSetup
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { NavbarProvider, NavbarContext } from "@/lib/NavbarContext";
 import { StudentExperienceProvider } from "@/lib/StudentExperienceContext";
+import { ProfileDisplayNameProvider } from "@/lib/ProfileContext";
 import { warmRoute, warmRouteData } from "@/lib/navigationWarmup";
 import {
   acknowledgeSessionExpired,
@@ -323,7 +324,11 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
           {/* A linha de filhos so aparece no desktop: no mobile ela mora colada
               na barra inferior, onde o polegar alcanca. */}
           {!hideNavigationChrome && isDesktopNavigation && <IntentSubNav />}
-          {children}
+          {/* O nome ja foi buscado aqui para a sidebar; o provider so o torna
+              alcancavel pelas paginas, sem uma segunda ida a rede. */}
+          <ProfileDisplayNameProvider displayName={userDisplayName}>
+            {children}
+          </ProfileDisplayNameProvider>
         </main>
       </div>
       {showMobileTabBar && <MobileTabBar />}

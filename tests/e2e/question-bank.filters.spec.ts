@@ -310,7 +310,10 @@ test("question bank applies filters, calendar review context, and gated correcti
   await quantityInput.blur();
   await expect(quantityInput).toHaveValue("12");
 
-  await page.getByRole("button", { name: /Começar 12 questões.*feedback por questão/i }).click();
+  // O padrao corrige ao terminar, uma a uma — e o rotulo agora diz isso. Antes
+  // ele prometia "feedback por questão", que era o unico modo que a tela NAO
+  // oferecia.
+  await page.getByRole("button", { name: /Começar 12 questões.*ao terminar, uma a uma/i }).click();
   await page.waitForURL("**/banco/sessao/session_qb_e2e**");
 
   const payload = createPayloads[0];
@@ -423,14 +426,19 @@ test("manual search becomes an active session filter and clears selected topics"
 
   const topicRequestsBeforeAreaChange = topicRequestUrls.length;
   await expect(filterPanel).toContainText("Cardiologia");
-  await page.getByRole("button", { name: "GO" }).click();
+  await page.getByRole("button", { name: "GO", exact: true }).click();
   await expect(filterPanel).not.toContainText("Cardiologia");
   await page.waitForTimeout(400);
   expect(topicRequestUrls).toHaveLength(topicRequestsBeforeAreaChange);
 
-  await page.getByRole("button", { name: /Placenta previa/ }).first().click();
+  // A arvore nasce colapsada, entao o subtema so existe no DOM depois de abrir
+  // o ramo. ACHADO: buscar "Placenta" tambem NAO abre o ramo que casa — a
+  // filtragem preserva os ancestrais mas os mantem fechados, e o aluno que
+  // pesquisa ainda precisa expandir na mao.
+  await page.getByRole("button", { name: /Expandir Obstetricia/ }).click();
+  await page.getByRole("checkbox", { name: /Placenta previa/ }).first().click();
   await page.getByPlaceholder("Buscar especialidade, macrotema ou subtema").fill("Placenta");
-  await expect(page.getByRole("button", { name: /Placenta previa/ }).first()).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: /Placenta previa/ }).first()).toBeVisible();
   await expect(page.getByText("Obstetricia").first()).toBeVisible();
   await page.waitForTimeout(400);
   expect(topicRequestUrls.some((url) => new URL(url).searchParams.get("search") === "Placenta")).toBe(false);
@@ -447,13 +455,15 @@ test("manual search becomes an active session filter and clears selected topics"
     .toBe(true);
   await expect(page.getByTestId("question-bank-top-filters")).not.toContainText("Medicina");
 
-  await page.getByRole("button", { name: /Iniciar simulado/ }).click();
+  await page.getByRole("button", { name: /Começar/ }).click();
   await expect.poll(() => createPayloads.length).toBe(1);
 
   const payload = createPayloads[0];
   expect(payload.search).toBe("Placenta");
   expect(payload.knowledge_node_ids).toBeUndefined();
-  expect(payload.generate_review_trail).toBeUndefined();
+  // A tela passou a mandar `false` explicito em vez de omitir o campo; para o
+  // servidor os dois dizem a mesma coisa.
+  expect(payload.generate_review_trail).toBeFalsy();
   expect(payload.board_codes).toEqual(["SMK"]);
   expect(payload.exam_codes).toEqual(["ACESSO-DIRETO"]);
   expect(payload.institutions).toEqual(["USP-SP"]);
@@ -538,7 +548,7 @@ test("builder keeps requested quantity above 50 before availability resolves", a
   await quantityInput.fill("99");
   await expect(quantityInput).toHaveValue("99");
 
-  await page.getByRole("button", { name: /Iniciar simulado/ }).click();
+  await page.getByRole("button", { name: /Começar/ }).click();
   await expect.poll(() => createPayloads.length).toBe(1);
   expect(createPayloads[0]).toMatchObject({ limit: 99 });
 });
@@ -596,11 +606,14 @@ test("simulation session allows answer changes by click and keyboard", async ({ 
 
   await page.goto("/banco-de-questoes/sessao/session_qb_sim_change");
 
-  await page.getByRole("button", { name: /^A\s+Placenta/ }).click();
-  await expect(page.getByText("Resposta A")).toBeVisible();
+  const optionA = page.getByRole("button", { name: /^A\s+Placenta/ });
+  const optionB = page.getByRole("button", { name: /^B\s+Abortamento/ });
+  await optionA.click();
+  await expect(optionA).toHaveAttribute("aria-pressed", "true");
 
   await page.keyboard.press("B");
-  await expect(page.getByText("Resposta B")).toBeVisible();
+  await expect(optionB).toHaveAttribute("aria-pressed", "true");
+  await expect(optionA).toHaveAttribute("aria-pressed", "false");
   await page.waitForTimeout(800);
 
   expect(attemptPayloads).toHaveLength(2);

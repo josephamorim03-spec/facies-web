@@ -24,6 +24,14 @@ export function logThemesKey(area: string): string {
  */
 export const BOOT_SEQUENCE_SEEN_KEY = "kros:boot-seen";
 
+/**
+ * Digitação das perguntas do Kros — uma vez por aba, mesma trava do boot.
+ *
+ * O aluno abre o Kros várias vezes por dia; cobrar a animação toda vez
+ * transforma assinatura em pedágio.
+ */
+export const KROS_TYPED_SEEN_KEY = "kros:prompt-typed";
+
 // ── sessionStorage (token-scoped) ─────────────────────────────────────────────
 export function getBlockedRedirectSessionKey(authToken: string): string {
   return `kros:initial-goal-blocked-session:${authToken.slice(0, 24)}`;

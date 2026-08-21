@@ -3,16 +3,33 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import { LoadBar } from "@/components/ui/LoadBar";
+import { TypedText } from "@/components/ui/TypedText";
+import { KROS_TYPED_SEEN_KEY } from "@/lib/storage-keys";
+import { KrosDetected } from "./KrosDetected";
 import type { NavigationEnergy, NavigationPrompt } from "@/lib/api";
 
-// "Fadigado/Normal/Focado" e nao "Baixa/Normal/Alta": o aluno descreve o proprio
-// estado, nao gradua uma escala abstrata. Os tres continuam mapeando exatamente
-// para low/normal/high do motor.
-const ENERGY_OPTIONS: { value: NavigationEnergy; label: string }[] = [
-  { value: "low", label: "Fadigado" },
+/**
+ * Fonte unica dos rotulos de energia.
+ *
+ * Estavam duplicados aqui e em `rota/page.tsx` — duas tabelas para a mesma
+ * escala divergem na primeira vez que alguem edita uma so.
+ *
+ * "Baixa/Normal/Alta" e nao "Fadigado/Normal/Focado": a escala e' de energia, e
+ * graduar a propria escala le mais rapido do que interpretar tres adjetivos de
+ * estado. O motor continua recebendo low/normal/high, sem traducao.
+ */
+export const ENERGY_OPTIONS: { value: NavigationEnergy; label: string }[] = [
+  { value: "low", label: "Baixa" },
   { value: "normal", label: "Normal" },
-  { value: "high", label: "Focado" },
+  { value: "high", label: "Alta" },
 ];
+
+export const ENERGY_LABEL: Record<NavigationEnergy, string> = {
+  low: "Baixa",
+  normal: "Normal",
+  high: "Alta",
+};
 
 // Espelha `MIN_AVAILABLE_MINUTES`/`MAX_AVAILABLE_MINUTES` de
 // `navigation_route.py` — a mesma faixa que `NavigationRouteIn` valida. Tê-la
@@ -61,7 +78,34 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
   // inesperado estourava o error boundary e o aluno perdia a pagina inteira —
   // aconteceu de verdade, num spec que nao mockava este endpoint.
   const presets = Array.isArray(prompt?.presets) ? prompt.presets : [];
-  if (!prompt || presets.length === 0) return null;
+
+  // Ainda carregando: a tela precisa existir. Antes ela era `null`, e o aluno
+  // via papel em branco ate o `getNavigationPrompt` responder.
+  if (!prompt) {
+    return (
+      <section className="border-b border-edge pb-4" aria-busy="true" aria-label="Carregando o Kros">
+        <LoadBar label="Lendo sua rotina e seu acervo" className="w-full max-w-xs" />
+        <div className="paper-skeleton mt-4 h-7 w-48" />
+        <div className="paper-skeleton mt-5 h-4 w-40" />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <div className="paper-skeleton h-10 w-20" />
+          <div className="paper-skeleton h-10 w-20" />
+          <div className="paper-skeleton h-10 w-20" />
+          <div className="paper-skeleton h-10 w-24" />
+        </div>
+        <div className="paper-skeleton mt-6 h-4 w-44" />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <div className="paper-skeleton h-10 w-24" />
+          <div className="paper-skeleton h-10 w-24" />
+          <div className="paper-skeleton h-10 w-24" />
+        </div>
+        <div className="paper-skeleton mt-6 h-11 w-44" />
+      </section>
+    );
+  }
+
+  // Chegou, mas sem preset nenhum: forma inesperada. Some sem derrubar a pagina.
+  if (presets.length === 0) return null;
 
   // O campo livre vence o preset: havendo número digitado, ele é a última coisa
   // que o aluno disse. Fora da faixa não vira valor — vira aviso e trava o
@@ -97,11 +141,17 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
         Rota de hoje
       </h1>
 
+      {/* O triangulo e' o marcador de prompt do sistema — ele diz "aqui o
+          programa esta perguntando". Fica fora do nome acessivel: o leitor de
+          tela anuncia a pergunta, nao "triangulo preto apontando a direita". */}
       <h2
         id="navigator-context-title"
-        className="mt-4 font-serif text-xl font-semibold text-ink"
+        className="mt-4 flex items-baseline gap-2 font-serif text-xl font-semibold text-ink"
       >
-        Quanto tempo você tem?
+        <span aria-hidden="true" className="text-sm text-primary">
+          ▶
+        </span>
+        <TypedText text="Quanto tempo você tem?" storageKey={KROS_TYPED_SEEN_KEY} />
       </h2>
 
       <div
@@ -163,7 +213,12 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
         </p>
       )}
 
-      <h3 className="mt-5 text-sm font-semibold text-ink">Como está sua energia?</h3>
+      <h3 className="mt-5 flex items-baseline gap-2 text-sm font-semibold text-ink">
+        <span aria-hidden="true" className="text-primary">
+          ▶
+        </span>
+        <TypedText text="Como está sua energia?" storageKey={KROS_TYPED_SEEN_KEY} />
+      </h3>
       <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Energia">
         {ENERGY_OPTIONS.map((option) => (
           <button
@@ -190,9 +245,15 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
         </p>
       ) : null}
 
+      <KrosDetected
+        prompt={prompt}
+        declaredMinutes={selectedMinutes}
+        riskActive={riskActive}
+      />
+
       {riskActive ? (
         <p className="mt-4 text-sm leading-6 text-muted">
-          Você marcou plantão: priorizamos o que aguenta interrupção.{" "}
+          Seu calendário indica plantão: priorizamos o que aguenta interrupção.{" "}
           <button
             type="button"
             disabled={busy}

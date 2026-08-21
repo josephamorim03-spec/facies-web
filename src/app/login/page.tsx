@@ -30,7 +30,6 @@ function LoginPageContent() {
   const router = useRouter();
   // O boot e overlay, nao gate: o formulario ja esta montado atras dele, entao
   // quem digita rapido nem ve a sequencia e nada bloqueia a autenticacao.
-  const [booting, setBooting] = useState(true);
   const searchParams = useSearchParams();
   const sessionExpired = searchParams.get("reason") === "expired";
   const nextParam = searchParams.get("next") ?? "";
@@ -108,21 +107,35 @@ function LoginPageContent() {
 
   return (
     <main className={`${styles.screen} w-full text-ink`}>
-      {booting ? <BootSequence onDone={() => setBooting(false)} /> : null}
       <div className={`${styles.shell}${installState !== "hidden" ? " pb-28 sm:pb-10" : ""}`}>
-        <section className={styles.composition}>
-            {/* Havia DUAS marcas empilhadas: o sprite animado de 75 quadros e um
-                wordmark em serifa logo abaixo. Sobrou uma, mono e estática — o
-                `<h1>` já era o lugar semanticamente certo para o nome. */}
+        {/* A tela de acesso É a tela de POST.
+
+            O autoteste era um overlay que cobria o formulário e sumia em menos
+            de um segundo — rápido demais para ser lido, e no caminho de quem só
+            queria entrar. Como enquadramento ele faz o oposto: diz o que o
+            sistema é enquanto a pessoa está parada olhando, sem atrasar nada. */}
+        <section className={`chrome-window ${styles.composition}`}>
+          <div className="chrome-titlebar">
+            <span>KrosMed — Acesso</span>
+            <span aria-hidden="true">▪</span>
+          </div>
+
+          <div className="px-5 py-6 sm:px-7">
             <div className={styles.brandBlock}>
               <h1 className="leading-none">
                 <KrosWordmark />
               </h1>
+              <p className="mt-2 text-center font-serif text-sm leading-relaxed text-muted">
+                Sistema de treino para residência médica
+              </p>
             </div>
 
-          <div className={styles.accessPanel}>
+            <div className="mt-5">
+              <BootSequence />
+            </div>
+
             {isDevMode ? (
-              <p className={styles.accessLine}>Ambiente de desenvolvimento</p>
+              <p className={`${styles.accessLine} mt-3`}>Ambiente de desenvolvimento</p>
             ) : null}
 
             <div className="mt-4 space-y-4">
@@ -175,6 +188,23 @@ function LoginPageContent() {
                 </div>
               )}
             </div>
+
+            {/* Prompt de comando: decoração, e por isso `aria-hidden`. O leitor
+                de tela não deve anunciar "C dois pontos barra invertida KROS
+                maior que" entre o formulário e o fim da página. */}
+            <div
+              aria-hidden="true"
+              className="mt-6 flex items-center gap-1 border-t border-dotted border-edge pt-3 text-sm text-muted"
+            >
+              <span>{"C:\\KROS>"}</span>
+              <span className="chrome-cursor" />
+            </div>
+          </div>
+
+          <div className="chrome-statusbar">
+            <span>Aguardando acesso</span>
+            <span className="flex-1" />
+            <span>{isDevMode ? "Modo desenvolvimento" : "Entrada por Google"}</span>
           </div>
         </section>
       </div>

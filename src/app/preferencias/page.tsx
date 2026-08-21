@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { ContaSection } from "./_components/ContaSection";
-import { Bell, Calendar as CalendarClock, Calendar2 as CalendarPlus, Check, Target as Crosshair, Notes as Layers3, Save, Target, Trash as Trash2 } from "pixelarticons/react";
+import { Bell, Calendar as CalendarClock, Calendar2 as CalendarPlus, Check, Goal, Notes as Layers3, Repeat, Save, Target, Trash as Trash2 } from "pixelarticons/react";
 
 import {
   createEvent,
@@ -331,7 +331,7 @@ export default function PreferenciasPage() {
       <div className="divide-y divide-edge">
         <section className="py-7">
           <SectionTitle
-            icon={Target}
+            icon={Repeat}
             title="Rotina"
             description="Meta, capacidade e compromissos que bloqueiam ou reduzem a carga de estudo."
           />
@@ -543,7 +543,7 @@ export default function PreferenciasPage() {
         {targetExamCapability?.enabled ? (
           <section className="py-7">
             <SectionTitle
-              icon={Crosshair}
+              icon={Goal}
               title="Prova alvo"
               description="Escolha até três provas entre as que o banco de questões tem. Suas sessões passam a priorizar essas bancas, e a data ancora o cronograma."
             />

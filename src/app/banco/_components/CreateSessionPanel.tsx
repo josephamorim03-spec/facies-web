@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 
+import { LoadBar } from "@/components/ui/LoadBar";
 import type { QuestionBankAvailability, StudyKind } from "@/lib/api";
 import { CORRECTION_MODE_LABEL, type CorrectionMode } from "../_lib/sessionBuilder";
 import { Alert } from "@/components/ui/Alert";
@@ -54,11 +55,14 @@ function SummaryRow({
   label,
   value,
   detail,
+  stale = false,
 }: {
   icon: ReactNode;
   label: string;
   value: string;
   detail?: string;
+  /** Recalculando: o valor exibido nao vale mais. */
+  stale?: boolean;
 }) {
   return (
     <div className="flex items-center gap-3 border-b border-edge py-3 last:border-b-0">
@@ -67,8 +71,14 @@ function SummaryRow({
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-xs text-muted">{label}</p>
-        <p className="mt-0.5 text-base font-semibold leading-tight text-ink">{value}</p>
-        {detail && <p className="mt-0.5 truncate text-xs text-muted">{detail}</p>}
+        {stale ? (
+          // Reticula no lugar do numero, e nao o numero esmaecido: valor velho
+          // continua legivel, e legivel e' o que faz o aluno acreditar nele.
+          <div className="paper-skeleton mt-1 h-5 w-24" aria-label="Recalculando" />
+        ) : (
+          <p className="mt-0.5 text-base font-semibold leading-tight text-ink">{value}</p>
+        )}
+        {detail && !stale && <p className="mt-0.5 truncate text-xs text-muted">{detail}</p>}
       </div>
     </div>
   );
@@ -107,7 +117,12 @@ export default function CreateSessionPanel({
   onStartSession,
   onRetry,
 }: CreateSessionPanelProps) {
-  const canStart = !busy && canStartSession && !!availability && availability.available_count > 0;
+  const canStart =
+    !busy &&
+    !loadingPreview &&
+    canStartSession &&
+    !!availability &&
+    availability.available_count > 0;
   const estimatedMinutes = Math.max(10, Math.ceil(clampedLimit * 1.5));
   const modeLabel = CORRECTION_MODE_LABEL[correctionMode];
   const displayModeLabel = studyKind === "full_exam" ? "Prova institucional" : modeLabel;
@@ -121,7 +136,13 @@ export default function CreateSessionPanel({
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Sessão configurada</p>
           <h2 className="mt-1 font-serif text-xl font-semibold leading-tight">Resumo</h2>
-          <p className="mt-1 text-sm text-muted" aria-live="polite">{loadingPreview ? "Atualizando prévia..." : availabilityText(availability)}</p>
+          {loadingPreview ? (
+            <div className="mt-2">
+              <LoadBar label="Recalculando a prévia" className="w-40" />
+            </div>
+          ) : (
+            <p className="mt-1 text-sm text-muted" aria-live="polite">{availabilityText(availability)}</p>
+          )}
         </div>
         <Button type="button" variant="secondary" size="xs" onClick={onRefreshAvailability} disabled={loadingPreview || busy}>
           Recalcular
@@ -132,18 +153,21 @@ export default function CreateSessionPanel({
         <SummaryRow
           icon={<IconClipboard className="h-5 w-5" />}
           label="Número de questões"
+          stale={loadingPreview}
           value={String(clampedLimit)}
           detail={availability ? `${availability.total_count} no filtro` : undefined}
         />
         <SummaryRow
           icon={<IconClock className="h-5 w-5" />}
           label="Tempo estimado"
+          stale={loadingPreview}
           value={`${estimatedMinutes} min`}
           detail={displayModeLabel}
         />
         <SummaryRow
           icon={<IconChart className="h-5 w-5" />}
           label="Distribuição"
+          stale={loadingPreview}
           value={distribution}
           detail={availability?.answer_status === "wrong" ? "Foco em erros recentes" : "Atualiza conforme os filtros"}
         />

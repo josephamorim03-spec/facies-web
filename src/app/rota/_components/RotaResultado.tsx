@@ -159,7 +159,7 @@ export function RotaResultado({
           return (
             <li key={item.action.action_id ?? `${item.action.kind}-${index}`} className="py-3">
               <div className="flex items-start gap-3">
-                <AreaIcon area={area} size={28} colored />
+                <AreaIcon area={area} size={28} colored variant="glyph" />
                 <span className="sr-only">{displayAreaLabel(area)}</span>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-ink">{item.action.title}</p>

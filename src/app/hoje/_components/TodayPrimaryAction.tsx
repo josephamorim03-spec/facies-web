@@ -29,7 +29,7 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
     >
       <div className="flex flex-col sm:flex-row sm:items-stretch">
         <div className="flex shrink-0 items-center justify-center border-b border-edge bg-surfaceMuted px-5 py-4 sm:w-24 sm:border-b-0 sm:border-r sm:py-5">
-          <AreaIcon area={area} size={44} colored />
+          <AreaIcon area={area} size={44} colored variant="glyph" />
           <span className="sr-only">{displayAreaLabel(area)}</span>
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 py-5 sm:px-6 sm:py-6 md:flex-row md:items-end md:justify-between">
@@ -59,7 +59,7 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
           </div>
           <TodayActionCTA
             action={action}
-            className="inline-flex min-h-12 w-full shrink-0 items-center justify-center border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:w-auto"
+            className="chrome-raised chrome-bracket inline-flex min-h-12 w-full shrink-0 items-center justify-center border border-primary bg-primary px-5 text-sm uppercase tracking-[0.11em] text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-1 focus-visible:outline-dotted focus-visible:[outline-offset:-4px] focus-visible:outline-current md:w-auto"
           >
             {action.cta_label}
           </TodayActionCTA>

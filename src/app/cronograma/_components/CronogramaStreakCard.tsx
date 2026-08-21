@@ -34,7 +34,7 @@ function tierColor(days: number): string {
   return "var(--color-primary)";
 }
 
-function StreakRing({ days, size = 18 }: { days: number; size?: number }) {
+function StreakMeter({ days, size = 18 }: { days: number; size?: number }) {
   const tier = streakTier(days);
   const lo = tier === 0 ? 0 : STREAK_MILESTONES[tier - 1];
   const hi = STREAK_MILESTONES[tier] ?? STREAK_MILESTONES[STREAK_MILESTONES.length - 1];
@@ -88,7 +88,7 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
         className="flex items-center justify-center gap-2 text-xs text-muted"
         data-streak-mode="empty"
       >
-        <StreakRing days={0} />
+        <StreakMeter days={0} />
         <span>Comece sua sequência hoje{best > 0 ? ` · recorde ${best}` : ""}</span>
       </div>
     );
@@ -108,13 +108,13 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
   const toneClass = protection ? "text-info" : "text-ink";
 
   return (
-    <div className="flex justify-center" data-streak-mode="ring">
+    <div className="flex justify-center" data-streak-mode="active">
       <span
         title={detailTitle}
         data-streak-days={days}
         className={`inline-flex items-center gap-2 border border-edge bg-surface px-3 py-1 text-xs font-medium ${toneClass}`}
       >
-        <StreakRing days={days} />
+        <StreakMeter days={days} />
         <span>
           <span className="font-semibold">{days}</span> {dayLabel}
           {protection ? " · protegida" : ""}

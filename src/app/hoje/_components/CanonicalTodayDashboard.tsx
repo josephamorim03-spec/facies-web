@@ -20,6 +20,7 @@ import {
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentAgenda } from "@/features/student-agenda/useStudentAgenda";
+import { firstName, useProfileDisplayName } from "@/lib/ProfileContext";
 import { AgendaItemRow } from "@/features/student-agenda/AgendaItemRow";
 import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
 // O Navigator (pergunta de tempo/energia + rota) mudou para a aba ROTA, com
@@ -29,11 +30,12 @@ import { TodayBackupActions } from "./TodayBackupActions";
 import { TodayEmptyState } from "./TodayEmptyState";
 import { TodayPrimaryAction } from "./TodayPrimaryAction";
 
-function greeting(): string {
+function greeting(name: string | null): string {
   const hour = new Date().getHours();
-  if (hour < 12) return "Bom dia!";
-  if (hour < 18) return "Boa tarde!";
-  return "Boa noite!";
+  const period = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+  // Sem nome, o cumprimento fecha em exclamacao; com nome, em virgula. "Bom
+  // dia!, Joseph" seria o resultado de concatenar sem olhar.
+  return name ? `${period}, ${name}` : `${period}!`;
 }
 
 function pct(value: number | null): string {
@@ -56,6 +58,7 @@ function TodayDashboardSkeleton() {
 }
 
 export function CanonicalTodayDashboard() {
+  const studentFirstName = firstName(useProfileDisplayName());
   const { setTitle, setActions } = useNavbar();
   const isDesktopNavigation = useDesktopNavigationMode();
   const { token, tokenResolved } = useAuthToken();
@@ -126,7 +129,7 @@ export function CanonicalTodayDashboard() {
     <div className="space-y-5 md:space-y-6">
       <header>
         <h1 className="font-serif text-3xl font-semibold leading-tight text-ink md:text-4xl">
-          {greeting()}
+          {greeting(studentFirstName)}
         </h1>
       </header>
 

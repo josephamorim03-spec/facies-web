@@ -174,12 +174,13 @@ export function SidebarNav({
           if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setHovered(false);
         }}
       >
-        {/* Wordmark — link para a home */}
-        <Link
-          href="/hoje"
-          className="block border-b border-edge transition-colors shrink-0 hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        {/* Wordmark — marca, nao navegacao.
+            Era um <Link href="/hoje"> com hover de fundo. A aba "Hoje" ja e o
+            caminho para a home, e um segundo alvo clicavel para o mesmo destino
+            so acrescenta uma coisa que reage ao mouse sem levar a lugar novo. */}
+        <div
+          className="block border-b border-edge shrink-0"
           style={{ padding: visible ? "1.25rem 1rem" : "0.875rem 0.625rem" }}
-          aria-label="KrosMed — início"
         >
           {/* Uma marca so em todo o app: login, sidebar, boot e status bar. O
               <img> do logo vetor saiu junto com o hack de `dark:invert` que ele
@@ -192,7 +193,7 @@ export function SidebarNav({
               <span aria-hidden="true" className="text-sm font-semibold text-ink">K</span>
             )}
           </div>
-        </Link>
+        </div>
 
         <button
           type="button"

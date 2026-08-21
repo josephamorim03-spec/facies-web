@@ -1,4 +1,6 @@
 import { CalendarEventOut, DirectedStudyListItem, ReviewTask } from "@/lib/api";
+import { resolveDisplayArea } from "@/lib/areaDisplay";
+import type { DisplayArea } from "@/lib/areaIdentity";
 import {
   AREA_COLORS,
   FULL_EXAM_COLOR,
@@ -19,6 +21,8 @@ export type CalendarPopupTarget =
 export type CalendarDotEntry = {
   key: string;
   color: string;
+  /** Sigla da area, para a barra dizer o nome alem da cor. `null` em prova. */
+  areaCode?: DisplayArea | null;
   kind: CalendarVisibleCategory;
   theme?: string;
   tooltip?: string;
@@ -118,7 +122,8 @@ export function buildDayDotEntries(params: {
         const theme = studyThemeLabel(study);
         return {
           key: `i_${study.study_id}`,
-          color: AREA_COLORS[study.area] ?? "#ccc",
+          color: AREA_COLORS[study.area] ?? AREA_COLORS.OU,
+          areaCode: resolveDisplayArea(study.area, theme, null),
           kind: "initial" as const,
           theme,
           tooltip: `${study.area}: ${theme}`,
@@ -144,7 +149,8 @@ export function buildDayDotEntries(params: {
       const theme = taskThemeLabel(task);
       return {
         key: task.task_id,
-        color: AREA_COLORS[task.area] ?? "#ccc",
+        color: AREA_COLORS[task.area] ?? AREA_COLORS.OU,
+        areaCode: resolveDisplayArea(task.area, theme, null),
         kind: "pending" as const,
         theme,
         task,
@@ -156,7 +162,8 @@ export function buildDayDotEntries(params: {
       const theme = taskThemeLabel(task);
       return {
         key: `d_${task.task_id}`,
-        color: AREA_COLORS[task.area] ?? "#ccc",
+        color: AREA_COLORS[task.area] ?? AREA_COLORS.OU,
+        areaCode: resolveDisplayArea(task.area, theme, null),
         kind: "done" as const,
         theme,
         task,

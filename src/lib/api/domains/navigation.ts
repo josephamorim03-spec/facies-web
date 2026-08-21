@@ -26,6 +26,17 @@ export type NavigationPrompt = {
   /** Inferido de plantão, nunca perguntado — mas exibido e corrigível. */
   interruption_risk: boolean;
   interruption_reason: string | null;
+  /**
+   * Horas que o calendário já bloqueou hoje — a EVIDÊNCIA por trás de
+   * `interruption_risk`. A tela mostra "12h bloqueadas" em vez de afirmar
+   * "plantão" sem dizer de onde tirou.
+   */
+  blocked_hours_today: number;
+  /**
+   * Previsão crua da rotina. Difere de `suggested_minutes`, que cai em 45
+   * quando não há previsão — e "previu 45" não é "não soube prever".
+   */
+  predicted_minutes: number;
 };
 
 export type NavigationRouteAction = {

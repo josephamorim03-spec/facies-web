@@ -5154,6 +5154,16 @@ export interface components {
             interruption_risk: boolean;
             /** Interruption Reason */
             interruption_reason?: string | null;
+            /**
+             * Blocked Hours Today
+             * @default 0
+             */
+            blocked_hours_today: number;
+            /**
+             * Predicted Minutes
+             * @default 0
+             */
+            predicted_minutes: number;
         };
         /** NavigationRouteActionOut */
         NavigationRouteActionOut: {

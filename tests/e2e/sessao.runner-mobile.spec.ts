@@ -1,7 +1,11 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-import { mockQuestionSession, RUNNER_SESSION_ID } from "./support/questionSessionMock";
+import {
+  mockQuestionSession,
+  runnerSession,
+  RUNNER_SESSION_ID,
+} from "./support/questionSessionMock";
 
 /**
  * A barra superior da sessao no celular.
@@ -84,5 +88,61 @@ test.describe("Runner da sessao no mobile", () => {
       .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
       .analyze();
     expect(results.violations).toEqual([]);
+  });
+});
+
+/**
+ * Feedback por questao, ponta a ponta.
+ *
+ * O modo nao existia: `normalize_session_contract` sobrescrevia `feedback_timing`
+ * em toda sessao nova e `reveal_item_feedback` exigia sessao finalizada — tudo
+ * isso enquanto o botao do banco anunciava "feedback por questao". Estes testes
+ * existem para que o anuncio e o produto nao voltem a divergir.
+ */
+test.describe("Feedback por questao", () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  test("responder confirma, e o acerto aparece na hora", async ({ page }) => {
+    const revealed: number[] = [];
+    const attempts: unknown[] = [];
+    await mockQuestionSession(page, {
+      session: runnerSession({ feedback_timing: "immediate" }),
+      onAttempt: (body) => attempts.push(body),
+      onReveal: (position) => revealed.push(position),
+    });
+
+    await page.goto(`/banco/sessao/${RUNNER_SESSION_ID}`);
+
+    // Antes de escolher nao ha o que confirmar.
+    await expect(page.getByRole("button", { name: "Responder" })).toHaveCount(0);
+
+    await page.getByRole("button", { name: /Amoxicilina em dose adequada/ }).click();
+
+    const confirmar = page.getByRole("button", { name: "Responder" });
+    await expect(confirmar).toBeVisible();
+    await confirmar.click();
+
+    // A confirmacao COMPROMETE a resposta — e o que separa escolher de responder.
+    expect(attempts.some((body) => (body as { commit?: boolean }).commit === true)).toBe(true);
+    expect(revealed).toEqual([1]);
+
+    await expect(page.getByText("Correto", { exact: true })).toBeVisible();
+    // E o passo seguinte volta a ser avancar, no mesmo lugar do rodape.
+    await expect(page.getByRole("button", { name: "Próxima" })).toBeVisible();
+  });
+
+  test("sem feedback por questao, nao ha o que confirmar", async ({ page }) => {
+    // Numa sessao `post_result` a resposta nao trava e o gabarito nao abre: o
+    // aluno anda para a proxima e corrige tudo no fim.
+    await mockQuestionSession(page, {
+      session: runnerSession({ feedback_timing: "post_result" }),
+    });
+
+    await page.goto(`/banco/sessao/${RUNNER_SESSION_ID}`);
+    await page.getByRole("button", { name: /Amoxicilina em dose adequada/ }).click();
+
+    await expect(page.getByRole("button", { name: "Responder" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Próxima" })).toBeVisible();
+    await expect(page.getByText("Correto", { exact: true })).toHaveCount(0);
   });
 });

@@ -33,17 +33,6 @@ export function IconChart({ className }: { className?: string }) {
   );
 }
 
-export function IconRoutine({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      {/* Mostrador QUADRADO. O circulo era o mesmo do lucide, e num icone de
-          24px ele e a unica curva suave da barra inteira. */}
-      <rect x="3" y="3" width="18" height="18" />
-      <polyline points="12 7 12 12 16 14" />
-    </svg>
-  );
-}
-
 export function IconMenu({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">

@@ -1,22 +1,25 @@
 /*
- * Tela de entrada — a ultima ilha pre-pivo do repo.
+ * Tela de entrada — a janela de POST.
  *
- * O que estava aqui: quatro `radial-gradient` empilhados como iluminacao de
- * palco, um halo de `blur(22px)` atras da marca, painel de `border-radius:
- * 1.5rem` com `backdrop-filter: blur(18px)` e sombra de 68px, e quatro keyframes
- * de subida encadeados por atraso ate 1,12s. Era a primeira tela do produto
- * prometendo uma interface que nenhuma outra tela cumpria.
+ * Duas reescritas até aqui. A primeira versão era uma ilha pré-pivô: quatro
+ * `radial-gradient` como iluminação de palco, halo de `blur(22px)` atrás da
+ * marca, painel de `border-radius: 1.5rem` com `backdrop-filter` e sombra de
+ * 68px, e quatro keyframes de subida encadeados até 1,12s.
  *
- * O que fica: papel liso, uma moldura dura, e o mesmo relevo dos controles. As
- * quatro classes do sprite animado (`logoField`, `wordmark`, `wordmarkText`,
- * `pitch`) sairam junto com ele — nenhuma tinha consumidor.
+ * A segunda tirou tudo isso e deixou um painel centralizado minimalista — que
+ * era honesto, mas não era o que o mockup aprovado propunha: o login SENDO a
+ * tela de autoteste, com barra de título, verificações e prompt de comando.
+ *
+ * Esta é a terceira: o layout inteiro vive na janela (`chrome-window`, no
+ * `globals.css`), e o que sobra aqui é só o que a janela não sabe — largura,
+ * centralização e o alinhamento da marca.
  */
 
 .screen {
   position: relative;
   min-height: 100svh;
-  /* Chapado. O degrade radial simulava foco de luz sobre papel; o sistema
-     inteiro trabalha com area chapada e borda de 1px. */
+  /* Chapado. O degradê radial simulava foco de luz sobre papel; o sistema
+     inteiro trabalha com área chapada e borda de 1px. */
   background: var(--color-paper);
 }
 
@@ -29,27 +32,17 @@
   padding: 2rem 1rem;
 }
 
+/* A janela. `chrome-window` traz borda, superfície e a sombra dura; aqui fica
+   só a medida — larga o bastante para as réguas do autoteste terem curso, e
+   estreita o bastante para o formulário não se espalhar. */
 .composition {
-  width: min(100%, 31rem);
-  text-align: center;
+  width: min(100%, 34rem);
 }
 
 .brandBlock {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.accessPanel {
-  margin: 2rem auto 0;
-  width: min(100%, 23.5rem);
-  padding: 1.25rem;
-  border: 1px solid var(--color-ink);
-  border-radius: 0;
-  background: var(--color-surface);
-  /* Sombra DURA, sem desfoque: a mesma de qualquer sobreposicao do sistema
-     (`--overlay-shadow`), que no tema escuro e `none` de proposito. */
-  box-shadow: var(--overlay-shadow);
 }
 
 .accessLine {
@@ -64,10 +57,5 @@
 @media (max-width: 640px) {
   .shell {
     padding: 1.5rem 1rem;
-  }
-
-  .accessPanel {
-    margin-top: 1.65rem;
-    padding: 1rem;
   }
 }

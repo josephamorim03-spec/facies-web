@@ -17,6 +17,14 @@ function tokens(theme) {
   const body = css.match(re)?.[1] ?? "";
   const out = {};
   for (const m of body.matchAll(/(--[\w-]+):\s*(#[0-9A-Fa-f]{6})/g)) out[m[1]] = m[2];
+
+  // Alias por `var()`: `--area-full-exam: var(--color-primary)`. Sem resolver,
+  // o token some da tabela e o par nunca e' medido — em silencio, porque o
+  // `continue` la embaixo trata "nao achei" e "nao precisa" do mesmo jeito.
+  for (const m of body.matchAll(/(--[\w-]+):\s*var\((--[\w-]+)\)/g)) {
+    const resolved = out[m[2]];
+    if (resolved) out[m[1]] = resolved;
+  }
   return out;
 }
 
@@ -57,6 +65,16 @@ const BACKGROUND = ["--color-paper", "--color-surface", "--color-surface-muted",
 const INVERTED = [
   ["--color-primary-ink", "--color-primary"],
   ["--color-accent-ink", "--color-accent"],
+  // Area como FUNDO. No claro os tons EGA sao escuros e no escuro sao
+  // quase-brancos, entao a tinta que serve nos dois e' `--color-paper` — nunca
+  // branco literal, que passa no claro (8:1) e quebra no escuro (1,8:1).
+  ["--color-paper", "--area-cm"],
+  ["--color-paper", "--area-cg"],
+  ["--color-paper", "--area-go"],
+  ["--color-paper", "--area-ob"],
+  ["--color-paper", "--area-ped"],
+  ["--color-paper", "--area-mp"],
+  ["--color-paper", "--area-ou"],
 ];
 
 /** Limite de componente (WCAG 1.4.11): borda contra o que ela separa. */
@@ -79,7 +97,15 @@ for (const theme of ["light", "dark"]) {
     for (const bg of BACKGROUND) {
       const a = get(fg);
       const b = get(bg);
-      if (!a || !b) continue;
+      if (!a || !b) {
+        // Nao medir e' um resultado, e precisa aparecer. Antes isto era um
+        // `continue` mudo: um token renomeado saia da cobertura sem ninguem ver.
+        failures += 1;
+        console.error(
+          `${theme}: ${!a ? fg : bg} nao resolveu para uma cor — par ${fg}/${bg} NAO foi medido.`,
+        );
+        continue;
+      }
       const r = ratio(a, b);
       if (r < TEXT_MIN) {
         failures += 1;

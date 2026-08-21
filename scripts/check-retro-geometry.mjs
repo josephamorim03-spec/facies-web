@@ -79,6 +79,13 @@ const RULES = [
     catches: 'className="bg-success text-white"',
     ignores: 'className="bg-success text-paper"',
   },
+  {
+    label:
+      'branco/preto literal em style (color: "white") — escapa da classe E do gate de contraste',
+    pattern: /:\s*["'](?:white|black|#fff{1,2}|#000{1,3})["']/i,
+    catches: 'style={{ color: "white" }}',
+    ignores: 'style={{ color: "var(--color-paper)" }}',
+  },
 ];
 
 /**

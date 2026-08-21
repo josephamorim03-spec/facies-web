@@ -478,13 +478,22 @@ export function CalendarGrid({
                         className={`flex w-full items-center gap-1 border border-edge bg-surface px-1 py-0.5 ${barH} overflow-hidden`}
                         style={{ opacity: 0.7 }}
                       >
-                        {/* Faixa da area: 3px solidos. Le de relance como a
-                            barra cheia lia, sem sequestrar o fundo do texto. */}
+                        {/* Faixa de 6px + sigla na cor da area. O fundo segue
+                            neutro: area como fundo com texto por cima nao passa
+                            no escuro, onde os tons EGA sao quase-brancos. */}
                         <span
                           aria-hidden="true"
-                          className="h-full w-[3px] shrink-0 self-stretch"
+                          className="h-full w-[6px] shrink-0 self-stretch"
                           style={{ backgroundColor: dot.color }}
                         />
+                        {dot.areaCode ? (
+                          <span
+                            className="shrink-0 font-bold uppercase leading-none"
+                            style={{ fontSize: chipFontSize, color: dot.color }}
+                          >
+                            {dot.areaCode}
+                          </span>
+                        ) : null}
                         <span
                           className="shrink-0 font-bold leading-none tabular-nums text-ink"
                           style={{ fontSize: chipFontSize }}
@@ -580,9 +589,17 @@ export function CalendarGrid({
                     >
                       <span
                         aria-hidden="true"
-                        className="h-full w-[3px] shrink-0 self-stretch"
+                        className="h-full w-[6px] shrink-0 self-stretch"
                         style={{ backgroundColor: dot.color }}
                       />
+                      {dot.areaCode ? (
+                        <span
+                          className="shrink-0 font-bold uppercase leading-none"
+                          style={{ fontSize: chipFontSize, color: dot.color }}
+                        >
+                          {dot.areaCode}
+                        </span>
+                      ) : null}
                       <span
                         className="shrink-0 font-bold leading-none tabular-nums text-ink"
                         style={{ fontSize: chipFontSize }}

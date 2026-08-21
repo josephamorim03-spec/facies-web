@@ -642,6 +642,8 @@ async function mockApi(page) {
         energy_source: "daily_checkin",
         interruption_risk: true,
         interruption_reason: "plantao",
+        blocked_hours_today: 12,
+        predicted_minutes: 60,
       });
     }
     if (method === "GET" && path === "/api/reviews/agenda") {

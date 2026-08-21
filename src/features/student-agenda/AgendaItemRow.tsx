@@ -1,11 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import { SquareAlert as AlertTriangle, CheckDouble as CheckCircle2, Clock as Clock3 } from "pixelarticons/react";
+import {
+  SquareAlert as AlertTriangle,
+  BookOpen,
+  Calendar,
+  CheckDouble as CheckCircle2,
+  Clock as Clock3,
+  Copy,
+  ListBox,
+  Repeat,
+} from "pixelarticons/react";
 
 import AreaDot from "@/components/AreaDot";
 import { displayAreaLabel, resolveDisplayArea } from "@/lib/areaDisplay";
 import type { StudentAgendaItem } from "@/lib/api";
+
+/**
+ * Icone por TIPO de item, nao por status.
+ *
+ * O fallback anterior era um relogio para tudo que nao tinha area — e revisao de
+ * flashcards e transversal, nao tem area. Resultado: "Cards no ponto" aparecia
+ * com mostrador de relogio, que e' o que o aluno reportou.
+ *
+ * O relogio sobra so para `calendar_event`, onde ele e' literal: um bloco de
+ * tempo reservado na agenda.
+ */
+const KIND_ICON: Record<StudentAgendaItem["kind"], typeof Copy> = {
+  flashcard_review: Copy,
+  question_session: ListBox,
+  review_task: Repeat,
+  directed_study: BookOpen,
+  plan_activity: BookOpen,
+  calendar_event: Clock3,
+};
 
 const STATUS_LABEL: Record<StudentAgendaItem["status"], string> = {
   scheduled: "Prevista",
@@ -19,6 +47,7 @@ const STATUS_LABEL: Record<StudentAgendaItem["status"], string> = {
 export function AgendaItemRow({ item }: { item: StudentAgendaItem }) {
   const area = item.area ? resolveDisplayArea(item.area, item.title, item.rationale) : null;
   const manageHref = `/cronograma?view=month&anchor=${item.date}&day=${item.date}`;
+  const KindIcon = KIND_ICON[item.kind] ?? Clock3;
 
   return (
     <li data-agenda-occurrence-id={item.occurrence_id} className="py-3">
@@ -30,7 +59,7 @@ export function AgendaItemRow({ item }: { item: StudentAgendaItem }) {
       ) : item.status === "overdue" ? (
         <AlertTriangle className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
       ) : (
-        <Clock3 className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+        <KindIcon className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
       )}
       <div className="min-w-0 flex-1">
         {item.href ? (

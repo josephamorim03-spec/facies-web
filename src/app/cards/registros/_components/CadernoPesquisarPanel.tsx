@@ -93,19 +93,15 @@ export function CadernoPesquisarPanel({
                     if (next.has(a)) next.delete(a); else next.add(a);
                     return next;
                   })}
+                  aria-pressed={selected}
                   style={{
-                    backgroundColor: selected
-                      ? areaColor
-                      : hasSelection
-                        ? "var(--color-surface)"
-                        : `color-mix(in srgb, ${areaColor} 14%, var(--color-surface))`,
-                    borderColor: selected
-                      ? areaColor
-                      : `color-mix(in srgb, ${areaColor} 38%, var(--color-edge))`,
-                    color: selected ? "white" : (hasSelection ? "var(--color-muted)" : areaColor),
+                    borderColor: areaColor,
+                    color: hasSelection && !selected ? "var(--color-muted)" : areaColor,
                     opacity: hasSelection && !selected ? 0.66 : 1,
                   }}
-                  className="min-h-[2.25rem] min-w-14 border px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[background-color,border-color,color,opacity] duration-150 hover:opacity-100"
+                  className={`min-h-[2.25rem] min-w-14 border bg-surface px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[color,opacity] duration-150 hover:opacity-100 ${
+                    selected ? "chrome-sunken" : "chrome-raised"
+                  }`}
                 >
                   {a}
                 </button>

@@ -80,7 +80,7 @@ export function runnerSession(overrides: Record<string, unknown> = {}) {
   const items = (overrides.items as unknown[]) ?? [runnerItem(1), runnerItem(2), runnerItem(3)];
   return {
     session_id: RUNNER_SESSION_ID,
-    status: "in_progress",
+    status: "active",
     mode: "by_topic",
     resolution_mode: "simulation",
     session_purpose: "practice",
@@ -135,7 +135,11 @@ export function runnerSession(overrides: Record<string, unknown> = {}) {
  */
 export async function mockQuestionSession(
   page: Page,
-  options: { session?: Record<string, unknown>; onAttempt?: (body: unknown) => void } = {},
+  options: {
+    session?: Record<string, unknown>;
+    onAttempt?: (body: unknown) => void;
+    onReveal?: (position: number) => void;
+  } = {},
 ) {
   await addHttpOnlySessionForPage(page, "runner_session");
 
@@ -166,6 +170,33 @@ export async function mockQuestionSession(
               answered: Boolean(body.selected_option),
               answer_committed: Boolean(body.commit),
               answer_state: body.commit ? "committed" : "draft",
+            }
+          : item,
+      );
+      current = { ...current, items };
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(current),
+      });
+    },
+  );
+
+  await page.route(
+    `**/api/question-bank/sessions/${RUNNER_SESSION_ID}/items/*/feedback/reveal`,
+    async (route) => {
+      const position = Number(new URL(route.request().url()).pathname.split("/").at(-3));
+      options.onReveal?.(position);
+      const items = (current.items as ReturnType<typeof runnerItem>[]).map((item) =>
+        item.position === position
+          ? {
+              ...item,
+              // Espelha o `_session_out`: a visibilidade e' POR ITEM, e nasce de
+              // `feedback_revealed_at`. Os demais itens seguem fechados.
+              feedback_state: "revealed",
+              correct_answer: "A",
+              is_correct: item.selected_option === "A",
+              result_state: item.selected_option === "A" ? "correct" : "incorrect",
             }
           : item,
       );
