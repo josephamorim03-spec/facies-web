@@ -90,3 +90,25 @@ test.describe("Revisao turbo no mobile", () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+test.describe("Navegar entre cards", () => {
+  test.beforeEach(async ({ context, page }) => {
+    await forceDesktopNavigation(page);
+    await addHttpOnlySession(context);
+    await mockTurboApi(page);
+  });
+
+  test("anterior e proximo existem como botao, nao so como gesto", async ({ page }) => {
+    // O swipe continua, mas era a UNICA porta: invisivel no desktop e
+    // inalcancavel por teclado ou leitor de tela.
+    await page.goto("/cards");
+    await page.getByTestId("turbo-start").click();
+    await expect(page.getByTestId("turbo-card")).toBeVisible();
+
+    const nav = page.getByRole("navigation", { name: "Navegar entre cards" });
+    await expect(nav).toBeVisible();
+    // No primeiro card nao ha para onde voltar, e o botao diz isso.
+    await expect(nav.getByRole("button", { name: /Anterior/ })).toBeDisabled();
+    await expect(nav.getByRole("button", { name: /Próximo/ })).toBeVisible();
+  });
+});

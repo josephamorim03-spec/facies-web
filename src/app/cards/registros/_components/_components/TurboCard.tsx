@@ -62,6 +62,13 @@ export type TurboCardProps = {
   sessionDone: boolean;
   cardState: UseTurboCardStateReturn;
   onRateAction: (result: OperationalTurboResult) => void | Promise<void>;
+  // Navegar entre cards existia so' como GESTO. Quem revisa no computador, com
+  // teclado ou com leitor de tela nao tinha como voltar um card — e voltar e' o
+  // que se quer justamente quando a resposta passou rapido demais.
+  canSwipePrev: boolean;
+  canSwipeNext: boolean;
+  onNavigatePrevAction: () => void | Promise<void>;
+  onNavigateNextAction: () => void | Promise<void>;
   // Timer state (owned by panel)
   timerEnabled: boolean;
   setTimerEnabled: React.Dispatch<React.SetStateAction<boolean>>;
@@ -85,6 +92,10 @@ export function TurboCard({
   sessionDone,
   cardState,
   onRateAction,
+  canSwipePrev,
+  canSwipeNext,
+  onNavigatePrevAction,
+  onNavigateNextAction,
   timerEnabled,
   setTimerEnabled,
   progressEnabled,
@@ -264,6 +275,28 @@ export function TurboCard({
           )}
         </div>
       </div>
+
+      {/* Navegar entre cards — o gesto continua, isto e' a superficie visivel
+          dele. Sem botao, o swipe era a UNICA porta: invisivel no desktop e
+          inalcancavel por teclado. */}
+      <nav aria-label="Navegar entre cards" className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          disabled={!canSwipePrev || turboLoading || isActionLocked}
+          onClick={() => void onNavigatePrevAction()}
+          className="inline-flex min-h-10 items-center border border-edge bg-surface px-3 text-xs font-semibold text-muted transition-colors enabled:hover:text-ink disabled:opacity-40"
+        >
+          ← Anterior
+        </button>
+        <button
+          type="button"
+          disabled={!canSwipeNext || turboLoading || isActionLocked}
+          onClick={() => void onNavigateNextAction()}
+          className="inline-flex min-h-10 items-center border border-edge bg-surface px-3 text-xs font-semibold text-muted transition-colors enabled:hover:text-ink disabled:opacity-40"
+        >
+          Próximo →
+        </button>
+      </nav>
 
       {/* Rating buttons */}
       {cardState.showAnswer && (

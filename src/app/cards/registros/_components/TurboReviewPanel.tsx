@@ -234,6 +234,10 @@ export function TurboReviewPanel({
             sessionDone={sessionDone}
             cardState={cardState}
             onRateAction={onRateAction}
+            canSwipePrev={canSwipePrev}
+            canSwipeNext={canSwipeNext}
+            onNavigatePrevAction={onNavigatePrevAction}
+            onNavigateNextAction={onNavigateNextAction}
             timerEnabled={timerEnabled}
             setTimerEnabled={setTimerEnabled}
             progressEnabled={progressEnabled}
