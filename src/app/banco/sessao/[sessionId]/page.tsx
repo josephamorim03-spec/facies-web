@@ -19,6 +19,7 @@ import {
   recordQuestionBankEvents,
   reportQuestionBankSessionItem,
   requestQuestionBankAICorrection,
+  revealQuestionBankItemFeedback,
   submitQuestionBankGuidedReview,
   setQuestionBankBookmark,
   setQuestionBankSessionFeedbackPolicy,
@@ -159,16 +160,21 @@ export default function SessionPage() {
     setError(null);
     const elapsedMs = Date.now() - questionStartTimeRef.current;
     try {
-      const updated = item.answer_committed
-        ? session
-        : await recordQuestionBankAttempt(token, session.session_id, position, {
-            selected_option: item.selected_option,
-            time_ms: elapsedMs,
-            doubtful: item.doubtful,
-            confidence_self_rating: item.confidence_self_rating ?? confidenceRatings[position] ?? null,
-            eliminated_options: item.eliminated_options ?? [],
-            commit: true,
-          });
+      if (!item.answer_committed) {
+        await recordQuestionBankAttempt(token, session.session_id, position, {
+          selected_option: item.selected_option,
+          time_ms: elapsedMs,
+          doubtful: item.doubtful,
+          confidence_self_rating: item.confidence_self_rating ?? confidenceRatings[position] ?? null,
+          eliminated_options: item.eliminated_options ?? [],
+          commit: true,
+        });
+      }
+      const updated = await revealQuestionBankItemFeedback(
+        token,
+        session.session_id,
+        position,
+      );
       setSession(updated);
       setRevealedPositions((prev) => ({ ...prev, [position]: true }));
       enqueueStudentEvent(position, "answer_revealed", {
@@ -1043,8 +1049,14 @@ export default function SessionPage() {
   // Items worth re-testing at the end of a training session: missed or hesitated.
   const fixacaoItems = session.items.filter((i) => i.answered && (i.is_correct === false || i.doubtful));
 
-  // Training mode
-  if (session.resolution_mode === "training") {
+  // Feedback por questao.
+  //
+  // O eixo e' `feedback_timing`, e nao `resolution_mode`: o segundo esta pinado
+  // em "simulation" para toda sessao nova — pontuar ao finalizar e' decisao de
+  // produto — e era exatamente por isso que este ramo, a tela inteira de
+  // responder-e-conferir, estava inalcancavel. O banco anunciava "feedback por
+  // questao" no botao e entregava correcao so no fim.
+  if (session.feedback_timing === "immediate") {
     if (showFixacao && fixacaoItems.length > 0) {
       return <FixacaoRound items={fixacaoItems} onExit={() => setShowFixacao(false)} />;
     }

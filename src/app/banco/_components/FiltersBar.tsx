@@ -5,13 +5,13 @@ import type {
   FullExamType,
   QuestionBankAnswerStatus,
   QuestionBankCorrectionStatus,
-  QuestionBankResolutionMode,
   QuestionBankSourceOption,
   QuestionBankStateOption,
   QuestionBankTopic,
   QuestionBankYearStat,
   StudyKind,
 } from "@/lib/api";
+import { CORRECTION_MODE_SHORT_LABEL, type CorrectionMode } from "../_lib/sessionBuilder";
 import { TopicTreeList } from "./TopicTreeList";
 import { buildTopicTree, flattenTopicTree, topicPathLabel } from "./topicTree";
 import BancaPicker from "./BancaPicker";
@@ -89,9 +89,10 @@ const TIPO_OPTIONS: { value: "topic" | "full_exam"; label: string; help: string 
   { value: "full_exam", label: "Prova institucional", help: "Uma instituição e um ano." },
 ];
 
-const CORRECAO_OPTIONS: { value: QuestionBankResolutionMode; label: string; help: string }[] = [
-  { value: "simulation", label: "Escolher por questão", help: "Depois do resultado, revise o raciocínio ou revele cada feedback." },
-  { value: "training", label: "Revelar tudo ao finalizar", help: "Mostra gabarito e comentários de todas após concluir." },
+const CORRECAO_OPTIONS: { value: CorrectionMode; label: string; help: string }[] = [
+  { value: "immediate", label: "A cada questão", help: "Você responde, confere na hora e segue. O comentário abre logo abaixo." },
+  { value: "guided_choice", label: "Ao terminar, uma a uma", help: "Termina tudo primeiro; depois revisa o raciocínio ou revela questão por questão." },
+  { value: "reveal_all", label: "Ao terminar, tudo de uma vez", help: "Termina tudo primeiro; o gabarito e os comentários abrem juntos." },
 ];
 
 export type FiltersBarProps = {
@@ -129,8 +130,8 @@ export type FiltersBarProps = {
   onAnswerStatusChange: (v: QuestionBankAnswerStatus) => void;
   correctionStatus: QuestionBankCorrectionStatus;
   onCorrectionStatusChange: (v: QuestionBankCorrectionStatus) => void;
-  resolutionMode: QuestionBankResolutionMode;
-  onResolutionModeChange: (v: QuestionBankResolutionMode) => void;
+  correctionMode: CorrectionMode;
+  onCorrectionModeChange: (v: CorrectionMode) => void;
   studyKind: StudyKind;
   onStudyKindChange: (v: StudyKind) => void;
   fullExamName: string;
@@ -252,7 +253,7 @@ export default function FiltersBar(props: FiltersBarProps) {
     selectedYears, onSelectedYearsChange, includeNoYear, onIncludeNoYearChange,
     answerStatus, onAnswerStatusChange,
     correctionStatus, onCorrectionStatusChange,
-    resolutionMode, onResolutionModeChange, studyKind, onStudyKindChange,
+    correctionMode, onCorrectionModeChange, studyKind, onStudyKindChange,
     fullExamName, onFullExamNameChange, fullExamYear, onFullExamYearChange,
     fullExamType, onFullExamTypeChange,
     limit, clampedLimit, maxSelectable, limitMax, onLimitChange, focusTopicId, onQuantityEditingChange,
@@ -323,7 +324,7 @@ export default function FiltersBar(props: FiltersBarProps) {
   // aluno não via como a prova seria corrigida até terminá-la.
   const modeLabel = [
     studyKind === "full_exam" ? "Prova institucional" : "Por tópico",
-    resolutionMode === "simulation" ? "feedback por questão" : "revelação ao finalizar",
+    CORRECTION_MODE_SHORT_LABEL[correctionMode],
   ].join(" · ");
   const statusLabel = deriveRealizacaoLabel(realizacaoState);
   const selectedSourceCount = boardCodes.length + examCodes.length + institutions.length;
@@ -592,16 +593,16 @@ export default function FiltersBar(props: FiltersBarProps) {
           <legend className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
             Como corrigir
           </legend>
-          <div className="mt-2 grid gap-3 md:grid-cols-2">
+          <div className="mt-2 grid gap-3 md:grid-cols-3">
             {CORRECAO_OPTIONS.map((option) => (
               <button
                 key={option.value}
                 type="button"
-                aria-pressed={resolutionMode === option.value}
-                onClick={() => onResolutionModeChange(option.value)}
+                aria-pressed={correctionMode === option.value}
+                onClick={() => onCorrectionModeChange(option.value)}
                 className={cx(
                   "border p-4 text-left transition-colors",
-                  resolutionMode === option.value
+                  correctionMode === option.value
                     ? "border-primary bg-surfaceMuted"
                     : "border-edge bg-surface hover:border-primary",
                 )}

@@ -116,12 +116,31 @@ export function getActiveFilters(params: {
   return filters;
 }
 
-export function questionBankCtaLabel(limit: number, resolutionMode: "training" | "simulation", studyKind: string): string {
+/** Quando o aluno vê o gabarito. Um eixo, três posições, sem sinônimo. */
+export type CorrectionMode = "immediate" | "guided_choice" | "reveal_all";
+
+/** O que o botão promete. Precisa ser o que a sessão entrega — durante um bom
+ *  tempo ele anunciou "feedback por questão" para uma sessão que só corrigia no
+ *  fim, porque o rótulo era derivado de `resolutionMode`, que nada tem a ver
+ *  com o momento do gabarito. */
+export const CORRECTION_MODE_LABEL: Record<CorrectionMode, string> = {
+  immediate: "Corrigir a cada questão",
+  guided_choice: "Corrigir ao terminar, uma a uma",
+  reveal_all: "Corrigir tudo ao terminar",
+};
+
+export const CORRECTION_MODE_SHORT_LABEL: Record<CorrectionMode, string> = {
+  immediate: "corrige a cada questão",
+  guided_choice: "corrige ao terminar, uma a uma",
+  reveal_all: "corrige tudo ao terminar",
+};
+
+export function questionBankCtaLabel(limit: number, correctionMode: CorrectionMode, studyKind: string): string {
   // A correção aparece nos DOIS tipos. Antes a prova institucional retornava
   // cedo e omitia como seria corrigida — e como escolher a prova sobrescrevia a
   // correção em silêncio, o aluno não tinha nenhum lugar onde ver o que ia
   // receber.
-  const correction = resolutionMode === "training" ? "revelar ao final" : "feedback por questão";
+  const correction = CORRECTION_MODE_SHORT_LABEL[correctionMode];
   if (studyKind === "full_exam") return `Começar prova · ${limit} questões · ${correction}`;
   return `Começar ${limit} questões · ${correction}`;
 }

@@ -65,7 +65,10 @@ test("filter count includes the default access-direct choice and quantity is cla
     search: "",
     defaultExamCodes: ["ACESSO-DIRETO"],
   }).map((filter) => filter.label), ["Puericultura", "Acesso Direto"]);
-  assert.equal(questionBankCtaLabel(10, "simulation", "topic"), "Começar 10 questões · feedback por questão");
+  assert.equal(
+    questionBankCtaLabel(10, "immediate", "topic"),
+    "Começar 10 questões · corrige a cada questão",
+  );
 });
 
 test("o CTA diz como sera corrigido tambem na prova institucional", () => {
@@ -73,19 +76,20 @@ test("o CTA diz como sera corrigido tambem na prova institucional", () => {
   // prova SOBRESCREVIA a correcao em silencio, o aluno nao tinha nenhum lugar
   // onde ver o que ia receber. Os dois eixos aparecem sempre.
   assert.equal(
-    questionBankCtaLabel(100, "training", "full_exam"),
-    "Começar prova · 100 questões · revelar ao final",
+    questionBankCtaLabel(100, "reveal_all", "full_exam"),
+    "Começar prova · 100 questões · corrige tudo ao terminar",
   );
   assert.equal(
-    questionBankCtaLabel(100, "simulation", "full_exam"),
-    "Começar prova · 100 questões · feedback por questão",
+    questionBankCtaLabel(100, "guided_choice", "full_exam"),
+    "Começar prova · 100 questões · corrige ao terminar, uma a uma",
   );
 });
 
 test("tipo de estudo e correcao sao eixos independentes no rotulo", () => {
-  const porTopico = questionBankCtaLabel(20, "training", "topic");
-  const prova = questionBankCtaLabel(20, "training", "full_exam");
-  assert.ok(porTopico.endsWith("revelar ao final"));
-  assert.ok(prova.endsWith("revelar ao final"));
+  const porTopico = questionBankCtaLabel(20, "reveal_all", "topic");
+  const prova = questionBankCtaLabel(20, "reveal_all", "full_exam");
+  // Mesma correcao nos dois: o que muda e' so o tipo de estudo.
+  assert.ok(porTopico.endsWith("corrige tudo ao terminar"));
+  assert.ok(prova.endsWith("corrige tudo ao terminar"));
   assert.notEqual(porTopico, prova);
 });

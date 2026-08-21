@@ -1,7 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { QuestionBankAvailability, QuestionBankResolutionMode, StudyKind } from "@/lib/api";
+
+import type { QuestionBankAvailability, StudyKind } from "@/lib/api";
+import { CORRECTION_MODE_LABEL, type CorrectionMode } from "../_lib/sessionBuilder";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 
@@ -77,7 +79,7 @@ type CreateSessionPanelProps = {
   loadingPreview: boolean;
   busy: boolean;
   clampedLimit: number;
-  resolutionMode: QuestionBankResolutionMode;
+  correctionMode: CorrectionMode;
   studyKind: StudyKind;
   canStartSession?: boolean;
   error?: string | null;
@@ -94,7 +96,7 @@ export default function CreateSessionPanel({
   loadingPreview,
   busy,
   clampedLimit,
-  resolutionMode,
+  correctionMode,
   studyKind,
   canStartSession = true,
   error,
@@ -107,7 +109,7 @@ export default function CreateSessionPanel({
 }: CreateSessionPanelProps) {
   const canStart = !busy && canStartSession && !!availability && availability.available_count > 0;
   const estimatedMinutes = Math.max(10, Math.ceil(clampedLimit * 1.5));
-  const modeLabel = resolutionMode === "simulation" ? "Escolher feedback por questão" : "Revelar tudo ao finalizar";
+  const modeLabel = CORRECTION_MODE_LABEL[correctionMode];
   const displayModeLabel = studyKind === "full_exam" ? "Prova institucional" : modeLabel;
   const distribution = availability
     ? `${availability.unanswered_count} novas · ${availability.answered_count} respondidas`

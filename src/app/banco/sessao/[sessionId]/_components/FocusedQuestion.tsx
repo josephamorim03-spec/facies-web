@@ -947,18 +947,6 @@ export default function FocusedQuestion({
           </section>
         )}
 
-        {canReveal && (
-          <section className="mt-5 flex justify-center">
-            <button
-              type="button"
-              onClick={onReveal}
-              className="border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            >
-              Ver gabarito
-            </button>
-          </section>
-        )}
-
         {canUsePostAnswerActions && (
           <section className="mt-5 border border-edge bg-surface p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1240,14 +1228,25 @@ export default function FocusedQuestion({
               >
                 Anterior
               </button>
-              <button
-                type="button"
-                disabled={!canNext}
-                onClick={onNext}
-                className="border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              >
-                Próxima
-              </button>
+              {canReveal ? (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={onReveal}
+                  className="border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  Responder
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={!canNext}
+                  onClick={onNext}
+                  className="border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  Próxima
+                </button>
+              )}
               {onFixar && fixacaoCount ? (
                 <button
                   type="button"

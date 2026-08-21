@@ -42,10 +42,12 @@ import { filterTopicsLocally } from "./_components/topicTree";
 import {
   QUESTION_BANK_LIMIT_CAP,
   clampQuestionLimit,
+  CORRECTION_MODE_SHORT_LABEL,
   getActiveFilters,
   parseQuestionBankEntryContext,
   questionBankCtaLabel,
   resolveEntryTopic,
+  type CorrectionMode,
   type QuestionBankEntryContext,
 } from "./_lib/sessionBuilder";
 
@@ -301,9 +303,7 @@ function BancoDeQuestoesContent() {
   const [answerStatus, setAnswerStatus] = useState<QuestionBankAnswerStatus>("unanswered");
   const [correctionStatus, setCorrectionStatus] = useState<QuestionBankCorrectionStatus>("all");
   const [limit, setLimit] = useState(() => clampQuestionLimit(initialContext.expectedQuestions ?? 10));
-  const [resolutionMode, setResolutionMode] = useState<QuestionBankResolutionMode>(
-    "simulation",
-  );
+  const [correctionMode, setCorrectionMode] = useState<CorrectionMode>("guided_choice");
   const [studyKind, setStudyKind] = useState<StudyKind>("topic");
   const [fullExamName, setFullExamName] = useState("");
   const [fullExamYear, setFullExamYear] = useState(() => String(new Date().getFullYear()));
@@ -365,7 +365,7 @@ function BancoDeQuestoesContent() {
       ? "near_miss"
       : answerStatus === "wrong" || answerStatus === "needs_review"
         ? "weakness"
-        : studyKind === "full_exam" || resolutionMode === "simulation"
+        : studyKind === "full_exam" || correctionMode !== "immediate"
           ? "simulation"
           : "learning";
 
@@ -402,7 +402,7 @@ function BancoDeQuestoesContent() {
     setCommittedSearch(context.source ? "" : (context.theme ?? "").trim());
     setCorrectionStatus("all");
     setLimit(clampQuestionLimit(context.expectedQuestions ?? 10));
-    setResolutionMode("simulation");
+    setCorrectionMode("guided_choice");
     setStudyKind(opensInstitutionalExam ? "full_exam" : "topic");
     setStateCodes([]);
     setSelectedTopics([]);
@@ -422,10 +422,12 @@ function BancoDeQuestoesContent() {
     getProfile(token)
       .then((profile) => {
         setHasChosenFeedbackDefault(profile.has_chosen_feedback_default);
-        setResolutionMode(
-          profile.default_feedback_reveal_policy === "reveal_all"
-            ? "training"
-            : "simulation",
+        setCorrectionMode(
+          profile.default_feedback_timing === "immediate"
+            ? "immediate"
+            : profile.default_feedback_reveal_policy === "reveal_all"
+              ? "reveal_all"
+              : "guided_choice",
         );
       })
       .catch(() => setHasChosenFeedbackDefault(true));
@@ -844,9 +846,9 @@ function BancoDeQuestoesContent() {
           : selectedTopics.length > 1
             ? "bank_combined"
             : "bank_topic",
-      feedback_timing: "post_result",
+      feedback_timing: correctionMode === "immediate" ? "immediate" : "post_result",
       feedback_reveal_policy:
-        resolutionMode === "training" ? "reveal_all" : "guided_choice",
+        correctionMode === "reveal_all" ? "reveal_all" : "guided_choice",
       mode: studyKind === "full_exam" ? "by_exam" : "by_topic",
       resolution_mode: "simulation",
       study_kind: studyKind,
@@ -887,9 +889,9 @@ function BancoDeQuestoesContent() {
       try {
         await updateProfile(token, {
           default_feedback_timing:
-            "post_result",
+            correctionMode === "immediate" ? "immediate" : "post_result",
           default_feedback_reveal_policy:
-            resolutionMode === "training" ? "reveal_all" : "guided_choice",
+            correctionMode === "reveal_all" ? "reveal_all" : "guided_choice",
           has_chosen_feedback_default: true,
         });
       } catch (cause) {
@@ -910,7 +912,7 @@ function BancoDeQuestoesContent() {
   }
 
   const canStartConfigured = !busy && (studyKind !== "full_exam" || fullExamReady) && !!availability && availability.available_count > 0;
-  const configuredStartLabel = questionBankCtaLabel(clampedLimit, resolutionMode, studyKind);
+  const configuredStartLabel = questionBankCtaLabel(clampedLimit, correctionMode, studyKind);
   // Zero questoes tem causas diferentes e acoes diferentes. Sem dizer qual, a
   // tela so mostra "Max. 0" e um botao morto — foi o que fez o filtro parecer
   // quebrado.
@@ -1017,8 +1019,8 @@ function BancoDeQuestoesContent() {
                   onAnswerStatusChange={handleAnswerStatusChange}
                   correctionStatus={correctionStatus}
                   onCorrectionStatusChange={handleCorrectionStatusChange}
-                  resolutionMode={resolutionMode}
-                  onResolutionModeChange={setResolutionMode}
+                  correctionMode={correctionMode}
+                  onCorrectionModeChange={setCorrectionMode}
                   studyKind={studyKind}
                   onStudyKindChange={setStudyKind}
                   fullExamName={fullExamName}
@@ -1043,7 +1045,7 @@ function BancoDeQuestoesContent() {
               loadingPreview={loadingPreview}
               busy={busy}
               clampedLimit={clampedLimit}
-              resolutionMode={resolutionMode}
+              correctionMode={correctionMode}
               studyKind={studyKind}
               canStartSession={studyKind !== "full_exam" || fullExamReady}
               error={error}
@@ -1092,11 +1094,7 @@ function BancoDeQuestoesContent() {
       <ConfirmDialog
         open={feedbackDefaultPromptOpen}
         title="Usar esta correção como padrão?"
-        message={`Você escolheu ${
-          resolutionMode === "training"
-            ? "revelar tudo ao finalizar"
-            : "escolher o feedback por questão"
-        }. Esta preferência pode ser alterada depois.`}
+        message={`Você escolheu ${CORRECTION_MODE_SHORT_LABEL[correctionMode]}. Esta preferência pode ser alterada depois.`}
         cancelLabel="Só nesta sessão"
         confirmLabel="Usar como padrão"
         onCancel={() => void continueAfterFeedbackPrompt(false)}
