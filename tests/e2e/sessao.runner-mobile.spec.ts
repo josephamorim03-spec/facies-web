@@ -122,11 +122,16 @@ test.describe("Feedback por questao", () => {
     await expect(confirmar).toBeVisible();
     await confirmar.click();
 
+    // O efeito visivel primeiro: `toBeVisible` re-tenta, e e ele que espera a
+    // ida ao servidor terminar. As duas assercoes abaixo NAO re-tentam — postas
+    // antes desta, passavam isoladas e falhavam na suite cheia, onde a maquina
+    // esta carregada e a resposta de revelar ainda nao voltou.
+    await expect(page.getByText("Correto", { exact: true })).toBeVisible();
+
     // A confirmacao COMPROMETE a resposta — e o que separa escolher de responder.
     expect(attempts.some((body) => (body as { commit?: boolean }).commit === true)).toBe(true);
     expect(revealed).toEqual([1]);
 
-    await expect(page.getByText("Correto", { exact: true })).toBeVisible();
     // E o passo seguinte volta a ser avancar, no mesmo lugar do rodape.
     await expect(page.getByRole("button", { name: "Próxima" })).toBeVisible();
   });
