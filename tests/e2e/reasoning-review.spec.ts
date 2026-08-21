@@ -209,6 +209,11 @@ test("keeps feedback concealed, finds the first self-reported gap, then reveals 
 
   await expect(page.getByRole("heading", { name: "Infarto inferior" })).toBeVisible();
   await expect(page.getByText("Gabarito A", { exact: true })).toHaveCount(0);
+
+  // A revisao do raciocinio deixou de ser um botao por item e virou etapa
+  // propria (`CorrecaoStage`), ANTES do gabarito: enterrada na lista, quem nao
+  // abrisse item por item nunca descobria que ela existia.
+  await page.getByRole("button", { name: /Localizar a lacuna/ }).click();
   await expect(page.getByRole("button", { name: "Revisar raciocínio" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Revelar resposta e comentários" })).toBeVisible();
 

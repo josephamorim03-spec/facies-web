@@ -229,3 +229,50 @@ export async function mockQuestionSession(
     route.fulfill({ status: 200, contentType: "application/json", body: "{}" }),
   );
 }
+
+/**
+ * Sessao FINALIZADA com varias questoes, para exercitar a correcao pos-prova.
+ *
+ * O fixture do runner tem uma questao so'; a revisao pos-prova e' justamente a
+ * tela onde o numero de itens importa, porque o problema dela era navegar entre
+ * eles.
+ */
+export function finalizedSession(overrides: Record<string, unknown> = {}) {
+  const outcomes = [true, false, true, false, false];
+  const items = outcomes.map((correct, index) =>
+    runnerItem(index + 1, {
+      selected_option: correct ? "A" : "B",
+      answered: true,
+      answer_committed: true,
+      answer_state: "committed",
+      feedback_state: "revealed",
+      correct_answer: "A",
+      is_correct: correct,
+      result_state: correct ? "correct" : "incorrect",
+      doubtful: index === 3,
+    }),
+  );
+  const timestamp = "2026-08-21T16:00:00Z";
+  return runnerSession({
+    status: "finalized",
+    finalized_at: timestamp,
+    results_revealed_at: timestamp,
+    all_feedback_revealed: true,
+    answered_count: items.length,
+    unanswered_count: 0,
+    unanswered_question_numbers: [],
+    doubtful_count: 1,
+    items,
+    ...overrides,
+  });
+}
+
+export async function mockFinalizedSession(
+  page: Page,
+  overrides: Record<string, unknown> = {},
+) {
+  await mockQuestionSession(page, { session: finalizedSession(overrides) });
+  await page.route("**/api/question-bank/sessions/*/corrections", async (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) }),
+  );
+}

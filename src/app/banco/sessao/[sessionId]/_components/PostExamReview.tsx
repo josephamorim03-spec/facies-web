@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import type {
@@ -16,6 +16,7 @@ import { cognitivePatternSummary } from "@/lib/guidanceCopy";
 import ErrorFlashcardsPanel from "./ErrorFlashcardsPanel";
 import QuickNoteModal from "./QuickNoteModal";
 import AttemptHistoryModal from "../../../_components/AttemptHistoryModal";
+import { PostExamIndex } from "./_postExamReview/PostExamIndex";
 import { PostExamTabs } from "./_postExamReview/PostExamTabs";
 import { PostExamItemActions } from "./_postExamReview/PostExamItemActions";
 import { ReportedItemsPanel } from "./_postExamReview/ReportedItemsPanel";
@@ -68,6 +69,18 @@ export default function PostExamReview({
   const [activeTab, setActiveTab] = useState<PostExamReviewTab>(
     session.all_feedback_revealed ? "resumo" : "erros",
   );
+  const [cursor, setCursor] = useState(0);
+  const reviewTopRef = useRef<HTMLDivElement | null>(null);
+
+  /** Trocar de questao sem levar a rolagem junto deixa o aluno no MEIO do item
+   *  novo — o rodape de navegacao fica no fim da pagina, entao avancar o
+   *  colocava direto no pacote pedagogico, sem nunca ver o enunciado. */
+  function goToReviewIndex(next: number) {
+    setCursor(next);
+    requestAnimationFrame(() => {
+      reviewTopRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+  }
   const [dismissedInsights, setDismissedInsights] = useState(false);
   const [dismissedDiagnosisError, setDismissedDiagnosisError] = useState(false);
   const [quickNoteTarget, setQuickNoteTarget] = useState<QuickNoteTarget | null>(null);
@@ -386,7 +399,16 @@ export default function PostExamReview({
           />
         ) : null}
 
-        <PostExamTabs tabs={TABS} activeTab={activeTab} onSelect={setActiveTab} />
+        <PostExamTabs
+          tabs={TABS}
+          activeTab={activeTab}
+          onSelect={(tab) => {
+            setActiveTab(tab);
+            // Trocar o filtro recomeca a revisao no primeiro item dele. Manter o
+            // cursor mostraria a questao 12 de "Erros" ao abrir "Marcadas".
+            setCursor(0);
+          }}
+        />
 
         {/* Tab content */}
         {activeTab === "resumo" && detailedFeedbackAvailable && (
@@ -550,9 +572,22 @@ export default function PostExamReview({
             );
           }
 
+          // Uma questao por vez, com indice e anterior/proxima — o mesmo
+          // modelo do `ExamMap` que o aluno acabou de usar na prova. Antes esta
+          // aba despejava TODAS as questoes do conjunto com enunciado e
+          // alternativas abertos: revisar 25 erros de uma prova de 60 era uma
+          // rolagem sem indice, sem volta e sem fim.
+          const index = Math.min(Math.max(cursor, 0), displayItems.length - 1);
+          const current = displayItems[index];
+
           return (
-            <div className="grid gap-3">
-              {displayItems.map((item) => {
+            <div className="grid gap-3" ref={reviewTopRef}>
+              <PostExamIndex
+                items={displayItems}
+                currentPosition={current.position}
+                onSelect={goToReviewIndex}
+              />
+              {[current].map((item) => {
                 const selectedDiagnosis = item.selected_option ? item.distractor_diagnosis?.[item.selected_option] : null;
                 const correction = correctionByQuestionId.get(item.question_id);
                 const isExpanded = expandedCorrections.has(item.question_id);
@@ -771,6 +806,33 @@ export default function PostExamReview({
                   </article>
                 );
               })}
+
+              {displayItems.length > 1 && (
+                <nav
+                  aria-label="Navegar entre as questões revisadas"
+                  className="flex items-center justify-between gap-3 border-t border-edge pt-3"
+                >
+                  <button
+                    type="button"
+                    disabled={index === 0}
+                    onClick={() => goToReviewIndex(index - 1)}
+                    className="min-h-11 border border-edge px-4 text-sm font-semibold text-muted transition-colors enabled:hover:text-ink disabled:opacity-40"
+                  >
+                    Anterior
+                  </button>
+                  <p className="text-xs tabular-nums text-muted" aria-live="polite">
+                    {index + 1} de {displayItems.length}
+                  </p>
+                  <button
+                    type="button"
+                    disabled={index >= displayItems.length - 1}
+                    onClick={() => goToReviewIndex(index + 1)}
+                    className="min-h-11 border border-primary bg-primary px-4 text-sm font-semibold text-primaryInk transition enabled:hover:brightness-[1.04] disabled:opacity-40"
+                  >
+                    Próxima
+                  </button>
+                </nav>
+              )}
             </div>
           );
         })()}
