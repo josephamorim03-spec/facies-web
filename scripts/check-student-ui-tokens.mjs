@@ -26,7 +26,6 @@ const PAPER_SURFACES = [
   "src/app/rota/page.tsx",
   "src/app/rota/_components/KrosBaseline.tsx",
   "src/app/rota/_components/KrosModeChooser.tsx",
-  "src/app/rota/_components/KrosSizeSlider.tsx",
   "src/app/rota/_components/KrosComposition.tsx",
   "src/app/rota/loading.tsx",
   "src/components/student/StudentActionSurface.tsx",
