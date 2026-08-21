@@ -9,7 +9,8 @@ export type NavigationCognitiveLoad = "low" | "moderate" | "high";
  *
  * Os dois continuam sendo sempre perguntados. A rotina do aluno não substitui a
  * pergunta: ela fornece os presets e o valor pré-selecionado, para responder
- * custar um toque.
+ * custar um toque — mas a tela também aceita o tempo digitado, porque preset é
+ * atalho e não o conjunto das respostas possíveis.
  */
 export type NavigationPrompt = {
   /** Presets de tempo já informados pela rotina — não a lista fixa da spec. */

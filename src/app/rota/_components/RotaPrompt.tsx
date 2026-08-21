@@ -14,6 +14,12 @@ const ENERGY_OPTIONS: { value: NavigationEnergy; label: string }[] = [
   { value: "high", label: "Focado" },
 ];
 
+// Espelha `MIN_AVAILABLE_MINUTES`/`MAX_AVAILABLE_MINUTES` de
+// `navigation_route.py` — a mesma faixa que `NavigationRouteIn` valida. Tê-la
+// aqui é o que troca um 422 do servidor por uma frase legível antes do clique.
+const MIN_MINUTES = 5;
+const MAX_MINUTES = 480;
+
 type Props = {
   prompt: NavigationPrompt | null;
   busy?: boolean;
@@ -31,6 +37,11 @@ type Props = {
  * que o aluno costuma ter, não o que ele tem neste momento. O que a rotina faz
  * é tornar a resposta barata: os presets saem da capacidade estimada do dia (e
  * não de uma lista fixa), e a energia já chega pré-selecionada pelo check-in.
+ *
+ * Ainda assim preset é atalho, não o conjunto das respostas possíveis: a rotina
+ * descreve o dia típico, e hoje o aluno pode ter exatamente 35 minutos entre um
+ * plantão e outro. Por isso o campo livre convive com os atalhos e tem
+ * precedência sobre eles — digitar é dizer que nenhum atalho servia.
  */
 export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
   // O estado local guarda apenas o OVERRIDE do aluno. O valor sugerido é
@@ -38,6 +49,9 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
   // copiar criaria uma segunda fonte da mesma verdade, que fica velha quando o
   // prompt chega depois — exatamente o caso aqui, já que ele vem de uma query.
   const [minutes, setMinutes] = useState<number | null>(null);
+  // Texto cru, não número: guardar já convertido apagaria a diferença entre
+  // "vazio" e "inválido", e o aluno perderia no meio da digitação o que digitou.
+  const [typedMinutes, setTypedMinutes] = useState("");
   const [energy, setEnergy] = useState<NavigationEnergy | null>(null);
   const [interruption, setInterruption] = useState<boolean | null>(null);
 
@@ -49,7 +63,24 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
   const presets = Array.isArray(prompt?.presets) ? prompt.presets : [];
   if (!prompt || presets.length === 0) return null;
 
-  const selectedMinutes = minutes ?? prompt.suggested_minutes ?? presets[0];
+  // O campo livre vence o preset: havendo número digitado, ele é a última coisa
+  // que o aluno disse. Fora da faixa não vira valor — vira aviso e trava o
+  // botão, em vez de virar 422 depois do clique.
+  const rawMinutes = typedMinutes.trim();
+  const parsedMinutes = rawMinutes === "" ? null : Number.parseInt(rawMinutes, 10);
+  const invalidMinutes =
+    parsedMinutes !== null &&
+    (!Number.isFinite(parsedMinutes) ||
+      parsedMinutes < MIN_MINUTES ||
+      parsedMinutes > MAX_MINUTES);
+  const selectedMinutes =
+    parsedMinutes !== null && !invalidMinutes
+      ? parsedMinutes
+      : (minutes ?? prompt.suggested_minutes ?? presets[0]);
+  // Com número inválido no campo, nenhum atalho aparece marcado: marcar um
+  // seria dizer que ele vale, e neste estado nada vale — o botão está travado.
+  // `selectedMinutes` continua tendo valor só para o caso de o campo ser limpo.
+  const pressedMinutes = invalidMinutes ? null : selectedMinutes;
   const selectedEnergy = energy ?? prompt.suggested_energy ?? "normal";
   const riskActive = interruption ?? Boolean(prompt.interruption_risk);
 
@@ -65,16 +96,25 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
         Quanto tempo você tem?
       </h2>
 
-      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Tempo disponível">
+      <div
+        className="mt-3 flex flex-wrap items-center gap-2"
+        role="group"
+        aria-label="Tempo disponível"
+      >
         {presets.map((preset) => (
           <button
             key={preset}
             type="button"
-            aria-pressed={selectedMinutes === preset}
+            aria-pressed={pressedMinutes === preset}
             disabled={busy}
-            onClick={() => setMinutes(preset)}
+            onClick={() => {
+              setMinutes(preset);
+              // Limpar o campo é obrigatório: ele tem precedência, então um
+              // número esquecido lá dentro venceria o atalho recém-tocado.
+              setTypedMinutes("");
+            }}
             className={`min-h-10 rounded-control border px-4 text-sm font-semibold transition-colors disabled:opacity-60 ${
-              selectedMinutes === preset
+              pressedMinutes === preset
                 ? "border-primary bg-surfaceMuted text-ink"
                 : "border-edge bg-paper text-muted enabled:hover:bg-surfaceMuted"
             }`}
@@ -82,7 +122,38 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
             {preset} min
           </button>
         ))}
+
+        <span className="flex items-center gap-2">
+          <input
+            id="rota-minutos"
+            type="number"
+            inputMode="numeric"
+            min={MIN_MINUTES}
+            max={MAX_MINUTES}
+            value={typedMinutes}
+            disabled={busy}
+            onChange={(event) => setTypedMinutes(event.target.value)}
+            placeholder="Outro"
+            aria-label="Outro tempo, em minutos"
+            aria-invalid={invalidMinutes || undefined}
+            aria-describedby={invalidMinutes ? "rota-minutos-erro" : undefined}
+            className={`min-h-10 w-24 rounded-control border bg-paper px-3 text-sm font-semibold tabular-nums text-ink transition-colors placeholder:font-normal placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/25 disabled:opacity-60 ${
+              invalidMinutes ? "border-warning" : "border-edge focus:border-primary"
+            }`}
+          />
+          <span className="text-sm text-muted">min</span>
+        </span>
       </div>
+
+      {invalidMinutes ? (
+        <p id="rota-minutos-erro" className="mt-2 text-sm font-semibold text-warning">
+          Diga um tempo entre {MIN_MINUTES} e {MAX_MINUTES} minutos.
+        </p>
+      ) : (
+        <p className="mt-2 text-xs text-muted">
+          Toque num tempo ou digite o seu, de {MIN_MINUTES} a {MAX_MINUTES} min.
+        </p>
+      )}
 
       <h3 className="mt-5 text-sm font-semibold text-ink">Como está sua energia?</h3>
       <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Energia">
@@ -128,7 +199,7 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
       <div className="mt-5">
         <Button
           type="button"
-          disabled={busy}
+          disabled={busy || invalidMinutes}
           onClick={() =>
             onCalculate({
               availableMinutes: selectedMinutes,

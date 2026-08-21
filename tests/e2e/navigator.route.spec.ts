@@ -67,6 +67,7 @@ async function mockNavigator(
   options: {
     route: ReturnType<typeof routePayload>;
     onResolve?: (status: string) => void;
+    onBuild?: (body: Record<string, unknown>) => void;
   },
 ) {
   await page.route("**/api/navigation/prompt", async (route) =>
@@ -83,19 +84,20 @@ async function mockNavigator(
       }),
     }),
   );
-  await page.route("**/api/navigation/route", async (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(options.route),
-    }),
-  );
-  await page.route("**/api/navigation/*/complete", async (route) => {
-    options.onResolve?.("completed");
+  await page.route("**/api/navigation/route", async (route) => {
+    options.onBuild?.(route.request().postDataJSON() as Record<string, unknown>);
     return route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ route_id: "nrt_e2e", status: "completed" }),
+      body: JSON.stringify(options.route),
+    });
+  });
+  await page.route("**/api/navigation/*/accept", async (route) => {
+    options.onResolve?.("accepted");
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ route_id: "nrt_e2e", status: "accepted" }),
     });
   });
   await page.route("**/api/navigation/*/reject", async (route) => {
@@ -122,10 +124,12 @@ test.describe("Navigator", () => {
       onResolve: (status) => resolved.push(status),
     });
 
-    await page.goto("/hoje");
+    await page.goto("/rota");
 
     // Os presets vêm da rotina do aluno, não de uma lista fixa.
     await expect(page.getByRole("button", { name: "90 min" })).toBeVisible();
+    // E preset é atalho, não a lista das respostas possíveis.
+    await expect(page.getByRole("spinbutton", { name: /Outro tempo/i })).toBeVisible();
 
     // Energia é sempre perguntada; sem check-in, a tela diz que assumiu.
     await expect(page.getByText(/Assumimos normal/i)).toBeVisible();
@@ -139,9 +143,11 @@ test.describe("Navigator", () => {
     await expect(routeSection).toContainText("20 de 45 min");
     await expect(routeSection).toContainText("Praticar Cardiologia");
 
-    await routeSection.getByRole("button", { name: /Concluir rota/i }).click();
-    await expect(routeSection).toContainText(/Rota conclu/i);
-    expect(resolved).toEqual(["completed"]);
+    // Iniciar É o aceite: é ele que marca a rota como `accepted` e faz a
+    // energia declarada contar para a média do dia.
+    await routeSection.getByRole("button", { name: /Iniciar rota/i }).click();
+    await expect(routeSection).toContainText(/Rota iniciada/i);
+    expect(resolved).toEqual(["accepted"]);
   });
 
   test("recusar a rota tambem chega ao servidor", async ({ page }) => {
@@ -155,7 +161,7 @@ test.describe("Navigator", () => {
       onResolve: (status) => resolved.push(status),
     });
 
-    await page.goto("/hoje");
+    await page.goto("/rota");
     await page.getByRole("button", { name: /Calcular rota/i }).click();
 
     const routeSection = page.getByRole("region", { name: "Sua rota" });
@@ -172,7 +178,7 @@ test.describe("Navigator", () => {
       route: routePayload({ actions: [], reasonCodes: ["NO_CANDIDATES"] }),
     });
 
-    await page.goto("/hoje");
+    await page.goto("/rota");
     await page.getByRole("button", { name: /Calcular rota/i }).click();
 
     const empty = page.getByRole("region", { name: "Rota" });
@@ -190,7 +196,7 @@ test.describe("Navigator", () => {
       }),
     });
 
-    await page.goto("/hoje");
+    await page.goto("/rota");
     await page.getByRole("button", { name: /Calcular rota/i }).click();
 
     const empty = page.getByRole("region", { name: "Rota" });
@@ -206,18 +212,69 @@ test.describe("Navigator", () => {
       route: routePayload({ routeId: null, actions: [practiceAction(20)] }),
     });
 
-    await page.goto("/hoje");
+    await page.goto("/rota");
     await page.getByRole("button", { name: /Calcular rota/i }).click();
 
     const routeSection = page.getByRole("region", { name: "Sua rota" });
     await expect(routeSection).toBeVisible();
-    await expect(routeSection.getByRole("button", { name: /Concluir rota/i })).toHaveCount(0);
+    await expect(routeSection.getByRole("button", { name: /Iniciar rota/i })).toHaveCount(0);
+    await expect(routeSection.getByRole("button", { name: /N.o serve agora/i })).toHaveCount(0);
+  });
+
+  test("tempo digitado vence o preset e chega ao servidor", async ({ page }) => {
+    // O preset sai da rotina — o dia típico do aluno. Hoje ele pode ter 35
+    // minutos exatos entre um plantão e outro, e é esse número que precisa
+    // chegar em `available_minutes`, não o atalho mais próximo.
+    await mockCronogramaApi(page);
+    await mockStudentTodayApi(page);
+    const bodies: Record<string, unknown>[] = [];
+    await mockNavigator(page, {
+      route: routePayload({ actions: [practiceAction(20)], availableMinutes: 35 }),
+      onBuild: (body) => bodies.push(body),
+    });
+
+    await page.goto("/rota");
+
+    await page.getByRole("button", { name: "45 min" }).click();
+    await page.getByRole("spinbutton", { name: /Outro tempo/i }).fill("35");
+    await page.getByRole("button", { name: /Calcular rota/i }).click();
+
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0].available_minutes).toBe(35);
+  });
+
+  test("tempo fora da faixa vira aviso, nao 422 do servidor", async ({ page }) => {
+    // `NavigationRouteIn` valida 5..480. Deixar o clique sair para o servidor
+    // trocaria uma frase legível por um erro cru na tela.
+    await mockCronogramaApi(page);
+    await mockStudentTodayApi(page);
+    const bodies: Record<string, unknown>[] = [];
+    await mockNavigator(page, {
+      route: routePayload({ actions: [practiceAction(20)] }),
+      onBuild: (body) => bodies.push(body),
+    });
+
+    await page.goto("/rota");
+
+    const suggested = page.getByRole("button", { name: "45 min" });
+    await expect(suggested).toHaveAttribute("aria-pressed", "true");
+
+    const field = page.getByRole("spinbutton", { name: /Outro tempo/i });
+    await field.fill("700");
+    await expect(page.getByText(/entre 5 e 480 minutos/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: /Calcular rota/i })).toBeDisabled();
+    // E nenhum atalho fica marcado: marcado significaria "é este que vale".
+    await expect(suggested).toHaveAttribute("aria-pressed", "false");
+
+    await field.fill("35");
+    await expect(page.getByRole("button", { name: /Calcular rota/i })).toBeEnabled();
+    expect(bodies).toHaveLength(0);
   });
 
   test("prompt malformado faz o cartao sumir, nao a pagina cair", async ({ page }) => {
     // Regressao real: `/api/navigation/prompt` devolvendo payload parcial fazia
-    // `presets.map` estourar o error boundary e o aluno perdia `/hoje` INTEIRA.
-    // A tela principal do produto degrada; ela nao cai.
+    // `presets.map` estourar o error boundary e derrubar a pagina inteira. A
+    // tela degrada — o cartao some — mas nao cai.
     await mockCronogramaApi(page);
     await mockStudentTodayApi(page);
     await page.route("**/api/navigation/prompt", async (route) =>
@@ -228,11 +285,9 @@ test.describe("Navigator", () => {
       }),
     );
 
-    await page.goto("/hoje");
+    await page.goto("/rota");
 
-    await expect(page.getByText(/Erro na p.gina de hoje/i)).toHaveCount(0);
+    await expect(page.getByText(/Erro na p.gina do Kros/i)).toHaveCount(0);
     await expect(page.getByRole("button", { name: /Calcular rota/i })).toHaveCount(0);
-    // E o resto do dia continua de pe.
-    await expect(page.getByRole("region", { name: "Resumo de hoje" })).toBeVisible();
   });
 });
