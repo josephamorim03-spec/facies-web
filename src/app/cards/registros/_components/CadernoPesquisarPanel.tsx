@@ -193,6 +193,8 @@ export function CadernoPesquisarPanel({
               <input
                 type="range" min={1} max={10} value={filterWeightMin}
                 onChange={(e) => onFilterWeightMinChange(Number(e.target.value))}
+                aria-label="Peso mínimo"
+                aria-valuetext={`a partir de ${filterWeightMin} de 10`}
                 className="w-full"
                 style={rangeStyle(filterWeightMin, 1, 10)}
               />

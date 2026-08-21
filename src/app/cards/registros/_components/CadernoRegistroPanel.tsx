@@ -209,6 +209,8 @@ export function CadernoRegistroPanel({
           <input
             type="range" min={1} max={10} step={1} value={weight}
             onChange={(e) => onWeightChange(Number(e.target.value))}
+            aria-label="Peso do registro"
+            aria-valuetext={`${weight} de 10`}
             className="w-full"
             style={rangeStyle(weight, 1, 10)}
           />
