@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 const E2E_BASE_URL = process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:3000";
@@ -672,4 +673,71 @@ test("session shows an honest placeholder when a question image is unavailable",
   await page.goto("/banco-de-questoes/sessao/session_qb_broken_image");
 
   await expect(page.getByText("Imagem indisponível")).toBeVisible();
+});
+
+test("o montador de sessao passa no gate automatico de WCAG", async ({ page }) => {
+  // O gate mora aqui, e nao no spec de acessibilidade, porque `/banco` precisa
+  // de sete rotas mockadas e elas ja existem neste arquivo. Duplicar o fixture
+  // criaria uma segunda verdade sobre como o banco responde — e e' a copia
+  // desatualizada que passa a ser testada.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.context().addCookies([
+    {
+      name: "krosmed_session",
+      value: "session_e2e",
+      url: E2E_BASE_URL,
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+
+  await mockQuestionBankMetadata(page);
+  await page.route("**/api/question-bank/availability**", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        total_count: 120,
+        available_count: 120,
+        answered_count: 0,
+        unanswered_count: 120,
+        max_selectable: 120,
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/topics**", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify([]) });
+  });
+  await page.route("**/api/question-bank/performance", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ areas: [], first_attempt_accuracy: null }),
+    });
+  });
+  await page.route("**/api/reviews/agenda", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        tasks: [],
+        due_question_total: 0,
+        struggling_question_total: 0,
+        question_review_total: 0,
+        generated_at: new Date().toISOString(),
+      }),
+    });
+  });
+
+  await page.goto("/banco-de-questoes");
+  await expect(page.getByTestId("question-bank-top-filters")).toBeVisible();
+
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
+    .analyze();
+  expect(
+    results.violations.map((violation) => ({
+      id: violation.id,
+      impact: violation.impact,
+      nodes: violation.nodes.length,
+      help: violation.help,
+    })),
+  ).toEqual([]);
 });

@@ -4,7 +4,11 @@ import { expect, test, type Page } from "@playwright/test";
 import { addHttpOnlySessionForPage } from "./support/authCookies";
 import { mockCadernoApi } from "./support/cadernoApiMock";
 import { mockCronogramaApi } from "./support/cronogramaApiMock";
-import { mockFinalizedSession, RUNNER_SESSION_ID } from "./support/questionSessionMock";
+import {
+  mockFinalizedSession,
+  mockQuestionSession,
+  RUNNER_SESSION_ID,
+} from "./support/questionSessionMock";
 import { mockStudentTodayApi } from "./support/studentTodayApiMock";
 
 /**
@@ -61,6 +65,34 @@ test.describe("Gate de acessibilidade", () => {
     await mockCadernoApi(page);
     await page.goto("/cards/registros");
     await expect(page.locator("main")).toBeVisible();
+
+    expect(await analyze(page)).toEqual([]);
+  });
+
+  test("Correcao pos-prova", async ({ page }) => {
+    await mockFinalizedSession(page);
+    await page.goto(`/banco/sessao/${RUNNER_SESSION_ID}`);
+    await page.getByRole("button", { name: /^Erros/ }).click();
+
+    expect(await analyze(page)).toEqual([]);
+  });
+});
+
+/**
+ * O mesmo gate no desktop.
+ *
+ * Não é o mesmo DOM. A barra da sessão mostra no desktop quatro controles que o
+ * celular esconde — o par Aprender/Prova, o cartucho do tipo, o cronômetro e o
+ * modo foco —, e o shell troca a barra inferior de abas pela lateral. Rodar só
+ * num viewport deixa metade dos elementos sem gate.
+ */
+test.describe("Gate de acessibilidade no desktop", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("Runner da sessao", async ({ page }) => {
+    await mockQuestionSession(page);
+    await page.goto(`/banco/sessao/${RUNNER_SESSION_ID}`);
+    await expect(page.getByRole("progressbar", { name: /Progresso da sessão/i })).toBeVisible();
 
     expect(await analyze(page)).toEqual([]);
   });
