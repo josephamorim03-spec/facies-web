@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, ExternalLink, Search, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ExternalLink, Search, Close as X } from "pixelarticons/react";
 
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";

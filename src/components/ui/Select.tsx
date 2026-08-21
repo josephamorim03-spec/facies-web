@@ -27,18 +27,18 @@ export function Select({ value, onValueChange, options, label, placeholder, disa
       >
         <SelectPrimitive.Value placeholder={placeholder} />
         <SelectPrimitive.Icon aria-hidden="true">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 text-muted"><path d="m6 8 4 4 4-4" /></svg>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-muted"><path d="m6 8 4 4 4-4" /></svg>
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
-        <SelectPrimitive.Content position="popper" sideOffset={6} className="paper-overlay z-[100] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-surface border border-edge bg-surface">
+        <SelectPrimitive.Content position="popper" sideOffset={6} className="paper-overlay z-[100] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden border border-edge bg-surface">
           <SelectPrimitive.Viewport className="p-1">
             {options.map((option) => (
               <SelectPrimitive.Item
                 key={option.value}
                 value={option.value}
                 disabled={option.disabled}
-                className="paper-control relative flex min-h-10 cursor-default select-none items-center rounded-control py-2 pl-8 pr-3 text-sm text-ink outline-none data-[disabled]:opacity-40 data-[highlighted]:bg-surfaceMuted"
+                className="paper-control relative flex min-h-10 cursor-default select-none items-center py-2 pl-8 pr-3 text-sm text-ink outline-none data-[disabled]:opacity-40 data-[highlighted]:bg-surfaceMuted"
               >
                 <SelectPrimitive.ItemIndicator className="absolute left-2 text-primary">✓</SelectPrimitive.ItemIndicator>
                 <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>

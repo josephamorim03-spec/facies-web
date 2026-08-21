@@ -88,7 +88,7 @@ export function RangeSlider({
           {visibleTicks.map((tick) => (
             <span
               key={tick}
-              className="absolute -translate-x-1/2 text-[10px] tabular-nums text-muted"
+              className="absolute -translate-x-1/2 text-nano tabular-nums text-muted"
               style={{ left: `${((tick - min) / span) * 100}%` }}
             >
               {tick}

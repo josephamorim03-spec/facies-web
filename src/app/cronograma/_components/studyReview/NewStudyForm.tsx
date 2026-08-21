@@ -63,7 +63,7 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
 
   if (createdEvent) {
     return (
-      <div className="text-sm rounded-surface border border-edge p-2">
+      <div className="text-sm border border-edge p-2">
         Compromisso criado em <strong>{displayDate(dateISO)}</strong>.
       </div>
     );
@@ -75,31 +75,31 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
         <button
           type="button"
           onClick={() => setMode("question_bank")}
-          className={`text-xs rounded-surface border px-3 py-1 ${mode === "question_bank" ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
+          className={`text-xs border px-3 py-1 ${mode === "question_bank" ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:border-primary"}`}
         >
           Banco de questões
         </button>
         <button
           type="button"
           onClick={() => setMode("event")}
-          className={`text-xs rounded-surface border px-3 py-1 ${mode === "event" ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
+          className={`text-xs border px-3 py-1 ${mode === "event" ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:border-primary"}`}
         >
           Compromisso
         </button>
       </div>
 
       {mode === "question_bank" ? (
-        <div className="rounded-surface border border-edge bg-paper p-4 text-center">
+        <div className="border border-edge bg-paper p-4 text-center">
           <button
             type="button"
             onClick={() => router.push("/banco")}
-            className="mt-3 rounded-surface bg-ink px-4 py-2 text-sm font-semibold text-paper"
+            className="mt-3 bg-primary px-4 py-2 text-sm font-semibold text-primaryInk"
           >
             Resolver questões do banco
           </button>
         </div>
       ) : (
-        <div className="space-y-3 rounded-surface border border-edge bg-paper p-4">
+        <div className="space-y-3 border border-edge bg-paper p-4">
           <div className="flex justify-center gap-2">
             {[
               { value: "work" as const, label: "Plantao/Trabalho" },
@@ -109,7 +109,7 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
                 key={item.value}
                 type="button"
                 onClick={() => setEventCategory(item.value)}
-                className={`text-xs rounded-surface px-2 py-1 border ${eventCategory === item.value ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
+                className={`text-xs px-2 py-1 border ${eventCategory === item.value ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:border-primary"}`}
               >
                 {item.label}
               </button>
@@ -121,12 +121,12 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
               placeholder={eventCategory === "work" ? "Ex. Plantão/UBS" : "Ex. Imprevisto/Viagem"}
               value={eventLabel}
               onChange={(e) => setEventLabel(e.target.value)}
-              className="rounded-surface border border-edge bg-paper px-2 py-1 text-sm"
+              className="border border-edge bg-paper px-2 py-1 text-sm"
             />
             <select
               value={eventDuration}
               onChange={(e) => setEventDuration(Number(e.target.value))}
-              className="rounded-surface border border-edge bg-paper px-2 py-1 text-sm"
+              className="border border-edge bg-paper px-2 py-1 text-sm"
             >
               {EVENT_DURATIONS.map((duration) => <option key={duration} value={duration}>{duration}h</option>)}
             </select>
@@ -141,7 +141,7 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
             type="button"
             onClick={submitEvent}
             disabled={submitting}
-            className="text-xs rounded-surface border border-primary bg-primary px-3 py-1.5 font-semibold text-primaryInk hover:opacity-90 disabled:opacity-50"
+            className="text-xs border border-primary bg-primary px-3 py-1.5 font-semibold text-primaryInk hover:opacity-90 disabled:opacity-50"
           >
             Adicionar{submitting ? submittingDots : ""}
           </button>

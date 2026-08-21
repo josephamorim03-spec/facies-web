@@ -15,14 +15,14 @@ export function AdminViewSwitcher({
   onViewChange: (view: AdminQuestionBankView) => void;
 }) {
   return (
-    <div className="inline-flex rounded-surface border border-edge bg-surface p-1 text-sm">
+    <div className="inline-flex border border-edge bg-surface p-1 text-sm">
       {([["ingestao", "Ingestão"], ["curadoria", "Curadoria"], ["questoes", "Questões"]] as const).map(([value, label]) => (
         <button
           key={value}
           onClick={() => onViewChange(value)}
-          className={`rounded-control px-4 py-1.5 font-semibold transition ${
+          className={`px-4 py-1.5 font-semibold transition ${
             view === value
-              ? "bg-surface text-ink shadow-sm"
+              ? "bg-surface text-ink "
               : "text-muted hover:text-ink"
           }`}
         >
@@ -31,9 +31,9 @@ export function AdminViewSwitcher({
       ))}
       <button
         onClick={() => onViewChange("resolucao-ia")}
-        className={`rounded-control px-4 py-1.5 font-semibold transition ${
+        className={`px-4 py-1.5 font-semibold transition ${
           view === "resolucao-ia"
-            ? "bg-surface text-ink shadow-sm"
+            ? "bg-surface text-ink "
             : "text-muted hover:text-ink"
         }`}
       >
@@ -75,7 +75,7 @@ export default function AdminOverview({
         : "border-success bg-surfaceMuted text-success/40/30";
   return (
     <>
-      <section className="rounded-surface border border-edge bg-surface p-5 shadow-sm">
+      <section className="border border-edge bg-surface p-5 ">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase text-muted">Banco de Questões</p>
@@ -86,25 +86,25 @@ export default function AdminOverview({
             {lastRefreshedLabel ? <span className="text-xs text-muted">{lastRefreshedLabel}</span> : null}
             <button
               onClick={onRefresh}
-              className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:border-edge hover:bg-surface"
+              className="border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:border-edge hover:bg-surface"
             >
               Atualizar
             </button>
             <button
               onClick={onRunAll}
-              className="rounded-surface bg-paper px-4 py-2 text-sm font-semibold text-ink transition hover:bg-paper"
+              className="bg-paper px-4 py-2 text-sm font-semibold text-ink transition hover:bg-paper"
             >
               Processar fila
             </button>
           </div>
         </div>
         {error ? (
-          <div className="mt-4 rounded-surface border border-danger bg-surfaceMuted px-4 py-3 text-sm text-danger/40/30">
+          <div className="mt-4 border border-danger bg-surfaceMuted px-4 py-3 text-sm text-danger/40/30">
             {error}
           </div>
         ) : null}
         {busy ? (
-          <div className="mt-4 rounded-surface border border-info bg-surfaceMuted px-4 py-3 text-sm text-info/40/30">
+          <div className="mt-4 border border-info bg-surfaceMuted px-4 py-3 text-sm text-info/40/30">
             {busy}
           </div>
         ) : null}
@@ -120,12 +120,12 @@ export default function AdminOverview({
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-        <section className="rounded-surface border border-edge bg-surface p-5 shadow-sm">
+        <section className="border border-edge bg-surface p-5 ">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase text-muted">Leitura Editorial</p>
               <h2 className="mt-1 text-xl font-semibold text-ink">Publicacao e qualidade</h2>
-              <div className={`mt-3 inline-flex rounded-surface border px-3 py-1 text-xs font-semibold ${healthTone}`}>
+              <div className={`mt-3 inline-flex border px-3 py-1 text-xs font-semibold ${healthTone}`}>
                 {editorialHealth?.label ?? "sem leitura"}
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function AdminOverview({
             </div>
           </div>
 
-          <div className="mt-5 rounded-surface border border-warning bg-surfaceMuted p-4/40/20">
+          <div className="mt-5 border border-warning bg-surfaceMuted p-4/40/20">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <div className="text-xs font-semibold uppercase text-warning">Re-lint auditado</div>
@@ -149,30 +149,30 @@ export default function AdminOverview({
                 type="button"
                 onClick={onPreviewStemReclassification}
                 disabled={Boolean(busy)}
-                className="rounded-surface border border-warning bg-surface px-4 py-2 text-sm font-semibold text-warning transition hover:bg-surfaceMuted disabled:opacity-50/60"
+                className="border border-warning bg-surface px-4 py-2 text-sm font-semibold text-warning transition hover:bg-surfaceMuted disabled:opacity-50/60"
               >
                 Simular re-lint
               </button>
             </div>
             {stemReclassResult ? (
               <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
-                <div className="rounded-surface bg-surface/80 p-3">
+                <div className="bg-surface p-3">
                   <div className="text-xs font-semibold uppercase opacity-70">Liberariam</div>
                   <div className="mt-1 text-2xl font-semibold">{stemReclassResult.published}</div>
                 </div>
-                <div className="rounded-surface bg-surface/80 p-3">
+                <div className="bg-surface p-3">
                   <div className="text-xs font-semibold uppercase opacity-70">Continuam revisão</div>
                   <div className="mt-1 text-2xl font-semibold">{stemReclassResult.kept_review}</div>
                 </div>
-                <div className="rounded-surface bg-surface/80 p-3">
+                <div className="bg-surface p-3">
                   <div className="text-xs font-semibold uppercase opacity-70">Checksum</div>
-                  <div className="mt-2 truncate font-mono text-xs">{stemReclassResult.checksum}</div>
+                  <div className="mt-2 truncate text-xs">{stemReclassResult.checksum}</div>
                 </div>
-                <div className="rounded-surface bg-surface/80 p-3 sm:col-span-3">
+                <div className="bg-surface p-3 sm:col-span-3">
                   <div className="text-xs font-semibold uppercase opacity-70">Bloqueios restantes</div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {Object.entries(stemReclassResult.after_blockers).length ? Object.entries(stemReclassResult.after_blockers).map(([code, count]) => (
-                      <span key={code} className="rounded-control bg-surfaceMuted px-2 py-1 text-xs font-semibold text-warning/40">
+                      <span key={code} className="bg-surfaceMuted px-2 py-1 text-xs font-semibold text-warning/40">
                         {code}: {count}
                       </span>
                     )) : <span className="text-xs opacity-70">Nenhum blocker restante no lote simulado.</span>}
@@ -183,19 +183,19 @@ export default function AdminOverview({
           </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-4">
-            <div className="rounded-surface border border-edge bg-surface p-4">
+            <div className="border border-edge bg-surface p-4">
               <div className="text-xs font-semibold uppercase text-muted">Imports</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.imported_files ?? 0}</div>
             </div>
-            <div className="rounded-surface border border-edge bg-surface p-4">
+            <div className="border border-edge bg-surface p-4">
               <div className="text-xs font-semibold uppercase text-muted">Candidatos</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.candidate_total ?? 0}</div>
             </div>
-            <div className="rounded-surface border border-edge bg-surface p-4">
+            <div className="border border-edge bg-surface p-4">
               <div className="text-xs font-semibold uppercase text-muted">Canonicas</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.canonical_questions ?? 0}</div>
             </div>
-            <div className="rounded-surface border border-edge bg-surface p-4">
+            <div className="border border-edge bg-surface p-4">
               <div className="text-xs font-semibold uppercase text-muted">Publicadas</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.published_questions ?? 0}</div>
             </div>
@@ -219,10 +219,10 @@ export default function AdminOverview({
           {editorialHealth?.funnel?.length ? (
             <div className="mt-5 grid gap-2 md:grid-cols-3 xl:grid-cols-6">
               {editorialHealth.funnel.map((stage) => (
-                <div key={stage.key} className="rounded-surface border border-edge bg-surface p-3">
+                <div key={stage.key} className="border border-edge bg-surface p-3">
                   <div className="text-xs font-semibold uppercase text-muted">{stage.label}</div>
                   <div className="mt-2 text-lg font-semibold text-ink">{stage.done}</div>
-                  <div className="mt-1 text-[11px] text-muted">
+                  <div className="mt-1 text-micro text-muted">
                     fila {stage.pending} / rodando {stage.processing} / falha {stage.failed}
                   </div>
                 </div>
@@ -233,7 +233,7 @@ export default function AdminOverview({
           {editorialHealth?.top_actions.length ? (
             <div className="mt-4 flex flex-wrap gap-2">
               {editorialHealth.top_actions.map((action) => (
-                <span key={action} className="rounded-surface border border-edge px-3 py-1 text-xs font-semibold text-ink">
+                <span key={action} className="border border-edge px-3 py-1 text-xs font-semibold text-ink">
                   {action}
                 </span>
               ))}
@@ -241,22 +241,22 @@ export default function AdminOverview({
           ) : null}
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <div className="rounded-surface border border-edge bg-surface p-4">
+            <div className="border border-edge bg-surface p-4">
               <div className="text-xs font-semibold uppercase text-muted">Conflitos pasta x primario</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.folder_taxonomy_conflicts ?? 0}</div>
             </div>
-            <div className="rounded-surface border border-edge bg-surface p-4">
+            <div className="border border-edge bg-surface p-4">
               <div className="text-xs font-semibold uppercase text-muted">Sem specialty</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.published_without_specialty ?? 0}</div>
             </div>
-            <div className="rounded-surface border border-edge bg-surface p-4">
+            <div className="border border-edge bg-surface p-4">
               <div className="text-xs font-semibold uppercase text-muted">Re-homadas</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.folder_taxonomy_rehomes ?? 0}</div>
             </div>
           </div>
         </section>
 
-        <section className="rounded-surface border border-edge bg-surface p-5 shadow-sm">
+        <section className="border border-edge bg-surface p-5 ">
           <div>
             <p className="text-xs font-semibold uppercase text-muted">Hotspots</p>
             <h2 className="mt-1 text-xl font-semibold text-ink">Onde o backlog pesa</h2>
@@ -267,7 +267,7 @@ export default function AdminOverview({
               ["Baixo rendimento (1-2 candidatas)", hotspots.low_yield_candidates ?? []],
               ["Artefatos tecnicos", hotspots.technical_artifacts ?? []],
             ] as const).map(([label, items]) => (
-              <div key={label} className="rounded-surface border border-edge bg-surface p-4">
+              <div key={label} className="border border-edge bg-surface p-4">
                 <div className="text-sm font-semibold text-ink">{label}</div>
                 <div className="mt-3 space-y-2">
                   {items.length ? items.map((item) => (
@@ -291,7 +291,7 @@ export default function AdminOverview({
               ["Conflitos de gaveta", taxonomyAudit?.conflict_examples ?? []],
               ["Publicadas sem specialty", taxonomyAudit?.missing_specialty_examples ?? []],
             ] as const).map(([label, items]) => (
-              <div key={label} className="rounded-surface border border-edge bg-surface p-4">
+              <div key={label} className="border border-edge bg-surface p-4">
                 <div className="text-sm font-semibold text-ink">{label}</div>
                 <div className="mt-3 space-y-2">
                   {items.length ? items.map((item) => (

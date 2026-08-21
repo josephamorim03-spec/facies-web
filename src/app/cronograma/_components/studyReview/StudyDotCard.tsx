@@ -171,11 +171,11 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
       </button>
       <div className="flex items-center gap-2 pr-6">
         {studyIsFullExam ? (
-          <div className="shrink-0 rounded-[2px]" style={{ width: 9, height: 9, backgroundColor: FULL_EXAM_COLOR }} />
+          <div className="shrink-0 " style={{ width: 9, height: 9, backgroundColor: FULL_EXAM_COLOR }} />
         ) : study.is_review ? (
           <div
-            className="shrink-0 w-2.5 h-2.5 rounded-control"
-            style={{ backgroundColor: AREA_COLORS[study.area] ?? "#ccc", opacity: 0.6 }}
+            className="shrink-0 w-2.5 h-2.5 "
+            style={{ backgroundColor: AREA_COLORS[study.area] ?? AREA_COLORS.OU, opacity: 0.6 }}
           />
         ) : (
           <div
@@ -185,7 +185,7 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
               height: 0,
               borderLeft: "5px solid transparent",
               borderRight: "5px solid transparent",
-              borderBottom: `9px solid ${AREA_COLORS[study.area] ?? "#ccc"}`,
+              borderBottom: `9px solid ${AREA_COLORS[study.area] ?? AREA_COLORS.OU}`,
             }}
           />
         )}

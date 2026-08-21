@@ -167,9 +167,9 @@ export function IconGrid({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      strokeWidth="2"
+      strokeLinecap="butt"
+      strokeLinejoin="miter"
       className={className}
       aria-hidden="true"
     >

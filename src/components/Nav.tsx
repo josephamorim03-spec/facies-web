@@ -16,21 +16,12 @@ import { FastNavLink } from "@/components/FastNavLink";
 import { useSessionNavGuard } from "@/hooks/useSessionNavGuard";
 import { useEdgeSwipeSuppression } from "@/hooks/useEdgeSwipeSuppression";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import {
-  CalendarDays,
-  ChartNoAxesCombined,
-  CircleUserRound,
-  House,
-  Layers3,
-  LibraryBig,
-  Navigation,
-  Settings,
-  type LucideIcon,
-} from "lucide-react";
+import { Calendar as CalendarDays, TrendingUp as ChartNoAxesCombined, AvatarSquare as CircleUserRound, Home as House, Notes as Layers3, Library as LibraryBig, Gps as Navigation, Gear as Settings } from "pixelarticons/react";
+import type { ComponentType, SVGProps } from "react";
 
 
 
-const ICON_MAP: Record<string, LucideIcon> = {
+const ICON_MAP: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
   today: House,
   bank: LibraryBig,
   // A Rota e navegacao: a seta de GPS diz o que a tela faz melhor que o glifo
@@ -92,11 +83,11 @@ function UserAvatar({ photoUrl, displayName, size = "sm" }: { photoUrl?: string 
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img src={photoUrl} alt={displayName ?? "Usuário"} referrerPolicy="no-referrer"
-        className={`${dim} rounded-control object-cover shrink-0 border border-edge`} />
+        className={`${dim} object-cover shrink-0 border border-edge`} />
     );
   }
   return (
-    <span className={`${dim} rounded-control bg-primary flex items-center justify-center font-semibold text-primaryInk shrink-0`}>
+    <span className={`${dim} bg-primary flex items-center justify-center font-semibold text-primaryInk shrink-0`}>
       {initial}
     </span>
   );
@@ -211,7 +202,7 @@ export function SidebarNav({
           className={`paper-control mx-1.5 mt-2 flex min-h-10 items-center border border-transparent text-xs text-muted hover:border-edge hover:bg-surfaceMuted hover:text-ink ${visible ? "justify-between px-2.5" : "justify-center"}`}
         >
           {visible ? <span>{pinned ? "Recolher" : "Fixar aberta"}</span> : null}
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className={`h-4 w-4 transition-transform ${visible ? "rotate-180" : ""}`} aria-hidden="true">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className={`h-4 w-4 transition-transform ${visible ? "rotate-180" : ""}`} aria-hidden="true">
             <path d="m7 4 6 6-6 6" />
           </svg>
         </button>
@@ -264,7 +255,7 @@ export function SidebarNav({
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-ink truncate">{displayName?.split(" ")[0] ?? ""}</p>
                   {displayName?.includes(" ") && (
-                    <p className="text-[10px] text-muted truncate leading-tight">{displayName.split(" ").slice(1).join(" ")}</p>
+                    <p className="text-nano text-muted truncate leading-tight">{displayName.split(" ").slice(1).join(" ")}</p>
                   )}
                 </div>
               )}
@@ -274,7 +265,7 @@ export function SidebarNav({
             {visible ? (
               <>
                 <button type="button" onClick={requestLogout}
-                  className="rounded-surface px-3 py-2 text-xs text-muted transition-colors hover:bg-surfaceMuted hover:text-ink">
+                  className="px-3 py-2 text-xs text-muted transition-colors hover:bg-surfaceMuted hover:text-ink">
                   Sair da conta
                 </button>
                 <ThemeToggle className="px-2 py-2" />

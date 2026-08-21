@@ -99,19 +99,15 @@ export function CadernoRegistroPanel({
               <button
                 key={a}
                 onClick={() => onAreaChange(a)}
+                aria-pressed={selected}
                 style={{
-                  backgroundColor: selected
-                    ? areaColor
-                    : hasSelection
-                      ? "var(--color-surface)"
-                      : `color-mix(in srgb, ${areaColor} 14%, var(--color-surface))`,
-                  borderColor: selected
-                    ? areaColor
-                    : `color-mix(in srgb, ${areaColor} 38%, var(--color-edge))`,
-                  color: selected ? "white" : (hasSelection ? "var(--color-muted)" : areaColor),
+                  borderColor: areaColor,
+                  color: hasSelection && !selected ? "var(--color-muted)" : areaColor,
                   opacity: hasSelection && !selected ? 0.66 : 1,
                 }}
-                className="min-h-[2.25rem] min-w-14 rounded-surface border px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[background-color,border-color,color,opacity] duration-150 hover:opacity-100"
+                className={`min-h-[2.25rem] min-w-14 border bg-surface px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[color,opacity] duration-150 hover:opacity-100 ${
+                  selected ? "chrome-sunken" : "chrome-raised"
+                }`}
               >
                 {a}
               </button>
@@ -123,7 +119,7 @@ export function CadernoRegistroPanel({
         <div className="relative">
           <input
             type="text"
-            className="w-full rounded-surface border border-edge px-2 py-1 text-sm bg-paper"
+            className="w-full border border-edge px-2 py-1 text-sm bg-paper"
             placeholder="Tema"
             value={theme}
             onChange={(e) => { onThemeChange(e.target.value); onShowThemeSuggestionsChange(true); }}
@@ -131,7 +127,7 @@ export function CadernoRegistroPanel({
             onFocus={() => onShowThemeSuggestionsChange(true)}
           />
           {themeSuggestions.length > 0 && showThemeSuggestions && (
-            <div className="absolute left-0 right-0 mt-0.5 border border-edge bg-paper z-10 max-h-36 overflow-y-auto shadow-sm rounded-b-control">
+            <div className="absolute left-0 right-0 mt-0.5 border border-edge bg-paper z-10 max-h-36 overflow-y-auto ">
               {themeSuggestions.map((s) => (
                 <button
                   key={s}
@@ -153,7 +149,7 @@ export function CadernoRegistroPanel({
             <button
               key={s}
               onClick={() => { onSourceTypeChange(s); if (s !== "question") onQuestionOutcomeChange(""); }}
-              className={`text-xs rounded-surface px-3 py-1 border ${sourceType === s ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary"}`}
+              className={`text-xs px-3 py-1 border ${sourceType === s ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:border-primary"}`}
             >
               {s === "reading" ? "Leitura" : "Questão"}
             </button>
@@ -164,9 +160,9 @@ export function CadernoRegistroPanel({
                 <button
                   key={o}
                   onClick={() => onQuestionOutcomeChange(questionOutcome === o ? "" : o)}
-                  className={`text-xs rounded-surface px-3 py-1 border ${
+                  className={`text-xs px-3 py-1 border ${
                     questionOutcome === o
-                      ? "border-ink bg-ink text-paper"
+                      ? "border-primary bg-primary text-primaryInk"
                       : "border-edge text-muted hover:border-primary"
                   }`}
                 >
@@ -181,7 +177,7 @@ export function CadernoRegistroPanel({
         <Field label="O que eu não sabia" hint="Escreva em forma de pergunta — vira a frente do Card.">
           <input
             type="text"
-            className="w-full rounded-surface border border-edge px-2 py-1 text-sm bg-paper"
+            className="w-full border border-edge px-2 py-1 text-sm bg-paper"
             placeholder="Ex.: Qual mecanismo explica dor na DPP?"
             value={insightQuestion}
             onChange={(e) => onInsightQuestionChange(e.target.value)}
@@ -192,7 +188,7 @@ export function CadernoRegistroPanel({
         <Field label="Anotação">
           <textarea
             rows={4}
-            className="w-full rounded-surface border border-edge px-2 py-1 text-sm bg-paper"
+            className="w-full border border-edge px-2 py-1 text-sm bg-paper"
             placeholder="Explique o conceito com suas palavras."
             value={body}
             onChange={(e) => onBodyChange(e.target.value)}
@@ -204,8 +200,8 @@ export function CadernoRegistroPanel({
           <div className="flex items-center justify-between">
             <label className="text-xs text-muted uppercase tracking-wide">Peso</label>
             <span
-              className="text-xs font-semibold px-1.5 py-0.5 rounded-control text-white"
-              style={{ backgroundColor: weightBadgeColor(weight) }}
+              className="border bg-surface px-1.5 py-0.5 text-xs font-semibold tabular-nums"
+              style={{ borderColor: weightBadgeColor(weight), color: weightBadgeColor(weight) }}
             >
               {weight}
             </span>
@@ -236,7 +232,7 @@ export function CadernoRegistroPanel({
               <label className="text-xs text-muted uppercase tracking-wide">ID da questão</label>
               <input
                 type="text"
-                className="w-full rounded-surface border border-edge px-2 py-1 text-sm bg-paper"
+                className="w-full border border-edge px-2 py-1 text-sm bg-paper"
                 placeholder="Opcional"
                 value={questionId}
                 onChange={(e) => onQuestionIdChange(e.target.value)}
@@ -246,7 +242,7 @@ export function CadernoRegistroPanel({
               <label className="text-xs text-muted uppercase tracking-wide">Links externos</label>
               <textarea
                 rows={2}
-                className="w-full rounded-surface border border-edge px-2 py-1 text-sm bg-paper"
+                className="w-full border border-edge px-2 py-1 text-sm bg-paper"
                 placeholder="Um por linha ou separado por vírgula"
                 value={externalLinksInput}
                 onChange={(e) => onExternalLinksInputChange(e.target.value)}

@@ -48,7 +48,7 @@ export function CronogramaTodayPanel({
 
   return (
     <section
-      className="rounded-surface border border-edge bg-surface px-3 py-3"
+      className="border border-edge bg-surface px-3 py-3"
       aria-label="Para revisar hoje"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -63,9 +63,9 @@ export function CronogramaTodayPanel({
         </div>
         <div className="flex items-start gap-2">
           {practiceCount > 0 && (
-            <div className="rounded-surface border border-primary bg-paper px-2.5 py-1 text-right">
+            <div className="border border-primary bg-paper px-2.5 py-1 text-right">
               <p className="text-sm font-semibold leading-none text-primary">{practiceCount}</p>
-              <p className="mt-0.5 text-[9px] leading-none text-muted">prática</p>
+              <p className="mt-0.5 text-pico leading-none text-muted">prática</p>
             </div>
           )}
           <button
@@ -73,15 +73,15 @@ export function CronogramaTodayPanel({
             onClick={() => setPinned((value) => !value)}
             aria-expanded={open}
             aria-label={open ? "Recolher revisões de hoje" : "Expandir revisões de hoje"}
-            className="mt-0.5 shrink-0 rounded-control p-1 text-muted transition-colors hover:text-ink"
+            className="mt-0.5 shrink-0 p-1 text-muted transition-colors hover:text-ink"
           >
             <svg
               viewBox="0 0 20 20"
               fill="none"
               stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              strokeWidth="2"
+              strokeLinecap="butt"
+              strokeLinejoin="miter"
               className={`h-4 w-4 transition-transform ${open ? "rotate-90" : ""}`}
               aria-hidden="true"
             >
@@ -103,7 +103,7 @@ export function CronogramaTodayPanel({
               <>
                 {visible.map((item) => {
                   const areaKey = String(item.area ?? "").toUpperCase();
-                  const accentColor = AREA_COLORS[areaKey] ?? AREA_COLORS.OU ?? "#AEAEA8";
+                  const accentColor = AREA_COLORS[areaKey] ?? AREA_COLORS.OU;
 
                   return (
                     <div
@@ -114,9 +114,9 @@ export function CronogramaTodayPanel({
                       <div className="min-w-0 flex-1">
                         <div className="flex min-w-0 items-center gap-1.5">
                           <span className="truncate text-xs">{item.theme}</span>
-                          <span className="shrink-0 text-[9px] text-muted">{areaKey || "OU"}</span>
+                          <span className="shrink-0 text-pico text-muted">{areaKey || "OU"}</span>
                           {item.label && (
-                            <span className="shrink-0 text-[9px] text-success">feito</span>
+                            <span className="shrink-0 text-pico text-success">feito</span>
                           )}
                         </div>
                         {item.task && <ReviewSignalChips task={item.task} compact className="mt-1" />}

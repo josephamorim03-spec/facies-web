@@ -14,7 +14,7 @@ import { Tabs as TabsPrimitive } from "radix-ui";
  */
 
 const SCROLLER =
-  "flex max-w-full items-center gap-1 overflow-x-auto rounded-control border border-edge bg-surface p-1 " +
+  "flex max-w-full items-center gap-1 overflow-x-auto border border-edge bg-surface p-1 " +
   "snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 
 /** Base de um gatilho de aba. O estado ativo vem de `data-state` (Radix) ou `aria-current` (link). */
@@ -33,7 +33,7 @@ export function TabCount({ children }: { children: ReactNode }) {
   return (
     <span
       className={
-        "rounded-control bg-surfaceMuted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted " +
+        "bg-surfaceMuted px-1.5 py-0.5 text-nano font-semibold tabular-nums text-muted " +
         "group-data-[state=active]:bg-primaryInk/25 group-data-[state=active]:text-primaryInk " +
         "group-aria-[current=page]:bg-primaryInk/25 group-aria-[current=page]:text-primaryInk"
       }
@@ -86,13 +86,13 @@ export function TabsScrollArea({
       {edges.start && (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-1 left-1 w-6 rounded-l-control bg-gradient-to-r from-surface to-transparent"
+          className="pointer-events-none absolute inset-y-1 left-1 w-6 bg-gradient-to-r from-surface to-transparent"
         />
       )}
       {edges.end && (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-1 right-1 w-6 rounded-r-control bg-gradient-to-l from-surface to-transparent"
+          className="pointer-events-none absolute inset-y-1 right-1 w-6 bg-gradient-to-l from-surface to-transparent"
         />
       )}
     </div>

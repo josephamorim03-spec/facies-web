@@ -22,13 +22,13 @@ function IconAiSpark({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      strokeWidth="2"
+      strokeLinecap="butt"
+      strokeLinejoin="miter"
       className={className}
       aria-hidden="true"
     >
-      <rect x="6" y="7" width="12" height="10" rx="2" />
+      <rect x="6" y="7" width="12" height="10"/>
       <path d="M9.5 11h0.01M14.5 11h0.01M10 14c0.6.55 1.3.82 2 .82s1.4-.27 2-.82" />
       <path d="M12 7V4M8 5l1 1M16 5l-1 1" />
     </svg>
@@ -77,7 +77,7 @@ function questionChipClass(item: AnalysisSelectionItem): string {
   if (item.status === "processing" || item.status === "analysis_ready") return "border-warning bg-surfaceMuted text-warning";
   if (item.status === "failed") return "border-danger bg-surfaceMuted text-danger hover:bg-surfaceMuted";
   if (item.status === "ineligible") return "border-edge text-muted opacity-40 cursor-default";
-  if (item.selected) return "border-ink bg-ink text-paper";
+  if (item.selected) return "border-primary bg-primary text-primaryInk";
   return "border-edge text-ink hover:border-ink";
 }
 
@@ -259,7 +259,7 @@ export function AnalysisTab(props: AnalysisTabProps) {
             title="Navegar por análises"
             aria-label="Navegar por análises"
             style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
-            className="fixed left-4 z-40 h-12 w-12 rounded-control border border-ink bg-ink text-paper flex items-center justify-center shadow-lg"
+            className="fixed left-4 z-40 h-12 w-12 border border-ink bg-ink text-paper flex items-center justify-center shadow-overlay"
           >
             <IconAiSpark className="h-5 w-5" />
           </button>

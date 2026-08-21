@@ -111,7 +111,7 @@ export function KrosModeChooser({
             aria-checked={active}
             disabled={disabled || unavailable}
             onClick={() => onChange(option.value)}
-            className={`rounded-control border px-4 py-3 text-left transition-colors disabled:opacity-60 ${
+            className={`border px-4 py-3 text-left transition-colors disabled:opacity-60 ${
               active
                 ? "border-primary bg-surfaceMuted"
                 : "border-edge bg-paper enabled:hover:bg-surfaceMuted"

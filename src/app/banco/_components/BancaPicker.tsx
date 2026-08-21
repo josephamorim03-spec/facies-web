@@ -219,7 +219,7 @@ export default function BancaPicker({
           {selectedChips.map((chip) => (
             <span key={chip.id} className="km-chip max-w-full">
               <span className="min-w-0 truncate">{chip.label}</span>
-              <span className="text-[10px] uppercase text-muted">{sourceKindLabel(chip.kind)}</span>
+              <span className="text-nano uppercase text-muted">{sourceKindLabel(chip.kind)}</span>
               <button
                 type="button"
                 onClick={() => removeChip(chip)}
@@ -246,11 +246,11 @@ export default function BancaPicker({
       {loading ? (
         <div className="space-y-2" aria-hidden="true">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-10 animate-pulse rounded-surface bg-surfaceMuted" />
+            <div key={i} className="h-10 paper-skeleton" />
           ))}
         </div>
       ) : error ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-surface border border-danger/40 bg-paper px-3 py-2 text-xs text-danger">
+        <div className="flex flex-wrap items-center gap-2 border border-danger/40 bg-paper px-3 py-2 text-xs text-danger">
           <span>Não foi possível carregar as fontes.</span>
           {onRetry && (
             <button
@@ -301,7 +301,7 @@ export default function BancaPicker({
               .map((section, _idx, sections) => (
                 <li key={section.heading} role="presentation">
                   {sections.length > 1 ? (
-                    <p className="px-1 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">
+                    <p className="px-1 pb-1 pt-2 text-nano font-semibold uppercase tracking-[0.08em] text-muted">
                       {section.heading}
                     </p>
                   ) : null}
@@ -314,7 +314,7 @@ export default function BancaPicker({
                         <li key={optionId(source)}>
                           <label
                             className={cx(
-                              "flex min-h-[44px] cursor-pointer items-center gap-3 rounded-surface border px-3 py-2 text-sm transition",
+                              "flex min-h-[44px] cursor-pointer items-center gap-3 border px-3 py-2 text-sm transition",
                               checked
                                 ? "border-primary bg-[var(--amber-tint)]"
                                 : "border-edge bg-paper hover:border-primary/50",

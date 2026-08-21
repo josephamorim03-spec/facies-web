@@ -1,7 +1,7 @@
 import { type CSSProperties, type ReactNode } from "react";
 
 export const BOTTOM_ACTION_BAR_RESERVE_CLASS =
-  "pb-[calc(var(--bottom-action-bar-space)_+_1rem)] md:pb-0";
+  "pb-[calc(var(--nav-stack-height)_+_var(--bottom-action-bar-space)_+_1rem)] md:pb-0";
 
 type BottomActionBarProps = {
   children: ReactNode;
@@ -13,7 +13,14 @@ type BottomActionBarProps = {
 };
 
 const MOBILE_BAR_STYLE: CSSProperties = {
-  paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)",
+  // Assenta ACIMA da barra de abas. Com ela ausente o token vale 0 e a barra
+  // volta a encostar no rodape.
+  bottom: "var(--nav-stack-height)",
+  // A safe-area so entra quando NAO ha navegacao embaixo — com ela presente,
+  // quem ja consumiu a safe-area foi a propria barra de abas, e somar de novo
+  // abriria ~34px de vazio num aparelho com notch.
+  paddingBottom:
+    "calc(0.75rem + max(0px, env(safe-area-inset-bottom, 0px) - var(--nav-stack-height)))",
 };
 
 export function BottomActionBar({
@@ -28,8 +35,9 @@ export function BottomActionBar({
     <div
       data-bottom-action-bar="true"
       className={[
-        "fixed inset-x-0 bottom-0 z-40 border-t border-edge bg-paper px-4 pt-3 shadow-[0_-6px_18px_rgba(0,0,0,0.06)]",
-        "md:static md:border md:bg-surface md:p-3 md:shadow-soft",
+        // `bottom` vem do style, nao da classe: e o token que decide.
+        "fixed inset-x-0 z-40 border-t border-edge bg-paper px-4 pt-3",
+        "md:static md:border md:bg-surface md:p-3",
         hiddenOnMobile ? "hidden md:block" : "",
         className,
       ].filter(Boolean).join(" ")}

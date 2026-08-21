@@ -84,7 +84,7 @@ export default function ImportWorkspace({
 
   return (
     <div className="space-y-5">
-      <section className="rounded-surface border border-edge bg-surface p-5">
+      <section className="border border-edge bg-surface p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-ink">Ingestao</h2>
@@ -98,12 +98,12 @@ export default function ImportWorkspace({
               type="file"
               accept="application/pdf"
               onChange={(event) => onFileChange(event.target.files?.[0] ?? null)}
-              className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
+              className="border border-edge bg-surface px-3 py-2 text-sm"
             />
           </label>
           {file ? <div className="text-xs text-muted">{file.name}</div> : null}
 
-          <div className="grid gap-4 rounded-surface border border-edge bg-surface p-4/60">
+          <div className="grid gap-4 border border-edge bg-surface p-4/60">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <p className="text-xs font-semibold uppercase text-muted">Prova</p>
@@ -114,7 +114,7 @@ export default function ImportWorkspace({
                       <input
                         value={fieldText(metadataDraft[key])}
                         onChange={(event) => onMetadataFieldChange(key, event.target.value)}
-                        className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
+                        className="border border-edge bg-surface px-3 py-2 text-sm"
                       />
                     </label>
                   ))}
@@ -130,7 +130,7 @@ export default function ImportWorkspace({
                         <select
                           value={fieldText(metadataDraft[key])}
                           onChange={(event) => onMetadataFieldChange(key, event.target.value)}
-                          className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
+                          className="border border-edge bg-surface px-3 py-2 text-sm"
                         >
                           <option value="">IA</option>
                           {GRANDE_AREA_OPTIONS.map((area) => (
@@ -141,7 +141,7 @@ export default function ImportWorkspace({
                         <input
                           value={fieldText(metadataDraft[key])}
                           onChange={(event) => onMetadataFieldChange(key, event.target.value)}
-                          className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
+                          className="border border-edge bg-surface px-3 py-2 text-sm"
                         />
                       )}
                     </label>
@@ -150,12 +150,12 @@ export default function ImportWorkspace({
               </div>
             </div>
 
-            <details className="rounded-surface border border-edge bg-surface p-3">
+            <details className="border border-edge bg-surface p-3">
               <summary className="cursor-pointer text-sm font-semibold text-ink">JSON</summary>
               <textarea
                 value={metadataText}
                 onChange={(event) => onMetadataTextChange(event.target.value)}
-                className="mt-3 min-h-[160px] w-full rounded-surface border border-edge bg-surface px-3 py-3 font-mono text-xs leading-6 text-ink"
+                className="mt-3 min-h-[160px] w-full border border-edge bg-surface px-3 py-3 text-xs leading-6 text-ink"
               />
             </details>
           </div>
@@ -165,22 +165,22 @@ export default function ImportWorkspace({
               type="checkbox"
               checked={autoPipeline}
               onChange={(event) => onAutoPipelineChange(event.target.checked)}
-              className="h-4 w-4 rounded border-edge"
+              className="h-4 w-4 border-edge"
             />
             Auto pipeline
           </label>
           <div className="flex flex-wrap gap-3">
-            <button onClick={onPreview} className="rounded-surface bg-info px-5 py-2 text-sm font-semibold text-ink transition hover:bg-info">
+            <button onClick={onPreview} className="bg-info px-5 py-2 text-sm font-semibold text-ink transition hover:bg-info">
               Preview
             </button>
-            <button onClick={onImport} className="rounded-surface bg-paper px-5 py-2 text-sm font-semibold text-ink transition hover:bg-paper">
+            <button onClick={onImport} className="bg-paper px-5 py-2 text-sm font-semibold text-ink transition hover:bg-paper">
               Importar
             </button>
           </div>
         </div>
 
         {previewSummary ? (
-          <div className="mt-5 space-y-4 rounded-surface border border-edge bg-surface p-4/70">
+          <div className="mt-5 space-y-4 border border-edge bg-surface p-4/70">
             <div>
               <h3 className="text-lg font-semibold text-ink">Preview</h3>
               <p className="mt-1 text-sm text-ink">Diagnostico antes de importar.</p>
@@ -195,7 +195,7 @@ export default function ImportWorkspace({
               <MetadataPill label="páginas OCR" value={previewSummary.quality_summary?.ocr_summary?.pages_used} />
             </div>
             {readiness ? (
-              <div className={`rounded-surface border p-4 text-sm ${readinessTone}`}>
+              <div className={`border p-4 text-sm ${readinessTone}`}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="text-xs font-semibold uppercase opacity-70">Prontidao editorial</div>
@@ -211,7 +211,7 @@ export default function ImportWorkspace({
                 {readiness.blockers.length ? (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {readiness.blockers.map((blocker) => (
-                      <span key={blocker} className="rounded-control bg-surface/50 px-2 py-0.5 text-[11px] font-semibold">
+                      <span key={blocker} className="bg-surface px-2 py-0.5 text-micro font-semibold">
                         {blocker}
                       </span>
                     ))}
@@ -220,7 +220,7 @@ export default function ImportWorkspace({
                 {readiness.pipeline_warnings.length ? (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {readiness.pipeline_warnings.map((warning) => (
-                      <span key={warning} className="rounded-control bg-surface/50 px-2 py-0.5 text-[11px] font-semibold">
+                      <span key={warning} className="bg-surface px-2 py-0.5 text-micro font-semibold">
                         {warning}
                       </span>
                     ))}
@@ -235,13 +235,13 @@ export default function ImportWorkspace({
                 ))}
               </div>
             ) : (
-                <div className="rounded-surface border border-success bg-surfaceMuted px-4 py-3 text-sm text-success/40/30">
+                <div className="border border-success bg-surfaceMuted px-4 py-3 text-sm text-success/40/30">
                   Sem alertas criticos.
                 </div>
             )}
 
             {questions.length ? (
-              <div className="overflow-hidden rounded-surface border border-edge bg-surface">
+              <div className="overflow-hidden border border-edge bg-surface">
                 <div className="border-b border-edge px-4 py-3">
                   <h4 className="text-sm font-semibold text-ink">Overrides por questão</h4>
                 </div>
@@ -286,7 +286,7 @@ export default function ImportWorkspace({
                                       return next;
                                     })
                                   }
-                                  className="mt-1 rounded-control border border-edge px-1.5 py-0.5 text-[10px] font-semibold text-muted hover:bg-surface"
+                                  className="mt-1 border border-edge px-1.5 py-0.5 text-nano font-semibold text-muted hover:bg-surface"
                                 >
                                   {isOpen ? "ocultar" : "ver"}
                                 </button>
@@ -296,8 +296,8 @@ export default function ImportWorkspace({
                               </td>
                               <td className="px-3 py-3 text-muted">
                                 <div>{extractionSource}</div>
-                                {ocrUsed ? <div className="mt-1 rounded-control border border-info bg-surfaceMuted px-2 py-0.5 text-[10px] font-semibold text-info/40/30">OCR</div> : null}
-                                {diagnostic?.requires_image ? <div className="mt-1 text-[10px] text-warning">imagem</div> : null}
+                                {ocrUsed ? <div className="mt-1 border border-info bg-surfaceMuted px-2 py-0.5 text-nano font-semibold text-info/40/30">OCR</div> : null}
+                                {diagnostic?.requires_image ? <div className="mt-1 text-nano text-warning">imagem</div> : null}
                               </td>
                               <td className="max-w-[220px] px-3 py-3 text-muted">
                                 {blockers ? <div className="font-semibold text-danger">{blockers}</div> : null}
@@ -322,7 +322,7 @@ export default function ImportWorkspace({
                                             if (event.target.value) onQuestionOverrideChange(number, key, event.target.value);
                                             else onQuestionOverrideRemove(number, key);
                                           }}
-                                          className="w-full rounded-surface border border-edge bg-surface px-2 py-1.5 text-xs"
+                                          className="w-full border border-edge bg-surface px-2 py-1.5 text-xs"
                                         >
                                           <option value="">{fieldText(resolved[key]) || "herda"}</option>
                                           {GRANDE_AREA_OPTIONS.map((area) => (
@@ -334,14 +334,14 @@ export default function ImportWorkspace({
                                           value={hasOverride ? fieldText(override[key]) : ""}
                                           placeholder={fieldText(resolved[key]) || "herda"}
                                           onChange={(event) => onQuestionOverrideChange(number, key, event.target.value)}
-                                          className="w-full rounded-surface border border-edge bg-surface px-2 py-1.5 text-xs"
+                                          className="w-full border border-edge bg-surface px-2 py-1.5 text-xs"
                                         />
                                       )}
                                       {hasOverride ? (
                                         <button
                                           type="button"
                                           onClick={() => onQuestionOverrideRemove(number, key)}
-                                          className="rounded-surface border border-edge px-1.5 py-1 text-[10px] font-semibold text-muted hover:bg-surface"
+                                          className="border border-edge px-1.5 py-1 text-nano font-semibold text-muted hover:bg-surface"
                                         >
                                           herdar
                                         </button>
@@ -352,7 +352,7 @@ export default function ImportWorkspace({
                               })}
                             </tr>
                             {isOpen ? (
-                              <tr className="bg-surface/70/40">
+                              <tr className="bg-surface/40">
                                 <td colSpan={5 + QUESTION_OVERRIDE_FIELDS.length} className="px-4 py-4">
                                   <p className="whitespace-pre-wrap text-sm text-ink">{question.stem || "-"}</p>
                                   <div className="mt-3 grid gap-1.5">
@@ -361,7 +361,7 @@ export default function ImportWorkspace({
                                       return (
                                         <div
                                           key={letter}
-                                          className={`flex gap-2 rounded-surface px-2 py-1 text-sm ${
+                                          className={`flex gap-2 px-2 py-1 text-sm ${
                                             isCorrect
                                               ? "bg-surfaceMuted text-success/40"
                                               : "text-ink"
@@ -401,7 +401,7 @@ export default function ImportWorkspace({
         ) : null}
       </section>
 
-      <section className="rounded-surface border border-edge bg-surface p-5">
+      <section className="border border-edge bg-surface p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-ink">Historico</h2>
@@ -412,12 +412,12 @@ export default function ImportWorkspace({
               type="checkbox"
               checked={showArtifacts}
               onChange={(event) => onShowArtifactsChange(event.target.checked)}
-              className="h-4 w-4 rounded border-edge"
+              className="h-4 w-4 border-edge"
             />
             Mostrar artefatos
           </label>
         </div>
-        <div className="mt-4 overflow-auto rounded-surface border border-edge">
+        <div className="mt-4 overflow-auto border border-edge">
           <table className="w-full text-left text-sm">
             <thead className="bg-surface">
               <tr className="text-muted">
@@ -441,29 +441,29 @@ export default function ImportWorkspace({
                       <div className="font-medium text-ink">
                         {item.file_name || item.id}
                         {item.is_mixed_source ? (
-                          <span className="ml-2 rounded-control bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-warning/30">
+                          <span className="ml-2 bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-warning/30">
                             misto
                           </span>
                         ) : null}
                       </div>
                       <div className="mt-1 flex flex-wrap gap-1.5">
                         {item.is_zero_ai_locked ? (
-                          <span className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-semibold text-info/30">
+                          <span className="bg-surfaceMuted px-2 py-0.5 text-micro font-semibold text-info/30">
                             zero-IA
                           </span>
                         ) : null}
                         {item.is_artifact ? (
-                          <span className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-semibold text-danger/30">
+                          <span className="bg-surfaceMuted px-2 py-0.5 text-micro font-semibold text-danger/30">
                             {formatArtifactReason(item.artifact_reason)}
                           </span>
                         ) : null}
                         {(item.candidate_count ?? 0) > 0 && (item.candidate_count ?? 0) <= 2 ? (
-                          <span className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-semibold text-warning/30">
+                          <span className="bg-surfaceMuted px-2 py-0.5 text-micro font-semibold text-warning/30">
                             baixo rendimento
                           </span>
                         ) : null}
                         {(item.published_question_count ?? 0) === 0 ? (
-                          <span className="rounded-control bg-surface px-2 py-0.5 text-[11px] font-semibold text-ink">
+                          <span className="bg-surface px-2 py-0.5 text-micro font-semibold text-ink">
                             sem publicacao
                           </span>
                         ) : null}

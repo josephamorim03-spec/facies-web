@@ -124,7 +124,7 @@ export default function AdminAuditPage() {
             setActionFilter(e.target.value);
             setPage(0);
           }}
-          className="px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+          className="px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
         >
           <option value="">Todas as ações</option>
           <option value="key_created">Criação</option>
@@ -144,12 +144,12 @@ export default function AdminAuditPage() {
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="h-16 bg-surface rounded-surface animate-pulse"
+              className="h-16 paper-skeleton"
             />
           ))}
         </div>
       ) : entries.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-edge rounded-surface">
+        <div className="text-center py-16 border border-dashed border-edge ">
           <p className="text-3xl mb-2">📋</p>
           <p className="text-sm text-muted">
             {actionFilter
@@ -162,7 +162,7 @@ export default function AdminAuditPage() {
           {entries.map((entry) => (
             <div
               key={entry.id}
-              className="border border-edge rounded-surface px-4 py-3 bg-surface/50 hover:bg-surface transition-colors"
+              className="border border-edge px-4 py-3 bg-surface hover:bg-surface transition-colors"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 min-w-0">
@@ -175,7 +175,7 @@ export default function AdminAuditPage() {
                     </p>
                     <p className="text-xs text-muted mt-0.5 break-all">
                       {entry.target_id && (
-                        <span className="font-mono">
+                        <span className="tabular-nums">
                           {entry.target_id.slice(0, 12)}…
                         </span>
                       )}

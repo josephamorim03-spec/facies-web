@@ -50,7 +50,7 @@ const DIMENSION_LABELS: Record<string, string> = {
   provenance_freshness: "Proveniência e atualidade",
 };
 
-const ADMIN_PANEL = "rounded-surface border border-edge bg-surface";
+const ADMIN_PANEL = "border border-edge bg-surface";
 const ADMIN_CONTROL = "paper-control border border-edge bg-surface px-3 py-2 text-sm text-ink";
 const ADMIN_BUTTON = "paper-control border border-edge px-4 py-2 text-sm font-semibold text-ink hover:bg-surfaceMuted disabled:opacity-50";
 const ADMIN_BUTTON_SM = "paper-control border border-edge px-3 py-2 text-sm font-semibold text-ink hover:bg-surfaceMuted disabled:opacity-50";
@@ -58,7 +58,7 @@ const ADMIN_PRIMARY_BUTTON = "paper-control border border-primary bg-primary px-
 const ADMIN_PRIMARY_BUTTON_SM = "paper-control border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primaryInk hover:brightness-[1.04] disabled:opacity-50";
 const ADMIN_DANGER_BUTTON = "paper-control border border-danger px-4 py-2 text-sm font-semibold text-danger hover:bg-surfaceMuted disabled:opacity-50";
 const ADMIN_WARNING_BUTTON = "paper-control border border-warning px-4 py-2 text-sm font-semibold text-warning hover:bg-surfaceMuted disabled:opacity-50";
-const ADMIN_CHIP = "rounded-control border border-edge bg-paper px-2 py-0.5 text-[11px] text-muted";
+const ADMIN_CHIP = "border border-edge bg-paper px-2 py-0.5 text-micro text-muted";
 
 function stateTone(state?: string | null): string {
   if (state === "blocked" || state === "fail" || state === "critical") return "border-danger bg-danger/5 text-danger";
@@ -304,7 +304,7 @@ export default function AiReviewPanel() {
         note: draftNote || undefined,
         evidenceCorpusVersion: draft.evidence_corpus_version,
       });
-      setNotice(action === "approve" ? "Artefato aprovado e auditado." : "Decisao do artefato registrada.");
+      setNotice(action === "approve" ? "Artefato aprovado e auditado." : "Decisão do artefato registrada.");
       setDraftNotes((current) => ({ ...current, [key]: "" }));
       await refresh();
     } catch (err) {
@@ -433,8 +433,8 @@ export default function AiReviewPanel() {
         </div>
       </header>
 
-      {notice ? <div className="rounded-surface border border-success bg-success/5 p-3 text-sm text-success">{notice}</div> : null}
-      {error ? <div className="rounded-surface border border-danger bg-danger/5 p-3 text-sm text-danger">{error} <button type="button" onClick={() => void refresh()} className="ml-2 font-semibold underline">Tentar novamente</button></div> : null}
+      {notice ? <div className="border border-success bg-success/5 p-3 text-sm text-success">{notice}</div> : null}
+      {error ? <div className="border border-danger bg-danger/5 p-3 text-sm text-danger">{error} <button type="button" onClick={() => void refresh()} className="ml-2 font-semibold underline">Tentar novamente</button></div> : null}
 
       {aiCoverage ? <section className="border-y border-edge py-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -469,7 +469,7 @@ export default function AiReviewPanel() {
         </div>
       </section> : null}
 
-      <details className="group rounded-surface border border-edge bg-surface">
+      <details className="group border border-edge bg-surface">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-ink sm:px-5">
           <span>Piloto governado Micro + DNA</span>
           <span className="text-muted transition group-open:rotate-90" aria-hidden="true">&gt;</span>
@@ -503,14 +503,14 @@ export default function AiReviewPanel() {
             const errors = draft.validation_report?.errors ?? [];
             const warnings = draft.validation_report?.warnings ?? [];
             return <article key={`${draft.rollout_id}:${key}`} className={`${ADMIN_PANEL} p-4`}>
-              <div className="flex flex-wrap items-center gap-2"><strong className="text-sm">{draft.draft_kind}</strong><span className={`rounded-control border px-2 py-0.5 text-xs ${errors.length ? stateTone("blocked") : warnings.length ? stateTone("warning") : stateTone("ready")}`}>{errors.length ? "bloqueado" : warnings.length ? "com alertas" : "validado"}</span><span className="text-xs text-muted">v{draft.question_version}</span></div>
+              <div className="flex flex-wrap items-center gap-2"><strong className="text-sm">{draft.draft_kind}</strong><span className={`border px-2 py-0.5 text-xs ${errors.length ? stateTone("blocked") : warnings.length ? stateTone("warning") : stateTone("ready")}`}>{errors.length ? "bloqueado" : warnings.length ? "com alertas" : "validado"}</span><span className="text-xs text-muted">v{draft.question_version}</span></div>
               <p className="mt-2 line-clamp-2 font-serif text-sm">{draft.stem_preview}</p>
               <details className="mt-3">
                 <summary className="cursor-pointer text-sm font-semibold">Revisar artefato</summary>
                 {errors.length ? <ul className="mt-2 list-disc pl-5 text-sm text-danger">{errors.map((item) => <li key={item}>{item}</li>)}</ul> : null}
                 {warnings.length ? <ul className="mt-2 list-disc pl-5 text-sm text-warning">{warnings.map((item) => <li key={item}>{item}</li>)}</ul> : null}
-                <pre className="mt-3 max-h-72 overflow-auto rounded-surface bg-paper p-3 text-xs">{JSON.stringify(draft.payload, null, 2)}</pre>
-                <textarea value={draftNotes[key] ?? ""} onChange={(event) => setDraftNotes((current) => ({ ...current, [key]: event.target.value }))} rows={2} placeholder="Nota editorial" className="mt-3 w-full rounded-surface border border-edge bg-transparent p-2 text-sm" />
+                <pre className="mt-3 max-h-72 overflow-auto bg-paper p-3 text-xs">{JSON.stringify(draft.payload, null, 2)}</pre>
+                <textarea value={draftNotes[key] ?? ""} onChange={(event) => setDraftNotes((current) => ({ ...current, [key]: event.target.value }))} rows={2} placeholder="Nota editorial" className="mt-3 w-full border border-edge bg-transparent p-2 text-sm" />
                 <div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={Boolean(busy) || errors.length > 0} onClick={() => void decideAiDraft(draft, "approve")} className={ADMIN_PRIMARY_BUTTON_SM}>Aprovar</button><button type="button" disabled={Boolean(busy)} onClick={() => void decideAiDraft(draft, "request_changes")} className={ADMIN_BUTTON_SM}>Solicitar ajustes</button><button type="button" disabled={Boolean(busy)} onClick={() => void decideAiDraft(draft, "reject")} className="paper-control border border-danger px-3 py-2 text-sm font-semibold text-danger disabled:opacity-50">Rejeitar</button></div>
               </details>
             </article>;
@@ -519,7 +519,7 @@ export default function AiReviewPanel() {
       </section> : null}
 
       <div className="flex items-center justify-between text-sm text-muted"><span>{visibleItems.length} exibidas de {total}</span><span>Dificuldade observada aparece com ≥ 30 usuários únicos</span></div>
-      {loading ? <div className="h-48 animate-pulse rounded-surface bg-surfaceMuted" aria-busy="true" /> : visibleItems.length === 0 ? <div className="rounded-surface border border-dashed border-edge p-12 text-center text-sm text-muted">Nenhuma questão corresponde aos filtros.</div> : (
+      {loading ? <div className="h-48 paper-skeleton" aria-busy="true" /> : visibleItems.length === 0 ? <div className="border border-dashed border-edge p-12 text-center text-sm text-muted">Nenhuma questão corresponde aos filtros.</div> : (
         <div className="grid gap-3">
           {visibleItems.map((item) => {
             const observed = quality[item.question_id];
@@ -530,10 +530,10 @@ export default function AiReviewPanel() {
                 <input aria-label="Selecionar questão" type="checkbox" checked={selected.has(item.question_id)} onChange={(event) => setSelected((current) => { const next = new Set(current); if (event.target.checked) next.add(item.question_id); else next.delete(item.question_id); return next; })} className="mt-1" />
                 <button type="button" onClick={() => void openItem(item)} className="min-w-0 flex-1 text-left">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={`rounded-control border px-2 py-0.5 text-[11px] font-semibold ${stateTone(item.priority)}`}>{item.priority ?? "sem prioridade"}</span>
+                    <span className={`border px-2 py-0.5 text-micro font-semibold ${stateTone(item.priority)}`}>{item.priority ?? "sem prioridade"}</span>
                     <span className={ADMIN_CHIP}>{LANES.find(([value]) => value === item.lane)?.[1] ?? item.lane ?? "Triagem editorial"}</span>
-                    {mismatch ? <span className="rounded-control border border-danger bg-danger/5 px-2 py-0.5 text-[11px] font-semibold text-danger">difficulty_mismatch</span> : null}
-                    {observed?.flags.includes("negative_discrimination") ? <span className="rounded-control border border-danger bg-danger/5 px-2 py-0.5 text-[11px] font-semibold text-danger">discriminação negativa</span> : null}
+                    {mismatch ? <span className="border border-danger bg-danger/5 px-2 py-0.5 text-micro font-semibold text-danger">difficulty_mismatch</span> : null}
+                    {observed?.flags.includes("negative_discrimination") ? <span className="border border-danger bg-danger/5 px-2 py-0.5 text-micro font-semibold text-danger">discriminação negativa</span> : null}
                   </div>
                   <p className="mt-1 text-xs font-medium text-warning">Prioridade: {priorityReason(item, observed)}</p>
                   <p className="mt-2 line-clamp-2 font-serif text-sm leading-relaxed text-ink">{item.stem_preview}</p>
@@ -553,8 +553,8 @@ export default function AiReviewPanel() {
       )}
 
       {batchPreview ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-paper/50 p-4">
-          <div role="dialog" aria-modal="true" className="w-full max-w-xl rounded-surface bg-surface p-5 shadow-overlay">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-paper p-4">
+          <div role="dialog" aria-modal="true" className="w-full max-w-xl bg-surface p-5 shadow-overlay">
             <h2 className="font-serif text-xl font-semibold">Confirmar análise em lote</h2>
             <p className="mt-2 text-sm text-muted">{batchPreview.count} questões · {batchPreview.estimated_calls} novas chamadas · {batchPreview.cached_count} em cache · modelo {batchPreview.model} · custo estimado {batchPreview.estimated_cost_band}.</p>
             <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">{batchPreview.checks.map((check) => <li key={check}>{check}</li>)}</ul>
@@ -567,12 +567,12 @@ export default function AiReviewPanel() {
         </div>
       ) : null}
 
-      {active ? <div className="fixed inset-0 z-40 bg-paper/40" onMouseDown={(event) => { if (event.target === event.currentTarget) setActive(null); }}><aside className="ml-auto h-full w-full overflow-y-auto bg-surface p-5 shadow-overlay sm:w-[min(760px,92vw)]"><div className="flex items-start justify-between gap-3"><div><p className="paper-eyebrow">Revisão versionada · v{active.question_version}</p><h2 className="mt-1 font-serif text-xl font-semibold">Decisão editorial</h2></div><button type="button" onClick={() => setActive(null)} className={ADMIN_BUTTON_SM}>Fechar</button></div>
-        <div className="mt-5 rounded-surface border border-edge p-4"><p className="font-serif text-sm leading-relaxed">{detail?.stem ?? active.stem_preview}</p>{detail ? <div className="mt-4 space-y-2">{Object.entries(detail.alternatives).map(([letter, text]) => <div key={letter} className={`rounded-surface border p-2 text-sm ${letter === detail.answer ? "border-success bg-success/5" : "border-edge"}`}><strong>{letter}.</strong> {text}</div>)}</div> : <p className="mt-3 text-sm text-muted">Carregando conteúdo canônico…</p>}<div className="mt-3 text-xs text-muted">Fonte: {[active.institution, active.exam_name, active.year].filter(Boolean).join(" · ") || "não informada"} · Status: {active.question_status}</div></div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3"><div className="rounded-surface bg-paper p-3"><div className="text-xs text-muted">Pretendida</div><strong>{active.difficulty_assessment?.intended_level ?? "não definida"}</strong><div className="mt-1 text-xs">{active.difficulty_assessment?.cognitive_demand ?? "demanda não definida"}</div></div><div className="rounded-surface bg-paper p-3"><div className="text-xs text-muted">Prevista pela IA</div><strong>{percent(active.difficulty_assessment?.predicted_score ?? active.difficulty_estimate)}</strong><div className="mt-1 text-xs">confiança {percent(active.difficulty_assessment?.confidence)}</div></div><div className="rounded-surface bg-paper p-3"><div className="text-xs text-muted">Observada</div><strong>{percent(quality[active.question_id]?.observed_difficulty)}</strong><div className="mt-1 text-xs">n={quality[active.question_id]?.unique_users ?? 0}; IC facilidade {percent(quality[active.question_id]?.facility_ci_low)}–{percent(quality[active.question_id]?.facility_ci_high)}</div></div></div>
-        <div className="mt-5 space-y-2"><h3 className="font-semibold">Rubrica editorial</h3>{Object.entries(active.dimensions ?? {}).map(([key, dimension]) => <div key={key} className={`rounded-surface border p-3 ${stateTone(dimension.state)}`}><div className="flex items-center justify-between gap-2"><strong className="text-sm">{DIMENSION_LABELS[key] ?? key}</strong><span className="text-xs uppercase">{dimension.state}</span></div><p className="mt-1 text-sm">{dimension.summary}</p>{dimension.evidence.length ? <ul className="mt-2 list-disc pl-5 text-xs">{dimension.evidence.map((evidence) => <li key={evidence}>{evidence}</li>)}</ul> : null}</div>)}</div>
-        <div className="mt-5"><div className="flex items-center justify-between"><h3 className="font-semibold">Diff proposto pela IA</h3><span className="text-xs text-muted">edite antes de aprovar</span></div><textarea value={patchText} onChange={(event) => setPatchText(event.target.value)} rows={10} spellCheck={false} className="mt-2 w-full rounded-surface border border-edge bg-paper p-3 font-mono text-xs" /><p className="mt-2 text-xs text-muted">Evidências e incertezas permanecem no histórico mesmo quando o rascunho é rejeitado.</p></div>
-        <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} placeholder="Justificativa da decisão" className="mt-5 w-full rounded-surface border border-edge bg-transparent p-3 text-sm" />
+      {active ? <div className="fixed inset-0 z-40 bg-paper" onMouseDown={(event) => { if (event.target === event.currentTarget) setActive(null); }}><aside className="ml-auto h-full w-full overflow-y-auto bg-surface p-5 shadow-overlay sm:w-[min(760px,92vw)]"><div className="flex items-start justify-between gap-3"><div><p className="paper-eyebrow">Revisão versionada · v{active.question_version}</p><h2 className="mt-1 font-serif text-xl font-semibold">Decisão editorial</h2></div><button type="button" onClick={() => setActive(null)} className={ADMIN_BUTTON_SM}>Fechar</button></div>
+        <div className="mt-5 border border-edge p-4"><p className="font-serif text-sm leading-relaxed">{detail?.stem ?? active.stem_preview}</p>{detail ? <div className="mt-4 space-y-2">{Object.entries(detail.alternatives).map(([letter, text]) => <div key={letter} className={`border p-2 text-sm ${letter === detail.answer ? "border-success bg-success/5" : "border-edge"}`}><strong>{letter}.</strong> {text}</div>)}</div> : <p className="mt-3 text-sm text-muted">Carregando conteúdo canônico…</p>}<div className="mt-3 text-xs text-muted">Fonte: {[active.institution, active.exam_name, active.year].filter(Boolean).join(" · ") || "não informada"} · Status: {active.question_status}</div></div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-3"><div className="bg-paper p-3"><div className="text-xs text-muted">Pretendida</div><strong>{active.difficulty_assessment?.intended_level ?? "não definida"}</strong><div className="mt-1 text-xs">{active.difficulty_assessment?.cognitive_demand ?? "demanda não definida"}</div></div><div className="bg-paper p-3"><div className="text-xs text-muted">Prevista pela IA</div><strong>{percent(active.difficulty_assessment?.predicted_score ?? active.difficulty_estimate)}</strong><div className="mt-1 text-xs">confiança {percent(active.difficulty_assessment?.confidence)}</div></div><div className="bg-paper p-3"><div className="text-xs text-muted">Observada</div><strong>{percent(quality[active.question_id]?.observed_difficulty)}</strong><div className="mt-1 text-xs">n={quality[active.question_id]?.unique_users ?? 0}; IC facilidade {percent(quality[active.question_id]?.facility_ci_low)}–{percent(quality[active.question_id]?.facility_ci_high)}</div></div></div>
+        <div className="mt-5 space-y-2"><h3 className="font-semibold">Rubrica editorial</h3>{Object.entries(active.dimensions ?? {}).map(([key, dimension]) => <div key={key} className={`border p-3 ${stateTone(dimension.state)}`}><div className="flex items-center justify-between gap-2"><strong className="text-sm">{DIMENSION_LABELS[key] ?? key}</strong><span className="text-xs uppercase">{dimension.state}</span></div><p className="mt-1 text-sm">{dimension.summary}</p>{dimension.evidence.length ? <ul className="mt-2 list-disc pl-5 text-xs">{dimension.evidence.map((evidence) => <li key={evidence}>{evidence}</li>)}</ul> : null}</div>)}</div>
+        <div className="mt-5"><div className="flex items-center justify-between"><h3 className="font-semibold">Diff proposto pela IA</h3><span className="text-xs text-muted">edite antes de aprovar</span></div><textarea value={patchText} onChange={(event) => setPatchText(event.target.value)} rows={10} spellCheck={false} className="mt-2 w-full border border-edge bg-paper p-3 text-xs" /><p className="mt-2 text-xs text-muted">Evidências e incertezas permanecem no histórico mesmo quando o rascunho é rejeitado.</p></div>
+        <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} placeholder="Justificativa da decisão" className="mt-5 w-full border border-edge bg-transparent p-3 text-sm" />
         <div className="mt-4 flex flex-wrap gap-2"><button type="button" disabled={!active.review_id || Boolean(busy)} onClick={() => void decide("approve")} className={ADMIN_PRIMARY_BUTTON}>Editar e aprovar</button><button type="button" disabled={!active.review_id || Boolean(busy)} onClick={() => void decide("reject")} className={ADMIN_DANGER_BUTTON}>Rejeitar</button><button type="button" disabled={!active.review_id || Boolean(busy)} onClick={() => void decide("request_changes")} className={ADMIN_BUTTON}>Solicitar ajustes</button><button type="button" disabled={!active.review_id || Boolean(busy)} onClick={() => void decide("specialist_review")} className={ADMIN_WARNING_BUTTON}>Revisão especializada</button><button type="button" disabled={Boolean(busy)} onClick={() => void analyzeOne(active.question_id)} className={ADMIN_BUTTON}>Nova análise</button>{active.question_status === "published" ? <button type="button" disabled={Boolean(busy)} onClick={() => void changeCanonicalStatus("unpublish")} className={ADMIN_BUTTON}>Despublicar</button> : null}<button type="button" disabled={Boolean(busy)} onClick={() => void changeCanonicalStatus("block")} className={ADMIN_DANGER_BUTTON}>Bloquear</button></div>
       </aside></div> : null}
     </section>

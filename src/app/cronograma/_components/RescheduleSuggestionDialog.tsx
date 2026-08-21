@@ -47,11 +47,11 @@ export function RescheduleSuggestionDialog({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="m-auto w-full max-w-xl space-y-3 rounded-surface border border-edge bg-paper p-4 shadow-xl"
+        className="m-auto w-full max-w-xl space-y-3 border border-edge bg-paper p-4 shadow-overlay"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="font-serif text-base">{title}</h3>
+          <h3 className="text-base">{title}</h3>
         </div>
 
         {loading ? (
@@ -88,7 +88,7 @@ export function RescheduleSuggestionDialog({
                 </div>
                 <ul className="space-y-1">
                   {suggestion.items.map((item) => (
-                    <li key={`${suggestion.suggestion_id}:${item.task_id}`} className="rounded-surface border border-edge px-3 py-2">
+                    <li key={`${suggestion.suggestion_id}:${item.task_id}`} className="border border-edge px-3 py-2">
                       <div className="flex items-center gap-2">
                         <AreaDot area={item.area as Area} size="sm" />
                         <div className="min-w-0 flex-1">

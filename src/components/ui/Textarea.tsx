@@ -7,7 +7,7 @@ type Props = TextareaHTMLAttributes<HTMLTextAreaElement> & {
 };
 
 const CONTROL =
-  "w-full rounded-control border bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted " +
+  "w-full border bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted " +
   "focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 " +
   "disabled:cursor-not-allowed disabled:opacity-60";
 

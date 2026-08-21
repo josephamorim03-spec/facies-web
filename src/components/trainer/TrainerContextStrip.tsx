@@ -25,10 +25,10 @@ export function TrainerContextStrip({
   return (
     <aside
       aria-label="Ação do treinador para hoje"
-      className={`flex flex-col gap-2 rounded-surface border border-edge bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between ${className}`}
+      className={`flex flex-col gap-2 border border-edge bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between ${className}`}
     >
       <div className="min-w-0">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+        <p className="text-micro font-semibold uppercase tracking-[0.14em] text-muted">
           Sua ação de hoje
         </p>
         <p className="truncate text-sm font-medium text-ink">{action.title}</p>

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Lock, RefreshCw } from "lucide-react";
+import { Lock, Reload as RefreshCw } from "pixelarticons/react";
+
+import { LoadBar } from "@/components/ui/LoadBar";
 
 import {
   getCurrentPlan,
@@ -129,8 +131,10 @@ export default function TrilhaPage() {
   if (loading) {
     return (
       <main className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 aria-hidden className="h-5 w-5 animate-spin text-muted" />
-        <span className="sr-only">Carregando trilha</span>
+        <div className="w-full max-w-xs">
+          <LoadBar label="Carregando trilha" />
+          <p className="mt-2 text-xs uppercase tracking-[0.12em] text-muted">Carregando trilha</p>
+        </div>
       </main>
     );
   }
@@ -201,7 +205,7 @@ export default function TrilhaPage() {
           silêncio parecia bug do produto. */}
       {unscheduled.length > 0 && (
         <section
-          className="rounded-control border border-edge bg-surfaceMuted p-4"
+          className="border border-edge bg-surfaceMuted p-4"
           aria-labelledby="trilha-unscheduled"
         >
           <h2 id="trilha-unscheduled" className="text-sm font-medium text-ink">
@@ -237,7 +241,7 @@ export default function TrilhaPage() {
       ) : (
         <ol className="space-y-4">
           {days.map(([day, activities]) => (
-            <li key={day} className="rounded-control border border-edge bg-surface p-4">
+            <li key={day} className="border border-edge bg-surface p-4">
               <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted">
                 {formatDay(day)}
               </p>

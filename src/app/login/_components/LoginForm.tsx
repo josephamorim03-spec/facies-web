@@ -67,14 +67,14 @@ export function LoginForm({
       <label className="flex cursor-pointer items-center gap-2 text-left text-sm text-muted">
         <input
           type="checkbox"
-          className="h-4 w-4 shrink-0 rounded border-edge text-ink"
+          className="h-4 w-4 shrink-0 border-edge text-ink"
           checked={rememberDevice}
           onChange={(event) => setRememberDevice(event.target.checked)}
         />
         <span>Lembrar neste dispositivo</span>
       </label>
       {loginError && (
-        <div className="rounded-surface border border-danger bg-surfaceMuted px-4 py-3 text-center text-sm text-danger">
+        <div className="border border-danger bg-surfaceMuted px-4 py-3 text-center text-sm text-danger">
           {loginError}
         </div>
       )}

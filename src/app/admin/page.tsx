@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { adminGetStats, AdminStats } from "@/lib/api/domains/access-keys";
+import { LoadingLine } from "@/components/ui/LoadBar";
 import {
   BarChart,
   Bar,
@@ -10,10 +11,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
 } from "recharts";
 
 // ─── Colors ────────────────────────────────────────────────────────────────
@@ -47,7 +44,7 @@ function StatCard({
   trend?: { direction: "up" | "down" | "neutral"; label: string };
 }) {
   return (
-    <div className="bg-surface rounded-surface border border-edge p-5">
+    <div className="bg-surface border border-edge p-5">
       <p className="text-xs font-medium text-muted uppercase tracking-wide mb-1">
         {label}
       </p>
@@ -135,7 +132,7 @@ function ReviewsChart({
           <Tooltip
             contentStyle={{
               fontSize: 12,
-              borderRadius: 8,
+              borderRadius: 0,
               border: `1px solid ${COLORS.edge}`,
             }}
             labelFormatter={(val) => {
@@ -151,7 +148,6 @@ function ReviewsChart({
           <Bar
             dataKey="reviews"
             fill={COLORS.blue}
-            radius={[4, 4, 0, 0]}
             maxBarSize={32}
           />
         </BarChart>
@@ -188,39 +184,33 @@ function KeyDistributionChart({
     );
   }
 
+  const total = data.reduce((sum, entry) => sum + entry.value, 0);
+
   return (
-    <div className="h-56 flex items-center">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={50}
-            outerRadius={80}
-            paddingAngle={2}
-            dataKey="value"
-          >
-            {data.map((entry, index) => (
-              <Cell key={entry.name} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip
-            contentStyle={{
-              fontSize: 12,
-              borderRadius: 8,
-              border: `1px solid ${COLORS.edge}`,
-            }}
-            formatter={(value, name) => [value, name]}
-          />
-          <Legend
-            wrapperStyle={{ fontSize: 11, color: COLORS.muted }}
-            iconType="circle"
-            iconSize={8}
-          />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
+    // Lista de medidores, nao rosca. Quatro categorias com contagem exata se
+    // leem comparando COMPRIMENTOS alinhados a um eixo comum; num anel elas
+    // viram arcos, que ninguem compara de olho — e a legenda com bolinha
+    // ("iconType: circle") era a ultima forma redonda do painel.
+    <dl className="flex h-56 flex-col justify-center gap-3">
+      {data.map((entry) => (
+        <div key={entry.name} className="grid grid-cols-[7rem_1fr_3rem] items-center gap-3">
+          <dt className="text-micro font-semibold uppercase tracking-[0.1em] text-muted">
+            {entry.name}
+          </dt>
+          <div className="chrome-meter h-3" aria-hidden="true">
+            <div
+              style={{
+                width: `${total > 0 ? (entry.value / total) * 100 : 0}%`,
+                ["--meter-color"]: entry.color,
+              } as CSSProperties}
+            />
+          </div>
+          <dd className="text-right text-sm font-semibold tabular-nums text-ink">
+            {entry.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -376,9 +366,7 @@ export default function AdminDashboardPage() {
   if (!stats) {
     return (
       <div className="flex items-center justify-center h-48">
-        <span className="text-sm text-muted animate-pulse">
-          Carregando métricas…
-        </span>
+        <LoadingLine>Carregando métricas</LoadingLine>
       </div>
     );
   }
@@ -462,13 +450,13 @@ export default function AdminDashboardPage() {
       {/* ── Charts row ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Review activity chart */}
-        <div className="bg-surface rounded-surface border border-edge p-5">
+        <div className="bg-surface border border-edge p-5">
           <SectionTitle>Atividade de Revisões (14 dias)</SectionTitle>
           <ReviewsChart data={activity.daily_last_14_days} />
         </div>
 
         {/* Key distribution pie */}
-        <div className="bg-surface rounded-surface border border-edge p-5">
+        <div className="bg-surface border border-edge p-5">
           <SectionTitle>Distribuição de Chaves</SectionTitle>
           <KeyDistributionChart
             available={keys.available}
@@ -482,13 +470,13 @@ export default function AdminDashboardPage() {
       {/* ── Bottom row: Top users + Mentor breakdown ────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top users */}
-        <div className="bg-surface rounded-surface border border-edge p-5">
+        <div className="bg-surface border border-edge p-5">
           <SectionTitle>Top Alunos (30 dias)</SectionTitle>
           <TopUsersTable users={activity.top_users_last_30_days} />
         </div>
 
         {/* Mentor breakdown */}
-        <div className="bg-surface rounded-surface border border-edge p-5">
+        <div className="bg-surface border border-edge p-5">
           <SectionTitle>Chaves por Mentoria</SectionTitle>
           <MentorBreakdown data={keys.by_mentor_label} />
         </div>

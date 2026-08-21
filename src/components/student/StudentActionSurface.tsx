@@ -26,10 +26,10 @@ export function StudentPrimaryAction({
   eyebrow?: string;
 }) {
   return (
-    <section className="rounded-surface border border-edge bg-paper px-4 py-5 sm:px-6">
+    <section className="border border-edge bg-paper px-4 py-5 sm:px-6">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0 space-y-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <p className="text-micro font-semibold uppercase tracking-[0.14em] text-muted">
             {eyebrow ? `${eyebrow} / ` : ""}{sourceLabel(action.source)}
             {action.estimated_minutes && action.estimated_minutes > 0 ? ` / ${action.estimated_minutes} min` : ""}
           </p>
@@ -42,7 +42,7 @@ export function StudentPrimaryAction({
         </div>
         <Link
           href={action.href}
-          className="inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:w-auto"
+          className="inline-flex min-h-12 w-full items-center justify-center border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:w-auto"
         >
           {action.cta_label}
         </Link>
@@ -54,7 +54,7 @@ export function StudentPrimaryAction({
 export function StudentLoadNote({ load }: { load: StudentSurfaceHome["load_note"] }) {
   if (!load) return null;
   return (
-    <aside className={`rounded-surface border px-4 py-3 text-sm ${load.overload_alert ? "border-warning/50 bg-warning/5" : "border-edge bg-surface"}`}>
+    <aside className={`border px-4 py-3 text-sm ${load.overload_alert ? "border-warning/50 bg-warning/5" : "border-edge bg-surface"}`}>
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <p className="font-semibold text-ink">Carga {load.label}</p>
         <p className="text-xs text-muted">
@@ -76,7 +76,7 @@ export function StudentBackupActions({ actions }: { actions: StudentTodayAction[
           <Link
             key={`${action.kind}:${action.href}`}
             href={action.href}
-            className="rounded-surface border border-edge bg-surface px-4 py-3 transition hover:border-primary"
+            className="border border-edge bg-surface px-4 py-3 transition hover:border-primary"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -101,7 +101,7 @@ export function StudentSurfaceInsight({ surface }: { surface: StudentSurfaceHome
         ? "border-edge bg-surface"
         : "border-edge bg-paper";
   return (
-    <aside className={`rounded-surface border px-4 py-3 ${tone}`}>
+    <aside className={`border px-4 py-3 ${tone}`}>
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(10rem,14rem)] md:items-center">
         <div className="min-w-0">
           {surface.insight ? (
@@ -112,7 +112,7 @@ export function StudentSurfaceInsight({ surface }: { surface: StudentSurfaceHome
           ) : null}
         </div>
         {surface.support_metric ? (
-          <div className="rounded-surface border border-edge bg-paper px-3 py-2">
+          <div className="border border-edge bg-paper px-3 py-2">
             <p className="text-xs text-muted">{surface.support_metric.label}</p>
             <p className="mt-1 text-2xl font-semibold text-ink">
               {surface.support_metric.value ?? "-"}
@@ -134,7 +134,7 @@ export function StudentDeepLinks({ links }: { links: StudentSurfaceHome["deep_li
         <Link
           key={`${link.label}:${link.href}`}
           href={link.href}
-          className="rounded-surface border border-edge bg-surface px-4 py-3 transition hover:border-primary"
+          className="border border-edge bg-surface px-4 py-3 transition hover:border-primary"
         >
           <p className="text-sm font-semibold text-ink">{link.label}</p>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{link.reason}</p>
@@ -156,7 +156,7 @@ export function StudentDetailsDisclosure({
   children: ReactNode;
 }) {
   return (
-    <details className="group rounded-surface border border-edge bg-surface">
+    <details className="group border border-edge bg-surface">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-ink sm:px-5">
         <span>{title}</span>
         <span className="text-muted transition group-open:rotate-90" aria-hidden="true">
@@ -165,7 +165,7 @@ export function StudentDetailsDisclosure({
       </summary>
       <div className="space-y-4 border-t border-edge p-4 sm:p-5">
         {status !== "complete" ? (
-          <p className="rounded-surface border border-edge bg-paper px-3 py-2 text-xs leading-5 text-muted">
+          <p className="border border-edge bg-paper px-3 py-2 text-xs leading-5 text-muted">
             Dados parciais: {missingSources.join(", ") || "fonte indisponível"}.
           </p>
         ) : null}
@@ -186,11 +186,11 @@ export function StudentSurfaceSnapshot({ items }: { items: Array<{ label: string
           </>
         );
         return item.href ? (
-          <Link key={item.label} href={item.href} className="rounded-surface border border-edge bg-paper p-3 hover:border-primary">
+          <Link key={item.label} href={item.href} className="border border-edge bg-paper p-3 hover:border-primary">
             {content}
           </Link>
         ) : (
-          <div key={item.label} className="rounded-surface border border-edge bg-paper p-3">
+          <div key={item.label} className="border border-edge bg-paper p-3">
             {content}
           </div>
         );

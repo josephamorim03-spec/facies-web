@@ -88,7 +88,7 @@ export function CommandBar() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="w-[min(34rem,calc(100vw-3rem))] border border-edge bg-surface shadow-[var(--overlay-shadow)]"
+        className="w-[min(34rem,calc(100vw-3rem))] border border-edge bg-surface shadow-overlay"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center gap-2 border-b border-edge px-3 py-2">
@@ -137,7 +137,7 @@ export function CommandBar() {
                 <span className="uppercase tracking-[0.08em]">{item.label}</span>
                 {item.hint ? (
                   <span
-                    className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${
+                    className={`text-nano font-semibold uppercase tracking-[0.12em] ${
                       index === cursor ? "opacity-70" : "text-muted"
                     }`}
                   >

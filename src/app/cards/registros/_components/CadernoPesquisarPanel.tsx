@@ -105,7 +105,7 @@ export function CadernoPesquisarPanel({
                     color: selected ? "white" : (hasSelection ? "var(--color-muted)" : areaColor),
                     opacity: hasSelection && !selected ? 0.66 : 1,
                   }}
-                  className="min-h-[2.25rem] min-w-14 rounded-surface border px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[background-color,border-color,color,opacity] duration-150 hover:opacity-100"
+                  className="min-h-[2.25rem] min-w-14 border px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[background-color,border-color,color,opacity] duration-150 hover:opacity-100"
                 >
                   {a}
                 </button>
@@ -119,7 +119,7 @@ export function CadernoPesquisarPanel({
             ref={searchInputRef}
             id="caderno-search-theme"
             type="text"
-            className="w-full rounded-surface border border-edge bg-paper px-3 py-2 text-sm"
+            className="w-full border border-edge bg-paper px-3 py-2 text-sm"
             placeholder="Buscar por tema"
             value={filterTheme}
             onChange={(e) => onFilterThemeChange(e.target.value)}
@@ -156,7 +156,7 @@ export function CadernoPesquisarPanel({
                       onFilterSourceTypeChange(v);
                       if (v !== "question") onFilterOutcomeChange("");
                     }}
-                    className={`rounded-surface border px-3 py-1.5 text-xs transition-colors ${filterSourceType === v ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary hover:text-ink"}`}
+                    className={`border px-3 py-1.5 text-xs transition-colors ${filterSourceType === v ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:border-primary hover:text-ink"}`}
                   >
                     {l}
                   </button>
@@ -174,7 +174,7 @@ export function CadernoPesquisarPanel({
                       type="button"
                       key={v}
                       onClick={() => onFilterOutcomeChange(v)}
-                      className={`rounded-surface border px-3 py-1.5 text-xs transition-colors ${filterOutcome === v ? "border-ink bg-ink text-paper" : "border-edge text-muted hover:border-primary hover:text-ink"}`}
+                      className={`border px-3 py-1.5 text-xs transition-colors ${filterOutcome === v ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:border-primary hover:text-ink"}`}
                     >
                       {l}
                     </button>
@@ -188,8 +188,8 @@ export function CadernoPesquisarPanel({
               <div className="flex items-center justify-between">
                 <p className="text-xs text-muted uppercase tracking-widest">Peso a partir de</p>
                 <span
-                  className="text-xs font-semibold px-1 py-0.5 rounded-control text-white"
-                  style={{ backgroundColor: weightBadgeColor(filterWeightMin) }}
+                  className="border bg-surface px-1 py-0.5 text-xs font-semibold tabular-nums"
+                  style={{ borderColor: weightBadgeColor(filterWeightMin), color: weightBadgeColor(filterWeightMin) }}
                 >
                   {filterWeightMin}
                 </span>
@@ -211,7 +211,7 @@ export function CadernoPesquisarPanel({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 w-full max-w-full items-start">
                 <div className="space-y-1 w-full min-w-0">
                   <p className="text-xs text-muted">De</p>
-                  <div className="overflow-hidden rounded-surface border border-edge bg-paper focus-within:border-primary">
+                  <div className="overflow-hidden border border-edge bg-paper focus-within:border-primary">
                     <input
                       type="date"
                       className="block w-full border-0 bg-transparent px-3 py-2 text-sm outline-none"
@@ -222,7 +222,7 @@ export function CadernoPesquisarPanel({
                 </div>
                 <div className="space-y-1 w-full min-w-0">
                   <p className="text-xs text-muted">Até</p>
-                  <div className="overflow-hidden rounded-surface border border-edge bg-paper focus-within:border-primary">
+                  <div className="overflow-hidden border border-edge bg-paper focus-within:border-primary">
                     <input
                       type="date"
                       className="block w-full border-0 bg-transparent px-3 py-2 text-sm outline-none"

@@ -51,7 +51,7 @@ export function CorrecaoStage({ token, session, onSessionChange, onSkip }: Props
         aria-labelledby="correcao-stage-title"
         className="paper-surface mt-4 border-2 border-primary p-4 sm:p-5"
       >
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+        <p className="text-nano font-semibold uppercase tracking-[0.16em] text-muted">
           Antes do gabarito
         </p>
         <h2 id="correcao-stage-title" className="mt-1 font-serif text-2xl font-semibold text-ink">
@@ -82,13 +82,13 @@ export function CorrecaoStage({ token, session, onSessionChange, onSkip }: Props
                   item.knowledge_nodes[0]?.node_name ??
                   `Questão ${item.position}`}
               </span>
-              <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
+              <span className="shrink-0 text-nano font-semibold uppercase tracking-[0.1em] text-muted">
                 {item.is_correct === false ? "Errou" : "Marcou dúvida"}
               </span>
             </li>
           ))}
           {eligible.length > 5 ? (
-            <li className="px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+            <li className="px-3 py-1 text-nano font-semibold uppercase tracking-[0.12em] text-muted">
               e mais {eligible.length - 5}
             </li>
           ) : null}
@@ -109,10 +109,10 @@ export function CorrecaoStage({ token, session, onSessionChange, onSkip }: Props
   return (
     <section aria-labelledby="correcao-stage-title" className="paper-surface mt-4 border-2 border-primary p-4 sm:p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="correcao-stage-title" className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+        <h2 id="correcao-stage-title" className="text-nano font-semibold uppercase tracking-[0.16em] text-muted">
           Correção · questão {current?.position}
         </h2>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+        <p className="text-nano font-semibold uppercase tracking-[0.16em] text-muted">
           {index + 1} de {eligible.length}
         </p>
       </div>

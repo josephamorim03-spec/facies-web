@@ -55,7 +55,7 @@ export function KrosSizeSlider({
   return (
     <div className="mt-4">
       <div className="flex items-baseline gap-3">
-        <span className="font-serif text-4xl font-semibold tabular-nums text-ink">{value}</span>
+        <span className="text-4xl font-semibold tabular-nums text-ink">{value}</span>
         <span className="text-sm text-muted">
           questões · <span className="tabular-nums">~{minutes} min</span>
         </span>

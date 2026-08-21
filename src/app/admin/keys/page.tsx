@@ -87,7 +87,7 @@ function extractEmail(userId: string | null): string {
 function StatusBadge({ status }: { status: AccessKeyOut["status"] }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-control font-medium ${STATUS_BADGE[status]}`}
+      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 font-medium ${STATUS_BADGE[status]}`}
     >
       <span>{STATUS_ICON[status]}</span>
       <span>{STATUS_LABELS[status]}</span>
@@ -97,13 +97,13 @@ function StatusBadge({ status }: { status: AccessKeyOut["status"] }) {
 
 function SkeletonRow() {
   return (
-    <tr className="border-b border-edge last:border-0 animate-pulse">
-      <td className="px-3 py-3"><div className="h-3 w-32 bg-surfaceMuted rounded" /></td>
-      <td className="px-3 py-3"><div className="h-3 w-20 bg-surfaceMuted rounded" /></td>
-      <td className="px-3 py-3"><div className="h-3 w-28 bg-surfaceMuted rounded" /></td>
-      <td className="px-3 py-3"><div className="h-3 w-16 bg-surfaceMuted rounded" /></td>
-      <td className="px-3 py-3"><div className="h-3 w-24 bg-surfaceMuted rounded" /></td>
-      <td className="px-3 py-3"><div className="h-3 w-20 bg-surfaceMuted rounded" /></td>
+    <tr className="border-b border-edge last:border-0">
+      <td className="px-3 py-3"><div className="h-3 w-32 paper-skeleton" /></td>
+      <td className="px-3 py-3"><div className="h-3 w-20 paper-skeleton" /></td>
+      <td className="px-3 py-3"><div className="h-3 w-28 paper-skeleton" /></td>
+      <td className="px-3 py-3"><div className="h-3 w-16 paper-skeleton" /></td>
+      <td className="px-3 py-3"><div className="h-3 w-24 paper-skeleton" /></td>
+      <td className="px-3 py-3"><div className="h-3 w-20 paper-skeleton" /></td>
     </tr>
   );
 }
@@ -385,7 +385,7 @@ export default function AdminKeysPage() {
         ].map(({ label, value, color }) => (
           <div
             key={label}
-            className="border border-edge rounded-surface px-4 py-3 text-center bg-surface/50"
+            className="border border-edge px-4 py-3 text-center bg-surface"
           >
             <div className={`text-xl font-bold ${color}`}>{value}</div>
             <div className="text-xs text-muted mt-0.5">{label}</div>
@@ -397,7 +397,7 @@ export default function AdminKeysPage() {
       {showCreateForm && (
         <form
           onSubmit={handleCreate}
-          className="border border-edge rounded-surface p-4 mb-6 space-y-3 bg-surface/50"
+          className="border border-edge p-4 mb-6 space-y-3 bg-surface"
         >
           <h2 className="text-sm font-semibold text-ink mb-1">
             Gerar novo lote
@@ -412,7 +412,7 @@ export default function AdminKeysPage() {
                 placeholder="Nome da mentoria"
                 required
                 list="mentor-labels"
-                className="w-full px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+                className="w-full px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
               />
               <datalist id="mentor-labels">
                 {distinctLabels.map((l) => (
@@ -430,7 +430,7 @@ export default function AdminKeysPage() {
                 max={100}
                 value={createQty}
                 onChange={(e) => setCreateQty(Number(e.target.value))}
-                className="w-full px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+                className="w-full px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
               />
             </div>
             <div>
@@ -438,7 +438,7 @@ export default function AdminKeysPage() {
               <select
                 value={createDays}
                 onChange={(e) => setCreateDays(Number(e.target.value))}
-                className="w-full px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+                className="w-full px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
               >
                 <option value={30}>30 dias</option>
                 <option value={60}>60 dias</option>
@@ -455,7 +455,7 @@ export default function AdminKeysPage() {
                   value={createCustomDays}
                   onChange={(e) => setCreateCustomDays(e.target.value)}
                   placeholder="Nº de dias"
-                  className="w-full mt-1.5 px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+                  className="w-full mt-1.5 px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
                 />
               )}
             </div>
@@ -477,7 +477,7 @@ export default function AdminKeysPage() {
 
       {/* Created keys banner */}
       {createdKeys.length > 0 && (
-        <div className="border border-success bg-surfaceMuted rounded-surface p-4 mb-6 space-y-3">
+        <div className="border border-success bg-surfaceMuted p-4 mb-6 space-y-3">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-success">
               🎉 Chaves criadas — copie agora (só aparecem uma vez)
@@ -512,7 +512,7 @@ export default function AdminKeysPage() {
                 key={key.key_id}
                 type="button"
                 onClick={() => key.key_code && copyToClipboard(key.key_code)}
-                className="text-left font-mono text-xs rounded border border-success bg-paper px-2.5 py-2 text-ink hover:border-success hover:bg-surfaceMuted transition-colors cursor-pointer"
+                className="text-left text-xs border border-success bg-paper px-2.5 py-2 text-ink hover:border-success hover:bg-surfaceMuted transition-colors cursor-pointer"
                 title="Copiar chave"
               >
                 {key.key_code}
@@ -534,7 +534,7 @@ export default function AdminKeysPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por código, mentoria ou usuário..."
-            className="w-full pl-8 pr-3 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+            className="w-full pl-8 pr-3 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
           />
         </div>
 
@@ -543,7 +543,7 @@ export default function AdminKeysPage() {
           <select
             value={filterLabel}
             onChange={(e) => setFilterLabel(e.target.value)}
-            className="px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+            className="px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
           >
             <option value="">Todas mentorias</option>
             {distinctLabels.map((l) => (
@@ -555,12 +555,12 @@ export default function AdminKeysPage() {
         )}
 
         {/* Hide inactive toggle */}
-        <label className="flex items-center gap-2 text-sm text-muted cursor-pointer select-none whitespace-nowrap px-2.5 py-2 rounded-control border border-edge bg-paper hover:bg-edge/10 transition-colors">
+        <label className="flex items-center gap-2 text-sm text-muted cursor-pointer select-none whitespace-nowrap px-2.5 py-2 border border-edge bg-paper hover:bg-edge/10 transition-colors">
           <input
             type="checkbox"
             checked={hideInactive}
             onChange={(e) => setHideInactive(e.target.checked)}
-            className="rounded border-edge text-ink focus:ring-ink/20"
+            className="border-edge text-ink focus:ring-ink/20"
           />
           Ocultar inativas
         </label>
@@ -568,7 +568,7 @@ export default function AdminKeysPage() {
 
       {/* Table */}
       {initialLoading ? (
-        <div className="overflow-x-auto rounded-surface border border-edge">
+        <div className="overflow-x-auto border border-edge">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-edge bg-edge/30 text-left">
@@ -589,7 +589,7 @@ export default function AdminKeysPage() {
           </table>
         </div>
       ) : filteredKeys.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-edge rounded-surface">
+        <div className="text-center py-16 border border-dashed border-edge ">
           <p className="text-3xl mb-2">🔑</p>
           <p className="text-sm text-muted">
             {searchQuery || filterLabel || hideInactive
@@ -608,7 +608,7 @@ export default function AdminKeysPage() {
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-surface border border-edge">
+        <div className="overflow-x-auto border border-edge">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-edge bg-edge/30 text-left">
@@ -630,7 +630,7 @@ export default function AdminKeysPage() {
                   {/* Code */}
                   <td className="px-3 py-2.5">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono text-xs text-ink">
+                      <span className="text-xs text-ink">
                         {key.key_code_masked}
                       </span>
                       <button
@@ -648,11 +648,11 @@ export default function AdminKeysPage() {
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
-                          strokeWidth={1.5}
+                          strokeWidth={2}
                         >
                           <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                            strokeLinecap="butt"
+                            strokeLinejoin="miter"
                             d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"
                           />
                         </svg>
@@ -701,7 +701,7 @@ export default function AdminKeysPage() {
                           onChange={(e) =>
                             setExtendDays(Number(e.target.value))
                           }
-                          className="w-16 px-1.5 py-1 text-xs rounded border border-edge bg-paper text-ink focus:outline-none"
+                          className="w-16 px-1.5 py-1 text-xs border border-edge bg-paper text-ink focus:outline-none"
                         />
                         <Button
                           size="xs"

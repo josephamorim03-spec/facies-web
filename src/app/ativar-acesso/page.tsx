@@ -7,6 +7,7 @@ import { getProfile } from "@/lib/api";
 import { redeemKey } from "@/lib/api/domains/access-keys";
 import { getAPIErrorCode } from "@/lib/api/shared/http";
 import { resolveAuthenticatedLandingRoute } from "@/lib/initialGoalSetup";
+import { LoadBar } from "@/components/ui/LoadBar";
 
 export default function AtivarAcessoPage() {
   const router = useRouter();
@@ -61,7 +62,10 @@ export default function AtivarAcessoPage() {
   if (checking) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-paper">
-        <div className="w-5 h-5 rounded-control border-2 border-muted border-t-ink animate-spin" />
+        <div className="w-full max-w-xs">
+          <LoadBar label="Verificando seu acesso" />
+          <p className="mt-2 text-xs uppercase tracking-[0.12em] text-muted">Verificando acesso</p>
+        </div>
       </div>
     );
   }
@@ -70,17 +74,17 @@ export default function AtivarAcessoPage() {
     <div className="flex items-center justify-center min-h-screen bg-paper px-4">
       <div className="w-full max-w-sm">
         <div className="flex justify-center mb-6">
-          <div className="w-14 h-14 rounded-control bg-edge flex items-center justify-center">
+          <div className="w-14 h-14 bg-edge flex items-center justify-center">
             <svg
               className="w-7 h-7 text-ink"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
-              strokeWidth={1.5}
+              strokeWidth={2}
             >
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeLinecap="butt"
+                strokeLinejoin="miter"
                 d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z"
               />
             </svg>
@@ -101,7 +105,7 @@ export default function AtivarAcessoPage() {
             maxLength={24}
             spellCheck={false}
             autoComplete="off"
-            className="w-full px-3 py-2.5 rounded-control border border-edge bg-paper text-ink text-center text-base font-mono tracking-widest placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-ink/20"
+            className="w-full px-3 py-2.5 border border-edge bg-paper text-ink text-center text-base tracking-widest placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-ink/20"
           />
 
           {error && (
@@ -111,7 +115,7 @@ export default function AtivarAcessoPage() {
           <button
             type="submit"
             disabled={busy || !keyCode.trim()}
-            className="w-full py-2.5 rounded-control bg-ink text-paper text-sm font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
+            className="w-full py-2.5 bg-primary text-primaryInk text-sm font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
           >
             {busy ? "Ativando..." : "Ativar"}
           </button>

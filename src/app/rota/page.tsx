@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "pixelarticons/react";
 
 import {
   buildNavigationRoute,
@@ -14,6 +14,7 @@ import {
   type NavigationPrompt,
   type NavigationRoute,
   type NavigationRouteStatus,
+  getAPIErrorMessage,
 } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
 import { Alert } from "@/components/ui/Alert";
@@ -129,7 +130,8 @@ export default function RotaPage() {
       setResolved(null);
       setStep("route");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Não foi possível montar sua rota agora.");
+      console.error("rota: falha ao calcular", cause);
+      setError(getAPIErrorMessage(cause) ?? "Não foi possível montar sua rota agora.");
     } finally {
       setBusy(false);
     }
@@ -166,7 +168,8 @@ export default function RotaPage() {
       });
       router.push(`/banco/sessao/${session.session_id}`);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Não foi possível montar a sessão agora.");
+      console.error("rota: falha ao montar sessão", cause);
+      setError(getAPIErrorMessage(cause) ?? "Não foi possível montar a sessão agora.");
       setBusy(false);
     }
   }

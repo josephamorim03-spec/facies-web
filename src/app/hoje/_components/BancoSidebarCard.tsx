@@ -16,7 +16,7 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
 
   if (longitudinal.total_nodes_studied === 0) {
     return (
-      <section className="rounded-surface border border-edge bg-surface p-5 shadow-soft">
+      <section className="border border-edge bg-surface p-5 ">
         <h2 className="text-sm font-semibold text-ink">Banco de questões</h2>
         <p className="mt-2 text-xs leading-relaxed text-muted">
           Responda questões no banco para ver seu progresso aqui.
@@ -36,7 +36,7 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
   const atRiskCount = longitudinal.at_risk_node_ids.length;
 
   return (
-    <section className="space-y-3 rounded-surface border border-edge bg-surface p-5 shadow-soft">
+    <section className="space-y-3 border border-edge bg-surface p-5 ">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-ink">Banco de questões</h2>
         {/* `/revisoes` nao existe como pagina: era so um 308 para `/evolucao`. */}
@@ -76,8 +76,8 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
                   </span>
                   <span className={`font-semibold ${toneClass}`}>{mastery}%</span>
                 </div>
-                <div className="h-1 w-full overflow-hidden rounded-control bg-edge">
-                  <div className={`h-full rounded-control ${barClass}`} style={{ width: `${mastery}%` }} />
+                <div className="h-1 w-full overflow-hidden bg-edge">
+                  <div className={`h-full ${barClass}`} style={{ width: `${mastery}%` }} />
                 </div>
               </Link>
             );
@@ -92,7 +92,7 @@ export default function BancoSidebarCard({ longitudinal }: BancoSidebarCardProps
           ? `/banco?theme=${encodeURIComponent(weakNodes[0].node_name ?? weakNodes[0].knowledge_node_id)}`
           : "/banco"
         }
-        className="block rounded-surface border border-edge px-3 py-2 text-center text-xs font-semibold transition-colors hover:border-primary hover:text-primary"
+        className="block border border-edge px-3 py-2 text-center text-xs font-semibold transition-colors hover:border-primary hover:text-primary"
       >
         {weakNodes.length > 0 ? `Treinar ${weakNodes[0].node_name ?? "tema frágil"}` : "Estudar agora"}
       </Link>

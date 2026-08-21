@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "pixelarticons/react";
+
+import { LoadBar } from "@/components/ui/LoadBar";
 
 import {
   completeOnboarding,
@@ -181,8 +183,10 @@ export default function OnboardingPage() {
   if (loading) {
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center px-4">
-        <Loader2 aria-hidden className="h-5 w-5 animate-spin text-muted" />
-        <span className="sr-only">Carregando questionário</span>
+        <div className="w-full max-w-xs">
+          <LoadBar label="Carregando questionário" />
+          <p className="mt-2 text-xs uppercase tracking-[0.12em] text-muted">Carregando questionário</p>
+        </div>
       </main>
     );
   }
@@ -197,7 +201,7 @@ export default function OnboardingPage() {
             <li key={item.key} className="flex flex-1 items-center gap-2">
               <span
                 aria-current={active ? "step" : undefined}
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-control border text-xs font-semibold ${
+                className={`flex h-7 w-7 shrink-0 items-center justify-center border text-xs font-semibold ${
                   done
                     ? "border-success bg-success text-primaryInk"
                     : active
@@ -272,7 +276,7 @@ export default function OnboardingPage() {
           ))}
 
         {step === "routine" && (
-          <div className="space-y-4 rounded-control border border-edge bg-surface p-4">
+          <div className="space-y-4 border border-edge bg-surface p-4">
             <WeekdayPicker
               ariaLabel="Dias com compromisso"
               selected={routine.map((day) => day.weekday)}
@@ -300,7 +304,7 @@ export default function OnboardingPage() {
                       <label className="text-xs text-muted">
                         <span className="mb-1 block uppercase tracking-[0.08em]">Tipo</span>
                         <select
-                          className="rounded-control border border-edge bg-surface px-2 py-2 text-sm text-ink"
+                          className="border border-edge bg-surface px-2 py-2 text-sm text-ink"
                           value={day.kind}
                           onChange={(event) =>
                             setRoutine((previous) =>
@@ -328,7 +332,7 @@ export default function OnboardingPage() {
                           type="number"
                           min={1}
                           max={24}
-                          className="w-20 rounded-control border border-edge bg-surface px-2 py-2 text-sm text-ink"
+                          className="w-20 border border-edge bg-surface px-2 py-2 text-sm text-ink"
                           value={day.duration_hours}
                           onChange={(event) =>
                             setRoutine((previous) =>
@@ -355,7 +359,7 @@ export default function OnboardingPage() {
         )}
 
         {step === "capacity" && (
-          <div className="space-y-3 rounded-control border border-edge bg-surface p-4">
+          <div className="space-y-3 border border-edge bg-surface p-4">
             {["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"].map(
               (label, weekday) => {
                 const minutes = availability[weekday] ?? 0;
@@ -371,7 +375,7 @@ export default function OnboardingPage() {
                         min={0}
                         max={960}
                         step={15}
-                        className="w-24 rounded-control border border-edge bg-surface px-2 py-2 text-sm text-ink"
+                        className="w-24 border border-edge bg-surface px-2 py-2 text-sm text-ink"
                         value={minutes}
                         onChange={(event) =>
                           setAvailability((previous) => ({
@@ -395,7 +399,7 @@ export default function OnboardingPage() {
         )}
 
         {step === "ready" && (
-          <div className="rounded-control border border-edge bg-surface p-4">
+          <div className="border border-edge bg-surface p-4">
             <p className="text-sm text-ink">
               Vamos montar sua trilha agora. Ela já começa com os simulados diagnósticos —
               é com eles que o sistema aprende onde você está.

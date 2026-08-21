@@ -3,13 +3,18 @@ import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger" | "success";
 export type ButtonSize = "xs" | "sm" | "md";
 
+// Sem `border`: o relevo e' desenhado por `inset box-shadow` DENTRO da caixa
+// (ver `.chrome-raised`), entao uma borda por cima viraria contorno duplo.
+//
+// `ghost` e a excecao — acao terciaria nao se aperta, entao nao ganha relevo
+// nem colchete; e' texto que responde ao hover.
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "border border-primary bg-primary text-primaryInk hover:brightness-[1.04]",
-  secondary: "border border-ink bg-surface text-ink hover:bg-surfaceMuted",
-  outline: "border border-primary text-primary hover:bg-primary hover:text-primaryInk",
+  primary: "chrome-raised bg-primary text-primaryInk hover:brightness-[1.04]",
+  secondary: "chrome-raised bg-surfaceMuted text-ink hover:brightness-[0.97]",
+  outline: "chrome-raised bg-surface text-primary hover:bg-surfaceMuted",
   ghost: "text-muted hover:bg-surfaceMuted hover:text-ink",
-  danger: "border border-danger bg-danger text-primaryInk hover:brightness-[1.04]",
-  success: "border border-success bg-success text-primaryInk hover:brightness-[1.04]",
+  danger: "chrome-raised bg-danger text-primaryInk hover:brightness-[1.04]",
+  success: "chrome-raised bg-success text-primaryInk hover:brightness-[1.04]",
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
@@ -25,9 +30,13 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
 // `ghost` fica de fora — e o tratamento para acao terciaria, onde o colchete
 // competiria com o botao primario ao lado.
 const BASE =
-  "paper-control inline-flex items-center justify-center gap-1.5 font-sans font-semibold uppercase tracking-[0.11em] leading-none " +
+  "paper-control inline-flex items-center justify-center gap-1.5 font-semibold uppercase tracking-[0.11em] leading-none " +
   "disabled:cursor-not-allowed disabled:opacity-50 " +
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+  // Foco pontilhado POR DENTRO: o anel de 2px por fora encostava na borda dura
+  // do vizinho e sumia. `outline-offset` negativo o traz para dentro do relevo,
+  // que e exatamente onde o Win98 o desenhava.
+  "focus-visible:outline focus-visible:outline-1 focus-visible:outline-dotted " +
+  "focus-visible:[outline-offset:-4px] focus-visible:outline-current";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;

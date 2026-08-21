@@ -3,15 +3,8 @@
 import { usePathname } from "next/navigation";
 import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
 import { useState } from "react";
-import {
-  CalendarDays,
-  CircleUserRound,
-  House,
-  Layers3,
-  LibraryBig,
-  Navigation,
-  type LucideIcon,
-} from "lucide-react";
+import { Calendar as CalendarDays, AvatarSquare as CircleUserRound, Home as House, Notes as Layers3, Library as LibraryBig, Gps as Navigation } from "pixelarticons/react";
+import type { ComponentType, SVGProps } from "react";
 
 import { FastNavLink } from "@/components/FastNavLink";
 import {
@@ -22,7 +15,7 @@ import {
   type StudentNavIcon,
 } from "@/lib/navConfig";
 
-const ICON_MAP: Record<StudentNavIcon, LucideIcon> = {
+const ICON_MAP: Record<StudentNavIcon, ComponentType<SVGProps<SVGSVGElement>>> = {
   today: House,
   bank: LibraryBig,
   rota: Navigation,
@@ -96,7 +89,7 @@ export function MobileTabBar() {
       {showChildren && (
         <nav
           aria-label="Seções desta área"
-          className="flex items-center gap-1 px-3 pb-1"
+          className="flex items-center gap-1 border-t border-edge bg-paper px-3 pb-1 pt-1"
         >
           {children.map((item) => {
             const active = isNavChildActive(pathname, item);
@@ -111,7 +104,7 @@ export function MobileTabBar() {
                 data-nav-item-href={item.href}
                 data-nav-active={active ? "true" : "false"}
                 className={[
-                  "flex min-h-10 flex-1 items-center justify-center border px-3 text-[10px] font-semibold uppercase tracking-[0.1em]",
+                  "flex min-h-10 flex-1 items-center justify-center border px-3 text-nano font-semibold uppercase tracking-[0.1em]",
                   active
                     ? "border-primary bg-primary text-primaryInk"
                     : "border-edge bg-surface text-muted",
@@ -154,7 +147,7 @@ export function MobileTabBar() {
               ].join(" ")}
             >
               <Icon className="h-5 w-5" aria-hidden="true" />
-              <span className="text-[9px] font-semibold uppercase tracking-[0.08em]">{item.shortLabel}</span>
+              <span className="text-pico font-semibold uppercase tracking-[0.08em]">{item.shortLabel}</span>
             </FastNavLink>
           );
         })}

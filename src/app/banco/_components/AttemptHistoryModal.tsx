@@ -56,7 +56,7 @@ export default function AttemptHistoryModal({ questionId, onClose }: AttemptHist
         role="dialog"
         aria-modal="true"
         aria-label="Histórico de respostas"
-        className="flex max-h-[80vh] w-full max-w-md flex-col rounded-surface border border-edge bg-paper p-5 shadow-lg"
+        className="flex max-h-[80vh] w-full max-w-md flex-col border border-edge bg-paper p-5 shadow-overlay"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
@@ -76,7 +76,7 @@ export default function AttemptHistoryModal({ questionId, onClose }: AttemptHist
           <button
             type="button"
             onClick={onClose}
-            className="rounded-surface border border-edge px-2 py-1 text-xs text-muted hover:border-primary hover:text-ink"
+            className="border border-edge px-2 py-1 text-xs text-muted hover:border-primary hover:text-ink"
             aria-label="Fechar"
           >
             ×
@@ -97,23 +97,23 @@ export default function AttemptHistoryModal({ questionId, onClose }: AttemptHist
                 return (
                   <li
                     key={attempt.attempt_id}
-                    className="flex items-center justify-between gap-3 rounded-surface border border-edge px-3 py-2"
+                    className="flex items-center justify-between gap-3 border border-edge px-3 py-2"
                   >
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-ink">{formatAnsweredAt(attempt.answered_at)}</p>
-                      <p className="mt-0.5 text-[11px] text-muted">
+                      <p className="mt-0.5 text-micro text-muted">
                         {attempt.selected_option ? `Marcou ${attempt.selected_option}` : "Sem alternativa"}
                         {duration ? ` · ${duration}` : ""}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                       {attempt.doubtful && (
-                        <span className="rounded-control border border-warning/40 px-2 py-0.5 text-[11px] font-semibold text-warning">
+                        <span className="border border-warning/40 px-2 py-0.5 text-micro font-semibold text-warning">
                           Em dúvida
                         </span>
                       )}
                       <span
-                        className={`rounded-control border px-2 py-0.5 text-[11px] font-semibold ${
+                        className={`border px-2 py-0.5 text-micro font-semibold ${
                           attempt.is_correct
                             ? "border-success/40 text-success"
                             : "border-danger/40 text-danger"
@@ -132,7 +132,7 @@ export default function AttemptHistoryModal({ questionId, onClose }: AttemptHist
         <button
           type="button"
           onClick={onClose}
-          className="mt-4 w-full rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink hover:border-primary"
+          className="mt-4 w-full border border-edge px-4 py-2 text-sm font-semibold text-ink hover:border-primary"
         >
           Fechar
         </button>

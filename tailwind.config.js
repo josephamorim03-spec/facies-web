@@ -36,6 +36,16 @@ module.exports = {
       // A prosa NÃO segue junto: `.paper-reading` declara `--font-serif`
       // explicitamente. Bloco de texto clínico que dependa do sans padrão vira
       // mono silenciosamente — é a varredura por tela da fase de telas.
+      // Escala MICRO, abaixo de `text-xs`. Existia como 178 `text-[Npx]` avulsos
+      // em quatro degraus — uma escala paralela, sem nome e sem contrato, no
+      // rótulo do chrome (eyebrow, status bar, tag de área, legenda de gráfico).
+      // Nomear é o que permite auditá-la e mudá-la num lugar só.
+      fontSize: {
+        micro: ["11px", { lineHeight: "1.35" }],
+        nano: ["10px", { lineHeight: "1.3" }],
+        pico: ["9px", { lineHeight: "1.25" }],
+        femto: ["8px", { lineHeight: "1.2" }],
+      },
       fontFamily: {
         sans: [
           "var(--font-mono)",

@@ -18,7 +18,7 @@ export function Drawer({ open, onOpenChange, title, children, side = "left" }: D
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-[70] bg-ink/40" />
         <DialogPrimitive.Content className={`paper-overlay fixed inset-y-0 z-[71] w-[min(88vw,20rem)] overflow-y-auto border-edge bg-paper p-5 focus:outline-none ${sideClass}`}>
-          <DialogPrimitive.Title className="font-serif text-lg font-semibold text-ink">{title}</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="text-lg font-semibold text-ink">{title}</DialogPrimitive.Title>
           <div className="mt-4">{children}</div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

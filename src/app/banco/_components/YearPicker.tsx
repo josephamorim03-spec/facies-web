@@ -106,11 +106,11 @@ export default function YearPicker({
       {loading ? (
         <div className="flex flex-wrap gap-2" aria-hidden="true">
           {[0, 1, 2, 3, 4].map((i) => (
-            <span key={i} className="h-9 w-16 animate-pulse rounded-control bg-surfaceMuted" />
+            <span key={i} className="h-9 w-16 paper-skeleton" />
           ))}
         </div>
       ) : error ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-surface border border-danger/40 bg-paper px-3 py-2 text-xs text-danger">
+        <div className="flex flex-wrap items-center gap-2 border border-danger/40 bg-paper px-3 py-2 text-xs text-danger">
           <span>Não foi possível carregar os anos.</span>
           {onRetry && (
             <button
@@ -132,7 +132,7 @@ export default function YearPicker({
               current selection so it always reflects the chips below. */}
           {numericYears.length > 1 && (
             <div className="flex flex-wrap items-end gap-2">
-              <label className="flex flex-col gap-1 text-[11px] font-medium text-muted">
+              <label className="flex flex-col gap-1 text-micro font-medium text-muted">
                 De
                 <select
                   value={selMin ?? ""}
@@ -141,7 +141,7 @@ export default function YearPicker({
                     if (!from) return;
                     selectRange(from, selMax ?? from);
                   }}
-                  className="min-h-[40px] rounded-surface border border-edge bg-paper px-2 py-1.5 text-sm text-ink"
+                  className="min-h-[40px] border border-edge bg-paper px-2 py-1.5 text-sm text-ink"
                   aria-label="Ano inicial da faixa"
                 >
                   <option value="">—</option>
@@ -152,7 +152,7 @@ export default function YearPicker({
                   ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-1 text-[11px] font-medium text-muted">
+              <label className="flex flex-col gap-1 text-micro font-medium text-muted">
                 Até
                 <select
                   value={selMax ?? ""}
@@ -161,7 +161,7 @@ export default function YearPicker({
                     if (!to) return;
                     selectRange(selMin ?? to, to);
                   }}
-                  className="min-h-[40px] rounded-surface border border-edge bg-paper px-2 py-1.5 text-sm text-ink"
+                  className="min-h-[40px] border border-edge bg-paper px-2 py-1.5 text-sm text-ink"
                   aria-label="Ano final da faixa"
                 >
                   <option value="">—</option>
@@ -192,7 +192,7 @@ export default function YearPicker({
                   aria-pressed={selected}
                 >
                   {year}
-                  <span className="ml-1 text-[10px] text-muted">{count}</span>
+                  <span className="ml-1 text-nano text-muted">{count}</span>
                 </button>
               );
             })}
@@ -206,7 +206,7 @@ export default function YearPicker({
                 title="Questões sem ano identificado na prova de origem"
               >
                 Sem ano
-                <span className="ml-1 text-[10px] text-muted">{noYearCount}</span>
+                <span className="ml-1 text-nano text-muted">{noYearCount}</span>
               </button>
             )}
           </div>

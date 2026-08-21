@@ -18,7 +18,7 @@ export default function CandidatesPanel({
   onOpenCuradoria,
 }: Props) {
   return (
-    <section className="rounded-surface border border-edge bg-surface p-5">
+    <section className="border border-edge bg-surface p-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-xl font-semibold text-ink">Questões extraídas</h2>
@@ -27,7 +27,7 @@ export default function CandidatesPanel({
         <div className="flex flex-wrap items-end gap-3">
           <button
             onClick={onOpenCuradoria}
-            className="rounded-surface border border-warning bg-surfaceMuted px-4 py-2 text-sm font-semibold text-warning transition hover:bg-surfaceMuted/50/20"
+            className="border border-warning bg-surfaceMuted px-4 py-2 text-sm font-semibold text-warning transition hover:bg-surfaceMuted/50/20"
           >
             Abrir curadoria
           </button>
@@ -36,7 +36,7 @@ export default function CandidatesPanel({
             <select
               value={candidateStatus}
               onChange={(event) => onCandidateStatusChange(event.target.value)}
-              className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
+              className="border border-edge bg-surface px-3 py-2 text-sm"
             >
               <option value="">Todos</option>
               <option value="dedup_pending">dedup_pending</option>
@@ -51,7 +51,7 @@ export default function CandidatesPanel({
         </div>
       </div>
 
-      <div className="mt-4 overflow-auto rounded-surface border border-edge">
+      <div className="mt-4 overflow-auto border border-edge">
         <table className="w-full min-w-[900px] text-left text-sm">
           <thead className="bg-surface">
             <tr className="text-muted">

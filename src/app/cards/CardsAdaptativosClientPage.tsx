@@ -17,42 +17,41 @@ import { TurboReviewPanel } from "./registros/_components/TurboReviewPanel";
 import { useTurboSession } from "./registros/_hooks/useTurboSession";
 import { AREA_COLORS, Area } from "./registros/_lib/cadernoShared";
 import { Skeleton } from "@/components/Skeleton";
-import { CardsSectionTabs } from "./CardsSectionTabs";
 import { queryKeys } from "@/lib/queryKeys";
 import { TabsScrollArea } from "@/components/ui/Tabs";
 
 function TurboLobbySkeleton() {
   return (
-    <div className="animate-pulse space-y-4">
+    <div className="space-y-4">
       {/* area filter row */}
       <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
         <span className="block h-7 w-7" />
-        <Skeleton className="mx-auto h-4 w-20 rounded-control" />
+        <Skeleton className="mx-auto h-4 w-20 " />
         <span className="block h-7 w-7" />
       </div>
       {/* hero card */}
-      <div className="rounded-surface border border-edge bg-surface p-6 text-center space-y-3">
-        <Skeleton className="mx-auto h-3 w-44 rounded-control" />
-        <Skeleton className="mx-auto h-14 w-20 rounded-control" />
-        <Skeleton className="mx-auto h-3 w-32 rounded-control" />
+      <div className="border border-edge bg-surface p-6 text-center space-y-3">
+        <Skeleton className="mx-auto h-3 w-44 " />
+        <Skeleton className="mx-auto h-14 w-20 " />
+        <Skeleton className="mx-auto h-3 w-32 " />
       </div>
       {/* 2-col info cards */}
       <div className="grid gap-2 sm:grid-cols-2">
-        <div className="rounded-surface border border-edge bg-surface p-3 space-y-2">
-          <Skeleton className="h-2.5 w-28 rounded-control" />
+        <div className="border border-edge bg-surface p-3 space-y-2">
+          <Skeleton className="h-2.5 w-28 " />
           {Array.from({ length: 2 }).map((_, i) => (
             <div key={`r-sk-${i}`} className="flex items-center justify-between gap-3">
-              <Skeleton className="h-3 flex-1 rounded-control" />
-              <Skeleton className="h-3 w-8 shrink-0 rounded-control" />
+              <Skeleton className="h-3 flex-1 " />
+              <Skeleton className="h-3 w-8 shrink-0 " />
             </div>
           ))}
         </div>
-        <div className="rounded-surface border border-edge bg-surface p-3 space-y-2">
-          <Skeleton className="h-2.5 w-32 rounded-control" />
+        <div className="border border-edge bg-surface p-3 space-y-2">
+          <Skeleton className="h-2.5 w-32 " />
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={`a-sk-${i}`} className="flex items-center justify-between gap-3">
-              <Skeleton className="h-3 w-10 rounded-control" />
-              <Skeleton className="h-3 w-24 shrink-0 rounded-control" />
+              <Skeleton className="h-3 w-10 " />
+              <Skeleton className="h-3 w-24 shrink-0 " />
             </div>
           ))}
         </div>
@@ -60,14 +59,14 @@ function TurboLobbySkeleton() {
       {/* preview cards */}
       <div className="space-y-1.5">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={`prev-sk-${i}`} className="rounded-surface border border-edge bg-surface px-3 py-2 space-y-1.5">
-            <Skeleton className="h-2.5 w-20 rounded-control" />
-            <Skeleton className="h-3 w-4/5 rounded-control" />
+          <div key={`prev-sk-${i}`} className="border border-edge bg-surface px-3 py-2 space-y-1.5">
+            <Skeleton className="h-2.5 w-20 " />
+            <Skeleton className="h-3 w-4/5 " />
           </div>
         ))}
       </div>
       {/* iniciar button */}
-      <Skeleton className="h-11 w-full rounded-surface" />
+      <Skeleton className="h-11 w-full " />
     </div>
   );
 }
@@ -112,7 +111,7 @@ function CardsAreaFilterControl({
           onScroll={onScroll}
           role="group"
           aria-label="Filtrar cards por área"
-          className="mx-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-control border border-edge bg-surface p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="mx-auto flex max-w-full items-center gap-1 overflow-x-auto border border-edge bg-surface p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {AREA_FILTER_OPTIONS.map((option) => {
             const active = selectedArea === option;
@@ -146,7 +145,7 @@ function CardsAreaFilterControl({
 function CardsAreaHeader({ selectedArea, onSelect, interactive = true }: CardsAreaHeaderProps) {
   return (
     <div className="space-y-2 text-center">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">Filtrar por área</p>
+      <p className="text-nano font-semibold uppercase tracking-[0.14em] text-muted">Filtrar por área</p>
       <CardsAreaFilterControl
         selectedArea={selectedArea}
         onSelect={onSelect}
@@ -191,7 +190,6 @@ export default function CardsAdaptativosClientPage() {
   }, [sessionStarted]);
 
   const selectedAreaCode = selectedArea === ALL_AREAS ? undefined : selectedArea;
-  const lobbyAccentColor = selectedAreaCode ? AREA_COLORS[selectedAreaCode] : undefined;
   const overviewQuery = useQuery({
     queryKey: queryKeys.cardsOverview(selectedAreaCode),
     queryFn: () => getOperationalTurboOverview(token, {
@@ -320,11 +318,6 @@ export default function CardsAdaptativosClientPage() {
 
   return (
     <div className="space-y-4">
-      {!sessionStarted ? (
-        <>
-          <CardsSectionTabs active="review" />
-        </>
-      ) : null}
       {(isDesktopNavigation || !sessionStarted) && (
         <CardsAreaHeader
           selectedArea={selectedArea}
@@ -372,7 +365,6 @@ export default function CardsAdaptativosClientPage() {
           onRateAction={submitAction}
           areaStats={areaStats}
           token={token}
-          lobbyAccentColor={lobbyAccentColor}
         />
       )}
     </div>

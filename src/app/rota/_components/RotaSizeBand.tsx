@@ -65,7 +65,7 @@ export function RotaSizeBand({
               ].join(" ")}
             >
               <span className="text-base font-semibold tabular-nums">{size}</span>
-              <span className="text-[9px] font-semibold uppercase tracking-[0.1em]">
+              <span className="text-pico font-semibold uppercase tracking-[0.1em]">
                 {unavailable ? "Sem acervo" : `${estimatedMinutesFor(size)} min`}
               </span>
             </button>

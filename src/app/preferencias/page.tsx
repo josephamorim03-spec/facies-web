@@ -3,17 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { ContaSection } from "./_components/ContaSection";
-import {
-  Bell,
-  CalendarClock,
-  CalendarPlus,
-  Check,
-  Crosshair,
-  Layers3,
-  Save,
-  Target,
-  Trash2,
-} from "lucide-react";
+import { Bell, Calendar as CalendarClock, Calendar2 as CalendarPlus, Check, Target as Crosshair, Notes as Layers3, Save, Target, Trash as Trash2 } from "pixelarticons/react";
 
 import {
   createEvent,
@@ -27,6 +17,7 @@ import {
   type CalendarEventOut,
   type CapabilityStatus,
   type UserProfile,
+  getAPIErrorMessage,
 } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
 import {
@@ -91,9 +82,9 @@ function PreferenceToggle({
       />
       <span
         aria-hidden="true"
-        className="relative mt-0.5 h-6 w-11 shrink-0 rounded-control bg-edge transition-colors peer-checked:bg-primary peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
+        className="relative mt-0.5 h-6 w-11 shrink-0 bg-edge transition-colors peer-checked:bg-primary peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
       >
-        <span className="absolute left-1 top-1 h-4 w-4 rounded-control bg-paper shadow-sm transition-transform peer-checked:translate-x-5" />
+        <span className="absolute left-1 top-1 h-4 w-4 bg-paper transition-transform peer-checked:translate-x-5" />
       </span>
     </label>
   );
@@ -151,22 +142,31 @@ export default function PreferenciasPage() {
       .then(([nextProfile, nextEvents, fsrs, capabilities]) => {
         setProfile(nextProfile);
         setEvents(nextEvents);
+        // `.catch` no fetch protege REJEICAO, nao resposta com outra forma.
+        // Quando `getCapabilities` resolve sem o campo `capabilities`, o
+        // `.find` estoura DENTRO do `.then` — e a excecao cai no `.catch` de
+        // baixo, que a imprime na tela. Foi assim que a pagina de preferencias
+        // apareceu com "Cannot read properties of undefined (reading 'find')"
+        // ao lado do botao Salvar.
+        const capabilityList = Array.isArray(capabilities?.capabilities)
+          ? capabilities.capabilities
+          : [];
         setObjectivesCapability(
-          capabilities.capabilities.find((item) => item.key === "student_objectives_v2") ?? null,
+          capabilityList.find((item) => item.key === "student_objectives_v2") ?? null,
         );
         setTargetExamCapability(
-          capabilities.capabilities.find((item) => item.key === "target_exam_v1") ?? null,
+          capabilityList.find((item) => item.key === "target_exam_v1") ?? null,
         );
         setWeeklyGoalInput(String(nextProfile.weekly_goal_questions));
         setShift12hInput(nextProfile.shift_12h_capacity == null ? "" : String(nextProfile.shift_12h_capacity));
         setRetention(fsrs.desired_retention);
       })
       .catch((cause) => {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "Não foi possível abrir as preferências.",
-        );
+        // A mensagem tecnica vai para o console, nunca para o aluno: `cause`
+        // pode carregar detalhe de rede, de provedor ou um TypeError nosso, e
+        // nenhum deles diz ao aluno o que fazer.
+        console.error("preferencias: falha ao carregar", cause);
+        setError("Não foi possível abrir as preferências. Tente recarregar a página.");
       })
       .finally(() => setLoading(false));
   }, [token]);
@@ -301,11 +301,8 @@ export default function PreferenciasPage() {
       setProfile(next);
       setSaved(true);
     } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Não foi possível salvar as preferências.",
-      );
+      console.error("preferencias: falha ao salvar", cause);
+      setError(getAPIErrorMessage(cause) ?? "Não foi possível salvar as preferências.");
     } finally {
       setSaving(false);
     }
@@ -314,9 +311,9 @@ export default function PreferenciasPage() {
   if (loading) {
     return (
       <div className="space-y-5 py-8" aria-busy="true">
-        <div className="h-9 w-56 animate-pulse bg-edge" />
-        <div className="h-32 animate-pulse border-y border-edge bg-surface" />
-        <div className="h-32 animate-pulse border-y border-edge bg-surface" />
+        <div className="h-9 w-56 paper-skeleton" />
+        <div className="h-32 paper-skeleton border-y border-edge" />
+        <div className="h-32 paper-skeleton border-y border-edge" />
       </div>
     );
   }
@@ -354,7 +351,7 @@ export default function PreferenciasPage() {
                 </label>
                 <label className="block">
                   <span className="text-sm font-semibold text-ink">Trabalho 12h</span>
-                  <div className="mt-2 flex min-h-11 items-center rounded-control border border-edge bg-surface px-3">
+                  <div className="mt-2 flex min-h-11 items-center border border-edge bg-surface px-3">
                     <input
                       type="text"
                       inputMode="numeric"
@@ -389,7 +386,7 @@ export default function PreferenciasPage() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-surface border border-edge bg-surface p-4">
+            <div className="space-y-4 border border-edge bg-surface p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-ink">Adicionar compromisso</p>
@@ -456,12 +453,14 @@ export default function PreferenciasPage() {
               <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_6rem_auto]">
                 <input
                   type="text"
+                  aria-label={eventCategory === "work" ? "Nome do plantão" : "Nome do compromisso"}
                   placeholder={eventCategory === "work" ? "Ex. Plantao/UBS" : "Ex. Viagem"}
                   value={eventLabel}
                   onChange={(event) => setEventLabel(event.target.value)}
                   className="paper-control min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink"
                 />
                 <select
+                  aria-label="Duração em horas"
                   value={eventDuration}
                   onChange={(event) => setEventDuration(Number(event.target.value))}
                   className="paper-control min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink"
@@ -618,7 +617,7 @@ export default function PreferenciasPage() {
             <legend className="text-sm font-semibold text-ink">
               Feedback padrão após o resultado
             </legend>
-            <div className="mt-3 grid grid-cols-2 gap-1 rounded-control border border-edge bg-paper p-1">
+            <div className="mt-3 grid grid-cols-2 gap-1 border border-edge bg-paper p-1">
               {(
                 [
                   ["guided_choice", "Escolher por questão"],
@@ -660,7 +659,7 @@ export default function PreferenciasPage() {
               No fim, com a sessão inteira fresca e antes de qualquer gabarito, mede o quanto você
               sabe que sabe. A cada questão é outro ritmo: registra a dúvida no calor dela.
             </p>
-            <div className="mt-3 grid grid-cols-2 gap-1 rounded-control border border-edge bg-paper p-1">
+            <div className="mt-3 grid grid-cols-2 gap-1 border border-edge bg-paper p-1">
               {(
                 [
                   ["post_session", "No fim da sessão"],

@@ -32,7 +32,7 @@ export function Toast() {
         key={id}
         role="status"
         aria-live="polite"
-        className={`paper-overlay relative rounded-surface border bg-surface px-5 py-4 text-sm toast-enter ${TONE_ALERT[tone]}`}
+        className={`paper-overlay relative border bg-surface px-5 py-4 text-sm toast-enter ${TONE_ALERT[tone]}`}
       >
         <p className="pr-8 text-center leading-relaxed text-ink">{message}</p>
         <button

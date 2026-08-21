@@ -71,36 +71,60 @@ export function AreaSmallMultiples({ activeAreaLines, areaLineData }: Props) {
               : "";
 
           return (
-            <div key={area} className="rounded-surface border border-edge bg-paper px-2.5 py-2">
+            <div key={area} className="border border-edge bg-paper px-2.5 py-2">
               <div className="flex items-baseline justify-between gap-1">
-                <span className="text-[11px] font-bold tracking-wide" style={{ color }}>
+                <span className="text-micro font-bold tracking-wide" style={{ color }}>
                   {area}
                 </span>
                 {delta !== null && (
-                  <span className={`text-[10px] font-semibold tabular-nums ${tone}`}>
+                  <span className={`text-nano font-semibold tabular-nums ${tone}`}>
                     {arrow} {delta > 0 ? "+" : ""}
                     {delta}
                   </span>
                 )}
               </div>
-              <div className="truncate text-[9px] leading-tight text-muted">{AREA_LABELS[area]}</div>
+              <div className="truncate text-pico leading-tight text-muted">{AREA_LABELS[area]}</div>
               <div className="mt-0.5 text-base font-semibold tabular-nums text-ink">
                 {current === null ? "—" : `${current}%`}
               </div>
               <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="mt-1 block w-full" style={{ height: "auto" }} aria-hidden="true">
-                {areaPath && <path d={areaPath} fill={color} fillOpacity={0.1} stroke="none" />}
+                {/* Hachura de 1px, nao tinta translucida.
+
+                    O `fillOpacity={0.1}` aqui era o mesmo gesto que saiu do
+                    grafico principal: area que desvanece simula profundidade, e
+                    o sistema desenha em traco chapado. A trama diz "abaixo da
+                    linha" sem inventar volume, e sobrevive a impressao.
+
+                    O `id` carrega a area porque os seis cartoes convivem no
+                    mesmo documento — `id` repetido faria os seis usarem a cor
+                    do primeiro. */}
+                {areaPath && (
+                  <>
+                    <defs>
+                      <pattern
+                        id={`sparkline-hatch-${area}`}
+                        width="4"
+                        height="4"
+                        patternUnits="userSpaceOnUse"
+                      >
+                        <path d="M0 4L4 0" stroke={color} strokeWidth={0.5} strokeOpacity={0.55} />
+                      </pattern>
+                    </defs>
+                    <path d={areaPath} fill={`url(#sparkline-hatch-${area})`} stroke="none" />
+                  </>
+                )}
                 {linePath && (
                   <path
                     d={linePath.trim()}
                     fill="none"
                     stroke={color}
-                    strokeWidth={1.8}
-                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    strokeLinejoin="miter"
                     strokeLinecap="butt"
                   />
                 )}
                 {current !== null && lastIdx >= 0 && (
-                  <circle cx={xAt(lastIdx)} cy={yAt(current)} r={2.4} fill={color} />
+                  <rect x={xAt(lastIdx) - 1.5} y={yAt(current) - 1.5} width={3} height={3} fill={color} />
                 )}
               </svg>
             </div>

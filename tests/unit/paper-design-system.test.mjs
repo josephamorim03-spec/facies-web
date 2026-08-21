@@ -46,3 +46,32 @@ test("dark mode drops the hard shadow instead of painting black on black", () =>
   assert.match(darkBlock, /--overlay-shadow:\s*none/);
   assert.match(darkBlock, /--color-primary:\s*#FFB000/i);
 });
+
+test("loading has exactly one vocabulary: segmented bar, static reticle, blinking cursor", () => {
+  // O que este teste impede e a volta dos QUATRO dialetos que conviviam aqui:
+  // 204 skeletons pulsando, 25 `animate-pulse`, um quadrado girando e meia
+  // duzia de "Carregando..." em texto puro. Cada um dizia a mesma frase de um
+  // jeito, e nenhum deles existia na epoca que a interface cita.
+
+  // 1. A barra e gradiente repetido (receita do 98.css), nunca imagem.
+  const fillRule = css.match(/\.load-bar__fill\s*\{([\s\S]*?)\}/)?.[1] ?? "";
+  assert.match(fillRule, /linear-gradient/);
+  assert.doesNotMatch(fillRule, /url\(/);
+
+  // 2. So o INDETERMINADO marcha. Barra com percentual conhecido nao anima:
+  //    a largura ja carrega a informacao e movimento em cima dela atrapalha.
+  assert.match(css, /\.load-bar__fill--indeterminate\s*\{[\s\S]*?animation:\s*load-bar-march/);
+  assert.doesNotMatch(fillRule, /animation:/);
+
+  // 3. Cursor e alerta piscam em DEGRAU. `step-end` e o contrato: qualquer
+  //    easing suave aqui e um cursor de 2015 disfarcado de retro.
+  assert.match(css, /\.chrome-cursor\s*\{[\s\S]*?animation:[^;]*step-end/);
+  assert.match(css, /\.chrome-urgent\s*\{[\s\S]*?animation:[^;]*step-end/);
+
+  // 4. O campo vazio se assume vazio: reticula estatica, sem animacao nenhuma.
+  //    O respiro de opacidade que estava aqui simulava conteudo chegando.
+  const skeletonRule = css.match(/\.paper-skeleton\s*\{([\s\S]*?)\n  \}/)?.[1] ?? "";
+  assert.match(skeletonRule, /conic-gradient/);
+  assert.doesNotMatch(skeletonRule, /animation/);
+  assert.doesNotMatch(css, /paper-skeleton-breathe/);
+});

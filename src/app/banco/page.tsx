@@ -25,6 +25,7 @@ import {
   type QuestionBankYearStat,
   type FullExamType,
   type StudyKind,
+  getAPIErrorMessage,
 } from "@/lib/api";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useAuthToken } from "@/lib/useAuthToken";
@@ -69,7 +70,7 @@ function splitBootstrapTopics(topics: QuestionBankTopic[]) {
 
 function IconBookOpen({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
       <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H7a3 3 0 0 0-3 3V5.5Z" />
       <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20" />
       <path d="M8 7h8" />
@@ -80,7 +81,7 @@ function IconBookOpen({ className }: { className?: string }) {
 
 function IconTrophy({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
       <path d="M8 21h8" />
       <path d="M12 17v4" />
       <path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" />
@@ -92,7 +93,7 @@ function IconTrophy({ className }: { className?: string }) {
 
 function IconChevronRight({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
       <path d="m7 4 6 6-6 6" />
     </svg>
   );
@@ -120,7 +121,7 @@ function SessionIntentCard({ eyebrow, title, description, active, Icon, onClick 
     >
       <Icon className={cx("h-7 w-7 shrink-0 md:h-8 md:w-8", active ? "text-primary" : "text-muted")} />
       <div className="min-w-0 flex-1 md:flex-none">
-        <p className={cx("text-[10px] font-semibold uppercase tracking-[0.12em]", active ? "text-primary" : "text-muted")}>{eyebrow}</p>
+        <p className={cx("text-nano font-semibold uppercase tracking-[0.12em]", active ? "text-primary" : "text-muted")}>{eyebrow}</p>
         <h2 className={cx("font-serif text-base font-semibold leading-tight md:text-lg", active ? "text-ink" : "text-muted group-hover:text-ink")}>{title}</h2>
         <p className="mt-0.5 text-xs leading-relaxed text-muted md:mt-1 md:text-sm">{description}</p>
       </div>
@@ -190,10 +191,10 @@ function RecommendedTopicsPanel({
           : "Priorizadas pelo seu histórico.";
 
   return (
-    <section className="rounded-surface border border-edge bg-surface p-4" aria-label="Microcompetências recomendadas">
+    <section className="border border-edge bg-surface p-4" aria-label="Microcompetências recomendadas">
       <div>
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Sugestões do sistema</p>
+          <p className="text-micro font-semibold uppercase tracking-[0.14em] text-muted">Sugestões do sistema</p>
           <h3 className="mt-1 font-serif text-lg font-semibold leading-tight">Microcompetências</h3>
           <p className="mt-1 text-sm leading-relaxed text-muted">{intentCopy}</p>
         </div>
@@ -210,18 +211,18 @@ function RecommendedTopicsPanel({
               aria-pressed={selected}
               title={topic.node_code ? `${topic.node_code} - ${topic.node_name}` : topic.node_name}
               className={cx(
-                "w-full rounded-surface border p-3 text-left transition-colors",
+                "w-full border p-3 text-left transition-colors",
                 selected ? "border-primary bg-[var(--amber-tint)]" : "border-edge bg-paper hover:border-primary",
               )}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                  <p className="text-micro font-semibold uppercase tracking-[0.08em] text-muted">
                     {topic.question_count} questões
                   </p>
                   <p className="mt-0.5 line-clamp-2 break-words text-sm font-semibold leading-snug text-ink [overflow-wrap:anywhere]">{topic.node_name}</p>
                 </div>
-                <span className={cx("shrink-0 whitespace-nowrap rounded-control px-2 py-0.5 text-[11px] font-semibold", selected ? "bg-primary text-primaryInk" : "bg-surfaceMuted text-ink")}>
+                <span className={cx("shrink-0 whitespace-nowrap px-2 py-0.5 text-micro font-semibold", selected ? "bg-primary text-primaryInk" : "bg-surfaceMuted text-ink")}>
                   #{topic.recommendation_rank}
                 </span>
               </div>
@@ -447,9 +448,9 @@ function BancoDeQuestoesContent() {
           viewBox="0 0 20 20"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeWidth="2"
+          strokeLinecap="butt"
+          strokeLinejoin="miter"
           className="h-5 w-5"
           aria-hidden="true"
         >
@@ -892,10 +893,9 @@ function BancoDeQuestoesContent() {
           has_chosen_feedback_default: true,
         });
       } catch (cause) {
+        console.error("banco: falha ao salvar correção padrão", cause);
         showToast(
-          cause instanceof Error
-            ? cause.message
-            : "Não foi possível salvar a correção padrão.",
+          getAPIErrorMessage(cause) ?? "Não foi possível salvar a correção padrão.",
           "error",
         );
         return;
@@ -933,12 +933,8 @@ function BancoDeQuestoesContent() {
           O `max-w-7xl` que estava aqui nunca chegava a valer. */}
       <div className={`space-y-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
         <section className="space-y-4" aria-label="Montador de sessão">
-          <div className="flex w-full flex-wrap items-center justify-between gap-3 border-b border-edge pb-4">
-            <span className="min-w-0">
-              <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-primary">Montagem manual</span>
-              <span className="mt-1 block font-serif text-xl font-semibold leading-tight text-ink">Montar sessão</span>
-            </span>
-            {activeFilters.length > 0 && (
+          {activeFilters.length > 0 && (
+            <div className="flex w-full flex-wrap items-center justify-end gap-3 border-b border-edge pb-4">
               <div className="relative shrink-0">
                 <button
                   type="button"
@@ -954,12 +950,12 @@ function BancoDeQuestoesContent() {
                     }
                     setFilterMenuOpen((open) => !open);
                   }}
-                  className="min-h-11 rounded-control bg-surfaceMuted px-3 text-xs font-semibold text-muted transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  className="min-h-11 bg-surfaceMuted px-3 text-xs font-semibold text-muted transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                 >
                   {activeFilters.length === 1 ? activeFilters[0].label : activeFilters.length + " filtros"}
                 </button>
                 {filterMenuOpen && activeFilters.length > 1 && (
-                  <div id="question-bank-active-filters" role="dialog" aria-label="Filtros ativos" className="absolute right-0 z-30 mt-2 w-72 rounded-surface border border-edge bg-surface p-2 shadow-[var(--soft-shadow)]">
+                  <div id="question-bank-active-filters" role="dialog" aria-label="Filtros ativos" className="absolute right-0 z-30 mt-2 w-72 border border-edge bg-surface p-2 ">
                     {activeFilters.map((filter) => (
                       <button
                         key={filter.id}
@@ -968,7 +964,7 @@ function BancoDeQuestoesContent() {
                           setFilterMenuOpen(false);
                           locateActiveFilter(filter);
                         }}
-                        className="flex min-h-11 w-full items-center rounded-surface px-3 text-left text-sm font-medium text-ink hover:bg-surfaceMuted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        className="flex min-h-11 w-full items-center px-3 text-left text-sm font-medium text-ink hover:bg-surfaceMuted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                       >
                         {filter.label}
                       </button>
@@ -976,8 +972,8 @@ function BancoDeQuestoesContent() {
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <section
             aria-label="Filtros e resumo do banco de questões"
@@ -1086,7 +1082,7 @@ function BancoDeQuestoesContent() {
               className="w-full"
             >
               {busy ? "Preparando..." : configuredStartLabel}
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className="h-4 w-4" aria-hidden="true">
                 <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
               </svg>
             </Button>

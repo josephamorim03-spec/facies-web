@@ -73,10 +73,10 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
               key={area}
               type="button"
               onClick={(e) => { e.stopPropagation(); actions.setLockedAreaLine(lockedAreaLine === area ? null : area); }}
-              className="flex items-center gap-1 text-[11px] font-medium transition-opacity"
+              className="flex items-center gap-1 text-micro font-medium transition-opacity"
               style={{ color: isOtherLocked ? CHART_MUTED : AREA_COLORS[area], opacity: isOtherLocked ? 0.4 : 1 }}
             >
-              <span className="inline-block w-2 h-2 rounded-control" style={{ backgroundColor: AREA_COLORS[area] }} />
+              <span className="inline-block w-2 h-2 " style={{ backgroundColor: AREA_COLORS[area] }} />
               {area}
             </button>
           );
@@ -85,7 +85,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); actions.setLockedAreaLine(null); }}
-            className="ml-auto text-[11px] text-muted hover:text-ink transition-colors"
+            className="ml-auto text-micro text-muted hover:text-ink transition-colors"
           >
             × limpar
           </button>
@@ -119,19 +119,19 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
                   dataKey={area}
                   type="linear"
                   stroke={AREA_COLORS[area]}
-                  strokeWidth={isLocked ? 2.8 : 1.8}
+                  strokeWidth={isLocked ? 2 : 1}
                   strokeOpacity={opacity}
                   dot={(props: any) => {
                     const val = props.payload?.[area];
                     if (val === null || val === undefined) return <g key={`dot-${area}-${props.index}`} />;
                     if (!isLocked) {
                       return (
-                        <circle key={`dot-${area}-${props.index}`} cx={props.cx} cy={props.cy} r={2} fill={AREA_COLORS[area]} fillOpacity={opacity} stroke="none" />
+                        <rect key={`dot-${area}-${props.index}`} x={props.cx - 1.5} y={props.cy - 1.5} width={3} height={3} fill={AREA_COLORS[area]} fillOpacity={opacity} stroke="none" />
                       );
                     }
                     return (
                       <g key={`dot-${area}-${props.index}`}>
-                        <circle cx={props.cx} cy={props.cy} r={3.5} fill={AREA_COLORS[area]} stroke="none" />
+                        <rect x={props.cx - 2.5} y={props.cy - 2.5} width={5} height={5} fill={AREA_COLORS[area]} stroke="none" />
                       </g>
                     );
                   }}
@@ -156,7 +156,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
             data-week-index={label.weekIndex}
             /* Overlay denso (12 pontos × até 6 séries): fora de cima do gráfico
                no mobile pra não vazar/sobrepor; a linha destacada + legenda bastam. */
-            className="pointer-events-none absolute z-20 hidden whitespace-nowrap text-[10px] font-bold leading-none sm:block"
+            className="pointer-events-none absolute z-20 hidden whitespace-nowrap text-nano font-bold leading-none sm:block"
             style={{
               left: label.placement.left,
               top: label.placement.top,

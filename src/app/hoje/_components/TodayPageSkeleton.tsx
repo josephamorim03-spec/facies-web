@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/Skeleton";
+import { LoadBar } from "@/components/ui/LoadBar";
 import { TodayDaySummarySkeleton } from "./TodayDaySummary";
 
 /**
@@ -15,30 +16,34 @@ import { TodayDaySummarySkeleton } from "./TodayDaySummary";
 export function TodayPageSkeleton() {
   return (
     <div className="space-y-5 md:space-y-6" aria-label="Carregando seu dia" aria-busy="true">
+      {/* A reticula abaixo so reserva a forma. Quem diz "esta carregando" e a
+          barra — uma vez, no topo, e nao duzentos blocos pulsando juntos. */}
+      <LoadBar label="Carregando seu dia" className="w-full max-w-xs" />
+
       {/* Saudacao: o canonico tem so o h1, sem subtitulo. */}
-      <Skeleton className="h-9 w-56 rounded-control" />
+      <Skeleton className="h-9 w-56 " />
 
       {/* Heroi, na geometria exata do TodayPrimaryAction. */}
-      <section className="overflow-hidden rounded-surface border border-edge bg-paper">
+      <section className="overflow-hidden border border-edge bg-paper">
         <div className="flex flex-col sm:flex-row sm:items-stretch">
           <div className="flex shrink-0 items-center justify-center border-b border-edge bg-surfaceMuted px-5 py-4 sm:w-24 sm:border-b-0 sm:border-r sm:py-5">
-            <Skeleton className="h-11 w-11 rounded-control" />
+            <Skeleton className="h-11 w-11 " />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 py-5 sm:px-6 sm:py-6 md:flex-row md:items-end md:justify-between">
             <div className="min-w-0 space-y-3">
               <div className="flex items-center gap-2">
-                <Skeleton className="h-2.5 w-28 rounded-control" />
-                <Skeleton className="h-2.5 w-20 rounded-control" />
-                <Skeleton className="h-2.5 w-12 rounded-control" />
+                <Skeleton className="h-2.5 w-28 " />
+                <Skeleton className="h-2.5 w-20 " />
+                <Skeleton className="h-2.5 w-12 " />
               </div>
               <div>
-                <Skeleton className="h-8 w-4/5 rounded-control sm:h-9" />
-                <Skeleton className="mt-2 h-8 w-2/5 rounded-control sm:h-9" />
-                <Skeleton className="mt-3 h-3.5 w-full max-w-2xl rounded-control" />
-                <Skeleton className="mt-2 h-3.5 w-3/4 max-w-2xl rounded-control" />
+                <Skeleton className="h-8 w-4/5 sm:h-9" />
+                <Skeleton className="mt-2 h-8 w-2/5 sm:h-9" />
+                <Skeleton className="mt-3 h-3.5 w-full max-w-2xl " />
+                <Skeleton className="mt-2 h-3.5 w-3/4 max-w-2xl " />
               </div>
             </div>
-            <Skeleton className="h-12 w-full shrink-0 rounded-control md:w-36" />
+            <Skeleton className="h-12 w-full shrink-0 md:w-36" />
           </div>
         </div>
       </section>
@@ -48,8 +53,8 @@ export function TodayPageSkeleton() {
       {/* Carga do dia. */}
       <div className="border-y border-edge px-1 py-3">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <Skeleton className="h-3.5 w-32 rounded-control" />
-          <Skeleton className="h-3 w-24 rounded-control" />
+          <Skeleton className="h-3.5 w-32 " />
+          <Skeleton className="h-3 w-24 " />
         </div>
       </div>
 
@@ -57,18 +62,18 @@ export function TodayPageSkeleton() {
       <div className="border-y border-edge py-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1.5">
-            <Skeleton className="h-5 w-32 rounded-control" />
-            <Skeleton className="h-3 w-52 rounded-control" />
+            <Skeleton className="h-5 w-32 " />
+            <Skeleton className="h-3 w-52 " />
           </div>
         </div>
         <div className="mt-4 divide-y divide-edge border-y border-edge">
           {Array.from({ length: 3 }).map((_, index) => (
             <div key={`schedule-sk-${index}`} className="flex items-center justify-between gap-3 py-3">
               <div className="min-w-0 flex-1 space-y-1.5">
-                <Skeleton className="h-3 w-3/5 rounded-control" />
-                <Skeleton className="h-2.5 w-28 rounded-control" />
+                <Skeleton className="h-3 w-3/5 " />
+                <Skeleton className="h-2.5 w-28 " />
               </div>
-              <Skeleton className="h-3 w-14 shrink-0 rounded-control" />
+              <Skeleton className="h-3 w-14 shrink-0 " />
             </div>
           ))}
         </div>

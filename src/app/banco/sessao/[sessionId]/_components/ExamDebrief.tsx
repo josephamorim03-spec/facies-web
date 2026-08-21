@@ -35,7 +35,7 @@ function pct(v: number | null | undefined): string {
 }
 
 function DebriefSkeleton() {
-  return <div className="paper-skeleton h-24 rounded-surface border border-edge bg-surface" aria-hidden="true" />;
+  return <div className="paper-skeleton h-24 border border-edge bg-surface" aria-hidden="true" />;
 }
 
 /**
@@ -89,13 +89,13 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
     .map((b) => ({ label: `${b.confidence}`, acerto: b.accuracy === null ? 0 : Math.round(b.accuracy * 100) }));
 
   return (
-    <details aria-label="Análise detalhada do simulado" className="rounded-surface border border-edge bg-surface p-4 sm:p-5">
-      <summary className="cursor-pointer font-serif text-lg font-semibold text-ink">Abrir análise detalhada do simulado</summary>
+    <details aria-label="Análise detalhada do simulado" className="border border-edge bg-surface p-4 sm:p-5">
+      <summary className="cursor-pointer text-lg font-semibold text-ink">Abrir análise detalhada do simulado</summary>
       <div className="mt-4">
       {/* First fold */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="font-serif text-2xl font-semibold text-ink">
+          <h2 className="text-2xl font-semibold text-ink">
             {summary.correct}/{summary.answered} · {Math.round(summary.accuracy * 100)}% de acerto
           </h2>
           <p className="mt-1 text-sm text-muted">
@@ -108,7 +108,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
         {primary && (
           <Link
             href={primary.href}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-surface border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105"
+            className="inline-flex shrink-0 items-center justify-center gap-2 border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-primaryInk transition hover:brightness-105"
           >
             {primary.title}
           </Link>
@@ -155,7 +155,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
             {timelineData.some((d) => d.acuracia !== null) ? (
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={timelineData} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
-                  <CartesianGrid strokeDasharray="1 3" stroke="var(--color-edge, #e5e7eb)" />
+                  <CartesianGrid strokeDasharray="1 3" stroke="var(--color-edge)" />
                   <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                   <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} />
                   <Tooltip
@@ -164,7 +164,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
                     cursor={studyChartTooltipCursor}
                     wrapperStyle={{ zIndex: 20 }}
                   />
-                  <Line type="linear" dataKey="acuracia" stroke="var(--color-primary, #2563eb)" strokeWidth={2} connectNulls />
+                  <Line type="linear" dataKey="acuracia" stroke="var(--color-primary)" strokeWidth={2} connectNulls />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -186,7 +186,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
                 </p>
                 <ResponsiveContainer width="100%" height={180}>
                   <BarChart data={calibData} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
-                    <CartesianGrid strokeDasharray="1 3" stroke="var(--color-edge, #e5e7eb)" />
+                    <CartesianGrid strokeDasharray="1 3" stroke="var(--color-edge)" />
                     <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                     <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} />
                     <Tooltip
@@ -195,7 +195,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
                     cursor={studyChartTooltipCursor}
                     wrapperStyle={{ zIndex: 20 }}
                   />
-                    <Bar dataKey="acerto" fill="var(--color-primary, #2563eb)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="acerto" fill="var(--color-primary)" />
                   </BarChart>
                 </ResponsiveContainer>
               </>
@@ -234,9 +234,9 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-surface border border-edge bg-paper p-3">
-      <p className="text-[11px] uppercase tracking-wide text-muted">{label}</p>
-      <p className="mt-0.5 font-serif text-lg text-ink">{value}</p>
+    <div className="border border-edge bg-paper p-3">
+      <p className="text-micro uppercase tracking-wide text-muted">{label}</p>
+      <p className="mt-0.5 text-lg text-ink">{value}</p>
     </div>
   );
 }

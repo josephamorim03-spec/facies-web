@@ -49,7 +49,6 @@ type TurboReviewPanelProps = {
   sessionStarted: boolean;
   areaStats?: Record<string, { correct: number; total: number }>;
   token: string;
-  lobbyAccentColor?: string;
 };
 
 export function TurboReviewPanel({
@@ -85,7 +84,6 @@ export function TurboReviewPanel({
   sessionStarted,
   areaStats = {},
   token,
-  lobbyAccentColor,
 }: TurboReviewPanelProps) {
   // ── Timer state (shared between card view and performance report)
   const [timerEnabled, setTimerEnabled] = useState(true);
@@ -181,20 +179,20 @@ export function TurboReviewPanel({
 
         {/* Confirm close */}
         {sessionGuard.confirmClose && (
-          <div className="space-y-3 rounded-surface border border-edge bg-surface p-4 shadow-sm">
+          <div className="space-y-3 border border-edge bg-surface p-4 ">
             <p className="text-sm">Sair? Os cards não avaliados serão descartados.</p>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => sessionGuard.setConfirmClose(false)}
-                className="rounded-surface border border-edge bg-surface px-3 py-1.5 text-xs text-muted hover:border-primary hover:text-ink"
+                className="border border-edge bg-surface px-3 py-1.5 text-xs text-muted hover:border-primary hover:text-ink"
               >
                 Continuar
               </button>
               <button
                 type="button"
                 onClick={sessionGuard.confirmCloseSession}
-                className="rounded-surface border border-danger bg-surface px-3 py-1.5 text-xs text-danger hover:bg-surfaceMuted"
+                className="border border-danger bg-surface px-3 py-1.5 text-xs text-danger hover:bg-surfaceMuted"
               >
                 Sair da sessão
               </button>
@@ -208,7 +206,6 @@ export function TurboReviewPanel({
             turboOverview={turboOverview}
             availableCount={availableCount}
             isTurboMode={isTurboMode}
-            lobbyAccentColor={lobbyAccentColor}
             minCards={isTurboMode ? undefined : 10}
             onStartAction={onStartAction}
           />

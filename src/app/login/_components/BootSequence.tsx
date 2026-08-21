@@ -115,8 +115,8 @@ export function BootSequence({ onDone }: Props) {
       aria-hidden="true"
       className="fixed inset-0 z-[100] flex items-center justify-center bg-paper"
     >
-      <div className="w-[min(26rem,calc(100vw-3rem))] border border-edge bg-surface p-6 shadow-[var(--overlay-shadow)]">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+      <div className="w-[min(26rem,calc(100vw-3rem))] border border-edge bg-surface p-6 shadow-overlay">
+        <p className="text-micro font-semibold uppercase tracking-[0.16em] text-primary">
           KROS · autoteste
         </p>
 
@@ -136,7 +136,7 @@ export function BootSequence({ onDone }: Props) {
           ))}
         </ul>
 
-        <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+        <p className="mt-5 text-nano font-semibold uppercase tracking-[0.14em] text-muted">
           Toque para continuar
         </p>
       </div>

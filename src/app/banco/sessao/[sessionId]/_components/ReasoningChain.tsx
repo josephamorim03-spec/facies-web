@@ -52,11 +52,11 @@ export function ReasoningChain({ chain }: { chain: QuestionBankReasoningCheckpoi
   return (
     <section className="mt-4" aria-label="Cadeia de raciocínio">
       <div className="flex items-center gap-3">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+        <span className="text-nano font-semibold uppercase tracking-[0.16em] text-muted">
           Cadeia de raciocínio
         </span>
         <span className="chrome-leader" aria-hidden="true" />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+        <span className="text-nano font-semibold uppercase tracking-[0.16em] text-muted">
           {chain.length} elos
         </span>
       </div>
@@ -75,7 +75,7 @@ export function ReasoningChain({ chain }: { chain: QuestionBankReasoningCheckpoi
             </span>
             <span className="chrome-leader" aria-hidden="true" />
             <span
-              className={`text-[10px] font-semibold uppercase tracking-[0.1em] ${stateTextClass(item.state)}`}
+              className={`text-nano font-semibold uppercase tracking-[0.1em] ${stateTextClass(item.state)}`}
             >
               {STATE_LABEL[item.state ?? ""] ?? ""}
             </span>
@@ -85,13 +85,13 @@ export function ReasoningChain({ chain }: { chain: QuestionBankReasoningCheckpoi
 
       {gapIndex >= 0 && skipped.length > 0 ? (
         <div className="mt-3 border-t border-dotted border-edge pt-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+          <p className="text-nano font-semibold uppercase tracking-[0.16em] text-muted">
             O que vinha depois, e não foi perguntado
           </p>
           <div className="mt-2 flex flex-col gap-2 opacity-60">
             {skipped.map((item) => (
               <div key={item.checkpoint_key}>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+                <p className="text-nano font-semibold uppercase tracking-[0.12em] text-muted">
                   Elo {String(item.step_order).padStart(2, "0")} · {KIND_LABEL[item.kind] ?? item.kind}
                 </p>
                 <p className="mt-0.5 font-serif text-sm leading-relaxed text-ink">{item.prompt}</p>

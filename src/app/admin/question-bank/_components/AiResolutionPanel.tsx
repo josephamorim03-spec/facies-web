@@ -379,7 +379,7 @@ export default function AiResolutionPanel() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-surface border border-edge bg-surface p-5 shadow-sm">
+      <section className="border border-edge bg-surface p-5 ">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase text-muted">Resolução IA</p>
@@ -392,23 +392,23 @@ export default function AiResolutionPanel() {
           <button
             onClick={() => void loadDemand(filter)}
             disabled={loading || Boolean(busy)}
-            className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
+            className="border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
           >
             {loading ? "Carregando..." : "Atualizar"}
           </button>
         </div>
         {error ? (
-          <div className="mt-4 rounded-surface border border-danger bg-surfaceMuted px-4 py-3 text-sm text-danger/40/30">
+          <div className="mt-4 border border-danger bg-surfaceMuted px-4 py-3 text-sm text-danger/40/30">
             {error}
           </div>
         ) : null}
         {notice ? (
-          <div className="mt-4 rounded-surface border border-success bg-surfaceMuted px-4 py-3 text-sm text-success/40/30">
+          <div className="mt-4 border border-success bg-surfaceMuted px-4 py-3 text-sm text-success/40/30">
             {notice}
           </div>
         ) : null}
         {busy ? (
-          <div className="mt-4 rounded-surface border border-info bg-surfaceMuted px-4 py-3 text-sm text-info/40/30">
+          <div className="mt-4 border border-info bg-surfaceMuted px-4 py-3 text-sm text-info/40/30">
             {busy}
           </div>
         ) : null}
@@ -421,7 +421,7 @@ export default function AiResolutionPanel() {
       </section>
 
       <section className="grid gap-3 xl:grid-cols-5">
-        <div className="rounded-surface border border-danger bg-surfaceMuted p-4 text-danger shadow-sm/50/20">
+        <div className="border border-danger bg-surfaceMuted p-4 text-danger ">
           <div className="text-xs font-semibold uppercase opacity-70">1. Segurança médica</div>
           <div className="mt-1 text-lg font-semibold">Denúncias primeiro</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
@@ -430,12 +430,12 @@ export default function AiResolutionPanel() {
           <button
             onClick={() => selectIds(reportedIds)}
             disabled={!reportedIds.length}
-            className="mt-3 rounded-surface bg-danger px-3 py-2 text-xs font-semibold text-ink transition hover:bg-danger disabled:opacity-50"
+            className="mt-3 bg-danger px-3 py-2 text-xs font-semibold text-ink transition hover:bg-danger disabled:opacity-50"
           >
             Selecionar denunciadas ({reportedIds.length})
           </button>
         </div>
-        <div className="rounded-surface border border-danger bg-surfaceMuted p-4 text-danger shadow-sm/50/20">
+        <div className="border border-danger bg-surfaceMuted p-4 text-danger ">
           <div className="text-xs font-semibold uppercase opacity-70">2. Importação quebrada</div>
           <div className="mt-1 text-lg font-semibold">Corrigir estrutura</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
@@ -444,12 +444,12 @@ export default function AiResolutionPanel() {
           <button
             onClick={() => selectIds(brokenIds)}
             disabled={!brokenIds.length}
-            className="mt-3 rounded-surface bg-danger px-3 py-2 text-xs font-semibold text-ink transition hover:bg-danger disabled:opacity-50"
+            className="mt-3 bg-danger px-3 py-2 text-xs font-semibold text-ink transition hover:bg-danger disabled:opacity-50"
           >
             Selecionar quebradas ({brokenIds.length})
           </button>
         </div>
-        <div className="rounded-surface border border-info bg-surfaceMuted p-4 text-info shadow-sm/50/20">
+        <div className="border border-info bg-surfaceMuted p-4 text-info ">
           <div className="text-xs font-semibold uppercase opacity-70">3. Lote seguro</div>
           <div className="mt-1 text-lg font-semibold">Pode mandar para IA</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
@@ -458,12 +458,12 @@ export default function AiResolutionPanel() {
           <button
             onClick={() => selectIds(safeAiIds)}
             disabled={!safeAiIds.length}
-            className="mt-3 rounded-surface bg-info px-3 py-2 text-xs font-semibold text-ink transition hover:bg-info disabled:opacity-50"
+            className="mt-3 bg-info px-3 py-2 text-xs font-semibold text-ink transition hover:bg-info disabled:opacity-50"
           >
             Selecionar lote seguro ({safeAiIds.length})
           </button>
         </div>
-        <div className="rounded-surface border border-warning bg-surfaceMuted p-4 text-warning shadow-sm/50/20">
+        <div className="border border-warning bg-surfaceMuted p-4 text-warning ">
           <div className="text-xs font-semibold uppercase opacity-70">4. Revisão humana</div>
           <div className="mt-1 text-lg font-semibold">Bloqueios editoriais</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
@@ -472,12 +472,12 @@ export default function AiResolutionPanel() {
           <button
             onClick={() => selectIds([...new Set([...reportedIds, ...brokenIds, ...blockedIds])])}
             disabled={!reportedIds.length && !brokenIds.length && !blockedIds.length}
-            className="mt-3 rounded-surface bg-warning px-3 py-2 text-xs font-semibold text-ink transition hover:bg-warning disabled:opacity-50"
+            className="mt-3 bg-warning px-3 py-2 text-xs font-semibold text-ink transition hover:bg-warning disabled:opacity-50"
           >
             Selecionar revisão ({new Set([...reportedIds, ...brokenIds, ...blockedIds]).size})
           </button>
         </div>
-        <div className="rounded-surface border border-success bg-surfaceMuted p-4 text-success shadow-sm/50/20">
+        <div className="border border-success bg-surfaceMuted p-4 text-success ">
           <div className="text-xs font-semibold uppercase opacity-70">5. Valor editorial</div>
           <div className="mt-1 text-lg font-semibold">Prontas para gate/SQLite</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
@@ -486,7 +486,7 @@ export default function AiResolutionPanel() {
           <button
             onClick={() => selectIds(processedCleanIds)}
             disabled={!processedCleanIds.length}
-            className="mt-3 rounded-surface bg-success px-3 py-2 text-xs font-semibold text-ink transition hover:bg-success disabled:opacity-50"
+            className="mt-3 bg-success px-3 py-2 text-xs font-semibold text-ink transition hover:bg-success disabled:opacity-50"
           >
             Selecionar processadas ({processedCleanIds.length})
           </button>
@@ -495,7 +495,7 @@ export default function AiResolutionPanel() {
 
       <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
         <div className="space-y-5">
-          <div className="rounded-surface border border-edge bg-surface p-5 shadow-sm">
+          <div className="border border-edge bg-surface p-5 ">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-sm font-semibold text-ink">Modo leigo: o que fazer agora</div>
@@ -504,13 +504,13 @@ export default function AiResolutionPanel() {
                   e só depois pense em publicar no catálogo SQLite.
                 </p>
               </div>
-              <span className="rounded-control border border-edge px-2.5 py-1 text-[11px] font-semibold text-muted">
+              <span className="border border-edge px-2.5 py-1 text-micro font-semibold text-muted">
                 {selected.size} selecionadas
               </span>
             </div>
             <button
               onClick={selectRecommendedNextBatch}
-              className="mt-4 w-full rounded-surface bg-paper px-4 py-2 text-sm font-semibold text-ink transition hover:bg-paper"
+              className="mt-4 w-full bg-paper px-4 py-2 text-sm font-semibold text-ink transition hover:bg-paper"
             >
               Escolher próximo lote seguro automaticamente
             </button>
@@ -523,36 +523,36 @@ export default function AiResolutionPanel() {
             </ol>
           </div>
 
-          <div className="rounded-surface border border-success bg-surface p-5 shadow-sm/40">
+          <div className="border border-success bg-surface p-5 ">
             <div className="text-sm font-semibold text-ink">Saída editorial / SQLite</div>
             <p className="mt-1 text-xs leading-5 text-muted">
               Esta tela prepara valor editorial; ela não publica sozinha. Para uma questão entrar no catálogo SQLite do aluno,
               precisa estar sem denúncia aberta, sem bloqueio, com IA/resolução útil quando necessário e revisão humana versionada.
             </p>
             <div className="mt-4 grid gap-2 text-xs text-ink">
-              <div className="flex items-center justify-between rounded-surface border border-edge px-3 py-2">
+              <div className="flex items-center justify-between border border-edge px-3 py-2">
                 <span>Sem denúncia aberta</span>
                 <span className="font-semibold">{items.length - reportedIds.length}/{items.length || 0}</span>
               </div>
-              <div className="flex items-center justify-between rounded-surface border border-edge px-3 py-2">
+              <div className="flex items-center justify-between border border-edge px-3 py-2">
                 <span>Sem bloqueio de qualidade</span>
                 <span className="font-semibold">{items.length - blockedIds.length}/{items.length || 0}</span>
               </div>
-              <div className="flex items-center justify-between rounded-surface border border-edge px-3 py-2">
+              <div className="flex items-center justify-between border border-edge px-3 py-2">
                 <span>Sem quebra estrutural/importação</span>
                 <span className="font-semibold">{items.length - brokenIds.length}/{items.length || 0}</span>
               </div>
-              <div className="flex items-center justify-between rounded-surface border border-edge px-3 py-2">
+              <div className="flex items-center justify-between border border-edge px-3 py-2">
                 <span>Processadas e limpas para auditoria</span>
                 <span className="font-semibold">{processedCleanIds.length}</span>
               </div>
             </div>
-            <p className="mt-3 text-[11px] leading-5 text-muted">
+            <p className="mt-3 text-micro leading-5 text-muted">
               Transferir para SQLite continua sendo operação do publisher/gate médico; aqui você reduz o caos antes do release.
             </p>
           </div>
 
-          <div className="rounded-surface border border-edge bg-surface p-5 shadow-sm">
+          <div className="border border-edge bg-surface p-5 ">
             <div className="text-sm font-semibold text-ink">Filtros prontos</div>
             <div className="mt-3 flex flex-wrap gap-2">
               {FILTERS.map(([value, label]) => (
@@ -562,7 +562,7 @@ export default function AiResolutionPanel() {
                     setFilter(value);
                     void loadDemand(value);
                   }}
-                  className={`rounded-control border px-3 py-1.5 text-xs font-semibold transition ${
+                  className={`border px-3 py-1.5 text-xs font-semibold transition ${
                     filter === value
                       ? "border-edge bg-paper text-ink"
                       : "border-edge text-ink hover:bg-surface"
@@ -574,7 +574,7 @@ export default function AiResolutionPanel() {
             </div>
           </div>
 
-          <div className="rounded-surface border border-edge bg-surface p-5 shadow-sm">
+          <div className="border border-edge bg-surface p-5 ">
             <label className="text-sm font-semibold text-ink" htmlFor="ai-resolution-ids">
               Colar IDs de questões
             </label>
@@ -586,40 +586,40 @@ export default function AiResolutionPanel() {
               value={pastedIds}
               onChange={(event) => setPastedIds(event.target.value)}
               rows={7}
-              className="mt-3 w-full rounded-surface border border-edge bg-surface px-3 py-2 font-mono text-xs text-ink outline-none focus:border-edge"
+              className="mt-3 w-full border border-edge bg-surface px-3 py-2 text-xs text-ink outline-none focus:border-edge"
               placeholder="question_id_1&#10;question_id_2"
             />
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 onClick={() => void loadDemand("all", parseIds(pastedIds))}
                 disabled={loading || parseIds(pastedIds).length === 0}
-                className="rounded-surface bg-paper px-4 py-2 text-sm font-semibold text-ink transition hover:bg-paper disabled:opacity-50"
+                className="bg-paper px-4 py-2 text-sm font-semibold text-ink transition hover:bg-paper disabled:opacity-50"
               >
                 Classificar IDs
               </button>
               <button
                 onClick={() => setSelected(new Set(eligibleIds))}
                 disabled={!items.length}
-                className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
+                className="border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
               >
                 Selecionar elegíveis
               </button>
               <button
                 onClick={() => setSelected(new Set())}
                 disabled={!selected.size}
-                className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
+                className="border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
               >
                 Limpar seleção
               </button>
             </div>
             {data?.missing_question_ids.length ? (
-              <div className="mt-3 rounded-surface border border-warning bg-surfaceMuted p-3 text-xs text-warning/40/30">
+              <div className="mt-3 border border-warning bg-surfaceMuted p-3 text-xs text-warning/40/30">
                 IDs não encontrados: {data.missing_question_ids.join(", ")}
               </div>
             ) : null}
           </div>
 
-          <div className="rounded-surface border border-edge bg-surface p-5 shadow-sm">
+          <div className="border border-edge bg-surface p-5 ">
             <div className="text-sm font-semibold text-ink">Ação em lote</div>
             <label className="mt-3 flex items-center gap-2 text-sm text-ink">
               <input
@@ -641,7 +641,7 @@ export default function AiResolutionPanel() {
                   setAiPreview(preview);
                   setNotice(`Dry-run: ${preview.selected} selecionadas, estimativa registrada antes de enfileirar.`);
                 })}
-                className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
+                className="border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
               >
                 Ver custo/quantidade primeiro
               </button>
@@ -657,7 +657,7 @@ export default function AiResolutionPanel() {
                   setNotice(`Lote enviado: ${result.enqueued} enfileiradas de ${result.selected} selecionadas.`);
                   await loadDemand(filter, parseIds(pastedIds).length ? parseIds(pastedIds) : undefined);
                 })}
-                className="rounded-surface bg-info px-4 py-2 text-sm font-semibold text-ink transition hover:bg-info disabled:opacity-50"
+                className="bg-info px-4 py-2 text-sm font-semibold text-ink transition hover:bg-info disabled:opacity-50"
               >
                 Enviar lote para IA
               </button>
@@ -667,7 +667,7 @@ export default function AiResolutionPanel() {
                   const result = await routeQuestionBankEditorialBatch(selectedIds, "editorial_review");
                   setNotice(`${result.count} questões roteadas para revisão humana.`);
                 })}
-                className="rounded-surface bg-warning px-4 py-2 text-sm font-semibold text-ink transition hover:bg-warning disabled:opacity-50"
+                className="bg-warning px-4 py-2 text-sm font-semibold text-ink transition hover:bg-warning disabled:opacity-50"
               >
                 Mandar para revisão humana
               </button>
@@ -682,7 +682,7 @@ export default function AiResolutionPanel() {
                   );
                   setSelected(next);
                 }}
-                className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
+                className="border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
               >
                 Ignorar ja processadas
               </button>
@@ -693,7 +693,7 @@ export default function AiResolutionPanel() {
           {detail ? <JsonPanel title={`Detalhes ${detail.id}`} value={detail} /> : null}
         </div>
 
-        <div className="rounded-surface border border-edge bg-surface shadow-sm">
+        <div className="border border-edge bg-surface ">
           <div className="flex items-center justify-between gap-3 border-b border-edge p-4">
             <div>
               <div className="text-sm font-semibold text-ink">Fila de resolução</div>
@@ -705,7 +705,7 @@ export default function AiResolutionPanel() {
                 const allSelected = items.every((item) => selected.has(item.question_id));
                 setSelected(allSelected ? new Set() : new Set(items.map((item) => item.question_id)));
               }}
-              className="rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
+              className="border border-edge px-3 py-1.5 text-xs font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
             >
               {items.every((item) => selected.has(item.question_id)) ? "Desmarcar todos" : "Marcar todos"}
             </button>
@@ -736,21 +736,21 @@ export default function AiResolutionPanel() {
                         />
                       </td>
                       <td className="px-3 py-3">
-                        <div className="font-mono text-xs font-semibold text-ink">{item.question_id}</div>
+                        <div className="text-xs font-semibold text-ink">{item.question_id}</div>
                         <div className="mt-1 max-w-xl text-xs leading-5 text-ink">
                           {item.stem_preview || "Sem enunciado disponível neste recorte."}
                         </div>
                         {item.quality_blockers.length ? (
                           <div className="mt-2 flex flex-wrap gap-1">
                             {item.quality_blockers.map((blocker) => (
-                              <span key={blocker} className="rounded-control bg-surfaceMuted px-2 py-0.5 text-[11px] font-semibold text-danger/40">
+                              <span key={blocker} className="bg-surfaceMuted px-2 py-0.5 text-micro font-semibold text-danger/40">
                                 {blockerLabel(blocker)}
                               </span>
                             ))}
                           </div>
                         ) : null}
                         {questionReports.length ? (
-                          <div className="mt-2 space-y-1 rounded-surface border border-danger bg-surface/70 p-2 text-[11px] text-danger/50/20">
+                          <div className="mt-2 space-y-1 border border-danger bg-surface p-2 text-micro text-danger/50/20">
                             <div className="font-semibold uppercase tracking-wide">
                               {questionReports.length} denuncia{questionReports.length === 1 ? "" : "s"} aberta{questionReports.length === 1 ? "" : "s"}
                             </div>
@@ -786,7 +786,7 @@ export default function AiResolutionPanel() {
                           onClick={() => void runSafely("Carregando detalhes", async () => {
                             setDetail(await getQuestionBankAdminQuestion(item.question_id));
                           })}
-                          className="mt-2 rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-ink transition hover:bg-surface"
+                          className="mt-2 border border-edge px-3 py-1.5 text-xs font-semibold text-ink transition hover:bg-surface"
                         >
                           Ver detalhes
                         </button>

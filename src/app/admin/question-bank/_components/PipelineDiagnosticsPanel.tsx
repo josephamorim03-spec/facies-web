@@ -251,7 +251,7 @@ export default function PipelineDiagnosticsPanel({
 
   return (
     <div className="space-y-5">
-      <section className="rounded-surface border border-edge bg-surface p-5">
+      <section className="border border-edge bg-surface p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-ink">Fila tecnica</h2>
@@ -264,7 +264,7 @@ export default function PipelineDiagnosticsPanel({
             <select
               value={jobType}
               onChange={(event) => onJobTypeChange(event.target.value)}
-              className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
+              className="border border-edge bg-surface px-3 py-2 text-sm"
             >
               {JOB_TYPES.map((type) => (
                 <option key={type} value={type}>{jobTypeLabel(type)}</option>
@@ -279,7 +279,7 @@ export default function PipelineDiagnosticsPanel({
               max={50}
               value={batchSize}
               onChange={(event) => onBatchSizeChange(Math.min(50, Math.max(1, Number(event.target.value) || 1)))}
-              className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
+              className="border border-edge bg-surface px-3 py-2 text-sm"
             />
           </label>
           <label className="grid gap-1 text-sm font-medium text-ink">
@@ -290,28 +290,28 @@ export default function PipelineDiagnosticsPanel({
               max={1}
               value={workers}
               onChange={() => onWorkersChange(1)}
-              className="rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
+              className="border border-edge bg-surface px-3 py-2 text-sm"
             />
           </label>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             onClick={onRunBatch}
-            className="rounded-surface bg-info px-5 py-2 text-sm font-semibold text-ink transition hover:bg-info"
+            className="bg-info px-5 py-2 text-sm font-semibold text-ink transition hover:bg-info"
           >
             Rodar lote
           </button>
           <span className="text-xs text-muted">{selectedImportId ? "import selecionado" : "global"}</span>
           <button
             onClick={onRefresh}
-            className="rounded-surface border border-edge px-5 py-2 text-sm font-semibold text-ink transition hover:border-edge hover:bg-surface"
+            className="border border-edge px-5 py-2 text-sm font-semibold text-ink transition hover:border-edge hover:bg-surface"
           >
             Recalcular
           </button>
         </div>
 
         {/* IA dirigida: seleção econômica de enriquecimento + custo em R$ + acompanhamento */}
-        <div className="mt-5 rounded-surface border border-warning bg-surfaceMuted/40 p-4/40/10">
+        <div className="mt-5 border border-warning bg-surfaceMuted/40 p-4/40/10">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 className="text-sm font-semibold text-ink">IA dirigida (enriquecimento econômico)</h3>
@@ -324,7 +324,7 @@ export default function PipelineDiagnosticsPanel({
               type="button"
               onClick={() => void previewAi()}
               disabled={aiBusy}
-              className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
+              className="border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
             >
               Prever custo
             </button>
@@ -338,7 +338,7 @@ export default function PipelineDiagnosticsPanel({
                 max={100}
                 value={aiMaxNewJobs}
                 onChange={(event) => setAiMaxNewJobs(Number(event.target.value))}
-                className="w-32 rounded-surface border border-edge bg-surface px-3 py-2 text-sm"
+                className="w-32 border border-edge bg-surface px-3 py-2 text-sm"
               />
             </label>
             <label className="flex items-center gap-2 text-sm font-medium text-ink">
@@ -353,14 +353,14 @@ export default function PipelineDiagnosticsPanel({
               type="button"
               onClick={() => void runAi()}
               disabled={aiBusy}
-              className="rounded-surface bg-warning px-5 py-2 text-sm font-semibold text-ink transition hover:bg-warning disabled:opacity-50"
+              className="bg-warning px-5 py-2 text-sm font-semibold text-ink transition hover:bg-warning disabled:opacity-50"
             >
               {aiBusy ? "Processando…" : "Rodar IA"}
             </button>
           </div>
           {aiError ? <p className="mt-2 text-sm text-danger">{aiError}</p> : null}
           {aiPreview?.cost_estimate ? (
-            <div className="mt-3 rounded-surface border border-warning/70 bg-surface/60 p-3 text-sm/40/40">
+            <div className="mt-3 border border-warning/70 bg-surface p-3 text-sm/40/40">
               <p className="text-ink">
                 Selecionadas: <span className="font-semibold">{aiPreview.cost_estimate.selected}</span>
                 {" · "}chamadas estimadas: <span className="font-semibold">{aiPreview.cost_estimate.estimated_llm_calls}</span>
@@ -389,11 +389,11 @@ export default function PipelineDiagnosticsPanel({
                   <ul className="mt-1.5 space-y-1">
                     {aiPreview.results.slice(0, 5).map((cand, idx) => (
                       <li key={String(cand.question_id ?? idx)} className="flex flex-wrap items-center gap-1.5 text-xs text-ink">
-                        <span className="font-mono text-muted">
+                        <span className="text-muted">
                           {String(cand.question_id ?? "?").slice(0, 8)}
                         </span>
                         {((cand.missing_capabilities as string[] | undefined) || []).map((cap) => (
-                          <span key={cap} className="rounded-control border border-edge px-1.5 py-0.5">
+                          <span key={cap} className="border border-edge px-1.5 py-0.5">
                             {cap === "microcompetency"
                               ? "microcompetência"
                               : cap === "pedagogical_profile"
@@ -442,7 +442,7 @@ export default function PipelineDiagnosticsPanel({
                 {aiBatches.map((batch) => (
                   <li key={batch.id} className="flex flex-wrap items-center gap-2 text-sm text-ink">
                     <span
-                      className={`rounded-control px-2 py-0.5 text-xs font-semibold ${
+                      className={`px-2 py-0.5 text-xs font-semibold ${
                         batch.status === "completed"
                           ? "bg-surfaceMuted text-success/40"
                           : batch.status === "failed"
@@ -469,7 +469,7 @@ export default function PipelineDiagnosticsPanel({
           ) : null}
         </div>
 
-        <div className="mt-4 overflow-auto rounded-surface border border-edge">
+        <div className="mt-4 overflow-auto border border-edge">
           <table className="w-full min-w-[760px] text-left text-sm">
             <thead className="bg-surface">
               <tr className="text-muted">
@@ -489,15 +489,15 @@ export default function PipelineDiagnosticsPanel({
                   </td>
                   <td className="px-4 py-3 text-ink">
                     <div className="flex flex-wrap gap-1.5">
-                      <span className="rounded-control bg-surface px-2 py-0.5 text-xs font-semibold text-ink">fila {stage.pending}</span>
-                      <span className="rounded-control bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-info/40">rodando {stage.processing}</span>
-                      <span className="rounded-control bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-success/40">ok {stage.done}</span>
+                      <span className="bg-surface px-2 py-0.5 text-xs font-semibold text-ink">fila {stage.pending}</span>
+                      <span className="bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-info/40">rodando {stage.processing}</span>
+                      <span className="bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-success/40">ok {stage.done}</span>
                     </div>
                     {stage.failed > 0 ? (
                       <button
                         onClick={() => onRetryStage(stage.job_type)}
                         title={`Retry ${stage.failed} jobs falhos`}
-                        className="mt-2 rounded-control bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-danger hover:bg-surfaceMuted/40"
+                        className="mt-2 bg-surfaceMuted px-2 py-0.5 text-xs font-semibold text-danger hover:bg-surfaceMuted/40"
                       >
                         retry {stage.failed}
                       </button>
@@ -515,7 +515,7 @@ export default function PipelineDiagnosticsPanel({
                           {stage.last_error.length > 56 ? `${stage.last_error.slice(0, 56)}...` : stage.last_error}
                         </button>
                         {expandedError === stage.job_type ? (
-                          <pre className="mt-1 max-w-xs overflow-auto rounded-surface bg-surfaceMuted p-2 text-xs text-danger/40">
+                          <pre className="mt-1 max-w-xs overflow-auto bg-surfaceMuted p-2 text-xs text-danger/40">
                             {stage.last_error}
                           </pre>
                         ) : null}
@@ -532,10 +532,10 @@ export default function PipelineDiagnosticsPanel({
         </div>
       </section>
 
-      <section className="rounded-surface border border-edge bg-surface p-5">
+      <section className="border border-edge bg-surface p-5">
         <h2 className="text-xl font-semibold text-ink">Diagnostics</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <div className="rounded-surface border border-edge bg-surface p-4">
+          <div className="border border-edge bg-surface p-4">
             <div className="text-xs font-semibold uppercase text-muted">Readiness</div>
             <div className="mt-3 text-sm text-ink">
               <div>Status: <span className="font-semibold">{readiness.status || "-"}</span></div>
@@ -545,7 +545,7 @@ export default function PipelineDiagnosticsPanel({
               <div>Workers: <span className="font-semibold">{readiness.pipeline_workers ?? "-"}</span></div>
             </div>
           </div>
-          <div className="rounded-surface border border-edge bg-surface p-4">
+          <div className="border border-edge bg-surface p-4">
             <div className="text-xs font-semibold uppercase text-muted">Providers</div>
             <div className="mt-3 space-y-2 text-sm text-ink">
               <div>Cheap: <span className="font-semibold">{readiness.providers.cheap.model || "-"}</span></div>
@@ -553,7 +553,7 @@ export default function PipelineDiagnosticsPanel({
             </div>
           </div>
         </div>
-        <div className="mt-4 rounded-surface border border-edge bg-surface p-4">
+        <div className="mt-4 border border-edge bg-surface p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <div className="text-xs font-semibold uppercase text-muted">Storage</div>
@@ -590,7 +590,7 @@ export default function PipelineDiagnosticsPanel({
                 type="button"
                 onClick={() => void refreshStorageSummary()}
                 disabled={storageBusy}
-                className="rounded-surface border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
+                className="border border-edge px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-50"
               >
                 Storage
               </button>
@@ -598,14 +598,14 @@ export default function PipelineDiagnosticsPanel({
                 type="button"
                 onClick={() => void runCompactDryRun()}
                 disabled={storageBusy || !selectedImportId}
-                className="rounded-surface bg-paper px-4 py-2 text-sm font-semibold text-ink transition hover:bg-paper disabled:opacity-50"
+                className="bg-paper px-4 py-2 text-sm font-semibold text-ink transition hover:bg-paper disabled:opacity-50"
               >
                 Dry-run compact
               </button>
             </div>
           </div>
         </div>
-        <details className="mt-4 rounded-surface border border-edge bg-surface p-3">
+        <details className="mt-4 border border-edge bg-surface p-3">
           <summary className="cursor-pointer text-sm font-semibold text-ink">JSON bruto</summary>
           <div className="mt-3 grid gap-4 xl:grid-cols-2">
             <JsonPanel title="Readiness raw" value={readiness} />

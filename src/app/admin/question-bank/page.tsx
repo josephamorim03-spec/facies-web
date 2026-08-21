@@ -304,14 +304,14 @@ export default function QuestionBankAdminPage() {
   const viewSwitcher = <AdminViewSwitcher view={view} onViewChange={changeView} />;
 
   if (!viewReady) {
-    return <div className="h-64 animate-pulse rounded-surface bg-surface" aria-busy="true" />;
+    return <div className="h-64 paper-skeleton" aria-busy="true" />;
   }
 
   if (view === "curadoria") {
     return (
       <div className="space-y-6">
         {viewSwitcher}
-        <Suspense fallback={<div className="h-64 animate-pulse rounded-surface bg-surface" />}>
+        <Suspense fallback={<div className="h-64 paper-skeleton" />}>
           <AiReviewPanel />
         </Suspense>
       </div>

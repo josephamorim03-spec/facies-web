@@ -507,12 +507,12 @@ export function CronogramaCalendarView({
           className="pointer-events-none fixed z-[70] max-w-[14rem]"
           style={{ left: touchDragGhost.x, top: touchDragGhost.y, transform: "translate(-50%, -50%)" }}
         >
-          <div className="flex items-center gap-2 rounded-control border border-edge bg-paper/95 px-2 py-1.5 shadow-sm">
+          <div className="flex items-center gap-2 border border-edge bg-paper px-2 py-1.5 ">
             <span
-              className="h-3 w-3 shrink-0 rounded-control border border-ink/35"
+              className="h-3 w-3 shrink-0 border border-ink/35"
               style={{ backgroundColor: touchDragGhost.color, opacity: 0.92 }}
             />
-            <span className="min-w-0 truncate text-[11px] font-semibold text-ink">
+            <span className="min-w-0 truncate text-micro font-semibold text-ink">
               {touchDragGhost.label}
             </span>
           </div>
@@ -524,7 +524,7 @@ export function CronogramaCalendarView({
           className="pointer-events-none fixed z-[71]"
           style={{ left: touchEventGhost.x, top: touchEventGhost.y, transform: "translate(-50%, -50%)" }}
         >
-          <div className="w-6 h-6 rounded-control border border-ink/45 bg-paper/95 shadow-sm flex items-center justify-center">
+          <div className="w-6 h-6 border border-ink/45 bg-paper flex items-center justify-center">
             {touchEventGhost.iconType === "work" ? (
               <IconStethoscope className="w-3.5 h-3.5 text-ink" />
             ) : (
@@ -668,7 +668,7 @@ export function CronogramaCalendarView({
             e.stopPropagation();
             handleEventDeleteDrop();
           }}
-          className={`flex items-center justify-center gap-2 py-3 mt-1 border rounded-control transition-colors ${
+          className={`flex items-center justify-center gap-2 py-3 mt-1 border transition-colors ${
             eventDeleteHot
               ? "border-danger bg-surfaceMuted text-danger dark:border-danger dark:bg-danger/40 dark:text-danger"
               : "border-dashed border-edge text-muted"

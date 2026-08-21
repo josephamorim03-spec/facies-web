@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from "pixelarticons/react";
 
 import { Meter } from "@/components/ui/Meter";
 import { Skeleton } from "@/components/Skeleton";
@@ -78,8 +78,8 @@ export function KrosComposition({ composition, loading }: KrosCompositionProps) 
   if (!composition && loading) {
     return (
       <div className="mt-5 space-y-2" aria-label="Carregando a composição da prova">
-        <Skeleton className="h-4 w-56 rounded-control" />
-        <Skeleton className="h-11 w-full rounded-control" />
+        <Skeleton className="h-4 w-56 " />
+        <Skeleton className="h-11 w-full " />
       </div>
     );
   }
@@ -160,7 +160,7 @@ export function KrosComposition({ composition, loading }: KrosCompositionProps) 
                 fillClassName="bg-muted"
               />
             ))}
-            <p className="pt-1 text-[11px] leading-4 text-muted">
+            <p className="pt-1 text-micro leading-4 text-muted">
               A barra mostra o seu domínio atual; o número, quantas questões da prova
               tocam nessa microcompetência.
             </p>

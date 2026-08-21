@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from "pixelarticons/react";
 
 import {
   getCurrentPlan,
@@ -187,7 +187,7 @@ export function TrilhaNextActivity({ fallback = null }: Props) {
 
   return (
     <section
-      className="rounded-control border border-edge bg-surface p-4"
+      className="border border-edge bg-surface p-4"
       aria-labelledby="trilha-next-heading"
     >
       <div className="flex items-center justify-between gap-3">
@@ -195,7 +195,7 @@ export function TrilhaNextActivity({ fallback = null }: Props) {
           {isToday ? "Sua trilha hoje" : `Próximo passo · ${next.scheduled_date}`}
         </p>
         <span
-          className="shrink-0 rounded-control border border-edge px-2 py-0.5 text-[11px] text-muted"
+          className="shrink-0 border border-edge px-2 py-0.5 text-micro text-muted"
           title={evidence.note}
         >
           {evidence.label}
@@ -254,12 +254,12 @@ export function TrilhaNextActivity({ fallback = null }: Props) {
               sustenta e o que ainda falta (KROS-007). */}
           <div>
             <p className="text-xs font-medium text-ink">{evidence.label}</p>
-            <ul className="mt-1 space-y-0.5 text-[11px] text-muted">
+            <ul className="mt-1 space-y-0.5 text-micro text-muted">
               {evidences.map((item) => (
                 <li key={item}>✓ {item}</li>
               ))}
             </ul>
-            <p className="mt-1 text-[11px] text-muted">{evidence.note}</p>
+            <p className="mt-1 text-micro text-muted">{evidence.note}</p>
           </div>
         </div>
       )}

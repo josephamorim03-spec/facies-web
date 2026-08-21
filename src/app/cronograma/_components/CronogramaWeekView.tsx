@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarPlus2, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { Calendar2 as CalendarPlus2, ChevronLeft, ChevronRight, Sliders as SlidersHorizontal } from "pixelarticons/react";
 
 import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
@@ -114,7 +114,7 @@ export function CronogramaWeekView({
           href={`/cronograma?view=month&anchor=${today}&day=${today}`}
           data-testid="schedule-view-month"
           aria-label="Ver calendário mensal"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex h-9 w-9 shrink-0 items-center justify-center text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <IconMonthGrid className="h-5 w-5" />
         </Link>
@@ -133,9 +133,9 @@ export function CronogramaWeekView({
   if (agendaQuery.isPending) {
     return (
       <div className="space-y-4" aria-label="Semana carregando">
-        <Skeleton className="mx-auto h-6 w-40 rounded-control" />
-        <Skeleton className="h-24 w-full rounded-control" />
-        <Skeleton className="h-52 w-full rounded-control" />
+        <Skeleton className="mx-auto h-6 w-40 " />
+        <Skeleton className="h-24 w-full " />
+        <Skeleton className="h-52 w-full " />
       </div>
     );
   }
@@ -165,7 +165,7 @@ export function CronogramaWeekView({
         <Link
           href={`/cronograma?view=week&anchor=${shiftISO(range.start, -7)}&day=${shiftISO(selectedDate, -7)}`}
           aria-label="Semana anterior"
-          className="flex h-11 w-11 items-center justify-center rounded-control text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="flex h-11 w-11 items-center justify-center text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
         >
           <ChevronLeft className="h-5 w-5" aria-hidden="true" />
         </Link>
@@ -180,7 +180,7 @@ export function CronogramaWeekView({
         <Link
           href={`/cronograma?view=week&anchor=${shiftISO(range.start, 7)}&day=${shiftISO(selectedDate, 7)}`}
           aria-label="Próxima semana"
-          className="flex h-11 w-11 items-center justify-center rounded-control text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="flex h-11 w-11 items-center justify-center text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
         >
           <ChevronRight className="h-5 w-5" aria-hidden="true" />
         </Link>
@@ -202,7 +202,11 @@ export function CronogramaWeekView({
       ) : null}
 
       <section aria-label="Dias da semana" data-week-strip="true">
-        <ol className="grid grid-cols-7 overflow-hidden rounded-control border border-edge bg-edge">
+        {/* Colunas presas ao numero REAL de dias, nao fixas em 7: o `bg-edge`
+            do container e a cor do vao de 1px entre celulas, e com `grid-cols-7`
+            uma agenda mais curta deixava as colunas restantes pintadas de
+            chumbo — um paredao escuro que le como area quebrada. */}
+        <ol className="grid auto-cols-fr grid-flow-col overflow-hidden border border-edge bg-edge">
           {agenda.days.map((day) => {
             const current = day.date === today;
             const selected = day.date === selectedDay?.date;
@@ -230,10 +234,10 @@ export function CronogramaWeekView({
                         : undefined
                   }
                 >
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted sm:text-xs">
+                  <span className="text-nano font-semibold uppercase tracking-wide text-muted sm:text-xs">
                     {shortWeekday(day.date)}
                   </span>
-                  <span className={`flex h-6 w-6 items-center justify-center rounded-control text-xs font-semibold ${current ? "bg-ink text-paper" : "text-ink"}`}>
+                  <span className={`flex h-6 w-6 items-center justify-center text-xs font-semibold ${current ? "bg-ink text-paper" : "text-ink"}`}>
                     {dayNumber(day.date)}
                   </span>
                   <span className="flex min-h-2 items-center justify-center gap-0.5" aria-hidden="true">
@@ -244,15 +248,15 @@ export function CronogramaWeekView({
                           key={item.occurrence_id}
                           data-week-day-dot="true"
                           data-area={dot.area}
-                          className={`h-1.5 w-1.5 rounded-control ${dot.className}`}
+                          className={`h-1.5 w-1.5 ${dot.className}`}
                         />
                       );
                     })}
                     {hasOverflow ? (
-                      <span data-week-day-overflow="true" className="text-[9px] font-semibold leading-none text-muted">...</span>
+                      <span data-week-day-overflow="true" className="text-pico font-semibold leading-none text-muted">...</span>
                     ) : null}
                   </span>
-                  <span className="min-h-3 truncate text-[9px] font-medium text-muted sm:text-[10px]">
+                  <span className="min-h-3 truncate text-pico font-medium text-muted sm:text-nano">
                     {activityCount === 0 ? "livre" : hasOverflow ? `${activityCount} ativ.` : null}
                   </span>
                 </button>
@@ -267,7 +271,7 @@ export function CronogramaWeekView({
           aria-labelledby="selected-day-title"
           data-week-detail="true"
           data-detail-date={selectedDay.date}
-          className="rounded-control border border-edge bg-paper px-3 py-4 sm:px-4"
+          className="border border-edge bg-paper px-3 py-4 sm:px-4"
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -276,7 +280,7 @@ export function CronogramaWeekView({
                   {formatWeekday(selectedDay.date)}
                 </h2>
                 {selectedDay.is_today ? (
-                  <span className="rounded-control border border-primary bg-primary/5 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary">
+                  <span className="border border-primary bg-primary/5 px-2 py-0.5 text-nano font-semibold uppercase text-primary">
                     Hoje
                   </span>
                 ) : null}
@@ -285,14 +289,14 @@ export function CronogramaWeekView({
             </div>
             <Link
               href={`/cronograma?view=month&anchor=${selectedDay.date}&day=${selectedDay.date}`}
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-control border border-edge px-3 text-xs font-semibold text-primary transition-colors hover:border-primary hover:bg-surfaceMuted"
+              className="inline-flex min-h-9 items-center gap-1.5 border border-edge px-3 text-xs font-semibold text-primary transition-colors hover:border-primary hover:bg-surfaceMuted"
             >
               <CalendarPlus2 className="h-4 w-4" aria-hidden="true" />
               Organizar dia
             </Link>
           </div>
 
-          <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-control border border-edge bg-edge sm:grid-cols-4">
+          <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden border border-edge bg-edge sm:grid-cols-4">
             {[
               ["Atividades", `${selectedDay.completed_items}/${selectedDay.total_items}`],
               ["Tempo", selectedDay.planned_minutes > 0 ? `${selectedDay.planned_minutes} min` : "—"],
@@ -304,7 +308,7 @@ export function CronogramaWeekView({
               ["Recomendação", selectedDay.recommended_questions == null ? "—" : String(selectedDay.recommended_questions)],
             ].map(([label, value]) => (
               <div key={label} className="bg-paper px-3 py-2.5">
-                <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted">{label}</dt>
+                <dt className="text-nano font-semibold uppercase tracking-wide text-muted">{label}</dt>
                 <dd className="mt-0.5 text-sm font-semibold tabular-nums text-ink">{value}</dd>
               </div>
             ))}
@@ -318,7 +322,7 @@ export function CronogramaWeekView({
               {selectedItems.map((item) => <AgendaItemRow key={item.occurrence_id} item={item} />)}
             </ul>
           ) : (
-            <div className="mt-4 rounded-control bg-surfaceMuted px-3 py-4 text-sm text-muted">
+            <div className="mt-4 bg-surfaceMuted px-3 py-4 text-sm text-muted">
               <p>Dia livre. Nenhuma atividade planejada.</p>
               <Link href={`/cronograma?view=month&anchor=${selectedDay.date}&day=${selectedDay.date}`} className="mt-2 inline-block font-semibold text-primary hover:underline">
                 Adicionar atividade
@@ -357,7 +361,7 @@ export function CronogramaWeekView({
         />
       ) : null}
 
-      <section aria-labelledby="week-settings-title" data-week-context="true" className="rounded-control border border-edge bg-surface px-3 py-3 sm:px-4">
+      <section aria-labelledby="week-settings-title" data-week-context="true" className="border border-edge bg-surface px-3 py-3 sm:px-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 id="week-settings-title" className="text-sm font-semibold text-ink">Preferências da semana</h2>
@@ -365,7 +369,7 @@ export function CronogramaWeekView({
           </div>
           <Link
             href="/preferencias"
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-control border border-primary px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-primaryInk"
+            className="inline-flex min-h-10 items-center gap-1.5 border border-primary px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-primaryInk"
           >
             <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
             Abrir preferências

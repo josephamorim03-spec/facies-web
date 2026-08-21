@@ -43,8 +43,8 @@ function VolumeLegend({ areas }: { areas: AreaKey[] }) {
   return (
     <ul className="flex flex-wrap gap-x-3 gap-y-1" aria-label="Áreas">
       {areas.map((area) => (
-        <li key={area} className="flex items-center gap-1 text-[11px] font-medium leading-none text-muted">
-          <span className="inline-block h-2 w-2 shrink-0 rounded-control" style={{ backgroundColor: AREA_COLORS[area] }} />
+        <li key={area} className="flex items-center gap-1 text-micro font-medium leading-none text-muted">
+          <span className="inline-block h-2 w-2 shrink-0 " style={{ backgroundColor: AREA_COLORS[area] }} />
           {area}
         </li>
       ))}
@@ -127,7 +127,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
                       if (!Number.isFinite(bx) || !Number.isFinite(by) || !Number.isFinite(bw) || bv <= 0) return null;
                       return (
                         <g>
-                          <line x1={bx} x2={bx + bw} y1={by} y2={by} stroke={CHART_INK} strokeWidth={1.2} strokeOpacity={0.7} />
+                          <line x1={bx} x2={bx + bw} y1={by} y2={by} stroke={CHART_INK} strokeWidth={1} strokeOpacity={0.7} />
                           <text x={bx + bw / 2} y={by - 5} textAnchor="middle" dominantBaseline="auto" fontSize={11} fontWeight={700} fill={CHART_INK}>
                             {bv}
                           </text>
@@ -154,7 +154,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
                 {volumeSegmentLabelPositions.map(({ area, midY, count }) => (
                   <div
                     key={area}
-                    className="absolute flex items-center gap-1 text-[9px] font-medium leading-none"
+                    className="absolute flex items-center gap-1 text-pico font-medium leading-none"
                     style={{ top: clamp(midY - 5, 0, 190), left: 2, color: AREA_COLORS[area] }}
                   >
                     <span className="opacity-80">{area}</span>
@@ -201,7 +201,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
                   stackId="v"
                   fill={AREA_COLORS[area]}
                   stroke="var(--color-paper)"
-                  strokeWidth={0.75}
+                  strokeWidth={1}
                   isAnimationActive={false}
                 />
               ))}

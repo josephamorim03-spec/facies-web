@@ -160,10 +160,11 @@ export function CalendarGrid({
     const dragImage = document.createElement("div");
     dragImage.style.width = "24px";
     dragImage.style.height = "24px";
-    dragImage.style.border = "1px solid rgba(30, 41, 59, 0.45)";
-    dragImage.style.borderRadius = "999px";
-    dragImage.style.background = "rgba(255, 255, 255, 0.96)";
-    dragImage.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.18)";
+    // Var de tema e nao literal: este no vive no documento, entao ele resolve
+    // `var()` normalmente — e no escuro deixa de ser um cartao branco.
+    dragImage.style.border = "1px solid var(--color-ink)";
+    dragImage.style.borderRadius = "0";
+    dragImage.style.background = "var(--color-surface)";
     dragImage.style.display = "flex";
     dragImage.style.alignItems = "center";
     dragImage.style.justifyContent = "center";
@@ -184,7 +185,7 @@ export function CalendarGrid({
       fallback.style.fontSize = "11px";
       fallback.style.fontWeight = "600";
       fallback.style.lineHeight = "1";
-      fallback.style.color = "#111827";
+      fallback.style.color = "var(--color-ink)";
       dragImage.appendChild(fallback);
     }
 
@@ -276,13 +277,13 @@ export function CalendarGrid({
             } ${isHoverDropTarget ? "bg-[var(--amber-tint)] ring-2 ring-inset ring-primary" : ""}`}
             style={
               isSelected && isSearchMatch
-                ? { backgroundColor: "var(--amber-tint)", boxShadow: "inset 0 0 0 2px #f59e0b" }
+                ? { backgroundColor: "var(--amber-tint)", boxShadow: "inset 0 0 0 2px var(--color-primary)" }
                 : isToday && isSelected
                   ? { backgroundColor: "var(--amber-tint)", boxShadow: "inset 0 0 0 2px var(--color-ink)" }
                   : isSelected
-                    ? { backgroundColor: "var(--amber-tint)", boxShadow: "inset 0 0 0 1px #f59e0b" }
+                    ? { backgroundColor: "var(--amber-tint)", boxShadow: "inset 0 0 0 1px var(--color-primary)" }
                     : isSearchMatch
-                      ? { boxShadow: "inset 0 0 0 2px #f59e0b" }
+                      ? { boxShadow: "inset 0 0 0 2px var(--color-primary)" }
                       : isToday
                         ? { boxShadow: "inset 0 0 0 2px var(--color-ink)" }
                         : {}
@@ -328,11 +329,11 @@ export function CalendarGrid({
           >
             <div className="absolute top-0.5 left-0 right-0 flex justify-center">
               {isToday ? (
-                <span className={`${showDayDetail ? "text-[9px] w-3.5 h-3.5" : "text-[10px] w-4 h-4"} leading-none bg-ink text-paper rounded-control flex items-center justify-center font-medium`}>
+                <span className={`${showDayDetail ? "text-pico w-3.5 h-3.5" : "text-nano w-4 h-4"} leading-none bg-ink text-paper flex items-center justify-center font-medium`}>
                   {day}
                 </span>
               ) : (
-                <span className={`${showDayDetail ? "text-[9px]" : "text-[10px]"} leading-none text-muted`}>
+                <span className={`${showDayDetail ? "text-pico" : "text-nano"} leading-none text-muted`}>
                   {day}
                 </span>
               )}
@@ -375,7 +376,7 @@ export function CalendarGrid({
                     onDragEnd={interactive && canDragWorkEvent && workEvent ? () => handleEventDragEnd() : undefined}
                   >
                     <IconStethoscope className={`${showDayDetail ? "w-2 h-2" : "w-2.5 h-2.5"} text-ink`} />
-                    <span className="pointer-events-none absolute bottom-full right-0 mb-0.5 whitespace-nowrap rounded bg-ink text-paper px-1 py-0.5 text-[8px] opacity-0 group-hover:opacity-100 transition-opacity z-30">
+                    <span className="pointer-events-none absolute bottom-full right-0 mb-0.5 whitespace-nowrap bg-ink text-paper px-1 py-0.5 text-femto opacity-0 group-hover:opacity-100 transition-opacity z-30">
                       {(workLabels.length > 0 ? workLabels.join(" - ") : "Trabalho") + (isWorkCompleted ? " - feito" : "")}
                     </span>
                   </div>
@@ -411,10 +412,10 @@ export function CalendarGrid({
                     } : undefined}
                     onDragEnd={interactive && canDragOtherEvent && otherEvent ? () => handleEventDragEnd() : undefined}
                   >
-                    <span className={`inline-flex ${showDayDetail ? "w-2 h-2" : "w-2.5 h-2.5"} items-center justify-center text-ink font-semibold leading-none text-[8px]`}>
+                    <span className={`inline-flex ${showDayDetail ? "w-2 h-2" : "w-2.5 h-2.5"} items-center justify-center text-ink font-semibold leading-none text-femto`}>
                       !
                     </span>
-                    <span className="pointer-events-none absolute bottom-full right-0 mb-0.5 whitespace-nowrap rounded bg-ink text-paper px-1 py-0.5 text-[8px] opacity-0 group-hover:opacity-100 transition-opacity z-30">
+                    <span className="pointer-events-none absolute bottom-full right-0 mb-0.5 whitespace-nowrap bg-ink text-paper px-1 py-0.5 text-femto opacity-0 group-hover:opacity-100 transition-opacity z-30">
                       {(otherLabels.length > 0 ? otherLabels.join(" - ") : "Outras") + (isOtherCompleted ? " - feito" : "")}
                     </span>
                   </div>
@@ -447,7 +448,7 @@ export function CalendarGrid({
                 >
                   <IconCards className={`${showDayDetail ? "w-2 h-2" : "w-2.5 h-2.5"}`} />
                 </button>
-                <span className={`pointer-events-none absolute bottom-full left-0 mb-0.5 whitespace-nowrap rounded bg-ink text-paper px-1 py-0.5 text-[8px] transition-opacity z-30 ${
+                <span className={`pointer-events-none absolute bottom-full left-0 mb-0.5 whitespace-nowrap bg-ink text-paper px-1 py-0.5 text-femto transition-opacity z-30 ${
                   activeFlashcardsTooltipIso === iso
                     ? "opacity-100"
                     : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
@@ -474,17 +475,24 @@ export function CalendarGrid({
                           e.stopPropagation();
                           onBarClick?.(dot.popupTarget!, (e.currentTarget as HTMLElement).getBoundingClientRect());
                         } : undefined}
-                        className={`flex w-full items-center gap-1 rounded-control px-1 py-0.5 ${barH} overflow-hidden shadow-sm`}
-                        style={{ backgroundColor: dot.color, opacity: 0.7, boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.14)" }}
+                        className={`flex w-full items-center gap-1 border border-edge bg-surface px-1 py-0.5 ${barH} overflow-hidden`}
+                        style={{ opacity: 0.7 }}
                       >
+                        {/* Faixa da area: 3px solidos. Le de relance como a
+                            barra cheia lia, sem sequestrar o fundo do texto. */}
                         <span
-                          className="shrink-0 rounded-[4px] bg-white/95 px-1 py-[2px] font-bold leading-none shadow-sm"
-                          style={{ color: dot.color, fontSize: chipFontSize }}
+                          aria-hidden="true"
+                          className="h-full w-[3px] shrink-0 self-stretch"
+                          style={{ backgroundColor: dot.color }}
+                        />
+                        <span
+                          className="shrink-0 font-bold leading-none tabular-nums text-ink"
+                          style={{ fontSize: chipFontSize }}
                         >
                           #EI
                         </span>
                         <span
-                          className="min-w-0 flex-1 truncate font-semibold leading-none text-white"
+                          className="min-w-0 flex-1 truncate font-semibold leading-none text-ink"
                           style={{ fontSize }}
                         >
                           {dot.theme ?? ""}
@@ -503,7 +511,7 @@ export function CalendarGrid({
                           e.stopPropagation();
                           onBarClick?.(dot.popupTarget!, (e.currentTarget as HTMLElement).getBoundingClientRect());
                         } : undefined}
-                        className={`w-full rounded-control overflow-hidden ${showDayDetail ? "h-1.5" : "h-2"}`}
+                        className={`w-full overflow-hidden ${showDayDetail ? "h-1.5" : "h-2"}`}
                         style={{ backgroundColor: dot.color }}
                       />
                     );
@@ -515,6 +523,11 @@ export function CalendarGrid({
                   const chipFontSize = showDayDetail ? "8px" : "9px";
                   const revNum = dot.task ? (taskRevisionMap?.get(dot.task.task_id) ?? 1) : 1;
                   const canDragTask = interactive && !showDayDetail && isPending && Boolean(dot.task);
+                  // Na grade do mes um dia com tarefa ATRASADA era pixel por
+                  // pixel igual a um dia em dia — o unico lugar do cronograma
+                  // onde o atraso nao aparecia. A visao de semana ja o marcava,
+                  // e e por isso que a divergencia passou tanto tempo.
+                  const isOverdue = isPending && dot.task?.is_overdue === true;
                   return (
                     <div
                       key={dot.key}
@@ -549,13 +562,15 @@ export function CalendarGrid({
                         if (taskDragOrigin.current === "touch" || touchDragTouchId.current !== null) return;
                         clearDragState();
                       } : undefined}
-                      className={`flex w-full items-center gap-1 rounded-control px-1 py-0.5 ${barH} overflow-hidden shadow-sm ${isPending && dot.task ? "select-none" : ""} ${
-                        dot.task && touchDraggingTaskId === dot.task.task_id ? "ring-1 ring-white/60 scale-[1.02]" : ""
-                      } ${dot.task && dragTaskId === dot.task.task_id ? "ring-1 ring-white/60" : ""}`}
+                      className={`flex w-full items-center gap-1 border bg-surface px-1 py-0.5 ${barH} overflow-hidden ${isPending && dot.task ? "select-none" : ""} ${
+                        dot.task && (touchDraggingTaskId === dot.task.task_id || dragTaskId === dot.task.task_id)
+                          ? "border-ink"
+                          : isOverdue
+                            ? "border-warning"
+                            : "border-edge"
+                      }`}
                       style={{
-                        backgroundColor: dot.color,
                         opacity: isDone ? 0.45 : 1,
-                        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.14)",
                         WebkitUserSelect: isPending && dot.task ? "none" : undefined,
                         userSelect: isPending && dot.task ? "none" : undefined,
                         WebkitTouchCallout: isPending && dot.task ? "none" : undefined,
@@ -564,16 +579,18 @@ export function CalendarGrid({
                       }}
                     >
                       <span
-                        className="shrink-0 rounded-[4px] bg-white/95 px-1 py-[2px] font-bold leading-none shadow-sm"
-                        style={{
-                          color: dot.color,
-                          fontSize: chipFontSize,
-                        }}
+                        aria-hidden="true"
+                        className="h-full w-[3px] shrink-0 self-stretch"
+                        style={{ backgroundColor: dot.color }}
+                      />
+                      <span
+                        className="shrink-0 font-bold leading-none tabular-nums text-ink"
+                        style={{ fontSize: chipFontSize }}
                       >
-                        {`#${revNum}`}
+                        {isOverdue ? "!" : ""}{`#${revNum}`}
                       </span>
                       <span
-                        className="min-w-0 flex-1 truncate font-semibold leading-none text-white"
+                        className="min-w-0 flex-1 truncate font-semibold leading-none text-ink"
                         style={{ fontSize }}
                       >
                         {dot.theme ?? dot.task?.theme ?? dot.tooltip?.split(": ")[1] ?? ""}

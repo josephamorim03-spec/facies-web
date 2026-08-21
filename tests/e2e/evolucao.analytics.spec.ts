@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { join } from "node:path";
 
@@ -59,7 +60,10 @@ for (const viewport of [
     await mockEvolutionApi(page);
 
     await page.goto("/evolucao");
-    await expect(page.getByRole("heading", { name: "Analise sua trajetória" })).toBeVisible();
+    // O titulo que este teste esperava nao existe no produto ha tempos, e a
+    // pagina nao ganha um: o nome dela ja esta na navegacao e na barra de
+    // titulo, e repeti-lo dentro do conteudo e a redundancia que o resto desta
+    // rodada foi remover. O primeiro conteudo real e o resumo.
     await expect(page.getByText("Resumo do desempenho")).toBeVisible();
     await expect(page.getByTestId("chart-weekly-accuracy")).toBeVisible();
     await expect(page.getByTestId("chart-area-lines")).toBeVisible();
@@ -78,6 +82,14 @@ for (const viewport of [
     }));
     expect(pageWidth.scrollWidth).toBeLessThanOrEqual(pageWidth.clientWidth);
     await page.evaluate(() => window.scrollTo(0, 0));
+
+    // A tela perdeu duas abas e virou uma leitura so: o gate automatico entra
+    // agora porque e quando a estrutura acabou de mudar que ele vale alguma coisa.
+    const axe = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
+      .analyze();
+    expect(axe.violations).toEqual([]);
+
     const captureDir = process.env.EVOLUTION_CAPTURE_DIR;
     await page.screenshot({
       path: captureDir

@@ -10,7 +10,6 @@ import { CadernoHeader } from "./_components/CadernoHeader";
 import { CadernoRegistroPanel, CadernoRegistroSkeletonPanel } from "./_components/CadernoRegistroPanel";
 import { CadernoPesquisarPanel, CadernoPesquisarSkeletonPanel } from "./_components/CadernoPesquisarPanel";
 import { CadernoNoteList } from "./_components/CadernoNoteList";
-import { CardsSectionTabs } from "../CardsSectionTabs";
 import { BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
 
 export default function CadernoClientPage() {
@@ -154,7 +153,6 @@ export default function CadernoClientPage() {
   // Main notebook
   return (
     <div className={`space-y-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
-      <CardsSectionTabs active="records" />
       <CadernoHeader
         tab={tab}
         onEnterSearch={() => setTabWithSession("pesquisar")}

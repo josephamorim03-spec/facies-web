@@ -112,7 +112,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
 
   if (!review) {
     return (
-      <div className="mt-4 rounded-surface border border-primary/35 bg-[var(--amber-tint)] p-4">
+      <div className="mt-4 border border-primary/35 bg-[var(--amber-tint)] p-4">
         <p className="text-sm font-semibold text-ink">Antes de ver o comentário</p>
         <p className="mt-1 text-sm leading-relaxed text-muted">
           Você pode localizar até onde seu raciocínio chegou ou abrir o feedback agora.
@@ -123,7 +123,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
               type="button"
               disabled={busy}
               onClick={() => void openReview()}
-              className="rounded-surface border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-primaryInk disabled:opacity-50"
+              className="border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-primaryInk disabled:opacity-50"
             >
               Revisar raciocínio
             </button>
@@ -132,7 +132,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
             type="button"
             disabled={busy}
             onClick={() => void reveal()}
-            className="rounded-surface border border-edge bg-surface px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-50"
+            className="border border-edge bg-surface px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-50"
           >
             Revelar resposta e comentários
           </button>
@@ -143,7 +143,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
   }
 
   return (
-    <div className="mt-4 rounded-surface border border-primary/40 bg-surface p-4" aria-live="polite">
+    <div className="mt-4 border border-primary/40 bg-surface p-4" aria-live="polite">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
@@ -169,7 +169,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
                 type="button"
                 disabled={busy}
                 onClick={() => void answer(value)}
-                className="rounded-surface border border-edge px-3 py-2 text-sm font-semibold text-ink hover:border-primary disabled:opacity-50"
+                className="border border-edge px-3 py-2 text-sm font-semibold text-ink hover:border-primary disabled:opacity-50"
               >
                 {label}
               </button>
@@ -181,13 +181,13 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
       <ReasoningChain chain={review.chain} />
 
       {review.first_gap && (
-        <div className="mt-4 rounded-surface border border-warning/40 bg-[var(--amber-tint)] p-3">
+        <div className="mt-4 border border-warning/40 bg-[var(--amber-tint)] p-3">
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Primeira lacuna percebida</p>
           <p className="mt-1 text-sm font-semibold text-ink">
             {review.first_gap.knowledge_node_name ?? "Microcompetência associada"}
           </p>
           <p className="mt-1 font-serif text-sm leading-relaxed text-muted">{review.first_gap.feedback}</p>
-          <button type="button" disabled={busy} onClick={() => void reveal()} className="mt-3 rounded-surface bg-primary px-4 py-2 text-sm font-semibold text-primaryInk disabled:opacity-50">
+          <button type="button" disabled={busy} onClick={() => void reveal()} className="mt-3 bg-primary px-4 py-2 text-sm font-semibold text-primaryInk disabled:opacity-50">
             Ver resposta e comentários
           </button>
         </div>
@@ -205,7 +205,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
                 type="button"
                 disabled={busy}
                 onClick={() => void attribute(value as Parameters<typeof attribute>[0])}
-                className="rounded-surface border border-edge px-3 py-2 text-left text-sm font-semibold text-ink hover:border-primary disabled:opacity-50"
+                className="border border-edge px-3 py-2 text-left text-sm font-semibold text-ink hover:border-primary disabled:opacity-50"
               >
                 {label}
               </button>

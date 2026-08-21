@@ -11,11 +11,11 @@ type ViewMode = "month" | "week";
 function IconToday({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none"
-      stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter"
       className={`shrink-0 ${className ?? ""}`} aria-hidden="true">
-      <rect x="2.5" y="2.5" width="15" height="15" rx="2" />
+      <rect x="2.5" y="2.5" width="15" height="15"/>
       <line x1="2.5" y1="6" x2="17.5" y2="6" />
-      <circle cx="10" cy="12" r="2.5" fill="currentColor" stroke="none" />
+      <rect x="8" y="10" width="4" height="4" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -23,9 +23,9 @@ function IconToday({ className }: { className?: string }) {
 function IconMonth({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none"
-      stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter"
       className={`shrink-0 ${className ?? ""}`} aria-hidden="true">
-      <rect x="2.5" y="2.5" width="15" height="15" rx="2" />
+      <rect x="2.5" y="2.5" width="15" height="15"/>
       <line x1="2.5" y1="6" x2="17.5" y2="6" />
       <line x1="7" y1="6" x2="7" y2="15" />
       <line x1="13" y1="6" x2="13" y2="15" />
@@ -95,7 +95,7 @@ export function ViewModeSwitch({ activeView, hideOnMobile }: { activeView: ViewM
         {/* Span fora da tela — mede o texto real na fonte correta antes de animar */}
         <span
           ref={labelMeasureRef}
-          className="fixed top-0 left-[-9999px] font-serif text-sm whitespace-nowrap pointer-events-none select-none"
+          className="fixed top-0 left-[-9999px] text-sm whitespace-nowrap pointer-events-none select-none"
           aria-hidden="true"
         >
           {label}
@@ -109,13 +109,13 @@ export function ViewModeSwitch({ activeView, hideOnMobile }: { activeView: ViewM
             bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)",
             width: open ? expandedWidth : "48px",
           }}
-          className="fixed left-4 z-40 h-12 flex items-center overflow-hidden rounded-control bg-ink text-paper shadow-lg transition-[width] duration-300 ease-in-out"
+          className="fixed left-4 z-40 h-12 flex items-center overflow-hidden bg-ink text-paper shadow-overlay transition-[width] duration-300 ease-in-out"
         >
           {/* Wrapper w-12 fixo: texto começa exatamente em 48px, zero sangramento */}
           <span className="w-12 h-12 flex items-center justify-center shrink-0">
             <Icon className="w-5 h-5" />
           </span>
-          <span className="font-serif text-sm whitespace-nowrap pr-4 select-none">
+          <span className="text-sm whitespace-nowrap pr-4 select-none">
             {label}
           </span>
         </button>
@@ -132,7 +132,7 @@ export function ViewModeSwitch({ activeView, hideOnMobile }: { activeView: ViewM
           aria-current={activeView === "week" ? "page" : undefined}
         >
           <IconToday className="w-4 h-4" />
-          <span className="font-serif">Hoje</span>
+          <span className="">Hoje</span>
         </Link>
         {/* Direto para a visao de mes: `/agenda-operacional` so redirecionava
             de volta para ca, uma ida e volta por um alias legado para trocar um
@@ -146,7 +146,7 @@ export function ViewModeSwitch({ activeView, hideOnMobile }: { activeView: ViewM
           aria-current={activeView === "month" ? "page" : undefined}
         >
           <IconMonth className="w-4 h-4" />
-          <span className="font-serif">Mês</span>
+          <span className="">Mês</span>
         </Link>
       </div>
     </>
@@ -195,7 +195,7 @@ export function ViewModeFabInline({ activeView }: { activeView: ViewMode }) {
     <>
       <span
         ref={labelMeasureRef}
-        className="fixed top-0 left-[-9999px] font-serif text-sm whitespace-nowrap pointer-events-none select-none"
+        className="fixed top-0 left-[-9999px] text-sm whitespace-nowrap pointer-events-none select-none"
         aria-hidden="true"
       >
         {label}
@@ -206,12 +206,12 @@ export function ViewModeFabInline({ activeView }: { activeView: ViewMode }) {
         aria-label={open ? `Navegar para ${label}` : `Ir para ${label}`}
         aria-expanded={open}
         style={{ width: open ? expandedWidth : "48px" }}
-        className="h-12 flex items-center overflow-hidden rounded-control bg-ink text-paper shadow-lg transition-[width] duration-300 ease-in-out"
+        className="h-12 flex items-center overflow-hidden bg-ink text-paper shadow-overlay transition-[width] duration-300 ease-in-out"
       >
         <span className="w-12 h-12 flex items-center justify-center shrink-0">
           <Icon className="w-5 h-5" />
         </span>
-        <span className="font-serif text-sm whitespace-nowrap pr-4 select-none">
+        <span className="text-sm whitespace-nowrap pr-4 select-none">
           {label}
         </span>
       </button>
@@ -223,12 +223,12 @@ export function ViewModeSwitchSkeleton({ className: _ }: { className?: string })
   return (
     <div className="hidden md:flex items-center gap-5 border-t border-edge pt-3" aria-hidden="true">
       <div className="flex items-center gap-1.5">
-        <Skeleton className="w-4 h-4 rounded-control" />
-        <Skeleton className="h-4 w-14 rounded-control" />
+        <Skeleton className="w-4 h-4 " />
+        <Skeleton className="h-4 w-14 " />
       </div>
       <div className="flex items-center gap-1.5">
-        <Skeleton className="w-4 h-4 rounded-control" />
-        <Skeleton className="h-4 w-10 rounded-control" />
+        <Skeleton className="w-4 h-4 " />
+        <Skeleton className="h-4 w-10 " />
       </div>
     </div>
   );

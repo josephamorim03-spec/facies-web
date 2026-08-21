@@ -71,8 +71,8 @@ export function CadernoNoteList({
           {notes.map((note) => (
             <li
               key={note.note_id}
-              className="rounded-surface border border-edge p-3 space-y-1"
-              style={{ borderLeftWidth: "3px", borderLeftColor: AREA_COLORS[note.area as Area] ?? "#ccc" }}
+              className="border border-edge p-3 space-y-1"
+              style={{ borderLeftWidth: "3px", borderLeftColor: AREA_COLORS[note.area as Area] ?? AREA_COLORS.OU }}
             >
               {editingNote?.note_id === note.note_id ? (
                 <NoteEditForm
@@ -87,8 +87,8 @@ export function CadernoNoteList({
                     <p className="text-sm">{note.insight_question}</p>
                     <div className="flex items-center gap-1 shrink-0">
                       <span
-                        className="text-xs font-semibold px-1 py-0.5 rounded-control text-white"
-                        style={{ backgroundColor: weightBadgeColor(note.weight) }}
+                        className="border bg-surface px-1 py-0.5 text-xs font-semibold tabular-nums"
+                        style={{ borderColor: weightBadgeColor(note.weight), color: weightBadgeColor(note.weight) }}
                       >
                         {note.weight}
                       </span>

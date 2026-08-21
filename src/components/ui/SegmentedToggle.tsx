@@ -18,9 +18,9 @@ const FOCUS =
  * o mesmo estado "selecionado" do resto da identidade.
  */
 export function SegmentedToggle<T extends string>({ value, onChange, options, ariaLabel, size = "sm" }: Props<T>) {
-  const pad = size === "md" ? "min-h-9 px-3 py-1.5 text-xs" : "min-h-8 px-2.5 py-1 text-[11px]";
+  const pad = size === "md" ? "min-h-9 px-3 py-1.5 text-xs" : "min-h-8 px-2.5 py-1 text-micro";
   return (
-    <div role="group" aria-label={ariaLabel} className="inline-flex items-center gap-0.5 rounded-control border border-edge bg-paper p-0.5">
+    <div role="group" aria-label={ariaLabel} className="inline-flex items-center gap-0.5 border border-edge bg-paper p-0.5">
       {options.map((opt) => {
         const active = opt.value === value;
         return (
@@ -29,7 +29,7 @@ export function SegmentedToggle<T extends string>({ value, onChange, options, ar
             type="button"
             aria-pressed={active}
             onClick={() => onChange(opt.value)}
-            className={`rounded-control font-semibold transition ${pad} ${FOCUS} ${
+            className={`font-semibold transition ${pad} ${FOCUS} ${
               active ? "bg-primary text-primaryInk" : "text-muted hover:text-ink"
             }`}
           >

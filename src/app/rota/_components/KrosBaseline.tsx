@@ -20,8 +20,8 @@ export function KrosBaseline({ performance, loading }: KrosBaselineProps) {
     return (
       <section className="border-y border-edge py-4" aria-label="Carregando sua linha de base">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <Skeleton className="h-3.5 w-36 rounded-control" />
-          <Skeleton className="h-3 w-52 rounded-control" />
+          <Skeleton className="h-3.5 w-36 " />
+          <Skeleton className="h-3 w-52 " />
         </div>
       </section>
     );

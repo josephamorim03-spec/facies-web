@@ -16,7 +16,7 @@ type ExamMapProps = {
 
 function IconClose({ className = "h-4 w-4" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
       <path d="M5 5l10 10" />
       <path d="M15 5 5 15" />
     </svg>
@@ -29,11 +29,11 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
   const open = Math.max(0, items.length - answered);
 
   return (
-    <div className="fixed inset-y-0 right-0 z-30 flex w-[min(22rem,100vw)] flex-col border-l border-edge bg-surface shadow-[var(--soft-shadow)]">
+    <div className="fixed inset-y-0 right-0 z-30 flex w-[min(22rem,100vw)] flex-col border-l border-edge bg-surface ">
       <div className="border-b border-edge px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Navegação</p>
+            <p className="text-micro font-semibold uppercase tracking-[0.16em] text-muted">Navegação</p>
             <h2 className="mt-0.5 font-serif text-lg font-semibold leading-tight text-ink">
               {sessionKindLabel === "Prova" ? "Mapa da prova" : "Mapa do simulado"}
             </h2>
@@ -41,7 +41,7 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
           <button
             type="button"
             onClick={onClose}
-            className="rounded-surface p-2 text-muted hover:bg-surfaceMuted hover:text-ink"
+            className="p-2 text-muted hover:bg-surfaceMuted hover:text-ink"
             aria-label="Fechar mapa"
           >
             <IconClose />
@@ -49,15 +49,15 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
         </div>
 
         <div className="mt-3 grid grid-cols-3 gap-1.5 text-center text-xs">
-          <div className="rounded-surface border border-edge bg-paper px-2 py-2">
+          <div className="border border-edge bg-paper px-2 py-2">
             <p className="font-semibold text-ink">{answered}</p>
             <p className="text-muted">feitas</p>
           </div>
-          <div className="rounded-surface border border-edge bg-paper px-2 py-2">
+          <div className="border border-edge bg-paper px-2 py-2">
             <p className="font-semibold text-ink">{open}</p>
             <p className="text-muted">abertas</p>
           </div>
-          <div className="rounded-surface border border-edge bg-paper px-2 py-2">
+          <div className="border border-edge bg-paper px-2 py-2">
             <p className="font-semibold text-warning">{marked}</p>
             <p className="text-muted">marcadas</p>
           </div>
@@ -67,19 +67,19 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
       <div className="border-b border-edge px-4 py-3">
         <div className="grid grid-cols-2 gap-2 text-xs text-muted">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3 w-3 rounded border border-edge bg-paper" />
+            <span className="inline-block h-3 w-3 border border-edge bg-paper" />
             Não respondida
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3 w-3 rounded bg-primary" />
+            <span className="inline-block h-3 w-3 bg-primary" />
             Respondida
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3 w-3 rounded bg-warning" />
+            <span className="inline-block h-3 w-3 bg-warning" />
             Marcada
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3 w-3 rounded border-2 border-primary bg-paper" />
+            <span className="inline-block h-3 w-3 border-2 border-primary bg-paper" />
             Atual
           </span>
         </div>
@@ -98,10 +98,10 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
                 type="button"
                 onClick={() => onNavigateTo(item.position)}
                 className={cx(
-                  "flex h-10 w-full items-center justify-center rounded-surface border text-xs font-semibold transition-colors",
+                  "flex h-10 w-full items-center justify-center border text-xs font-semibold transition-colors",
                   isCurrent && "ring-2 ring-primary ring-offset-2 ring-offset-surface",
                   isDoubtful
-                    ? "border-warning bg-warning text-white"
+                    ? "border-warning bg-warning text-paper"
                     : isAnswered
                       ? "border-primary bg-primary text-primaryInk"
                       : "border-edge bg-paper text-muted hover:border-primary hover:text-ink",

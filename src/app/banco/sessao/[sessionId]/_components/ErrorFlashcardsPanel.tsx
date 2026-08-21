@@ -155,7 +155,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
   const resultsWithDrafts = (response?.results ?? []).filter((r) => r.caderno_drafts.length > 0);
 
   return (
-    <section className="rounded-surface border border-edge bg-surface p-4 shadow-[var(--soft-shadow)] md:col-span-2">
+    <section className="border border-edge bg-surface p-4 md:col-span-2">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">De erro para revisão ativa</p>
@@ -167,7 +167,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
             type="button"
             onClick={() => void generate()}
             disabled={loading}
-            className="inline-flex shrink-0 items-center gap-2 rounded-surface border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk shadow-sm transition hover:brightness-105 disabled:opacity-50"
+            className="inline-flex shrink-0 items-center gap-2 border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-105 disabled:opacity-50"
           >
             {loading ? "Analisando seus erros..." : "Gerar cards dos erros"}
           </button>
@@ -186,7 +186,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
 
       {resultsWithDrafts.length > 0 && (
         <div className="mt-4 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-surface border border-edge bg-paper px-3 py-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border border-edge bg-paper px-3 py-2">
             <p className="text-xs font-semibold text-ink">
               {selectedCount === 0 ? "Selecione os cards que valem revisar." : `${selectedCount} card${selectedCount === 1 ? "" : "s"} selecionado${selectedCount === 1 ? "" : "s"}.`}
             </p>
@@ -195,7 +195,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
             const position = positionByQuestionId.get(result.question_id);
             const selectedForQuestion = result.caderno_drafts.filter((d) => selected.has(draftKey(result.question_id, d.flashcard_index)));
             return (
-              <div key={result.question_id} className="rounded-surface border border-edge bg-paper p-3">
+              <div key={result.question_id} className="border border-edge bg-paper p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">
                   {position ? `Questão ${position}` : "Questão"}
                 </p>
@@ -211,7 +211,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
                         onClick={() => toggle(key)}
                         disabled={isSaved}
                         aria-pressed={isSelected}
-                        className={`flex w-full gap-3 rounded-surface border p-3 text-left transition-colors ${
+                        className={`flex w-full gap-3 border p-3 text-left transition-colors ${
                           isSaved
                             ? "border-success/40 bg-surface opacity-70"
                             : isSelected
@@ -220,9 +220,9 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
                         }`}
                       >
                         <span
-                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border text-[10px] font-bold ${
+                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border text-nano font-bold ${
                             isSaved
-                              ? "border-success bg-success text-white"
+                              ? "border-success bg-success text-paper"
                               : isSelected
                                 ? "border-primary bg-primary text-primaryInk"
                                 : "border-edge bg-paper text-transparent"
@@ -246,7 +246,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
                     type="button"
                     onClick={() => void saveForQuestion(result)}
                     disabled={savingQuestion === result.question_id || selectedForQuestion.length === 0}
-                    className="rounded-surface border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-surfaceMuted disabled:opacity-50"
+                    className="border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-surfaceMuted disabled:opacity-50"
                   >
                     {savingQuestion === result.question_id ? "Salvando..." : selectedForQuestion.length > 0 ? `Salvar ${selectedForQuestion.length}` : "Salvar"}
                   </button>

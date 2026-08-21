@@ -3,13 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  CalendarCheck2,
-  ChevronLeft,
-  ChevronRight,
-  HelpCircle,
-} from "lucide-react";
+import { ArrowRight, CalendarWeeks as CalendarCheck2, ChevronLeft, ChevronRight, InfoBox as HelpCircle } from "pixelarticons/react";
 
 import { Button } from "@/components/ui/Button";
 import { useNavbar } from "@/lib/NavbarContext";
@@ -202,7 +196,7 @@ function MonthControl({
       <button
         type="button"
         onClick={onOpenPicker}
-        className="min-w-0 px-2 text-center font-serif text-[17px] font-bold tracking-normal text-ink transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="min-w-0 px-2 text-center text-lg font-bold uppercase tracking-[0.06em] text-ink transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         aria-label={`Selecionar mês e ano. Atual: ${label}`}
         data-month-title="true"
       >
@@ -429,7 +423,7 @@ export default function CronogramaMonthView({
             href={`/cronograma?view=week&anchor=${today}&day=${today}`}
             data-testid="schedule-view-week"
             aria-label="Ver calendário semanal"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="flex h-9 w-9 shrink-0 items-center justify-center text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <IconWeekRow className="h-5 w-5" />
           </Link>
@@ -476,7 +470,7 @@ export default function CronogramaMonthView({
                 autoFocus
               />
               {searchSuggestions.length > 0 && !searchQuery ? (
-                <ul className="absolute left-0 right-0 z-30 max-h-48 overflow-y-auto rounded-b-control border border-t-0 border-edge bg-paper shadow-sm">
+                <ul className="absolute left-0 right-0 z-30 max-h-48 overflow-y-auto border border-t-0 border-edge bg-paper ">
                   {searchSuggestions.map((theme) => (
                     <li key={theme}>
                       <button
@@ -649,7 +643,7 @@ export default function CronogramaMonthView({
               >
                 <CalendarCheck2 className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-warning">
+                  <span className="block text-micro font-semibold uppercase tracking-[0.12em] text-warning">
                     Sugestão — ainda não adicionada
                   </span>
                   <strong className="mt-0.5 block font-semibold text-ink">{item.title}</strong>
@@ -696,7 +690,7 @@ export default function CronogramaMonthView({
             role="dialog"
             aria-modal="true"
             aria-label="Selecionar mês e ano"
-            className="w-full rounded-t-surface border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-md md:rounded-surface"
+            className="w-full border border-edge bg-paper p-4 md:max-w-md "
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-3">
@@ -734,7 +728,7 @@ export default function CronogramaMonthView({
                     onClick={() => selectMonth(monthPickerYear, index)}
                     className={`min-h-11 border px-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       selected
-                        ? "border-primary bg-primary text-white"
+                        ? "border-primary bg-primary text-primaryInk"
                         : "border-edge bg-paper text-ink hover:bg-surfaceMuted"
                     }`}
                   >

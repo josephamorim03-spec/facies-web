@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Close as X } from "pixelarticons/react";
 
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -174,10 +174,10 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
   if (loading) {
     return (
       <div className="mt-4 space-y-3" aria-busy="true">
-        <Skeleton className="h-4 w-56 rounded-control" />
-        <Skeleton className="h-14 w-full rounded-surface" />
-        <Skeleton className="h-14 w-full rounded-surface" />
-        <Skeleton className="h-11 w-40 rounded-surface" />
+        <Skeleton className="h-4 w-56 " />
+        <Skeleton className="h-14 w-full " />
+        <Skeleton className="h-14 w-full " />
+        <Skeleton className="h-11 w-40 " />
       </div>
     );
   }

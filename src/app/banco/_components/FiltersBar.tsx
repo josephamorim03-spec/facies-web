@@ -156,8 +156,8 @@ function SectionHeader({ step, title, detail }: { step: string; title: string; d
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-2">
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">{step}</p>
-        <h3 className="mt-0.5 font-serif text-xl font-semibold leading-tight text-ink">{title}</h3>
+        <p className="text-micro font-semibold uppercase tracking-[0.14em] text-primary">{step}</p>
+        <h3 className="mt-0.5 text-xl font-semibold leading-tight text-ink">{title}</h3>
       </div>
       {detail ? <p className="max-w-md text-sm text-muted">{detail}</p> : null}
     </div>
@@ -233,7 +233,7 @@ function StatePicker({
                 aria-pressed={active}
               >
                 <span>{code}</span>
-                <span className="text-[10px] tabular-nums text-muted">{state.question_count}</span>
+                <span className="text-nano tabular-nums text-muted">{state.question_count}</span>
               </button>
             );
           })}
@@ -367,7 +367,7 @@ export default function FiltersBar(props: FiltersBarProps) {
             className="w-full"
           />
           {suggestionsFocused && search.trim() && (
-            <ul className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-y-auto rounded-surface border border-edge bg-surface shadow-[var(--soft-shadow)]">
+            <ul className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-y-auto border border-edge bg-surface ">
               {topicSuggestions.slice(0, 8).map((topic) => {
                 const selectable = topic.question_count > 0;
                 return (
@@ -400,7 +400,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
-          <div className="max-h-[32rem] overflow-y-auto rounded-surface border border-edge bg-paper p-2">
+          <div className="max-h-[32rem] overflow-y-auto border border-edge bg-paper p-2">
             <TopicTreeList
               nodes={topicTree}
               selectedIds={selectedTopicIds}
@@ -575,7 +575,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                 // Só o tipo. A correção fica onde o aluno deixou.
                 onClick={() => onStudyKindChange(option.value)}
                 className={cx(
-                  "rounded-surface border p-4 text-left transition-colors",
+                  "border p-4 text-left transition-colors",
                   studyKind === option.value
                     ? "border-primary bg-surfaceMuted"
                     : "border-edge bg-surface hover:border-primary",
@@ -600,7 +600,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                 aria-pressed={resolutionMode === option.value}
                 onClick={() => onResolutionModeChange(option.value)}
                 className={cx(
-                  "rounded-surface border p-4 text-left transition-colors",
+                  "border p-4 text-left transition-colors",
                   resolutionMode === option.value
                     ? "border-primary bg-surfaceMuted"
                     : "border-edge bg-surface hover:border-primary",
@@ -640,7 +640,7 @@ export default function FiltersBar(props: FiltersBarProps) {
               <select
                 value={fullExamType}
                 onChange={(e) => onFullExamTypeChange(e.target.value as FullExamType)}
-                className="w-full rounded-surface border border-edge bg-surface px-3 py-2 text-sm text-ink"
+                className="w-full border border-edge bg-surface px-3 py-2 text-sm text-ink"
               >
                 <option value="acesso_direto">Acesso direto</option>
                 <option value="r_plus">R+</option>

@@ -90,7 +90,7 @@ function trendArrowClass(trend: TrendDirection): string {
 
 function ChartIcon({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
       <line x1="6" y1="20" x2="6" y2="14" />
@@ -130,7 +130,7 @@ function SectionCard({
     <section
       data-testid={testId}
       data-no-break={noBreak || undefined}
-      className={`space-y-3 rounded-surface border border-edge px-4 py-4${emphasized ? " shadow-sm" : ""}`}
+      className={`space-y-3 border border-edge px-4 py-4${emphasized ? " " : ""}`}
     >
       <h2 className="text-center text-xs font-bold uppercase tracking-[0.14em] text-ink">
         {title}
@@ -142,18 +142,18 @@ function SectionCard({
 
 function RelatorioSkeleton() {
   return (
-    <div className="space-y-4 animate-pulse">
+    <div className="space-y-4">
       <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
-        <div className="h-5 w-5 rounded-control bg-edge" />
-        <div className="mx-auto h-3 w-20 rounded-control bg-edge" />
-        <div className="ml-auto h-5 w-5 rounded-control bg-edge" />
+        <div className="h-5 w-5 paper-skeleton" />
+        <div className="mx-auto h-3 w-20 paper-skeleton" />
+        <div className="ml-auto h-5 w-5 paper-skeleton" />
       </div>
       {Array.from({ length: 5 }).map((_, idx) => (
-        <div key={`relatorio-skeleton-${idx}`} className="space-y-2 rounded-surface border border-edge p-4">
-          <div className="h-3 w-28 rounded-control bg-edge" />
-          <div className="h-2.5 w-full rounded-control bg-edge" />
-          <div className="h-2.5 w-5/6 rounded-control bg-edge" />
-          <div className="h-2.5 w-2/3 rounded-control bg-edge" />
+        <div key={`relatorio-skeleton-${idx}`} className="space-y-2 border border-edge p-4">
+          <div className="h-3 w-28 paper-skeleton" />
+          <div className="h-2.5 w-full paper-skeleton" />
+          <div className="h-2.5 w-5/6 paper-skeleton" />
+          <div className="h-2.5 w-2/3 paper-skeleton" />
         </div>
       ))}
     </div>
@@ -164,9 +164,9 @@ function ChartSectionSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={`chart-section-skeleton-${index}`} className="space-y-3 rounded-control border border-edge p-4">
-          <div className="h-4 w-32 rounded-control bg-edge" />
-          <div className="h-56 w-full rounded-control bg-edge" />
+        <div key={`chart-section-skeleton-${index}`} className="space-y-3 border border-edge p-4">
+          <div className="h-4 w-32 paper-skeleton" />
+          <div className="h-56 w-full paper-skeleton" />
         </div>
       ))}
     </div>
@@ -398,7 +398,7 @@ export function RelatorioBody({
       >
         {!diagnosis.ready && (
           <div className="space-y-3">
-            <div className="rounded-surface border border-edge bg-paper/70 p-3">
+            <div className="border border-edge bg-paper p-3">
               <RelatorioParagraph>
                 {diagnosis.reason === "insufficient_total"
                   ? `Diagnóstico disponível a partir de ${DIAG_MIN_TOTAL_QUESTIONS} questões no total. Você tem ${diagnosis.total_questions} registradas.`
@@ -414,7 +414,7 @@ export function RelatorioBody({
                     : `Diagnóstico por área — maiores e menores médias por grande área. Ao concentrar questões nos temas principais, o diagnóstico por tema ativa automaticamente.`}
                 </RelatorioParagraph>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="space-y-2 rounded-surface border border-edge border-l-2 border-l-emerald-600/40 bg-paper/70 p-3">
+                  <div className="space-y-2 border border-edge border-l-2 border-l-emerald-600/40 bg-paper p-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">Pontos fortes</p>
                     <ul className="space-y-1.5">
                       {preliminaryStrengths.map((item) => (
@@ -427,7 +427,7 @@ export function RelatorioBody({
                       ))}
                     </ul>
                   </div>
-                  <div className="space-y-2 rounded-surface border border-edge border-l-2 border-l-red-600/40 bg-paper/70 p-3">
+                  <div className="space-y-2 border border-edge border-l-2 border-l-red-600/40 bg-paper p-3">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">Pontos fracos</p>
                     <ul className="space-y-1.5">
                       {preliminaryWeaknesses.map((item) => (
@@ -449,7 +449,7 @@ export function RelatorioBody({
         {diagnosis.ready && (
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-2 rounded-control border border-success/40 bg-surfaceMuted/50 p-3 dark:border-success/40 dark:bg-success/20">
+              <div className="space-y-2 border border-success/40 bg-surfaceMuted/50 p-3 dark:border-success/40 dark:bg-success/20">
                 <p className="text-xs font-semibold uppercase tracking-wide text-success dark:text-success">Pontos fortes</p>
                 <ul className="space-y-3">
                   {diagnosis.strengths.length === 0 && (
@@ -486,7 +486,7 @@ export function RelatorioBody({
                 </ul>
               </div>
 
-              <div className="space-y-2 rounded-control border border-danger/40 bg-surfaceMuted/50 p-3 dark:border-danger/40 dark:bg-danger/20">
+              <div className="space-y-2 border border-danger/40 bg-surfaceMuted/50 p-3 dark:border-danger/40 dark:bg-danger/20">
                 <p className="text-xs font-semibold uppercase tracking-wide text-danger dark:text-danger">Pontos fracos</p>
                 <ul className="space-y-3">
                   {diagnosis.weaknesses.length === 0 && (
@@ -648,7 +648,7 @@ export function RelatorioBody({
         <RelatorioParagraph>{healthText}</RelatorioParagraph>
 
         {staleThemesCount > 0 && (
-          <div className="space-y-2 rounded-surface border border-edge bg-paper/70 p-3">
+          <div className="space-y-2 border border-edge bg-paper p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Temas sem contato
@@ -724,7 +724,7 @@ export default function RelatorioClientPage() {
       {isDesktopNavigation && (
         <div className="mb-4 grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
           <span className="block h-7 w-7" aria-hidden="true" />
-          <span className="text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-ink">
+          <span className="text-center text-nano font-semibold uppercase tracking-[0.08em] text-ink">
             RELATÓRIOS
           </span>
           <TopBarActionLink href="/estatisticas" label="Desempenho" title="Desempenho">
@@ -737,7 +737,7 @@ export default function RelatorioClientPage() {
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/kroslogo-menu.png" alt="" aria-hidden="true" className="w-5 h-5 shrink-0" />
-          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">
+          <p className="text-nano font-semibold uppercase tracking-[0.08em] text-muted">
             Relatório de Progresso
           </p>
         </div>

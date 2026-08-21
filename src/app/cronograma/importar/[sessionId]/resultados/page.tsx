@@ -197,7 +197,11 @@ export default function ResultadosPage() {
             className="h-full transition-all"
             style={{
               width: `${displayAccuracy}%`,
-              backgroundColor: displayAccuracy >= 70 ? "#22c55e" : displayAccuracy >= 50 ? "#eab308" : "#ef4444",
+              backgroundColor: displayAccuracy >= 70
+                  ? "var(--color-success)"
+                  : displayAccuracy >= 50
+                    ? "var(--color-warning)"
+                    : "var(--color-danger)",
             }}
           />
         </div>

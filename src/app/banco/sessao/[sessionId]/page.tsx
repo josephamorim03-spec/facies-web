@@ -927,14 +927,14 @@ export default function SessionPage() {
           <button
             type="button"
             onClick={() => loadSession()}
-            className="rounded-surface bg-primary px-4 py-2 text-sm font-semibold text-primaryInk hover:opacity-90"
+            className="bg-primary px-4 py-2 text-sm font-semibold text-primaryInk hover:opacity-90"
           >
             Tentar novamente
           </button>
           <button
             type="button"
             onClick={() => router.push("/banco")}
-            className="rounded-surface border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
+            className="border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
           >
             Voltar ao banco
           </button>
@@ -950,7 +950,7 @@ export default function SessionPage() {
         <button
           type="button"
           onClick={() => router.push("/banco")}
-          className="rounded-surface border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
+          className="border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
         >
           Voltar ao banco
         </button>
@@ -1034,7 +1034,7 @@ export default function SessionPage() {
       className="fixed inset-x-0 bottom-4 z-50 mx-auto w-full max-w-md px-4"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
-      <Alert variant="danger" onDismiss={() => setError(null)} className="shadow-[var(--soft-shadow)]">
+      <Alert variant="danger" onDismiss={() => setError(null)} className="">
         {error}
       </Alert>
     </div>

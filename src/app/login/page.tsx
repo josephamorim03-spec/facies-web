@@ -129,7 +129,7 @@ function LoginPageContent() {
               {sessionExpired && (
                 <div
                   role="alert"
-                  className="rounded-surface bg-[var(--amber-tint)] px-4 py-3 text-center text-sm text-ink shadow-sm"
+                  className="border border-warning bg-[var(--amber-tint)] px-4 py-3 text-center text-sm text-ink"
                 >
                   Sessão expirada. Entre novamente.
                 </div>

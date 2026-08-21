@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Clock3 } from "lucide-react";
+import { SquareAlert as AlertTriangle, CheckDouble as CheckCircle2, Clock as Clock3 } from "pixelarticons/react";
 
 import AreaDot from "@/components/AreaDot";
 import { displayAreaLabel, resolveDisplayArea } from "@/lib/areaDisplay";

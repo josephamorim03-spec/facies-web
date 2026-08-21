@@ -30,7 +30,7 @@ export function ReasoningClosing({ chain, status }: Props) {
       aria-label="Registro no motor"
       className="mt-4 border-t border-ink pt-3"
     >
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+      <p className="text-nano font-semibold uppercase tracking-[0.16em] text-muted">
         Gravando no motor
       </p>
 

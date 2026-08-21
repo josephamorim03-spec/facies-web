@@ -60,8 +60,12 @@ export function AccuracyChart({ state, refs, actions }: Props) {
       <div ref={refs.accuracyFrameRef} className="relative overflow-visible">
         {delta !== null && (
           <span
-            className={`pointer-events-none absolute z-20 text-[11px] font-semibold tabular-nums ${deltaTone}`}
-            style={{ left: CHART_Y_AXIS_WIDTH + 6, top: 2 }}
+            className={`pointer-events-none absolute z-20 text-micro font-semibold tabular-nums ${deltaTone}`}
+            // Ancorado a DIREITA. Encostado na esquerda ele caia exatamente
+            // sobre o tick "100%" do eixo — dois numeros colados que se leem
+            // como um so. A direita a area esta sempre livre: a serie de acerto
+            // nunca encosta no topo do grafico.
+            style={{ right: 4, top: 2 }}
           >
             {deltaArrow} {delta > 0 ? "+" : ""}{delta} pp
           </span>
@@ -108,7 +112,7 @@ export function AccuracyChart({ state, refs, actions }: Props) {
               type="linear"
               dataKey="accuracy_pct"
               stroke={CHART_INK}
-              strokeWidth={1.5}
+              strokeWidth={1}
               strokeLinecap="butt"
               fill="url(#accuracyFill)"
               connectNulls={false}
@@ -120,12 +124,39 @@ export function AccuracyChart({ state, refs, actions }: Props) {
                 if (!payload || payload.accuracy_pct === null || Number(payload.total ?? 0) <= 0) return null;
                 const isActive = props.index === accuracyActiveWeekIndex;
                 if (!isActive) {
-                  return <circle cx={props.cx} cy={props.cy} r={2} fill={CHART_INK} stroke="none" />;
+                  return (
+                    <rect
+                      x={props.cx - 1.5}
+                      y={props.cy - 1.5}
+                      width={3}
+                      height={3}
+                      fill={CHART_INK}
+                      stroke="none"
+                    />
+                  );
                 }
                 return (
                   <g>
-                    <circle cx={props.cx} cy={props.cy} r={6.5} fill={CHART_INK} fillOpacity={0.16} />
-                    <circle cx={props.cx} cy={props.cy} r={4.5} fill={CHART_INK} stroke="none" />
+                    {/* Ponto ativo = alvo quadrado: moldura vazada de 1px em
+                        volta do pixel cheio. O halo com alpha que estava aqui
+                        era brilho, e brilho e a linguagem do grafico moderno. */}
+                    <rect
+                      x={props.cx - 4.5}
+                      y={props.cy - 4.5}
+                      width={9}
+                      height={9}
+                      fill="none"
+                      stroke={CHART_INK}
+                      strokeWidth={1}
+                    />
+                    <rect
+                      x={props.cx - 2.5}
+                      y={props.cy - 2.5}
+                      width={5}
+                      height={5}
+                      fill={CHART_INK}
+                      stroke="none"
+                    />
                   </g>
                 );
               }}
@@ -147,7 +178,7 @@ export function AccuracyChart({ state, refs, actions }: Props) {
         {activeAccuracyOverlayLabel && (
           <span
             data-testid="accuracy-overlay-percent-label"
-            className="pointer-events-none absolute z-20 whitespace-nowrap text-[10px] font-bold leading-none text-ink"
+            className="pointer-events-none absolute z-20 whitespace-nowrap text-nano font-bold leading-none text-ink"
             style={{
               left: activeAccuracyOverlayLabel.placement.left,
               top: activeAccuracyOverlayLabel.placement.top,

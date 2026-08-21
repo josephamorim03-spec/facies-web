@@ -20,7 +20,6 @@ import {
   VOLUME_ACTIVE_OUTLINE,
   detectTouchInteractionMode,
   resolveIndexFromClientX,
-  withAlpha,
   clamp,
   computeChartPoint,
   computeExplodedLabelPlacement,
@@ -517,7 +516,7 @@ export function useGraficosData(
     const hasBreakdown = payload.hasAreaBreakdown && payload.total > 0;
 
     if (!isActive || !hasBreakdown) {
-      return <rect x={x} y={y} width={width} height={height} rx={2} fill={CHART_INK} fillOpacity={isActive ? 0.75 : 0.58} />;
+      return <rect x={x} y={y} width={width} height={height} fill={CHART_INK} fillOpacity={isActive ? 0.75 : 0.58} />;
     }
 
     const positiveAreas = AREA_SEGMENT_ORDER.filter((area) => payload.areaTotals[area] > 0);
@@ -537,7 +536,7 @@ export function useGraficosData(
 
     return (
       <g>
-        <rect x={x} y={y} width={width} height={height} rx={2} fill={CHART_INK} fillOpacity={0.22} />
+        <rect x={x} y={y} width={width} height={height} fill={CHART_INK} fillOpacity={0.22} />
         {segments.map(({ area, segY, segHeight }) => (
           <rect
             key={`${payload.week_start}-${area}`}
@@ -554,11 +553,12 @@ export function useGraficosData(
           y={y}
           width={width}
           height={height}
-          rx={2}
           fill="none"
           stroke={VOLUME_ACTIVE_OUTLINE}
-          strokeWidth={1.5}
-          style={{ filter: `drop-shadow(0 0 7px ${withAlpha(VOLUME_ACTIVE_OUTLINE, 0.45)})` }}
+          // Selecao marcada por PESO de traco, nao por brilho: 2px duros em
+          // vez de 1,5px com 7px de blur. O blur era o unico pixel macio do
+          // grafico inteiro.
+          strokeWidth={2}
         />
       </g>
     );

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { CalendarDays } from "lucide-react";
+import { Calendar as CalendarDays } from "pixelarticons/react";
 
 import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
@@ -44,7 +44,7 @@ function TodayDashboardSkeleton() {
   return (
     <div className="space-y-5" aria-label="Hoje carregando">
       <Skeleton className="h-9 w-44" />
-      <Skeleton className="h-44 w-full rounded-surface" />
+      <Skeleton className="h-44 w-full " />
       <div className="grid grid-cols-3 gap-2">
         <Skeleton className="h-20" />
         <Skeleton className="h-20" />
@@ -142,21 +142,21 @@ export function CanonicalTodayDashboard() {
 
       <section aria-label="Resumo de hoje" className="grid grid-cols-3 divide-x divide-edge border-y border-edge py-3">
         <div className="px-2 text-center sm:px-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Dia</p>
+          <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">Dia</p>
           <p className="mt-1 font-serif text-xl font-semibold text-ink">
             {day ? `${day.completed_items}/${day.total_items}` : "—"}
           </p>
           <p className="text-xs text-muted">atividades</p>
         </div>
         <div className="px-2 text-center sm:px-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Semana</p>
+          <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">Semana</p>
           <p className="mt-1 font-serif text-xl font-semibold text-ink">
             {pct(agenda?.summary?.weekly_progress_pct ?? today.progress_snapshot.weekly_progress_pct)}
           </p>
           <p className="text-xs text-muted">da meta</p>
         </div>
         <div className="px-2 text-center sm:px-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Carga</p>
+          <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">Carga</p>
           <p className="mt-1 font-serif text-xl font-semibold capitalize text-ink">{today.today_load.label}</p>
           <p className="text-xs text-muted">{today.today_load.estimated_minutes} min</p>
         </div>

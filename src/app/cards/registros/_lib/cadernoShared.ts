@@ -1,6 +1,6 @@
 import React from "react";
 
-import { AREA_HEX } from "@/lib/areaColors";
+import { AREA_VAR } from "@/lib/areaColors";
 
 export type Area = "GO" | "PD" | "MP" | "CG" | "CM" | "OU";
 export type Tab = "registro" | "pesquisar";
@@ -9,7 +9,7 @@ export type SortWeight = "desc" | "asc" | "";
 
 export const AREAS: Area[] = ["GO", "PD", "MP", "CG", "CM", "OU"];
 // Single source of truth — re-exported from the canonical area palette in lib/areaColors.
-export const AREA_COLORS: Record<Area, string> = AREA_HEX;
+export const AREA_COLORS: Record<Area, string> = AREA_VAR;
 
 export const MAX_FILE_MB = 10;
 export const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
@@ -38,10 +38,21 @@ export function displayDateTime(iso: string | null | undefined): string {
   });
 }
 
+/**
+ * Tom do peso do card — token de tema, nunca hex.
+ *
+ * Eram `#e56464`, `#e7c040` e `#aab0b8`: sobras da identidade anterior, que
+ * seguiam claras no tema escuro. O amarelo era o pior: os selos pintavam esse
+ * fundo e escreviam `text-white` por cima, ~1,9:1 — o numero sumia.
+ *
+ * Agora o retorno e' a cor do TRACO. Quem consome desenha selo de fundo neutro
+ * com borda e digito nesta cor, que e' o padrao de contraste do resto do
+ * sistema (ver `AreaIcon`) e passa nos dois temas.
+ */
 export function weightBadgeColor(weight: number): string {
-  if (weight >= 8) return "#e56464";
-  if (weight >= 5) return "#e7c040";
-  return "#aab0b8";
+  if (weight >= 8) return "var(--color-danger)";
+  if (weight >= 5) return "var(--color-warning)";
+  return "var(--color-muted)";
 }
 
 // Passou a morar junto do `RangeSlider`, o componente de barra do sistema.

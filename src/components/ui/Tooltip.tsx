@@ -18,7 +18,7 @@ export function Tooltip({ label, children, side = "top" }: TooltipProps) {
           <TooltipPrimitive.Content
             side={side}
             sideOffset={8}
-            className="paper-overlay z-[100] max-w-64 rounded-surface border border-edge bg-ink px-2.5 py-1.5 text-xs text-paper"
+            className="paper-overlay z-[100] max-w-64 border border-edge bg-ink px-2.5 py-1.5 text-xs text-paper"
           >
             {label}
             <TooltipPrimitive.Arrow className="fill-ink" />

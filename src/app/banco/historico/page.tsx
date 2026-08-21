@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { listQuestionBankSessions, type QuestionBankSession } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
+import { LoadBar } from "@/components/ui/LoadBar";
 
 /**
  * Historico de sessoes finalizadas.
@@ -56,6 +57,7 @@ export default function BancoHistoricoPage() {
   if (sessionsQuery.isLoading) {
     return (
       <div className="mx-auto max-w-4xl space-y-3 py-8" aria-busy="true">
+        <LoadBar label="Carregando seu histórico" className="w-full max-w-xs" />
         <div className="paper-skeleton h-16" />
         <div className="paper-skeleton h-16" />
         <div className="paper-skeleton h-16" />
@@ -97,7 +99,7 @@ export default function BancoHistoricoPage() {
                   </p>
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate font-serif text-sm text-ink">
+                  <p className="truncate text-sm text-ink">
                     {session.full_exam_name ??
                       session.theme ??
                       (session.session_kind === "bank_combined" ? "Conteúdos combinados" : "Sessão concluída")}

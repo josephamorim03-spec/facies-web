@@ -77,13 +77,13 @@ function IconAiSpark(props: { className?: string }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      strokeWidth="2"
+      strokeLinecap="butt"
+      strokeLinejoin="miter"
       className={className}
       aria-hidden="true"
     >
-      <rect x="6" y="7" width="12" height="10" rx="2" />
+      <rect x="6" y="7" width="12" height="10"/>
       <path d="M9.5 11h0.01M14.5 11h0.01M10 14c0.6.55 1.3.82 2 .82s1.4-.27 2-.82" />
       <path d="M12 7V4M8 5l1 1M16 5l-1 1" />
     </svg>
@@ -166,21 +166,21 @@ export function CorrectionTab(props: CorrectionTabProps) {
             <button
               type="button"
               onClick={() => onResultFilterChange("all")}
-              className={`min-w-0 text-xs border px-1.5 py-1.5 leading-none ${resultFilter === "all" ? "border-ink bg-ink text-paper" : "border-edge text-ink"}`}
+              className={`min-w-0 text-xs border px-1.5 py-1.5 leading-none ${resultFilter === "all" ? "border-primary bg-primary text-primaryInk" : "border-edge text-ink"}`}
             >
               Todas ({correctionQuestionsCount})
             </button>
             <button
               type="button"
               onClick={() => onResultFilterChange("correct")}
-              className={`min-w-0 text-xs border px-1.5 py-1.5 leading-none ${resultFilter === "correct" ? "border-ink bg-ink text-paper" : "border-edge text-ink"}`}
+              className={`min-w-0 text-xs border px-1.5 py-1.5 leading-none ${resultFilter === "correct" ? "border-primary bg-primary text-primaryInk" : "border-edge text-ink"}`}
             >
               Certas ({correctCount})
             </button>
             <button
               type="button"
               onClick={() => onResultFilterChange("wrong")}
-              className={`min-w-0 text-xs border px-1.5 py-1.5 leading-none ${resultFilter === "wrong" ? "border-ink bg-ink text-paper" : "border-edge text-ink"}`}
+              className={`min-w-0 text-xs border px-1.5 py-1.5 leading-none ${resultFilter === "wrong" ? "border-primary bg-primary text-primaryInk" : "border-edge text-ink"}`}
             >
               Erradas ({wrongCount})
             </button>

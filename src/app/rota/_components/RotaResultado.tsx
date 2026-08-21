@@ -146,8 +146,12 @@ export function RotaResultado({
 
       <ol className="mt-4 divide-y divide-edge border-y border-edge">
         {route.actions.map((item, index) => {
+          // O codigo do servidor vem em `start_payload.area` — a MESMA fonte que
+          // `/hoje` usa. Passar `null` aqui desligava o primeiro degrau da
+          // cascata e fazia 100% das linhas da rota dependerem de inferencia por
+          // texto; qualquer titulo sem marcador reconhecivel virava "Outros".
           const area = resolveDisplayArea(
-            null,
+            item.action.start_payload?.area ?? null,
             item.action.title,
             item.action.rationale,
           );

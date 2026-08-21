@@ -85,13 +85,16 @@ function todayAction(overrides = {}) {
   return {
     kind: "question_block",
     title: "Resolver bloco clínico de GO",
-    rationale: "A maior alavanca hoje e corrigir pre-eclampsia e hemorragias do terceiro trimestre enquanto a memoria ainda esta quente.",
+    rationale: "A maior alavanca hoje é corrigir pré-eclâmpsia e hemorragias do terceiro trimestre enquanto a memória ainda está quente.",
     estimated_minutes: 35,
     href: "/banco-de-questoes?area=GO&answer_status=needs_review",
-    cta_label: "Comecar bloco",
+    cta_label: "Começar bloco",
     source: "trainer",
     priority_reason: "fila critica",
     confidence: "high",
+    // O contrato manda `area`; sem ela no mock a captura exercitava so a
+    // inferencia por texto e registrava "Outras" como se fosse o normal da tela.
+    area: "GO",
     ...overrides,
   };
 }
@@ -153,8 +156,8 @@ function studentExperience() {
 function surfaceHome(kind) {
   const titleByKind = {
     review: "Revisar GO antes de abrir assunto novo",
-    track: "Graficos primeiro: queda recente em GO",
-    plan: "Proteger calendario de revisão",
+    track: "Gráficos primeiro: queda recente em GO",
+    plan: "Proteger calendário de revisão",
   };
   return {
     contract_version: kind === "review" ? "student-review-home-v1" : kind === "track" ? "student-track-v1" : "student-plan-v1",
@@ -166,7 +169,7 @@ function surfaceHome(kind) {
       cta_label: kind === "plan" ? "Abrir calendario" : "Comecar",
     }),
     backup_actions: [
-      todayAction({ title: "Revisar cards criticos", cta_label: "Abrir cards", href: "/cards-adaptativos", estimated_minutes: 12 }),
+      todayAction({ title: "Revisar cards críticos", cta_label: "Abrir cards", href: "/cards-adaptativos", estimated_minutes: 12 }),
       todayAction({ title: "Fazer bloco curto", cta_label: "Praticar", href: "/banco-de-questoes", estimated_minutes: 20 }),
     ],
     load_note: loadNote(),
@@ -549,6 +552,8 @@ async function mockApi(page) {
         calendar_change_alerts_enabled: true,
         calendar_recommendations_enabled: true,
         default_feedback_timing: "post_result",
+        default_feedback_reveal_policy: "guided_choice",
+        confidence_timing: "post_session",
         has_chosen_feedback_default: true,
       });
     }
@@ -571,8 +576,8 @@ async function mockApi(page) {
         primary_action: todayAction(),
         backup_actions: [
           todayAction({ title: "Revisar cards criticos", href: "/cards-adaptativos", cta_label: "Abrir cards", estimated_minutes: 12 }),
-          todayAction({ title: "Ajustar calendario", href: "/calendario", cta_label: "Planejar", estimated_minutes: 5 }),
-          todayAction({ title: "Ver relatorio", href: "/estatisticas", cta_label: "Acompanhar", estimated_minutes: 6 }),
+          todayAction({ title: "Ajustar calendário", href: "/calendario", cta_label: "Planejar", estimated_minutes: 5 }),
+          todayAction({ title: "Ver relatório", href: "/estatisticas", cta_label: "Acompanhar", estimated_minutes: 6 }),
         ],
         today_load: loadNote(),
         schedule_preview: {
@@ -911,9 +916,17 @@ async function runViewport(browser, viewport) {
   }, !viewport.mobile);
 
   await visit("/evolucao", "evolucao", async () => {
-    // Era `heading "Analise sua trajetória"`, string que nao existe no codigo.
-    // As abas de /evolucao sao o alvo estavel.
-    await page.getByText("Gráficos").first().waitFor({ state: "visible", timeout: 30_000 });
+    // Terceira versao desta assercao, e as duas anteriores erraram do mesmo
+    // jeito: prenderam um elemento que a pagina nao tem.
+    //
+    // Era `heading "Analise sua trajetória"`, string que nunca existiu. Virou a
+    // aba "Gráficos" — que existia quando /evolucao tinha tres abas, e sumiu
+    // quando a tela virou leitura unica.
+    //
+    // `#evolution-charts-title` e o cabecalho da secao de graficos: ele nasce
+    // com a pagina, tem id proprio (ninguem o renomeia sem querer) e some se a
+    // secao sumir — que e exatamente a falha que esta captura deve pegar.
+    await page.locator("#evolution-charts-title").waitFor({ state: "visible", timeout: 30_000 });
     await page.locator("svg.recharts-surface").first().waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil } from "pixelarticons/react";
 
 import { updateProfile } from "@/lib/api";
 import { useToast } from "@/lib/useToast";
@@ -105,7 +105,7 @@ export function WeeklyGoalControl({
             role="dialog"
             aria-modal="true"
             aria-label="Editar meta semanal"
-            className="w-full rounded-t-surface border border-edge bg-paper p-4 shadow-[var(--soft-shadow)] md:max-w-sm md:rounded-surface"
+            className="w-full border border-edge bg-paper p-4 md:max-w-sm "
             onClick={(event) => event.stopPropagation()}
           >
             <h3 className="text-base font-semibold text-ink">Meta semanal</h3>

@@ -37,10 +37,10 @@ export function ConfirmDialog({
       <AlertDialog.Portal>
         <AlertDialog.Overlay className={`fixed inset-0 bg-ink/45 ${zIndexClassName}`} />
         <AlertDialog.Content
-          className={`paper-overlay fixed left-1/2 top-1/2 ${zIndexClassName} w-[min(calc(100vw-2rem),28rem)] -translate-x-1/2 -translate-y-1/2 rounded-surface border border-edge bg-surface p-5 focus:outline-none`}
+          className={`paper-overlay fixed left-1/2 top-1/2 ${zIndexClassName} w-[min(calc(100vw-2rem),28rem)] -translate-x-1/2 -translate-y-1/2 border border-edge bg-surface p-5 focus:outline-none`}
         >
           {title ? (
-            <AlertDialog.Title className="font-serif text-xl font-semibold leading-tight text-ink">{title}</AlertDialog.Title>
+            <AlertDialog.Title className="text-xl font-semibold leading-tight text-ink">{title}</AlertDialog.Title>
           ) : (
             <AlertDialog.Title className="sr-only">Confirmação</AlertDialog.Title>
           )}

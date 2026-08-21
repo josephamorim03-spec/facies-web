@@ -7,6 +7,7 @@ export {
   authHeader,
   getAPIErrorCode,
   getAPIErrorDetail,
+  getAPIErrorMessage,
 } from "./api/shared/http";
 export type { APIError, ClientCachePolicy } from "./api/shared/http";
 

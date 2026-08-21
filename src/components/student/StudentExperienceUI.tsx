@@ -30,7 +30,7 @@ export function StudentPageHeader({
           </p>
         ) : null}
         {eyebrow ? <p className="paper-eyebrow">{eyebrow}</p> : null}
-        <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight text-ink md:text-4xl">{title}</h1>
+        <h1 className="mt-1 text-3xl font-semibold leading-tight text-ink md:text-4xl">{title}</h1>
         {description ? <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{description}</p> : null}
       </div>
       {actions ? <div className="shrink-0">{actions}</div> : null}
@@ -51,11 +51,11 @@ export function MetricCard({ metric, compact = false }: { metric: StudentMetric;
   return (
     <Surface as="article" variant="outlined" className={compact ? "p-3" : "p-4"} title={`${metric.definition} Universo: ${metric.scope}`}>
       <p className="text-xs font-medium text-muted">{metric.label}</p>
-      <p className={`mt-1 font-serif font-semibold tabular-nums text-ink ${compact ? "text-xl" : "text-2xl"}`}>
+      <p className={`mt-1 font-semibold tabular-nums text-ink ${compact ? "text-xl" : "text-2xl"}`}>
         {unavailable ? "—" : metricValue(metric)}
         {!unavailable && metric.unit === "%" ? <span className="text-base">%</span> : null}
       </p>
-      <p className="mt-1 text-[11px] leading-snug text-muted">{unavailable ? "Dado indisponível" : metric.scope}</p>
+      <p className="mt-1 text-micro leading-snug text-muted">{unavailable ? "Dado indisponível" : metric.scope}</p>
     </Surface>
   );
 }
@@ -79,7 +79,7 @@ export function ContextNotice({
 }) {
   const toneClass = tone === "attention" ? "border-warning/40" : tone === "info" ? "border-info/40" : "border-edge";
   return (
-    <aside className={`rounded-surface border bg-surface px-4 py-3 ${toneClass}`}>
+    <aside className={`border bg-surface px-4 py-3 ${toneClass}`}>
       <p className="text-sm font-semibold text-ink">{title}</p>
       <div className="mt-1 text-xs leading-relaxed text-muted">{children}</div>
     </aside>
@@ -103,7 +103,7 @@ export function ModuleSection({
     <section className={`space-y-4 ${className}`.trim()}>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="font-serif text-2xl font-semibold text-ink">{title}</h2>
+          <h2 className="text-2xl font-semibold text-ink">{title}</h2>
           {description ? <p className="mt-1 text-sm text-muted">{description}</p> : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
@@ -124,14 +124,14 @@ export function LearningStatus({ load }: { load: TrainerReviewLoad }) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="paper-eyebrow">Revisão</p>
-          <h2 className="mt-1 font-serif text-xl font-semibold text-ink">Carga atual</h2>
+          <h2 className="mt-1 text-xl font-semibold text-ink">Carga atual</h2>
         </div>
         <span className="text-sm font-medium tabular-nums text-muted">≈ {load.estimated_minutes} min</span>
       </div>
       <dl className="mt-4 grid grid-cols-3 gap-3">
         {items.map(([label, value]) => (
           <div key={label}>
-            <dt className="text-[11px] leading-tight text-muted">{label}</dt>
+            <dt className="text-micro leading-tight text-muted">{label}</dt>
             <dd className="mt-1 text-xl font-semibold tabular-nums text-ink">{value}</dd>
           </div>
         ))}
@@ -151,7 +151,7 @@ export function DataFreshness({
 }) {
   const label = status === "complete" ? "Dados atualizados" : status === "stale" ? "Último retrato disponível" : "Retrato parcial";
   return (
-    <p className="text-[11px] text-muted" title={missingSources.length ? `Fontes indisponíveis: ${missingSources.join(", ")}` : undefined}>
+    <p className="text-micro text-muted" title={missingSources.length ? `Fontes indisponíveis: ${missingSources.join(", ")}` : undefined}>
       {label} · {new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date(generatedAt))}
     </p>
   );

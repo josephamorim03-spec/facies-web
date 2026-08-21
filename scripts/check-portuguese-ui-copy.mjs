@@ -12,6 +12,22 @@ const roots = [
   // que e' como "as duas finalistasó" chegou a producao sem ninguem reclamar.
   path.join(cwd, "src", "lib"),
   path.join(cwd, "scripts", "capture-design-redesign.mjs"),
+  // O BACKEND tambem escreve texto que o aluno le: `title`, `rationale`,
+  // `cta_label` e `priority_reason` sao renderizados como vieram. Este checker
+  // vigiava so `web/src`, e por isso "Continuar sessao" chegou a tela — o
+  // acento faltava do lado de fora do seu alcance.
+  path.join(cwd, "..", "app", "services"),
+];
+
+// Módulos cujas strings são PADRÃO DE CASAMENTO, não copy: marcador lido de PDF
+// ("QUESTAO ALTERNATIVA"), token de classificação ("nao usar"), lista de
+// stopwords ("na questao"). Acentuá-los quebra o parser em silêncio — foi o que
+// aconteceu na primeira passada deste checker sobre o backend, e o teste que
+// pegou foi a leitura humana do diff, não a suíte.
+const PATTERN_MODULES = [
+  "exam_import_parser",
+  "_question_analysis",
+  "turbo_card_selection_strategy",
 ];
 
 const EXCLUDE_DIRS = new Set([
@@ -22,7 +38,7 @@ const EXCLUDE_DIRS = new Set([
   "test-results",
 ]);
 
-const EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs"]);
+const EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".py"]);
 
 const forbidden = [
   ["questoes", "questões"],
@@ -44,6 +60,42 @@ const forbidden = [
   ["catalogo", "catálogo"],
   ["topico", "tópico"],
   ["nao", "não"],
+  // A lista era escolhida a dedo, e por isso so pegava o que alguem lembrou de
+  // adicionar: "Comecar bloco curto" chegou a tela do aluno com o gate verde.
+  // O criterio para entrar aqui e simples — palavra acentuada que aparece em
+  // texto que o aluno LE. Nao entra jargao de codigo: o extrator ja descarta
+  // token isolado sem espaco, entao `area` como identificador nao dispara.
+  ["comecar", "começar"],
+  ["comeca", "começa"],
+  ["comecou", "começou"],
+  ["inicio", "início"],
+  ["ultimo", "último"],
+  ["ultima", "última"],
+  ["proximo", "próximo"],
+  ["unico", "único"],
+  ["unica", "única"],
+  ["media", "média"],
+  ["dificil", "difícil"],
+  ["facil", "fácil"],
+  ["rapido", "rápido"],
+  ["grafico", "gráfico"],
+  ["graficos", "gráficos"],
+  ["relatorio", "relatório"],
+  ["saude", "saúde"],
+  ["clinico", "clínico"],
+  ["clinica", "clínica"],
+  ["numero", "número"],
+  ["decisao", "decisão"],
+  ["condicao", "condição"],
+  ["atencao", "atenção"],
+  ["periodo", "período"],
+  ["nivel", "nível"],
+  ["horario", "horário"],
+  ["duvida", "dúvida"],
+  ["memoria", "memória"],
+  ["pratica", "prática"],
+  ["disponivel", "disponível"],
+  ["ultimos", "últimos"],
 ];
 
 const technicalExactValues = new Set([
@@ -111,6 +163,10 @@ function shouldSkipCandidate(value) {
   if (technicalExactValues.has(text)) return true;
   if (text.includes("${") && /(?:className|activeTab|question_patch|questao\.)/.test(text)) return true;
   if (/\b(border|bg|text|px|py|mt|flex|grid|rounded|hover|disabled):?-/.test(text)) return true;
+  // Chave de React montada por interpolacao (`relatorio-skeleton-${idx}`):
+  // sem espaco, nunca aparece na tela, e nao e frase. A regra de
+  // identificador logo abaixo nao a pegava so por causa do `${`.
+  if (/^[a-z0-9.${}-]+$/i.test(text) && !/\s/.test(text)) return true;
   if (/[\\/]/.test(text)) return true;
   if (/_/.test(text)) return true;
   if (/\.(spec|test|tsx?|jsx?|mjs|css|png|jpg|jpeg|webp)$/i.test(text)) return true;
@@ -142,8 +198,28 @@ const failures = [];
 for (const file of roots.flatMap(walk)) {
   const relative = path.relative(cwd, file).replaceAll(path.sep, "/");
   if (relative.startsWith("src/lib/api/generated/")) continue;
+  if (PATTERN_MODULES.some((mod) => relative.includes(mod))) continue;
   const lines = fs.readFileSync(file, "utf8").split(/\r?\n/);
+  // Docstring de Python e documentacao para QUEM MANTEM o codigo, nao copy
+  // para o aluno — e ela cita nome de variavel (`Date.now() - inicio`) e nome
+  // de heuristica ("comeca com o tema") que acentuar QUEBRARIA. Rastrear o
+  // bloco inteiro importa: ignorar so a linha de abertura deixaria a prosa das
+  // linhas seguintes disparando.
+  const isPython = relative.endsWith(".py");
+  let openDelimiter = null;
   lines.forEach((line, index) => {
+    if (isPython) {
+      if (openDelimiter) {
+        if (line.includes(openDelimiter)) openDelimiter = null;
+        return;
+      }
+      const opener = /("""|''')/.exec(line);
+      if (opener) {
+        const rest = line.slice(opener.index + opener[1].length);
+        if (!rest.includes(opener[1])) openDelimiter = opener[1];
+        return;
+      }
+    }
     checkQuestionContract(line, relative, index);
     if (skipLinePatterns.some((pattern) => pattern.test(line))) return;
     for (const candidate of candidatesFromLine(line)) {

@@ -264,7 +264,7 @@ export default function ImportSessionPage() {
                 const visualClass = doubtful
                   ? "border-warning bg-surfaceMuted text-warning"
                   : answered
-                    ? "border-ink bg-ink text-paper"
+                    ? "border-primary bg-primary text-primaryInk"
                     : "border-edge bg-paper text-ink";
                 return (
                   <button
@@ -399,7 +399,7 @@ export default function ImportSessionPage() {
                   <div
                     key={letter}
                     className={`group relative overflow-hidden md:overflow-visible px-1 py-2 transition-colors ${
-                      selected ? "bg-ink text-paper" : "bg-paper text-ink"
+                      selected ? "bg-primary text-primaryInk" : "bg-paper text-ink"
                     } ${eliminated ? "opacity-70" : ""}`}
                     onTouchStart={(e) =>
                       !selected &&

@@ -16,7 +16,7 @@ function availabilityText(availability: QuestionBankAvailability | null): string
 
 function IconClipboard({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
       <path d="M9 3h6l1 2h3v16H5V5h3l1-2Z" />
       <path d="M9 9h6" />
       <path d="M9 13h6" />
@@ -27,8 +27,10 @@ function IconClipboard({ className }: { className?: string }) {
 
 function IconClock({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
+      {/* Mostrador QUADRADO. O circulo era o mesmo do lucide, e num icone de
+          24px ele e a unica curva suave da barra inteira. */}
+      <rect x="3" y="3" width="18" height="18" />
       <path d="M12 7v5l3 2" />
     </svg>
   );
@@ -36,7 +38,7 @@ function IconClock({ className }: { className?: string }) {
 
 function IconChart({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
       <path d="M5 19V9" />
       <path d="M12 19V5" />
       <path d="M19 19v-7" />
@@ -181,7 +183,7 @@ export default function CreateSessionPanel({
           className="hidden w-full md:flex"
         >
           {busy ? "Preparando..." : startLabel}
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className="h-4 w-4" aria-hidden="true">
             <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
           </svg>
         </Button>

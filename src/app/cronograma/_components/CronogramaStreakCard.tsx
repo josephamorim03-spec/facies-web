@@ -41,34 +41,28 @@ function StreakRing({ days, size = 18 }: { days: number; size?: number }) {
   const frac =
     tier >= STREAK_MILESTONES.length ? 1 : Math.max(0.1, Math.min(1, (days - lo) / (hi - lo)));
   const color = tierColor(days);
-  const center = size / 2;
-  const radius = size * 0.36;
-  const circumference = 2 * Math.PI * radius;
-  const dot = 0.9 + tier * 0.5;
+  // Eram dois circulos concentricos mais um miolo redondo. Viraram blocos: a
+  // leitura ("quanto falta para o proximo marco") e a mesma, e o desenho passa a
+  // ser o do sistema. Os 5 segmentos sao a granularidade que cabe em 20px sem
+  // virar serrilha.
+  const SEGMENTS = 5;
+  const filled = Math.max(1, Math.round(frac * SEGMENTS));
+  const segW = size / SEGMENTS;
 
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      fill="none"
-      aria-hidden="true"
-      className="shrink-0"
-    >
-      <circle cx={center} cy={center} r={radius} stroke="var(--color-edge)" strokeWidth={1.6} />
-      <circle
-        cx={center}
-        cy={center}
-        r={radius}
-        stroke={color}
-        strokeWidth={1.9}
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={circumference * (1 - frac)}
-        transform={`rotate(-90 ${center} ${center})`}
-        style={{ transition: "stroke-dashoffset 0.5s ease, stroke 0.35s ease" }}
-      />
-      <circle cx={center} cy={center} r={dot} fill={color} />
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+      {Array.from({ length: SEGMENTS }, (_, i) => (
+        <rect
+          key={i}
+          x={i * segW + 0.5}
+          y={size * 0.3}
+          width={segW - 1.5}
+          height={size * 0.4}
+          fill={i < filled ? color : "transparent"}
+          stroke={i < filled ? color : "var(--color-edge)"}
+          strokeWidth={1}
+        />
+      ))}
     </svg>
   );
 }
@@ -77,7 +71,7 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
   if (loading) {
     return (
       <div className="flex justify-center" data-testid="streak-skeleton">
-        <div className="h-3 w-40 animate-pulse rounded-control bg-edge" />
+        <div className="h-3 w-40 paper-skeleton" />
       </div>
     );
   }
@@ -112,15 +106,13 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
     .join(" · ");
 
   const toneClass = protection ? "text-info" : "text-ink";
-  const tint = protection ? "var(--color-info)" : "var(--color-primary)";
 
   return (
     <div className="flex justify-center" data-streak-mode="ring">
       <span
         title={detailTitle}
         data-streak-days={days}
-        className={`inline-flex items-center gap-2 rounded-control px-3 py-1 text-xs font-medium ${toneClass}`}
-        style={{ backgroundColor: `color-mix(in srgb, ${tint} 9%, transparent)` }}
+        className={`inline-flex items-center gap-2 border border-edge bg-surface px-3 py-1 text-xs font-medium ${toneClass}`}
       >
         <StreakRing days={days} />
         <span>

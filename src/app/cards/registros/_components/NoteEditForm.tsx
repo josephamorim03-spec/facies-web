@@ -65,7 +65,7 @@ export function NoteEditForm({
             key={a}
             type="button"
             onClick={() => setArea(a)}
-            className={`text-xs px-2 py-0.5 border ${area === a ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+            className={`text-xs px-2 py-0.5 border ${area === a ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted"}`}
           >
             {a}
           </button>
@@ -83,7 +83,7 @@ export function NoteEditForm({
             key={s}
             type="button"
             onClick={() => setSourceType(s)}
-            className={`text-xs px-2 py-0.5 border ${sourceType === s ? "border-ink bg-ink text-paper" : "border-edge text-muted"}`}
+            className={`text-xs px-2 py-0.5 border ${sourceType === s ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted"}`}
           >
             {s === "reading" ? "Leitura" : "Questão"}
           </button>
@@ -97,7 +97,7 @@ export function NoteEditForm({
                 onClick={() => setQuestionOutcome(o)}
                 className={`text-xs px-2 py-0.5 border ${
                   questionOutcome === o
-                    ? "border-ink bg-ink text-paper"
+                    ? "border-primary bg-primary text-primaryInk"
                     : "border-edge text-muted"
                 }`}
               >
@@ -124,8 +124,8 @@ export function NoteEditForm({
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted uppercase tracking-wide">Peso</p>
           <span
-            className="text-xs font-semibold px-1 py-0.5 rounded-control text-white"
-            style={{ backgroundColor: weightBadgeColor(weight) }}
+            className="border bg-surface px-1 py-0.5 text-xs font-semibold tabular-nums"
+            style={{ borderColor: weightBadgeColor(weight), color: weightBadgeColor(weight) }}
           >
             {weight}
           </span>

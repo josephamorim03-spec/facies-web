@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState, type CSSProperties } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import Nav, { SidebarNav } from "@/components/Nav";
@@ -156,7 +156,7 @@ function BuildVersionBadge() {
   return (
     <span
       title={title}
-      className="pointer-events-none fixed right-2 z-[60] rounded border border-edge bg-paper/85 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-muted shadow-sm backdrop-blur supports-[backdrop-filter]:bg-paper/70 bottom-[calc(env(safe-area-inset-bottom,0px)+0.8rem)] md:bottom-3"
+      className="pointer-events-none fixed right-2 z-[60] border border-edge bg-paper px-1.5 py-0.5 text-pico uppercase tracking-wide text-muted bottom-[calc(env(safe-area-inset-bottom,0px)+0.8rem)] md:bottom-3"
       aria-label={`Build ${shortSha}`}
     >
       build: {shortSha}
@@ -178,14 +178,40 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   // de questoes, runner de importacao). Tocar numa aba durante a revisao de
   // cards dispararia o guard de `popstate` do Turbo.
   const showMobileTabBar = showMobileTopBar;
-  // `--mobile-nav-height` (4rem) cobre so a fileira de abas. Quando a linha de
-  // filhos aparece a barra cresce ~2.75rem, e reservar so a fileira fazia a
-  // linha cobrir o fim do conteudo — foi o que a captura mobile mostrou.
+  // Altura real da navegacao inferior, publicada em `--nav-stack-height` para
+  // quem precisa se afastar do rodape — hoje o `<main>` e o `BottomActionBar`.
+  //
+  // A aritmetica morava aqui em tres strings soltas, e o `BottomActionBar` nao
+  // participava dela: ficava em `bottom-0` e a barra de abas pintava por cima.
+  // Um token so resolve a colisao e mata a dupla contagem de safe-area (a barra
+  // de abas ja a consome no proprio `padding-bottom`).
+  //
+  // 3.875rem = `min-h-[3.875rem]` da fileira de abas; 2.75rem = a linha de
+  // filhos (`min-h-10` + `pb-1`).
+  const navStackHeight = !showMobileTabBar
+    ? "0px"
+    : hasChildRow(pathname)
+      ? "calc(3.875rem + 2.75rem + env(safe-area-inset-bottom, 0px))"
+      : "calc(3.875rem + env(safe-area-inset-bottom, 0px))";
   const mobileBottomPad = !showMobileTabBar
     ? "pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)]"
-    : hasChildRow(pathname)
-      ? "pb-[calc(env(safe-area-inset-bottom,0px)+var(--mobile-nav-height)+4rem)]"
-      : "pb-[calc(env(safe-area-inset-bottom,0px)+var(--mobile-nav-height)+1.25rem)]";
+    : "pb-[calc(var(--nav-stack-height)+1.25rem)]";
+  // Altura LIVRE entre as duas barras, ja descontado o respiro do proprio
+  // `<main>`. Publicada pelo mesmo motivo que `--nav-stack-height`: quem precisa
+  // preencher a tela estava adivinhando o valor. A revisao de cards usava
+  // `calc(100svh - 5.5rem)` — um numero magico que ignorava a linha de filhos e
+  // a safe-area, e por isso empurrava os botoes de avaliacao para baixo da barra
+  // de abas, onde o dedo nao alcanca.
+  //
+  // A aritmetica mora aqui porque e aqui que o recuo do `<main>` e decidido:
+  // repetida na ponta, ela envelhece na primeira vez que este arquivo mudar.
+  const contentFreeHeight = hideNavigationChrome
+    ? "100svh"
+    : isDesktopNavigation
+      ? "calc(100svh - max(1.5rem, env(safe-area-inset-top, 0px)) - 2rem)"
+      : showMobileTopBar
+        ? "calc(100svh - env(safe-area-inset-top, 0px) - 5rem - var(--nav-stack-height))"
+        : "calc(100svh - max(1.5rem, env(safe-area-inset-top, 0px)) - 1.25rem - var(--nav-stack-height))";
   const mainClassName = hideNavigationChrome
     ? "min-h-screen"
     : isDesktopNavigation
@@ -280,7 +306,18 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       <PwaRegister />
       <SidebarNav isDesktopNavigation={isDesktopNavigation} displayName={userDisplayName} photoUrl={userPhotoUrl} />
       {showMobileTopBar && <MobileTopBar pathname={pathname} />}
-      <div className={hideNavigationChrome || !isDesktopNavigation ? "" : "ml-14"}>
+      {/* O token vive aqui e nao no fragmento: cobre o `<main>` e, com ele, todo
+          `BottomActionBar` que as paginas montam dentro. A barra de abas nao le
+          o token — ela DEFINE a altura que ele descreve. */}
+      <div
+        className={hideNavigationChrome || !isDesktopNavigation ? "" : "ml-14"}
+        style={
+          {
+            "--nav-stack-height": navStackHeight,
+            "--app-content-height": contentFreeHeight,
+          } as CSSProperties
+        }
+      >
         <main className={mainClassName}>
           <Nav />
           {/* A linha de filhos so aparece no desktop: no mobile ela mora colada

@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={href}
                   href={href}
-                  className={`shrink-0 px-3 py-1.5 rounded-control text-sm font-medium transition-colors ${
+                  className={`shrink-0 px-3 py-1.5 text-sm font-medium transition-colors ${
                     active
                       ? "bg-surface text-ink"
                       : "text-muted hover:text-ink"

@@ -43,17 +43,17 @@ export function GraficosSection({
   if (state.loading) {
     return (
       <div className="space-y-4">
-        <div className="border border-edge rounded-control p-3 space-y-2 animate-pulse">
-          <div className="h-3 w-32 bg-edge rounded-control" />
-          <div className="h-[180px] bg-edge/40 rounded-control" />
+        <div className="border border-edge p-3 space-y-2">
+          <div className="h-3 w-32 paper-skeleton" />
+          <div className="h-[180px] paper-skeleton" />
         </div>
-        <div className="border border-edge rounded-control p-3 space-y-2 animate-pulse">
-          <div className="h-3 w-28 bg-edge rounded-control" />
-          <div className="h-[180px] bg-edge/40 rounded-control" />
+        <div className="border border-edge p-3 space-y-2">
+          <div className="h-3 w-28 paper-skeleton" />
+          <div className="h-[180px] paper-skeleton" />
         </div>
-        <div className="border border-edge rounded-control p-3 space-y-2 animate-pulse">
-          <div className="h-3 w-36 bg-edge rounded-control" />
-          <div className="h-[220px] bg-edge/40 rounded-control" />
+        <div className="border border-edge p-3 space-y-2">
+          <div className="h-3 w-36 paper-skeleton" />
+          <div className="h-[220px] paper-skeleton" />
         </div>
       </div>
     );
@@ -66,7 +66,7 @@ export function GraficosSection({
         <button
           type="button"
           onClick={actions.retryCharts}
-          className="mt-3 rounded-surface border border-edge bg-paper px-3 py-2 text-xs font-semibold text-ink transition hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="mt-3 border border-edge bg-paper px-3 py-2 text-xs font-semibold text-ink transition hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Tentar novamente
         </button>

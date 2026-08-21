@@ -87,11 +87,19 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
   return (
     <section
       aria-labelledby="navigator-context-title"
-      className="border-y border-edge py-4"
+      className="border-b border-edge pb-4"
     >
+      {/* O <h1> nasce aqui e nao na pagina porque os dois passos da rota
+          (prompt e resultado) tem titulos diferentes, e o do resultado ja mora
+          no próprio ramo. Um <h1> comum na página daria dois <h1> vivos no
+          passo de resultado. */}
+      <h1 className="font-serif text-2xl font-semibold leading-tight text-ink">
+        Rota de hoje
+      </h1>
+
       <h2
         id="navigator-context-title"
-        className="font-serif text-xl font-semibold text-ink"
+        className="mt-4 font-serif text-xl font-semibold text-ink"
       >
         Quanto tempo você tem?
       </h2>
@@ -113,7 +121,7 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
               // número esquecido lá dentro venceria o atalho recém-tocado.
               setTypedMinutes("");
             }}
-            className={`min-h-10 rounded-control border px-4 text-sm font-semibold transition-colors disabled:opacity-60 ${
+            className={`min-h-10 border px-4 text-sm font-semibold transition-colors disabled:opacity-60 ${
               pressedMinutes === preset
                 ? "border-primary bg-surfaceMuted text-ink"
                 : "border-edge bg-paper text-muted enabled:hover:bg-surfaceMuted"
@@ -137,7 +145,7 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
             aria-label="Outro tempo, em minutos"
             aria-invalid={invalidMinutes || undefined}
             aria-describedby={invalidMinutes ? "rota-minutos-erro" : undefined}
-            className={`min-h-10 w-24 rounded-control border bg-paper px-3 text-sm font-semibold tabular-nums text-ink transition-colors placeholder:font-normal placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/25 disabled:opacity-60 ${
+            className={`min-h-10 w-24 border bg-paper px-3 text-sm font-semibold tabular-nums text-ink transition-colors placeholder:font-normal placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/25 disabled:opacity-60 ${
               invalidMinutes ? "border-warning" : "border-edge focus:border-primary"
             }`}
           />
@@ -164,7 +172,7 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
             aria-pressed={selectedEnergy === option.value}
             disabled={busy}
             onClick={() => setEnergy(option.value)}
-            className={`min-h-10 rounded-control border px-4 text-sm font-semibold transition-colors disabled:opacity-60 ${
+            className={`min-h-10 border px-4 text-sm font-semibold transition-colors disabled:opacity-60 ${
               selectedEnergy === option.value
                 ? "border-primary bg-surfaceMuted text-ink"
                 : "border-edge bg-paper text-muted enabled:hover:bg-surfaceMuted"
@@ -199,6 +207,10 @@ export function RotaPrompt({ prompt, busy = false, onCalculate }: Props) {
       <div className="mt-5">
         <Button
           type="button"
+          // Sem isto o `Button` cai em `secondary`: a acao principal da tela
+          // ficava neutra enquanto a do banco vinha em azul.
+          variant="primary"
+          size="md"
           disabled={busy || invalidMinutes}
           onClick={() =>
             onCalculate({

@@ -87,7 +87,7 @@ export function ConfidenceReviewStep({
     <div className="fixed inset-0 z-50 overflow-y-auto bg-paper">
       <div className="mx-auto max-w-3xl px-4 py-6 md:py-8">
         <header className="mb-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Antes de corrigir</p>
+          <p className="text-micro font-semibold uppercase tracking-[0.16em] text-muted">Antes de corrigir</p>
           <h1 className="font-serif text-2xl font-semibold text-ink">Quão confiante você estava?</h1>
           <p className="mt-1 text-sm text-muted">
             Marque sua confiança em cada questão — sem ver o gabarito.
@@ -98,7 +98,7 @@ export function ConfidenceReviewStep({
           <button
             type="button"
             onClick={() => setAll(3)}
-            className="rounded-surface border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
+            className="border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
           >
             Marcar restantes como dúvida
           </button>
@@ -106,7 +106,7 @@ export function ConfidenceReviewStep({
 
         <ul className="space-y-2">
           {items.map((it) => (
-            <li key={it.position} className="rounded-surface border border-edge bg-surface p-3">
+            <li key={it.position} className="border border-edge bg-surface p-3">
               <QuestionFullContext
                 eyebrow={`Q${it.position}${it.doubtful ? " - marcada" : ""}`}
                 stem={it.stem}
@@ -117,7 +117,7 @@ export function ConfidenceReviewStep({
                 knowledgeNodes={it.knowledge_nodes}
                 selectedOption={it.selected_option}
                 showCorrectAnswer={false}
-                className="rounded-surface border border-edge bg-paper p-3"
+                className="border border-edge bg-paper p-3"
               />
               <div className="mt-2 flex gap-1.5">
                 {LEVELS.map((lvl) => {
@@ -127,7 +127,7 @@ export function ConfidenceReviewStep({
                       key={lvl.value}
                       type="button"
                       onClick={() => setRatings((prev) => ({ ...prev, [it.position]: lvl.value }))}
-                      className={`min-h-8 flex-1 rounded-surface border px-2 py-1.5 text-xs font-semibold transition ${
+                      className={`min-h-8 flex-1 border px-2 py-1.5 text-xs font-semibold transition ${
                         active
                           ? "border-primary bg-primary text-primaryInk"
                           : "border-edge text-muted hover:text-ink"
@@ -148,7 +148,7 @@ export function ConfidenceReviewStep({
             type="button"
             onClick={() => void saveAndProceed()}
             disabled={busy}
-            className="inline-flex items-center justify-center rounded-surface border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk disabled:opacity-60"
+            className="inline-flex items-center justify-center border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk disabled:opacity-60"
           >
             {busy ? "Salvando…" : "Salvar e corrigir"}
           </button>
@@ -156,7 +156,7 @@ export function ConfidenceReviewStep({
             type="button"
             onClick={onProceed}
             disabled={busy}
-            className="inline-flex items-center justify-center rounded-surface border border-edge px-5 py-3 text-sm font-semibold text-muted hover:text-ink disabled:opacity-60"
+            className="inline-flex items-center justify-center border border-edge px-5 py-3 text-sm font-semibold text-muted hover:text-ink disabled:opacity-60"
           >
             Pular e corrigir
           </button>

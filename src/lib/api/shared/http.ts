@@ -90,6 +90,26 @@ export function getAPIErrorCode(err: unknown): string | null {
   return null;
 }
 
+/**
+ * Mensagem que pode ser MOSTRADA ao aluno, ou `null`.
+ *
+ * Existe porque a checagem obvia esta invertida: `APIError` e' um objeto
+ * simples (`{ message, status, details }`), nao uma subclasse de `Error`.
+ * Entao `cause instanceof Error` da FALSE justamente para o erro da API — o
+ * unico cujo texto o backend escreveu para o usuario — e da TRUE para
+ * `TypeError` do nosso proprio codigo, que e' o unico que nunca deveria
+ * aparecer. Quatro telas mostravam exatamente o oposto do que queriam.
+ *
+ * O fallback `Request failed: NNN` que `toAPIError` gera tambem nao passa:
+ * um codigo HTTP nao diz ao aluno o que fazer.
+ */
+export function getAPIErrorMessage(err: unknown): string | null {
+  const message = (err as APIError | undefined)?.message;
+  if (typeof message !== "string" || message.trim() === "") return null;
+  if (/^Request failed: \d+$/.test(message)) return null;
+  return message;
+}
+
 export function getAPIErrorDetail(err: unknown): Record<string, unknown> | null {
   const details = (err as APIError | undefined)?.details as Record<string, unknown> | undefined;
   if (details?.detail && typeof details.detail === "object") return details.detail as Record<string, unknown>;

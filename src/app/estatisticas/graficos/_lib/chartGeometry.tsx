@@ -510,7 +510,7 @@ export function renderWeekTickLabel(
       y={tickY + 2}
       textAnchor="middle"
       dominantBaseline="hanging"
-      fill={isActive ? (option.activeFill ?? "#ffffff") : (option.defaultFill ?? CHART_MUTED)}
+      fill={isActive ? (option.activeFill ?? CHART_INK) : (option.defaultFill ?? CHART_MUTED)}
       fontSize={10}
       fontWeight={isActive ? 700 : 400}
     >

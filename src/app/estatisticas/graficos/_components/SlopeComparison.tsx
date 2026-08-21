@@ -19,7 +19,7 @@ export function SlopeComparison({ state, actions }: Props) {
       <p className="text-xs text-muted">
         Acerto acumulado em duas metades das semanas registradas
       </p>
-      <div className="flex items-center gap-2 text-[10px] text-muted">
+      <div className="flex items-center gap-2 text-nano text-muted">
         <span className="w-8 shrink-0" />
         <span className="w-10 text-right shrink-0 tabular-nums">{slopePeriodLabels.before}</span>
         <span className="flex-1 text-center">→</span>
@@ -42,15 +42,15 @@ export function SlopeComparison({ state, actions }: Props) {
               className="flex items-center gap-2 cursor-pointer transition-opacity select-none"
               style={{ opacity: isOtherLocked ? 0.22 : 1 }}
             >
-              <span className="w-8 text-[10px] font-semibold shrink-0" style={{ color }}>{area}</span>
+              <span className="w-8 text-nano font-semibold shrink-0" style={{ color }}>{area}</span>
               <span className="w-10 text-right text-xs tabular-nums shrink-0">{first !== null ? `${first}%` : "—"}</span>
               <div className="flex-1 flex items-center">
-                <div className="w-2 h-2 rounded-control shrink-0" style={{ backgroundColor: color, opacity: first !== null ? 1 : 0.2 }} />
+                <div className="w-2 h-2 shrink-0" style={{ backgroundColor: color, opacity: first !== null ? 1 : 0.2 }} />
                 <div className="flex-1 h-px" style={{ backgroundColor: color, opacity: isLocked ? 0.9 : 0.45 }} />
-                <div className="w-2 h-2 rounded-control shrink-0" style={{ backgroundColor: color, opacity: second !== null ? 1 : 0.2 }} />
+                <div className="w-2 h-2 shrink-0" style={{ backgroundColor: color, opacity: second !== null ? 1 : 0.2 }} />
               </div>
               <span className="w-10 text-xs tabular-nums shrink-0">{second !== null ? `${second}%` : "—"}</span>
-              <span className={`w-10 text-right text-[10px] font-semibold tabular-nums shrink-0 ${deltaClass}`}>
+              <span className={`w-10 text-right text-nano font-semibold tabular-nums shrink-0 ${deltaClass}`}>
                 {delta !== null
                   ? delta > 0 ? `↑ ${delta}%` : delta < 0 ? `↓ ${Math.abs(delta)}%` : "= 0%"
                   : "—"}
