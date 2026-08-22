@@ -6529,6 +6529,28 @@ export interface components {
             last_error_at?: string | null;
         };
         /**
+         * QuestionBankAnnulledJustificationOut
+         * @description Por que a fonte anulou ou marcou a questao como desatualizada.
+         *
+         *     O texto e gerado por IA a partir do enunciado e das alternativas, nunca lido de
+         *     fonte oficial: nenhuma banca publica o motivo da anulacao num campo. Por isso
+         *     `is_inferencia` e True e `justificativa` ja chega prefixada com "Provavel
+         *     motivo:" -- a tela nao precisa lembrar de hedgear, e nao deve desfazer o hedge.
+         */
+        QuestionBankAnnulledJustificationOut: {
+            /** Motivo Code */
+            motivo_code: string;
+            /** Motivo Label */
+            motivo_label?: string | null;
+            /** Justificativa */
+            justificativa: string;
+            /**
+             * Is Inferencia
+             * @default true
+             */
+            is_inferencia: boolean;
+        };
+        /**
          * QuestionBankAreaReadinessOut
          * @description Prontidão por grande área: conhecimento (acurácia) + memória (revisões vencidas).
          */
@@ -7869,6 +7891,12 @@ export interface components {
              * @default false
              */
             is_annulled: boolean;
+            /**
+             * Is Outdated
+             * @default false
+             */
+            is_outdated: boolean;
+            annulled_justification?: components["schemas"]["QuestionBankAnnulledJustificationOut"] | null;
             /**
              * Reported Problem
              * @default false
