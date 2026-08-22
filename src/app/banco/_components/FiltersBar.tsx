@@ -134,6 +134,9 @@ export type FiltersBarProps = {
   onCorrectionModeChange: (v: CorrectionMode) => void;
   studyKind: StudyKind;
   onStudyKindChange: (v: StudyKind) => void;
+  /** Inclui na prova as questoes que a banca anulou ou que estao desatualizadas. */
+  includeRetired: boolean;
+  onIncludeRetiredChange: (value: boolean) => void;
   fullExamName: string;
   onFullExamNameChange: (v: string) => void;
   fullExamYear: string;
@@ -254,6 +257,7 @@ export default function FiltersBar(props: FiltersBarProps) {
     answerStatus, onAnswerStatusChange,
     correctionStatus, onCorrectionStatusChange,
     correctionMode, onCorrectionModeChange, studyKind, onStudyKindChange,
+    includeRetired, onIncludeRetiredChange,
     fullExamName, onFullExamNameChange, fullExamYear, onFullExamYearChange,
     fullExamType, onFullExamTypeChange,
     limit, clampedLimit, maxSelectable, limitMax, onLimitChange, focusTopicId, onQuantityEditingChange,
@@ -648,6 +652,30 @@ export default function FiltersBar(props: FiltersBarProps) {
               </select>
             </label>
           </div>
+        ) : null}
+
+        {/* So aparece na prova institucional: e o unico recorte onde "o resto
+            daquela prova" quer dizer alguma coisa. Num estudo por tema, questao
+            sem gabarito valido seria ruido. */}
+        {studyKind === "full_exam" ? (
+          <label className="flex cursor-pointer items-start gap-3 border-t border-edge pt-4">
+            <input
+              type="checkbox"
+              checked={includeRetired}
+              onChange={(e) => onIncludeRetiredChange(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--teal)]"
+            />
+            <span>
+              <span className="block text-sm font-semibold text-ink">
+                Completar com as questoes anuladas e desatualizadas
+              </span>
+              <span className="mt-1 block text-xs text-muted">
+                Como a prova caiu no dia: entram as que a banca anulou depois e as que
+                ficaram desatualizadas. Vem marcadas, com o provavel motivo, e a anulada
+                nao conta no seu desempenho.
+              </span>
+            </span>
+          </label>
         ) : null}
 
         {/* Alinhado a esquerda e em largura cheia, como o cabecalho da secao e os

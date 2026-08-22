@@ -308,6 +308,10 @@ function BancoDeQuestoesContent() {
   const [fullExamName, setFullExamName] = useState("");
   const [fullExamYear, setFullExamYear] = useState(() => String(new Date().getFullYear()));
   const [fullExamType, setFullExamType] = useState<FullExamType>("acesso_direto");
+  // Desligado por padrao: a pratica normal continua sendo a pratica normal.
+  // Completar a prova com anulada e desatualizada e uma escolha do aluno, e o
+  // valor esta em ele SABER que escolheu.
+  const [includeRetired, setIncludeRetired] = useState(false);
   const [hasChosenFeedbackDefault, setHasChosenFeedbackDefault] = useState<boolean | null>(null);
   const [feedbackDefaultPromptOpen, setFeedbackDefaultPromptOpen] = useState(false);
 
@@ -863,6 +867,12 @@ function BancoDeQuestoesContent() {
       payload.institutions = [fullExamName.trim()];
       payload.years = [fullExamYearNumber];
       payload.exam_codes = [fullExamType === "r_plus" ? "RPLUS" : "ACESSO-DIRETO"];
+      // Um controle, dois flags: para o aluno a pergunta e "quero a prova como ela
+      // caiu?", nao "anulada sim, desatualizada nao". O backend mantem os eixos
+      // separados porque o tratamento difere -- anulada nao pontua, desatualizada
+      // pontua -- mas essa distincao e' do sistema, nao da decisao dele.
+      payload.include_annulled = includeRetired;
+      payload.include_outdated = includeRetired;
       payload.generate_review_trail = false;
     } else {
       payload.generate_review_trail = false;
@@ -1023,6 +1033,8 @@ function BancoDeQuestoesContent() {
                   onCorrectionModeChange={setCorrectionMode}
                   studyKind={studyKind}
                   onStudyKindChange={setStudyKind}
+                  includeRetired={includeRetired}
+                  onIncludeRetiredChange={setIncludeRetired}
                   fullExamName={fullExamName}
                   onFullExamNameChange={setFullExamName}
                   fullExamYear={fullExamYear}

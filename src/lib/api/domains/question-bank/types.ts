@@ -506,6 +506,19 @@ export type QuestionBankSessionItem = {
   adaptive_explanation?: { title: string; reasons: string[] } | null;
   editorial_quality?: { badge: string; message: string | null } | null;
   is_annulled: boolean;
+  /** Era certa a epoca e por isso PONTUA -- o aviso e "a conduta mudou", nao "nao conta". */
+  is_outdated: boolean;
+  /**
+   * Por que a fonte tirou a questao do ar. E inferencia: nenhuma banca publica o
+   * motivo em campo, entao `justificativa` ja chega prefixada com "Provavel
+   * motivo:" e a tela nao deve desfazer esse hedge.
+   */
+  annulled_justification?: {
+    motivo_code: string;
+    motivo_label: string | null;
+    justificativa: string;
+    is_inferencia: boolean;
+  } | null;
   reported_problem: boolean;
   report_type: QuestionBankReportType | null;
   report_reason: string | null;
@@ -881,6 +894,13 @@ export type QuestionBankSessionCreatePayload = {
   institutions?: string[];
   board_codes?: string[];
   exam_codes?: string[];
+  /**
+   * Completa a prova com o que a banca tirou do ar depois. Dois campos porque o
+   * tratamento difere -- anulada nao pontua, desatualizada pontua -- ainda que a
+   * tela ofereca uma escolha so ao aluno.
+   */
+  include_annulled?: boolean;
+  include_outdated?: boolean;
   state_codes?: string[];
   year_from?: number;
   year_to?: number;

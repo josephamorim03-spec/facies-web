@@ -709,12 +709,45 @@ export default function PostExamReview({
                           Denunciada
                         </span>
                       )}
-                      {item.excluded_from_scoring && (
+                      {item.excluded_from_scoring && !item.is_annulled && (
                         <span className="border border-edge bg-surfaceMuted px-2.5 py-1 text-xs font-semibold text-muted">
                           Descartada por você
                         </span>
                       )}
+                      {/* Dois selos distintos porque as consequencias sao distintas:
+                          anulada nao entra no seu desempenho, desatualizada entra.
+                          Dizer "descartada" para as duas apagaria essa diferenca. */}
+                      {item.is_annulled && (
+                        <span className="border border-edge bg-surfaceMuted px-2.5 py-1 text-xs font-semibold text-muted">
+                          Anulada pela banca · não conta
+                        </span>
+                      )}
+                      {item.is_outdated && !item.is_annulled && (
+                        <span className="border border-warning/40 bg-[var(--amber-tint)] px-2.5 py-1 text-xs font-semibold text-warning">
+                          Conduta desatualizada
+                        </span>
+                      )}
                     </div>
+
+                    {/* So na revisao, nunca durante a prova: saber de antemao que a
+                        questao caiu quebraria a simulacao, e viver a questao mal
+                        elaborada e' exatamente o que se treina aqui. */}
+                    {item.annulled_justification && (
+                      <div className="mt-3 border border-edge bg-surfaceMuted p-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">
+                          {item.is_annulled ? "Por que foi anulada" : "O que mudou desde a prova"}
+                        </p>
+                        <p className="mt-1 text-sm leading-relaxed text-ink">
+                          {item.annulled_justification.justificativa}
+                        </p>
+                        {item.annulled_justification.is_inferencia && (
+                          <p className="mt-2 text-xs text-muted">
+                            Leitura nossa do enunciado e das alternativas — a banca não publica
+                            o motivo da anulação.
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {activeTab === "erros" && selectedDiagnosis && (
                       <div id={trapId} className="mt-3 border border-warning/50 bg-[var(--amber-tint)] p-3">
