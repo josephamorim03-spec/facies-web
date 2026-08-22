@@ -87,7 +87,7 @@ export function ConfidenceReviewStep({
     <div className="fixed inset-0 z-50 overflow-y-auto bg-paper">
       <div className="mx-auto max-w-3xl px-4 py-6 md:py-8">
         <header className="mb-4">
-          <p className="text-micro font-semibold uppercase tracking-[0.16em] text-muted">Antes de corrigir</p>
+          <p className="paper-eyebrow">Antes de corrigir</p>
           <h1 className="font-serif text-2xl font-semibold text-ink">Quão confiante você estava?</h1>
           <p className="mt-1 text-sm text-muted">
             Marque sua confiança em cada questão — sem ver o gabarito.
@@ -106,7 +106,7 @@ export function ConfidenceReviewStep({
 
         <ul className="space-y-2">
           {items.map((it) => (
-            <li key={it.position} className="border border-edge bg-surface p-3">
+            <li key={it.position} className="rounded-control border border-edge bg-surface p-3">
               <QuestionFullContext
                 eyebrow={`Q${it.position}${it.doubtful ? " - marcada" : ""}`}
                 stem={it.stem}
@@ -117,7 +117,7 @@ export function ConfidenceReviewStep({
                 knowledgeNodes={it.knowledge_nodes}
                 selectedOption={it.selected_option}
                 showCorrectAnswer={false}
-                className="border border-edge bg-paper p-3"
+                className="rounded-control border border-edge bg-paper p-3"
               />
               <div className="mt-2 flex gap-1.5">
                 {LEVELS.map((lvl) => {

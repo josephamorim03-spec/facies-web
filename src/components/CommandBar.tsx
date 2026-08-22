@@ -88,7 +88,7 @@ export function CommandBar() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="w-[min(34rem,calc(100vw-3rem))] border border-edge bg-surface shadow-overlay"
+        className="w-[min(34rem,calc(100vw-3rem))] rounded-control border border-edge bg-surface shadow-overlay"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center gap-2 border-b border-edge px-3 py-2">
@@ -134,10 +134,10 @@ export function CommandBar() {
                   index === cursor ? "bg-primary text-primaryInk" : "text-ink hover:bg-surfaceMuted"
                 }`}
               >
-                <span className="uppercase tracking-[0.08em]">{item.label}</span>
+                <span>{item.label}</span>
                 {item.hint ? (
                   <span
-                    className={`text-nano font-semibold uppercase tracking-[0.12em] ${
+                    className={`paper-eyebrow ${
                       index === cursor ? "opacity-70" : "text-muted"
                     }`}
                   >
@@ -152,7 +152,10 @@ export function CommandBar() {
           ) : null}
         </ul>
 
-        <div className="chrome-statusbar">
+        {/* Era uma barra de status de janela: versal espacada, celulas
+            divididas por filete. Vira uma linha de rodape — os atalhos sao
+            referencia, nao estado do sistema. */}
+        <div className="flex items-center gap-4 border-t border-edge px-3 py-2 text-xs text-muted">
           <span>↑↓ navegar</span>
           <span>Enter abrir</span>
           <span>Esc fechar</span>

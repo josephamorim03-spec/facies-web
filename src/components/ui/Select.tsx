@@ -31,7 +31,7 @@ export function Select({ value, onValueChange, options, label, placeholder, disa
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
-        <SelectPrimitive.Content position="popper" sideOffset={6} className="paper-overlay z-[100] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden border border-edge bg-surface">
+        <SelectPrimitive.Content position="popper" sideOffset={6} className="paper-overlay z-[100] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-control border border-edge bg-surface">
           <SelectPrimitive.Viewport className="p-1">
             {options.map((option) => (
               <SelectPrimitive.Item

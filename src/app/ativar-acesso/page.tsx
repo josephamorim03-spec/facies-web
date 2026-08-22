@@ -64,7 +64,7 @@ export default function AtivarAcessoPage() {
       <div className="flex items-center justify-center min-h-screen bg-paper">
         <div className="w-full max-w-xs">
           <LoadBar label="Verificando seu acesso" />
-          <p className="mt-2 text-xs uppercase tracking-[0.12em] text-muted">Verificando acesso</p>
+          <p className="paper-eyebrow mt-2">Verificando acesso</p>
         </div>
       </div>
     );
@@ -105,7 +105,7 @@ export default function AtivarAcessoPage() {
             maxLength={24}
             spellCheck={false}
             autoComplete="off"
-            className="w-full px-3 py-2.5 border border-edge bg-paper text-ink text-center text-base tracking-widest placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-ink/20"
+            className="w-full px-3 py-2.5 rounded-control border border-edge bg-paper text-ink text-center text-base tracking-widest placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-ink/20"
           />
 
           {error && (

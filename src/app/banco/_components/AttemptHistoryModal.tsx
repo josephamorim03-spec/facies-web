@@ -56,7 +56,7 @@ export default function AttemptHistoryModal({ questionId, onClose }: AttemptHist
         role="dialog"
         aria-modal="true"
         aria-label="Histórico de respostas"
-        className="flex max-h-[80vh] w-full max-w-md flex-col border border-edge bg-paper p-5 shadow-overlay"
+        className="flex max-h-[80vh] w-full max-w-md flex-col rounded-surface border border-edge bg-paper p-5 shadow-overlay"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">

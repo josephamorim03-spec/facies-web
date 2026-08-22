@@ -30,25 +30,25 @@ export function ReasoningClosing({ chain, status }: Props) {
       aria-label="Registro no motor"
       className="mt-4 border-t border-ink pt-3"
     >
-      <p className="text-nano font-semibold uppercase tracking-[0.16em] text-muted">
+      <p className="paper-eyebrow">
         Gravando no motor
       </p>
 
       <dl className="mt-2 flex flex-col gap-1 text-xs">
         <div className="flex items-center gap-3">
           <dt className="text-ink">Elos verificados</dt>
-          <span className="chrome-leader" aria-hidden="true" />
+          <span className="paper-leader" aria-hidden="true" />
           <dd className="font-semibold tabular-nums text-primary">{verified}</dd>
         </div>
         <div className="flex items-center gap-3">
           <dt className="text-ink">Lacunas identificadas</dt>
-          <span className="chrome-leader" aria-hidden="true" />
+          <span className="paper-leader" aria-hidden="true" />
           <dd className="font-semibold tabular-nums text-primary">{gaps}</dd>
         </div>
         <div className="flex items-center gap-3">
           <dt className="text-ink">Perfil cognitivo</dt>
-          <span className="chrome-leader" aria-hidden="true" />
-          <dd className="font-semibold uppercase tracking-[0.1em] text-primary">Atualizado</dd>
+          <span className="paper-leader" aria-hidden="true" />
+          <dd className="paper-eyebrow text-primary">Atualizado</dd>
         </div>
       </dl>
 

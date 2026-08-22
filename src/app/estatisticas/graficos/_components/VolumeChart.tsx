@@ -154,7 +154,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
                 {volumeSegmentLabelPositions.map(({ area, midY, count }) => (
                   <div
                     key={area}
-                    className="absolute flex items-center gap-1 text-pico font-medium leading-none"
+                    className="absolute flex items-center gap-1 text-micro font-medium leading-none"
                     style={{ top: clamp(midY - 5, 0, 190), left: 2, color: AREA_COLORS[area] }}
                   >
                     <span className="opacity-80">{area}</span>

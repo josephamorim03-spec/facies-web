@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CalendarWeeks as CalendarCheck2, ChevronLeft, ChevronRight, InfoBox as HelpCircle } from "pixelarticons/react";
+import { ArrowRight, CalendarRange as CalendarCheck2, ChevronLeft, ChevronRight, Info as HelpCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { useNavbar } from "@/lib/NavbarContext";
@@ -196,7 +196,7 @@ function MonthControl({
       <button
         type="button"
         onClick={onOpenPicker}
-        className="min-w-0 px-2 text-center text-lg font-bold uppercase tracking-[0.06em] text-ink transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="min-w-0 px-2 text-center text-lg font-semibold tracking-[-0.012em] text-ink transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         aria-label={`Selecionar mês e ano. Atual: ${label}`}
         data-month-title="true"
       >
@@ -475,7 +475,7 @@ export default function CronogramaMonthView({
                     <li key={theme}>
                       <button
                         type="button"
-                        className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-[var(--amber-tint)]"
+                        className="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-[var(--wash-selecao)]"
                         onClick={() => {
                           selectSearchSuggestion(theme);
                           searchInputRef.current?.blur();
@@ -624,8 +624,8 @@ export default function CronogramaMonthView({
           <div className="mt-2 space-y-2">
             {[
               {
-                href: "/rota",
-                title: "Reserve um Kros de 50 questões",
+                href: "/hoje",
+                title: "Reserve uma sessão de 50 questões",
                 detail: "Escolha o melhor dia antes de iniciar.",
                 cta: "Escolher dia e adicionar",
               },
@@ -643,7 +643,7 @@ export default function CronogramaMonthView({
               >
                 <CalendarCheck2 className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-micro font-semibold uppercase tracking-[0.12em] text-warning">
+                  <span className="paper-eyebrow block text-warning">
                     Sugestão — ainda não adicionada
                   </span>
                   <strong className="mt-0.5 block font-semibold text-ink">{item.title}</strong>
@@ -690,7 +690,7 @@ export default function CronogramaMonthView({
             role="dialog"
             aria-modal="true"
             aria-label="Selecionar mês e ano"
-            className="w-full border border-edge bg-paper p-4 md:max-w-md "
+            className="w-full rounded-surface border border-edge bg-paper p-4 md:max-w-md "
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-3">
@@ -709,7 +709,7 @@ export default function CronogramaMonthView({
               <select
                 value={monthPickerYear}
                 onChange={(event) => setMonthPickerYear(Number(event.target.value))}
-                className="mt-2 min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="mt-2 min-h-11 w-full rounded-control border border-edge bg-paper px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {Array.from({ length: 11 }, (_, index) => currentRealYear - 5 + index).map((year) => (
                   <option key={year} value={year}>

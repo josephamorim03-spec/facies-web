@@ -151,6 +151,7 @@ async function mockShellApi(page: Page) {
         streak_reviews: 0,
         streak_flashcards_seen: 0,
         weekly_study_days: 0,
+        weekly_protected_days: 0,
         active_protection: false,
         protection_window_end: null,
       });
@@ -356,8 +357,8 @@ test.describe("Navigation shell", () => {
     // "Cronograma" continua sendo o rotulo mais longo da navegacao, mas deixou
     // de ser item da sidebar: virou FILHO de Inicio. O risco de estouro mudou de
     // lugar junto com ele, entao o contrato mira a linha de secoes -- onde as
-    // cinco abas de agora ("Inicio", "Banco", "Rota", "Cards", "Perfil") sao
-    // curtas demais para exercitar o limite.
+    // quatro abas de agora ("Inicio", "Banco", "Cards", "Perfil") sao curtas
+    // demais para exercitar o limite.
     const longestItem = page
       .getByLabel("Seções desta área")
       .locator("[data-nav-item-href='/cronograma']");
@@ -374,19 +375,20 @@ test.describe("Navigation shell", () => {
     expect(labelBox.x + labelBox.width).toBeLessThanOrEqual(itemBox.x + itemBox.width + 1);
   });
 
-  test("a sidebar expoe as cinco abas, e o Cronograma vive na linha de filhos", async ({ page }) => {
+  test("a sidebar expoe as quatro abas, e o Cronograma vive na linha de filhos", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/hoje");
 
     const sidebar = navSidebar(page);
     await expect(sidebar).toBeVisible();
 
-    // Cinco destinos, nem um a mais: Cronograma e Evolucao deixaram de ser itens
-    // proprios e viraram FILHOS de Inicio e Perfil.
-    for (const href of ["/hoje", "/banco", "/rota", "/cards", "/evolucao"]) {
+    // Quatro destinos, nem um a mais: Cronograma e Evolucao viraram FILHOS de
+    // Inicio e Perfil, e a Rota saiu inteira junto com a pergunta de tempo e
+    // energia que era o conteudo dela.
+    for (const href of ["/hoje", "/banco", "/cards", "/evolucao"]) {
       await expect(sidebar.locator(`[data-nav-item-href='${href}']`)).toHaveCount(1);
     }
-    for (const href of ["/cronograma", "/preferencias", "/kros", "/caderno"]) {
+    for (const href of ["/cronograma", "/preferencias", "/kros", "/caderno", "/rota"]) {
       await expect(sidebar.locator(`[data-nav-item-href='${href}']`)).toHaveCount(0);
     }
 
@@ -439,24 +441,27 @@ test.describe("Navigation shell mobile tab bar", () => {
     await expect(activeItems).toHaveAttribute("aria-current", "page");
   });
 
-  test("mostra as cinco abas sem estouro horizontal", async ({ page }) => {
+  test("mostra as quatro abas sem estouro horizontal", async ({ page }) => {
     await page.goto("/hoje");
 
     const tabs = page.locator("[data-nav-surface='tabbar'] [data-nav-item-href]");
-    await expect(tabs).toHaveCount(5);
-    for (const label of ["Início", "Banco", "Rota", "Cards", "Perfil"]) {
+    await expect(tabs).toHaveCount(4);
+    for (const label of ["Início", "Banco", "Cards", "Perfil"]) {
       await expect(tabs.getByText(label, { exact: true })).toBeVisible();
     }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
-  test("Kros deixou de ser rotulo de menu", async ({ page }) => {
-    // Virou marca do motor. O destino se chama Rota, e `/kros` e 308.
+  test("nem Kros nem Rota sobrevivem como rotulo de menu", async ({ page }) => {
+    // "Kros" saiu primeiro (virou nome interno do motor); "Rota" saiu com a
+    // propria aba, quando a pergunta de tempo e energia morreu. Os dois
+    // enderecos continuam 308 para o Hoje.
     await page.goto("/hoje");
     const tabbar = page.locator("[data-nav-surface='tabbar']");
     await expect(tabbar.getByText("Kros", { exact: true })).toHaveCount(0);
-    await expect(tabbar.locator("[data-nav-item-href='/rota']")).toHaveCount(1);
+    await expect(tabbar.getByText("Rota", { exact: true })).toHaveCount(0);
+    await expect(tabbar.locator("[data-nav-item-href='/rota']")).toHaveCount(0);
     await expect(tabbar.locator("[data-nav-item-href='/kros']")).toHaveCount(0);
   });
 

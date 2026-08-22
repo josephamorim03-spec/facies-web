@@ -5,15 +5,19 @@ export type NavigationEnergy = "low" | "normal" | "high";
 export type NavigationCognitiveLoad = "low" | "moderate" | "high";
 
 /**
- * O que a tela precisa para perguntar tempo e energia sem cobrar digitação.
+ * O dimensionamento do dia, e a evidência que o sustenta.
  *
- * Os dois continuam sendo sempre perguntados. A rotina do aluno não substitui a
- * pergunta: ela fornece os presets e o valor pré-selecionado, para responder
- * custar um toque — mas a tela também aceita o tempo digitado, porque preset é
- * atalho e não o conjunto das respostas possíveis.
+ * Isto já **é** a resposta. A tela não pergunta tempo nem energia: ela mostra a
+ * sessão do tamanho que o dia comporta e diz de onde tirou o número. Perguntar
+ * custava um toque por sessão e devolvia o palpite de quem ainda não tinha
+ * começado a estudar; o calendário e as rotas iniciadas custam zero e devolvem o
+ * que aconteceu.
+ *
+ * `presets` sobrevive para o ESCAPE, que continua existindo — inferência sem
+ * caminho de volta é imposição pelo outro lado.
  */
 export type NavigationPrompt = {
-  /** Presets de tempo já informados pela rotina — não a lista fixa da spec. */
+  /** Tamanhos alternativos, para quem discorda do dimensionamento. */
   presets: number[];
   suggested_minutes: number;
   suggested_energy: NavigationEnergy;
@@ -54,7 +58,9 @@ export type NavigationRoute = {
   actions: NavigationRouteAction[];
   /** Invariante do produto: nunca maior que `available_minutes`. */
   total_minutes: number;
+  /** O orçamento que o motor USOU — inferido, salvo escape explícito. */
   available_minutes: number;
+  /** A energia que o motor USOU. Nunca `null`: o servidor resolve antes. */
   energy: NavigationEnergy;
   interruption_risk: boolean;
   policy_version: string;
@@ -67,20 +73,31 @@ export async function getNavigationPrompt(token: string): Promise<NavigationProm
   });
 }
 
+/**
+ * Monta a rota do dia.
+ *
+ * Sem argumento, o servidor dimensiona — é o caminho normal. `availableMinutes`
+ * e `energy` são o escape de quem discorda, e valem só para esta rota: declarar
+ * 20 minutos hoje não reensina o motor a prever 20.
+ *
+ * `null` e `undefined` significam a mesma coisa aqui, e ambos viram ausência no
+ * corpo. Mandar `available_minutes: null` explicitamente também funciona, mas
+ * omitir é mais barato de ler do outro lado.
+ */
 export async function buildNavigationRoute(
   token: string,
   input: {
-    availableMinutes: number;
-    energy: NavigationEnergy;
+    availableMinutes?: number | null;
+    energy?: NavigationEnergy | null;
     interruptionOverride?: boolean | null;
-  },
+  } = {},
 ): Promise<NavigationRoute> {
   return api<NavigationRoute>("/api/navigation/route", {
     method: "POST",
     headers: { ...authHeader(token), "Content-Type": "application/json" },
     body: JSON.stringify({
-      available_minutes: input.availableMinutes,
-      energy: input.energy,
+      available_minutes: input.availableMinutes ?? null,
+      energy: input.energy ?? null,
       interruption_override: input.interruptionOverride ?? null,
     }),
   });

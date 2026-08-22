@@ -58,7 +58,7 @@ type LoadingLineProps = {
  * Para quando reservar area seria mentira sobre o layout que vem — um botao
  * enviando, uma lista curta buscando. Espera longa ou area grande usa `LoadBar`.
  *
- * `aria-live="polite"`: quem nao ve o cursor precisa saber que algo esta em
+ * `aria-live="polite"`: quem nao ve a barra precisa saber que algo esta em
  * curso, mas nunca ao ponto de interromper o que esta sendo lido.
  */
 export function LoadingLine({ children, className = "" }: LoadingLineProps) {
@@ -68,7 +68,11 @@ export function LoadingLine({ children, className = "" }: LoadingLineProps) {
       className={`flex items-center text-sm text-muted ${className}`}
     >
       <span>{children}</span>
-      <span className="chrome-cursor" aria-hidden="true" />
+      {/* Barra fina no lugar do cursor de bloco piscando. O cursor era teatro de
+          terminal; a barra e o mesmo sinal no vocabulario do sistema. */}
+      <span className="load-bar ml-2 w-8 shrink-0" aria-hidden="true">
+        <span className="load-bar__fill load-bar__fill--indeterminate" />
+      </span>
     </p>
   );
 }

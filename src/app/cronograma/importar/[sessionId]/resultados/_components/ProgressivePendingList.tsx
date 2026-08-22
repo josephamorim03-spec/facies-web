@@ -12,7 +12,7 @@ function PendingSkeletonBlock(props: { title: string; lines?: number }) {
   const { title, lines = 3 } = props;
   return (
     <div className="border border-edge p-2 space-y-2">
-      <p className="text-xs uppercase tracking-wide text-ink">{title}</p>
+      <p className="paper-eyebrow text-ink">{title}</p>
       <div className="space-y-2">
         {Array.from({ length: lines }).map((_, index) => (
           <Skeleton
@@ -53,26 +53,26 @@ export function ProgressivePendingList(props: ProgressivePendingListProps) {
                 <div className="grid gap-2 sm:grid-cols-2">
                   {normalized.essence && (
                     <div className="border border-edge p-2">
-                      <p className="text-xs uppercase tracking-wide text-ink">Essencia</p>
+                      <p className="paper-eyebrow text-ink">Essencia</p>
                       <p className="mt-1 text-xs break-words [overflow-wrap:anywhere] text-ink">{normalized.essence}</p>
                     </div>
                   )}
                   {normalized.mainClue && (
                     <div className="border border-edge p-2">
-                      <p className="text-xs uppercase tracking-wide text-ink">Pista principal</p>
+                      <p className="paper-eyebrow text-ink">Pista principal</p>
                       <p className="mt-1 text-xs break-words [overflow-wrap:anywhere] text-ink">{normalized.mainClue}</p>
                     </div>
                   )}
                   {normalized.killerDetail && (
                     <div className="border border-edge p-2">
-                      <p className="text-xs uppercase tracking-wide text-ink">Detalhe decisivo</p>
+                      <p className="paper-eyebrow text-ink">Detalhe decisivo</p>
                       <p className="mt-1 text-xs break-words [overflow-wrap:anywhere] text-ink">{normalized.killerDetail}</p>
                     </div>
                   )}
                 </div>
                 {(normalized.microDrillPrompt || normalized.microDrillAnswer) && (
                   <div className="border border-edge p-2 space-y-1">
-                    <p className="text-xs uppercase tracking-wide text-ink">Micro treino</p>
+                    <p className="paper-eyebrow text-ink">Micro treino</p>
                     {normalized.microDrillPrompt && (
                       <p className="text-xs break-words [overflow-wrap:anywhere] text-ink"><strong>Pergunta:</strong> {normalized.microDrillPrompt}</p>
                     )}

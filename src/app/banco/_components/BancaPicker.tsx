@@ -200,7 +200,7 @@ export default function BancaPicker({
   return (
     <div className="space-y-3 border-t border-edge pt-4">
       <div className="flex items-center justify-between gap-2">
-        <label htmlFor="source-search" className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
+        <label htmlFor="source-search" className="paper-eyebrow">
           Prova / Banca / Instituição
         </label>
         {selectedCount > 0 && (
@@ -219,7 +219,7 @@ export default function BancaPicker({
           {selectedChips.map((chip) => (
             <span key={chip.id} className="km-chip max-w-full">
               <span className="min-w-0 truncate">{chip.label}</span>
-              <span className="text-nano uppercase text-muted">{sourceKindLabel(chip.kind)}</span>
+              <span className="paper-eyebrow">{sourceKindLabel(chip.kind)}</span>
               <button
                 type="button"
                 onClick={() => removeChip(chip)}
@@ -301,7 +301,7 @@ export default function BancaPicker({
               .map((section, _idx, sections) => (
                 <li key={section.heading} role="presentation">
                   {sections.length > 1 ? (
-                    <p className="px-1 pb-1 pt-2 text-nano font-semibold uppercase tracking-[0.08em] text-muted">
+                    <p className="paper-eyebrow px-1 pb-1 pt-2">
                       {section.heading}
                     </p>
                   ) : null}
@@ -316,7 +316,7 @@ export default function BancaPicker({
                             className={cx(
                               "flex min-h-[44px] cursor-pointer items-center gap-3 border px-3 py-2 text-sm transition",
                               checked
-                                ? "border-primary bg-[var(--amber-tint)]"
+                                ? "border-primary bg-[var(--wash-selecao)]"
                                 : "border-edge bg-paper hover:border-primary/50",
                             )}
                           >

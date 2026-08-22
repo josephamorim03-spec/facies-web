@@ -132,7 +132,7 @@ export default function QuickNoteModal({
         <div
           role="dialog"
           aria-modal="true"
-          className="w-full max-w-sm border border-edge bg-paper p-6 text-center shadow-overlay"
+          className="w-full max-w-sm rounded-surface border border-edge bg-paper p-6 text-center shadow-overlay"
           onClick={(event) => event.stopPropagation()}
         >
           <p className="text-sm font-semibold text-ink">
@@ -158,7 +158,7 @@ export default function QuickNoteModal({
         aria-label={primaryLabel}
         onSubmit={(event) => void handleSubmit(event)}
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-md border border-edge bg-paper p-5 shadow-overlay"
+        className="w-full max-w-md rounded-surface border border-edge bg-paper p-5 shadow-overlay"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -176,8 +176,8 @@ export default function QuickNoteModal({
         </div>
 
         {trimmedHypothesis && (
-          <div className="mt-4 border border-warning bg-[var(--amber-tint)] p-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-warning">
+          <div className="mt-4 border border-warning bg-[var(--wash-atencao)] p-3">
+            <p className="paper-eyebrow text-warning">
               Hipotese do distrator
             </p>
             <p className="mt-1 text-sm leading-relaxed text-ink">
@@ -202,7 +202,7 @@ export default function QuickNoteModal({
           maxLength={180}
           required
           placeholder="Min. 6 caracteres"
-          className="mt-1 w-full border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"
+          className="mt-1 w-full rounded-control border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"
         />
 
         <button
@@ -214,8 +214,8 @@ export default function QuickNoteModal({
         </button>
 
         {advancedOpen && (
-          <div className="mt-3 border border-edge bg-surface p-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Area</p>
+          <div className="mt-3 rounded-control border border-edge bg-surface p-3">
+            <p className="paper-eyebrow mb-2">Area</p>
             <div className="mb-3 flex flex-wrap gap-1.5">
               {AREAS.map((item) => (
                 <button
@@ -239,7 +239,7 @@ export default function QuickNoteModal({
               onChange={(event) => setBody(event.target.value)}
               required
               placeholder="Escreva o conceito ou raciocinio correto"
-              className="mt-1 min-h-24 w-full resize-y border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"
+              className="mt-1 min-h-24 w-full resize-y rounded-control border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"
             />
           </div>
         )}

@@ -9,6 +9,10 @@ module.exports = {
         surface: "var(--color-surface)",
         surfaceMuted: "var(--color-surface-muted)",
         edge: "var(--color-edge)",
+        // Filete decorativo. Separado de `edge` porque `edge` desenha limite de
+        // componente e responde a 3:1 do WCAG 1.4.11; este nao identifica nada
+        // e por isso pode ser a linha delicada da marca.
+        rule: "var(--color-rule)",
         ink: "var(--color-ink)",
         muted: "var(--color-muted)",
         primary: "var(--color-primary)",
@@ -29,30 +33,38 @@ module.exports = {
           ob: "var(--area-ob)",
         },
       },
-      // `sans` aponta para a MONO de propósito. `body` já faz `@apply font-sans`,
-      // então todo o chrome (menus, rótulos, números, botões, status bar) vira
-      // mono nesta única linha, sem editar componente nenhum.
+      // `sans` aponta para a SANS HUMANISTA. `body` já faz `@apply font-sans`,
+      // então todo o chrome (menus, rótulos, botões, status bar) muda nesta
+      // única linha, sem editar componente nenhum.
+      //
+      // Antes isto apontava para a mono, de propósito — era a decisão central do
+      // KROS/DOS e o mecanismo exato pelo qual a interface lia como terminal de
+      // dev em vez de instrumento clínico. A mono continua disponível como
+      // `font-mono`, agora restrita ao que ela sempre deveria vestir: número,
+      // tempo e percentual.
       //
       // A prosa NÃO segue junto: `.paper-reading` declara `--font-serif`
-      // explicitamente. Bloco de texto clínico que dependa do sans padrão vira
-      // mono silenciosamente — é a varredura por tela da fase de telas.
+      // explicitamente.
       // Escala MICRO, abaixo de `text-xs`. Existia como 178 `text-[Npx]` avulsos
       // em quatro degraus — uma escala paralela, sem nome e sem contrato, no
       // rótulo do chrome (eyebrow, status bar, tag de área, legenda de gráfico).
       // Nomear é o que permite auditá-la e mudá-la num lugar só.
+      // Um degrau so abaixo de `text-xs`, e ele e' o piso.
+      //
+      // Eram quatro (11/10/9/8), que nunca foram uma escala — foram quatro
+      // valores que apareceram um de cada vez. A Facies comeca em 11px
+      // (`--t0`, rotulo mono) e nao desce: abaixo disso o rotulo deixa de ser
+      // legivel em celular, que e' onde este produto e' usado.
       fontSize: {
         micro: ["11px", { lineHeight: "1.35" }],
-        nano: ["10px", { lineHeight: "1.3" }],
-        pico: ["9px", { lineHeight: "1.25" }],
-        femto: ["8px", { lineHeight: "1.2" }],
       },
       fontFamily: {
         sans: [
-          "var(--font-mono)",
-          "ui-monospace",
-          "\"Cascadia Mono\"",
-          "Consolas",
-          "monospace",
+          "var(--font-sans)",
+          "system-ui",
+          "-apple-system",
+          "\"Segoe UI\"",
+          "sans-serif",
         ],
         mono: [
           "var(--font-mono)",

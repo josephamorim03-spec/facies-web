@@ -15,7 +15,7 @@ function normalizeRetention(value: number | null | undefined): number | null {
 
 function toneChipClass(tone: GuidanceTone): string {
   if (tone === "critical") return "border-danger/40 bg-danger/10 text-danger";
-  if (tone === "attention") return "border-warning bg-[var(--amber-tint)] text-ink";
+  if (tone === "attention") return "border-warning bg-[var(--wash-atencao)] text-ink";
   if (tone === "positive") return "border-success/40 bg-success/10 text-success";
   return "border-edge bg-surface text-muted";
 }
@@ -59,8 +59,8 @@ export function ReviewSignalChips({
   if (!memory && !mastery && !task.at_risk && questionPracticeCount <= 0) return null;
 
   const baseClass = compact
-    ? "border px-1.5 py-0.5 text-pico font-medium leading-none"
-    : "border px-2 py-0.5 text-nano font-medium leading-none";
+    ? "border px-1.5 py-0.5 text-micro font-medium leading-none"
+    : "border px-2 py-0.5 text-micro font-medium leading-none";
 
   return (
     <div className={`flex flex-wrap items-center gap-1 ${className}`}>
@@ -81,7 +81,7 @@ export function ReviewSignalChips({
       {/* Só mostra o aviso de risco quando não há leitura de memória (evita chip duplicado). */}
       {task.at_risk && !memory && (
         <span
-          className={`${baseClass} border-warning bg-[var(--amber-tint)] text-ink`}
+          className={`${baseClass} border-warning bg-[var(--wash-atencao)] text-ink`}
           title="Antecipada: você está começando a esquecer."
         >
           {compact ? "Revisar já" : "Revisar antes de esquecer"}

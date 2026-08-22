@@ -28,7 +28,7 @@ import LearningPackagePanel from "./LearningPackagePanel";
 
 const ExamDebrief = dynamic(() => import("./ExamDebrief"), {
   ssr: false,
-  loading: () => <div className="paper-skeleton h-24 border border-edge bg-surface" aria-hidden="true" />,
+  loading: () => <div className="paper-skeleton h-24 rounded-control border border-edge bg-surface" aria-hidden="true" />,
 });
 
 const REPORT_OPTIONS: Array<{ type: QuestionBankReportType; label: string }> = [
@@ -224,17 +224,17 @@ export default function PostExamReview({
 
         {examLike && detailedFeedbackAvailable && <ExamDebrief sessionId={session.session_id} />}
 
-        <header className="border border-edge bg-surface p-5">
+        <header className="rounded-surface border border-edge bg-surface p-5">
           <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+              <p className="paper-eyebrow">
                 O que você fez · {resultLabel}
               </p>
               <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight">
                 {sessionDisplayLabel}
               </h1>
-              <div className="mt-4 border border-primary/30 bg-[var(--amber-tint)] p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">O que você aprendeu</p>
+              <div className="mt-4 border border-primary/30 bg-[var(--wash-selecao)] p-4">
+                <p className="paper-eyebrow text-primary">O que você aprendeu</p>
                 <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight text-ink">{gainTitle}</h2>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{gainDetail}</p>
               </div>
@@ -244,24 +244,24 @@ export default function PostExamReview({
           <details className="mt-5">
             <summary className="cursor-pointer text-sm font-semibold text-muted">Ver métricas da sessão</summary>
             <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
-            <div className="border border-edge bg-paper px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Acertos</p>
+            <div className="rounded-surface border border-edge bg-paper px-4 py-3">
+              <p className="paper-eyebrow">Acertos</p>
               <p className="mt-1 text-2xl font-bold text-success">{correctItems.length}</p>
             </div>
-            <div className="border border-edge bg-paper px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Erros</p>
+            <div className="rounded-surface border border-edge bg-paper px-4 py-3">
+              <p className="paper-eyebrow">Erros</p>
               <p className="mt-1 text-2xl font-bold text-danger">{wrongItems.length}</p>
             </div>
-            <div className="border border-edge bg-paper px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Marcadas</p>
+            <div className="rounded-surface border border-edge bg-paper px-4 py-3">
+              <p className="paper-eyebrow">Marcadas</p>
               <p className="mt-1 text-2xl font-bold text-warning">{markedItems.length}</p>
             </div>
-            <div className="border border-edge bg-paper px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Em branco</p>
+            <div className="rounded-surface border border-edge bg-paper px-4 py-3">
+              <p className="paper-eyebrow">Em branco</p>
               <p className="mt-1 text-2xl font-bold text-muted">{unansweredItems.length}</p>
             </div>
-            <div className="border border-edge bg-paper px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Descartadas</p>
+            <div className="rounded-surface border border-edge bg-paper px-4 py-3">
+              <p className="paper-eyebrow">Descartadas</p>
               <p className="mt-1 text-2xl font-bold text-muted">{excludedItems.length}</p>
             </div>
             </div>
@@ -273,7 +273,7 @@ export default function PostExamReview({
                 type="button"
                 disabled={isWorking}
                 onClick={() => void revealAll()}
-                className="border border-edge bg-surface px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
+                className="rounded-control border border-edge bg-surface px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
               >
                 Revelar todas
               </button>
@@ -285,7 +285,7 @@ export default function PostExamReview({
           <section className="border border-primary bg-surface p-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                <p className="paper-eyebrow text-primary">
                   Resultado ainda não contabilizado
                 </p>
                 <p className="mt-1 text-sm leading-relaxed text-muted">
@@ -318,7 +318,7 @@ export default function PostExamReview({
         {detailedFeedbackAvailable && <section className="border border-primary bg-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">O que vale fazer agora</p>
+              <p className="paper-eyebrow text-primary">O que vale fazer agora</p>
               <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight">{primaryAction.title}</h2>
               <p className="mt-1 text-sm text-muted">{primaryAction.detail}</p>
             </div>
@@ -336,8 +336,8 @@ export default function PostExamReview({
             </div>
           </div>
           {cognitivePattern && (
-            <div className="mt-4 border border-warning/40 bg-[var(--amber-tint)] p-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-warning">
+            <div className="mt-4 border border-warning/40 bg-[var(--wash-atencao)] p-3">
+              <p className="paper-eyebrow text-warning">
                 Padrão cognitivo dominante
               </p>
               <h3 className="mt-1 font-serif text-lg font-semibold text-ink">
@@ -360,7 +360,7 @@ export default function PostExamReview({
               <button
                 type="button"
                 onClick={() => setActiveTab("erros")}
-                className="border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+                className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
               >
                 Reparar erros
                 <span className="mt-1 block text-xs font-normal text-muted">{diagnosedWrongCount} com diagnóstico de armadilha</span>
@@ -369,7 +369,7 @@ export default function PostExamReview({
             <button
               type="button"
               onClick={() => router.push("/cards/registros")}
-              className="border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+              className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
             >
               Abrir caderno
               <span className="mt-1 block text-xs font-normal text-muted">Revisar notas e cards salvos</span>
@@ -378,7 +378,7 @@ export default function PostExamReview({
               <button
                 type="button"
               onClick={() => router.push("/cards")}
-                className="border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+                className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
               >
                 Continuar revisão
                 <span className="mt-1 block text-xs font-normal text-muted">{scheduledCount} {scheduledCount === 1 ? "revisão criada" : "revisões criadas"}</span>
@@ -424,7 +424,7 @@ export default function PostExamReview({
             )}
             {diagnosis && diagnosis.nodes.length > 0 && (
               <div className="km-card p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Desempenho por tema</p>
+                <p className="paper-eyebrow">Desempenho por tema</p>
                 <div className="mt-3 space-y-3">
                   {diagnosis.nodes.slice(0, 8).map((node) => (
                     <div key={node.knowledge_node_id}>
@@ -454,13 +454,13 @@ export default function PostExamReview({
 
             {/* Recommended actions */}
             <div className="km-card p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Ações recomendadas</p>
+              <p className="paper-eyebrow">Ações recomendadas</p>
               <div className="mt-3 space-y-2">
                 {wrongItems.length > 0 && (
                   <button
                     type="button"
                     onClick={() => router.push("/cards")}
-                    className="flex w-full items-center justify-between border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
+                    className="flex w-full items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                   >
                     <div>
                       <p className="text-sm font-semibold text-ink">Revisar só erros</p>
@@ -473,7 +473,7 @@ export default function PostExamReview({
                   <button
                     type="button"
                     onClick={() => router.push("/cards")}
-                    className="flex w-full items-center justify-between border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
+                    className="flex w-full items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                   >
                     <div>
                       <p className="text-sm font-semibold text-ink">
@@ -487,7 +487,7 @@ export default function PostExamReview({
                 <button
                   type="button"
                   onClick={() => router.push("/banco")}
-                  className="flex w-full items-center justify-between border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
+                  className="flex w-full items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                 >
                   <div>
                     <p className="text-sm font-semibold text-ink">Nova sessão</p>
@@ -501,7 +501,7 @@ export default function PostExamReview({
             {/* Weak topics focus */}
             {diagnosis && diagnosis.nodes.some((n) => n.accuracy < 0.5 && (n.correct + n.wrong) >= 2) && (
               <div className="km-card p-4 md:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">Focar nestes temas</p>
+                <p className="paper-eyebrow">Focar nestes temas</p>
                 <p className="mt-1 text-xs text-muted">Abaixo de 50% de acerto nesta sessão</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {diagnosis.nodes
@@ -512,7 +512,7 @@ export default function PostExamReview({
                         key={n.knowledge_node_id}
                         type="button"
                         onClick={() => router.push(`/banco?theme=${encodeURIComponent(n.node_name ?? "")}&answer_status=unanswered_or_wrong`)}
-                        className="flex items-center justify-between border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
+                        className="flex items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                       >
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-ink">{n.node_name ?? "—"}</p>
@@ -529,7 +529,7 @@ export default function PostExamReview({
             {diagnosis && !dismissedInsights && (diagnosis.impulsive_count >= 2 || diagnosis.overconfident_count >= 2) && (
               <div className="km-card border-warning/40 p-4 md:col-span-2">
                 <div className="flex items-start justify-between gap-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Padrão identificado</p>
+                  <p className="paper-eyebrow text-warning">Padrão identificado</p>
                   <button type="button" onClick={() => setDismissedInsights(true)} aria-label="Fechar" className="-mr-1 -mt-0.5 shrink-0 p-1 text-muted transition-colors hover:bg-surfaceMuted hover:text-ink">
                     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className="h-4 w-4" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" /></svg>
                   </button>
@@ -594,7 +594,7 @@ export default function PostExamReview({
                 const trapId = `post-exam-trap-${item.position}`;
 
                 return (
-                  <article key={item.question_id} className="border border-edge bg-surface p-4 ">
+                  <article key={item.question_id} className="rounded-surface border border-edge bg-surface p-4 ">
                     <QuestionFullContext
                       eyebrow={`Questão ${item.position}`}
                       stem={item.stem}
@@ -607,7 +607,7 @@ export default function PostExamReview({
                       correctAnswer={item.correct_answer}
                       isCorrect={item.is_correct}
                       showCorrectAnswer={item.feedback_state === "revealed"}
-                      className="border border-edge bg-paper p-3"
+                      className="rounded-control border border-edge bg-paper p-3"
                     />
 
                     {/* A revisão do raciocínio saiu daqui: virou `CorrecaoStage`,
@@ -644,7 +644,7 @@ export default function PostExamReview({
                     )}
 
                     {reportingPosition === item.position && (
-                      <div className="mt-3 border border-edge bg-paper p-3">
+                      <div className="mt-3 rounded-control border border-edge bg-paper p-3">
                         <div className="flex flex-wrap gap-2">
                           {REPORT_OPTIONS.map(({ type, label }) => (
                             <button
@@ -667,7 +667,7 @@ export default function PostExamReview({
                           onChange={(event) => setReportReason(event.target.value)}
                           maxLength={4000}
                           rows={3}
-                          className="mt-3 w-full border border-edge bg-surface px-3 py-2 text-sm outline-none focus:border-primary"
+                          className="mt-3 w-full rounded-control border border-edge bg-surface px-3 py-2 text-sm outline-none focus:border-primary"
                           placeholder="O que parece errado nesta questão?"
                         />
                         <div className="mt-2 flex justify-end gap-2">
@@ -700,17 +700,17 @@ export default function PostExamReview({
                         </span>
                       )}
                       {item.doubtful && (
-                        <span className="border border-warning/40 bg-[var(--amber-tint)] px-2.5 py-1 text-xs font-semibold text-warning">
+                        <span className="border border-warning/40 bg-[var(--wash-atencao)] px-2.5 py-1 text-xs font-semibold text-warning">
                           Marcada
                         </span>
                       )}
                       {item.reported_problem && (
-                        <span className="border border-warning/40 bg-[var(--amber-tint)] px-2.5 py-1 text-xs font-semibold text-warning">
+                        <span className="border border-warning/40 bg-[var(--wash-atencao)] px-2.5 py-1 text-xs font-semibold text-warning">
                           Denunciada
                         </span>
                       )}
                       {item.excluded_from_scoring && !item.is_annulled && (
-                        <span className="border border-edge bg-surfaceMuted px-2.5 py-1 text-xs font-semibold text-muted">
+                        <span className="rounded-control border border-edge bg-surfaceMuted px-2.5 py-1 text-xs font-semibold text-muted">
                           Descartada por você
                         </span>
                       )}
@@ -718,12 +718,12 @@ export default function PostExamReview({
                           anulada nao entra no seu desempenho, desatualizada entra.
                           Dizer "descartada" para as duas apagaria essa diferenca. */}
                       {item.is_annulled && (
-                        <span className="border border-edge bg-surfaceMuted px-2.5 py-1 text-xs font-semibold text-muted">
+                        <span className="rounded-control border border-edge bg-surfaceMuted px-2.5 py-1 text-xs font-semibold text-muted">
                           Anulada pela banca · não conta
                         </span>
                       )}
                       {item.is_outdated && !item.is_annulled && (
-                        <span className="border border-warning/40 bg-[var(--amber-tint)] px-2.5 py-1 text-xs font-semibold text-warning">
+                        <span className="border border-warning/40 bg-[var(--wash-atencao)] px-2.5 py-1 text-xs font-semibold text-warning">
                           Conduta desatualizada
                         </span>
                       )}
@@ -733,8 +733,8 @@ export default function PostExamReview({
                         questao caiu quebraria a simulacao, e viver a questao mal
                         elaborada e' exatamente o que se treina aqui. */}
                     {item.annulled_justification && (
-                      <div className="mt-3 border border-edge bg-surfaceMuted p-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">
+                      <div className="mt-3 rounded-control border border-edge bg-surfaceMuted p-3">
+                        <p className="paper-eyebrow">
                           {item.is_annulled ? "Por que foi anulada" : "O que mudou desde a prova"}
                         </p>
                         <p className="mt-1 text-sm leading-relaxed text-ink">
@@ -750,8 +750,8 @@ export default function PostExamReview({
                     )}
 
                     {activeTab === "erros" && selectedDiagnosis && (
-                      <div id={trapId} className="mt-3 border border-warning/50 bg-[var(--amber-tint)] p-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-warning">Hipótese do erro</p>
+                      <div id={trapId} className="mt-3 border border-warning/50 bg-[var(--wash-atencao)] p-3">
+                        <p className="paper-eyebrow text-warning">Hipótese do erro</p>
                         <p className="mt-1 text-sm leading-relaxed text-ink">{selectedDiagnosis}</p>
                       </div>
                     )}

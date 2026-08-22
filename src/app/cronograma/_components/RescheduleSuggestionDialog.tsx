@@ -47,7 +47,7 @@ export function RescheduleSuggestionDialog({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="m-auto w-full max-w-xl space-y-3 border border-edge bg-paper p-4 shadow-overlay"
+        className="m-auto w-full max-w-xl space-y-3 rounded-surface border border-edge bg-paper p-4 shadow-overlay"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between">

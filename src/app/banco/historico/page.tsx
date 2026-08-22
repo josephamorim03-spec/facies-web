@@ -8,7 +8,6 @@ import { listQuestionBankSessions, type QuestionBankSession } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { LoadBar } from "@/components/ui/LoadBar";
-import { AREA_TEXT_CLASS } from "@/lib/areaIdentity";
 import { displayAreaLabel, resolveDisplayArea } from "@/lib/areaDisplay";
 
 /**
@@ -18,7 +17,7 @@ import { displayAreaLabel, resolveDisplayArea } from "@/lib/areaDisplay";
  * entao nao havia como linkar para ela — foi por isso que `/provas` acabou
  * aterrissando na aba Graficos, "sem nada de simulados a vista".
  *
- * Mora sob o Banco porque e o historico das sessoes de QUESTAO (Kros, Banco,
+ * Mora sob o Banco porque e o historico das sessoes de QUESTAO (do dia, Banco,
  * combinada e prova sao todas `QuestionBankSession`).
  *
  * Ate aqui ele filtrava `status: "finalized"` no proprio queryFn — e a tela de
@@ -29,7 +28,7 @@ import { displayAreaLabel, resolveDisplayArea } from "@/lib/areaDisplay";
  */
 
 const SESSION_LABELS: Record<QuestionBankSession["session_kind"], string> = {
-  kros: "Kros",
+  kros: "Sessão do dia",
   bank_topic: "Banco",
   bank_combined: "Sessão combinada",
   institutional_exam: "Prova",
@@ -161,7 +160,7 @@ export default function BancoHistoricoPage() {
         <span className="paper-eyebrow">
           {pendingCount > 0 ? `${pendingCount} em andamento` : "Suas sessões"}
         </span>
-        <span className="chrome-leader" aria-hidden="true" />
+        <span className="paper-leader" aria-hidden="true" />
         <span className="paper-eyebrow">{visible.length}</span>
       </div>
 
@@ -244,7 +243,7 @@ export default function BancoHistoricoPage() {
                 <div className="min-w-0">
                   <p className="truncate text-sm text-ink">
                     {displayArea ? (
-                      <span className={`mr-2 font-semibold ${AREA_TEXT_CLASS[displayArea]}`}>
+                      <span className="mr-2 font-semibold text-ink">
                         {displayArea}
                       </span>
                     ) : null}
@@ -258,7 +257,7 @@ export default function BancoHistoricoPage() {
                 </div>
                 <div className="flex items-center justify-between gap-3 sm:justify-end">
                   {pending ? (
-                    <span className="border border-warning px-1.5 py-0.5 text-nano font-semibold uppercase tracking-[0.1em] text-warning">
+                    <span className="paper-eyebrow border border-warning px-1.5 py-0.5 text-warning">
                       Em andamento
                     </span>
                   ) : (

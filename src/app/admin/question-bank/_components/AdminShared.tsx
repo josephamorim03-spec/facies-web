@@ -24,7 +24,7 @@ export function StatCard({
         : "border-edge bg-surface text-ink";
   return (
     <div className={`border p-3 ${toneClasses}`}>
-      <p className="text-xs font-semibold uppercase opacity-70">{label}</p>
+      <p className="paper-eyebrow opacity-70">{label}</p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
       {helper ? <p className="mt-1 text-micro leading-4 opacity-70">{helper}</p> : null}
     </div>
@@ -37,7 +37,7 @@ export function MetadataPill({ label, value }: { label: string; value: unknown }
   }
   const rendered = Array.isArray(value) ? value.join(", ") : String(value);
   return (
-    <div className="border border-edge bg-surface px-3 py-1 text-xs font-medium text-ink">
+    <div className="rounded-control border border-edge bg-surface px-3 py-1 text-xs font-medium text-ink">
       <span className="opacity-60">{label}: </span>
       <span>{rendered}</span>
     </div>
@@ -52,7 +52,7 @@ export function WarningBox({ warning }: { warning: QuestionBankAdminWarning }) {
   const samples = warning.samples ?? warning.sample ?? [];
   return (
     <div className={`border p-3 ${toneClasses}`}>
-      <div className="text-xs font-semibold uppercase">{warning.code}</div>
+      <div className="paper-eyebrow">{warning.code}</div>
       <div className="mt-1 text-sm">{warning.message}</div>
       {warning.reason || warning.provider ? (
         <div className="mt-2 text-xs">
@@ -110,8 +110,8 @@ export function CandidateRow({ item }: { item: QuestionBankAdminCandidate }) {
 
 export function JsonPanel({ title, value }: { title: string; value: unknown }) {
   return (
-    <div className="border border-edge bg-paper p-4 text-ink">
-      <div className="mb-2 text-xs font-semibold uppercase text-muted">{title}</div>
+    <div className="rounded-surface border border-edge bg-paper p-4 text-ink">
+      <div className="paper-eyebrow mb-2">{title}</div>
       <pre className="overflow-auto text-xs leading-6 text-muted">{JSON.stringify(value, null, 2)}</pre>
     </div>
   );

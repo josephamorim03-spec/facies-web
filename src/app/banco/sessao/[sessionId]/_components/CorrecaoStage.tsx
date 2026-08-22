@@ -51,7 +51,7 @@ export function CorrecaoStage({ token, session, onSessionChange, onSkip }: Props
         aria-labelledby="correcao-stage-title"
         className="paper-surface mt-4 border-2 border-primary p-4 sm:p-5"
       >
-        <p className="text-nano font-semibold uppercase tracking-[0.16em] text-muted">
+        <p className="paper-eyebrow">
           Antes do gabarito
         </p>
         <h2 id="correcao-stage-title" className="mt-1 font-serif text-2xl font-semibold text-ink">
@@ -70,7 +70,7 @@ export function CorrecaoStage({ token, session, onSessionChange, onSkip }: Props
           {eligible.slice(0, 5).map((item) => (
             <li
               key={item.position}
-              className="flex items-center gap-3 border border-edge bg-surface px-3 py-2 text-xs"
+              className="flex items-center gap-3 rounded-control border border-edge bg-surface px-3 py-2 text-xs"
             >
               <span className="font-semibold tabular-nums text-muted">
                 {String(item.position).padStart(2, "0")}
@@ -82,13 +82,13 @@ export function CorrecaoStage({ token, session, onSessionChange, onSkip }: Props
                   item.knowledge_nodes[0]?.node_name ??
                   `Questão ${item.position}`}
               </span>
-              <span className="shrink-0 text-nano font-semibold uppercase tracking-[0.1em] text-muted">
+              <span className="paper-eyebrow shrink-0">
                 {item.is_correct === false ? "Errou" : "Marcou dúvida"}
               </span>
             </li>
           ))}
           {eligible.length > 5 ? (
-            <li className="px-3 py-1 text-nano font-semibold uppercase tracking-[0.12em] text-muted">
+            <li className="paper-eyebrow px-3 py-1">
               e mais {eligible.length - 5}
             </li>
           ) : null}
@@ -109,10 +109,10 @@ export function CorrecaoStage({ token, session, onSessionChange, onSkip }: Props
   return (
     <section aria-labelledby="correcao-stage-title" className="paper-surface mt-4 border-2 border-primary p-4 sm:p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="correcao-stage-title" className="text-nano font-semibold uppercase tracking-[0.16em] text-muted">
+        <h2 id="correcao-stage-title" className="paper-eyebrow">
           Correção · questão {current?.position}
         </h2>
-        <p className="text-nano font-semibold uppercase tracking-[0.16em] text-muted">
+        <p className="paper-eyebrow">
           {index + 1} de {eligible.length}
         </p>
       </div>
@@ -123,7 +123,7 @@ export function CorrecaoStage({ token, session, onSessionChange, onSkip }: Props
         aria-valuemin={0}
         aria-valuemax={eligible.length}
         aria-label="Progresso da correção"
-        className="chrome-meter mt-2 h-2.5"
+        className="paper-meter mt-2 h-2.5"
       >
         <div style={{ width: `${((index + 1) / eligible.length) * 100}%` }} />
       </div>

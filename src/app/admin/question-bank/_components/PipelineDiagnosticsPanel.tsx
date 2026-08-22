@@ -251,7 +251,7 @@ export default function PipelineDiagnosticsPanel({
 
   return (
     <div className="space-y-5">
-      <section className="border border-edge bg-surface p-5">
+      <section className="rounded-surface border border-edge bg-surface p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-ink">Fila tecnica</h2>
@@ -264,7 +264,7 @@ export default function PipelineDiagnosticsPanel({
             <select
               value={jobType}
               onChange={(event) => onJobTypeChange(event.target.value)}
-              className="border border-edge bg-surface px-3 py-2 text-sm"
+              className="rounded-control border border-edge bg-surface px-3 py-2 text-sm"
             >
               {JOB_TYPES.map((type) => (
                 <option key={type} value={type}>{jobTypeLabel(type)}</option>
@@ -279,7 +279,7 @@ export default function PipelineDiagnosticsPanel({
               max={50}
               value={batchSize}
               onChange={(event) => onBatchSizeChange(Math.min(50, Math.max(1, Number(event.target.value) || 1)))}
-              className="border border-edge bg-surface px-3 py-2 text-sm"
+              className="rounded-control border border-edge bg-surface px-3 py-2 text-sm"
             />
           </label>
           <label className="grid gap-1 text-sm font-medium text-ink">
@@ -290,7 +290,7 @@ export default function PipelineDiagnosticsPanel({
               max={1}
               value={workers}
               onChange={() => onWorkersChange(1)}
-              className="border border-edge bg-surface px-3 py-2 text-sm"
+              className="rounded-control border border-edge bg-surface px-3 py-2 text-sm"
             />
           </label>
         </div>
@@ -338,7 +338,7 @@ export default function PipelineDiagnosticsPanel({
                 max={100}
                 value={aiMaxNewJobs}
                 onChange={(event) => setAiMaxNewJobs(Number(event.target.value))}
-                className="w-32 border border-edge bg-surface px-3 py-2 text-sm"
+                className="w-32 rounded-control border border-edge bg-surface px-3 py-2 text-sm"
               />
             </label>
             <label className="flex items-center gap-2 text-sm font-medium text-ink">
@@ -383,7 +383,7 @@ export default function PipelineDiagnosticsPanel({
               </p>
               {(aiPreview.results || []).length > 0 ? (
                 <div className="mt-2 border-t border-warning/50 pt-2/30">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                  <p className="paper-eyebrow">
                     O que a IA vai completar (top {Math.min(5, aiPreview.results.length)})
                   </p>
                   <ul className="mt-1.5 space-y-1">
@@ -435,7 +435,7 @@ export default function PipelineDiagnosticsPanel({
           ) : null}
           {aiBatches.length > 0 ? (
             <div className="mt-3 border-t border-warning/60 pt-3/40">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+              <p className="paper-eyebrow">
                 Lotes assíncronos recentes
               </p>
               <ul className="mt-2 space-y-1">
@@ -532,11 +532,11 @@ export default function PipelineDiagnosticsPanel({
         </div>
       </section>
 
-      <section className="border border-edge bg-surface p-5">
+      <section className="rounded-surface border border-edge bg-surface p-5">
         <h2 className="text-xl font-semibold text-ink">Diagnostics</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <div className="border border-edge bg-surface p-4">
-            <div className="text-xs font-semibold uppercase text-muted">Readiness</div>
+          <div className="rounded-surface border border-edge bg-surface p-4">
+            <div className="paper-eyebrow">Readiness</div>
             <div className="mt-3 text-sm text-ink">
               <div>Status: <span className="font-semibold">{readiness.status || "-"}</span></div>
               <div>Banco: <span className="font-semibold">{readiness.database || "-"}</span></div>
@@ -545,18 +545,18 @@ export default function PipelineDiagnosticsPanel({
               <div>Workers: <span className="font-semibold">{readiness.pipeline_workers ?? "-"}</span></div>
             </div>
           </div>
-          <div className="border border-edge bg-surface p-4">
-            <div className="text-xs font-semibold uppercase text-muted">Providers</div>
+          <div className="rounded-surface border border-edge bg-surface p-4">
+            <div className="paper-eyebrow">Providers</div>
             <div className="mt-3 space-y-2 text-sm text-ink">
               <div>Cheap: <span className="font-semibold">{readiness.providers.cheap.model || "-"}</span></div>
               <div>Strong: <span className="font-semibold">{readiness.providers.strong.model || "-"}</span></div>
             </div>
           </div>
         </div>
-        <div className="mt-4 border border-edge bg-surface p-4">
+        <div className="mt-4 rounded-surface border border-edge bg-surface p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-xs font-semibold uppercase text-muted">Storage</div>
+              <div className="paper-eyebrow">Storage</div>
               <div className="mt-2 grid gap-2 text-sm text-ink sm:grid-cols-2 lg:grid-cols-4">
                 <div>DB logico: <span className="font-semibold">{formatBytes(storageSummary?.pg_database_size)}</span></div>
                 <div>WAL: <span className="font-semibold">{formatBytes(storageSummary?.pg_wal_size)}</span></div>
@@ -605,7 +605,7 @@ export default function PipelineDiagnosticsPanel({
             </div>
           </div>
         </div>
-        <details className="mt-4 border border-edge bg-surface p-3">
+        <details className="mt-4 rounded-surface border border-edge bg-surface p-3">
           <summary className="cursor-pointer text-sm font-semibold text-ink">JSON bruto</summary>
           <div className="mt-3 grid gap-4 xl:grid-cols-2">
             <JsonPanel title="Readiness raw" value={readiness} />

@@ -26,11 +26,11 @@ export function PostExamIndex({ items, currentPosition, onSelect }: PostExamInde
   if (items.length <= 1) return null;
 
   return (
-    <section aria-labelledby="post-exam-index-title" className="border border-edge bg-surface p-3">
+    <section aria-labelledby="post-exam-index-title" className="rounded-surface border border-edge bg-surface p-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3
           id="post-exam-index-title"
-          className="text-nano font-semibold uppercase tracking-[0.14em] text-muted"
+          className="paper-eyebrow"
         >
           Índice
         </h3>

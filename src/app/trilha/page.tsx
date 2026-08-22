@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Lock, Reload as RefreshCw } from "pixelarticons/react";
+import { Lock, RotateCw as RefreshCw } from "lucide-react";
 
 import { LoadBar } from "@/components/ui/LoadBar";
 
@@ -133,7 +133,7 @@ export default function TrilhaPage() {
       <main className="flex min-h-[50vh] items-center justify-center">
         <div className="w-full max-w-xs">
           <LoadBar label="Carregando trilha" />
-          <p className="mt-2 text-xs uppercase tracking-[0.12em] text-muted">Carregando trilha</p>
+          <p className="paper-eyebrow mt-2">Carregando trilha</p>
         </div>
       </main>
     );
@@ -145,7 +145,7 @@ export default function TrilhaPage() {
         <h1 className="font-serif text-3xl font-semibold text-ink">Trilha</h1>
         <EmptyState
           title="Sua trilha ainda não existe"
-          description="Responda o questionário inicial para o KrosMed montar seu cronograma."
+          description="Responda o questionário inicial para a Fácies montar seu cronograma."
           action={
             <Link href="/onboarding">
               <Button variant="primary" size="md">
@@ -205,7 +205,7 @@ export default function TrilhaPage() {
           silêncio parecia bug do produto. */}
       {unscheduled.length > 0 && (
         <section
-          className="border border-edge bg-surfaceMuted p-4"
+          className="rounded-surface border border-edge bg-surfaceMuted p-4"
           aria-labelledby="trilha-unscheduled"
         >
           <h2 id="trilha-unscheduled" className="text-sm font-medium text-ink">
@@ -241,8 +241,8 @@ export default function TrilhaPage() {
       ) : (
         <ol className="space-y-4">
           {days.map(([day, activities]) => (
-            <li key={day} className="border border-edge bg-surface p-4">
-              <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted">
+            <li key={day} className="rounded-control border border-edge bg-surface p-4">
+              <p className="paper-eyebrow">
                 {formatDay(day)}
               </p>
               <ul className="mt-3 space-y-3">

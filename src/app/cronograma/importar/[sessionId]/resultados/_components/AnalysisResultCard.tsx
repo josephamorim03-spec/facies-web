@@ -294,7 +294,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                 {contextBanner}
                 {imageDescriptions.length > 0 && (
                   <div className="border border-info bg-surfaceMuted px-3 py-2 space-y-1">
-                    <p className="text-xs text-info uppercase tracking-wide">Descrição da imagem (visão IA)</p>
+                    <p className="paper-eyebrow text-info">Descrição da imagem (visão IA)</p>
                     {imageDescriptions.map((desc, i) => (
                       <p key={i} className="text-xs text-info break-words [overflow-wrap:anywhere]">{desc}</p>
                     ))}
@@ -309,19 +309,19 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
               <div className="grid gap-3 sm:grid-cols-2">
                 {normalized.essence && (
                   <div className="border border-edge p-3">
-                    <p className="text-xs text-muted uppercase tracking-wide">Essência</p>
+                    <p className="paper-eyebrow">Essência</p>
                     <p className="text-sm mt-1.5 break-words [overflow-wrap:anywhere]">{normalized.essence}</p>
                   </div>
                 )}
                 {normalized.mainClue && (
                   <div className="border border-edge p-3">
-                    <p className="text-xs text-muted uppercase tracking-wide">Pista principal</p>
+                    <p className="paper-eyebrow">Pista principal</p>
                     <p className="text-sm mt-1.5 break-words [overflow-wrap:anywhere]">{normalized.mainClue}</p>
                   </div>
                 )}
                 {normalized.killerDetail && (
                   <div className="border border-edge p-3">
-                    <p className="text-xs text-muted uppercase tracking-wide">Detalhe decisivo</p>
+                    <p className="paper-eyebrow">Detalhe decisivo</p>
                     <p className="text-sm mt-1.5 break-words [overflow-wrap:anywhere]">{normalized.killerDetail}</p>
                   </div>
                 )}
@@ -329,7 +329,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
 
               {countErrorsByLevelFilled(normalized) > 0 && (
                 <div className="border border-edge p-3">
-                  <p className="text-xs text-muted uppercase tracking-wide">Erros prováveis por nível</p>
+                  <p className="paper-eyebrow">Erros prováveis por nível</p>
                   <div className="text-sm mt-1.5 space-y-1.5 break-words [overflow-wrap:anywhere]">
                     {normalized.errorsByLevel.beginner && <p><strong>Iniciante:</strong> {normalized.errorsByLevel.beginner}</p>}
                     {normalized.errorsByLevel.intermediate && <p><strong>Intermediário:</strong> {normalized.errorsByLevel.intermediate}</p>}
@@ -342,7 +342,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
 
               {normalized.reasoningLadder.length > 0 && (
                 <div className="border border-edge p-3">
-                  <p className="text-xs text-muted uppercase tracking-wide">Linha de raciocínio</p>
+                  <p className="paper-eyebrow">Linha de raciocínio</p>
                   <ol className="mt-1.5 list-decimal space-y-1.5 pl-4 text-sm break-words [overflow-wrap:anywhere]">
                     {normalized.reasoningLadder.map((item, idx) => (
                       <li key={`${result.question_id}_ladder_${idx}`}>{item}</li>
@@ -353,7 +353,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
 
               {(normalized.microDrillPrompt || normalized.microDrillAnswer) && (
                 <div className="border border-edge p-3 space-y-1.5">
-                  <p className="text-xs text-muted uppercase tracking-wide">Micro treino</p>
+                  <p className="paper-eyebrow">Micro treino</p>
                   {normalized.microDrillPrompt && (
                     <p className="text-sm break-words [overflow-wrap:anywhere]"><strong>Pergunta:</strong> {normalized.microDrillPrompt}</p>
                   )}
@@ -365,7 +365,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
 
               {atomicityQuality.atomicityOk === false && (
                 <div className="border border-warning bg-surfaceMuted p-3">
-                  <p className="text-xs text-warning uppercase tracking-wide">Granularidade atômica reduzida</p>
+                  <p className="paper-eyebrow text-warning">Granularidade atômica reduzida</p>
                   <p className="mt-1.5 text-sm text-warning break-words [overflow-wrap:anywhere]">
                     {atomicityQuality.message || "A análise ficou com granularidade atômica abaixo do ideal."}
                   </p>
@@ -378,7 +378,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
 
               {normalized.atomicEssentials.length > 0 && (
                 <div className="border border-edge p-3">
-                  <p className="text-xs text-muted uppercase tracking-wide">Conhecimentos atômicos essenciais</p>
+                  <p className="paper-eyebrow">Conhecimentos atômicos essenciais</p>
                   <div className="mt-1.5 space-y-2">
                     {normalized.atomicEssentials.map((item) => (
                       <div key={`${result.question_id}_${item.conceptId}`} className="border border-edge p-3">
@@ -466,7 +466,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                         const matchOriginLabel = existingMatchOriginLabel(draft.match_origin);
                         const sourceOriginLabel = existingSourceOriginLabel(draft.source_origin);
                         return (
-                          <div key={bodyKey} className="border border-edge bg-ink/5 p-2">
+                          <div key={bodyKey} className="rounded-control border border-edge bg-ink/5 p-2">
                             <div className="mb-1 flex flex-wrap items-center gap-1">
                               {matchOriginLabel && (
                                 <span className="text-xs px-2 py-0.5 border border-warning text-warning whitespace-nowrap">

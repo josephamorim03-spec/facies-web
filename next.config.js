@@ -69,6 +69,13 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // Link curto por prova. O canal deste produto e o print colado em
+      // grupo, e link longo com parametro morre no boca a boca (§11.3).
+      // Permanente: preserva o valor do link quando o dominio migrar.
+      //
+      // Precisa estar em `PUBLIC_EXACT` do `proxy.ts` tambem -- o proxy roda
+      // antes deste redirect e mandaria `/enamed` para o login.
+      { source: "/enamed", destination: "/prova/enamed", permanent: true },
       { source: "/praticar", destination: "/banco", permanent: true },
       { source: "/banco-de-questoes", destination: "/banco", permanent: true },
       {
@@ -101,7 +108,11 @@ const nextConfig = {
       // A tela deixou de se chamar Kros e virou Rota: o rotulo do menu e a URL
       // precisam dizer a mesma coisa. `Kros` continua sendo a marca do motor
       // (status bar, boot), so nao e mais nome de destino.
-      { source: "/kros", destination: "/rota", permanent: true },
+      // A aba Rota morreu com a pergunta de tempo e energia que a justificava.
+      // Quem tem o endereço salvo cai no Hoje, que é onde a decisão passou a
+      // morar — inteira, e já dimensionada.
+      { source: "/kros", destination: "/hoje", permanent: true },
+      { source: "/rota", destination: "/hoje", permanent: true },
     ];
   },
 };

@@ -102,11 +102,16 @@ export function CadernoRegistroPanel({
                 aria-pressed={selected}
                 style={{
                   borderColor: areaColor,
-                  color: hasSelection && !selected ? "var(--color-muted)" : areaColor,
-                  opacity: hasSelection && !selected ? 0.66 : 1,
+                  backgroundColor: selected
+                    ? `color-mix(in srgb, ${areaColor} 12%, var(--color-surface))`
+                    : undefined,
                 }}
-                className={`min-h-[2.25rem] min-w-14 border bg-surface px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[color,opacity] duration-150 hover:opacity-100 ${
-                  selected ? "chrome-sunken" : "chrome-raised"
+                className={`min-h-[2.25rem] min-w-14 rounded-control border bg-surface px-2 py-1.5 text-center text-xs leading-none transition-[background-color,color] duration-150 hover:text-ink active:translate-y-px ${
+                  selected
+                    ? "font-semibold text-ink"
+                    : hasSelection
+                      ? "font-medium text-muted"
+                      : "font-medium text-ink"
                 }`}
               >
                 {a}
@@ -127,14 +132,14 @@ export function CadernoRegistroPanel({
             onFocus={() => onShowThemeSuggestionsChange(true)}
           />
           {themeSuggestions.length > 0 && showThemeSuggestions && (
-            <div className="absolute left-0 right-0 mt-0.5 border border-edge bg-paper z-10 max-h-36 overflow-y-auto ">
+            <div className="absolute left-0 right-0 mt-0.5 rounded-control border border-edge bg-paper z-10 max-h-36 overflow-y-auto ">
               {themeSuggestions.map((s) => (
                 <button
                   key={s}
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { onThemeSuggestionSelect(s); onShowThemeSuggestionsChange(false); }}
-                  className="w-full text-left px-2 py-1 text-xs hover:bg-amber-tint"
+                  className="w-full text-left px-2 py-1 text-xs hover:bg-[var(--wash-selecao)]"
                 >
                   {s}
                 </button>
@@ -198,7 +203,7 @@ export function CadernoRegistroPanel({
         {/* Weight */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <label className="text-xs text-muted uppercase tracking-wide">Peso</label>
+            <label className="paper-eyebrow">Peso</label>
             <span
               className="border bg-surface px-1.5 py-0.5 text-xs font-semibold tabular-nums"
               style={{ borderColor: weightBadgeColor(weight), color: weightBadgeColor(weight) }}
@@ -231,7 +236,7 @@ export function CadernoRegistroPanel({
         {showAdvanced && (
           <div className="space-y-3 border-t border-edge pt-3">
             <div className="space-y-1">
-              <label className="text-xs text-muted uppercase tracking-wide">ID da questão</label>
+              <label className="paper-eyebrow">ID da questão</label>
               <input
                 type="text"
                 className="w-full border border-edge px-2 py-1 text-sm bg-paper"
@@ -241,7 +246,7 @@ export function CadernoRegistroPanel({
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted uppercase tracking-wide">Links externos</label>
+              <label className="paper-eyebrow">Links externos</label>
               <textarea
                 rows={2}
                 className="w-full border border-edge px-2 py-1 text-sm bg-paper"
@@ -252,7 +257,7 @@ export function CadernoRegistroPanel({
             </div>
             {/* Custom file input - hides browser "nenhum selecionado" */}
             <div className="space-y-1">
-              <p className="text-xs text-muted uppercase tracking-wide">
+              <p className="paper-eyebrow">
                 Anexo <span className="normal-case font-normal">(PDF ou imagem · max {MAX_FILE_MB} MB por arquivo)</span>
               </p>
               <div className="flex items-center gap-2">

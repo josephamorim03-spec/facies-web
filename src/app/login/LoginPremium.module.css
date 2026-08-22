@@ -10,9 +10,14 @@
  * era honesto, mas não era o que o mockup aprovado propunha: o login SENDO a
  * tela de autoteste, com barra de título, verificações e prompt de comando.
  *
- * Esta é a terceira: o layout inteiro vive na janela (`chrome-window`, no
- * `globals.css`), e o que sobra aqui é só o que a janela não sabe — largura,
- * centralização e o alinhamento da marca.
+ * A terceira foi a janela de autoteste — barra de título, verificações,
+ * prompt de comando — construída para o mockup do terminal.
+ *
+ * Esta é a quarta, e ela volta ao painel sóbrio da segunda por um motivo que a
+ * segunda não tinha: a Fácies não tem janela, tem superfície. O §11.1 pede de
+ * `/entrar` uma tela não indexável com a marca e o acesso, e nada além. O que
+ * sobra aqui é só o que `paper-surface` não sabe — largura, centralização e o
+ * alinhamento da marca.
  */
 
 .screen {
@@ -32,9 +37,9 @@
   padding: 2rem 1rem;
 }
 
-/* A janela. `chrome-window` traz borda, superfície e a sombra dura; aqui fica
-   só a medida — larga o bastante para as réguas do autoteste terem curso, e
-   estreita o bastante para o formulário não se espalhar. */
+/* A superfície. `paper-surface` traz borda, fundo e raio do sistema; aqui
+   fica só a medida — larga o bastante para o formulário respirar e estreita o
+   bastante para ele não se espalhar. */
 .composition {
   width: min(100%, 34rem);
 }
@@ -43,15 +48,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.accessLine {
-  color: var(--color-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  line-height: 1.5rem;
 }
 
 @media (max-width: 640px) {

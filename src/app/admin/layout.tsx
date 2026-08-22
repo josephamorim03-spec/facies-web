@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               );
             })}
           </nav>
-          <span className="ml-auto hidden text-xs font-medium uppercase tracking-wide text-muted sm:inline">
+          <span className="paper-eyebrow ml-auto hidden sm:inline">
             Admin
           </span>
         </div>

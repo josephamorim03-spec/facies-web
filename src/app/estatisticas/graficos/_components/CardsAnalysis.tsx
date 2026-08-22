@@ -1,6 +1,6 @@
 "use client";
 
-import { AREA_BG_CLASS, AREA_TEXT_CLASS } from "@/lib/areaColors";
+import { AREA_BG_CLASS } from "@/lib/areaColors";
 import { Meter } from "@/components/ui/Meter";
 import type { GraficosState } from "../_hooks/useGraficosData";
 
@@ -25,26 +25,26 @@ export function CardsAnalysis({ state }: Props) {
           <div className="grid grid-cols-3 divide-x divide-edge py-1 text-center">
             <div className="px-2">
               <p className="text-xl font-semibold tabular-nums">{turboAreaStats.total_reviews}</p>
-              <p className="text-nano text-muted">revisões</p>
+              <p className="text-micro text-muted">revisões</p>
             </div>
             <div className="px-2">
               <p className="text-xl font-semibold tabular-nums">{turboAreaStats.total_notes}</p>
-              <p className="text-nano text-muted">cards</p>
+              <p className="text-micro text-muted">cards</p>
             </div>
             <div className="px-2">
               <p className="text-xl font-semibold tabular-nums">
                 {Math.round((turboAreaStats.total_correct / turboAreaStats.total_reviews) * 100)}%
               </p>
-              <p className="text-nano text-muted">acerto</p>
+              <p className="text-micro text-muted">acerto</p>
             </div>
           </div>
-          <p className="text-nano text-muted">Barra: volume · Rótulo: acerto</p>
+          <p className="text-micro text-muted">Barra: volume · Rótulo: acerto</p>
           <div className="space-y-2">
             {cardAnalysisRows.map((item) => (
               <Meter
                 key={item.area}
                 label={item.area}
-                labelClassName={`w-8 font-semibold ${AREA_TEXT_CLASS[item.area] ?? "text-ink"}`}
+                labelClassName="w-8 font-semibold text-ink"
                 pct={item.volumePct}
                 fillClassName={AREA_BG_CLASS[item.area] ?? "bg-edge"}
                 value={`${item.reviewsTotal} rev.${item.accuracyPct !== null ? ` · ${item.accuracyPct}%` : ""}`}

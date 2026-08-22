@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { ContaSection } from "./_components/ContaSection";
-import { Bell, Calendar as CalendarClock, Calendar2 as CalendarPlus, Check, Goal, Notes as Layers3, Repeat, Save, Target, Trash as Trash2 } from "pixelarticons/react";
+import { Bell, Calendar as CalendarClock, CalendarDays as CalendarPlus, Check, Goal, NotepadText as Layers3, Repeat, Save, Target, Trash2 as Trash2 } from "lucide-react";
 
 import {
   createEvent,
@@ -351,7 +351,7 @@ export default function PreferenciasPage() {
                 </label>
                 <label className="block">
                   <span className="text-sm font-semibold text-ink">Trabalho 12h</span>
-                  <div className="mt-2 flex min-h-11 items-center border border-edge bg-surface px-3">
+                  <div className="mt-2 flex min-h-11 items-center rounded-control border border-edge bg-surface px-3">
                     <input
                       type="text"
                       inputMode="numeric"
@@ -386,7 +386,7 @@ export default function PreferenciasPage() {
               </div>
             </div>
 
-            <div className="space-y-4 border border-edge bg-surface p-4">
+            <div className="space-y-4 rounded-surface border border-edge bg-surface p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-ink">Adicionar compromisso</p>
@@ -487,7 +487,7 @@ export default function PreferenciasPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Recorrentes</p>
+                  <p className="paper-eyebrow">Recorrentes</p>
                   {routineEvents.length ? (
                     <ul className="mt-2 divide-y divide-edge">
                       {routineEvents.map((event) => (
@@ -512,7 +512,7 @@ export default function PreferenciasPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Pontuais</p>
+                  <p className="paper-eyebrow">Pontuais</p>
                   {upcomingPunctualEvents.length ? (
                     <ul className="mt-2 divide-y divide-edge">
                       {upcomingPunctualEvents.map((event) => (
@@ -610,14 +610,14 @@ export default function PreferenciasPage() {
                 patchLocal({ calendar_recommendations_enabled: checked })
               }
               label="Recomendações no calendário"
-              description="Sugira Kros, provas e novos temas nos espaços adequados, sem agendar automaticamente."
+              description="Sugira sessões, provas e novos temas nos espaços adequados, sem agendar automaticamente."
             />
           </div>
           <fieldset className="mt-5">
             <legend className="text-sm font-semibold text-ink">
               Feedback padrão após o resultado
             </legend>
-            <div className="mt-3 grid grid-cols-2 gap-1 border border-edge bg-paper p-1">
+            <div className="mt-3 grid grid-cols-2 gap-1 rounded-control border border-edge bg-paper p-1">
               {(
                 [
                   ["guided_choice", "Escolher por questão"],
@@ -659,7 +659,7 @@ export default function PreferenciasPage() {
               No fim, com a sessão inteira fresca e antes de qualquer gabarito, mede o quanto você
               sabe que sabe. A cada questão é outro ritmo: registra a dúvida no calor dela.
             </p>
-            <div className="mt-3 grid grid-cols-2 gap-1 border border-edge bg-paper p-1">
+            <div className="mt-3 grid grid-cols-2 gap-1 rounded-control border border-edge bg-paper p-1">
               {(
                 [
                   ["post_session", "No fim da sessão"],

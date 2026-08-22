@@ -84,7 +84,7 @@ export function useInstallPrompt(): UseInstallPromptReturn {
       setShowIosTooltip(false);
       if (typeof navigator.share === "function") {
         try {
-          await navigator.share({ url: window.location.href, title: "KrosMed" });
+          await navigator.share({ url: window.location.href, title: "Fácies" });
         } catch {
           // If share fails/cancels, keep explicit fallback guidance visible.
           setShowIosTooltip(true);

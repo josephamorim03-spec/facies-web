@@ -30,7 +30,7 @@ export function GuidanceNote({ children, area, eyebrow, tone = "neutral", classN
   return (
     <div className={`border-l-2 ${borderClass} pl-3 ${className}`}>
       {eyebrow ? (
-        <p className={`mb-0.5 text-nano font-semibold uppercase tracking-[0.12em] ${TONE_TEXT[tone]}`}>
+        <p className={`paper-eyebrow mb-0.5 ${TONE_TEXT[tone]}`}>
           {eyebrow}
         </p>
       ) : null}

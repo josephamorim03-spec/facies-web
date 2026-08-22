@@ -5,7 +5,7 @@ import {
   type OperationalTurboOverview,
   type OperationalTurboReviewChange,
 } from "@/lib/api";
-import { AREA_BG_CLASS, AREA_TEXT_CLASS } from "@/lib/areaColors";
+import { AREA_BG_CLASS } from "@/lib/areaColors";
 import { Area } from "../../_lib/cadernoShared";
 
 function fmtTime(ms: number): string {
@@ -76,15 +76,15 @@ export function TurboPerformanceReport({
   if (totalCards === 0) {
     return (
       <div className="flex items-center justify-center" style={{ minHeight: "calc(100svh - 3rem)" }}>
-        <p className="border border-edge bg-surface p-4 text-center text-sm text-muted ">Nenhum card no ponto de revisão neste momento</p>
+        <p className="rounded-surface border border-edge bg-surface p-4 text-center text-sm text-muted ">Nenhum card no ponto de revisão neste momento</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-4" data-testid="turbo-performance-report">
-      <div className="space-y-3 border border-edge bg-surface p-4 ">
-        <p className="text-xs text-muted uppercase tracking-widest">Desempenho</p>
+      <div className="space-y-3 rounded-surface border border-edge bg-surface p-4 ">
+        <p className="paper-eyebrow">Desempenho</p>
         <div className="flex items-end gap-8">
           <div>
             <p className="text-4xl leading-none text-ink tabular-nums">{totalCards}</p>
@@ -118,8 +118,8 @@ export function TurboPerformanceReport({
       </div>
 
       {reviewChanges.length > 0 && (
-        <div className="space-y-3 border border-edge bg-surface p-4 ">
-          <p className="text-xs text-muted uppercase tracking-widest">O que mudou</p>
+        <div className="space-y-3 rounded-surface border border-edge bg-surface p-4 ">
+          <p className="paper-eyebrow">O que mudou</p>
           <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
             <span className="text-muted">Saíram da fila</span>
             <span className="text-success font-semibold">{movedOutNow} cards</span>
@@ -140,7 +140,7 @@ export function TurboPerformanceReport({
             <div className="space-y-1">
               {Object.entries(reviewChangesByArea).map(([area, count]) => (
                 <div key={area} className="flex items-center justify-between text-xs">
-                  <span className={`font-semibold ${AREA_TEXT_CLASS[area as Area] ?? "text-muted"}`}>{area}</span>
+                  <span className="font-semibold text-ink">{area}</span>
                   <span className="text-muted">{count} ajustados</span>
                 </div>
               ))}
@@ -150,13 +150,13 @@ export function TurboPerformanceReport({
       )}
 
       {Object.keys(areaStats).length > 0 && (
-        <div className="space-y-2 border border-edge bg-surface p-4 ">
-          <p className="text-xs text-muted uppercase tracking-widest">Por área</p>
+        <div className="space-y-2 rounded-surface border border-edge bg-surface p-4 ">
+          <p className="paper-eyebrow">Por área</p>
           {Object.entries(areaStats).map(([area, stat]) => {
             const pct = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0;
             return (
               <div key={area} className="flex items-center gap-2">
-                <span className={`text-xs font-semibold w-6 shrink-0 ${AREA_TEXT_CLASS[area as Area] ?? "text-muted"}`}>{area}</span>
+                <span className="text-xs font-semibold w-6 shrink-0 text-ink">{area}</span>
                 <div className="h-1.5 flex-1 overflow-hidden bg-edge">
                   <div className={`h-full ${AREA_BG_CLASS[area as Area] ?? "bg-edge"}`} style={{ width: `${pct}%` }} />
                 </div>
@@ -184,7 +184,7 @@ export function TurboPerformanceReport({
             type="button"
             onClick={onStartRepeatAction}
             disabled={turboLoading || isActionLocked}
-            className="border border-edge bg-surface px-3 py-2 text-xs hover:border-primary hover:text-ink disabled:opacity-50"
+            className="rounded-control border border-edge bg-surface px-3 py-2 text-xs hover:border-primary hover:text-ink disabled:opacity-50"
           >
             Repetir sessão
           </button>

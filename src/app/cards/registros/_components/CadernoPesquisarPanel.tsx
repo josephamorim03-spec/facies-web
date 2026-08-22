@@ -96,11 +96,16 @@ export function CadernoPesquisarPanel({
                   aria-pressed={selected}
                   style={{
                     borderColor: areaColor,
-                    color: hasSelection && !selected ? "var(--color-muted)" : areaColor,
-                    opacity: hasSelection && !selected ? 0.66 : 1,
+                    backgroundColor: selected
+                      ? `color-mix(in srgb, ${areaColor} 12%, var(--color-surface))`
+                      : undefined,
                   }}
-                  className={`min-h-[2.25rem] min-w-14 border bg-surface px-2 py-1.5 text-center text-xs font-semibold leading-none transition-[color,opacity] duration-150 hover:opacity-100 ${
-                    selected ? "chrome-sunken" : "chrome-raised"
+                  className={`min-h-[2.25rem] min-w-14 rounded-control border bg-surface px-2 py-1.5 text-center text-xs leading-none transition-[background-color,color] duration-150 hover:text-ink active:translate-y-px ${
+                    selected
+                      ? "font-semibold text-ink"
+                      : hasSelection
+                        ? "font-medium text-muted"
+                        : "font-medium text-ink"
                   }`}
                 >
                   {a}
@@ -115,13 +120,13 @@ export function CadernoPesquisarPanel({
             ref={searchInputRef}
             id="caderno-search-theme"
             type="text"
-            className="w-full border border-edge bg-paper px-3 py-2 text-sm"
+            className="w-full rounded-control border border-edge bg-paper px-3 py-2 text-sm"
             placeholder="Buscar por tema"
             value={filterTheme}
             onChange={(e) => onFilterThemeChange(e.target.value)}
           />
 
-          <p className="text-xs text-muted uppercase tracking-[0.12em] text-center">ORDENAR POR</p>
+          <p className="paper-eyebrow text-center">ORDENAR POR</p>
 
           {/* Tempo + Peso sort - lado a lado */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -142,7 +147,7 @@ export function CadernoPesquisarPanel({
           <div className="space-y-4 border-t border-edge pt-4">
             {/* Origem */}
             <div className="space-y-1">
-              <p className="text-xs text-muted uppercase tracking-widest">Origem</p>
+              <p className="paper-eyebrow">Origem</p>
               <div className="flex gap-1 flex-wrap">
                 {([["", "Todas"], ["question", "Questão"], ["reading", "Leitura"]] as [string, string][]).map(([v, l]) => (
                   <button
@@ -163,7 +168,7 @@ export function CadernoPesquisarPanel({
             {/* Resultado - só aparece se origem = questão */}
             {filterSourceType === "question" && (
               <div className="space-y-1">
-                <p className="text-xs text-muted uppercase tracking-widest">Resultado</p>
+                <p className="paper-eyebrow">Resultado</p>
                 <div className="flex gap-1 flex-wrap">
                   {([["", "Todos"], ["incorrect", "Erro"], ["correct", "Acerto"]] as [string, string][]).map(([v, l]) => (
                     <button
@@ -182,7 +187,7 @@ export function CadernoPesquisarPanel({
             {/* Peso mínimo com slider */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted uppercase tracking-widest">Peso a partir de</p>
+                <p className="paper-eyebrow">Peso a partir de</p>
                 <span
                   className="border bg-surface px-1 py-0.5 text-xs font-semibold tabular-nums"
                   style={{ borderColor: weightBadgeColor(filterWeightMin), color: weightBadgeColor(filterWeightMin) }}
@@ -205,11 +210,11 @@ export function CadernoPesquisarPanel({
 
             {/* Data de / até - Limpar único abaixo */}
             <div className="space-y-2 w-full max-w-full overflow-x-hidden">
-              <p className="text-xs text-muted uppercase tracking-widest">Período</p>
+              <p className="paper-eyebrow">Período</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 w-full max-w-full items-start">
                 <div className="space-y-1 w-full min-w-0">
                   <p className="text-xs text-muted">De</p>
-                  <div className="overflow-hidden border border-edge bg-paper focus-within:border-primary">
+                  <div className="overflow-hidden rounded-control border border-edge bg-paper focus-within:border-primary">
                     <input
                       type="date"
                       className="block w-full border-0 bg-transparent px-3 py-2 text-sm outline-none"
@@ -220,7 +225,7 @@ export function CadernoPesquisarPanel({
                 </div>
                 <div className="space-y-1 w-full min-w-0">
                   <p className="text-xs text-muted">Até</p>
-                  <div className="overflow-hidden border border-edge bg-paper focus-within:border-primary">
+                  <div className="overflow-hidden rounded-control border border-edge bg-paper focus-within:border-primary">
                     <input
                       type="date"
                       className="block w-full border-0 bg-transparent px-3 py-2 text-sm outline-none"

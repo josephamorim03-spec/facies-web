@@ -4,7 +4,7 @@ export default function CadernoLoading() {
   return (
     <div className="space-y-5">
       <div className="flex justify-center">
-        <div className="flex gap-2 border border-edge bg-surface p-1">
+        <div className="flex gap-2 rounded-control border border-edge bg-surface p-1">
           <Skeleton className="h-9 w-24 " />
           <Skeleton className="h-9 w-24 " />
         </div>

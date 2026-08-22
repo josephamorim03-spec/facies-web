@@ -611,7 +611,7 @@ export default function QuestionsManager() {
     "border border-edge bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-edge";
 
   return (
-    <section className="space-y-5 border border-edge bg-surface p-6 ">
+    <section className="space-y-5 rounded-surface border border-edge bg-surface p-6 ">
       <div>
         <h2 className="text-2xl font-semibold text-ink">Questões</h2>
         <p className="mt-1 text-sm text-ink">
@@ -849,7 +849,7 @@ export default function QuestionsManager() {
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border border-edge bg-surface px-4 py-3 text-sm text-ink">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-surface border border-edge bg-surface px-4 py-3 text-sm text-ink">
         <span>
           {missingTopicPageItems.length} sem tópico · {missingDnaPageItems.length} sem DNA nesta página
         </span>
@@ -903,7 +903,7 @@ export default function QuestionsManager() {
       {/* Tabela */}
       <div className="overflow-x-auto border border-edge">
         <table className="w-full text-left text-sm">
-          <thead className="bg-surface text-xs uppercase tracking-wide text-muted">
+          <thead className="paper-eyebrow bg-surface">
             <tr>
               <th className="px-4 py-3">
                 <input
@@ -1048,7 +1048,7 @@ export default function QuestionsManager() {
       {detail && edit && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-paper p-4" onClick={closeEditor}>
           <div
-            className="my-8 w-full max-w-3xl border border-edge bg-surface p-6 shadow-overlay"
+            className="my-8 w-full max-w-3xl rounded-surface border border-edge bg-surface p-6 shadow-overlay"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
@@ -1105,7 +1105,7 @@ export default function QuestionsManager() {
                 <div className="mt-4 border border-info bg-surfaceMuted px-4 py-3 text-sm text-info/40/30">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide opacity-70">Leitura editorial da IA</p>
+                      <p className="paper-eyebrow opacity-70">Leitura editorial da IA</p>
                       <p className="mt-1 font-semibold">{summary.route_label} · confiança {summary.confidence_label}</p>
                     </div>
                     <span className="bg-surface px-2 py-1 text-xs font-semibold">
@@ -1132,8 +1132,8 @@ export default function QuestionsManager() {
             })()}
 
             {detail.question_fingerprint && (
-              <div className="mt-4 flex flex-wrap items-center gap-1.5 border border-edge bg-surface px-4 py-3">
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted">DNA</span>
+              <div className="mt-4 flex flex-wrap items-center gap-1.5 rounded-surface border border-edge bg-surface px-4 py-3">
+                <span className="paper-eyebrow">DNA</span>
                 {dnaChips(detail.question_fingerprint.tags).map((label) => (
                   <span key={label} className="bg-surfaceMuted px-2 py-0.5 text-micro font-medium text-accent/40">{label}</span>
                 ))}
@@ -1146,7 +1146,7 @@ export default function QuestionsManager() {
             {detail.question_quality_inspection && (
               <div className="mt-4 border border-info bg-surfaceMuted px-4 py-3 text-sm text-info/40/30">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Inspeção editorial</span>
+                  <span className="paper-eyebrow opacity-70">Inspeção editorial</span>
                   <span className="bg-surface px-2 py-0.5 text-xs font-semibold">
                     {detail.question_quality_inspection.inspection_status}
                   </span>
@@ -1167,15 +1167,15 @@ export default function QuestionsManager() {
             )}
 
             {detail.repair_draft?.summary && (
-              <div className="mt-4 border border-edge bg-surface px-4 py-3 text-sm text-ink">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Repair draft</p>
+              <div className="mt-4 rounded-surface border border-edge bg-surface px-4 py-3 text-sm text-ink">
+                <p className="paper-eyebrow">Repair draft</p>
                 <p className="mt-1">{detail.repair_draft.summary}</p>
               </div>
             )}
 
             {detail.similar_questions.length > 0 && (
               <div className="mt-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Questões similares (DNA)</p>
+                <p className="paper-eyebrow">Questões similares (DNA)</p>
                 <ul className="mt-1 space-y-1">
                   {detail.similar_questions.map((s) => (
                     <li key={s.id} className="border border-edge px-3 py-2 text-sm text-ink">
@@ -1205,7 +1205,7 @@ export default function QuestionsManager() {
               </div>
             )}
 
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-muted">Enunciado</label>
+            <label className="paper-eyebrow mt-4 block">Enunciado</label>
             <textarea
               value={edit.stem}
               onChange={(e) => setEdit({ ...edit, stem: e.target.value })}
@@ -1227,7 +1227,7 @@ export default function QuestionsManager() {
 
             {/* Diagnóstico de erro por distrator — só para alternativas erradas (≠ gabarito). */}
             <div className="mt-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+              <p className="paper-eyebrow">
                 Diagnóstico de erro por alternativa
               </p>
               <div className="mt-1 grid gap-2">
@@ -1254,26 +1254,26 @@ export default function QuestionsManager() {
 
             <div className="mt-4 flex flex-wrap items-end gap-4">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-muted">Gabarito</label>
+                <label className="paper-eyebrow block">Gabarito</label>
                 <select value={edit.answer} onChange={(e) => setEdit({ ...edit, answer: e.target.value })} className={`${inputCls} mt-1`}>
                   <option value="">—</option>
                   {OPTION_LETTERS.map((l) => <option key={l} value={l}>{l}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-muted">Nível pretendido</label>
+                <label className="paper-eyebrow block">Nível pretendido</label>
                 <select value={edit.intendedLevel} onChange={(e) => setEdit({ ...edit, intendedLevel: e.target.value as EditState["intendedLevel"] })} className={`${inputCls} mt-1`}>
                   <option value="">Não definido</option><option value="easy">Fácil</option><option value="medium">Médio</option><option value="hard">Difícil</option><option value="very_hard">Muito difícil</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-muted">Demanda cognitiva</label>
+                <label className="paper-eyebrow block">Demanda cognitiva</label>
                 <select value={edit.cognitiveDemand} onChange={(e) => setEdit({ ...edit, cognitiveDemand: e.target.value as EditState["cognitiveDemand"] })} className={`${inputCls} mt-1`}>
                   <option value="">Não definida</option><option value="recall">Recordação</option><option value="application">Aplicação</option><option value="analysis">Análise</option>
                 </select>
               </div>
               <div className="relative min-w-[14rem] flex-1">
-                <label className="block text-xs font-semibold uppercase tracking-wide text-muted">Tópico primário</label>
+                <label className="paper-eyebrow block">Tópico primário</label>
                 <input
                   value={nodeQuery || edit.primaryNodeLabel}
                   onChange={(e) => { setNodeQuery(e.target.value); }}
@@ -1281,7 +1281,7 @@ export default function QuestionsManager() {
                   className={`${inputCls} mt-1 w-full`}
                 />
                 {nodeResults.length > 0 && (
-                  <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto border border-edge bg-surface shadow-overlay">
+                  <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-control border border-edge bg-surface shadow-overlay">
                     {nodeResults.map((node) => (
                       <button
                         key={node.id}
@@ -1302,12 +1302,12 @@ export default function QuestionsManager() {
             </div>
 
             <div className="mt-4">
-              <label className="block text-xs font-semibold uppercase tracking-wide text-muted">Justificativa do nível · origem humana</label>
+              <label className="paper-eyebrow block">Justificativa do nível · origem humana</label>
               <textarea value={edit.difficultyRationale} onChange={(e) => setEdit({ ...edit, difficultyRationale: e.target.value })} rows={2} placeholder="Que evidência do item sustenta este nível?" className={`${inputCls} mt-1 w-full`} />
             </div>
 
             <div className="mt-4">
-              <label className="block text-xs font-semibold uppercase tracking-wide text-muted">
+              <label className="paper-eyebrow block">
                 Objetivo âncora
               </label>
               <p className="mt-0.5 text-micro text-muted">
@@ -1328,13 +1328,13 @@ export default function QuestionsManager() {
                       setObjectiveQuery("");
                       setObjectiveResults([]);
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 border border-edge px-1.5 py-0.5 text-nano font-semibold text-muted hover:bg-surface"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 border border-edge px-1.5 py-0.5 text-micro font-semibold text-muted hover:bg-surface"
                   >
                     limpar
                   </button>
                 ) : null}
                 {objectiveResults.length > 0 && (
-                  <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto border border-edge bg-surface shadow-overlay">
+                  <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-control border border-edge bg-surface shadow-overlay">
                     {objectiveResults.map((node) => (
                       <button
                         key={node.id}
@@ -1356,7 +1356,7 @@ export default function QuestionsManager() {
 
             {detail.nodes.some((n) => !n.is_primary) && (
               <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Tópicos secundários</p>
+                <p className="paper-eyebrow">Tópicos secundários</p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {detail.nodes.filter((n) => !n.is_primary).map((n) => (
                     <span
@@ -1375,7 +1375,7 @@ export default function QuestionsManager() {
 
             {detail.image_refs.length > 0 && (
               <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Imagens</p>
+                <p className="paper-eyebrow">Imagens</p>
                 <QuestionImageRefs
                   imageRefs={detail.image_refs}
                   className="mt-2 grid gap-2 md:grid-cols-3"

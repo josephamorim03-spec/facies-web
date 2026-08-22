@@ -24,7 +24,7 @@ export function Card({
   children,
 }: Props) {
   return (
-    <Tag className={`overflow-hidden border border-edge bg-surface ${className}`}>
+    <Tag className={`overflow-hidden rounded-control border border-edge bg-surface ${className}`}>
       {header != null && (
         <div className="flex items-center justify-between gap-2 border-b border-edge px-4 py-3">{header}</div>
       )}

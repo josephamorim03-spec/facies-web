@@ -84,7 +84,7 @@ export default function ImportWorkspace({
 
   return (
     <div className="space-y-5">
-      <section className="border border-edge bg-surface p-5">
+      <section className="rounded-surface border border-edge bg-surface p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-ink">Ingestao</h2>
@@ -98,15 +98,15 @@ export default function ImportWorkspace({
               type="file"
               accept="application/pdf"
               onChange={(event) => onFileChange(event.target.files?.[0] ?? null)}
-              className="border border-edge bg-surface px-3 py-2 text-sm"
+              className="rounded-control border border-edge bg-surface px-3 py-2 text-sm"
             />
           </label>
           {file ? <div className="text-xs text-muted">{file.name}</div> : null}
 
-          <div className="grid gap-4 border border-edge bg-surface p-4/60">
+          <div className="grid gap-4 rounded-surface border border-edge bg-surface p-4/60">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <p className="text-xs font-semibold uppercase text-muted">Prova</p>
+                <p className="paper-eyebrow">Prova</p>
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
                   {SOURCE_METADATA_FIELDS.map(([key, label]) => (
                     <label key={key} className="grid gap-1 text-sm font-medium text-ink">
@@ -114,14 +114,14 @@ export default function ImportWorkspace({
                       <input
                         value={fieldText(metadataDraft[key])}
                         onChange={(event) => onMetadataFieldChange(key, event.target.value)}
-                        className="border border-edge bg-surface px-3 py-2 text-sm"
+                        className="rounded-control border border-edge bg-surface px-3 py-2 text-sm"
                       />
                     </label>
                   ))}
                 </div>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase text-muted">Conteudo</p>
+                <p className="paper-eyebrow">Conteudo</p>
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
                   {CONTENT_METADATA_FIELDS.map(([key, label]) => (
                     <label key={key} className="grid gap-1 text-sm font-medium text-ink">
@@ -130,7 +130,7 @@ export default function ImportWorkspace({
                         <select
                           value={fieldText(metadataDraft[key])}
                           onChange={(event) => onMetadataFieldChange(key, event.target.value)}
-                          className="border border-edge bg-surface px-3 py-2 text-sm"
+                          className="rounded-control border border-edge bg-surface px-3 py-2 text-sm"
                         >
                           <option value="">IA</option>
                           {GRANDE_AREA_OPTIONS.map((area) => (
@@ -141,7 +141,7 @@ export default function ImportWorkspace({
                         <input
                           value={fieldText(metadataDraft[key])}
                           onChange={(event) => onMetadataFieldChange(key, event.target.value)}
-                          className="border border-edge bg-surface px-3 py-2 text-sm"
+                          className="rounded-control border border-edge bg-surface px-3 py-2 text-sm"
                         />
                       )}
                     </label>
@@ -150,12 +150,12 @@ export default function ImportWorkspace({
               </div>
             </div>
 
-            <details className="border border-edge bg-surface p-3">
+            <details className="rounded-surface border border-edge bg-surface p-3">
               <summary className="cursor-pointer text-sm font-semibold text-ink">JSON</summary>
               <textarea
                 value={metadataText}
                 onChange={(event) => onMetadataTextChange(event.target.value)}
-                className="mt-3 min-h-[160px] w-full border border-edge bg-surface px-3 py-3 text-xs leading-6 text-ink"
+                className="mt-3 min-h-[160px] w-full rounded-control border border-edge bg-surface px-3 py-3 text-xs leading-6 text-ink"
               />
             </details>
           </div>
@@ -180,7 +180,7 @@ export default function ImportWorkspace({
         </div>
 
         {previewSummary ? (
-          <div className="mt-5 space-y-4 border border-edge bg-surface p-4/70">
+          <div className="mt-5 space-y-4 rounded-surface border border-edge bg-surface p-4/70">
             <div>
               <h3 className="text-lg font-semibold text-ink">Preview</h3>
               <p className="mt-1 text-sm text-ink">Diagnostico antes de importar.</p>
@@ -198,10 +198,10 @@ export default function ImportWorkspace({
               <div className={`border p-4 text-sm ${readinessTone}`}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <div className="text-xs font-semibold uppercase opacity-70">Prontidao editorial</div>
+                    <div className="paper-eyebrow opacity-70">Prontidao editorial</div>
                     <div className="mt-1 text-lg font-semibold">{readiness.label}</div>
                   </div>
-                  <div className="text-xs font-semibold uppercase opacity-70">risco {readiness.risk}</div>
+                  <div className="paper-eyebrow opacity-70">risco {readiness.risk}</div>
                 </div>
                 <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
                   <span>{readiness.publishable_questions}/{readiness.total_questions} publicaveis</span>
@@ -241,7 +241,7 @@ export default function ImportWorkspace({
             )}
 
             {questions.length ? (
-              <div className="overflow-hidden border border-edge bg-surface">
+              <div className="overflow-hidden rounded-control border border-edge bg-surface">
                 <div className="border-b border-edge px-4 py-3">
                   <h4 className="text-sm font-semibold text-ink">Overrides por questão</h4>
                 </div>
@@ -286,7 +286,7 @@ export default function ImportWorkspace({
                                       return next;
                                     })
                                   }
-                                  className="mt-1 border border-edge px-1.5 py-0.5 text-nano font-semibold text-muted hover:bg-surface"
+                                  className="mt-1 border border-edge px-1.5 py-0.5 text-micro font-semibold text-muted hover:bg-surface"
                                 >
                                   {isOpen ? "ocultar" : "ver"}
                                 </button>
@@ -296,8 +296,8 @@ export default function ImportWorkspace({
                               </td>
                               <td className="px-3 py-3 text-muted">
                                 <div>{extractionSource}</div>
-                                {ocrUsed ? <div className="mt-1 border border-info bg-surfaceMuted px-2 py-0.5 text-nano font-semibold text-info/40/30">OCR</div> : null}
-                                {diagnostic?.requires_image ? <div className="mt-1 text-nano text-warning">imagem</div> : null}
+                                {ocrUsed ? <div className="mt-1 border border-info bg-surfaceMuted px-2 py-0.5 text-micro font-semibold text-info/40/30">OCR</div> : null}
+                                {diagnostic?.requires_image ? <div className="mt-1 text-micro text-warning">imagem</div> : null}
                               </td>
                               <td className="max-w-[220px] px-3 py-3 text-muted">
                                 {blockers ? <div className="font-semibold text-danger">{blockers}</div> : null}
@@ -322,7 +322,7 @@ export default function ImportWorkspace({
                                             if (event.target.value) onQuestionOverrideChange(number, key, event.target.value);
                                             else onQuestionOverrideRemove(number, key);
                                           }}
-                                          className="w-full border border-edge bg-surface px-2 py-1.5 text-xs"
+                                          className="w-full rounded-control border border-edge bg-surface px-2 py-1.5 text-xs"
                                         >
                                           <option value="">{fieldText(resolved[key]) || "herda"}</option>
                                           {GRANDE_AREA_OPTIONS.map((area) => (
@@ -334,14 +334,14 @@ export default function ImportWorkspace({
                                           value={hasOverride ? fieldText(override[key]) : ""}
                                           placeholder={fieldText(resolved[key]) || "herda"}
                                           onChange={(event) => onQuestionOverrideChange(number, key, event.target.value)}
-                                          className="w-full border border-edge bg-surface px-2 py-1.5 text-xs"
+                                          className="w-full rounded-control border border-edge bg-surface px-2 py-1.5 text-xs"
                                         />
                                       )}
                                       {hasOverride ? (
                                         <button
                                           type="button"
                                           onClick={() => onQuestionOverrideRemove(number, key)}
-                                          className="border border-edge px-1.5 py-1 text-nano font-semibold text-muted hover:bg-surface"
+                                          className="border border-edge px-1.5 py-1 text-micro font-semibold text-muted hover:bg-surface"
                                         >
                                           herdar
                                         </button>
@@ -401,7 +401,7 @@ export default function ImportWorkspace({
         ) : null}
       </section>
 
-      <section className="border border-edge bg-surface p-5">
+      <section className="rounded-surface border border-edge bg-surface p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-ink">Historico</h2>

@@ -109,7 +109,7 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       getReviewAgenda(token),
       listScheduleSuggestions(token),
     );
-  } else if (intent === "rota" || intent === "bank") {
+  } else if (intent === "bank") {
     requests.push(
       browseQuestionBankTopics(token, { limit: 40, include_empty: false }),
       previewQuestionBankAvailability(token),

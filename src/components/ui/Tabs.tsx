@@ -14,7 +14,7 @@ import { Tabs as TabsPrimitive } from "radix-ui";
  */
 
 const SCROLLER =
-  "flex max-w-full items-center gap-1 overflow-x-auto border border-edge bg-surface p-1 " +
+  "flex max-w-full items-center gap-1 overflow-x-auto rounded-control border border-edge bg-surface p-1 " +
   "snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 
 /** Base de um gatilho de aba. O estado ativo vem de `data-state` (Radix) ou `aria-current` (link). */
@@ -33,7 +33,7 @@ export function TabCount({ children }: { children: ReactNode }) {
   return (
     <span
       className={
-        "bg-surfaceMuted px-1.5 py-0.5 text-nano font-semibold tabular-nums text-muted " +
+        "rounded-control bg-surfaceMuted px-1.5 py-0.5 text-micro font-semibold tabular-nums text-muted " +
         "group-data-[state=active]:bg-primaryInk/25 group-data-[state=active]:text-primaryInk " +
         "group-aria-[current=page]:bg-primaryInk/25 group-aria-[current=page]:text-primaryInk"
       }

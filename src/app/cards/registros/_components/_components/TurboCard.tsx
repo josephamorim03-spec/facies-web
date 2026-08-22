@@ -114,7 +114,7 @@ export function TurboCard({
   // Timer display
   const timerPct = estimatedMs > 0 ? elapsed / estimatedMs : 0;
   const timerColor = isTurboMode
-    ? timerPct >= 1.2 ? "text-danger chrome-urgent"
+    ? timerPct >= 1.2 ? "text-danger font-semibold"
       : timerPct >= 1.0 ? "text-danger"
       : timerPct >= 0.8 ? "text-warning"
       : "text-muted"
@@ -142,7 +142,7 @@ export function TurboCard({
       {/* Top controls */}
       <div className="flex items-center justify-between gap-3">
         {lastChangeLabel ? (
-          <span className="border border-edge bg-surface px-2 py-1 text-nano leading-none text-muted">
+          <span className="rounded-control border border-edge bg-surface px-2 py-1 text-micro leading-none text-muted">
             ↩ {lastChangeLabel}
           </span>
         ) : <span className="min-h-[1rem] block" />}
@@ -199,14 +199,14 @@ export function TurboCard({
         >
           <div className="flex items-start justify-between gap-2">
             <span
-              className="inline-flex max-w-[min(100%,18rem)] items-center truncate border bg-surface px-2.5 py-1 text-xs font-semibold uppercase tracking-widest"
-              style={{ borderColor: areaColor, color: areaColor }}
+              className="paper-eyebrow inline-flex max-w-[min(100%,18rem)] items-center truncate border bg-surface px-2.5 py-1 text-ink"
+              style={{ borderColor: areaColor }}
             >
               {turboNote.area} - {turboNote.theme}
             </span>
             <div className="flex items-center gap-1">
               {(turboNote.turbo_incorrect ?? 0) >= 4 && (
-                <span className="border border-danger/40 px-1.5 py-0.5 text-pico text-danger">difícil</span>
+                <span className="border border-danger/40 px-1.5 py-0.5 text-micro text-danger">difícil</span>
               )}
               {isStandbyRound && (
                 <span className="border border-edge px-1.5 py-0.5 text-xs text-muted">pendente</span>
@@ -214,7 +214,7 @@ export function TurboCard({
             </div>
           </div>
           <p className="mt-2">
-            <span className="inline-flex max-w-full items-center gap-1 border border-edge bg-surface px-2 py-1 text-nano leading-none text-muted">
+            <span className="inline-flex max-w-full items-center gap-1 rounded-control border border-edge bg-surface px-2 py-1 text-micro leading-none text-muted">
               {currentWhyLabel}
             </span>
           </p>
@@ -262,12 +262,12 @@ export function TurboCard({
                 data-prevent-reveal-tap="true"
                 onClick={(e) => { e.stopPropagation(); cardState.triggerRevealFlip(); }}
                 className="min-h-[40px] min-w-[120px] border bg-surface px-4 py-2 text-xs font-semibold transition hover:bg-surfaceMuted active:scale-[0.98]"
-                style={{ borderColor: areaColor, color: areaColor }}
+                style={{ borderColor: areaColor }}
               >
                 Revelar
               </button>
               {cardState.mobileGestureHint && (
-                <p className="mt-2 text-nano text-muted" aria-hidden="true">
+                <p className="mt-2 text-micro text-muted" aria-hidden="true">
                   ↑ {cardState.mobileGestureHint}
                 </p>
               )}
@@ -284,7 +284,7 @@ export function TurboCard({
           type="button"
           disabled={!canSwipePrev || turboLoading || isActionLocked}
           onClick={() => void onNavigatePrevAction()}
-          className="inline-flex min-h-10 items-center border border-edge bg-surface px-3 text-xs font-semibold text-muted transition-colors enabled:hover:text-ink disabled:opacity-40"
+          className="inline-flex min-h-10 items-center rounded-control border border-edge bg-surface px-3 text-xs font-semibold text-muted transition-colors enabled:hover:text-ink disabled:opacity-40"
         >
           ← Anterior
         </button>
@@ -292,7 +292,7 @@ export function TurboCard({
           type="button"
           disabled={!canSwipeNext || turboLoading || isActionLocked}
           onClick={() => void onNavigateNextAction()}
-          className="inline-flex min-h-10 items-center border border-edge bg-surface px-3 text-xs font-semibold text-muted transition-colors enabled:hover:text-ink disabled:opacity-40"
+          className="inline-flex min-h-10 items-center rounded-control border border-edge bg-surface px-3 text-xs font-semibold text-muted transition-colors enabled:hover:text-ink disabled:opacity-40"
         >
           Próximo →
         </button>
@@ -310,9 +310,9 @@ export function TurboCard({
           >
             <span>Errei</span>
             {cardState.intervalPreview ? (
-              <span className={`text-nano ${RATING_EFFECT_TONE.again}`}>{formatIntervalLabel(cardState.intervalPreview.again)}</span>
+              <span className={`text-micro ${RATING_EFFECT_TONE.again}`}>{formatIntervalLabel(cardState.intervalPreview.again)}</span>
             ) : null}
-            {cardState.isDesktopHotkeys ? <span className="text-pico text-danger hidden md:block">[1]</span> : null}
+            {cardState.isDesktopHotkeys ? <span className="text-micro text-danger hidden md:block">[1]</span> : null}
           </button>
           <button
             type="button"
@@ -323,9 +323,9 @@ export function TurboCard({
           >
             <span>Difícil</span>
             {cardState.intervalPreview ? (
-              <span className={`text-nano ${RATING_EFFECT_TONE.hard}`}>{formatIntervalLabel(cardState.intervalPreview.hard)}</span>
+              <span className={`text-micro ${RATING_EFFECT_TONE.hard}`}>{formatIntervalLabel(cardState.intervalPreview.hard)}</span>
             ) : null}
-            {cardState.isDesktopHotkeys ? <span className="text-pico text-warning hidden md:block">[2]</span> : null}
+            {cardState.isDesktopHotkeys ? <span className="text-micro text-warning hidden md:block">[2]</span> : null}
           </button>
           <button
             type="button"
@@ -336,9 +336,9 @@ export function TurboCard({
           >
             <span>Bom</span>
             {cardState.intervalPreview ? (
-              <span className={`text-nano ${RATING_EFFECT_TONE.good}`}>{formatIntervalLabel(cardState.intervalPreview.good)}</span>
+              <span className={`text-micro ${RATING_EFFECT_TONE.good}`}>{formatIntervalLabel(cardState.intervalPreview.good)}</span>
             ) : null}
-            {cardState.isDesktopHotkeys ? <span className="text-pico text-success hidden md:block">[3]</span> : null}
+            {cardState.isDesktopHotkeys ? <span className="text-micro text-success hidden md:block">[3]</span> : null}
           </button>
           <button
             type="button"
@@ -349,9 +349,9 @@ export function TurboCard({
           >
             <span>Fácil</span>
             {cardState.intervalPreview ? (
-              <span className={`text-nano ${RATING_EFFECT_TONE.easy}`}>{formatIntervalLabel(cardState.intervalPreview.easy)}</span>
+              <span className={`text-micro ${RATING_EFFECT_TONE.easy}`}>{formatIntervalLabel(cardState.intervalPreview.easy)}</span>
             ) : null}
-            {cardState.isDesktopHotkeys ? <span className="text-pico text-info hidden md:block">[4]</span> : null}
+            {cardState.isDesktopHotkeys ? <span className="text-micro text-info hidden md:block">[4]</span> : null}
           </button>
         </div>
       )}

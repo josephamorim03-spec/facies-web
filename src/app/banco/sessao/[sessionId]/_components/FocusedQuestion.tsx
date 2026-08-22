@@ -156,29 +156,47 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+/**
+ * O cronômetro segue o MODO quando o aluno não escolheu.
+ *
+ * O §8.3 põe a tela de questão em densidade mínima e tira o relógio do modo
+ * tutor: ali não há prova para caber nele, e um contador subindo transforma
+ * leitura em corrida.
+ *
+ * Só que `parsed.timerVisible !== false` colapsava "nunca escolhi" com "escolhi
+ * ligado" — os dois davam `true` — e sem essa distinção o modo não tem como ter
+ * default próprio. Agora ausência segue o modo e escolha explícita vence sempre.
+ */
+function timerPadrao(mode: QuestionPresentationMode): boolean {
+  return mode === "exam";
+}
+
 function readPreferences(defaultPresentationMode: QuestionPresentationMode): Required<Preferences> {
   if (typeof window === "undefined") {
     return {
       presentationMode: defaultPresentationMode,
-      timerVisible: true,
+      timerVisible: timerPadrao(defaultPresentationMode),
       sourceVisible: false,
       autoReveal: false,
     };
   }
   try {
     const parsed = JSON.parse(window.localStorage.getItem(PREF_KEY) ?? "{}") as Preferences;
-    return {
-      presentationMode: parsed.presentationMode === "exam" || parsed.presentationMode === "learning"
+    const mode =
+      parsed.presentationMode === "exam" || parsed.presentationMode === "learning"
         ? parsed.presentationMode
-        : defaultPresentationMode,
-      timerVisible: parsed.timerVisible !== false,
+        : defaultPresentationMode;
+    return {
+      presentationMode: mode,
+      timerVisible:
+        typeof parsed.timerVisible === "boolean" ? parsed.timerVisible : timerPadrao(mode),
       sourceVisible: typeof parsed.sourceVisible === "boolean" ? parsed.sourceVisible : false,
       autoReveal: parsed.autoReveal === true,
     };
   } catch {
     return {
       presentationMode: defaultPresentationMode,
-      timerVisible: true,
+      timerVisible: timerPadrao(defaultPresentationMode),
       sourceVisible: false,
       autoReveal: false,
     };
@@ -284,7 +302,7 @@ function highlightsForTarget(
 
 function highlightClass(kind: QuestionTextHighlightKind) {
   return kind === "pegadinha"
-    ? "border-b border-warning/60 bg-[var(--amber-tint)] px-0.5"
+    ? "border-b border-warning/60 bg-[var(--wash-atencao)] px-0.5"
     : "border-b border-ink/40 bg-surfaceMuted px-0.5";
 }
 
@@ -743,7 +761,7 @@ export default function FocusedQuestion({
             <div className="flex min-w-0 items-center gap-2">
               {!focusActive && (
                 <>
-                  <span className="shrink-0 text-nano font-semibold uppercase tracking-[0.14em] text-muted">
+                  <span className="paper-eyebrow shrink-0">
                     {sessionKindLabel}
                   </span>
                   <span className="hidden truncate text-sm font-semibold text-ink md:inline">
@@ -767,7 +785,7 @@ export default function FocusedQuestion({
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             {isTrainingFlow ? (
-              <div className="hidden border border-edge bg-surface p-0.5 md:inline-flex">
+              <div className="hidden rounded-control border border-edge bg-surface p-0.5 md:inline-flex">
                 {(["learning", "exam"] as const).map((mode) => (
                   <button
                     key={mode}
@@ -784,7 +802,7 @@ export default function FocusedQuestion({
                 ))}
               </div>
             ) : (
-              <span className="hidden border border-edge bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink md:inline">
+              <span className="hidden rounded-control border border-edge bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink md:inline">
                 {sessionKindLabel}
               </span>
             )}
@@ -844,7 +862,7 @@ export default function FocusedQuestion({
             <div className={cx("flex flex-wrap items-center gap-3", prefs.sourceVisible ? "justify-between" : "justify-end")}>
               {prefs.sourceVisible && <p className="text-xs text-muted">{formatSourceLabel(item.source)}</p>}
               {item.selected_option && (
-                <span className="border border-edge bg-paper px-2.5 py-1 text-xs font-semibold text-muted">
+                <span className="rounded-control border border-edge bg-paper px-2.5 py-1 text-xs font-semibold text-muted">
                   Resposta {item.selected_option}
                 </span>
               )}
@@ -915,7 +933,7 @@ export default function FocusedQuestion({
                     {renderHighlightedText(item.alternatives[option], highlightsForTarget(item, "alternative", option), openHighlightToolbar)}
                   </span>
                   {(isCorrect || isWrong) && (
-                    <span className="hidden shrink-0 border border-current px-2 py-0.5 text-nano font-semibold sm:inline">
+                    <span className="hidden shrink-0 border border-current px-2 py-0.5 text-micro font-semibold sm:inline">
                       {isCorrect ? "Gabarito" : "Sua escolha"}
                     </span>
                   )}
@@ -942,24 +960,24 @@ export default function FocusedQuestion({
         </section>
 
         {item.answered && presentationMode === "exam" && canUseLearningFeedback && (
-          <section className="mt-5 border border-edge bg-surface px-4 py-3 text-sm text-muted">
+          <section className="mt-5 rounded-surface border border-edge bg-surface px-4 py-3 text-sm text-muted">
             Feedback oculto no modo Prova.
           </section>
         )}
 
         {canUsePostAnswerActions && (
-          <section className="mt-5 border border-edge bg-surface p-4">
+          <section className="mt-5 rounded-surface border border-edge bg-surface p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className={cx("text-xs font-semibold uppercase tracking-[0.14em]", item.is_correct ? "text-success" : "text-danger")}>
+                <p className={cx("paper-eyebrow", item.is_correct ? "text-success" : "text-danger")}>
                   {item.is_correct ? "Correto" : "Incorreto"}
                 </p>
                 <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight text-ink">
                   {item.is_correct ? "Caminho validado" : "Erro capturado"}
                 </h2>
               </div>
-              <div className="border border-edge bg-paper px-3 py-2 text-center">
-                <p className="text-nano font-semibold uppercase tracking-[0.12em] text-muted">Gabarito</p>
+              <div className="rounded-control border border-edge bg-paper px-3 py-2 text-center">
+                <p className="paper-eyebrow">Gabarito</p>
                 <p className="text-2xl font-bold text-ink">{item.correct_answer}</p>
               </div>
             </div>
@@ -1091,14 +1109,14 @@ export default function FocusedQuestion({
             </div>
 
             {item.needs_correction && ruleComposerOpen && (
-              <div className="mt-4 border border-edge bg-paper p-3">
+              <div className="mt-4 rounded-control border border-edge bg-paper p-3">
                 {guidedReviewError && !guidedReview && (
                   <p className="mb-2 text-xs text-muted">Não foi possível carregar a revisão guiada. Você ainda pode salvar uma regra.</p>
                 )}
                 {guidedReview?.eligible && guidedReview.checkpoints.length > 0 && (
                   <div className="mb-3 space-y-2">
                     {guidedReview.checkpoints.map((checkpoint) => (
-                      <div key={checkpoint.checkpoint_key} className="border border-edge bg-surface p-3">
+                      <div key={checkpoint.checkpoint_key} className="rounded-control border border-edge bg-surface p-3">
                         <p className="text-sm font-semibold text-ink">{checkpoint.prompt}</p>
                         {checkpoint.micro_question && <p className="mt-1 text-xs text-muted">{checkpoint.micro_question}</p>}
                         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -1122,7 +1140,7 @@ export default function FocusedQuestion({
                     ))}
                   </div>
                 )}
-                <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-muted" htmlFor="focused-question-correction">
+                <label className="paper-eyebrow block" htmlFor="focused-question-correction">
                   Regra para não errar de novo
                 </label>
                 <textarea
@@ -1167,8 +1185,8 @@ export default function FocusedQuestion({
         {canUsePostAnswerActions && learningPackagePanel}
 
         {reportOpen && !reportDone && canShowLearning && item.answered && (
-          <section className="mt-5 border border-edge bg-surface p-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Qual o problema?</p>
+          <section className="mt-5 rounded-surface border border-edge bg-surface p-3">
+            <p className="paper-eyebrow mb-2">Qual o problema?</p>
             <div className="mb-2 flex flex-wrap gap-1.5">
               {REPORT_OPTIONS.map((type) => (
                 <button
@@ -1281,7 +1299,7 @@ export default function FocusedQuestion({
             }}
           />
           <div
-            className="fixed z-50 w-auto max-w-none border border-edge bg-paper p-2 shadow-overlay md:max-w-sm md:-translate-x-1/2 md:-translate-y-full"
+            className="fixed z-50 w-auto max-w-none rounded-control border border-edge bg-paper p-2 shadow-overlay md:max-w-sm md:-translate-x-1/2 md:-translate-y-full"
             style={highlightToolbarStyle}
             role="toolbar"
             aria-label="Grifar texto"
@@ -1336,7 +1354,7 @@ export default function FocusedQuestion({
           <aside className="fixed bottom-0 right-0 z-40 max-h-[86svh] w-full overflow-y-auto border-t border-edge bg-paper p-4 shadow-overlay md:bottom-0 md:top-0 md:max-h-none md:max-w-md md:border-l md:border-t-0">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Preferências</p>
+                <p className="paper-eyebrow">Preferências</p>
                 <h2 className="mt-1 font-serif text-xl font-semibold text-ink">Resolver sem ruido</h2>
               </div>
               <button type="button" onClick={closeSettings} className="border border-edge px-2 py-1 text-xs text-muted hover:text-ink">
@@ -1345,9 +1363,9 @@ export default function FocusedQuestion({
             </div>
             <div className="mt-4 space-y-3 text-sm">
               {isTrainingFlow && (
-                <div className="border border-edge bg-surface p-3">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Modo visual</p>
-                  <div className="inline-flex border border-edge bg-paper p-0.5">
+                <div className="rounded-control border border-edge bg-surface p-3">
+                  <p className="paper-eyebrow mb-2">Modo visual</p>
+                  <div className="inline-flex rounded-control border border-edge bg-paper p-0.5">
                     {(["learning", "exam"] as const).map((mode) => (
                       <button
                         key={mode}
@@ -1366,8 +1384,8 @@ export default function FocusedQuestion({
                 </div>
               )}
               {!isTrainingFlow && feedbackRevealPolicy && onFeedbackRevealPolicyChange && (
-                <div className="border border-edge bg-surface p-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+                <div className="rounded-control border border-edge bg-surface p-3">
+                  <p className="paper-eyebrow">
                     Feedback ao finalizar
                   </p>
                   <p className="mt-1 text-xs leading-relaxed text-muted">
@@ -1407,8 +1425,8 @@ export default function FocusedQuestion({
                   )}
                 </div>
               )}
-              <div className="border border-edge bg-surface p-3">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Fonte</p>
+              <div className="rounded-control border border-edge bg-surface p-3">
+                <p className="paper-eyebrow mb-2">Fonte</p>
                 <FontScaleControl
                   increase={fontScale.increase}
                   decrease={fontScale.decrease}
@@ -1416,20 +1434,20 @@ export default function FocusedQuestion({
                   canDecrease={fontScale.canDecrease}
                 />
               </div>
-              <label className="flex items-center justify-between gap-3 border border-edge bg-surface px-3 py-2">
+              <label className="flex items-center justify-between gap-3 rounded-control border border-edge bg-surface px-3 py-2">
                 <span>Timer</span>
                 <input type="checkbox" checked={prefs.timerVisible} onChange={(e) => updatePrefs({ timerVisible: e.target.checked })} className="h-4 w-4 accent-ink" />
               </label>
-              <label className="flex items-center justify-between gap-3 border border-edge bg-surface px-3 py-2">
+              <label className="flex items-center justify-between gap-3 rounded-control border border-edge bg-surface px-3 py-2">
                 <span>Fonte da questão</span>
                 <input type="checkbox" checked={prefs.sourceVisible} onChange={(e) => updatePrefs({ sourceVisible: e.target.checked })} className="h-4 w-4 accent-ink" />
               </label>
-              <label className="flex items-center justify-between gap-3 border border-edge bg-surface px-3 py-2">
+              <label className="flex items-center justify-between gap-3 rounded-control border border-edge bg-surface px-3 py-2">
                 <span>Revelar ao responder</span>
                 <input type="checkbox" checked={prefs.autoReveal} onChange={(e) => updatePrefs({ autoReveal: e.target.checked })} className="h-4 w-4 accent-ink" />
               </label>
-              <div className="border border-edge bg-surface p-3">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Atalhos</p>
+              <div className="rounded-control border border-edge bg-surface p-3">
+                <p className="paper-eyebrow mb-2">Atalhos</p>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted">
                   <span>A-E / 1-5</span><span>Responder</span>
                   <span>Enter</span><span>Revelar ou avancar</span>
@@ -1441,8 +1459,15 @@ export default function FocusedQuestion({
               </div>
               <button
                 type="button"
-                onClick={() => updatePrefs({ presentationMode: defaultPresentationMode, timerVisible: true, sourceVisible: false, autoReveal: false })}
-                className="w-full border border-edge bg-surface px-3 py-2 text-left text-muted hover:text-ink"
+                onClick={() =>
+                  updatePrefs({
+                    presentationMode: defaultPresentationMode,
+                    timerVisible: timerPadrao(defaultPresentationMode),
+                    sourceVisible: false,
+                    autoReveal: false,
+                  })
+                }
+                className="w-full rounded-control border border-edge bg-surface px-3 py-2 text-left text-muted hover:text-ink"
               >
                 Restaurar padrão
               </button>
@@ -1457,7 +1482,7 @@ export default function FocusedQuestion({
           <aside className="fixed bottom-0 right-0 top-auto z-40 max-h-[85svh] w-full overflow-y-auto border-t border-edge bg-paper p-4 shadow-overlay md:bottom-0 md:top-0 md:max-h-none md:max-w-md md:border-l md:border-t-0">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Contexto</p>
+                <p className="paper-eyebrow">Contexto</p>
                 <h2 className="mt-1 font-serif text-xl font-semibold text-ink">Por que esta questão?</h2>
               </div>
               <button type="button" onClick={closeWhy} className="border border-edge px-2 py-1 text-xs text-muted hover:text-ink">
@@ -1466,29 +1491,29 @@ export default function FocusedQuestion({
             </div>
             <div className="mt-4 space-y-3 text-sm">
               {primaryNode?.node_name && (
-                <div className="border border-edge bg-surface p-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Tema</p>
+                <div className="rounded-control border border-edge bg-surface p-3">
+                  <p className="paper-eyebrow">Tema</p>
                   <p className="mt-1 text-ink">{primaryNode.node_name}</p>
                 </div>
               )}
               {microLabel && (
-                <div className="border border-edge bg-surface p-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Microcompetencia</p>
+                <div className="rounded-control border border-edge bg-surface p-3">
+                  <p className="paper-eyebrow">Microcompetencia</p>
                   <p className="mt-1 text-ink">{microLabel}</p>
                 </div>
               )}
               {difficultyLabel(item.difficulty_estimate) && (
-                <div className="border border-edge bg-surface p-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Dificuldade</p>
+                <div className="rounded-control border border-edge bg-surface p-3">
+                  <p className="paper-eyebrow">Dificuldade</p>
                   <p className="mt-1 text-ink">{difficultyLabel(item.difficulty_estimate)}</p>
                 </div>
               )}
               {reasonChips.length > 0 && (
-                <div className="border border-edge bg-surface p-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Selecao</p>
+                <div className="rounded-control border border-edge bg-surface p-3">
+                  <p className="paper-eyebrow">Selecao</p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {reasonChips.map((reason) => (
-                      <span key={reason} className="border border-edge bg-paper px-2.5 py-1 text-xs text-muted">
+                      <span key={reason} className="rounded-control border border-edge bg-paper px-2.5 py-1 text-xs text-muted">
                         {reason}
                       </span>
                     ))}
@@ -1496,14 +1521,14 @@ export default function FocusedQuestion({
                 </div>
               )}
               {showFeedback && item.selected_option && item.distractor_diagnosis?.[item.selected_option] && (
-                <div className="border border-edge bg-surface p-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Armadilha</p>
+                <div className="rounded-control border border-edge bg-surface p-3">
+                  <p className="paper-eyebrow">Armadilha</p>
                   <p className="mt-1 text-ink">{item.distractor_diagnosis[item.selected_option]}</p>
                 </div>
               )}
               {showFeedback && item.distractor_diagnosis && Object.keys(item.distractor_diagnosis).length > 0 && (
-                <div className="border border-edge bg-surface p-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Distratores</p>
+                <div className="rounded-control border border-edge bg-surface p-3">
+                  <p className="paper-eyebrow">Distratores</p>
                   <div className="mt-2 space-y-2">
                     {Object.entries(item.distractor_diagnosis).map(([letter, text]) => (
                       <p key={letter} className="text-muted"><span className="font-semibold text-ink">{letter}:</span> {text}</p>

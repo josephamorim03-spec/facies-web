@@ -18,7 +18,7 @@ export default function CandidatesPanel({
   onOpenCuradoria,
 }: Props) {
   return (
-    <section className="border border-edge bg-surface p-5">
+    <section className="rounded-surface border border-edge bg-surface p-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-xl font-semibold text-ink">Questões extraídas</h2>
@@ -36,7 +36,7 @@ export default function CandidatesPanel({
             <select
               value={candidateStatus}
               onChange={(event) => onCandidateStatusChange(event.target.value)}
-              className="border border-edge bg-surface px-3 py-2 text-sm"
+              className="rounded-control border border-edge bg-surface px-3 py-2 text-sm"
             >
               <option value="">Todos</option>
               <option value="dedup_pending">dedup_pending</option>

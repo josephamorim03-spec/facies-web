@@ -16,8 +16,8 @@ export function ReportedItemsPanel({
   if (items.length === 0) return null;
 
   return (
-    <section className="border border-warning/50 bg-[var(--amber-tint)] p-4 ">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-warning">
+    <section className="border border-warning/50 bg-[var(--wash-atencao)] p-4 ">
+      <p className="paper-eyebrow text-warning">
         Questoes denunciadas
       </p>
       <div className="mt-3 grid gap-2">

@@ -124,7 +124,7 @@ export default function AdminAuditPage() {
             setActionFilter(e.target.value);
             setPage(0);
           }}
-          className="px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+          className="px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
         >
           <option value="">Todas as ações</option>
           <option value="key_created">Criação</option>

@@ -46,10 +46,22 @@ export const AREA_BG_CLASS: Record<DisplayArea, string> = {
   CG: "bg-area-cg", CM: "bg-area-cm", OU: "bg-area-ou",
 };
 
-export const AREA_TEXT_CLASS: Record<DisplayArea, string> = {
-  GO: "text-area-go", OB: "text-area-ob", PD: "text-area-ped", MP: "text-area-mp",
-  CG: "text-area-cg", CM: "text-area-cm", OU: "text-area-ou",
-};
+/*
+ * NAO existe AREA_TEXT_CLASS, e a ausencia e' deliberada.
+ *
+ * Cor de area e' MARCA, nunca texto: ponto, barra, faixa, celula — sempre ao
+ * lado de um rotulo em tinta. O rotulo carrega a informacao; a cor e' o atalho
+ * de leitura.
+ *
+ * O motivo e' medido. Texto exige 4.5:1, e nenhuma paleta segura para
+ * daltonismo entrega isso em sete tons sobre papel claro: a Okabe-Ito reprovou
+ * 29 dos 152 pares quando a sigla era escrita na cor da area. Como MARCA o
+ * minimo e' 3:1 (WCAG 1.4.11), e ai ela passa — com tres tons escurecidos, o que
+ * esta registrado em globals.css.
+ *
+ * Se voce precisa da sigla colorida, o que voce quer e' a barra colorida com a
+ * sigla em `text-ink` ao lado. E o padrao `.area-nome` do sistema.
+ */
 
 export const AREA_BORDER_CLASS: Record<DisplayArea, string> = {
   GO: "border-area-go", OB: "border-area-ob", PD: "border-area-ped", MP: "border-area-mp",

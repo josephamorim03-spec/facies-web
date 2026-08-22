@@ -379,10 +379,10 @@ export default function AiResolutionPanel() {
 
   return (
     <div className="space-y-6">
-      <section className="border border-edge bg-surface p-5 ">
+      <section className="rounded-surface border border-edge bg-surface p-5 ">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase text-muted">Resolução IA</p>
+            <p className="paper-eyebrow">Resolução IA</p>
             <h1 className="mt-1 text-2xl font-semibold text-ink">Central leiga de resolução de questões</h1>
             <p className="mt-2 max-w-3xl text-sm text-ink">
               Veja o que alunos pediram, cole lotes de IDs e envie para IA sem aprovar conteúdo médico automaticamente.
@@ -422,7 +422,7 @@ export default function AiResolutionPanel() {
 
       <section className="grid gap-3 xl:grid-cols-5">
         <div className="border border-danger bg-surfaceMuted p-4 text-danger ">
-          <div className="text-xs font-semibold uppercase opacity-70">1. Segurança médica</div>
+          <div className="paper-eyebrow opacity-70">1. Segurança médica</div>
           <div className="mt-1 text-lg font-semibold">Denúncias primeiro</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
             Questões denunciadas ficam fora da IA em lote até revisão humana.
@@ -436,7 +436,7 @@ export default function AiResolutionPanel() {
           </button>
         </div>
         <div className="border border-danger bg-surfaceMuted p-4 text-danger ">
-          <div className="text-xs font-semibold uppercase opacity-70">2. Importação quebrada</div>
+          <div className="paper-eyebrow opacity-70">2. Importação quebrada</div>
           <div className="mt-1 text-lg font-semibold">Corrigir estrutura</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
             Sem enunciado, sem gabarito, alternativa vazia, ordem A/C/B/D ou banca/ano no texto.
@@ -450,7 +450,7 @@ export default function AiResolutionPanel() {
           </button>
         </div>
         <div className="border border-info bg-surfaceMuted p-4 text-info ">
-          <div className="text-xs font-semibold uppercase opacity-70">3. Lote seguro</div>
+          <div className="paper-eyebrow opacity-70">3. Lote seguro</div>
           <div className="mt-1 text-lg font-semibold">Pode mandar para IA</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
             Sem denúncia, sem bloqueio, sem correção pronta e sem job rodando.
@@ -464,7 +464,7 @@ export default function AiResolutionPanel() {
           </button>
         </div>
         <div className="border border-warning bg-surfaceMuted p-4 text-warning ">
-          <div className="text-xs font-semibold uppercase opacity-70">4. Revisão humana</div>
+          <div className="paper-eyebrow opacity-70">4. Revisão humana</div>
           <div className="mt-1 text-lg font-semibold">Bloqueios editoriais</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
             Estrutura ruim, reports ou qualidade incerta devem virar fila humana.
@@ -478,7 +478,7 @@ export default function AiResolutionPanel() {
           </button>
         </div>
         <div className="border border-success bg-surfaceMuted p-4 text-success ">
-          <div className="text-xs font-semibold uppercase opacity-70">5. Valor editorial</div>
+          <div className="paper-eyebrow opacity-70">5. Valor editorial</div>
           <div className="mt-1 text-lg font-semibold">Prontas para gate/SQLite</div>
           <p className="mt-1 text-xs leading-5 opacity-80">
             IA rodada não aprova sozinha: daqui ainda passa por auditoria e gate médico.
@@ -495,7 +495,7 @@ export default function AiResolutionPanel() {
 
       <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
         <div className="space-y-5">
-          <div className="border border-edge bg-surface p-5 ">
+          <div className="rounded-surface border border-edge bg-surface p-5 ">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-sm font-semibold text-ink">Modo leigo: o que fazer agora</div>
@@ -552,7 +552,7 @@ export default function AiResolutionPanel() {
             </p>
           </div>
 
-          <div className="border border-edge bg-surface p-5 ">
+          <div className="rounded-surface border border-edge bg-surface p-5 ">
             <div className="text-sm font-semibold text-ink">Filtros prontos</div>
             <div className="mt-3 flex flex-wrap gap-2">
               {FILTERS.map(([value, label]) => (
@@ -574,7 +574,7 @@ export default function AiResolutionPanel() {
             </div>
           </div>
 
-          <div className="border border-edge bg-surface p-5 ">
+          <div className="rounded-surface border border-edge bg-surface p-5 ">
             <label className="text-sm font-semibold text-ink" htmlFor="ai-resolution-ids">
               Colar IDs de questões
             </label>
@@ -586,7 +586,7 @@ export default function AiResolutionPanel() {
               value={pastedIds}
               onChange={(event) => setPastedIds(event.target.value)}
               rows={7}
-              className="mt-3 w-full border border-edge bg-surface px-3 py-2 text-xs text-ink outline-none focus:border-edge"
+              className="mt-3 w-full rounded-control border border-edge bg-surface px-3 py-2 text-xs text-ink outline-none focus:border-edge"
               placeholder="question_id_1&#10;question_id_2"
             />
             <div className="mt-3 flex flex-wrap gap-2">
@@ -619,7 +619,7 @@ export default function AiResolutionPanel() {
             ) : null}
           </div>
 
-          <div className="border border-edge bg-surface p-5 ">
+          <div className="rounded-surface border border-edge bg-surface p-5 ">
             <div className="text-sm font-semibold text-ink">Ação em lote</div>
             <label className="mt-3 flex items-center gap-2 text-sm text-ink">
               <input
@@ -693,7 +693,7 @@ export default function AiResolutionPanel() {
           {detail ? <JsonPanel title={`Detalhes ${detail.id}`} value={detail} /> : null}
         </div>
 
-        <div className="border border-edge bg-surface ">
+        <div className="rounded-control border border-edge bg-surface ">
           <div className="flex items-center justify-between gap-3 border-b border-edge p-4">
             <div>
               <div className="text-sm font-semibold text-ink">Fila de resolução</div>
@@ -713,7 +713,7 @@ export default function AiResolutionPanel() {
           <div className="max-h-[760px] overflow-auto">
             {items.length ? (
               <table className="min-w-full divide-y divide-edge text-sm">
-                <thead className="sticky top-0 bg-surface text-left text-xs uppercase text-muted">
+                <thead className="paper-eyebrow sticky top-0 bg-surface text-left">
                   <tr>
                     <th className="px-3 py-3">Sel.</th>
                     <th className="px-3 py-3">Questão</th>
@@ -751,7 +751,7 @@ export default function AiResolutionPanel() {
                         ) : null}
                         {questionReports.length ? (
                           <div className="mt-2 space-y-1 border border-danger bg-surface p-2 text-micro text-danger/50/20">
-                            <div className="font-semibold uppercase tracking-wide">
+                            <div className="paper-eyebrow">
                               {questionReports.length} denuncia{questionReports.length === 1 ? "" : "s"} aberta{questionReports.length === 1 ? "" : "s"}
                             </div>
                             {questionReports.slice(0, 2).map((report) => (

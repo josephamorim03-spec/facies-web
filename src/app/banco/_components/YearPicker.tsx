@@ -77,7 +77,7 @@ export default function YearPicker({
   return (
     <div className="space-y-3 border-t border-edge pt-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Ano da prova</p>
+        <p className="paper-eyebrow">Ano da prova</p>
         <div className="flex items-center gap-3">
           {numericYears.length > 0 && (
             <button
@@ -141,7 +141,7 @@ export default function YearPicker({
                     if (!from) return;
                     selectRange(from, selMax ?? from);
                   }}
-                  className="min-h-[40px] border border-edge bg-paper px-2 py-1.5 text-sm text-ink"
+                  className="min-h-[40px] rounded-control border border-edge bg-paper px-2 py-1.5 text-sm text-ink"
                   aria-label="Ano inicial da faixa"
                 >
                   <option value="">—</option>
@@ -161,7 +161,7 @@ export default function YearPicker({
                     if (!to) return;
                     selectRange(selMin ?? to, to);
                   }}
-                  className="min-h-[40px] border border-edge bg-paper px-2 py-1.5 text-sm text-ink"
+                  className="min-h-[40px] rounded-control border border-edge bg-paper px-2 py-1.5 text-sm text-ink"
                   aria-label="Ano final da faixa"
                 >
                   <option value="">—</option>
@@ -192,7 +192,7 @@ export default function YearPicker({
                   aria-pressed={selected}
                 >
                   {year}
-                  <span className="ml-1 text-nano text-muted">{count}</span>
+                  <span className="ml-1 text-micro text-muted">{count}</span>
                 </button>
               );
             })}
@@ -206,7 +206,7 @@ export default function YearPicker({
                 title="Questões sem ano identificado na prova de origem"
               >
                 Sem ano
-                <span className="ml-1 text-nano text-muted">{noYearCount}</span>
+                <span className="ml-1 text-micro text-muted">{noYearCount}</span>
               </button>
             )}
           </div>

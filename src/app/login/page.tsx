@@ -10,8 +10,7 @@ import { useInstallPrompt } from "./_hooks/useInstallPrompt";
 import { LoginForm } from "./_components/LoginForm";
 import { GoogleSection } from "./_components/GoogleSection";
 import { InstallBanner } from "./_components/InstallBanner";
-import { KrosWordmark } from "@/components/KrosWordmark";
-import { BootSequence } from "./_components/BootSequence";
+import { FaciesWordmark } from "@/components/FaciesWordmark";
 import styles from "./LoginPremium.module.css";
 
 function safeInternalNext(value: string): string | null {
@@ -108,41 +107,32 @@ function LoginPageContent() {
   return (
     <main className={`${styles.screen} w-full text-ink`}>
       <div className={`${styles.shell}${installState !== "hidden" ? " pb-28 sm:pb-10" : ""}`}>
-        {/* A tela de acesso É a tela de POST.
-
-            O autoteste era um overlay que cobria o formulário e sumia em menos
-            de um segundo — rápido demais para ser lido, e no caminho de quem só
-            queria entrar. Como enquadramento ele faz o oposto: diz o que o
-            sistema é enquanto a pessoa está parada olhando, sem atrasar nada. */}
-        <section className={`chrome-window ${styles.composition}`}>
-          <div className="chrome-titlebar">
-            <span>KrosMed — Acesso</span>
-            <span aria-hidden="true">▪</span>
-          </div>
-
-          <div className="px-5 py-6 sm:px-7">
+        {/* A tela de acesso já encenou um computador ligando: barra de título,
+            lista de autoteste, barra de status. Era coerente com a identidade de
+            terminal e não sobrevive a esta — o que a lista dizia ("banco de
+            questões OK, motor adaptativo OK") a marca diz em duas palavras, e o
+            qualificador é obrigatório na primeira aparição de qualquer contexto
+            novo. */}
+        <section className={`paper-surface ${styles.composition}`}>
+          <div className="px-5 py-8 sm:px-7">
             <div className={styles.brandBlock}>
               <h1 className="leading-none">
-                <KrosWordmark />
+                <FaciesWordmark />
               </h1>
               <p className="mt-2 text-center font-serif text-sm leading-relaxed text-muted">
-                Sistema de treino para residência médica
+                Inteligência de prova para residência médica
               </p>
             </div>
 
-            <div className="mt-5">
-              <BootSequence />
-            </div>
-
             {isDevMode ? (
-              <p className={`${styles.accessLine} mt-3`}>Ambiente de desenvolvimento</p>
+              <p className="paper-eyebrow mt-3 text-center">Ambiente de desenvolvimento</p>
             ) : null}
 
-            <div className="mt-4 space-y-4">
+            <div className="mt-7 space-y-4">
               {sessionExpired && (
                 <div
                   role="alert"
-                  className="border border-warning bg-[var(--amber-tint)] px-4 py-3 text-center text-sm text-ink"
+                  className="rounded-surface border border-warning bg-[var(--wash-atencao)] px-4 py-3 text-center text-sm text-ink"
                 >
                   Sessão expirada. Entre novamente.
                 </div>
@@ -189,22 +179,14 @@ function LoginPageContent() {
               )}
             </div>
 
-            {/* Prompt de comando: decoração, e por isso `aria-hidden`. O leitor
-                de tela não deve anunciar "C dois pontos barra invertida KROS
-                maior que" entre o formulário e o fim da página. */}
-            <div
-              aria-hidden="true"
-              className="mt-6 flex items-center gap-1 border-t border-dotted border-edge pt-3 text-sm text-muted"
-            >
-              <span>{"C:\\KROS>"}</span>
-              <span className="chrome-cursor" />
-            </div>
-          </div>
-
-          <div className="chrome-statusbar">
-            <span>Aguardando acesso</span>
-            <span className="flex-1" />
-            <span>{isDevMode ? "Modo desenvolvimento" : "Entrada por Google"}</span>
+            {/* O prompt `C:\KROS>` com cursor piscando saiu daqui junto com
+                a identidade KROS/DOS: era decoracao de terminal, e decoracao
+                de terminal e' exatamente o que fazia a tela parecer feita
+                por dev e nao por medico. No lugar, a unica linha que quem
+                chega aqui precisa ler antes de entrar. */}
+            <p className="mt-6 border-t border-rule pt-3 text-sm text-muted">
+              A Fácies não promete aprovação e não vende conteúdo teórico.
+            </p>
           </div>
         </section>
       </div>

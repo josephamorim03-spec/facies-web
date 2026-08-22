@@ -22,7 +22,7 @@ export function GoogleSection({
       ) : (
         <button
           type="button"
-          className="mx-auto flex h-11 w-full max-w-[320px] items-center justify-center gap-2 border border-edge bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-surfaceMuted"
+          className="mx-auto flex h-11 w-full max-w-[320px] items-center justify-center gap-2 rounded-control border border-edge bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-surfaceMuted"
           onClick={() =>
             onGoogleError?.(
               "Configure NEXT_PUBLIC_GOOGLE_CLIENT_ID para habilitar o login com Google.",

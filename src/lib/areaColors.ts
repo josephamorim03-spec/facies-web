@@ -2,13 +2,11 @@ import {
   AREA_BG_CLASS as CANONICAL_AREA_BG_CLASS,
   AREA_BORDER_CLASS as CANONICAL_AREA_BORDER_CLASS,
   AREA_FULL_EXAM_VAR,
-  AREA_TEXT_CLASS as CANONICAL_AREA_TEXT_CLASS,
   AREA_VAR,
 } from "@/lib/areaIdentity";
 
 export const AREA_BG_CLASS: Record<string, string> = CANONICAL_AREA_BG_CLASS;
 export const AREA_BORDER_CLASS: Record<string, string> = CANONICAL_AREA_BORDER_CLASS;
-export const AREA_TEXT_CLASS: Record<string, string> = CANONICAL_AREA_TEXT_CLASS;
 export { AREA_FULL_EXAM_VAR, AREA_VAR };
 
 /**

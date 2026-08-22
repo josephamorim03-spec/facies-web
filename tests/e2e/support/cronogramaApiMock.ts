@@ -63,6 +63,7 @@ type DbState = {
     streak_reviews: number;
     streak_flashcards_seen: number;
     weekly_study_days: number;
+    weekly_protected_days: number;
     active_protection: boolean;
     protection_window_end: string | null;
   };
@@ -300,6 +301,7 @@ function createDb(): DbState {
       streak_reviews: 48,
       streak_flashcards_seen: 36,
       weekly_study_days: 5,
+      weekly_protected_days: 2,
       active_protection: false,
       protection_window_end: null,
     },

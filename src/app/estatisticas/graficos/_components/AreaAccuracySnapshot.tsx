@@ -1,6 +1,6 @@
 "use client";
 
-import { AREA_BG_CLASS, AREA_TEXT_CLASS } from "@/lib/areaColors";
+import { AREA_BG_CLASS } from "@/lib/areaColors";
 import { Meter } from "@/components/ui/Meter";
 import type { QuestionBankPerformance } from "@/lib/api";
 
@@ -28,7 +28,7 @@ export function AreaAccuracySnapshot({ performance }: Props) {
               <Meter
                 key={area.area}
                 label={code}
-                labelClassName={`w-9 font-semibold ${AREA_TEXT_CLASS[code] ?? "text-ink"}`}
+                labelClassName="w-9 font-semibold text-ink"
                 pct={pct}
                 fillClassName={AREA_BG_CLASS[code] ?? "bg-primary"}
                 value={`${pct}% · ${area.questions_seen} q`}

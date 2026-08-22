@@ -55,9 +55,9 @@ export function TurboLobby({
       {/* Button — absolutely centered in the full container */}
       <div className="flex flex-1 flex-col justify-center gap-5 py-6">
         {effectiveAvailableCount <= 0 ? (
-          <div className="border border-edge bg-surface p-5 text-center ">
+          <div className="rounded-surface border border-edge bg-surface p-5 text-center ">
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-widest text-muted">Tudo em dia</p>
+              <p className="paper-eyebrow">Tudo em dia</p>
               <p className="text-2xl text-ink">Nenhum card para revisar agora.</p>
             </div>
             {turboOverview?.total_eligible ? (
@@ -70,7 +70,7 @@ export function TurboLobby({
           <>
             <div className="space-y-2 text-center">
               <div className="surface-hero px-5 py-6">
-                <p className="text-xs uppercase tracking-widest text-muted">Cards para revisar agora</p>
+                <p className="paper-eyebrow">Cards para revisar agora</p>
                 <p className="mt-2 text-5xl leading-none text-ink">{effectiveAvailableCount}</p>
                 <p className="mt-2 text-sm text-muted">
                   {turboOverview?.estimated_minutes
@@ -81,8 +81,8 @@ export function TurboLobby({
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
-              <div className="border border-edge bg-surface p-3 ">
-                <p className="text-nano uppercase tracking-widest text-muted">Foco de agora</p>
+              <div className="rounded-control border border-edge bg-surface p-3 ">
+                <p className="paper-eyebrow">Foco de agora</p>
                 <div className="mt-2 space-y-1.5">
                   {topReasons.length > 0 ? topReasons.map((reason) => (
                     <div key={reason.reason} className="flex items-start justify-between gap-3 text-sm">
@@ -94,8 +94,8 @@ export function TurboLobby({
                   )}
                 </div>
               </div>
-              <div className="border border-edge bg-surface p-3 ">
-                <p className="text-nano uppercase tracking-widest text-muted">Distribuição por área</p>
+              <div className="rounded-control border border-edge bg-surface p-3 ">
+                <p className="paper-eyebrow">Distribuição por área</p>
                 <div className="mt-2 space-y-1.5">
                   {topAreas.length > 0 ? topAreas.map((item) => {
                     const areaTone = AREA_COLORS[item.area as Area] ?? AREA_COLORS.OU;
@@ -103,7 +103,7 @@ export function TurboLobby({
                       <div key={item.area} className="flex items-center justify-between gap-3 text-sm">
                         <div className="flex items-center gap-1.5">
                           <span className="inline-block w-2 h-2 shrink-0" style={{ backgroundColor: areaTone }} />
-                          <span className="font-semibold" style={{ color: areaTone }}>{item.area}</span>
+                          <span className="font-semibold text-ink">{item.area}</span>
                         </div>
                         <span className="text-xs tabular-nums text-muted">
                           {item.due_count} agora
@@ -120,15 +120,15 @@ export function TurboLobby({
 
             {previewCards.length > 0 && (
               <div className="space-y-2">
-                <p className="text-nano uppercase tracking-widest text-muted">Próximos cards</p>
+                <p className="paper-eyebrow">Próximos cards</p>
                 <div className="space-y-1.5">
                   {previewCards.map((card) => {
                     const cardAreaColor = AREA_COLORS[card.area as Area] ?? AREA_COLORS.OU;
                     return (
                       <div key={card.note_id} className="border border-edge border-l-4 bg-surface px-3 py-2 text-sm " style={{ borderLeftColor: cardAreaColor }}>
                         <div className="mb-1 flex items-center gap-1.5">
-                          <span className="text-pico font-semibold leading-none" style={{ color: cardAreaColor }}>{card.area}</span>
-                          <span className="border border-edge px-1.5 py-0.5 text-pico leading-none text-muted">{card.context.label}</span>
+                          <span className="text-micro font-semibold leading-none text-ink">{card.area}</span>
+                          <span className="border border-edge px-1.5 py-0.5 text-micro leading-none text-muted">{card.context.label}</span>
                         </div>
                         <p className="line-clamp-1 text-ink">{card.insight_question}</p>
                       </div>
@@ -164,12 +164,12 @@ export function TurboLobby({
       )}
 
       {effectiveAvailableCount > 0 && (
-        <div className="sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.6rem)] z-40 -mx-1 border border-edge bg-paper p-2">
+        <div className="sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.6rem)] z-40 -mx-1 rounded-control border border-edge bg-paper p-2">
           <button
             type="button"
             data-testid="turbo-start"
             onClick={() => void onStartAction(questionCount)}
-            className="chrome-raised chrome-bracket bg-primary inline-flex min-h-11 w-full items-center justify-center border border-primary text-sm text-primaryInk transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-1 focus-visible:outline-dotted focus-visible:[outline-offset:-4px] focus-visible:outline-current"
+            className="bg-primary inline-flex min-h-11 w-full items-center justify-center rounded-control border border-primary text-sm font-semibold text-primaryInk transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             Iniciar revisão · {questionCount} cards
             {isTurboMode ? ` · ~${fmtTime(questionCount * ESTIMATED_MS_PER_CARD)}` : ""}

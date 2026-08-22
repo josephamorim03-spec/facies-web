@@ -32,6 +32,8 @@ export function isProtectedApiPath(path: string): boolean {
     if (!parsed.pathname.startsWith("/api/")) return false;
     if (parsed.pathname.startsWith("/api/auth")) return false;
     if (parsed.pathname.startsWith("/api/version")) return false;
+    // Mesma razao do BFF: o funil publico nao carrega sessao.
+    if (parsed.pathname.startsWith("/api/facies")) return false;
     return true;
   } catch {
     return false;

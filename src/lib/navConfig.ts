@@ -1,7 +1,6 @@
 export type StudentIntent =
   | "today"
   | "bank"
-  | "rota"
   | "cards"
   | "profile";
 
@@ -29,17 +28,17 @@ export type NavItemConfig = {
 export type NavGroupConfig = { items: NavItemConfig[] };
 export type NavChildConfig = { href: string; label: string; matches: string[] };
 
-//: Cinco destinos. A Kros deixou de ser rotulo de menu e virou marca do motor —
-//: aparece na status bar e no boot, nao competindo com um verbo. `ROTA` e o nome
-//: da tela porque e o que ela entrega, e e o vocabulario que o backend ja usa
-//: (`navigation_route`, `build_route`, `NavigationRouteOut`).
+//: Quatro destinos, um verbo cada. Foram cinco: a Rota saiu porque a tela dela
+//: era uma PERGUNTA (quanto tempo, com que energia), e a pergunta morreu — o
+//: tamanho do dia vem do calendario e do comportamento observado, e aparece como
+//: contexto da proxima acao no Hoje. O motor continua se chamando
+//: `navigation_route` no backend; o que sumiu foi a aba, nao o mecanismo.
 const INTENTS: Record<
   StudentIntent,
   { path: string; label: string; icon: StudentNavIcon }
 > = {
   today: { path: "/hoje", label: "Início", icon: "today" },
   bank: { path: "/banco", label: "Banco", icon: "bank" },
-  rota: { path: "/rota", label: "Rota", icon: "rota" },
   cards: { path: "/cards", label: "Cards", icon: "cards" },
   // A aba abre em Evolucao, nao em Preferencias: e a tela que o aluno consulta
   // com frequencia. O rotulo diz "Perfil" porque nomeia a AREA (voce e seus
@@ -68,7 +67,6 @@ const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
     { href: "/banco", label: "Montar sessão", matches: ["/banco"] },
     { href: "/banco/historico", label: "Histórico", matches: ["/banco/historico"] },
   ],
-  rota: [],
   cards: [
     { href: "/cards", label: "Montar sessão", matches: ["/cards"] },
     { href: "/cards/registros", label: "Pesquisar", matches: ["/cards/registros"] },
@@ -80,17 +78,17 @@ const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
 };
 
 //: Caminhos legados que o navegador ainda RENDERIZA e que precisam acender a
-//: aba certa. `/kros` NAO entra: virou 308 para `/rota`, entao ninguem para nele.
-//: `/provas` tambem sai — ele redireciona por conta propria para o historico.
+//: aba certa. `/kros` e `/rota` NAO entram: os dois sao 308 para `/hoje`, entao
+//: ninguem para neles. `/provas` tambem sai — ele redireciona por conta propria
+//: para o historico.
 const LEGACY_PATHS: Record<StudentIntent, string[]> = {
   today: ["/today", "/semana", "/agenda-operacional", "/desempenho", "/trilha", "/onboarding"],
   bank: [],
-  rota: [],
   cards: [],
   profile: ["/estatisticas", "/rotina-e-metas"],
 };
 
-const INTENT_ORDER: StudentIntent[] = ["today", "bank", "rota", "cards", "profile"];
+const INTENT_ORDER: StudentIntent[] = ["today", "bank", "cards", "profile"];
 
 function normalizePathname(pathname: string): string {
   const [withoutHash] = pathname.split("#", 1);

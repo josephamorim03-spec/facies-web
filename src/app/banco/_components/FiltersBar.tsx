@@ -160,7 +160,7 @@ function SectionHeader({ step, title, detail }: { step: string; title: string; d
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-2">
       <div>
-        <p className="text-micro font-semibold uppercase tracking-[0.14em] text-primary">{step}</p>
+        <p className="paper-eyebrow text-primary">{step}</p>
         <h3 className="mt-0.5 text-xl font-semibold leading-tight text-ink">{title}</h3>
       </div>
       {detail ? <p className="max-w-md text-sm text-muted">{detail}</p> : null}
@@ -206,7 +206,7 @@ function StatePicker({
     <div className="space-y-3 border-t border-edge pt-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Estado da prova</p>
+          <p className="paper-eyebrow">Estado da prova</p>
           <p className="mt-0.5 text-xs text-muted">UF catalogada na prova, banca ou instituição.</p>
         </div>
         {selectedSet.size > 0 && (
@@ -237,7 +237,7 @@ function StatePicker({
                 aria-pressed={active}
               >
                 <span>{code}</span>
-                <span className="text-nano tabular-nums text-muted">{state.question_count}</span>
+                <span className="text-micro tabular-nums text-muted">{state.question_count}</span>
               </button>
             );
           })}
@@ -372,7 +372,7 @@ export default function FiltersBar(props: FiltersBarProps) {
             className="w-full"
           />
           {suggestionsFocused && search.trim() && (
-            <ul className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-y-auto border border-edge bg-surface ">
+            <ul className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-20 max-h-72 overflow-y-auto rounded-surface border border-edge bg-surface ">
               {topicSuggestions.slice(0, 8).map((topic) => {
                 const selectable = topic.question_count > 0;
                 return (
@@ -405,7 +405,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
-          <div className="max-h-[32rem] overflow-y-auto border border-edge bg-paper p-2">
+          <div className="max-h-[32rem] overflow-y-auto rounded-control border border-edge bg-paper p-2">
             <TopicTreeList
               nodes={topicTree}
               selectedIds={selectedTopicIds}
@@ -420,7 +420,7 @@ export default function FiltersBar(props: FiltersBarProps) {
           </div>
 
           <div className="border-l-2 border-edge pl-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
+            <p className="paper-eyebrow">
               {selectedTopics.length > 0
                 ? `${selectedTopics.length} selecionado${selectedTopics.length > 1 ? "s" : ""}`
                 : "Nenhum tema selecionado"}
@@ -494,7 +494,7 @@ export default function FiltersBar(props: FiltersBarProps) {
           />
 
           <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Status das questões</p>
+            <p className="paper-eyebrow">Status das questões</p>
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
@@ -538,7 +538,7 @@ export default function FiltersBar(props: FiltersBarProps) {
               </div>
             )}
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted">Correção IA</p>
+              <p className="paper-eyebrow mb-2">Correção IA</p>
               <div className="flex flex-wrap gap-2">
                 {([
                   ["all", "Todas"],
@@ -568,7 +568,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         />
 
         <fieldset>
-          <legend className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
+          <legend className="paper-eyebrow">
             O que estudar
           </legend>
           <div className="mt-2 grid gap-3 md:grid-cols-2">
@@ -594,7 +594,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         </fieldset>
 
         <fieldset>
-          <legend className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
+          <legend className="paper-eyebrow">
             Como corrigir
           </legend>
           <div className="mt-2 grid gap-3 md:grid-cols-3">
@@ -621,7 +621,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         {studyKind === "full_exam" ? (
           <div className="grid gap-3 border-t border-edge pt-4 md:grid-cols-[1fr_7rem_11rem]">
             <label className="space-y-1.5">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Instituição</span>
+              <span className="paper-eyebrow">Instituição</span>
               <input
                 value={fullExamName}
                 onChange={(e) => onFullExamNameChange(e.target.value)}
@@ -630,7 +630,7 @@ export default function FiltersBar(props: FiltersBarProps) {
               />
             </label>
             <label className="space-y-1.5">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Ano</span>
+              <span className="paper-eyebrow">Ano</span>
               <input
                 type="number"
                 min={1900}
@@ -641,11 +641,11 @@ export default function FiltersBar(props: FiltersBarProps) {
               />
             </label>
             <label className="space-y-1.5">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">Tipo</span>
+              <span className="paper-eyebrow">Tipo</span>
               <select
                 value={fullExamType}
                 onChange={(e) => onFullExamTypeChange(e.target.value as FullExamType)}
-                className="w-full border border-edge bg-surface px-3 py-2 text-sm text-ink"
+                className="w-full rounded-control border border-edge bg-surface px-3 py-2 text-sm text-ink"
               >
                 <option value="acesso_direto">Acesso direto</option>
                 <option value="r_plus">R+</option>
@@ -684,7 +684,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         <div className="space-y-3 border-t border-edge pt-5">
           <div className="flex items-end justify-between gap-4">
             <label className="space-y-1.5">
-              <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-muted">Questões</span>
+              <span className="paper-eyebrow block">Questões</span>
               <input
                 type="number"
                 min={1}

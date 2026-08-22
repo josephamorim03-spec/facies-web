@@ -71,19 +71,29 @@ export function AreaSmallMultiples({ activeAreaLines, areaLineData }: Props) {
               : "";
 
           return (
-            <div key={area} className="border border-edge bg-paper px-2.5 py-2">
+            <div key={area} className="rounded-control border border-edge bg-paper px-2.5 py-2">
               <div className="flex items-baseline justify-between gap-1">
-                <span className="text-micro font-bold tracking-wide" style={{ color }}>
-                  {area}
+                {/* A cor da area vive no TRACO do grafico, logo abaixo. A sigla
+                    fica em tinta: a 11px em negrito ela precisaria de 4.5:1, e
+                    nenhum dos sete tons entrega isso sobre papel — o axe achou
+                    9 nos assim. O quadrado de 8px devolve a leitura de relance
+                    sem pedir contraste de texto. */}
+                <span className="flex items-baseline gap-1.5">
+                  <span
+                    aria-hidden="true"
+                    className="h-2 w-2 shrink-0 rounded-control"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="text-micro font-bold tracking-wide text-ink">{area}</span>
                 </span>
                 {delta !== null && (
-                  <span className={`text-nano font-semibold tabular-nums ${tone}`}>
+                  <span className={`text-micro font-semibold tabular-nums ${tone}`}>
                     {arrow} {delta > 0 ? "+" : ""}
                     {delta}
                   </span>
                 )}
               </div>
-              <div className="truncate text-pico leading-tight text-muted">{AREA_LABELS[area]}</div>
+              <div className="truncate text-micro leading-tight text-muted">{AREA_LABELS[area]}</div>
               <div className="mt-0.5 text-base font-semibold tabular-nums text-ink">
                 {current === null ? "—" : `${current}%`}
               </div>

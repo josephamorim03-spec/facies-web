@@ -250,8 +250,6 @@ export function eventFlags(iso: string, events: CalendarEventOut[]): {
   };
 }
 
-export const amberSelected = { backgroundColor: "var(--amber-tint)", borderColor: "var(--color-ink)" };
-
 export const SHORT_MONTH_LABELS = [
   "JAN.", "FEV.", "MAR.", "ABR.", "MAI.", "JUN.",
   "JUL.", "AGO.", "SET.", "OUT.", "NOV.", "DEZ.",

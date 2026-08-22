@@ -1,10 +1,9 @@
 /**
- * Icones do cronograma — reexportacao de `pixelarticons`, nao desenho proprio.
+ * Icones do cronograma — reexportacao de `lucide-react`, nao desenho proprio.
  *
- * Este arquivo era dezesseis SVGs escritos a mao que COPIAVAM o lucide: traco
- * de 2px com ponta arredondada, curvas de Bezier, circulos suaves. Redesenha-los
- * um a um seria refazer o mesmo erro com outro gosto; a biblioteca ja resolve o
- * problema no grid de 24x24 sem antisserrilhado.
+ * Este arquivo ja foi dezesseis SVGs escritos a mao, depois virou pixel art, e
+ * agora e' traco de 1.5px. O que nao muda e' a regra: uma fonte so. Desenho
+ * proprio ao lado de importado garante que os dois divirjam na proxima mexida.
  *
  * Os nomes locais ficam: oito arquivos consomem `IconCalendar`, `IconEye` e
  * companhia, e trocar a chamada em todos eles seria ruido num commit que e sobre
@@ -12,27 +11,30 @@
  *
  * As duas excecoes ficam no fim do arquivo: `IconMonthGrid` e `IconWeekRow` nao
  * sao icones de conceito, sao MAQUETES das duas visualizacoes do calendario, e
- * nenhuma biblioteca tem esse par. Eles ja eram retangulos — so perderam o raio.
+ * nenhuma biblioteca tem esse par.
  */
 export {
   Calendar as IconCalendar,
-  ListBox as IconList,
+  List as IconList,
   Eye as IconEye,
   Plus as IconPlus,
-  Reload as IconRefresh,
-  // Nao ha estetoscopio no acervo. `Heart` e o simbolo clinico que existe, e o
-  // sitio de uso e sempre rotulado em texto ao lado.
-  Heart as IconStethoscope,
+  RotateCw as IconRefresh,
+  // Estetoscopio de verdade. O acervo anterior nao tinha, e o contorno era
+  // `Heart` — num produto de medicina, o simbolo generico onde cabia o objeto.
+  Stethoscope as IconStethoscope,
   Check as IconCheck,
-  WarningDiamond as IconCritical,
+  TriangleAlert as IconCritical,
   Pencil as IconPencil,
   Menu as IconMenu,
   Search as IconSearch,
-  // Nao ha "prancheta com visto"; `ClipboardNote` e a prancheta que existe.
-  ClipboardNote as IconClipboardCheck,
-  Card as IconCards,
-  Close as IconX,
-} from "pixelarticons/react";
+  // Prancheta COM visto. O visto era o ponto do icone e faltava no acervo
+  // anterior.
+  ClipboardCheck as IconClipboardCheck,
+  // Pilha de cards. `Layers` e a metafora certa para baralho; o acervo anterior
+  // so tinha `Card`, que desenha UMA carta.
+  Layers as IconCards,
+  X as IconX,
+} from "lucide-react";
 
 /** Maquete da visao de mes: a grade 3x3 de dias. */
 export function IconMonthGrid({ className }: { className?: string }) {

@@ -24,7 +24,7 @@ export default function QuestionList({
     <section className="km-card p-4 md:p-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Prévia</p>
+          <p className="paper-eyebrow">Prévia</p>
           <h2 className="mt-1 font-serif text-2xl font-semibold">Questões encontradas</h2>
           <p className="mt-1 text-sm text-muted">{selectedTopicSummary}</p>
         </div>
@@ -34,7 +34,7 @@ export default function QuestionList({
           const stats = question.attempt_stats;
           const ratio = stats && stats.attempt_count > 0 ? stats.correct_count / stats.attempt_count : null;
           return (
-            <article key={question.id} className="border border-edge bg-paper p-4">
+            <article key={question.id} className="rounded-surface border border-edge bg-paper p-4">
               <p className="line-clamp-4 text-sm leading-relaxed">{question.stem}</p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <p className="text-xs text-muted">{formatSourceLabel(question.source)}</p>

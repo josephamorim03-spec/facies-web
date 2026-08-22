@@ -11,7 +11,7 @@ export function ToggleGroup<T extends string>({
 }) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <p className="text-xs text-muted uppercase tracking-widest whitespace-nowrap">{label}</p>
+      <p className="paper-eyebrow whitespace-nowrap">{label}</p>
       <div className="flex flex-wrap gap-1">
         {options.map((o) => (
           <button

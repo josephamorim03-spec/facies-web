@@ -2,8 +2,10 @@ import "./globals.css";
 import AppShell from "@/components/AppShell";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { THEME_KEY } from "@/lib/storage-keys";
-import { IBM_Plex_Mono, Source_Serif_4 } from "next/font/google";
+import { IBM_Plex_Mono, Instrument_Sans, Source_Serif_4 } from "next/font/google";
 import type { Metadata, Viewport } from "next";
+
+import { SITE_NAME, SITE_QUALIFICADOR, SITE_URL } from "@/lib/site";
 
 // Serifa da PROSA — inalterada. Enunciado, comentário e alternativas continuam
 // aqui; só o chrome virou mono.
@@ -15,8 +17,19 @@ const sourceSerif = Source_Serif_4({
   style: ["normal", "italic"],
 });
 
-// Mono do CHROME. Mesma superfamília do Plex Sans que saiu, então a métrica e o
-// desenho continuam familiares; `latin` cobre a acentuação pt-BR.
+// Sans do CHROME. Humanista com caráter, não a Inter que todo mundo usa. Ela
+// substitui a mono como fonte padrão da interface: no KROS/DOS o `sans` do
+// Tailwind apontava para a mono de propósito, e era isso que dava a leitura de
+// "ferramenta de dev" em vez de instrumento clínico.
+const instrumentSans = Instrument_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+  weight: ["400", "500", "600"],
+});
+
+// Mono de DADO, e só: número, tempo, percentual. Deixou de vestir o chrome
+// inteiro. `latin` cobre a acentuação pt-BR.
 const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -25,21 +38,45 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KrosMed",
-  description: "Banco adaptativo de questões e revisão inteligente para residência médica",
+  // Base para toda URL relativa de metadado. Sem ela o Next emite `og:image`
+  // relativo, e raspador de link nao resolve caminho relativo — o cartao chega
+  // sem imagem, o build passa, e so se descobre compartilhando.
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — ${SITE_QUALIFICADOR}`,
+    // O nome do produto NAO precisa ser o texto do titulo (§3.2): quem busca
+    // digita "raio-x da prova USP". O template deixa a pagina liderar e mantem
+    // a marca no fim, onde ela identifica sem competir.
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: "Inteligência de prova: como a sua prova cobra, e um plano que cabe na sua escala de plantão.",
   manifest: "/manifest.webmanifest",
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "pt_BR",
+  },
+  // `summary_large_image` e' o unico formato que mostra a imagem inteira; o
+  // `summary` corta em quadrado, e a arte do funil e' uma tabela larga.
+  twitter: { card: "summary_large_image" },
+  // O `?v=` nao e supersticao: icone e o recurso que o navegador cacheia com
+  // mais avidez, e trocar a arte sem trocar a URL deixa a marca antiga na aba
+  // por semanas.
   icons: {
     icon: [
-      { url: "/favicon.ico?v=20260311k6", type: "image/x-icon" },
-      { url: "/icon-32.png?v=20260311k6", type: "image/png", sizes: "32x32" },
-      { url: "/icon-192.png?v=20260311k6", type: "image/png", sizes: "192x192" },
+      { url: "/favicon.ico?v=20260822f", type: "image/x-icon" },
+      // O SVG vem primeiro para quem o suporta: a marca e geometria pura, entao
+      // ela e nitida em qualquer densidade sem um PNG por tamanho.
+      { url: "/facies-icone-solido.svg?v=20260822f", type: "image/svg+xml" },
+      { url: "/icon-32.png?v=20260822f", type: "image/png", sizes: "32x32" },
+      { url: "/icon-192.png?v=20260822f", type: "image/png", sizes: "192x192" },
     ],
-    shortcut: [{ url: "/favicon.ico?v=20260311k6", type: "image/x-icon" }],
-    apple: [{ url: "/apple-touch-icon.png?v=20260311k6", type: "image/png", sizes: "180x180" }],
+    shortcut: [{ url: "/favicon.ico?v=20260822f", type: "image/x-icon" }],
+    apple: [{ url: "/apple-touch-icon.png?v=20260822f", type: "image/png", sizes: "180x180" }],
   },
   appleWebApp: {
     capable: true,
-    title: "KrosMed",
+    title: "Fácies",
     statusBarStyle: "default",
   },
   other: {
@@ -48,9 +85,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Os valores da folha de marca. Os anteriores (#B8B8AE / #0B0C08) eram do
+  // e-ink e ja divergiam do `--color-paper` em vigor — a barra do navegador
+  // pintava de uma cor que nao existia mais em nenhuma tela.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#B8B8AE" },
-    { media: "(prefers-color-scheme: dark)", color: "#0B0C08" },
+    { media: "(prefers-color-scheme: light)", color: "#0D4F4A" },
+    { media: "(prefers-color-scheme: dark)", color: "#131516" },
   ],
   viewportFit: "cover",
   width: "device-width",
@@ -72,7 +112,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${sourceSerif.variable} ${ibmPlexMono.variable}`}
+      className={`${sourceSerif.variable} ${instrumentSans.variable} ${ibmPlexMono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />

@@ -156,7 +156,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
             data-week-index={label.weekIndex}
             /* Overlay denso (12 pontos × até 6 séries): fora de cima do gráfico
                no mobile pra não vazar/sobrepor; a linha destacada + legenda bastam. */
-            className="pointer-events-none absolute z-20 hidden whitespace-nowrap text-nano font-bold leading-none sm:block"
+            className="pointer-events-none absolute z-20 hidden whitespace-nowrap text-micro font-bold leading-none sm:block"
             style={{
               left: label.placement.left,
               top: label.placement.top,

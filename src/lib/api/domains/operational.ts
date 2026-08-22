@@ -45,6 +45,8 @@ export type OperationalStreak = {
   streak_reviews: number;
   streak_flashcards_seen: number;
   weekly_study_days: number;
+  /** Dias protegidos na MESMA janela de 7 dias. Sem ele, "5 de 7" le como duas faltas. */
+  weekly_protected_days: number;
   active_protection: boolean;
   protection_window_end: string | null;
 };

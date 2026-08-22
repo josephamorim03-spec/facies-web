@@ -11,7 +11,7 @@ export default function GraficosPage() {
           <span className="block h-7 w-7" aria-hidden="true" />
         </div>
         <div className="flex justify-center">
-          <h1 className="text-nano font-semibold uppercase leading-none tracking-[0.08em] text-ink">GRÁFICOS</h1>
+          <h1 className="paper-eyebrow leading-none text-ink">GRÁFICOS</h1>
         </div>
         <div className="flex justify-end">
           <Link

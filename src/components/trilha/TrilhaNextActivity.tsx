@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown } from "pixelarticons/react";
+import { ChevronDown } from "lucide-react";
 
 import {
   getCurrentPlan,
@@ -187,11 +187,11 @@ export function TrilhaNextActivity({ fallback = null }: Props) {
 
   return (
     <section
-      className="border border-edge bg-surface p-4"
+      className="rounded-surface border border-edge bg-surface p-4"
       aria-labelledby="trilha-next-heading"
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted">
+        <p className="paper-eyebrow">
           {isToday ? "Sua trilha hoje" : `Próximo passo · ${next.scheduled_date}`}
         </p>
         <span

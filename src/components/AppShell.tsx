@@ -42,7 +42,7 @@ type BuildVersionPayload = {
 const SHOW_BUILD_BADGE = process.env.NEXT_PUBLIC_SHOW_BUILD_BADGE === "1";
 // Mesma ordem de NAV_GROUPS_CONFIG (lib/navConfig.ts) — define a prioridade do
 // warm-up ocioso, então segue a ordem em que os destinos aparecem no menu.
-const PRIMARY_NAV_ROUTES = ["/hoje", "/banco", "/rota", "/cards", "/evolucao"];
+const PRIMARY_NAV_ROUTES = ["/hoje", "/banco", "/cards", "/evolucao"];
 
 type IdleCallbackHandle = number;
 type WindowWithIdleCallback = Window & {
@@ -66,6 +66,11 @@ function shouldHideNavigationChrome(pathname: string): boolean {
     pathname === "/" ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth") ||
+    // Superficies PUBLICAS da Facies. Sem estas duas linhas, a pagina que o
+    // visitante anonimo abre pelo link do grupo aparece com a barra lateral do
+    // app autenticado do lado — chrome de um produto que ele ainda nao tem.
+    pathname.startsWith("/facies") ||
+    pathname.startsWith("/prova") ||
     pathname === ACTIVATE_ROUTE ||
     // Immersive question/simulado runner: hide the full chrome (desktop sidebar
     // included). The session page keeps its own visible "Sair" affordance.
@@ -107,7 +112,7 @@ function MobileTopBar({ pathname }: { pathname: string }) {
     >
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-14">
         {typeof displayTitle === "string" ? (
-          <span className="truncate text-xs font-semibold uppercase tracking-[0.13em] text-ink">
+          <span className="paper-eyebrow truncate text-ink">
             {displayTitle}
           </span>
         ) : (
@@ -157,7 +162,7 @@ function BuildVersionBadge() {
   return (
     <span
       title={title}
-      className="pointer-events-none fixed right-2 z-[60] border border-edge bg-paper px-1.5 py-0.5 text-pico uppercase tracking-wide text-muted bottom-[calc(env(safe-area-inset-bottom,0px)+0.8rem)] md:bottom-3"
+      className="paper-eyebrow pointer-events-none fixed right-2 z-[60] rounded-control border border-edge bg-paper px-1.5 py-0.5 bottom-[calc(env(safe-area-inset-bottom,0px)+0.8rem)] md:bottom-3"
       aria-label={`Build ${shortSha}`}
     >
       build: {shortSha}

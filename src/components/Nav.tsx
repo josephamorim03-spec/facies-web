@@ -9,14 +9,14 @@ import {
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { getCronogramaAgendaHref } from "@/app/cronograma/_lib/viewModeSession";
 import { NAV_GROUPS_CONFIG, isNavItemActive } from "@/lib/navConfig";
-import { KrosWordmark } from "@/components/KrosWordmark";
+import { FaciesMark, FaciesWordmark } from "@/components/FaciesWordmark";
 import { ACTIVATE_ROUTE } from "@/lib/initialGoalSetup";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FastNavLink } from "@/components/FastNavLink";
 import { useSessionNavGuard } from "@/hooks/useSessionNavGuard";
 import { useEdgeSwipeSuppression } from "@/hooks/useEdgeSwipeSuppression";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { Calendar as CalendarDays, TrendingUp as ChartNoAxesCombined, AvatarSquare as CircleUserRound, Home as House, Notes as Layers3, Library as LibraryBig, Gps as Navigation, Gear as Settings } from "pixelarticons/react";
+import { Calendar as CalendarDays, TrendingUp as ChartNoAxesCombined, CircleUser as CircleUserRound, House as House, NotepadText as Layers3, Library as LibraryBig, Settings as Settings } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 
 
@@ -24,9 +24,6 @@ import type { ComponentType, SVGProps } from "react";
 const ICON_MAP: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
   today: House,
   bank: LibraryBig,
-  // A Rota e navegacao: a seta de GPS diz o que a tela faz melhor que o glifo
-  // da marca, que agora vive na status bar e no boot.
-  rota: Navigation,
   cards: Layers3,
   profile: CircleUserRound,
   // Chaves que a taxonomia de 5 abas absorveu: `evolution` e `planning`
@@ -36,18 +33,8 @@ const ICON_MAP: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
   settings: Settings,
 };
 
-/**
- * A Kros não usa ícone do Lucide: é o glifo próprio, que anima. Os demais
- * destinos seguem o mapa acima.
- */
+/** Um ícone por destino, do mapa acima. */
 function NavIcon({ icon, className }: { icon: string; className?: string }) {
-  // A aba ROTA usa a seta de GPS, a MESMA do `MobileTabBar`. Antes o desktop
-  // mostrava o glifo animado da Kros e o mobile a seta: dois icones para a mesma
-  // aba, e o unico movimento ambiente que sobrou num sistema cuja regra e zero
-  // animacao sem funcao.
-  //
-  // O glifo nao morreu: ele continua no estado `busy` da Rota, onde girar
-  // significa "montando a sessao" — animacao que comunica trabalho, nao enfeite.
   const Icon = ICON_MAP[icon] ?? LibraryBig;
   return <Icon className={className} />;
 }
@@ -182,16 +169,12 @@ export function SidebarNav({
           className="block border-b border-edge shrink-0"
           style={{ padding: visible ? "1.25rem 1rem" : "0.875rem 0.625rem" }}
         >
-          {/* Uma marca so em todo o app: login, sidebar, boot e status bar. O
-              <img> do logo vetor saiu junto com o hack de `dark:invert` que ele
-              exigia — o wordmark responde ao tema por token. Recolhida, a
-              sidebar mostra so a inicial. */}
+          {/* Uma marca so em todo o app: login, sidebar e cabecalho. O <img> do
+              logo vetor saiu junto com o hack de `dark:invert` que ele exigia —
+              o wordmark responde ao tema por token. Recolhida, a sidebar mostra
+              o acento, que E' a marca (§3.4), e nao uma inicial. */}
           <div className={`flex items-center gap-2 ${!visible ? "justify-center" : ""}`}>
-            {visible ? (
-              <KrosWordmark size="sm" />
-            ) : (
-              <span aria-hidden="true" className="text-sm font-semibold text-ink">K</span>
-            )}
+            {visible ? <FaciesWordmark size="sm" /> : <FaciesMark />}
           </div>
         </div>
 
@@ -216,12 +199,10 @@ export function SidebarNav({
               {group.items.map((item) => {
                 const { href, shortLabel, icon } = item;
                 const active = isNavItemActive(pathname, item);
-                // A Rota (ex-Kros) ganha uma superfície de acento levíssima em
-                // repouso — presente sem imitar o estado "selecionado".
+                // A superfície de acento em repouso saiu com a aba Rota: ela
+                // marcava UM destino como especial, e nenhum dos quatro é.
                 const restingClass =
-                  icon === "rota"
-                    ? "nav-kros-item"
-                    : "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink";
+                  "border-transparent text-muted hover:bg-surfaceMuted hover:text-ink";
                 return (
                   <FastNavLink
                     key={href}
@@ -256,7 +237,7 @@ export function SidebarNav({
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-ink truncate">{displayName?.split(" ")[0] ?? ""}</p>
                   {displayName?.includes(" ") && (
-                    <p className="text-nano text-muted truncate leading-tight">{displayName.split(" ").slice(1).join(" ")}</p>
+                    <p className="text-micro text-muted truncate leading-tight">{displayName.split(" ").slice(1).join(" ")}</p>
                   )}
                 </div>
               )}

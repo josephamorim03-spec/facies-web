@@ -1,32 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Calendar as CalendarDays } from "pixelarticons/react";
+import { useQuery } from "@tanstack/react-query";
+import { Calendar as CalendarDays } from "lucide-react";
 
 import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
-import {
-  buildNavigationRoute,
-  getNavigationPrompt,
-  getStudentToday,
-  resolveNavigationRoute,
-  type NavigationRoute,
-  type NavigationRouteStatus,
-} from "@/lib/api";
+import { getStudentToday } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentAgenda } from "@/features/student-agenda/useStudentAgenda";
 import { firstName, useProfileDisplayName } from "@/lib/ProfileContext";
 import { AgendaItemRow } from "@/features/student-agenda/AgendaItemRow";
 import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
-// O Navigator (pergunta de tempo/energia + rota) mudou para a aba ROTA, com
-// tela própria: perguntar aqui competia com a próxima ação logo abaixo — duas
-// superfícies dizendo "comece por aqui" na mesma tela.
+// A pergunta de tempo e energia morreu com a aba Rota. O que ela produzia — o
+// tamanho do dia — agora é INFERIDO e exibido como contexto da próxima ação, não
+// como um formulário antes dela. `TodayDimensioning` é uma linha, e a conta por
+// trás dela abre a um toque.
 import { TodayBackupActions } from "./TodayBackupActions";
+import { TodayDimensioning } from "./TodayDimensioning";
 import { TodayEmptyState } from "./TodayEmptyState";
 import { TodayPrimaryAction } from "./TodayPrimaryAction";
 
@@ -143,25 +138,29 @@ export function CanonicalTodayDashboard() {
 
       {isRest ? <TodayEmptyState /> : <TodayPrimaryAction action={today.primary_action} />}
 
+      {/* Depois da ação, não antes: o dimensionamento explica o TAMANHO do que
+          foi proposto, e explicação que precede a proposta vira formulário. */}
+      <TodayDimensioning />
+
       <section aria-label="Resumo de hoje" className="grid grid-cols-3 divide-x divide-edge border-y border-edge py-3">
         <div className="px-2 text-center sm:px-4">
-          <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">Dia</p>
+          <p className="paper-eyebrow">Dia</p>
           <p className="mt-1 font-serif text-xl font-semibold text-ink">
             {day ? `${day.completed_items}/${day.total_items}` : "—"}
           </p>
           <p className="text-xs text-muted">atividades</p>
         </div>
         <div className="px-2 text-center sm:px-4">
-          <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">Semana</p>
+          <p className="paper-eyebrow">Semana</p>
           <p className="mt-1 font-serif text-xl font-semibold text-ink">
             {pct(agenda?.summary?.weekly_progress_pct ?? today.progress_snapshot.weekly_progress_pct)}
           </p>
           <p className="text-xs text-muted">da meta</p>
         </div>
         <div className="px-2 text-center sm:px-4">
-          <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">Carga</p>
+          <p className="paper-eyebrow">Carga</p>
           <p className="mt-1 font-serif text-xl font-semibold capitalize text-ink">{today.today_load.label}</p>
-          <p className="text-xs text-muted">{today.today_load.estimated_minutes} min</p>
+          <p className="text-xs text-muted">{today.today_load.estimated_minutes} min planejados</p>
         </div>
       </section>
 

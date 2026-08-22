@@ -134,7 +134,7 @@ export default function CreateSessionPanel({
     <aside className="border-y border-edge py-4 lg:sticky lg:top-6 lg:self-start lg:border-y-0 lg:border-l lg:py-0 lg:pl-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Sessão configurada</p>
+          <p className="paper-eyebrow">Sessão configurada</p>
           <h2 className="mt-1 font-serif text-xl font-semibold leading-tight">Resumo</h2>
           {loadingPreview ? (
             <div className="mt-2">

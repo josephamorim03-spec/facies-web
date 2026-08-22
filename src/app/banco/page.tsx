@@ -123,7 +123,7 @@ function SessionIntentCard({ eyebrow, title, description, active, Icon, onClick 
     >
       <Icon className={cx("h-7 w-7 shrink-0 md:h-8 md:w-8", active ? "text-primary" : "text-muted")} />
       <div className="min-w-0 flex-1 md:flex-none">
-        <p className={cx("text-nano font-semibold uppercase tracking-[0.12em]", active ? "text-primary" : "text-muted")}>{eyebrow}</p>
+        <p className={cx("paper-eyebrow", active ? "text-primary" : "text-muted")}>{eyebrow}</p>
         <h2 className={cx("font-serif text-base font-semibold leading-tight md:text-lg", active ? "text-ink" : "text-muted group-hover:text-ink")}>{title}</h2>
         <p className="mt-0.5 text-xs leading-relaxed text-muted md:mt-1 md:text-sm">{description}</p>
       </div>
@@ -193,10 +193,10 @@ function RecommendedTopicsPanel({
           : "Priorizadas pelo seu histórico.";
 
   return (
-    <section className="border border-edge bg-surface p-4" aria-label="Microcompetências recomendadas">
+    <section className="rounded-surface border border-edge bg-surface p-4" aria-label="Microcompetências recomendadas">
       <div>
         <div>
-          <p className="text-micro font-semibold uppercase tracking-[0.14em] text-muted">Sugestões do sistema</p>
+          <p className="paper-eyebrow">Sugestões do sistema</p>
           <h3 className="mt-1 font-serif text-lg font-semibold leading-tight">Microcompetências</h3>
           <p className="mt-1 text-sm leading-relaxed text-muted">{intentCopy}</p>
         </div>
@@ -214,12 +214,12 @@ function RecommendedTopicsPanel({
               title={topic.node_code ? `${topic.node_code} - ${topic.node_name}` : topic.node_name}
               className={cx(
                 "w-full border p-3 text-left transition-colors",
-                selected ? "border-primary bg-[var(--amber-tint)]" : "border-edge bg-paper hover:border-primary",
+                selected ? "border-primary bg-[var(--wash-selecao)]" : "border-edge bg-paper hover:border-primary",
               )}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-micro font-semibold uppercase tracking-[0.08em] text-muted">
+                  <p className="paper-eyebrow">
                     {topic.question_count} questões
                   </p>
                   <p className="mt-0.5 line-clamp-2 break-words text-sm font-semibold leading-snug text-ink [overflow-wrap:anywhere]">{topic.node_name}</p>
@@ -967,7 +967,7 @@ function BancoDeQuestoesContent() {
                   {activeFilters.length === 1 ? activeFilters[0].label : activeFilters.length + " filtros"}
                 </button>
                 {filterMenuOpen && activeFilters.length > 1 && (
-                  <div id="question-bank-active-filters" role="dialog" aria-label="Filtros ativos" className="absolute right-0 z-30 mt-2 w-72 border border-edge bg-surface p-2 ">
+                  <div id="question-bank-active-filters" role="dialog" aria-label="Filtros ativos" className="absolute right-0 z-30 mt-2 w-72 rounded-control border border-edge bg-surface p-2 ">
                     {activeFilters.map((filter) => (
                       <button
                         key={filter.id}

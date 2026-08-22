@@ -79,12 +79,12 @@ export default function FixacaoRound({ items, onExit }: FixacaoRoundProps) {
         <div className="mx-auto max-w-4xl space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-micro font-semibold uppercase tracking-[0.16em] text-primary">Rodada de fixação</p>
+              <p className="paper-eyebrow text-primary">Rodada de fixação</p>
               <h1 className="mt-0.5 font-serif text-xl font-semibold leading-tight text-ink">Recupere antes de finalizar</h1>
               <p className="mt-1 text-xs text-muted">Sem nota.</p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="border border-edge bg-paper px-3 py-2 text-xs font-semibold tabular-nums text-muted">
+              <span className="rounded-control border border-edge bg-paper px-3 py-2 text-xs font-semibold tabular-nums text-muted">
                 {index + 1}/{total}
               </span>
               <button
@@ -106,9 +106,9 @@ export default function FixacaoRound({ items, onExit }: FixacaoRoundProps) {
       </div>
 
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 md:px-6">
-        <section className="border border-edge bg-surface p-4 md:p-5">
+        <section className="rounded-surface border border-edge bg-surface p-4 md:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="border border-edge bg-paper px-2.5 py-1 text-xs text-muted">
+            <span className="rounded-control border border-edge bg-paper px-2.5 py-1 text-xs text-muted">
               {primaryTheme(item)}
             </span>
             <span className="text-xs text-muted">
@@ -149,7 +149,7 @@ export default function FixacaoRound({ items, onExit }: FixacaoRoundProps) {
                     isCorrectOpt || isPickedWrong ? "border-current bg-paper" : "border-edge bg-paper text-ink",
                   )}>{option}</span>
                   <span className={cx("min-w-0 flex-1 leading-relaxed", isEliminated && "text-muted line-through")}>{item.alternatives[option]}</span>
-                  {isCorrectOpt && <span className="hidden border border-current px-2 py-0.5 text-nano font-semibold sm:inline">Gabarito</span>}
+                  {isCorrectOpt && <span className="hidden border border-current px-2 py-0.5 text-micro font-semibold sm:inline">Gabarito</span>}
                 </button>
                 <button
                   type="button"

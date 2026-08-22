@@ -48,7 +48,7 @@ export function CronogramaTodayPanel({
 
   return (
     <section
-      className="border border-edge bg-surface px-3 py-3"
+      className="rounded-surface border border-edge bg-surface px-3 py-3"
       aria-label="Para revisar hoje"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -65,7 +65,7 @@ export function CronogramaTodayPanel({
           {practiceCount > 0 && (
             <div className="border border-primary bg-paper px-2.5 py-1 text-right">
               <p className="text-sm font-semibold leading-none text-primary">{practiceCount}</p>
-              <p className="mt-0.5 text-pico leading-none text-muted">prática</p>
+              <p className="mt-0.5 text-micro leading-none text-muted">prática</p>
             </div>
           )}
           <button
@@ -114,9 +114,9 @@ export function CronogramaTodayPanel({
                       <div className="min-w-0 flex-1">
                         <div className="flex min-w-0 items-center gap-1.5">
                           <span className="truncate text-xs">{item.theme}</span>
-                          <span className="shrink-0 text-pico text-muted">{areaKey || "OU"}</span>
+                          <span className="shrink-0 text-micro text-muted">{areaKey || "OU"}</span>
                           {item.label && (
-                            <span className="shrink-0 text-pico text-success">feito</span>
+                            <span className="shrink-0 text-micro text-success">feito</span>
                           )}
                         </div>
                         {item.task && <ReviewSignalChips task={item.task} compact className="mt-1" />}

@@ -507,7 +507,7 @@ export function CronogramaCalendarView({
           className="pointer-events-none fixed z-[70] max-w-[14rem]"
           style={{ left: touchDragGhost.x, top: touchDragGhost.y, transform: "translate(-50%, -50%)" }}
         >
-          <div className="flex items-center gap-2 border border-edge bg-paper px-2 py-1.5 ">
+          <div className="flex items-center gap-2 rounded-control border border-edge bg-paper px-2 py-1.5 ">
             <span
               className="h-3 w-3 shrink-0 border border-ink/35"
               style={{ backgroundColor: touchDragGhost.color, opacity: 0.92 }}

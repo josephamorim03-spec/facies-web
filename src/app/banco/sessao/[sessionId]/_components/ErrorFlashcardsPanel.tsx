@@ -155,10 +155,10 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
   const resultsWithDrafts = (response?.results ?? []).filter((r) => r.caderno_drafts.length > 0);
 
   return (
-    <section className="border border-edge bg-surface p-4 md:col-span-2">
+    <section className="rounded-surface border border-edge bg-surface p-4 md:col-span-2">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">De erro para revisão ativa</p>
+          <p className="paper-eyebrow text-primary">De erro para revisão ativa</p>
           <h3 className="mt-1 font-serif text-xl font-semibold leading-tight">Flashcards dos seus erros</h3>
           <p className="mt-1 text-sm leading-relaxed text-muted">A IA transforma seus erros em perguntas de recall.</p>
         </div>
@@ -186,7 +186,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
 
       {resultsWithDrafts.length > 0 && (
         <div className="mt-4 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 border border-edge bg-paper px-3 py-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-control border border-edge bg-paper px-3 py-2">
             <p className="text-xs font-semibold text-ink">
               {selectedCount === 0 ? "Selecione os cards que valem revisar." : `${selectedCount} card${selectedCount === 1 ? "" : "s"} selecionado${selectedCount === 1 ? "" : "s"}.`}
             </p>
@@ -195,8 +195,8 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
             const position = positionByQuestionId.get(result.question_id);
             const selectedForQuestion = result.caderno_drafts.filter((d) => selected.has(draftKey(result.question_id, d.flashcard_index)));
             return (
-              <div key={result.question_id} className="border border-edge bg-paper p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-muted">
+              <div key={result.question_id} className="rounded-control border border-edge bg-paper p-3">
+                <p className="paper-eyebrow">
                   {position ? `Questão ${position}` : "Questão"}
                 </p>
                 <div className="mt-2 space-y-2">
@@ -215,12 +215,12 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
                           isSaved
                             ? "border-success/40 bg-surface opacity-70"
                             : isSelected
-                              ? "border-primary bg-[var(--amber-tint)]"
+                              ? "border-primary bg-[var(--wash-selecao)]"
                               : "border-edge bg-surface hover:border-primary"
                         }`}
                       >
                         <span
-                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border text-nano font-bold ${
+                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border text-micro font-bold ${
                             isSaved
                               ? "border-success bg-success text-paper"
                               : isSelected

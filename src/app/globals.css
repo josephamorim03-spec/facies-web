@@ -13,34 +13,51 @@
      area-cm, area-ou e a propria borda). Clarear o fundo conserta os seis de
      uma vez, em vez de escurecer cada cor. E aproxima do cinza autentico do
      Win95 (#C0C0C0) — acessibilidade e autenticidade puxando junto. */
-  --color-paper: #CACAC0;
-  --color-surface: #EDEDE5;
-  --color-surface-muted: #D8D8CE;
+  --color-paper: #EDEEEA;
+  --color-surface: #F6F6F4;
+  --color-surface-muted: #E3E4DF;
   /* Régua dura de 1px: no retrô a borda é definida, não um véu. */
-  --color-edge: #6E6E64;
-  --color-ink: #14140F;
+  --color-edge: #7C817A;
+  /* Filete DECORATIVO: separador de linha de tabela, divisor de secao.
+     Nao identifica componente, entao WCAG 1.4.11 nao se aplica — e por isso
+     ele pode ser a linha delicada da marca (#D8DAD4) enquanto `edge`, que
+     desenha borda de controle, fica no valor que passa 3:1. */
+  --color-rule: #D8DAD4;
+  --color-ink: #16191C;
   /* Medido pelo axe, nao estimado: #4A4A42 dava 4.47:1 sobre o `paper` — 0.03
      abaixo do minimo, em 22 nos de /hoje. O erro nao foi o valor, foi a
      verificacao: o script de contraste conferia `muted/surface` e `ink/paper`,
      mas nunca `muted/paper`. Agora ele cruza todos os pares. */
-  --color-muted: #42423C;
-  --color-primary: #000080;
-  --color-primary-ink: #FFFFFF;
-  --color-accent: #3D3D33;
-  --color-accent-ink: #EDEDE5;
-  --color-success: #0B5B2E;
-  --color-danger: #8E1116;
-  --color-warning: #6B4A00;
-  --color-info: #0B3D8C;
-  /* Apesar do nome, este token é o wash de "selecionado/atenção" — 25+ call
-     sites o usam com `border-primary` ou `border-warning`. O nome ficou; o
-     valor virou um pálido quente que ainda lê como realce sobre a surface. */
-  --amber-tint: #E8DFC0;
+  --color-muted: #5A6067;
+  --color-primary: #0D4F4A;
+  /* Estado :hover/:active da acao primaria. Aprofundar le como pressao; clarear
+     le como desabilitado, e era o que o `brightness()` fazia. */
+  --color-primary-strong: #0A3E3A;
+  --color-primary-ink: #F6F6F4;
+  --color-accent: #915500;
+  --color-accent-ink: #F6F6F4;
+  --color-success: #0D4F4A;
+  --color-danger: #B3261E;
+  --color-warning: #8A5200;
+  --color-info: #0B4F6C;
+  /* Dois washes, porque são duas coisas.
+
+     Havia um token só (`--amber-tint`) servindo a seleção E a atenção, e por
+     isso metade dos call sites estava errada em qualquer valor: um pálido
+     quente diz "cuidado", não diz "este é o escolhido". O dia de hoje no
+     calendário ficava creme dentro de um sistema petróleo.
+
+     Seleção = 9% da marca sobre o papel. Tinta cheia dá 14,1:1 e a fraca
+     5,07:1 sobre ele — medido, não estimado. */
+  --wash-selecao: #E1E7E5;
+  /* Atenção segue quente: é onde o pálido sempre fez sentido, e acompanha
+     `border-warning`. */
+  --wash-atencao: #F2EADA;
   /* Sem sombra difusa no claro: a elevação retrô é offset duro, sem blur. */
-  --soft-shadow: none;
-  --overlay-shadow: 4px 4px 0 rgba(0, 0, 0, 0.45);
+  --soft-shadow: 0 1px 2px rgba(22, 25, 28, 0.06), 0 2px 8px rgba(22, 25, 28, 0.04);
+  --overlay-shadow: 0 4px 16px rgba(22, 25, 28, 0.12);
   --range-fill:  var(--color-primary);
-  --range-rest: #9E9E93;
+  --range-rest: #D8DAD4;
   --range-thumb: var(--color-primary);
   /* Bevel de 2 camadas do Win98 (a receita do 98.css), em token para o tema
      escuro ter as suas. A ordem importa: clara em cima-esquerda, escura em
@@ -49,14 +66,10 @@
      Só CONTROLE recebe relevo. Painel, card, moldura e superfície de leitura
      seguem chapados em 1px: relevo aqui carrega informação ("isto se aperta"),
      e aplicá-lo em tudo o transformaria em textura. */
-  --bevel-light: #FFFFFF;
-  --bevel-face:  #DCDCD4;
-  --bevel-shade: #8A8A80;
-  --bevel-frame: #14140F;
   /* Zero em tudo. Não existe canto arredondado neste sistema. */
-  --radius-control: 0;
-  --radius-surface: 0;
-  --radius-hero: 0;
+  --radius-control: 2px;
+  --radius-surface: 3px;
+  --radius-hero: 4px;
   --reading-measure: 68ch;
   --content-wide: 72rem;
   --space-page: clamp(1rem, 2vw, 1.5rem);
@@ -96,13 +109,20 @@
      ESTA É A ÚNICA FONTE. O `AREA_HEX` paralelo foi removido: ele divergia nos
      8 hexes e 14 dos 20 arquivos liam a paleta errada — a mesma área saía com
      duas cores na mesma sessão. */
-  --area-cm:  #006400;
-  --area-cg:  #AA0000;
-  --area-go:  #990099;
-  --area-ob:  #0000AA;
-  --area-ped: #005F5F;
-  --area-mp:  #864300;
-  --area-ou:  #555555;
+  /* Okabe-Ito, com tres tons escurecidos ate 3:1 sobre a superficie mais
+     escura do tema claro (#E3E4DF). Medido, nao estimado: o rosa dava 2.39, o
+     verde 2.68 e o laranja 1.76 — a marca sumia no papel.
+
+     Escurecer multiplicando o RGB preserva a razao entre canais, entao a MATIZ
+     sobrevive. E matiz e' o que faz a Okabe-Ito funcionar: ela distingue por
+     tom, nao por luminancia. */
+  --area-cm:  #0072B2;  /* Okabe-Ito puro    */
+  --area-cg:  #D55E00;  /* Okabe-Ito puro    */
+  --area-go:  #B46A93;  /* de #CC79A7, 88%   */
+  --area-ob:  #B46A93;  /* divide com GO     */
+  --area-ped: #00936B;  /* de #009E73, 93%   */
+  --area-mp:  #AD7700;  /* de #E69F00, 75%   */
+  --area-ou:  #5A6067;  /* neutro: "Outras" nao e area, e o resto */
   /* "Prova inteira" nao e especialidade: e modo. Usa o primary para nao
      disputar matiz com as sete areas — e o primary ja passa no gate. */
   --area-full-exam: var(--color-primary);
@@ -110,9 +130,9 @@
 
 .dark {
   color-scheme: dark;
-  --color-paper: #0B0C08;
-  --color-surface: #14150E;
-  --color-surface-muted: #1E2016;
+  --color-paper: #131516;
+  --color-surface: #1C1F21;
+  --color-surface-muted: #24282A;
   /* Medido: #3E4232 (o valor do e-ink) dava 1.78:1 sobre a surface escura —
      abaixo do minimo de 3:1 da WCAG 1.4.11 para limite de componente. Passava
      despercebido enquanto a identidade tinha sombra e preenchimento; aqui a
@@ -121,46 +141,51 @@
   /* 3.21:1 sobre `surface-muted` e 3.57:1 sobre `surface`. O valor anterior
      (#666B55) media 3.32 contra a surface mas so 2.98 contra a surface-muted,
      que e mais clara — a borda sumia justamente nos paineis. */
-  --color-edge: #6B7059;
+  --color-edge: #737A7E;
+  --color-rule: #2C3033;
   /* O âmbar é ACENTO, não corpo de texto: prosa longa em #FFB000 puro cansa
      numa sessão de 100 questões. O texto fica num branco-quente. */
-  --color-ink: #D8D3BE;
-  --color-muted: #8E8B78;
-  --color-primary: #FFB000;
-  --color-primary-ink: #0B0C08;
-  --color-accent: #B5B2A0;
-  --color-accent-ink: #14150E;
-  --color-success: #6FD49A;
+  --color-ink: #E4E6E4;
+  --color-muted: #9AA0A2;
+  --color-primary: #38A096;
+  /* No escuro a direcao inverte: pressionar CLAREIA, porque aprofundar num
+     fundo escuro faz o botao sumir. */
+  --color-primary-strong: #4FB8AD;
+  --color-primary-ink: #0F1112;
+  --color-accent: #D89440;
+  --color-accent-ink: #131516;
+  --color-success: #4FB3A4;
   --color-danger: #F08A8A;
-  --color-warning: #E0B24A;
+  --color-warning: #D89440;
   --color-info: #6FB8F0;
-  --amber-tint: #2A2410;
-  /* No escuro a luz continua vindo do mesmo canto, mas o contraste é menor: um
-     branco puro de realce sobre #14150E viraria uma linha brilhante em vez de
-     um chanfro. */
-  --bevel-light: #6B7059;
-  --bevel-face:  #2A2C22;
-  --bevel-shade: #0F1009;
-  --bevel-frame: #000000;
-  /* A sombra dura é dispositivo do tema CLARO. No escuro ela seria invisível
-     contra o preto — a separação vem de surface > paper mais a borda de 1px.
-     Terminal CRT não tem sombra projetada. */
+  /* 10% da marca sobre a surface escura, e nao 14%: a 14% a propria marca como
+     TEXTO sobre ela dava 4,30:1, abaixo do minimo. A 10% da 4,56:1.
+
+     O preco e que o wash fica sutil no escuro (1,15:1 contra a surface) — um
+     tema escuro tem menos espaco para lavagem. Aceitavel porque todo sitio de
+     selecao carrega borda ou anel junto: o wash reforca, nao carrega sozinho. */
+  --wash-selecao: #1F2C2D;
+  --wash-atencao: #232A28;
+  /* A penumbra é dispositivo do tema CLARO. No escuro ela seria invisível
+     contra o fundo — a separação vem de surface > paper mais a borda de 1px.
+     Medido antes da identidade Facies e continua valendo depois dela: o valor
+     do papel não muda a física de sombra escura sobre fundo escuro. */
   --soft-shadow: none;
   --overlay-shadow: none;
   --range-fill:  var(--color-primary);
-  --range-rest:  #33362F;
+  --range-rest:  #2C3033;
   --range-thumb: var(--color-primary);
 
   /* Paleta de área no escuro. Sem estes overrides, os hexes saturados do
      tema claro ficam ilegíveis sobre o papel #0B0C08 — é o que acontecia
      nos gráficos da Evolução. Brilhos compatíveis com fósforo, >= 4.5:1. */
-  --area-cm:  #55FF55;
-  --area-cg:  #FF5555;
-  --area-go:  #FF55FF;
-  --area-ob:  #8A8AFF;
-  --area-ped: #55FFFF;
-  --area-mp:  #FFFF55;
-  --area-ou:  #AAAAAA;
+  --area-cm:  #4FA8DE;
+  --area-cg:  #EE8A45;
+  --area-go:  #E0A0C0;
+  --area-ob:  #E0A0C0;
+  --area-ped: #43C6A0;
+  --area-mp:  #F0B84A;
+  --area-ou:  #9AA0A2;
   --area-full-exam: var(--color-primary);
 }
 
@@ -190,14 +215,14 @@
     @apply border-edge;
   }
 
-  /* Campo afundado de verdade agora: o relevo invertido diz "aqui se digita"
-     pela forma, não só pelo contraste de fundo. Sem `border` — o `inset` já
-     desenha o contorno. */
+  /* Campo com CONTORNO, não com relevo invertido. O afundado do Win98 dizia
+     "aqui se digita" pela forma; num sistema com penumbra real ele lê como
+     defeito de renderização. A borda de 1px sobre superfície elevada diz o
+     mesmo, e é o vocabulário que o resto do sistema já usa. */
   input,
   select,
   textarea {
-    @apply chrome-sunken bg-paper outline-none px-3 py-2 text-sm text-ink;
-    border: 0;
+    @apply border border-edge bg-surface outline-none px-3 py-2 text-sm text-ink;
     border-radius: var(--radius-control);
     /* Um input sem largura declarada dimensiona pela largura do CARACTERE, e a
        mono e' bem mais larga que a proporcional que estava aqui antes — somada
@@ -207,14 +232,15 @@
     max-width: 100%;
   }
 
-  /* O halo de 3px era um anel difuso — vocabulário moderno, e ele apagava o
-     relevo afundado que acabou de ser desenhado. O foco fica pontilhado por
-     dentro, e o campo mantém a forma. */
+  /* Foco contínuo POR FORA. O pontilhado por dentro era a convenção do Win95 e
+     existia para não apagar o relevo afundado — que também saiu. Com raio no
+     sistema, o anel acompanha a forma do controle. */
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible {
-    outline: 1px dotted var(--color-ink);
-    outline-offset: -4px;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-color: var(--color-primary);
   }
 
   input::placeholder,
@@ -241,11 +267,8 @@
     border-radius: var(--radius-surface);
   }
 
-  /* Sem `rounded-full`: a pílula era a geometria da identidade anterior.
-     Ganha relevo porque chip é controle — clica-se nele. */
   .km-chip {
-    @apply chrome-raised inline-flex items-center gap-1.5 bg-surfaceMuted px-3 py-1 text-xs font-medium text-ink;
-    border: 0;
+    @apply inline-flex items-center gap-1.5 border border-edge bg-surfaceMuted px-3 py-1 text-xs font-medium text-ink;
     border-radius: var(--radius-control);
     transition: background-color var(--motion-fast) var(--ease-paper), border-color var(--motion-fast) var(--ease-paper), color var(--motion-fast) var(--ease-paper);
   }
@@ -258,18 +281,18 @@
     background: color-mix(in srgb, var(--color-surface-muted) 74%, transparent);
   }
 
-  .paper-surface {
-    @apply border border-edge bg-surface;
-    border-radius: var(--radius-surface);
-  }
-
   .paper-control {
     border-radius: var(--radius-control);
     transition: background-color var(--motion-fast) var(--ease-paper), border-color var(--motion-fast) var(--ease-paper), color var(--motion-fast) var(--ease-paper), opacity var(--motion-fast) var(--ease-paper);
   }
 
+  /* O rotulo do sistema — o `.label` da Facies.
+     Mono porque rotulo e' DADO, nao prosa: a mesma familia dos numeros, tempos e
+     percentuais. O tracking de .08em e o da folha; o de .14em vinha do
+     versalete do KROS/DOS e era largo demais para 11px em mono. */
   .paper-eyebrow {
-    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-muted;
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted;
+    line-height: 1.35;
   }
 
   /* Superficie provisoria: vazio, placeholder ou espaco reservado. O tracejado
@@ -299,50 +322,31 @@
      `linear-gradient` repetido corta o preenchimento em blocos de 12px com 2px
      de folga. E a UNICA linguagem de carregamento do app; o spinner girando e
      o skeleton pulsante saíram os dois. */
+  /* Trilho fino. A altura de 1rem existia para caber os segmentos da barra de
+     blocos; continua, ela le melhor discreta. */
   .load-bar {
     display: block;
-    height: 1rem;
-    padding: 2px;
-    border: 1px solid var(--color-edge);
-    background: var(--color-surface);
+    height: 4px;
+    overflow: hidden;
+    border-radius: var(--radius-control);
+    background: var(--color-surface-muted);
   }
 
+  /* Continua, na cor da marca. Os blocos de 12px com 2px de folga eram a
+     receita do 98.css — a barra de progresso do Win95 redesenhada a mao. */
   .load-bar__fill {
     display: block;
     height: 100%;
-    background-image: linear-gradient(
-      90deg,
-      var(--color-primary) 0 12px,
-      transparent 12px 14px
-    );
-    background-size: 14px 100%;
-    background-repeat: repeat-x;
+    border-radius: var(--radius-control);
+    background: var(--color-primary);
+    transition: width var(--motion-base) var(--ease-paper);
   }
 
-  /* Indeterminado: os blocos MARCHAM. Determinado nao anima — a largura ja
+  /* Indeterminado: um trecho ATRAVESSA. Determinado nao anima — a largura ja
      carrega a informacao, e movimento em cima dela so atrapalha a leitura. */
   .load-bar__fill--indeterminate {
-    animation: load-bar-march 640ms linear infinite;
-  }
-
-  /* Cursor de bloco piscando. `step-end` e obrigatorio: um cursor que
-     desvanece e um cursor de 2015. Este acende e apaga. */
-  .chrome-cursor {
-    display: inline-block;
-    width: 0.5em;
-    height: 1em;
-    margin-left: 0.15em;
-    vertical-align: text-bottom;
-    background: currentColor;
-    animation: chrome-blink 1060ms step-end infinite;
-  }
-
-  /* Alerta que pisca em degrau — cronometro estourado, prazo vencido. O
-     `animate-pulse` do Tailwind desvanece com curva suave: e o oposto do
-     alerta duro da epoca, e le como decoracao. Piso em 0.35 para o numero
-     continuar legivel no ciclo apagado. */
-  .chrome-urgent {
-    animation: chrome-urgent-blink 900ms step-end infinite;
+    width: 40%;
+    animation: load-bar-sweep 1200ms var(--ease-paper) infinite;
   }
 
   .paper-overlay {
@@ -350,23 +354,17 @@
   }
 
   .paper-skeleton {
-    /* NAO e um skeleton: e um campo vazio, e ele se assume vazio.
+    /* NAO e um skeleton animado: e um campo vazio, e ele se assume vazio.
 
-       O shimmer/respiro que estava aqui simula conteudo chegando — a mesma
-       mentira do placeholder moderno, e nada parecido existia em 1997. O que
-       existia era a RETICULA: 1 pixel aceso a cada 2x2, o padrao de 25% que o
-       Windows usava para "area sem conteudo". Ela e estatica de proposito, e
-       por isso 200 blocos na tela nao pulsam juntos.
+       O shimmer que simula conteudo chegando fica de fora pela regra do §8.4 —
+       ele nao explica nada, so entretem enquanto se espera. A reticula de 1px a
+       cada 2x2 que estava aqui explicava menos ainda: era o padrao do Windows
+       para "area sem conteudo", e saiu com a identidade dele.
 
-       `background-image` e nao `background-color`: dezenas de sitios ja
-       trazem seu proprio `bg-*`, e a reticula desenha POR CIMA dele em vez de
-       brigar na cascata.
-
-       `conic-gradient` com paradas duras nao interpola — sem antisserrilhado,
-       que e exatamente o ponto. */
-    background-color: var(--color-paper);
-    background-image: conic-gradient(var(--color-edge) 25%, transparent 0);
-    background-size: 2px 2px;
+       O que a reticula acertava e sobrevive: ela e ESTATICA. Duzentos blocos na
+       tela nao pulsam juntos. */
+    background-color: var(--color-surface-muted);
+    border-radius: var(--radius-control);
   }
 
   .student-page {
@@ -387,295 +385,51 @@
      escuro" quatro vezes. Régua = border. Barra = role="progressbar" com
      repeating-linear-gradient. Colchete de botão = ::before/::after. */
 
-  /* ── Relevo de controle ─────────────────────────────────────────────────
-     Duas camadas de `inset`, quatro cores. Desenha DENTRO da caixa, sobre o
-     fundo — por isso o elemento não precisa de `border`, e quem usa estas
-     classes deve remover a sua. */
-  .chrome-raised {
-    box-shadow:
-      inset -1px -1px 0 var(--bevel-frame),
-      inset  1px  1px 0 var(--bevel-light),
-      inset -2px -2px 0 var(--bevel-shade),
-      inset  2px  2px 0 var(--bevel-face);
-  }
+  /* Ação principal tem UMA aparência — e ela é em SENTENÇA.
 
-  /* Afundado: as quatro cores trocam de canto. Serve tanto ao campo de texto
-     quanto ao botão pressionado — no Win98 são o mesmo desenho. */
-  .chrome-sunken,
-  .chrome-raised:active:not(:disabled) {
-    box-shadow:
-      inset -1px -1px 0 var(--bevel-light),
-      inset  1px  1px 0 var(--bevel-frame),
-      inset -2px -2px 0 var(--bevel-face),
-      inset  2px  2px 0 var(--bevel-shade);
-  }
+     Aqui existia um seletor de atributo que forçava `uppercase` +
+     `letter-spacing: .11em` em todo `<button class="bg-primary">`. Ele resolvia
+     um problema real do KROS/DOS: 51 botões crus não passam pelo primitivo
+     `Button`, e apareciam em caixa mista ao lado de "[ MONTAR SESSÃO ]" em
+     versalete.
 
-  /* Sem isto o relevo inverte mas nada se move, e o clique lê como troca de
-     cor em vez de afundamento.
+     Ele morre com a razão dele. O versal espaçado é idioma de console; nesta
+     identidade ele fica restrito ao rótulo de 11px em mono (`.paper-eyebrow`).
+     Sem o seletor, os 51 botões crus herdam a tipografia do corpo — que é a
+     certa, e é o que o `Button` já faz.
 
-     O Win98 mantém a caixa parada e desloca só o rótulo, via padding. Aqui não
-     dá: o padding vem de utilitário Tailwind, que fica em `@layer utilities` —
-     depois de `components` no cascade — e venceria qualquer padding declarado
-     aqui. O deslocamento de 1px na caixa inteira é o que resta, e a essa escala
-     lê igual. */
-  .chrome-raised:active:not(:disabled) {
-    transform: translate(1px, 1px);
-  }
+     Consequência que vale registrar: um seletor de atributo global é invisível
+     no componente. Quem lesse `Button.tsx` não via de onde vinha o versal. */
 
-  /* Janela. A sombra dura só existe no claro (no escuro o token é `none`). */
-  .chrome-window {
-    @apply border border-edge bg-surface;
-    box-shadow: var(--overlay-shadow);
-  }
+  /* Régua pontilhada de sumário (rótulo … valor).
 
-  /* Ação principal tem UMA aparência.
-
-     O primitivo `Button` cobre 98 call sites; existem 407 `<button>` crus, e
-     51 deles se pintam de `primary` — leem como ação principal e apareciam com
-     outra tipografia ("Continuar" em caixa mista ao lado de "[ MONTAR SESSÃO ]"
-     em versalete). Reescrever 51 layouts seria arriscar 51 quebras; o seletor de
-     atributo alcança todos por aquilo que eles já declaram ser.
-
-     Só tipografia — nem relevo, nem espaçamento: um chip pequeno que use
-     `bg-primary` continua do tamanho que era. */
-  button[class~="bg-primary"],
-  a[class~="bg-primary"],
-  button[class~="bg-danger"],
-  button[class~="bg-success"] {
-    text-transform: uppercase;
-    letter-spacing: 0.11em;
-    font-weight: 600;
-  }
-
-  .chrome-titlebar {
-    @apply flex items-center justify-between bg-primary px-2.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-primaryInk;
-    min-height: 1.625rem;
-  }
-
-  /* Substitui a pílula teal da identidade anterior: o item ativo é um bloco
-     preenchido, sem raio e sem transição de forma. */
-  .chrome-menubar {
-    @apply flex items-center border-b border-edge text-[11px] font-medium uppercase tracking-[0.13em];
-  }
-
-  .chrome-menubar-item {
-    @apply px-4 py-2.5 text-muted;
-  }
-
-  .chrome-menubar-item[aria-current="page"],
-  .chrome-menubar-item[data-active="true"] {
-    @apply bg-primary font-semibold text-primaryInk;
-  }
-
-  .chrome-statusbar {
-    @apply flex items-center border-t border-edge bg-surfaceMuted text-[10px] font-medium uppercase tracking-[0.13em] text-muted;
-  }
-
-  .chrome-statusbar > * {
-    @apply border-r border-edge px-3 py-1.5;
-  }
-
-  .chrome-rule {
-    @apply border-t border-edge;
-  }
-
-  /* Régua pontilhada de sumário (rótulo … valor). Substitui a fileira de
-     pontos que o DOS fazia com caractere. */
-  .chrome-leader {
+     Única peça do lote `chrome-*` que sobrevive à troca de identidade, e por
+     mérito: a Fácies tem `.leader` no §8, o filete que liga rótulo a valor numa
+     linha de sumário. É o gesto do laudo impresso, não o do terminal. */
+  .paper-leader {
     @apply flex-1 border-b border-dotted border-edge;
     margin: 0 0.625rem;
     transform: translateY(-3px);
   }
 
-  /* Colchetes de botão como decoração: geram conteúdo que o leitor de tela
-     ignora, em vez de poluir o rótulo acessível com "[" e "]". */
-  .chrome-bracket::before {
-    content: "[";
-    opacity: 0.55;
-    margin-right: 0.375rem;
+  /* Medidor de VALOR — distinto da `.load-bar`, que é de espera. Mesma forma,
+     semânticas opostas: esta preenche até onde a medida chega e fica parada;
+     aquela anda enquanto não se sabe o fim.
+
+     `--meter-color` deixa o sítio pintar com a cor da área. É uso gráfico, com
+     mínimo de 3:1 (WCAG 1.4.11) — nunca texto. */
+  .paper-meter {
+    @apply overflow-hidden bg-surfaceMuted;
+    border-radius: var(--radius-control);
   }
 
-  .chrome-bracket::after {
-    content: "]";
-    opacity: 0.55;
-    margin-left: 0.375rem;
-  }
-
-  /* Barra de blocos. O preenchimento é gradiente, nunca caractere. */
-  .chrome-meter {
-    @apply border border-edge bg-paper;
-    padding: 1px;
-  }
-
-  .chrome-meter > * {
+  .paper-meter > * {
     height: 100%;
-    background: repeating-linear-gradient(
-      90deg,
-      var(--meter-color, var(--color-primary)) 0 7px,
-      transparent 7px 10px
-    );
+    border-radius: var(--radius-control);
+    background: var(--meter-color, var(--color-primary));
+    transition: width var(--motion-base) var(--ease-paper);
   }
 
-  /* Repouso do item Kros no menu. Classe propria em vez de `bg-primary/8`
-     para nao depender de como o Tailwind resolve modificador de opacidade
-     sobre uma cor declarada como var(). */
-  .nav-kros-item {
-    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-paper));
-    border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
-    @apply text-ink;
-  }
-
-  .nav-kros-item:hover {
-    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-paper));
-    border-color: color-mix(in srgb, var(--color-primary) 46%, transparent);
-  }
-}
-
-/* Desenho de traco. Depende de `pathLength="100"` no SVG, o que dispensa
-   medir geometria em JS — e por ser CSS, o bloco global de
-   `prefers-reduced-motion` no fim deste arquivo ja desliga tudo. */
-@keyframes kros-draw {
-  from { stroke-dashoffset: 100; }
-  to { stroke-dashoffset: 0; }
-}
-
-@keyframes kros-node-in {
-  from { opacity: 0; transform: scale(0.2); }
-  to { opacity: 0.62; transform: scale(1); }
-}
-
-@keyframes kros-core-in {
-  from { opacity: 0; transform: scale(0.2); }
-  to { opacity: 0.95; transform: scale(1); }
-}
-
-/* Arco que circunda o icone da Kros: uma volta em ~3,2s dentro de um ciclo
-   de 24s. O movimento fica na borda do icone, longe do texto que se le.
-   A acao fica na segunda metade do ciclo de proposito: quando o menu abre, a
-   volta de apresentacao ("wake") toca e o loop ambiente reinicia do zero — se
-   a acao estivesse no inicio, as duas tocariam coladas. Assim a proxima volta
-   so acontece ~14s depois. Os atrasos dos nos abaixo somam o mesmo deslocamento. */
-@keyframes kros-orbit {
-  0%, 58.5% { stroke-dashoffset: 0; opacity: 0; }
-  60% { opacity: 0.28; }
-  70% { opacity: 0.28; }
-  71.8% { stroke-dashoffset: -100; opacity: 0; }
-  100% { stroke-dashoffset: -100; opacity: 0; }
-}
-
-@keyframes kros-orbit-once {
-  0% { stroke-dashoffset: 0; opacity: 0; }
-  10% { opacity: 0.28; }
-  84% { opacity: 0.28; }
-  100% { stroke-dashoffset: -100; opacity: 0; }
-}
-
-/* Cada no responde no instante em que o arco passa por ele. */
-@keyframes kros-node-blink {
-  0%, 100% { opacity: 0.62; }
-  0.6% { opacity: 1; }
-  3% { opacity: 0.62; }
-}
-
-@keyframes kros-core-breathe {
-  0%, 100% { opacity: 0.95; transform: scale(1); }
-  1.5% { opacity: 1; transform: scale(1.16); }
-  5% { opacity: 0.95; transform: scale(1); }
-}
-
-/* ── Icone da Kros (components/KrosGlyph.tsx) ───────────────────────────── */
-.kros-glyph {
-  display: block;
-  overflow: visible;
-}
-
-.kros-glyph .kg-link {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.3;
-  stroke-linecap: round;
-  opacity: 0.4;
-  stroke-dasharray: 100;
-  stroke-dashoffset: 0;
-}
-
-.kros-glyph .kg-chord {
-  stroke-width: 1.1;
-  opacity: 0.24;
-}
-
-.kros-glyph .kg-node {
-  fill: currentColor;
-  opacity: 0.62;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.kros-glyph .kg-core {
-  fill: currentColor;
-  opacity: 0.95;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.kros-glyph .kg-orbit {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.1;
-  stroke-linecap: round;
-  stroke-dasharray: 20 80;
-  stroke-dashoffset: 0;
-  opacity: 0;
-}
-
-.kros-glyph[data-kros-motion="ambient"] .kg-orbit {
-  animation: kros-orbit var(--motion-ambient) linear infinite;
-}
-.kros-glyph[data-kros-motion="ambient"] .kg-node {
-  animation: kros-node-blink var(--motion-ambient) var(--ease-paper) infinite;
-}
-.kros-glyph[data-kros-motion="ambient"] .kg-core {
-  animation: kros-core-breathe var(--motion-ambient) var(--ease-paper) infinite;
-}
-/* Atrasos = 14,04s (inicio da volta, ver kros-orbit) + a posicao angular de
-   cada no ao longo do arco. */
-.kros-glyph[data-kros-motion="ambient"] .kg-n-e { animation-delay: 14.41s; }
-.kros-glyph[data-kros-motion="ambient"] .kg-n-d { animation-delay: 15.19s; }
-.kros-glyph[data-kros-motion="ambient"] .kg-n-a { animation-delay: 15.88s; }
-.kros-glyph[data-kros-motion="ambient"] .kg-n-b { animation-delay: 16.39s; }
-.kros-glyph[data-kros-motion="ambient"] .kg-n-c { animation-delay: 16.98s; }
-.kros-glyph[data-kros-motion="ambient"] .kg-core { animation-delay: 16.64s; }
-
-/* Abertura do menu: nucleo aparece, conexoes se estendem, nos acendem e o
-   arco da uma volta de apresentacao. */
-.kros-glyph[data-kros-motion="wake"] .kg-core {
-  animation: kros-core-in 220ms var(--ease-cozy) both;
-}
-.kros-glyph[data-kros-motion="wake"] .kg-link {
-  animation: kros-draw 240ms var(--ease-cozy) both;
-}
-.kros-glyph[data-kros-motion="wake"] .kg-l1 { animation-delay: 130ms; }
-.kros-glyph[data-kros-motion="wake"] .kg-l2 { animation-delay: 175ms; }
-.kros-glyph[data-kros-motion="wake"] .kg-l3 { animation-delay: 220ms; }
-.kros-glyph[data-kros-motion="wake"] .kg-l4 { animation-delay: 265ms; }
-.kros-glyph[data-kros-motion="wake"] .kg-l5 { animation-delay: 310ms; }
-.kros-glyph[data-kros-motion="wake"] .kg-chord { animation-delay: 380ms; }
-.kros-glyph[data-kros-motion="wake"] .kg-node {
-  animation: kros-node-in 190ms var(--ease-cozy) both;
-}
-.kros-glyph[data-kros-motion="wake"] .kg-n-a { animation-delay: 320ms; }
-.kros-glyph[data-kros-motion="wake"] .kg-n-b { animation-delay: 365ms; }
-.kros-glyph[data-kros-motion="wake"] .kg-n-c { animation-delay: 410ms; }
-.kros-glyph[data-kros-motion="wake"] .kg-n-d { animation-delay: 455ms; }
-.kros-glyph[data-kros-motion="wake"] .kg-n-e { animation-delay: 500ms; }
-.kros-glyph[data-kros-motion="wake"] .kg-orbit {
-  animation: kros-orbit-once 1500ms linear 420ms both;
-}
-
-/* Enquanto a prova e montada, o arco nao para de circundar. */
-.kros-glyph[data-kros-motion="busy"] .kg-orbit {
-  opacity: 1;
-  animation: kros-orbit-once 1300ms linear infinite;
 }
 
 /* ── Graficos ───────────────────────────────────────────────────────────── */
@@ -694,18 +448,16 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes load-bar-march {
-  to { background-position-x: 14px; }
-}
-
-@keyframes chrome-urgent-blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0.35; }
-}
-
-@keyframes chrome-blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+/* O trecho atravessa o trilho. `translateX` e nao `background-position`:
+   transform nao provoca repintura de layout, entao a barra nao custa nada
+   mesmo com varias na tela. */
+@keyframes load-bar-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
 }
 
 /* ── Range slider — cross-browser consistent ─────────────────────────────── */
@@ -826,12 +578,12 @@ input[type="range"]:focus-visible {
   /* Forçar modo claro — evita fundo preto no dark mode. Papel de impressão
      é branco, não o cinza do "desktop": um flood de #B8B8AE bebe tinta. */
   :root {
-    --color-paper: #FFFFFF;
-    --color-surface: #FFFFFF;
-    --color-surface-muted: #F0EFE8;
-    --color-edge:  #6E6E64;
-    --color-ink:   #14140F;
-    --color-muted: #4A4A42;
+    --color-paper: #131516;
+    --color-surface: #1C1F21;
+    --color-surface-muted: #24282A;
+    --color-edge:  #5F666A;
+    --color-ink:   #E4E6E4;
+    --color-muted: #9AA0A2;
     --overlay-shadow: none;
   }
 

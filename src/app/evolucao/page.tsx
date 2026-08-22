@@ -3,13 +3,20 @@
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { InfoBox as HelpCircle } from "pixelarticons/react";
+import { Info as HelpCircle } from "lucide-react";
 import { Popover } from "radix-ui";
 
 import {
   getQuestionBankPerformance,
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
+import {
+  PISO_N_CELULA,
+  baseDaMedida,
+  classificar,
+  comparavel,
+  valorDaMedida,
+} from "@/lib/exibicaoDeMedida";
 import { queryKeys } from "@/lib/queryKeys";
 import { Alert } from "@/components/ui/Alert";
 import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
@@ -46,8 +53,15 @@ const RANGE_OPTIONS = [
 type RangeValue = (typeof RANGE_OPTIONS)[number]["value"];
 
 
-function accuracy(value: number | null | undefined): string {
-  return value == null ? "Sem base" : `${Math.round(value * 100)}%`;
+/**
+ * §13.3: percentual só sai quando há base.
+ *
+ * Esta função recebia SÓ a taxa, e por isso não tinha como saber o denominador
+ * — "100%" sobre uma questão saía idêntico a "100%" sobre duzentas. O `n` agora
+ * é obrigatório, e a decisão mora em `classificar`.
+ */
+function accuracy(value: number | null | undefined, n: number | null | undefined): string {
+  return valorDaMedida(classificar(value, n));
 }
 
 
@@ -69,7 +83,7 @@ function MetricHelp({ text }: { text: string }) {
           side="bottom"
           align="start"
           sideOffset={8}
-          className="paper-overlay z-[100] max-w-72 border border-edge bg-ink px-3 py-2 text-xs leading-5 text-paper shadow-overlay"
+          className="paper-overlay z-[100] max-w-72 rounded-control border border-edge bg-ink px-3 py-2 text-xs leading-5 text-paper shadow-overlay"
         >
           {text}
           <Popover.Arrow className="fill-ink" />
@@ -126,9 +140,17 @@ export default function EvolucaoPage() {
   const loadFailed = performanceQuery.isError;
 
   const areaSummary = useMemo(() => {
-    const areas = (performance?.areas ?? []).filter((area) => area.questions_seen > 0 && area.accuracy !== null);
+    // `questions_seen > 0` deixava UMA questão eleger a melhor e a pior área. O
+    // piso do §13.3 é o mesmo do dataset público, e comparar exige estar acima
+    // dele: ordenar por uma taxa sem base é ordenar ruído.
+    const areas = (performance?.areas ?? []).filter((area) =>
+      comparavel(classificar(area.accuracy, area.questions_seen)),
+    );
     if (!areas.length) return { strongest: null, attention: null };
     const sorted = [...areas].sort((a, b) => (b.accuracy ?? 0) - (a.accuracy ?? 0));
+    // Uma área só não produz "melhor E pior": seria a mesma célula com dois
+    // rótulos opostos, o que faz a tela parecer ter medido uma diferença.
+    if (sorted.length < 2) return { strongest: sorted[0], attention: null };
     return { strongest: sorted[0], attention: sorted[sorted.length - 1] };
   }, [performance]);
 
@@ -165,27 +187,49 @@ export default function EvolucaoPage() {
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <SummaryMetric
                 label="Primeira tentativa"
-                value={accuracy(performance?.first_attempt_accuracy)}
-                detail={`${performance?.first_attempt_correct ?? 0} acertos em ${performance?.unique_questions ?? 0} questões únicas`}
+                value={accuracy(performance?.first_attempt_accuracy, performance?.unique_questions)}
+                detail={baseDaMedida(
+                  classificar(performance?.first_attempt_accuracy, performance?.unique_questions),
+                  "questões únicas",
+                )}
                 help="Usa somente a primeira resposta a cada questão, evitando que repetições inflem o percentual."
               />
               <SummaryMetric
                 label="Após revisões"
-                value={accuracy(performance?.repeat_accuracy)}
-                detail={`${performance?.repeat_correct ?? 0} acertos em ${performance?.repeat_attempts ?? 0} respostas repetidas`}
+                value={accuracy(performance?.repeat_accuracy, performance?.repeat_attempts)}
+                detail={baseDaMedida(
+                  classificar(performance?.repeat_accuracy, performance?.repeat_attempts),
+                  "respostas repetidas",
+                )}
                 help="Mostra respostas dadas a questões já vistas. Esta taxa não altera a métrica diagnóstica."
                 tone="accent"
               />
               <SummaryMetric
                 label="Melhor área"
-                value={areaSummary.strongest ? accuracy(areaSummary.strongest.accuracy) : "Sem base"}
-                detail={areaSummary.strongest ? `${areaSummary.strongest.label} · ${areaSummary.strongest.questions_seen} questões` : "Responda questões para formar sua leitura"}
+                value={
+                  areaSummary.strongest
+                    ? accuracy(areaSummary.strongest.accuracy, areaSummary.strongest.questions_seen)
+                    : "Não avaliado"
+                }
+                detail={
+                  areaSummary.strongest
+                    ? `${areaSummary.strongest.label} · ${areaSummary.strongest.questions_seen} questões`
+                    : `Nenhuma área chegou a ${PISO_N_CELULA} questões`
+                }
                 tone="success"
               />
               <SummaryMetric
                 label="Área a observar"
-                value={areaSummary.attention ? accuracy(areaSummary.attention.accuracy) : "Sem base"}
-                detail={areaSummary.attention ? `${areaSummary.attention.label} · ${areaSummary.attention.questions_seen} questões` : "A amostra ainda não permite comparação"}
+                value={
+                  areaSummary.attention
+                    ? accuracy(areaSummary.attention.accuracy, areaSummary.attention.questions_seen)
+                    : "Não avaliado"
+                }
+                detail={
+                  areaSummary.attention
+                    ? `${areaSummary.attention.label} · ${areaSummary.attention.questions_seen} questões`
+                    : "Duas áreas com base são o mínimo para comparar"
+                }
                 tone="neutral"
               />
             </div>

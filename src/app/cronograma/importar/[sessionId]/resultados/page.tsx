@@ -192,7 +192,7 @@ export default function ResultadosPage() {
             {overridesHook.displayCorrect}/{overridesHook.displayTotal} acertos
           </span>
         </div>
-        <div className="h-2 bg-amber-tint/50 border border-edge overflow-hidden">
+        <div className="h-2 bg-[var(--wash-selecao)] border border-edge overflow-hidden">
           <div
             className="h-full transition-all"
             style={{

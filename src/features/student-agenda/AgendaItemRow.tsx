@@ -1,16 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  SquareAlert as AlertTriangle,
-  BookOpen,
-  Calendar,
-  CheckDouble as CheckCircle2,
-  Clock as Clock3,
-  Copy,
-  ListBox,
-  Repeat,
-} from "pixelarticons/react";
+import { TriangleAlert as AlertTriangle, BookOpen, Calendar, CheckCheck as CheckCircle2, Clock as Clock3, Copy, List as ListBox, Repeat } from "lucide-react";
 
 import AreaDot from "@/components/AreaDot";
 import { displayAreaLabel, resolveDisplayArea } from "@/lib/areaDisplay";

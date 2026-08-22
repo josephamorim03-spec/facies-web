@@ -178,7 +178,7 @@ export function AccuracyChart({ state, refs, actions }: Props) {
         {activeAccuracyOverlayLabel && (
           <span
             data-testid="accuracy-overlay-percent-label"
-            className="pointer-events-none absolute z-20 whitespace-nowrap text-nano font-bold leading-none text-ink"
+            className="pointer-events-none absolute z-20 whitespace-nowrap text-micro font-bold leading-none text-ink"
             style={{
               left: activeAccuracyOverlayLabel.placement.left,
               top: activeAccuracyOverlayLabel.placement.top,

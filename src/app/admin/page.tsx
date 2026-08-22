@@ -45,7 +45,7 @@ function StatCard({
 }) {
   return (
     <div className="bg-surface border border-edge p-5">
-      <p className="text-xs font-medium text-muted uppercase tracking-wide mb-1">
+      <p className="paper-eyebrow mb-1">
         {label}
       </p>
       <p className="text-3xl font-bold text-ink">
@@ -82,7 +82,7 @@ function StatCard({
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-sm font-semibold text-muted uppercase tracking-wide mb-3">
+    <h2 className="paper-eyebrow mb-3">
       {children}
     </h2>
   );
@@ -194,10 +194,10 @@ function KeyDistributionChart({
     <dl className="flex h-56 flex-col justify-center gap-3">
       {data.map((entry) => (
         <div key={entry.name} className="grid grid-cols-[7rem_1fr_3rem] items-center gap-3">
-          <dt className="text-micro font-semibold uppercase tracking-[0.1em] text-muted">
+          <dt className="paper-eyebrow">
             {entry.name}
           </dt>
-          <div className="chrome-meter h-3" aria-hidden="true">
+          <div className="paper-meter h-3" aria-hidden="true">
             <div
               style={{
                 width: `${total > 0 ? (entry.value / total) * 100 : 0}%`,
@@ -234,13 +234,13 @@ function TopUsersTable({
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-edge text-left">
-            <th className="pb-2 text-xs font-semibold text-muted uppercase tracking-wide">
+            <th className="paper-eyebrow pb-2">
               #
             </th>
-            <th className="pb-2 text-xs font-semibold text-muted uppercase tracking-wide">
+            <th className="paper-eyebrow pb-2">
               Usuário
             </th>
-            <th className="pb-2 text-xs font-semibold text-muted uppercase tracking-wide text-right">
+            <th className="paper-eyebrow pb-2 text-right">
               Revisões
             </th>
           </tr>
@@ -286,19 +286,19 @@ function MentorBreakdown({
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-edge text-left">
-            <th className="pb-2 pr-3 text-xs font-semibold text-muted uppercase tracking-wide">
+            <th className="paper-eyebrow pb-2 pr-3">
               Mentoria
             </th>
-            <th className="pb-2 pr-3 text-xs font-semibold text-muted uppercase tracking-wide text-right">
+            <th className="paper-eyebrow pb-2 pr-3 text-right">
               Total
             </th>
-            <th className="pb-2 pr-3 text-xs font-semibold text-success uppercase tracking-wide text-right">
+            <th className="paper-eyebrow pb-2 pr-3 text-success text-right">
               Disp.
             </th>
-            <th className="pb-2 pr-3 text-xs font-semibold text-info uppercase tracking-wide text-right">
+            <th className="paper-eyebrow pb-2 pr-3 text-info text-right">
               Ativas
             </th>
-            <th className="pb-2 text-xs font-semibold text-muted uppercase tracking-wide text-right">
+            <th className="paper-eyebrow pb-2 text-right">
               Inat.
             </th>
           </tr>

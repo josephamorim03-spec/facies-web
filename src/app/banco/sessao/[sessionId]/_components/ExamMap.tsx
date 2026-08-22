@@ -33,7 +33,7 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
       <div className="border-b border-edge px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-micro font-semibold uppercase tracking-[0.16em] text-muted">Navegação</p>
+            <p className="paper-eyebrow">Navegação</p>
             <h2 className="mt-0.5 font-serif text-lg font-semibold leading-tight text-ink">
               {sessionKindLabel === "Prova" ? "Mapa da prova" : "Mapa do simulado"}
             </h2>
@@ -49,15 +49,15 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
         </div>
 
         <div className="mt-3 grid grid-cols-3 gap-1.5 text-center text-xs">
-          <div className="border border-edge bg-paper px-2 py-2">
+          <div className="rounded-control border border-edge bg-paper px-2 py-2">
             <p className="font-semibold text-ink">{answered}</p>
             <p className="text-muted">feitas</p>
           </div>
-          <div className="border border-edge bg-paper px-2 py-2">
+          <div className="rounded-control border border-edge bg-paper px-2 py-2">
             <p className="font-semibold text-ink">{open}</p>
             <p className="text-muted">abertas</p>
           </div>
-          <div className="border border-edge bg-paper px-2 py-2">
+          <div className="rounded-control border border-edge bg-paper px-2 py-2">
             <p className="font-semibold text-warning">{marked}</p>
             <p className="text-muted">marcadas</p>
           </div>
@@ -67,7 +67,7 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
       <div className="border-b border-edge px-4 py-3">
         <div className="grid grid-cols-2 gap-2 text-xs text-muted">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3 w-3 border border-edge bg-paper" />
+            <span className="inline-block h-3 w-3 rounded-control border border-edge bg-paper" />
             Não respondida
           </span>
           <span className="flex items-center gap-1.5">

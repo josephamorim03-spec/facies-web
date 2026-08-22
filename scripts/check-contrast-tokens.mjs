@@ -48,33 +48,33 @@ const FOREGROUND = [
   "--color-danger",
   "--color-warning",
   "--color-info",
-  "--area-go",
-  "--area-ped",
-  "--area-mp",
-  "--area-cg",
-  "--area-cm",
-  "--area-ou",
-  "--area-ob",
-  "--area-full-exam",
+
 ];
 
-/** Tokens usados como FUNDO de texto. */
-const BACKGROUND = ["--color-paper", "--color-surface", "--color-surface-muted", "--amber-tint"];
+/**
+ * Tokens usados como FUNDO de texto.
+ *
+ * Os dois washes entram porque texto de verdade cai sobre eles: o dia
+ * selecionado no calendario, a linha de aviso, o alvo de arrastar. Eram um
+ * token so (`--amber-tint`) servindo selecao E atencao — e um palido quente nao
+ * consegue dizer as duas coisas, entao metade dos 27 call sites estava errada
+ * em qualquer valor unico.
+ */
+const BACKGROUND = [
+  "--color-paper",
+  "--color-surface",
+  "--color-surface-muted",
+  "--wash-selecao",
+  "--wash-atencao",
+];
 
 /** Pares invertidos: tinta clara sobre preenchimento forte. */
 const INVERTED = [
   ["--color-primary-ink", "--color-primary"],
   ["--color-accent-ink", "--color-accent"],
-  // Area como FUNDO. No claro os tons EGA sao escuros e no escuro sao
-  // quase-brancos, entao a tinta que serve nos dois e' `--color-paper` — nunca
-  // branco literal, que passa no claro (8:1) e quebra no escuro (1,8:1).
-  ["--color-paper", "--area-cm"],
-  ["--color-paper", "--area-cg"],
-  ["--color-paper", "--area-go"],
-  ["--color-paper", "--area-ob"],
-  ["--color-paper", "--area-ped"],
-  ["--color-paper", "--area-mp"],
-  ["--color-paper", "--area-ou"],
+  // Nao ha par "tinta sobre area": cor de area deixou de ser fundo de texto
+  // quando `AREA_TEXT_CLASS` foi apagado. O bucket GRAPHICAL, abaixo, e' o que
+  // vale para ela — e o porque esta escrito em `lib/areaIdentity.ts`.
 ];
 
 /** Limite de componente (WCAG 1.4.11): borda contra o que ela separa. */
@@ -82,6 +82,29 @@ const COMPONENT = [
   ["--color-edge", "--color-surface"],
   ["--color-edge", "--color-paper"],
   ["--color-edge", "--color-surface-muted"],
+];
+
+/**
+ * Cor de area — MARCA grafica, nunca texto.
+ *
+ * Ela vive em ponto, barra, faixa e celula, sempre ao lado de um rotulo em
+ * tinta. O rotulo carrega a informacao; a cor e' o atalho. Por isso o minimo e'
+ * o de limite grafico (3:1), e nao o de texto.
+ *
+ * A consequencia pratica, e ela e' uma REGRA: sigla de area se escreve em
+ * `text-ink`, com a cor na barra ao lado. Escrever a sigla NA cor da area exige
+ * 4.5:1, e nenhuma paleta segura para daltonismo entrega isso em sete tons
+ * sobre papel claro — foi exatamente onde a Okabe-Ito reprovou 29 pares.
+ */
+const GRAPHICAL = [
+  "--area-go",
+  "--area-ob",
+  "--area-ped",
+  "--area-mp",
+  "--area-cg",
+  "--area-cm",
+  "--area-ou",
+  "--area-full-exam",
 ];
 
 const TEXT_MIN = 4.5;
@@ -129,9 +152,34 @@ for (const theme of ["light", "dark"]) {
       console.error(`${theme}: ${fg} sobre ${bg} = ${r.toFixed(2)}:1 (min ${COMPONENT_MIN})`);
     }
   }
+  for (const fg of GRAPHICAL) {
+    for (const bg of BACKGROUND) {
+      const a = get(fg);
+      const b = get(bg);
+      if (!a || !b) {
+        failures += 1;
+        console.error(
+          `${theme}: ${!a ? fg : bg} nao resolveu para uma cor — par grafico ${fg}/${bg} NAO foi medido.`,
+        );
+        continue;
+      }
+      const r = ratio(a, b);
+      if (r < COMPONENT_MIN) {
+        failures += 1;
+        console.error(
+          `${theme}: marca ${fg} sobre ${bg} = ${r.toFixed(2)}:1 (min ${COMPONENT_MIN}) — ${a} / ${b}`,
+        );
+      }
+    }
+  }
 }
 
-const combos = (FOREGROUND.length * BACKGROUND.length + INVERTED.length + COMPONENT.length) * 2;
+const combos =
+  (FOREGROUND.length * BACKGROUND.length +
+    INVERTED.length +
+    COMPONENT.length +
+    GRAPHICAL.length * BACKGROUND.length) *
+  2;
 if (failures > 0) {
   console.error(`\nContraste: ${failures} de ${combos} pares abaixo do minimo.`);
   process.exit(1);

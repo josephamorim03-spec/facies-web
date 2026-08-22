@@ -66,7 +66,7 @@ export function GraficosSection({
         <button
           type="button"
           onClick={actions.retryCharts}
-          className="mt-3 border border-edge bg-paper px-3 py-2 text-xs font-semibold text-ink transition hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="mt-3 rounded-control border border-edge bg-paper px-3 py-2 text-xs font-semibold text-ink transition hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Tentar novamente
         </button>
@@ -77,7 +77,7 @@ export function GraficosSection({
   if (!state.hasData) {
     return (
       <ChartCard>
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{rangeLabel}</p>
+        <p className="paper-eyebrow">{rangeLabel}</p>
         <p className="mt-2 text-sm leading-6 text-muted">
           Ainda não há questões suficientes neste período para gerar os gráficos. Conclua uma sessão para começar sua leitura de evolução.
         </p>
@@ -89,7 +89,7 @@ export function GraficosSection({
     <div className="grid gap-4 lg:grid-cols-2">
       <div className="lg:col-span-2">
         <ChartCard>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted">{rangeLabel}</p>
+          <p className="paper-eyebrow mb-3">{rangeLabel}</p>
           <AccuracyChart state={state} refs={refs} actions={actions} />
         </ChartCard>
       </div>

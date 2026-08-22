@@ -65,7 +65,7 @@ export function CalendarEventMoveErrorToast({
 }) {
   if (!message) return null;
   return (
-    <div className="fixed left-1/2 top-3 -translate-x-1/2 z-[85] w-[min(92vw,30rem)] border border-edge bg-paper px-3 py-2">
+    <div className="fixed left-1/2 top-3 -translate-x-1/2 z-[85] w-[min(92vw,30rem)] rounded-control border border-edge bg-paper px-3 py-2">
       <div className="flex items-start gap-2">
         <p className="text-xs text-ink flex-1 leading-snug">{message}</p>
         <button
@@ -183,23 +183,23 @@ function ReadonlyStudyPopupContent({
   return (
     <>
       <div>
-        <p className="text-nano font-semibold uppercase tracking-[0.1em] text-muted">{recordType}</p>
+        <p className="paper-eyebrow">{recordType}</p>
         <p className="mt-0.5 text-sm font-semibold leading-snug text-ink">{displayLabel}</p>
         <p className="mt-1 text-xs text-muted">{secondary}</p>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-center">
-        <div className="border border-edge bg-surface px-2.5 py-2.5">
+        <div className="rounded-control border border-edge bg-surface px-2.5 py-2.5">
           <p className="text-micro text-muted leading-none">Registro</p>
           <p className="mt-1 text-sm font-bold text-ink">{recordType}</p>
         </div>
-        <div className="border border-edge bg-surface px-2.5 py-2.5">
+        <div className="rounded-control border border-edge bg-surface px-2.5 py-2.5">
           <p className="text-micro text-muted leading-none">Questões</p>
           <p className="mt-1 text-sm font-bold text-ink">
             {study.correct_questions}/{study.total_questions}
           </p>
         </div>
-        <div className="border border-edge bg-surface px-2.5 py-2.5">
+        <div className="rounded-control border border-edge bg-surface px-2.5 py-2.5">
           <p className="text-micro text-muted leading-none">Acurácia</p>
           <p className="mt-1 text-sm font-bold text-ink">{study.accuracy.toFixed(0)}%</p>
         </div>
@@ -241,7 +241,7 @@ function EventPopupContent({
   return (
     <>
       <div>
-        <p className="text-nano font-semibold uppercase tracking-[0.1em] text-muted">{kindLabel}</p>
+        <p className="paper-eyebrow">{kindLabel}</p>
         <p className="mt-0.5 text-sm font-semibold leading-snug text-ink">{title}</p>
         <p className="mt-1 text-xs text-muted">
           {displayDate(sourceISO)} - {event.duration_hours}h{completed ? " - concluido" : ""}
@@ -253,7 +253,7 @@ function EventPopupContent({
           <button
             type="button"
             onClick={() => onRescheduleRequest?.(event, sourceISO, iconType)}
-            className="flex w-full items-center justify-center border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="flex w-full items-center justify-center rounded-control border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Reagendar
           </button>
@@ -319,7 +319,7 @@ export function CalendarEntryPopup({
     content = (
       <>
         <div>
-          <p className="text-nano font-semibold uppercase tracking-[0.1em] text-muted">{task.area}</p>
+          <p className="paper-eyebrow">{task.area}</p>
           <p className="mt-0.5 text-sm font-semibold text-ink leading-snug">{displayLabel}</p>
           <p className="mt-1 text-xs text-muted">
             {parentThemeLabel ? `${parentThemeLabel} · ` : ""}Revisão pendente
@@ -328,17 +328,17 @@ export function CalendarEntryPopup({
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-control border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-micro text-muted leading-none">Revisão</p>
             <p className="mt-1 text-lg font-bold text-ink">#{revision}</p>
           </div>
-          <div className="border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-control border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-micro text-muted leading-none">Acerto</p>
             <p className="mt-1 text-lg font-bold text-ink">
               {accuracy !== null ? `${accuracy}%` : "—"}
             </p>
           </div>
-          <div className="border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-control border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-micro text-muted leading-none">Min. q</p>
             <p className="mt-1 text-lg font-bold text-ink">{task.expected_questions}</p>
           </div>
@@ -359,7 +359,7 @@ export function CalendarEntryPopup({
             onClose();
             onRescheduleRequest?.(task);
           }}
-          className="flex w-full items-center justify-center border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex w-full items-center justify-center rounded-control border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Reagendar
         </button>
@@ -375,7 +375,7 @@ export function CalendarEntryPopup({
     content = (
       <>
         <div>
-          <p className="text-nano font-semibold uppercase tracking-[0.1em] text-muted">Revisão concluída</p>
+          <p className="paper-eyebrow">Revisão concluída</p>
           <p className="mt-0.5 text-sm font-semibold text-ink leading-snug">{displayLabel}</p>
           <p className="mt-1 text-xs text-muted">
             {[task.area, parentThemeLabel, `Revisão #${revision}`].filter(Boolean).join(" · ")}
@@ -384,17 +384,17 @@ export function CalendarEntryPopup({
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-control border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-micro text-muted leading-none">Registro</p>
             <p className="mt-1 text-sm font-bold text-ink">Revisão</p>
           </div>
-          <div className="border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-control border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-micro text-muted leading-none">Questões</p>
             <p className="mt-1 text-sm font-bold text-ink">
               {resolvedStudy ? `${resolvedStudy.correct_questions}/${resolvedStudy.total_questions}` : "—"}
             </p>
           </div>
-          <div className="border border-edge bg-surface px-2.5 py-2.5">
+          <div className="rounded-control border border-edge bg-surface px-2.5 py-2.5">
             <p className="text-micro text-muted leading-none">Acurácia</p>
             <p className="mt-1 text-sm font-bold text-ink">
               {resolvedStudy ? `${resolvedStudy.accuracy.toFixed(0)}%` : "—"}
@@ -436,7 +436,7 @@ export function CalendarEntryPopup({
     <>
       <div className="fixed inset-0 z-[60]" onClick={onClose} />
       <div
-        className="fixed z-[61] w-72 max-w-[calc(100vw-1rem)] space-y-3 border border-edge bg-paper p-4 "
+        className="fixed z-[61] w-72 max-w-[calc(100vw-1rem)] space-y-3 rounded-surface border border-edge bg-paper p-4 "
         style={{ top: popupTop, left: popupLeft }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -482,7 +482,7 @@ export function CalendarStudyDeleteConfirmModal({
         role="dialog"
         aria-modal="true"
         aria-label="Apagar estudo"
-        className="w-full max-w-sm space-y-3 border border-edge bg-paper p-4 "
+        className="w-full max-w-sm space-y-3 rounded-surface border border-edge bg-paper p-4 "
         onClick={(event) => event.stopPropagation()}
       >
         <h3 className="font-serif text-base">Apagar estudo</h3>
@@ -551,11 +551,11 @@ export function CalendarEventRescheduleSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Reagendar compromisso"
-        className="w-full border border-edge bg-paper p-4 md:max-w-sm "
+        className="w-full rounded-surface border border-edge bg-paper p-4 md:max-w-sm "
         onClick={(eventClick) => eventClick.stopPropagation()}
       >
         <div>
-          <p className="text-nano font-semibold uppercase tracking-[0.1em] text-muted">Compromisso</p>
+          <p className="paper-eyebrow">Compromisso</p>
           <h3 className="mt-1 text-base font-semibold leading-snug text-ink">{title}</h3>
           <p className="mt-1 text-xs text-muted">Data atual: {displayDate(selectedSourceISO)}</p>
         </div>
@@ -566,7 +566,7 @@ export function CalendarEventRescheduleSheet({
             type="date"
             value={date}
             onChange={(eventChange) => setDate(eventChange.target.value)}
-            className="mt-2 min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="mt-2 min-h-11 w-full rounded-control border border-edge bg-paper px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
         </label>
 
@@ -637,11 +637,11 @@ export function CalendarTaskRescheduleSheet({
         role="dialog"
         aria-modal="true"
         aria-label="Reagendar atividade"
-        className="w-full border border-edge bg-paper p-4 md:max-w-sm "
+        className="w-full rounded-surface border border-edge bg-paper p-4 md:max-w-sm "
         onClick={(event) => event.stopPropagation()}
       >
         <div>
-          <p className="text-nano font-semibold uppercase tracking-[0.1em] text-muted">{selectedTask.area}</p>
+          <p className="paper-eyebrow">{selectedTask.area}</p>
           <h3 className="mt-1 text-base font-semibold leading-snug text-ink">{selectedTask.subtheme || selectedTask.theme}</h3>
           <p className="mt-1 text-xs text-muted">Data atual: {displayDate(fromISO)}</p>
         </div>
@@ -652,7 +652,7 @@ export function CalendarTaskRescheduleSheet({
             type="date"
             value={date}
             onChange={(event) => setDate(event.target.value)}
-            className="mt-2 min-h-11 w-full border border-edge bg-paper px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="mt-2 min-h-11 w-full rounded-control border border-edge bg-paper px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
         </label>
 
@@ -688,7 +688,7 @@ export function CalendarUndoRescheduleToast({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] z-[90] mx-auto max-w-md border border-edge bg-paper px-3 py-2.5 ">
+    <div className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] z-[90] mx-auto max-w-md rounded-control border border-edge bg-paper px-3 py-2.5 ">
       <div className="flex items-center gap-3">
         <p className="min-w-0 flex-1 text-sm leading-snug text-ink">{message}</p>
         <button
@@ -777,7 +777,7 @@ export function CalendarEventDeleteConfirmModal({
   if (!eventDeleteConfirm) return null;
   return (
     <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4 modal-backdrop">
-      <div className="w-full max-w-sm space-y-3 border border-edge bg-paper p-4">
+      <div className="w-full max-w-sm space-y-3 rounded-surface border border-edge bg-paper p-4">
         <h3 className="font-serif text-base">Apagar compromisso</h3>
         <p className="text-sm text-muted">Você tem certeza que deseja apagar esse compromisso?</p>
         <div className="flex flex-col gap-2">
@@ -811,7 +811,7 @@ export function CalendarRescheduleWarningModal({
   if (!warnTask) return null;
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4 modal-backdrop">
-      <div className="w-full max-w-sm space-y-3 border border-edge bg-paper p-4">
+      <div className="w-full max-w-sm space-y-3 rounded-surface border border-edge bg-paper p-4">
         <h3 className="font-serif text-base">Reagendamento longo</h3>
         <p className="text-sm text-muted">
           Esta revisão está <strong>{warnTask.days} dias</strong> fora do agendamento ideal. Deseja continuar?

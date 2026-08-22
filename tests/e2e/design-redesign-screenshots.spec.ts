@@ -403,7 +403,7 @@ async function mockDesignApi(page: Page) {
     if (method === "POST" && path.includes("/api/trainer/recommendations/")) return json(route, { event_id: "event-design", recommendation_id: "design", event_type: "shown", occurred_at: NOW });
 
     if (method === "GET" && path === "/api/notes/operational/streak") {
-      return json(route, { streak_days: 7, streak_max: 18, streak_at_risk: false, streak_reviews: 6, streak_flashcards_seen: 74, weekly_study_days: 5, active_protection: false, protection_window_end: null });
+      return json(route, { streak_days: 7, streak_max: 18, streak_at_risk: false, streak_reviews: 6, streak_flashcards_seen: 74, weekly_study_days: 5, weekly_protected_days: 2, active_protection: false, protection_window_end: null });
     }
     if (method === "GET" && path === "/api/notes/operational/turbo/overview") return json(route, reviewQueue().flashcards_overview);
     if (method === "GET" && path === "/api/notes/operational/turbo/area-stats") {

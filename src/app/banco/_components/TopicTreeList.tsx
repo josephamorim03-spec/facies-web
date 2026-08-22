@@ -43,7 +43,7 @@ function TopicTreeItem({
     <div id={`topic-node-${node.knowledge_node_id}`} style={{ paddingLeft: `${indent}px` }}>
       <div className={cx(
         "flex min-w-0 items-start gap-2 border p-2.5 transition-colors",
-        checked ? "border-primary bg-[var(--amber-tint)]" : "border-transparent",
+        checked ? "border-primary bg-[var(--wash-selecao)]" : "border-transparent",
         highlightedId === node.knowledge_node_id && "ring-2 ring-primary ring-offset-2 ring-offset-paper",
         selectable ? "hover:border-edge hover:bg-surface" : "opacity-75",
       )}>
@@ -51,7 +51,7 @@ function TopicTreeItem({
           <button
             type="button"
             onClick={() => onToggleExpand(node.knowledge_node_id)}
-            className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center border border-edge bg-surface text-xs text-muted hover:border-primary hover:text-ink"
+            className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-edge bg-surface text-xs text-muted hover:border-primary hover:text-ink"
             aria-label={expanded ? `Recolher ${node.node_name}` : `Expandir ${node.node_name}`}
             aria-expanded={expanded}
           >
@@ -79,7 +79,7 @@ function TopicTreeItem({
               <span className="mt-0.5 block text-xs text-muted">{node.question_count} questões nesse grupo</span>
             )}
             {!node.synthetic && node.question_count === 0 && (
-              <span className="mt-1 inline-block border border-edge bg-surfaceMuted px-2 py-0.5 text-micro font-medium text-muted">
+              <span className="mt-1 inline-block rounded-control border border-edge bg-surfaceMuted px-2 py-0.5 text-micro font-medium text-muted">
                 0 questões · em curadoria
               </span>
             )}

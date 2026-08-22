@@ -412,7 +412,7 @@ export default function AdminKeysPage() {
                 placeholder="Nome da mentoria"
                 required
                 list="mentor-labels"
-                className="w-full px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+                className="w-full px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
               />
               <datalist id="mentor-labels">
                 {distinctLabels.map((l) => (
@@ -430,7 +430,7 @@ export default function AdminKeysPage() {
                 max={100}
                 value={createQty}
                 onChange={(e) => setCreateQty(Number(e.target.value))}
-                className="w-full px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+                className="w-full px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
               />
             </div>
             <div>
@@ -438,7 +438,7 @@ export default function AdminKeysPage() {
               <select
                 value={createDays}
                 onChange={(e) => setCreateDays(Number(e.target.value))}
-                className="w-full px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+                className="w-full px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
               >
                 <option value={30}>30 dias</option>
                 <option value={60}>60 dias</option>
@@ -455,7 +455,7 @@ export default function AdminKeysPage() {
                   value={createCustomDays}
                   onChange={(e) => setCreateCustomDays(e.target.value)}
                   placeholder="Nº de dias"
-                  className="w-full mt-1.5 px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+                  className="w-full mt-1.5 px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
                 />
               )}
             </div>
@@ -534,7 +534,7 @@ export default function AdminKeysPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por código, mentoria ou usuário..."
-            className="w-full pl-8 pr-3 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+            className="w-full pl-8 pr-3 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
           />
         </div>
 
@@ -543,7 +543,7 @@ export default function AdminKeysPage() {
           <select
             value={filterLabel}
             onChange={(e) => setFilterLabel(e.target.value)}
-            className="px-2.5 py-2 border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
+            className="px-2.5 py-2 rounded-control border border-edge bg-paper text-ink text-sm focus:outline-none focus:ring-1 focus:ring-ink/20"
           >
             <option value="">Todas mentorias</option>
             {distinctLabels.map((l) => (
@@ -555,7 +555,7 @@ export default function AdminKeysPage() {
         )}
 
         {/* Hide inactive toggle */}
-        <label className="flex items-center gap-2 text-sm text-muted cursor-pointer select-none whitespace-nowrap px-2.5 py-2 border border-edge bg-paper hover:bg-edge/10 transition-colors">
+        <label className="flex items-center gap-2 text-sm text-muted cursor-pointer select-none whitespace-nowrap px-2.5 py-2 rounded-control border border-edge bg-paper hover:bg-edge/10 transition-colors">
           <input
             type="checkbox"
             checked={hideInactive}
@@ -701,7 +701,7 @@ export default function AdminKeysPage() {
                           onChange={(e) =>
                             setExtendDays(Number(e.target.value))
                           }
-                          className="w-16 px-1.5 py-1 text-xs border border-edge bg-paper text-ink focus:outline-none"
+                          className="w-16 px-1.5 py-1 text-xs rounded-control border border-edge bg-paper text-ink focus:outline-none"
                         />
                         <Button
                           size="xs"

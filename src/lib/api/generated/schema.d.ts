@@ -89,6 +89,89 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/facies/sinal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registrar Sinal
+         * @description Registra um evento anônimo da Fácies pública.
+         *
+         *     SEM AUTENTICAÇÃO, de propósito: o público desta rota é quem ainda não tem
+         *     conta — é justamente a pessoa cuja passagem precisa ser contada.
+         *
+         *     Devolve `ok` mesmo para evento fora da allowlist. O cliente não tem nada a
+         *     fazer com o erro, e responder 400 daria a quem sondar a rota um oráculo para
+         *     descobrir a lista de eventos válidos. O evento desconhecido simplesmente não
+         *     entra na tabela.
+         */
+        post: operations["registrar_sinal_facies_sinal_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/facies/interesse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registrar Interesse
+         * @description Guarda o e-mail de quem quer acompanhar a fácies da banca dele.
+         *
+         *     Duas coisas que o endpoint NÃO faz, e as duas são deliberadas:
+         *
+         *     **Não confirma se o e-mail já estava na base.** Responder de forma diferente
+         *     para e-mail novo e e-mail existente transforma a rota num verificador de
+         *     cadastro: qualquer um descobre se um endereço usa o produto. A resposta é a
+         *     mesma nos dois casos.
+         *
+         *     **Não guarda o IP.** Ele é usado no balde do rate limit, em memória, e
+         *     descartado. Persistir IP ao lado do e-mail criaria dado pessoal adicional
+         *     para uma finalidade que ninguém declarou.
+         */
+        post: operations["registrar_interesse_facies_interesse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/facies/descadastrar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Descadastrar
+         * @description Para de enviar os avisos. Um clique, sem conta e sem expor o e-mail.
+         *
+         *     Responde ok para token válido, já cancelado E inexistente. Diferenciar
+         *     daria a quem sondasse a rota um oráculo para descobrir quais tokens existem
+         *     — e a pessoa que clicou não tem nada a fazer com a diferença.
+         */
+        post: operations["descadastrar_facies_descadastrar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ops/access-keys/batch": {
         parameters: {
             query?: never;
@@ -2030,11 +2113,12 @@ export interface paths {
         };
         /**
          * Get Navigation Prompt
-         * @description Presets e valores sugeridos para a pergunta de tempo e energia.
+         * @description O dimensionamento do dia: quantos minutos, com que energia, e por quê.
          *
-         *     Não é a resposta: a tela ainda pergunta os dois. Isto é o que torna a
-         *     pergunta barata — presets vindos da rotina do aluno e energia já
-         *     pré-selecionada pelo check-in do dia.
+         *     Isto **é** a resposta, não os presets de uma pergunta. Os minutos vêm do
+         *     calendário e a energia do comportamento observado; `blocked_hours_today` e
+         *     `energy_source` são a evidência que a tela exibe junto, para o número não
+         *     aparecer como decreto.
          */
         get: operations["get_navigation_prompt_navigation_prompt_get"];
         put?: never;
@@ -2056,7 +2140,11 @@ export interface paths {
         put?: never;
         /**
          * Build Navigation Route
-         * @description A melhor combinação de ações que cabe no tempo declarado agora.
+         * @description A melhor combinação de ações que cabe no dia.
+         *
+         *     Corpo vazio é o caminho normal: o servidor dimensiona. Campo preenchido é o
+         *     escape de quem discorda, e vale só para esta rota — declarar 20 minutos hoje
+         *     não reensina o motor a prever 20.
          */
         post: operations["build_navigation_route_navigation_route_post"];
         delete?: never;
@@ -4309,6 +4397,18 @@ export interface components {
              */
             end_at: string;
         };
+        /**
+         * DescadastroIn
+         * @description Cancelamento por token opaco.
+         *
+         *     O token vai no CORPO e a rota é POST, nunca GET com o token na URL:
+         *     scanner de e-mail e pré-carregamento de navegador seguem links por conta
+         *     própria, e um GET que muta descadastraria gente que nunca clicou.
+         */
+        DescadastroIn: {
+            /** Token */
+            token: string;
+        };
         /** DirectedStudyCreate */
         DirectedStudyCreate: {
             topic?: components["schemas"]["TopicIn"] | null;
@@ -4808,6 +4908,11 @@ export interface components {
              */
             exam_type: "acesso_direto" | "r_plus";
         };
+        /** FunnelOut */
+        FunnelOut: {
+            /** Ok */
+            ok: boolean;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -4834,6 +4939,22 @@ export interface components {
             name: string;
             /** Status */
             status: string;
+        };
+        /**
+         * InteresseIn
+         * @description Captura de e-mail com consentimento explícito (§19).
+         *
+         *     `consentimento` é obrigatório e precisa vir `true`. Um formulário que assume
+         *     consentimento pelo simples envio não tem prova de nada — e é exatamente o
+         *     ponto em que a LGPD deixa de ser checklist e vira problema.
+         */
+        InteresseIn: {
+            /** Email */
+            email: string;
+            /** Banca */
+            banca?: string | null;
+            /** Consentimento */
+            consentimento: boolean;
         };
         /** ItemCreate */
         ItemCreate: {
@@ -5126,11 +5247,11 @@ export interface components {
         };
         /**
          * NavigationPromptOut
-         * @description O que a tela precisa para perguntar sem cobrar digitação.
+         * @description O dimensionamento do dia, e a evidência que o sustenta.
          *
-         *     Tempo e energia continuam sendo **sempre** perguntados. A rotina do aluno
-         *     não substitui a pergunta: ela fornece os presets e o valor pré-selecionado,
-         *     para a resposta custar um toque.
+         *     Isto já **é** a resposta. A tela não pergunta: ela mostra a sessão do
+         *     tamanho que o dia comporta e diz de onde tirou o número, porque afirmação
+         *     sem evidência não é inferência, é palpite com cara de autoridade.
          */
         NavigationPromptOut: {
             /** Presets */
@@ -5181,13 +5302,9 @@ export interface components {
         /** NavigationRouteIn */
         NavigationRouteIn: {
             /** Available Minutes */
-            available_minutes: number;
-            /**
-             * Energy
-             * @default normal
-             * @enum {string}
-             */
-            energy: "low" | "normal" | "high";
+            available_minutes?: number | null;
+            /** Energy */
+            energy?: ("low" | "normal" | "high") | null;
             /** Interruption Override */
             interruption_override?: boolean | null;
         };
@@ -5684,6 +5801,11 @@ export interface components {
              * @default 0
              */
             weekly_study_days: number;
+            /**
+             * Weekly Protected Days
+             * @default 0
+             */
+            weekly_protected_days: number;
             /**
              * Active Protection
              * @default false
@@ -8826,6 +8948,20 @@ export interface components {
             /** Verification Expires At */
             verification_expires_at: string;
         };
+        /**
+         * SinalIn
+         * @description Um evento da superfície pública. Sem nenhum campo que identifique alguém.
+         *
+         *     Não há `user_id`, `session_id`, `ip` nem `user_agent` de propósito — e a
+         *     ausência é a decisão, não um esquecimento. O que este endpoint precisa
+         *     responder é "quantas vezes o print foi copiado", não "quem copiou".
+         */
+        SinalIn: {
+            /** Evento */
+            evento: string;
+            /** Banca */
+            banca?: string | null;
+        };
         /** StudentAgendaCapabilitiesOut */
         StudentAgendaCapabilitiesOut: {
             /**
@@ -10986,6 +11122,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    registrar_sinal_facies_sinal_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SinalIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FunnelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    registrar_interesse_facies_interesse_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InteresseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FunnelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    descadastrar_facies_descadastrar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DescadastroIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FunnelOut"];
                 };
             };
             /** @description Validation Error */

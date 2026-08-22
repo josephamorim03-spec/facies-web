@@ -12,7 +12,7 @@ import type {
   ReviewTask,
   StudyPerformanceSummary,
 } from "@/lib/api";
-import { AREA_BG_CLASS, AREA_TEXT_CLASS } from "@/lib/areaColors";
+import { AREA_BG_CLASS } from "@/lib/areaColors";
 import {
   AREA_LABELS,
   AREAS,
@@ -132,7 +132,7 @@ function SectionCard({
       data-no-break={noBreak || undefined}
       className={`space-y-3 border border-edge px-4 py-4${emphasized ? " " : ""}`}
     >
-      <h2 className="text-center text-xs font-bold uppercase tracking-[0.14em] text-ink">
+      <h2 className="paper-eyebrow text-center text-ink">
         {title}
       </h2>
       {children}
@@ -398,7 +398,7 @@ export function RelatorioBody({
       >
         {!diagnosis.ready && (
           <div className="space-y-3">
-            <div className="border border-edge bg-paper p-3">
+            <div className="rounded-control border border-edge bg-paper p-3">
               <RelatorioParagraph>
                 {diagnosis.reason === "insufficient_total"
                   ? `Diagnóstico disponível a partir de ${DIAG_MIN_TOTAL_QUESTIONS} questões no total. Você tem ${diagnosis.total_questions} registradas.`
@@ -415,7 +415,7 @@ export function RelatorioBody({
                 </RelatorioParagraph>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-2 border border-edge border-l-2 border-l-emerald-600/40 bg-paper p-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">Pontos fortes</p>
+                    <p className="paper-eyebrow">Pontos fortes</p>
                     <ul className="space-y-1.5">
                       {preliminaryStrengths.map((item) => (
                         <li key={`pstrong-${item.area}`} className="border-b border-edge pb-1.5 last:border-b-0">
@@ -428,7 +428,7 @@ export function RelatorioBody({
                     </ul>
                   </div>
                   <div className="space-y-2 border border-edge border-l-2 border-l-red-600/40 bg-paper p-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">Pontos fracos</p>
+                    <p className="paper-eyebrow">Pontos fracos</p>
                     <ul className="space-y-1.5">
                       {preliminaryWeaknesses.map((item) => (
                         <li key={`pweak-${item.area}`} className="border-b border-edge pb-1.5 last:border-b-0">
@@ -450,7 +450,7 @@ export function RelatorioBody({
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2 border border-success/40 bg-surfaceMuted/50 p-3 dark:border-success/40 dark:bg-success/20">
-                <p className="text-xs font-semibold uppercase tracking-wide text-success dark:text-success">Pontos fortes</p>
+                <p className="paper-eyebrow text-success dark:text-success">Pontos fortes</p>
                 <ul className="space-y-3">
                   {diagnosis.strengths.length === 0 && (
                     <li className="text-xs text-muted">Nenhum ponto forte identificado ainda.</li>
@@ -487,7 +487,7 @@ export function RelatorioBody({
               </div>
 
               <div className="space-y-2 border border-danger/40 bg-surfaceMuted/50 p-3 dark:border-danger/40 dark:bg-danger/20">
-                <p className="text-xs font-semibold uppercase tracking-wide text-danger dark:text-danger">Pontos fracos</p>
+                <p className="paper-eyebrow text-danger dark:text-danger">Pontos fracos</p>
                 <ul className="space-y-3">
                   {diagnosis.weaknesses.length === 0 && (
                     <li className="text-xs text-muted">Nenhum ponto fraco identificado ainda.</li>
@@ -581,7 +581,7 @@ export function RelatorioBody({
                 <Meter
                   key={item.area}
                   label={item.area}
-                  labelClassName={`w-8 font-semibold ${AREA_TEXT_CLASS[item.area] ?? "text-ink"}`}
+                  labelClassName="w-8 font-semibold text-ink"
                   pct={item.volumePct}
                   fillClassName={AREA_BG_CLASS[item.area] ?? "bg-edge"}
                   value={`${item.reviewsTotal} rev. · ${item.accuracyPct}%`}
@@ -648,9 +648,9 @@ export function RelatorioBody({
         <RelatorioParagraph>{healthText}</RelatorioParagraph>
 
         {staleThemesCount > 0 && (
-          <div className="space-y-2 border border-edge bg-paper p-3">
+          <div className="space-y-2 rounded-control border border-edge bg-paper p-3">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+              <p className="paper-eyebrow">
                 Temas sem contato
               </p>
               <button
@@ -724,7 +724,7 @@ export default function RelatorioClientPage() {
       {isDesktopNavigation && (
         <div className="mb-4 grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
           <span className="block h-7 w-7" aria-hidden="true" />
-          <span className="text-center text-nano font-semibold uppercase tracking-[0.08em] text-ink">
+          <span className="paper-eyebrow text-center text-ink">
             RELATÓRIOS
           </span>
           <TopBarActionLink href="/estatisticas" label="Desempenho" title="Desempenho">
@@ -737,7 +737,7 @@ export default function RelatorioClientPage() {
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/kroslogo-menu.png" alt="" aria-hidden="true" className="w-5 h-5 shrink-0" />
-          <p className="text-nano font-semibold uppercase tracking-[0.08em] text-muted">
+          <p className="paper-eyebrow">
             Relatório de Progresso
           </p>
         </div>
@@ -757,7 +757,7 @@ export default function RelatorioClientPage() {
       />
 
       <div className="print:pt-2 print:pb-2" data-print-charts>
-        <h2 className="text-center text-xs font-bold uppercase tracking-[0.14em] text-ink mb-4">
+        <h2 className="paper-eyebrow text-center text-ink mb-4">
           Gráficos
         </h2>
         <GraficosSection />

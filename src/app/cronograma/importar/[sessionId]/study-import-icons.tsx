@@ -1,18 +1,13 @@
 "use client";
 
 /**
- * Icones da importacao — reexportacao de `pixelarticons`.
+ * Icones da importacao — reexportacao de `lucide-react`.
  *
- * O `IconScissors` era o pior caso do repo: cinco circulos num icone de 24px,
- * tres deles com raio 0,8 (reticencias). Nesse tamanho um circulo de raio 0,8 e
- * uma mancha antisserrilhada, nao um ponto.
- *
- * `IconGrid` ja era quatro retangulos duros e continuaria correto — mas manter
- * um desenho proprio ao lado de dois importados garantiria que os tres
- * divergissem de novo na proxima mexida. Vem tudo da mesma fonte.
+ * Tudo vem da mesma fonte, sempre: desenho proprio ao lado de importado
+ * garantiria que os dois divergissem na proxima mexida.
  */
 export {
   Flag as IconFlagQuestion,
   Scissors as IconScissors,
-  Grid2x22 as IconGrid,
-} from "pixelarticons/react";
+  Grid2x2 as IconGrid,
+} from "lucide-react";

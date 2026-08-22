@@ -30,14 +30,14 @@ function TurboLobbySkeleton() {
         <span className="block h-7 w-7" />
       </div>
       {/* hero card */}
-      <div className="border border-edge bg-surface p-6 text-center space-y-3">
+      <div className="rounded-surface border border-edge bg-surface p-6 text-center space-y-3">
         <Skeleton className="mx-auto h-3 w-44 " />
         <Skeleton className="mx-auto h-14 w-20 " />
         <Skeleton className="mx-auto h-3 w-32 " />
       </div>
       {/* 2-col info cards */}
       <div className="grid gap-2 sm:grid-cols-2">
-        <div className="border border-edge bg-surface p-3 space-y-2">
+        <div className="rounded-control border border-edge bg-surface p-3 space-y-2">
           <Skeleton className="h-2.5 w-28 " />
           {Array.from({ length: 2 }).map((_, i) => (
             <div key={`r-sk-${i}`} className="flex items-center justify-between gap-3">
@@ -46,7 +46,7 @@ function TurboLobbySkeleton() {
             </div>
           ))}
         </div>
-        <div className="border border-edge bg-surface p-3 space-y-2">
+        <div className="rounded-control border border-edge bg-surface p-3 space-y-2">
           <Skeleton className="h-2.5 w-32 " />
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={`a-sk-${i}`} className="flex items-center justify-between gap-3">
@@ -59,7 +59,7 @@ function TurboLobbySkeleton() {
       {/* preview cards */}
       <div className="space-y-1.5">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={`prev-sk-${i}`} className="border border-edge bg-surface px-3 py-2 space-y-1.5">
+          <div key={`prev-sk-${i}`} className="rounded-control border border-edge bg-surface px-3 py-2 space-y-1.5">
             <Skeleton className="h-2.5 w-20 " />
             <Skeleton className="h-3 w-4/5 " />
           </div>
@@ -111,11 +111,12 @@ function CardsAreaFilterControl({
           onScroll={onScroll}
           role="group"
           aria-label="Filtrar cards por área"
-          className="mx-auto flex max-w-full items-center gap-1 overflow-x-auto border border-edge bg-surface p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="mx-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-control border border-edge bg-surface p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {AREA_FILTER_OPTIONS.map((option) => {
             const active = selectedArea === option;
             const color = option === ALL_AREAS ? "var(--color-primary)" : AREA_COLORS[option];
+            const marcado = !active && option !== ALL_AREAS;
             return (
               <button
                 key={option}
@@ -126,12 +127,22 @@ function CardsAreaFilterControl({
                 className={[
                   "paper-control inline-flex min-h-10 shrink-0 items-center justify-center px-3 text-xs font-semibold",
                   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-                  active ? "bg-primary text-primaryInk" : "text-muted hover:text-ink",
+                  active ? "bg-primary text-primaryInk" : "text-ink hover:bg-surfaceMuted",
+                  marcado ? "gap-1.5" : "",
                   !interactive ? "opacity-70" : "",
                 ].join(" ")}
-                style={!active && option !== ALL_AREAS ? { color } : undefined}
                 title={AREA_FILTER_LABELS[option]}
               >
+                {marcado ? (
+                  // A cor vira MARCA de 8px; a sigla fica em tinta. Escrever a
+                  // sigla na cor da area pedia 4.5:1 num texto de 12px, e nenhum
+                  // dos sete tons entrega isso sobre papel claro.
+                  <span
+                    aria-hidden="true"
+                    className="h-2 w-2 shrink-0 rounded-control"
+                    style={{ backgroundColor: color }}
+                  />
+                ) : null}
                 {option === ALL_AREAS ? "Todos" : option}
               </button>
             );
@@ -145,7 +156,7 @@ function CardsAreaFilterControl({
 function CardsAreaHeader({ selectedArea, onSelect, interactive = true }: CardsAreaHeaderProps) {
   return (
     <div className="space-y-2 text-center">
-      <p className="text-nano font-semibold uppercase tracking-[0.14em] text-muted">Filtrar por área</p>
+      <p className="paper-eyebrow">Filtrar por área</p>
       <CardsAreaFilterControl
         selectedArea={selectedArea}
         onSelect={onSelect}

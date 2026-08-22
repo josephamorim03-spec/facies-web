@@ -79,16 +79,20 @@ test.describe("Cronograma mobile portrait UX", () => {
     await addHttpOnlySessionForPage(page);
   });
 
-  test("streak aparece como anel discreto no vertical", async ({ page }) => {
+  test("constancia e uma janela de 7 dias, com os protegidos ao lado", async ({ page }) => {
     await mockCronogramaApi(page);
     await page.goto("/cronograma");
 
     const streak = page.locator("[data-streak-mode='active']");
     await expect(streak).toBeVisible();
-    await expect(streak).toContainText(/12\s+dias seguidos/i);
-    // Detalhes (recorde/revisões/cards) ficam na dica do anel, sem competir com o mês.
-    await expect(page.locator("[data-streak-days]")).toHaveAttribute("title", /recorde/i);
-    // Sem expandir/recolher: o anel é sempre a mesma marca discreta.
+    // "12 dias seguidos" era um contador ilimitado: todo o valor dele estava em
+    // nao ser quebrado, o que e aversao a perda com desenho sobrio. A janela de
+    // 7 dias nao tem o que quebrar.
+    await expect(streak).toContainText(/5 de 7 dias/i);
+    await expect(streak).toContainText(/2 protegidos/i);
+    await expect(streak).not.toContainText(/seguidos/i);
+    // O recorde pessoal saiu junto: e um badge com outro nome.
+    await expect(streak).not.toContainText(/recorde/i);
     await expect(page.getByTestId("streak-compact-trigger")).toHaveCount(0);
   });
 
@@ -445,14 +449,16 @@ test.describe("Cronograma mobile landscape UX", () => {
     await addHttpOnlySessionForPage(page);
   });
 
-  test("streak permanece como anel discreto no horizontal", async ({ page }) => {
+  test("a janela sobrevive ao horizontal sem virar outra coisa", async ({ page }) => {
     await page.goto("/cronograma");
 
     const streak = page.locator("[data-streak-mode='active']");
     await expect(streak).toBeVisible();
-    await expect(streak).toContainText(/dias seguidos/i);
-    // Recorde/revisões/cards seguem disponíveis na dica do anel.
-    await expect(page.locator("[data-streak-days]")).toHaveAttribute("title", /cards/i);
+    await expect(streak).toContainText(/de 7 dias/i);
+    await expect(page.locator("[data-streak-protected]")).toHaveAttribute(
+      "data-streak-protected",
+      "2",
+    );
     await expect(page.getByTestId("streak-compact-trigger")).toHaveCount(0);
   });
 });

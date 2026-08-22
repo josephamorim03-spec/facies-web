@@ -122,7 +122,7 @@ export function NoteEditForm({
       />
       <div className="space-y-1 max-w-lg mx-auto">
         <div className="flex items-center justify-between">
-          <p className="text-xs text-muted uppercase tracking-wide">Peso</p>
+          <p className="paper-eyebrow">Peso</p>
           <span
             className="border bg-surface px-1 py-0.5 text-xs font-semibold tabular-nums"
             style={{ borderColor: weightBadgeColor(weight), color: weightBadgeColor(weight) }}

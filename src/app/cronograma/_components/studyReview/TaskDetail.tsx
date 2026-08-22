@@ -201,7 +201,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
       ? editableStudy.accuracy.toFixed(0)
       : accuracy !== null ? accuracy.toFixed(0) : null;
     return (
-      <div className="relative space-y-1 border border-edge bg-surface p-3 opacity-80">
+      <div className="relative space-y-1 rounded-control border border-edge bg-surface p-3 opacity-80">
         <button type="button" onClick={() => setCancelConfirm(true)} className="absolute right-1.5 top-1.5 p-1 text-muted hover:bg-surfaceMuted hover:text-ink" title="Reabrir revisão">
           <IconPencil className="w-3 h-3" />
         </button>
@@ -254,15 +254,15 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
       <ReviewSignalChips task={task} className="pl-7" />
       <>
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="border border-edge bg-paper px-2 py-2.5">
+            <div className="rounded-control border border-edge bg-paper px-2 py-2.5">
               <p className="text-micro leading-none text-muted">Acertos</p>
               <p className="mt-1 text-base font-semibold text-ink">{accuracy !== null ? `${accuracy.toFixed(0)}%` : "-"}</p>
             </div>
-            <div className="border border-edge bg-paper px-2 py-2.5">
+            <div className="rounded-control border border-edge bg-paper px-2 py-2.5">
               <p className="text-micro leading-none text-muted">Revisão</p>
               <p className="mt-1 text-base font-semibold text-ink">#{revision}</p>
             </div>
-            <div className="border border-edge bg-paper px-2 py-2.5">
+            <div className="rounded-control border border-edge bg-paper px-2 py-2.5">
               <p className="text-micro leading-none text-muted">Min. q.</p>
               <p className="mt-1 text-base font-semibold text-ink">{task.expected_questions}</p>
             </div>
@@ -285,7 +285,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
             </Button>
           </div>
           {showReschedule && (
-            <div className="space-y-2 border border-edge bg-surface p-3">
+            <div className="space-y-2 rounded-control border border-edge bg-surface p-3">
               {rescheduleControls === "auto_manual" && (
                 <div className="flex justify-center gap-1">
                   <Button type="button" variant={rescheduleMode === "auto" ? "primary" : "secondary"} size="xs" onClick={() => setRescheduleMode("auto")}>
@@ -343,7 +343,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
               {(rescheduleControls === "auto_manual" && rescheduleMode === "manual") && (
                 <div className="flex gap-2 items-center">
                   <input type="date" value={manualDueDate} onChange={(e) => setManualDueDate(e.target.value)}
-                    className="flex-1 border border-edge bg-paper px-2 py-1.5 text-xs" />
+                    className="flex-1 rounded-control border border-edge bg-paper px-2 py-1.5 text-xs" />
                   <Button type="button" variant="secondary" size="sm" onClick={runManualReschedule} loading={manualSaving}>
                     {manualSaving ? "..." : "Confirmar"}
                   </Button>

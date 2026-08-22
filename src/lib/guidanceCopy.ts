@@ -1,6 +1,6 @@
 // Camada pura de tradução pedagógica.
 //
-// Converte sinais e métricas internas do KrosMed (jargão: "readiness",
+// Converte sinais e métricas internas da Fácies (jargão: "readiness",
 // "health score", "retention", enums de answer_status) em linguagem do
 // estudante, em tom de tutor. Sem React, sem fetch, sem cor literal.
 //

@@ -274,14 +274,14 @@ export function CalendarGrid({
             data-calendar-last-cell={isLastCell ? "true" : undefined}
             className={`relative ${dayCellMinHeight} p-0.5 bg-paper border-r border-b border-edge cursor-pointer overflow-visible ${
               isTaskDropTarget ? "ring-1 ring-inset ring-primary/35" : ""
-            } ${isHoverDropTarget ? "bg-[var(--amber-tint)] ring-2 ring-inset ring-primary" : ""}`}
+            } ${isHoverDropTarget ? "bg-[var(--wash-selecao)] ring-2 ring-inset ring-primary" : ""}`}
             style={
               isSelected && isSearchMatch
-                ? { backgroundColor: "var(--amber-tint)", boxShadow: "inset 0 0 0 2px var(--color-primary)" }
+                ? { backgroundColor: "var(--wash-selecao)", boxShadow: "inset 0 0 0 2px var(--color-primary)" }
                 : isToday && isSelected
-                  ? { backgroundColor: "var(--amber-tint)", boxShadow: "inset 0 0 0 2px var(--color-ink)" }
+                  ? { backgroundColor: "var(--wash-selecao)", boxShadow: "inset 0 0 0 2px var(--color-ink)" }
                   : isSelected
-                    ? { backgroundColor: "var(--amber-tint)", boxShadow: "inset 0 0 0 1px var(--color-primary)" }
+                    ? { backgroundColor: "var(--wash-selecao)", boxShadow: "inset 0 0 0 1px var(--color-primary)" }
                     : isSearchMatch
                       ? { boxShadow: "inset 0 0 0 2px var(--color-primary)" }
                       : isToday
@@ -329,11 +329,11 @@ export function CalendarGrid({
           >
             <div className="absolute top-0.5 left-0 right-0 flex justify-center">
               {isToday ? (
-                <span className={`${showDayDetail ? "text-pico w-3.5 h-3.5" : "text-nano w-4 h-4"} leading-none bg-ink text-paper flex items-center justify-center font-medium`}>
+                <span className={`${showDayDetail ? "text-micro w-3.5 h-3.5" : "text-micro w-4 h-4"} leading-none bg-ink text-paper flex items-center justify-center font-medium`}>
                   {day}
                 </span>
               ) : (
-                <span className={`${showDayDetail ? "text-pico" : "text-nano"} leading-none text-muted`}>
+                <span className={`${showDayDetail ? "text-micro" : "text-micro"} leading-none text-muted`}>
                   {day}
                 </span>
               )}
@@ -376,7 +376,7 @@ export function CalendarGrid({
                     onDragEnd={interactive && canDragWorkEvent && workEvent ? () => handleEventDragEnd() : undefined}
                   >
                     <IconStethoscope className={`${showDayDetail ? "w-2 h-2" : "w-2.5 h-2.5"} text-ink`} />
-                    <span className="pointer-events-none absolute bottom-full right-0 mb-0.5 whitespace-nowrap bg-ink text-paper px-1 py-0.5 text-femto opacity-0 group-hover:opacity-100 transition-opacity z-30">
+                    <span className="pointer-events-none absolute bottom-full right-0 mb-0.5 whitespace-nowrap bg-ink text-paper px-1 py-0.5 text-micro opacity-0 group-hover:opacity-100 transition-opacity z-30">
                       {(workLabels.length > 0 ? workLabels.join(" - ") : "Trabalho") + (isWorkCompleted ? " - feito" : "")}
                     </span>
                   </div>
@@ -412,10 +412,10 @@ export function CalendarGrid({
                     } : undefined}
                     onDragEnd={interactive && canDragOtherEvent && otherEvent ? () => handleEventDragEnd() : undefined}
                   >
-                    <span className={`inline-flex ${showDayDetail ? "w-2 h-2" : "w-2.5 h-2.5"} items-center justify-center text-ink font-semibold leading-none text-femto`}>
+                    <span className={`inline-flex ${showDayDetail ? "w-2 h-2" : "w-2.5 h-2.5"} items-center justify-center text-ink font-semibold leading-none text-micro`}>
                       !
                     </span>
-                    <span className="pointer-events-none absolute bottom-full right-0 mb-0.5 whitespace-nowrap bg-ink text-paper px-1 py-0.5 text-femto opacity-0 group-hover:opacity-100 transition-opacity z-30">
+                    <span className="pointer-events-none absolute bottom-full right-0 mb-0.5 whitespace-nowrap bg-ink text-paper px-1 py-0.5 text-micro opacity-0 group-hover:opacity-100 transition-opacity z-30">
                       {(otherLabels.length > 0 ? otherLabels.join(" - ") : "Outras") + (isOtherCompleted ? " - feito" : "")}
                     </span>
                   </div>
@@ -448,7 +448,7 @@ export function CalendarGrid({
                 >
                   <IconCards className={`${showDayDetail ? "w-2 h-2" : "w-2.5 h-2.5"}`} />
                 </button>
-                <span className={`pointer-events-none absolute bottom-full left-0 mb-0.5 whitespace-nowrap bg-ink text-paper px-1 py-0.5 text-femto transition-opacity z-30 ${
+                <span className={`pointer-events-none absolute bottom-full left-0 mb-0.5 whitespace-nowrap bg-ink text-paper px-1 py-0.5 text-micro transition-opacity z-30 ${
                   activeFlashcardsTooltipIso === iso
                     ? "opacity-100"
                     : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
@@ -475,7 +475,7 @@ export function CalendarGrid({
                           e.stopPropagation();
                           onBarClick?.(dot.popupTarget!, (e.currentTarget as HTMLElement).getBoundingClientRect());
                         } : undefined}
-                        className={`flex w-full items-center gap-1 border border-edge bg-surface px-1 py-0.5 ${barH} overflow-hidden`}
+                        className={`flex w-full items-center gap-1 rounded-control border border-edge bg-surface px-1 py-0.5 ${barH} overflow-hidden`}
                         style={{ opacity: 0.7 }}
                       >
                         {/* Faixa de 6px + sigla na cor da area. O fundo segue
@@ -487,9 +487,12 @@ export function CalendarGrid({
                           style={{ backgroundColor: dot.color }}
                         />
                         {dot.areaCode ? (
+                          // Sigla em TINTA: a faixa de 6px a esquerda ja carrega
+                          // a cor. Escrever a sigla na cor da area exige 4.5:1,
+                          // que nenhuma paleta segura para daltonismo entrega.
                           <span
-                            className="shrink-0 font-bold uppercase leading-none"
-                            style={{ fontSize: chipFontSize, color: dot.color }}
+                            className="shrink-0 font-bold uppercase leading-none text-ink"
+                            style={{ fontSize: chipFontSize }}
                           >
                             {dot.areaCode}
                           </span>
@@ -594,8 +597,8 @@ export function CalendarGrid({
                       />
                       {dot.areaCode ? (
                         <span
-                          className="shrink-0 font-bold uppercase leading-none"
-                          style={{ fontSize: chipFontSize, color: dot.color }}
+                          className="shrink-0 font-bold uppercase leading-none text-ink"
+                          style={{ fontSize: chipFontSize }}
                         >
                           {dot.areaCode}
                         </span>

@@ -170,6 +170,11 @@ function isProtectedProxyPath(pathKey: string): boolean {
   if (!pathKey) return false;
   if (pathKey === "version") return false;
   if (pathKey.startsWith("auth/")) return false;
+  // O funil publico da Facies e' anonimo por definicao: um 401 ou 429 vindo dele
+  // nao significa sessao expirada. Sem esta linha, um aluno logado com token
+  // vencido que abrisse a landing veria o dialogo de sessao expirada disparado
+  // por uma rota que nem olha a sessao.
+  if (pathKey.startsWith("facies/")) return false;
   return true;
 }
 

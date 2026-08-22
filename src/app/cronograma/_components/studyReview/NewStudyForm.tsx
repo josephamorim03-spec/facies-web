@@ -89,7 +89,7 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
       </div>
 
       {mode === "question_bank" ? (
-        <div className="border border-edge bg-paper p-4 text-center">
+        <div className="rounded-surface border border-edge bg-paper p-4 text-center">
           <button
             type="button"
             onClick={() => router.push("/banco")}
@@ -99,7 +99,7 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
           </button>
         </div>
       ) : (
-        <div className="space-y-3 border border-edge bg-paper p-4">
+        <div className="space-y-3 rounded-surface border border-edge bg-paper p-4">
           <div className="flex justify-center gap-2">
             {[
               { value: "work" as const, label: "Plantao/Trabalho" },
@@ -121,12 +121,12 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
               placeholder={eventCategory === "work" ? "Ex. Plantão/UBS" : "Ex. Imprevisto/Viagem"}
               value={eventLabel}
               onChange={(e) => setEventLabel(e.target.value)}
-              className="border border-edge bg-paper px-2 py-1 text-sm"
+              className="rounded-control border border-edge bg-paper px-2 py-1 text-sm"
             />
             <select
               value={eventDuration}
               onChange={(e) => setEventDuration(Number(e.target.value))}
-              className="border border-edge bg-paper px-2 py-1 text-sm"
+              className="rounded-control border border-edge bg-paper px-2 py-1 text-sm"
             >
               {EVENT_DURATIONS.map((duration) => <option key={duration} value={duration}>{duration}h</option>)}
             </select>

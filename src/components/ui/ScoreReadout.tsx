@@ -33,19 +33,19 @@ export function ScoreReadout({
     <div
       role="img"
       aria-label={label ? `${safePct}% — ${label}` : `${safePct}%`}
-      className={`shrink-0 border border-edge bg-surface px-5 py-4 text-center ${className}`}
+      className={`shrink-0 rounded-surface border border-edge bg-surface px-5 py-4 text-center ${className}`}
     >
       <p className="text-4xl font-bold leading-none tabular-nums" style={{ color }}>
         {safePct}
         <span className="text-xl">%</span>
       </p>
 
-      <div className="chrome-meter mt-3 h-2.5 w-32" aria-hidden="true">
+      <div className="paper-meter mt-3 h-2.5 w-32" aria-hidden="true">
         <div style={{ width: `${safePct}%`, ["--meter-color"]: color } as CSSProperties} />
       </div>
 
       {label ? (
-        <p className="mt-2 text-micro font-semibold uppercase tracking-[0.12em] leading-tight text-muted [overflow-wrap:anywhere]">
+        <p className="paper-eyebrow mt-2 leading-tight [overflow-wrap:anywhere]">
           {label}
         </p>
       ) : null}

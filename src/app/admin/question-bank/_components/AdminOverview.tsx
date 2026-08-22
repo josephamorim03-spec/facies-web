@@ -15,7 +15,7 @@ export function AdminViewSwitcher({
   onViewChange: (view: AdminQuestionBankView) => void;
 }) {
   return (
-    <div className="inline-flex border border-edge bg-surface p-1 text-sm">
+    <div className="inline-flex rounded-control border border-edge bg-surface p-1 text-sm">
       {([["ingestao", "Ingestão"], ["curadoria", "Curadoria"], ["questoes", "Questões"]] as const).map(([value, label]) => (
         <button
           key={value}
@@ -75,10 +75,10 @@ export default function AdminOverview({
         : "border-success bg-surfaceMuted text-success/40/30";
   return (
     <>
-      <section className="border border-edge bg-surface p-5 ">
+      <section className="rounded-surface border border-edge bg-surface p-5 ">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase text-muted">Banco de Questões</p>
+            <p className="paper-eyebrow">Banco de Questões</p>
             <h1 className="mt-1 text-3xl font-semibold text-ink">Operacao KrosBank</h1>
             <p className="mt-2 text-sm text-ink">Ingestao, fila tecnica e curadoria editorial.</p>
           </div>
@@ -120,10 +120,10 @@ export default function AdminOverview({
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-        <section className="border border-edge bg-surface p-5 ">
+        <section className="rounded-surface border border-edge bg-surface p-5 ">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase text-muted">Leitura Editorial</p>
+              <p className="paper-eyebrow">Leitura Editorial</p>
               <h2 className="mt-1 text-xl font-semibold text-ink">Publicacao e qualidade</h2>
               <div className={`mt-3 inline-flex border px-3 py-1 text-xs font-semibold ${healthTone}`}>
                 {editorialHealth?.label ?? "sem leitura"}
@@ -140,7 +140,7 @@ export default function AdminOverview({
           <div className="mt-5 border border-warning bg-surfaceMuted p-4/40/20">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <div className="text-xs font-semibold uppercase text-warning">Re-lint auditado</div>
+                <div className="paper-eyebrow text-warning">Re-lint auditado</div>
                 <p className="mt-1 text-sm text-warning">
                   Simula a liberação de questões bloqueadas por <code>stem_incomplete</code> usando o lint revisado.
                 </p>
@@ -157,19 +157,19 @@ export default function AdminOverview({
             {stemReclassResult ? (
               <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
                 <div className="bg-surface p-3">
-                  <div className="text-xs font-semibold uppercase opacity-70">Liberariam</div>
+                  <div className="paper-eyebrow opacity-70">Liberariam</div>
                   <div className="mt-1 text-2xl font-semibold">{stemReclassResult.published}</div>
                 </div>
                 <div className="bg-surface p-3">
-                  <div className="text-xs font-semibold uppercase opacity-70">Continuam revisão</div>
+                  <div className="paper-eyebrow opacity-70">Continuam revisão</div>
                   <div className="mt-1 text-2xl font-semibold">{stemReclassResult.kept_review}</div>
                 </div>
                 <div className="bg-surface p-3">
-                  <div className="text-xs font-semibold uppercase opacity-70">Checksum</div>
+                  <div className="paper-eyebrow opacity-70">Checksum</div>
                   <div className="mt-2 truncate text-xs">{stemReclassResult.checksum}</div>
                 </div>
                 <div className="bg-surface p-3 sm:col-span-3">
-                  <div className="text-xs font-semibold uppercase opacity-70">Bloqueios restantes</div>
+                  <div className="paper-eyebrow opacity-70">Bloqueios restantes</div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {Object.entries(stemReclassResult.after_blockers).length ? Object.entries(stemReclassResult.after_blockers).map(([code, count]) => (
                       <span key={code} className="bg-surfaceMuted px-2 py-1 text-xs font-semibold text-warning/40">
@@ -183,20 +183,20 @@ export default function AdminOverview({
           </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-4">
-            <div className="border border-edge bg-surface p-4">
-              <div className="text-xs font-semibold uppercase text-muted">Imports</div>
+            <div className="rounded-surface border border-edge bg-surface p-4">
+              <div className="paper-eyebrow">Imports</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.imported_files ?? 0}</div>
             </div>
-            <div className="border border-edge bg-surface p-4">
-              <div className="text-xs font-semibold uppercase text-muted">Candidatos</div>
+            <div className="rounded-surface border border-edge bg-surface p-4">
+              <div className="paper-eyebrow">Candidatos</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.candidate_total ?? 0}</div>
             </div>
-            <div className="border border-edge bg-surface p-4">
-              <div className="text-xs font-semibold uppercase text-muted">Canonicas</div>
+            <div className="rounded-surface border border-edge bg-surface p-4">
+              <div className="paper-eyebrow">Canonicas</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.canonical_questions ?? 0}</div>
             </div>
-            <div className="border border-edge bg-surface p-4">
-              <div className="text-xs font-semibold uppercase text-muted">Publicadas</div>
+            <div className="rounded-surface border border-edge bg-surface p-4">
+              <div className="paper-eyebrow">Publicadas</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.published_questions ?? 0}</div>
             </div>
           </div>
@@ -219,8 +219,8 @@ export default function AdminOverview({
           {editorialHealth?.funnel?.length ? (
             <div className="mt-5 grid gap-2 md:grid-cols-3 xl:grid-cols-6">
               {editorialHealth.funnel.map((stage) => (
-                <div key={stage.key} className="border border-edge bg-surface p-3">
-                  <div className="text-xs font-semibold uppercase text-muted">{stage.label}</div>
+                <div key={stage.key} className="rounded-control border border-edge bg-surface p-3">
+                  <div className="paper-eyebrow">{stage.label}</div>
                   <div className="mt-2 text-lg font-semibold text-ink">{stage.done}</div>
                   <div className="mt-1 text-micro text-muted">
                     fila {stage.pending} / rodando {stage.processing} / falha {stage.failed}
@@ -241,24 +241,24 @@ export default function AdminOverview({
           ) : null}
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <div className="border border-edge bg-surface p-4">
-              <div className="text-xs font-semibold uppercase text-muted">Conflitos pasta x primario</div>
+            <div className="rounded-surface border border-edge bg-surface p-4">
+              <div className="paper-eyebrow">Conflitos pasta x primario</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.folder_taxonomy_conflicts ?? 0}</div>
             </div>
-            <div className="border border-edge bg-surface p-4">
-              <div className="text-xs font-semibold uppercase text-muted">Sem specialty</div>
+            <div className="rounded-surface border border-edge bg-surface p-4">
+              <div className="paper-eyebrow">Sem specialty</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.published_without_specialty ?? 0}</div>
             </div>
-            <div className="border border-edge bg-surface p-4">
-              <div className="text-xs font-semibold uppercase text-muted">Re-homadas</div>
+            <div className="rounded-surface border border-edge bg-surface p-4">
+              <div className="paper-eyebrow">Re-homadas</div>
               <div className="mt-2 text-2xl font-semibold text-ink">{summary?.folder_taxonomy_rehomes ?? 0}</div>
             </div>
           </div>
         </section>
 
-        <section className="border border-edge bg-surface p-5 ">
+        <section className="rounded-surface border border-edge bg-surface p-5 ">
           <div>
-            <p className="text-xs font-semibold uppercase text-muted">Hotspots</p>
+            <p className="paper-eyebrow">Hotspots</p>
             <h2 className="mt-1 text-xl font-semibold text-ink">Onde o backlog pesa</h2>
           </div>
           <div className="mt-4 space-y-4">
@@ -267,7 +267,7 @@ export default function AdminOverview({
               ["Baixo rendimento (1-2 candidatas)", hotspots.low_yield_candidates ?? []],
               ["Artefatos tecnicos", hotspots.technical_artifacts ?? []],
             ] as const).map(([label, items]) => (
-              <div key={label} className="border border-edge bg-surface p-4">
+              <div key={label} className="rounded-surface border border-edge bg-surface p-4">
                 <div className="text-sm font-semibold text-ink">{label}</div>
                 <div className="mt-3 space-y-2">
                   {items.length ? items.map((item) => (
@@ -291,7 +291,7 @@ export default function AdminOverview({
               ["Conflitos de gaveta", taxonomyAudit?.conflict_examples ?? []],
               ["Publicadas sem specialty", taxonomyAudit?.missing_specialty_examples ?? []],
             ] as const).map(([label, items]) => (
-              <div key={label} className="border border-edge bg-surface p-4">
+              <div key={label} className="rounded-surface border border-edge bg-surface p-4">
                 <div className="text-sm font-semibold text-ink">{label}</div>
                 <div className="mt-3 space-y-2">
                   {items.length ? items.map((item) => (

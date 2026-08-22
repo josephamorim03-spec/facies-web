@@ -631,9 +631,13 @@ async function mockApi(page) {
     if (method === "GET" && path === "/api/reviews/tasks") {
       return fulfillJson(route, url.searchParams.get("status") === "done" ? cal.done : cal.pending);
     }
-    // A Rota pergunta tempo e energia antes de qualquer coisa. Sem este mock o
-    // `RotaPrompt` cai na guarda de `presets` vazio e renderiza null — a tela
-    // apareceria em branco na captura.
+      // O Hoje dimensiona o dia a partir daqui. Sem este mock, o
+      // `TodayDimensioning` cai na guarda de "sem previsao e sem calendario" e
+      // renderiza null: a linha simplesmente nao apareceria na captura, e o
+      // resultado pareceria correto.
+      //
+      // Os valores descrevem um dia de plantao de proposito: 12h bloqueadas e
+      // 60 min previstos exercitam o ramo COM evidencia, que e o que se quer ver.
     if (method === "GET" && path === "/api/navigation/prompt") {
       return fulfillJson(route, {
         presets: [20, 45, 90],
@@ -884,16 +888,13 @@ async function runViewport(browser, viewport) {
     if (runAxe) report.axeViolations[name] = await axe(page);
   }
 
+  // A rota `/rota` saiu da captura junto com a tela. Ela abria na PERGUNTA de
+  // tempo e energia, que morreu: o dia agora e dimensionado pelo calendario e
+  // pelo comportamento observado, e o numero aparece no Hoje como contexto da
+  // proxima acao.
   await visit("/hoje", "hoje", async () => {
     await page.getByRole("link", { name: /Come/ }).waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
-
-  await visit("/rota", "rota", async () => {
-    // A Rota abre na PERGUNTA (tempo e energia), nao numa tela de montagem:
-    // "Simulador adaptativo" era o titulo da tela antiga, que pedia o numero de
-    // questoes que o aluno nao tem como saber.
-    await page.getByRole("heading", { name: "Quanto tempo você tem?" }).waitFor({ state: "visible", timeout: 30_000 });
-  });
 
   await visit("/cards", "cards", async () => {
     // Era `getByRole("heading", { name: "Revisão dinâmica" })`: esse titulo nao
@@ -966,6 +967,25 @@ try {
   writeFileSync(reportPath, JSON.stringify({ baseURL: BASE_URL, generatedAt: new Date().toISOString(), reports }, null, 2));
   console.log(`Design screenshots saved to ${OUT_DIR}`);
   console.log(`Report saved to ${reportPath}`);
+
+  // O axe e' o unico gate que ve COR CALCULADA. O de token mede par de token e
+  // nao alcanca `style={{ color }}`; foi por ali que a cor de area voltou a
+  // virar texto tres vezes. Reportar sem falhar deixava isso passar.
+  const achados = [];
+  for (const relatorio of reports) {
+    for (const [pagina, violacoes] of Object.entries(relatorio.axeViolations ?? {})) {
+      for (const v of violacoes) {
+        achados.push(`  ${relatorio.viewport}/${pagina}: ${v.id} — ${v.nodes} no(s)`);
+      }
+    }
+  }
+  if (achados.length > 0) {
+    console.error(`\nAcessibilidade: ${achados.length} violacao(oes).\n` + achados.join("\n"));
+    console.error(`\nDetalhe por no em ${reportPath}.`);
+    process.exitCode = 1;
+  } else {
+    console.log("Acessibilidade: nenhuma violacao nas telas capturadas.");
+  }
 } finally {
   await browser.close();
   if (server) server.kill();
