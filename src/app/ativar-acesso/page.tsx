@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/lib/useToast";
 import { getProfile } from "@/lib/api";
@@ -120,6 +121,36 @@ export default function AtivarAcessoPage() {
             {busy ? "Ativando..." : "Ativar"}
           </button>
         </form>
+
+        {/* A saída para quem chegou pela Fácies e não tem chave.
+
+            Sem este bloco a tela é um beco: o produto virou público em
+            `facies.app`, o `PonteDiagnostico` manda o visitante para cá, e o que
+            ele encontra é um campo pedindo um código de um mentor que ele não
+            tem — sem explicação de que isso é o modelo e não um erro dele.
+
+            O que está escrito aqui é só o que É VERDADE hoje: o acesso é por
+            convite. Nenhuma promessa de preço, de data ou de venda — porque
+            nada disso existe, e anúncio vira obrigação (CDC art. 30).
+
+            O destino é a Fácies, onde já existe algo que funciona de verdade:
+            a leitura é gratuita e o gate de e-mail avisa quando a prova muda.
+            Transformar o beco em lista é o melhor que dá para fazer sem
+            inventar um modelo comercial que ainda não foi decidido. */}
+        <div className="mt-8 border-t border-rule pt-5">
+          <p className="text-sm font-semibold text-ink">Não tem uma chave?</p>
+          <p className="mt-1 text-sm text-muted">
+            O acesso ao app hoje é por convite, e a chave vem de um mentor. Isto não é
+            um erro seu.
+          </p>
+          <Link href="/" className="mt-3 inline-flex text-sm font-semibold text-primary">
+            Ver a fácies da sua prova →
+          </Link>
+          <p className="mt-1 text-xs text-muted">
+            A leitura é gratuita e sem cadastro. Lá dá para salvar a sua prova e ser
+            avisado quando ela mudar.
+          </p>
+        </div>
       </div>
     </div>
   );
