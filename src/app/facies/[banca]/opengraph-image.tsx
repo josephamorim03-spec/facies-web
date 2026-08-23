@@ -8,6 +8,7 @@ import {
 } from "@/lib/facies";
 import { HOST_VISIVEL } from "@/lib/site";
 import { encurtar } from "@/lib/encurtar";
+import { dec } from "@/lib/decimal";
 
 /**
  * A imagem que circula — e ela é a MESMA nos dois canais.
@@ -183,9 +184,9 @@ function tresNumeros(banca: ReturnType<typeof bancaPorSlug>) {
   for (const linha of formatosDistintivos(banca)) {
     if (saida.length >= 2) break;
     saida.push({
-      valor: `${linha.pct.toFixed(1)}%`,
+      valor: `${dec(linha.pct)}%`,
       rotulo: linha.rotulo,
-      nota: `média nacional ${(NACIONAL.formato_pct[linha.codigo] ?? 0).toFixed(1)}%`,
+      nota: `média nacional ${dec(NACIONAL.formato_pct[linha.codigo] ?? 0)}%`,
     });
   }
 

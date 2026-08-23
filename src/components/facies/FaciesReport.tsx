@@ -1,6 +1,7 @@
 import type { Banca } from "@/lib/facies";
 import { formatosDistintivos, janela, NACIONAL, PISO_N_CELULA } from "@/lib/facies";
 import { cohenH } from "@/lib/distintividade";
+import { dec } from "@/lib/decimal";
 
 /**
  * A Fácies da prova, em três painéis.
@@ -138,7 +139,7 @@ export function FaciesReport({ banca }: { banca: Banca }) {
                     <span className="text-sm text-ink">{linha.rotulo}</span>
                     <Barra pct={linha.pct} />
                     <span className="font-mono text-xs tabular-nums text-muted">
-                      {linha.pct.toFixed(1)}%{" "}
+                      {dec(linha.pct)}%{" "}
                       <span className="text-accent">
                         {h > 0 ? "acima" : "abaixo"} da média
                       </span>

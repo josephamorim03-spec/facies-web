@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { provaPorSlug, todasAsProvas } from "@/lib/provas";
 import { HOST_VISIVEL } from "@/lib/site";
 import { encurtar } from "@/lib/encurtar";
+import { dec } from "@/lib/decimal";
 
 /**
  * O print que circula da página de uma prova.
@@ -86,10 +87,10 @@ export default async function Imagem({ params }: { params: Promise<{ slug: strin
     // viaja sem nada que a corrija.
     const faixa =
       serieHistorica.status === "medido"
-        ? ` · ${serieHistorica.recentes_minimo.toFixed(1)}–${serieHistorica.recentes_maximo.toFixed(1)}x nas ${serieHistorica.recentes} anteriores`
+        ? ` · ${dec(serieHistorica.recentes_minimo)}–${dec(serieHistorica.recentes_maximo)}x nas ${serieHistorica.recentes} anteriores`
         : "";
     numeros.push({
-      valor: `${val.lift.toFixed(1)}x`,
+      valor: `${dec(val.lift)}x`,
       rotulo: "melhor que o acaso",
       nota: `sobre ${val.edicoes_diretas} aplicação direta${faixa}`,
     });

@@ -1,6 +1,7 @@
-import Link from "next/link";
+import { LinkDestaque } from "./LinkDestaque";
 import type { Prova } from "@/lib/provas";
 import { Contagem } from "./Contagem";
+import { dec } from "@/lib/decimal";
 
 /**
  * O ENAMED em destaque na home.
@@ -37,29 +38,26 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
           </span>
         </div>
 
+        {/* A ORDEM aqui é decisão de posicionamento, não de layout.
+
+            Liderava com "2.034 questões rotuladas". O checklist de
+            docs/product/positioning.md proíbe liderar com contagem, e a razão é
+            precisa: contagem põe o produto no conjunto de comparação "banco de
+            questões", onde o piso de mercado é R$29,90 e a assinatura fica cara.
+            O conjunto certo é mentoria.
+
+            O lift pode liderar porque não é sobre VOLUME, é sobre ACERTO DE
+            PREVISÃO — o top-30 de assuntos acertou 35 das 91 questões da
+            aplicação direta, contra 9,7% por acaso. Esse número pertence à
+            conversa de mentoria ("isto prevê a sua prova"), não à de acervo.
+
+            As contagens ficam: são a evidência que sustenta a leitura. Só
+            deixam de ser a primeira coisa lida. */}
         <div className="mt-5 grid gap-px overflow-hidden rounded-control border border-rule bg-rule sm:grid-cols-3">
-          <div className="bg-paper p-4">
-            <div className="font-mono text-2xl leading-tight text-ink">
-              {prova.profundidade.questoes_rotuladas.toLocaleString("pt-BR")}
-            </div>
-            <div className="mt-0.5 text-sm text-muted">questões rotuladas</div>
-            <div className="mt-2 font-mono text-micro text-muted">
-              {prova.profundidade.aplicacoes_na_serie} aplicações na série
-            </div>
-          </div>
-          <div className="bg-paper p-4">
-            <div className="font-mono text-2xl leading-tight text-ink">
-              {prova.profundidade.subtemas_mapeados.toLocaleString("pt-BR")}
-            </div>
-            <div className="mt-0.5 text-sm text-muted">assuntos mapeados</div>
-            <div className="mt-2 font-mono text-micro text-muted">
-              {prova.formato.alternativas[0]?.n ?? "—"} alternativas por questão
-            </div>
-          </div>
           {val.status === "medido" && val.lift ? (
             <div className="bg-paper p-4">
               <div className="font-mono text-2xl leading-tight text-primary">
-                {val.lift.toFixed(1)}x
+                {dec(val.lift)}x
               </div>
               <div className="mt-0.5 text-sm text-muted">melhor que o acaso</div>
               {/* O `n` acompanha o número aqui também. Um lift de 4x sem a
@@ -70,20 +68,36 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
               </div>
             </div>
           ) : null}
+          <div className="bg-paper p-4">
+            <div className="font-mono text-2xl leading-tight text-ink">
+              {prova.profundidade.subtemas_mapeados.toLocaleString("pt-BR")}
+            </div>
+            <div className="mt-0.5 text-sm text-muted">assuntos mapeados</div>
+            <div className="mt-2 font-mono text-micro text-muted">
+              {prova.formato.alternativas[0]?.n ?? "—"} alternativas por questão
+            </div>
+          </div>
+          <div className="bg-paper p-4">
+            <div className="font-mono text-2xl leading-tight text-ink">
+              {prova.profundidade.questoes_rotuladas.toLocaleString("pt-BR")}
+            </div>
+            <div className="mt-0.5 text-sm text-muted">questões rotuladas</div>
+            <div className="mt-2 font-mono text-micro text-muted">
+              {prova.profundidade.aplicacoes_na_serie} aplicações na série
+            </div>
+          </div>
         </div>
 
         <Contagem
           sigla={prova.sigla}
           aplicacao={prova.aplicacao_prevista}
           cadernos={prova.cadernos_previstos}
+          aplicacoesDiretas={prova.profundidade.aplicacoes_diretas}
         />
 
-        <Link
-          href={`/prova/${prova.slug}`}
-          className="paper-control mt-6 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk"
-        >
+        <LinkDestaque slug={prova.slug} chave={prova.exam_key}>
           Ver a fácies do {prova.sigla}
-        </Link>
+        </LinkDestaque>
       </div>
     </section>
   );

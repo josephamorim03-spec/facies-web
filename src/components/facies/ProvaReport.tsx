@@ -1,5 +1,6 @@
 import type { LinhaSerie, Prova } from "@/lib/provas";
 import { PESO_CORRELATA, PISO_N_CELULA, ROTULO_FORMATO } from "@/lib/provas";
+import { dec } from "@/lib/decimal";
 
 /**
  * O laudo de uma prova, com a base composta declarada na própria tela.
@@ -229,9 +230,9 @@ export function ProvaReport({ prova }: { prova: Prova }) {
           <Painel numero="04" titulo="O que autoriza usar as fontes correlatas">
             <div className="grid gap-px overflow-hidden rounded-control border border-rule bg-rule sm:grid-cols-3">
               {[
-                [`${val.acerto_pct.toFixed(1)}%`, "do que a prova cobrou estava no top-30"],
-                [`${val.piso_pct.toFixed(1)}%`, "é o que uma lista de 30 ao acaso acertaria"],
-                [val.lift ? `${val.lift.toFixed(1)}x` : "—", "melhor que o acaso"],
+                [`${dec(val.acerto_pct)}%`, "do que a prova cobrou estava no top-30"],
+                [`${dec(val.piso_pct)}%`, "é o que uma lista de 30 ao acaso acertaria"],
+                [val.lift ? `${dec(val.lift)}x` : "—", "melhor que o acaso"],
               ].map(([valor, chave]) => (
                 <div key={chave} className="bg-paper p-4">
                   <div className="font-mono text-2xl leading-tight text-primary">{valor}</div>
@@ -260,16 +261,16 @@ export function ProvaReport({ prova }: { prova: Prova }) {
                 <p className="text-sm text-ink">
                   <b>O mesmo método, medido em {serieHistorica.medicoes} edições anteriores.</b>{" "}
                   Treinando só com o passado de cada uma: mediana de{" "}
-                  <span className="font-mono">{serieHistorica.mediana.toFixed(1)}x</span>, e{" "}
+                  <span className="font-mono">{dec(serieHistorica.mediana)}x</span>, e{" "}
                   <span className="font-mono">
-                    {serieHistorica.recentes_minimo.toFixed(1)}x a{" "}
-                    {serieHistorica.recentes_maximo.toFixed(1)}x
+                    {dec(serieHistorica.recentes_minimo)}x a{" "}
+                    {dec(serieHistorica.recentes_maximo)}x
                   </span>{" "}
                   nas {serieHistorica.recentes} mais recentes.
                 </p>
                 <p className="mt-2 text-sm text-muted">
                   O mínimo já foi{" "}
-                  <span className="font-mono">{serieHistorica.minimo.toFixed(1)}x</span> — abaixo
+                  <span className="font-mono">{dec(serieHistorica.minimo)}x</span> — abaixo
                   do acaso — nas edições antigas, quando a base era pequena. O método melhora
                   conforme o acervo cresce, e isso está no número, não na promessa.
                 </p>
