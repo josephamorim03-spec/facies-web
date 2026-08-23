@@ -150,12 +150,24 @@ export function CanonicalTodayDashboard() {
           </p>
           <p className="text-xs text-muted">atividades</p>
         </div>
-        <div className="px-2 text-center sm:px-4">
+        {/* Das tres celulas, esta e a unica que responde "estou em dia?" — o
+            hero acima ja respondeu "o que faco agora", e "Dia" e "Carga"
+            descrevem o presente. Progresso da semana e a unica que diz se o
+            plano esta se cumprindo.
+
+            As tres tinham peso identico, e tres pesos iguais nao tem climax:
+            a faixa lia como tres campos de um formulario. Escala e marca aqui
+            nao acrescentam informacao — declaram qual dos tres numeros a
+            pessoa veio buscar.
+
+            Uma vez por tela. Se as outras duas tambem crescessem, voltariamos
+            ao empate, com mais tinta. */}
+        <div className="bg-[var(--wash-selecao)] px-2 text-center sm:px-4">
           <p className="paper-eyebrow">Semana</p>
-          <p className="mt-1 font-serif text-xl font-semibold text-ink">
+          <p className="mt-1 font-serif text-3xl font-semibold leading-none text-marca">
             {pct(agenda?.summary?.weekly_progress_pct ?? today.progress_snapshot.weekly_progress_pct)}
           </p>
-          <p className="text-xs text-muted">da meta</p>
+          <p className="mt-1.5 text-xs text-muted">da meta</p>
         </div>
         <div className="px-2 text-center sm:px-4">
           <p className="paper-eyebrow">Carga</p>
