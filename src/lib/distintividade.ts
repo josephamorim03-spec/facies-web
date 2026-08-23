@@ -90,3 +90,26 @@ export function proporcaoDistintiva(
     Math.abs(cohenH(pct, pctReferencia)) >= H_MINIMO
   );
 }
+
+/**
+ * A decisão final, com a precedência certa.
+ *
+ * O gerador (`build_facies_dataset.py`, no kbank) é a autoridade quando se
+ * pronunciou: ele conhece o acervo inteiro e emite `exibivel` por linha, mesmo
+ * contrato que `mais_cai` já usava. Quando o campo não vem — dataset anterior à
+ * mudança — a regra é recalculada aqui com os mesmos limiares.
+ *
+ * Essa precedência é parte da regra, não do adaptador: é o que permite regerar
+ * o dataset e mudar o que a página exibe **sem novo deploy de código**, e o que
+ * garante que as duas pontas nunca discordem.
+ */
+export function decidirExibicao(
+  exibivel: boolean | undefined,
+  qtd: number,
+  base: number,
+  pct: number,
+  pctReferencia: number,
+): boolean {
+  if (typeof exibivel === "boolean") return exibivel;
+  return proporcaoDistintiva(qtd, base, pct, pctReferencia);
+}

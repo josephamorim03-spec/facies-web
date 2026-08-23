@@ -22,13 +22,22 @@
  */
 
 import dados from "@/data/facies/facies.json";
-import { cohenH, proporcaoDistintiva } from "@/lib/distintividade";
+import { cohenH, decidirExibicao } from "@/lib/distintividade";
 
 export type FormatoLinha = {
   codigo: string;
   rotulo: string;
   qtd: number;
   pct: number;
+  /**
+   * Decisão do gerador — ver `build_facies_dataset.py`.
+   *
+   * Opcional porque o dataset em produção pode ser anterior à mudança. Quando
+   * ausente, a regra é recalculada aqui com os mesmos limiares; quando presente,
+   * ela manda. Assim regerar o dataset não exige novo deploy de código, e as
+   * duas pontas nunca discordam.
+   */
+  exibivel?: boolean;
 };
 
 export type AlternativaLinha = { n: number; qtd: number; pct: number };
@@ -118,7 +127,8 @@ export function janela(banca: Banca): string {
  */
 export function formatoDistintivo(linha: FormatoLinha, base: number): boolean {
   if (linha.codigo === "direta") return false;
-  return proporcaoDistintiva(
+  return decidirExibicao(
+    linha.exibivel,
     linha.qtd,
     base,
     linha.pct,

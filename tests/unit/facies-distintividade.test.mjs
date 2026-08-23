@@ -8,6 +8,7 @@ import {
   proporcaoDistintiva,
   H_MINIMO,
   BASE_MINIMA,
+  decidirExibicao,
 } from "../../src/lib/distintividade.ts";
 
 /**
@@ -111,4 +112,20 @@ test("ordena da caracteristica mais forte para a mais fraca", () => {
   const caron = DATASET.bancas.find((b) => /Angelina Caron/i.test(b.nome));
   const hs = distintivos(caron).map((l) => Math.abs(cohenH(l.pct, NACIONAL[l.codigo] ?? 0)));
   assert.deepEqual(hs, [...hs].sort((a, b) => b - a));
+});
+
+test("a flag do gerador manda quando existe", () => {
+  // Transicao: enquanto o dataset em producao for anterior a Fase 2, a regra e'
+  // recalculada aqui. Quando o gerador passar a emitir `exibivel`, ele decide —
+  // e regerar o dataset nao exige novo deploy de codigo.
+
+  // Linha que a regra local suprimiria, marcada como exibivel pelo gerador.
+  assert.equal(decidirExibicao(true, 5, 1486, 0.3, 0.5), true);
+
+  // E o contrario: linha forte que o gerador decidiu esconder.
+  assert.equal(decidirExibicao(false, 172, 1486, 11.6, 7.1), false);
+
+  // Sem a flag, a regra local decide — que e' o estado do dataset hoje.
+  assert.equal(decidirExibicao(undefined, 5, 1486, 0.3, 0.5), false);
+  assert.equal(decidirExibicao(undefined, 172, 1486, 11.6, 7.1), true);
 });
