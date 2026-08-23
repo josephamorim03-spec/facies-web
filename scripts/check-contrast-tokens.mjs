@@ -43,6 +43,9 @@ const FOREGROUND = [
   "--color-ink",
   "--color-muted",
   "--color-primary",
+  // O acento da wordmark. Entra como TEXTO (4,5:1) e nao como grafico:
+  // e uma letra que se le, no meio de uma palavra que se le.
+  "--color-marca",
   "--color-accent",
   "--color-success",
   "--color-danger",

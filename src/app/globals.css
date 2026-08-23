@@ -34,6 +34,23 @@
      le como desabilitado, e era o que o `brightness()` fazia. */
   --color-primary-strong: #0A3E3A;
   --color-primary-ink: #F6F6F4;
+  /* O acento da wordmark — o `á` de Fácies — e SÓ ele.
+     Por que nao reusa `--color-primary`: o primary claro (#0D4F4A) contra a
+     tinta (#16191C) da 1,88:1. Os dois sao escuros, e o acento sumia no tema
+     branco. Este valor da 2,94:1, com 4,70:1 no pior fundo.
+
+     O TETO E' 3,03:1, e vale registrar por que: o acento tem duas exigencias
+     que puxam para lados opostos — ser escuro o bastante para 4,5:1 contra
+     fundos quase brancos, e claro o bastante para se separar de uma tinta quase
+     preta. Isso deixa uma janela de luminancia estreita (L <= 0,1325 no claro),
+     e 3,03:1 e' o maximo que cabe nela. Nao adianta procurar outro hex: se um
+     dia o acento precisar saltar mais, o caminho e' outro device (peso, marca
+     grafica), nao outra cor.
+
+     Token proprio em vez de clarear o primary: o #0D4F4A tem 8,69:1 no papel e
+     e' otimo para botao — nao ha motivo para estragar isso por causa de uma
+     letra. */
+  --color-marca: #136F66;
   --color-accent: #915500;
   --color-accent-ink: #F6F6F4;
   --color-success: #0D4F4A;
@@ -152,6 +169,14 @@
      fundo escuro faz o botao sumir. */
   --color-primary-strong: #4FB8AD;
   --color-primary-ink: #0F1112;
+  /* No escuro a restricao INVERTE e o token existe so' para nao sumir do tema:
+     para passar 4,5:1 contra fundo escuro o acento precisa ser claro, e a tinta
+     TAMBEM e' clara (#E4E6E4) — clarear aproxima em vez de separar. Medido:
+     #2E8F86 daria 3,11:1 contra a tinta e reprovaria em 3,70:1 no fundo.
+     O valor do primary ja' e' o melhor equilibrio possivel aqui (2,52:1 contra
+     a tinta, 4,56:1 no pior fundo), entao ele fica. Depois do ajuste, o tema
+     CLARO passa a ter mais separacao que o escuro — o oposto de antes. */
+  --color-marca: #38A096;
   --color-accent: #D89440;
   --color-accent-ink: #131516;
   --color-success: #4FB3A4;

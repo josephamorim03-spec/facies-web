@@ -33,7 +33,7 @@ export function FaciesWordmark({ size = "lg", className = "" }: Props) {
     <span
       className={`inline-flex items-baseline whitespace-nowrap font-serif font-semibold tracking-[-0.012em] text-ink ${escala} ${className}`.trim()}
     >
-      F<i className="not-italic text-primary">á</i>cies
+      F<i className="not-italic text-marca">á</i>cies
     </span>
   );
 }
@@ -53,7 +53,7 @@ export function FaciesMark({ className = "" }: { className?: string }) {
   return (
     <span
       aria-hidden="true"
-      className={`font-serif text-base font-semibold leading-none text-primary ${className}`.trim()}
+      className={`font-serif text-base font-semibold leading-none text-marca ${className}`.trim()}
     >
       á
     </span>

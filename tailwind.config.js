@@ -17,6 +17,11 @@ module.exports = {
         muted: "var(--color-muted)",
         primary: "var(--color-primary)",
         primaryInk: "var(--color-primary-ink)",
+        // Só o acento da wordmark. Separado de `primary` porque tem outro
+        // trabalho: `primary` precisa de contraste contra o FUNDO (é botão);
+        // este precisa de contraste contra a TINTA ao lado (é uma letra no meio
+        // de uma palavra). Reusar o primary dava 1,88:1 e o acento sumia.
+        marca: "var(--color-marca)",
         accent: "var(--color-accent)",
         accentInk: "var(--color-accent-ink)",
         success: "var(--color-success)",

@@ -21,7 +21,7 @@ import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
  */
 
 const DESCRICAO =
-  "A sua prova tem uma fácies. Veja como a sua banca cobra: o formato das questões, o que mais cai e a distribuição por área. Grátis, sem cadastro.";
+  "Toda prova tem uma cara. Veja como a sua banca cobra: o formato das questões, o que mais cai e a distribuição por área. Grátis, sem cadastro.";
 
 export const metadata: Metadata = {
   // Sem `title` de propósito: a home herda o default do layout, que já é a
@@ -53,8 +53,23 @@ export default function Home() {
           <span className="paper-eyebrow">
             Grátis, sem cadastro
           </span>
-          <h1 className="mt-3 max-w-[19ch] font-serif text-4xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl">
-            A sua prova tem uma fácies.
+          {/* A quebra é DECLARADA, não sorteada pela medida.
+              Antes: `max-w-[19ch]` com uma frase de 26 caracteres. A largura
+              decidia onde cortar, e caía antes de "fácies." — a palavra que
+              carregava o sentido ficava órfã na segunda linha, e a primeira
+              lia como enchimento.
+
+              A frase também mudou. "A sua prova tem uma fácies" usa o termo
+              antes de ensiná-lo, e `fácies` é invariável: na fala clínica se diz
+              "a fácies do paciente", quase nunca "tem uma fácies". Soava
+              estranho porque é uma construção que ninguém usa.
+
+              Agora ensina a metáfora em fala comum e só depois entrega. E não
+              repete o qualificador do cabeçalho, que já diz "a cara da sua
+              prova" no topo de toda página pública — repetir seria eco. */}
+          <h1 className="mt-3 max-w-[26ch] font-serif text-4xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl">
+            Toda prova tem uma cara.{" "}
+            <span className="block">Esta é a da sua.</span>
           </h1>
           <p className="mt-4 max-w-[56ch] text-lg text-muted">
             Escolha a sua e veja como ela cobra: o formato das questões, o que mais cai e a
