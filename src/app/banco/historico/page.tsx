@@ -249,10 +249,32 @@ export default function BancoHistoricoPage() {
                     ) : null}
                     {sessionTitle(session)}
                   </p>
-                  <p className="mt-1 text-xs text-muted">
-                    {pending
-                      ? `${session.answered_count}/${session.total_questions} respondidas`
-                      : `${score?.correct ?? 0}/${score?.total ?? 0} questões`}
+                  {/* O placar é o que a pessoa varre esta lista para ver, e
+                      estava em 12px cinza — o mesmo peso da data ao lado, que é
+                      metadado. Regra: cinza não carrega a informação principal
+                      de um bloco.
+
+                      O número recebe tinta cheia e mono tabular (as colunas se
+                      alinham numa lista), e a unidade fica cinza, porque ela
+                      apoia o número. A MARCA não entra aqui de propósito:
+                      colori-la em vinte linhas seria decoração, e ela só vale
+                      como sinal se aparecer uma vez, no lugar certo. */}
+                  <p className="mt-1 text-sm text-muted">
+                    {pending ? (
+                      <>
+                        <b className="font-mono font-semibold tabular-nums text-ink">
+                          {session.answered_count}/{session.total_questions}
+                        </b>{" "}
+                        respondidas
+                      </>
+                    ) : (
+                      <>
+                        <b className="font-mono font-semibold tabular-nums text-ink">
+                          {score?.correct ?? 0}/{score?.total ?? 0}
+                        </b>{" "}
+                        questões
+                      </>
+                    )}
                   </p>
                 </div>
                 <div className="flex items-center justify-between gap-3 sm:justify-end">

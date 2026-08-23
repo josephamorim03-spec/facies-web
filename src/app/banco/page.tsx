@@ -220,19 +220,42 @@ function RecommendedTopicsPanel({
                 selected ? "border-primary bg-[var(--wash-selecao)]" : "border-edge bg-paper hover:border-primary",
               )}
             >
+              {/* O maior texto deste card tinha 14px e era o NOME DO TEMA — a
+                  razão de o card existir. O caminho da taxonomia, que é
+                  metadado, ocupava a mesma faixa visual logo abaixo, em 12px
+                  cinza. Nada aqui era conteúdo; tudo era legenda.
+
+                  Três trocas, todas de hierarquia e nenhuma de informação:
+
+                  1. O CAMINHO vira rótulo. Ele diz onde o tema mora, e é
+                     exatamente o trabalho de um `paper-eyebrow`. Sai da faixa
+                     de conteúdo e para de competir com o nome.
+                  2. O NOME sobe para tamanho de leitura. É o que a pessoa
+                     procura na lista, e procurar num texto de 14px em cartão
+                     de 12 itens é o que fazia a tela parecer formulário.
+                  3. A CONTAGEM recebe a marca. É o número que responde "vale o
+                     meu tempo?" — a única pergunta que o card existe para
+                     responder antes do clique. `--color-marca` já passa o gate
+                     de contraste contra todo fundo (4,70:1 no pior).
+
+                  O motivo da recomendação passa a apoio: ele explica o `#rank`,
+                  não compete com o nome. */}
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="paper-eyebrow">
-                    {topic.question_count} questões
+                  <p className="paper-eyebrow line-clamp-1 break-words [overflow-wrap:anywhere]">
+                    {topicPathLabel(topic)}
                   </p>
-                  <p className="mt-0.5 line-clamp-2 break-words text-sm font-semibold leading-snug text-ink [overflow-wrap:anywhere]">{topic.node_name}</p>
+                  <p className="mt-1 line-clamp-2 break-words text-lg font-semibold leading-snug text-ink [overflow-wrap:anywhere]">{topic.node_name}</p>
                 </div>
                 <span className={cx("shrink-0 whitespace-nowrap px-2 py-0.5 text-micro font-semibold", selected ? "bg-primary text-primaryInk" : "bg-surfaceMuted text-ink")}>
                   #{topic.recommendation_rank}
                 </span>
               </div>
-              <p className="mt-2 line-clamp-2 break-words text-xs text-muted [overflow-wrap:anywhere]">{topicPathLabel(topic)}</p>
-              <p className="mt-1 text-xs font-medium text-ink">
+              <p className="mt-2.5 flex flex-wrap items-baseline gap-x-1.5">
+                <b className="font-mono text-xl font-semibold tabular-nums text-marca">{topic.question_count}</b>
+                <span className="text-sm text-muted">questões disponíveis</span>
+              </p>
+              <p className="mt-1.5 text-sm text-muted">
                 {RECOMMENDATION_REASON_LABEL[topic.recommendation_reason]}
               </p>
             </button>
