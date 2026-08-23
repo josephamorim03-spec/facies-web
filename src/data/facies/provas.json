@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-08-22T04:21:09.637773+00:00",
+  "gerado_em": "2026-08-23T04:48:51.641688+00:00",
   "peso_correlata": 0.4,
   "piso_n_celula": 5,
   "provas": [
@@ -10,38 +10,38 @@
         "cobertura": 100.0,
         "linhas": [
           {
-            "pct": 36.3,
+            "pct": 36.7,
             "qtd": 33,
             "rotulo": "Clínica Médica"
           },
           {
-            "pct": 13.2,
+            "pct": 13.3,
             "qtd": 12,
             "rotulo": "Outros"
           },
           {
-            "pct": 11.0,
+            "pct": 11.1,
             "qtd": 10,
             "rotulo": "Ginecologia"
           },
           {
-            "pct": 11.0,
+            "pct": 11.1,
             "qtd": 10,
             "rotulo": "Pediatria"
           },
           {
-            "pct": 11.0,
+            "pct": 11.1,
             "qtd": 10,
             "rotulo": "Medicina Preventiva"
           },
           {
-            "pct": 8.8,
+            "pct": 8.9,
             "qtd": 8,
             "rotulo": "Cirurgia"
           },
           {
-            "pct": 8.8,
-            "qtd": 8,
+            "pct": 7.8,
+            "qtd": 7,
             "rotulo": "Obstetrícia"
           }
         ]
@@ -56,14 +56,14 @@
           {
             "nome": "Revalida / INEP",
             "peso": 0.4,
-            "questoes": 1162
+            "questoes": 1160
           }
         ],
         "direta": {
           "anos": [
             2026
           ],
-          "questoes": 91
+          "questoes": 90
         }
       },
       "cadernos_previstos": "2026-09-15",
@@ -73,15 +73,15 @@
           {
             "n": 4,
             "pct": 100.0,
-            "qtd": 91
+            "qtd": 90
           }
         ],
-        "base": 91,
+        "base": 90,
         "distribuicao": [
           {
             "codigo": "direta",
             "pct": 100.0,
-            "qtd": 91
+            "qtd": 90
           }
         ]
       },
@@ -102,23 +102,23 @@
         "cobertura_direta": 100.0,
         "linhas": [
           {
-            "correlatas": 28,
+            "correlatas": 27,
             "diretas": 1,
             "exibivel": true,
             "rotulo": "Neoplasias do Sistema Digestivo",
-            "score": 12.2,
+            "score": 11.8,
             "serie": [
               1,
               1,
               2,
               8,
               8,
-              3,
+              2,
               2,
               3,
               1
             ],
-            "total_serie": 29
+            "total_serie": 28
           },
           {
             "correlatas": 20,
@@ -254,6 +254,25 @@
             "total_serie": 20
           },
           {
+            "correlatas": 17,
+            "diretas": 1,
+            "exibivel": true,
+            "rotulo": "Arboviroses",
+            "score": 7.8,
+            "serie": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              2,
+              3,
+              3,
+              5
+            ],
+            "total_serie": 18
+          },
+          {
             "correlatas": 14,
             "diretas": 2,
             "exibivel": true,
@@ -290,25 +309,6 @@
               2
             ],
             "total_serie": 16
-          },
-          {
-            "correlatas": 16,
-            "diretas": 1,
-            "exibivel": true,
-            "rotulo": "Arboviroses",
-            "score": 7.4,
-            "serie": [
-              1,
-              1,
-              0,
-              1,
-              1,
-              2,
-              3,
-              3,
-              5
-            ],
-            "total_serie": 17
           },
           {
             "correlatas": 13,
@@ -393,21 +393,32 @@
       "profundidade": {
         "aplicacoes_diretas": 1,
         "aplicacoes_na_serie": 9,
-        "correlatas": 1943,
-        "diretas": 91,
-        "questoes_rotuladas": 2034,
+        "correlatas": 1941,
+        "diretas": 90,
+        "questoes_rotuladas": 2031,
         "subtemas_mapeados": 310
       },
       "questoes_declaradas": 100,
       "sigla": "ENAMED",
       "slug": "enamed",
       "validacao": {
-        "acerto_pct": 38.5,
+        "acerto_pct": 38.9,
         "acertos": 35,
-        "de": 91,
+        "de": 90,
         "edicoes_diretas": 1,
         "grao": "subtema",
-        "lift": 3.97,
+        "historico": {
+          "maximo": 2.99,
+          "mediana": 2.32,
+          "medicoes": 8,
+          "minimo": 0.67,
+          "recentes": 4,
+          "recentes_maximo": 2.99,
+          "recentes_mediana": 2.6,
+          "recentes_minimo": 2.52,
+          "status": "medido"
+        },
+        "lift": 4.01,
         "piso_pct": 9.7,
         "status": "medido",
         "universo": 309

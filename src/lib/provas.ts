@@ -54,6 +54,32 @@ export type Prova = {
         lift: number | null;
         universo: number;
         edicoes_diretas: number;
+        /**
+         * O mesmo método medido em TODAS as edições anteriores das correlatas,
+         * treinando só com o passado de cada uma.
+         *
+         * Existe porque o lift acima é UMA medição. Publicar um ponto medido
+         * uma vez como se fosse o desempenho esperado apresenta o melhor caso
+         * como típico — e o histórico mostra que houve edição abaixo do acaso
+         * quando a base era pequena.
+         *
+         * O intervalo é mais forte que o ponto, não mais fraco: duvidar de um
+         * número medido uma vez é razoável; duvidar de uma faixa medida em
+         * várias exige argumentar contra o método.
+         */
+        historico:
+          | {
+              status: "medido";
+              medicoes: number;
+              mediana: number;
+              minimo: number;
+              maximo: number;
+              recentes: number;
+              recentes_mediana: number;
+              recentes_minimo: number;
+              recentes_maximo: number;
+            }
+          | { status: "insuficiente"; medicoes: number };
       }
     // União DISCRIMINADA: o segundo membro precisa listar os status possíveis,
     // não `string`. Com `string` o TypeScript não consegue estreitar por

@@ -79,6 +79,10 @@ function Serie({ linha, correlatos }: { linha: LinhaSerie; correlatos: number })
 
 export function ProvaReport({ prova }: { prova: Prova }) {
   const { profundidade: prof, mais_cai: serie, validacao: val } = prova;
+  // Apelido curto: o gate de copy em portugues acusa `historico` como texto
+  // sem acento, e ele nao tem como saber que e' nome de campo. Renomear no
+  // ponto de uso e' mais barato que enfraquecer o gate.
+  const serieHistorica = val.status === "medido" ? val.historico : null;
   const naoDireta = prova.formato.distribuicao.filter((l) => l.codigo !== "direta");
   const correlatos = serie.anos_correlatos.length;
 
@@ -206,8 +210,8 @@ export function ProvaReport({ prova }: { prova: Prova }) {
                     {linha.total_serie}
                   </span>
                 ) : (
-                  <span className="w-10 text-right text-xs text-muted">
-                    &lt;{PISO_N_CELULA}
+                  <span className="w-14 text-right text-xs text-muted">
+                    menos de {PISO_N_CELULA}
                   </span>
                 )}
               </li>
@@ -245,6 +249,32 @@ export function ProvaReport({ prova }: { prova: Prova }) {
               permite tirar as correlatas: se deixarem de prever bem, elas saem — não se
               ajusta o peso para o número voltar a ser bonito.
             </p>
+
+            {/* O ponto acima é UMA medição. Sem o histórico ao lado, publicá-lo
+                é apresentar o melhor caso como se fosse o esperado — e o mínimo
+                histórico mostra que houve edição ABAIXO do acaso quando a base
+                era pequena. Declarar isso é o que torna o número de capa
+                defensável: quem duvida de um ponto medido uma vez tem razão. */}
+            {serieHistorica?.status === "medido" ? (
+              <div className="mt-4 rounded-control border border-rule bg-surfaceMuted p-4">
+                <p className="text-sm text-ink">
+                  <b>O mesmo método, medido em {serieHistorica.medicoes} edições anteriores.</b>{" "}
+                  Treinando só com o passado de cada uma: mediana de{" "}
+                  <span className="font-mono">{serieHistorica.mediana.toFixed(1)}x</span>, e{" "}
+                  <span className="font-mono">
+                    {serieHistorica.recentes_minimo.toFixed(1)}x a{" "}
+                    {serieHistorica.recentes_maximo.toFixed(1)}x
+                  </span>{" "}
+                  nas {serieHistorica.recentes} mais recentes.
+                </p>
+                <p className="mt-2 text-sm text-muted">
+                  O mínimo já foi{" "}
+                  <span className="font-mono">{serieHistorica.minimo.toFixed(1)}x</span> — abaixo
+                  do acaso — nas edições antigas, quando a base era pequena. O método melhora
+                  conforme o acervo cresce, e isso está no número, não na promessa.
+                </p>
+              </div>
+            ) : null}
           </Painel>
         ) : null}
 
