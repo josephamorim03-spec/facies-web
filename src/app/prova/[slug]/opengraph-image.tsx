@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { provaPorSlug, todasAsProvas } from "@/lib/provas";
 import { HOST_VISIVEL } from "@/lib/site";
+import { encurtar } from "@/lib/encurtar";
 
 /**
  * O print que circula da página de uma prova.
@@ -17,7 +18,12 @@ import { HOST_VISIVEL } from "@/lib/site";
  * coisa por baixo antes de afirmar qualquer coisa sobre o que cai.
  */
 
-export const alt = "A fácies da prova";
+// O `alt` do Next é export estático por rota: não dá para citar a banca nem a
+// prova. Então ele descreve o que o cartão CONTÉM — "A fácies da prova" sozinho
+// não diz nada que o título do link já não diga, e alt existe justamente para
+// quem não vê a imagem.
+export const alt =
+  "Cartão da fácies da prova: questões rotuladas, quanto a leitura supera o acaso e o assunto que mais aparece.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -69,20 +75,30 @@ export default async function Imagem({ params }: { params: Promise<{ slug: strin
   ];
 
   if (val.status === "medido" && val.lift) {
+    const serieHistorica = val.historico;
+    // O `n` vai na imagem, não só na página: o print circula sozinho e sem ele o
+    // número viaja sem a ressalva que o torna honesto.
+    //
+    // E a FAIXA vai junto pelo mesmo motivo, que é mais forte: 4,0x é UMA
+    // medição — a melhor de várias. Na página dá para explicar isso em duas
+    // frases; aqui não dá, e é aqui que o número circula. Uma imagem que leva só
+    // o melhor caso é a forma mais eficiente de exagerar que existe, porque
+    // viaja sem nada que a corrija.
+    const faixa =
+      serieHistorica.status === "medido"
+        ? ` · ${serieHistorica.recentes_minimo.toFixed(1)}–${serieHistorica.recentes_maximo.toFixed(1)}x nas ${serieHistorica.recentes} anteriores`
+        : "";
     numeros.push({
       valor: `${val.lift.toFixed(1)}x`,
       rotulo: "melhor que o acaso",
-      // O `n` vai na imagem, não só na página: o print circula sozinho e sem ele
-      // o número viaja sem a ressalva que o torna honesto.
-      nota: `sobre ${val.edicoes_diretas} aplicação direta`,
+      nota: `sobre ${val.edicoes_diretas} aplicação direta${faixa}`,
     });
   }
 
   if (topo) {
     numeros.push({
       valor: String(topo.total_serie),
-      rotulo:
-        topo.rotulo.length > 30 ? `${topo.rotulo.slice(0, 28)}…` : topo.rotulo,
+      rotulo: encurtar(topo.rotulo, 30),
       nota: "assunto que mais aparece",
     });
   }
@@ -151,7 +167,9 @@ export default async function Imagem({ params }: { params: Promise<{ slug: strin
           }}
         >
           <div style={{ display: "flex" }}>
-            <span style={{ color: MARCA, fontWeight: 700 }}>Fácies</span>
+            <span style={{ color: TINTA, fontWeight: 700 }}>F</span>
+            <span style={{ color: MARCA, fontWeight: 700 }}>á</span>
+            <span style={{ color: TINTA, fontWeight: 700 }}>cies</span>
             <span style={{ marginLeft: 10 }}>· inteligência de prova</span>
           </div>
           <div style={{ display: "flex" }}>
