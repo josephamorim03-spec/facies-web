@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { NACIONAL, todasAsBancas } from "@/lib/facies";
+import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
 
 /**
  * O índice de bancas. Estático, e é ele que dá caminho de rastreio para as 141
@@ -36,11 +37,7 @@ export default function IndiceDeBancas() {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pb-16 sm:px-6">
-      <nav className="py-6">
-        <Link href="/" className="text-sm text-primary">
-          ← Fácies
-        </Link>
-      </nav>
+      <CabecalhoPublico comLink />
 
       <header className="pb-8">
         <h1 className="font-serif text-3xl font-semibold tracking-tight text-ink">Bancas</h1>

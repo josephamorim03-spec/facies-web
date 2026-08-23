@@ -554,6 +554,118 @@ test("builder keeps requested quantity above 50 before availability resolves", a
   expect(createPayloads[0]).toMatchObject({ limit: 99 });
 });
 
+/**
+ * O Treino dirigido chega ao servidor — verificado no que sai pela rede.
+ *
+ * Existe um guard de unidade lendo o código-fonte
+ * (`tests/unit/treino-dirigido-contrato.test.mjs`), e ele é bom para o que é: um
+ * alarme barato contra a deleção acidental. Mas fonte é proxy. Este teste olha o
+ * `POST` de verdade, com o preset que o aluno clicou dentro dele.
+ *
+ * O caminho inteiro sumiu uma vez sem que nada acusasse: `session_kind: "kros"`
+ * tinha um único produtor, o `/rota`, e ele foi deletado. O backend continuou
+ * pronto para atender uma chamada que ninguém mais fazia.
+ */
+test("o Treino dirigido envia session_kind kros e o preset escolhido", async ({ page }) => {
+  await page.context().addCookies([
+    { name: "krosmed_session", value: "session_e2e", url: E2E_BASE_URL, httpOnly: true, sameSite: "Lax" },
+  ]);
+
+  const createPayloads: Record<string, unknown>[] = [];
+  await mockQuestionBankMetadata(page);
+
+  await page.route("**/api/question-bank/availability**", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        total_count: 120,
+        answered_count: 0,
+        unanswered_count: 120,
+        available_count: 120,
+        max_selectable: 120,
+        answer_status: "unanswered",
+      }),
+    });
+  });
+  await page.route("**/api/question-bank/topics**", async (route) => {
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify([topic, childTopic]) });
+  });
+  await page.route("**/api/question-bank/performance", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        areas: [],
+        exam: { simulation_count: 0, accuracy: null, avg_time_ms: null, slow_rate: null },
+        generated_at: "2026-05-27T15:00:00Z",
+      }),
+    });
+  });
+  await page.route("**/api/reviews/agenda", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ tasks: [], generated_at: new Date().toISOString() }),
+    });
+  });
+
+  // A prévia é o que permite o cartão "Foco na banca" dizer a verdade. Este
+  // aluno declarou USP-SP e o acervo cobre — então o modo tem de ficar
+  // disponível, e nomear a banca.
+  await page.route("**/api/question-bank/kros/preview", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        kros_mode: "equilibrado",
+        requested_limit: 20,
+        max_available: 120,
+        estimated_minutes: 40,
+        min_size: 10,
+        max_size: 100,
+        size_step: 5,
+        size_anchors: [10, 20, 40],
+        suggested_size: null,
+        size_band: [],
+        composition: { counts: [], micros: [] },
+        target_boards: ["USP-SP"],
+        unsatisfied_target_boards: [],
+      }),
+    });
+  });
+
+  await page.route("**/api/question-bank/sessions", async (route) => {
+    createPayloads.push(await route.request().postDataJSON());
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({ ...sessionPayload(false), session_id: "session_qb_kros" }),
+    });
+  });
+  await page.route("**/api/question-bank/sessions/session_qb_kros", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ ...sessionPayload(false), session_id: "session_qb_kros" }),
+    });
+  });
+
+  await page.goto("/banco-de-questoes");
+
+  await page.getByRole("button", { name: /Treino dirigido/ }).click();
+
+  const focoBanca = page.getByRole("radio", { name: /Foco na banca/ });
+  // A prévia respondeu com a banca coberta: o cartão nomeia a USP-SP em vez de
+  // mandar o aluno "definir sua prova-alvo" que ele já definiu.
+  await expect(focoBanca).toBeEnabled();
+  await expect(focoBanca).toContainText(/USP-SP/);
+
+  await page.getByRole("radio", { name: /Prioridade nos erros/ }).click();
+  await page.getByRole("button", { name: /Começar/ }).click();
+
+  await expect.poll(() => createPayloads.length).toBe(1);
+  expect(createPayloads[0]).toMatchObject({
+    session_kind: "kros",
+    kros_mode: "prioridade_erros",
+  });
+});
+
 test("simulation session allows answer changes by click and keyboard", async ({ page }) => {
   await page.context().addCookies([
     {
@@ -726,18 +838,57 @@ test("o montador de sessao passa no gate automatico de WCAG", async ({ page }) =
     });
   });
 
+  // Uma banca alvo COBERTA e uma SEM cobertura: as duas metades da copy do
+  // cartão aparecem, e com elas os dois estados visuais que o axe precisa ver.
+  await page.route("**/api/question-bank/kros/preview", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        kros_mode: "equilibrado",
+        requested_limit: 20,
+        max_available: 120,
+        estimated_minutes: 40,
+        min_size: 10,
+        max_size: 100,
+        size_step: 5,
+        size_anchors: [10, 20, 40],
+        suggested_size: null,
+        size_band: [],
+        composition: { counts: [], micros: [] },
+        target_boards: ["USP-SP", "UNIFESP"],
+        unsatisfied_target_boards: ["UNIFESP"],
+      }),
+    });
+  });
+
   await page.goto("/banco-de-questoes");
   await expect(page.getByTestId("question-bank-top-filters")).toBeVisible();
 
-  const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
-    .analyze();
-  expect(
-    results.violations.map((violation) => ({
-      id: violation.id,
-      impact: violation.impact,
-      nodes: violation.nodes.length,
-      help: violation.help,
-    })),
-  ).toEqual([]);
+  const auditar = async (onde: string) => {
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
+      .analyze();
+    expect(
+      results.violations.map((violation) => ({
+        onde,
+        id: violation.id,
+        impact: violation.impact,
+        nodes: violation.nodes.length,
+        help: violation.help,
+      })),
+    ).toEqual([]);
+  };
+
+  await auditar("montador padrão");
+
+  /*
+   * O Treino dirigido é uma superfície que o gate nunca tinha visto: o seletor só
+   * existe no DOM depois do clique, então auditar `/banco-de-questoes` parado
+   * dava verde sobre um componente que não estava lá. São quatro `role="radio"`
+   * dentro de um `radiogroup`, com um deles capaz de ficar `disabled` — três
+   * coisas que o axe tem opinião sobre e que nada estava checando.
+   */
+  await page.getByRole("button", { name: /Treino dirigido/ }).click();
+  await expect(page.getByRole("radio", { name: /Foco na banca/ })).toContainText(/USP-SP/);
+  await auditar("treino dirigido aberto");
 });

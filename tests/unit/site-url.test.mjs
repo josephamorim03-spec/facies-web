@@ -45,9 +45,23 @@ test("o endereco publico e facies.app, SEM acento", () => {
 test("a marca em prosa mantem o acento", () => {
   const site = ler("lib/site.ts");
   assert.match(site, /SITE_NAME = "Fácies"/);
-  // O qualificador é obrigatório na primeira aparição em contexto novo, e
+  // O qualificador é obrigatório na primeira aparição em contexto novo —
   // resultado de busca, cartão de link e ícone na tela inicial são três deles.
-  assert.match(site, /SITE_QUALIFICADOR = "inteligência de prova"/);
+  //
+  // Este teste NÃO trava o texto, trava a PROPRIEDADE. Travar a string faria
+  // uma melhoria de copy parecer regressão, e foi exatamente o que aconteceu
+  // quando "inteligência de prova" virou "a cara da sua prova" — que é melhor
+  // porque explica o nome: *fácies*, em semiologia, é a cara característica que
+  // uma doença dá ao paciente.
+  const qualificador = site.match(/SITE_QUALIFICADOR = "([^"]+)"/);
+  assert.ok(qualificador, "`SITE_QUALIFICADOR` sumiu");
+  assert.ok(
+    qualificador[1].length >= 12 && qualificador[1].length <= 40,
+    `qualificador de ${qualificador[1].length} caracteres nao cabe num cartao de link`,
+  );
+  // Minúsculo: ele acompanha a marca numa linha só, e versal ali competiria
+  // com o wordmark.
+  assert.match(qualificador[1], /^[a-zà-ú]/);
 });
 
 test("SITE_URL nunca termina em barra", () => {
@@ -100,4 +114,33 @@ test("robots nao deixa o app autenticado ser indexado", () => {
   // um jeito de o cancelamento acontecer por acidente.
   assert.ok(robots.includes("/facies/descadastrar"));
   assert.match(robots, /sitemap:/);
+});
+
+test("o manifest identifica o app instalado e abre no lugar certo", () => {
+  const manifest = ler("app/manifest.ts");
+
+  // `id` fixo: sem ele o navegador identifica a instalação pelo `start_url`, e
+  // mudar o `start_url` vira "outro app" — quem já instalou fica com um ícone
+  // órfão que nunca mais atualiza, e um segundo aparece do lado.
+  assert.match(manifest, /id:\s*"\/"/);
+
+  // `/hoje` e não `/`: quem abre pelo ícone é aluno, e `/` é o funil público.
+  // Abrir em `/` carregava a página de marketing, esperava o `fetch` do
+  // `RedirectIfAuthenticated` e só então chegava ao app — uma piscada de página
+  // errada em toda abertura.
+  assert.match(manifest, /start_url:\s*"\/hoje"/);
+  // O escopo fica em "/" mesmo assim: o app instalado precisa alcançar
+  // `/login` e `/ativar` sem sair para o navegador.
+  assert.match(manifest, /scope:\s*"\/"/);
+
+  // O qualificador é obrigatório no diálogo de instalação (contexto novo onde a
+  // marca chega sozinha); o `short_name` é o que cabe embaixo do ícone.
+  assert.match(manifest, /name:\s*`\$\{SITE_NAME\} — \$\{SITE_QUALIFICADOR\}`/);
+  assert.match(manifest, /short_name:\s*SITE_NAME/);
+
+  // Um desenho próprio para `maskable`: o SO recorta na forma dele e só os 80%
+  // centrais sobrevivem. Reusar o ícone `any` faz o acento encostar na borda.
+  const maskable = manifest.match(/src:\s*"([^"]*)"[^}]*purpose:\s*"maskable"/);
+  assert.ok(maskable, "manifest sem ícone maskable");
+  assert.match(maskable[1], /maskable/, "o `maskable` reusa o ícone `any`");
 });

@@ -27,8 +27,23 @@ export const SITE_NAME = "Fácies";
  * O qualificador. Obrigatório na PRIMEIRA aparição da marca em qualquer contexto
  * novo (folha de marca §01): resultado de busca, cartão do WhatsApp e ícone na
  * tela inicial são três contextos onde "Fácies" chega sozinha e não diz nada.
+ *
+ * Era "inteligência de prova". A troca importa porque o qualificador tem UM
+ * trabalho — fazer o nome significar alguma coisa — e o anterior não fazia.
+ *
+ * Em semiologia, *fácies* é a cara característica que uma doença dá ao paciente:
+ * fácies leonina, fácies mitrálica, fácies de máscara. O médico reconhece a
+ * doença pela cara. A tese do produto é esse mesmo movimento aplicado à prova —
+ * cada banca tem uma cara reconhecível, e dá para aprender a ler.
+ *
+ * "Inteligência de prova" é rótulo de prateleira: diz em que categoria o produto
+ * fica, e toda edtech diz "inteligência". "A cara da sua prova" ensina a
+ * metáfora em cinco palavras, para um público que já conhece o termo.
+ *
+ * O registro coloquial contrasta com a direção sóbria do sistema, e o contraste
+ * é a favor: tipografia de laudo com frase de corredor lê como confiança.
  */
-export const SITE_QUALIFICADOR = "inteligência de prova";
+export const SITE_QUALIFICADOR = "a cara da sua prova";
 
 /**
  * O host sem protocolo, para EXIBIR.

@@ -24,6 +24,7 @@ import {
   type QuestionBankTopic,
   type QuestionBankYearStat,
   type FullExamType,
+  type KrosMode,
   type StudyKind,
   getAPIErrorMessage,
 } from "@/lib/api";
@@ -35,6 +36,8 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { BottomActionBar, BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
 import { Button } from "@/components/ui/Button";
 import FiltersBar from "./_components/FiltersBar";
+import type { TipoDeSessao } from "./_components/FiltersBar";
+import { previewKros } from "@/lib/api";
 import QuestionList from "./_components/QuestionList";
 import CreateSessionPanel from "./_components/CreateSessionPanel";
 import { BancoDeQuestoesSkeleton } from "./_components/BancoDeQuestoesSkeleton";
@@ -304,7 +307,22 @@ function BancoDeQuestoesContent() {
   const [correctionStatus, setCorrectionStatus] = useState<QuestionBankCorrectionStatus>("all");
   const [limit, setLimit] = useState(() => clampQuestionLimit(initialContext.expectedQuestions ?? 10));
   const [correctionMode, setCorrectionMode] = useState<CorrectionMode>("guided_choice");
-  const [studyKind, setStudyKind] = useState<StudyKind>("topic");
+  const [tipoSessao, setTipoSessao] = useState<TipoDeSessao>("topic");
+  // Derivado, nunca guardado: o contrato so conhece dois valores, e o servidor
+  // pina `study_kind="topic"` quando `session_kind="kros"`.
+  const studyKind: StudyKind = tipoSessao === "full_exam" ? "full_exam" : "topic";
+  // O preset do Treino dirigido. `equilibrado` e' o default do dominio
+  // (`DEFAULT_KROS_MODE`), e nao um palpite desta tela.
+  const [krosMode, setKrosMode] = useState<KrosMode>("equilibrado");
+  // UMA fonte de verdade. `studyKind` e `treinoDirigido` sao DERIVADOS: dois
+  // estados que precisam concordar e o padrao de defeito que esta sessao achou
+  // tres vezes hoje.
+  const treinoDirigido = tipoSessao === "kros";
+  // Bancas-alvo, para o cartao "Foco na banca" nao afirmar o contrario do que e'
+  // verdade. `null` = a previa ainda nao respondeu.
+  const [krosBancas, setKrosBancas] = useState<{ alvo: string[]; semCobertura: string[] } | null>(
+    null,
+  );
   const [fullExamName, setFullExamName] = useState("");
   const [fullExamYear, setFullExamYear] = useState(() => String(new Date().getFullYear()));
   const [fullExamType, setFullExamType] = useState<FullExamType>("acesso_direto");
@@ -407,7 +425,7 @@ function BancoDeQuestoesContent() {
     setCorrectionStatus("all");
     setLimit(clampQuestionLimit(context.expectedQuestions ?? 10));
     setCorrectionMode("guided_choice");
-    setStudyKind(opensInstitutionalExam ? "full_exam" : "topic");
+    setTipoSessao(opensInstitutionalExam ? "full_exam" : "topic");
     setStateCodes([]);
     setSelectedTopics([]);
     setFocusTopicId(null);
@@ -493,6 +511,49 @@ function BancoDeQuestoesContent() {
     correction_status: correctionStatus,
     limit: override.limit,
   }), [answerStatus, area, boardCodes, correctionStatus, examCodes, includeNoYear, institutions, normalizedSearch, selectedTopics, selectedYears, stateCodes]);
+
+  // As bancas-alvo, buscadas SÓ quando o Treino dirigido está na tela: a prévia
+  // roda a pipeline inteira no servidor, e chamá-la para quem escolheu "Por
+  // tópico" seria pagar por um dado que ninguém vai ler.
+  //
+  // Sem isto, o cartão "Foco na banca" diria "Defina sua prova-alvo no perfil"
+  // para TODO MUNDO, inclusive para quem já declarou — afirmação falsa dita a
+  // quem menos merece ouvi-la.
+  //
+  // As dependências são só as que mudam a RESPOSTA: as bancas-alvo vêm do perfil
+  // e a cobertura, do pool de candidatos, que é função dos filtros (`filterParams`
+  // é um useCallback que só troca de identidade quando eles trocam). O preset e o
+  // tamanho ficam de fora de propósito — arrastar o slider dispararia a pipeline
+  // inteira a cada tique para reler um dado que não depende dele.
+  useEffect(() => {
+    if (!treinoDirigido || !tokenResolved) return;
+    const controller = new AbortController();
+    previewKros(
+      token,
+      {
+        session_kind: "kros",
+        // Fixo, e não `krosMode`: esta chamada existe para ler as bancas, que são
+        // as mesmas nos quatro presets. Passar o preset atual só criaria uma
+        // dependência que não muda a resposta.
+        kros_mode: "equilibrado",
+        mode: "adaptive",
+        resolution_mode: "simulation",
+        ...filterParams(),
+      },
+      controller.signal,
+    )
+      .then((previa) => {
+        setKrosBancas({
+          alvo: previa.target_boards,
+          semCobertura: previa.unsatisfied_target_boards,
+        });
+      })
+      .catch(() => {
+        // Falha de prévia NÃO trava o seletor. Sem dado, o cartão da banca fica
+        // em "carregando" e não afirma nada — melhor que afirmar o contrário.
+      });
+    return () => controller.abort();
+  }, [treinoDirigido, tokenResolved, token, filterParams]);
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -847,9 +908,11 @@ function BancoDeQuestoesContent() {
       session_kind:
         studyKind === "full_exam"
           ? "institutional_exam"
-          : selectedTopics.length > 1
-            ? "bank_combined"
-            : "bank_topic",
+          : treinoDirigido
+            ? "kros"
+            : selectedTopics.length > 1
+              ? "bank_combined"
+              : "bank_topic",
       feedback_timing: correctionMode === "immediate" ? "immediate" : "post_result",
       feedback_reveal_policy:
         correctionMode === "reveal_all" ? "reveal_all" : "guided_choice",
@@ -857,6 +920,13 @@ function BancoDeQuestoesContent() {
       resolution_mode: "simulation",
       study_kind: studyKind,
       ...filterParams({ limit: clampedLimit }),
+      // O preset tem de viajar junto: `resolve_kros_mode(None)` devolve
+      // `equilibrado`, entao omiti-lo nao da erro — da a sessao errada em
+      // silencio. Quem escolheu "Prioridade nos erros" receberia
+      // `max_answered_share = 0.0` no lugar de 0.40 e nenhum dos boosts
+      // (`recent_error`, `deficit`, `fingerprint_need`): uma sessao que nunca
+      // reexpoe o erro, que e a unica coisa que o modo faz.
+      ...(treinoDirigido ? { kros_mode: krosMode } : {}),
       performed_at: localNoonISO(entryContext.dateISO),
       review_task_id: studyKind === "topic" ? entryContext.reviewTaskId ?? undefined : undefined,
     };
@@ -1031,8 +1101,13 @@ function BancoDeQuestoesContent() {
                   onCorrectionStatusChange={handleCorrectionStatusChange}
                   correctionMode={correctionMode}
                   onCorrectionModeChange={setCorrectionMode}
-                  studyKind={studyKind}
-                  onStudyKindChange={setStudyKind}
+                  tipoSessao={tipoSessao}
+                  onTipoSessaoChange={setTipoSessao}
+                  krosMode={krosMode}
+                  onKrosModeChange={setKrosMode}
+                  krosBancasAlvo={krosBancas?.alvo ?? []}
+                  krosBancasSemCobertura={krosBancas?.semCobertura ?? []}
+                  krosPreviaCarregando={treinoDirigido && krosBancas === null}
                   includeRetired={includeRetired}
                   onIncludeRetiredChange={setIncludeRetired}
                   fullExamName={fullExamName}

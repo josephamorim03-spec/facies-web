@@ -3,14 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  isStudyImportImmersivePath,
-} from "@/lib/studyImportRuntime";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { getCronogramaAgendaHref } from "@/app/cronograma/_lib/viewModeSession";
 import { NAV_GROUPS_CONFIG, isNavItemActive } from "@/lib/navConfig";
 import { FaciesMark, FaciesWordmark } from "@/components/FaciesWordmark";
-import { ACTIVATE_ROUTE } from "@/lib/initialGoalSetup";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FastNavLink } from "@/components/FastNavLink";
 import { useSessionNavGuard } from "@/hooks/useSessionNavGuard";
@@ -18,6 +14,7 @@ import { useEdgeSwipeSuppression } from "@/hooks/useEdgeSwipeSuppression";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Calendar as CalendarDays, TrendingUp as ChartNoAxesCombined, CircleUser as CircleUserRound, House as House, NotepadText as Layers3, Library as LibraryBig, Settings as Settings } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
+import { deveEsconderChrome } from "@/lib/chromeVisibility";
 
 
 
@@ -42,18 +39,6 @@ function NavIcon({ icon, className }: { icon: string; className?: string }) {
 const NAV_GROUPS = NAV_GROUPS_CONFIG;
 
 export const NAV_OPEN_EVENT = "kros:open-nav";
-
-function useNavHideCompletely(pathname: string) {
-  return (
-    pathname === "/" ||
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/auth") ||
-    pathname === ACTIVATE_ROUTE ||
-    // Immersive question/simulado runner — the session page has its own exit.
-    pathname.startsWith("/banco/sessao") ||
-    isStudyImportImmersivePath(pathname)
-  );
-}
 
 function resolveNavHref(href: string): string {
   if (href === "/agenda-operacional" || href === "/calendario") return getCronogramaAgendaHref();
@@ -96,7 +81,7 @@ function UserAvatar({ photoUrl, displayName, size = "sm" }: { photoUrl?: string 
  */
 export default function Nav() {
   const pathname = usePathname();
-  const hideCompletely = useNavHideCompletely(pathname);
+  const hideCompletely = deveEsconderChrome(pathname);
 
   const { exitConfirmOpen, cancelExit, confirmExit } = useSessionNavGuard({ pathname });
 
@@ -132,7 +117,7 @@ export function SidebarNav({
   photoUrl?: string | null;
 }) {
   const pathname = usePathname();
-  const hideCompletely = useNavHideCompletely(pathname);
+  const hideCompletely = deveEsconderChrome(pathname);
   const [hovered, setHovered] = useState(false);
   const [pinned, setPinned] = useState(false);
   const visible = hovered || pinned;

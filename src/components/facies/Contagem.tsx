@@ -31,10 +31,13 @@ export function Contagem({
   sigla,
   aplicacao,
   cadernos,
+  aplicacoesDiretas,
 }: {
   sigla: string;
   aplicacao: string;
   cadernos: string;
+  /** Quantas edições da PRÓPRIA prova já entraram na base. */
+  aplicacoesDiretas: number;
 }) {
   // `useSyncExternalStore` e nao `useEffect` + `setState`: e a ferramenta feita
   // exatamente para um valor que difere entre servidor e cliente. O snapshot do
@@ -67,10 +70,25 @@ export function Contagem({
           </span>
         )}
       </div>
+      {/* A frase anterior — "a fácies desta edição é publicada aqui assim que a
+          rotulagem fechar" — contradizia a página inteira. A fácies é a leitura
+          da SÉRIE, e ela está logo acima, sobre 2.034 questões. Uma edição não
+          tem fácies própria: ela confirma ou desloca a da série.
+
+          O que acontece de fato é mais forte, e é o que o produto vende: a
+          leitura de hoje repousa sobre uma aplicação direta, e em setembro
+          passa a ter uma segunda para conferir se acertou. */}
       <p className="max-w-[52ch] text-base text-ink">
         A prova é em <b>{formatar(aplicacao)}</b>; os cadernos e gabaritos saem em{" "}
-        <b>{formatar(cadernos)}</b>. A fácies desta edição é publicada aqui assim que
-        a rotulagem fechar.
+        <b>{formatar(cadernos)}</b>. Esta leitura foi feita sobre{" "}
+        <b>
+          {aplicacoesDiretas} aplicação
+          {aplicacoesDiretas === 1 ? "" : "ões"} direta
+          {aplicacoesDiretas === 1 ? "" : "s"}
+        </b>{" "}
+        do {sigla}; quando a rotulagem desta edição fechar,{" "}
+        {aplicacoesDiretas === 1 ? "serão duas" : `serão ${aplicacoesDiretas + 1}`} — e
+        dá para conferir aqui se ela acertou.
       </p>
     </section>
   );

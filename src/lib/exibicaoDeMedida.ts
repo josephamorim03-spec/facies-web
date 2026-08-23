@@ -26,6 +26,18 @@
  */
 export const PISO_N_CELULA = 5;
 
+/**
+ * A grafia única de "não há base suficiente".
+ *
+ * Existe como função, e não como texto solto em cada sítio, porque já houve
+ * três: "menos de 5", "<5" e "3 de 5". Regra de exibição que se escreve de três
+ * jeitos não é uma regra, são três — e o aluno que vê as três não tem como
+ * saber que significam a mesma coisa.
+ */
+export function rotuloSemBase(piso: number = PISO_N_CELULA): string {
+  return `menos de ${piso}`;
+}
+
 export type Medida =
   | { estado: "nao_avaliado" }
   | { estado: "sem_base"; n: number }
@@ -53,7 +65,10 @@ export function valorDaMedida(medida: Medida): string {
       // tela que escreve "0%" aqui acusa o aluno de errar o que ele não tentou.
       return "Não avaliado";
     case "sem_base":
-      return `${medida.n} de ${PISO_N_CELULA}`;
+      // NÃO "${n} de ${piso}": numa tela cheia de taxas isso lê como "3 acertos
+      // em 5" — o número que a regra existe para não mostrar. O `n` real vai na
+      // linha de baixo, em `baseDaMedida`, onde nada o confunde com um placar.
+      return rotuloSemBase();
     case "medido":
       return `${Math.round(medida.fracao * 100)}%`;
   }
@@ -65,7 +80,8 @@ export function baseDaMedida(medida: Medida, unidade = "questões"): string {
     case "nao_avaliado":
       return `Sem ${unidade} respondidas`;
     case "sem_base":
-      return `Base insuficiente — ${PISO_N_CELULA} ${unidade} é o mínimo`;
+      // Aqui o `n` cabe: é a linha de contexto, não o valor em destaque.
+      return `${medida.n} de ${PISO_N_CELULA} ${unidade} necessárias`;
     case "medido":
       return `${medida.n} ${unidade}`;
   }

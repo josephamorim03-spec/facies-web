@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import type {
+  KrosMode,
   FullExamType,
   QuestionBankAnswerStatus,
   QuestionBankCorrectionStatus,
@@ -16,6 +17,7 @@ import { TopicTreeList } from "./TopicTreeList";
 import { buildTopicTree, flattenTopicTree, topicPathLabel } from "./topicTree";
 import BancaPicker from "./BancaPicker";
 import YearPicker from "./YearPicker";
+import { TreinoDirigidoChooser } from "./TreinoDirigidoChooser";
 
 const AREA_OPTIONS = [
   { value: "", label: "Todas" },
@@ -84,9 +86,22 @@ function deriveRealizacaoLabel(s: RealizacaoState): string {
  * São perguntas independentes: O QUE estudar (tópico ou prova inteira) e COMO
  * corrigir (por questão ou tudo no fim). Separadas, uma não apaga a outra.
  */
-const TIPO_OPTIONS: { value: "topic" | "full_exam"; label: string; help: string }[] = [
+/**
+ * O tipo da ESCOLHA na tela, que tem três valores — enquanto `StudyKind` (o do
+ * contrato) tem dois. "Treino dirigido" não é um terceiro `study_kind`: o
+ * servidor pina `study_kind="topic"` quando `session_kind="kros"`. Manter os
+ * dois tipos separados evita ter de mentir para o contrato.
+ */
+export type TipoDeSessao = StudyKind | "kros";
+
+const TIPO_OPTIONS: { value: TipoDeSessao; label: string; help: string }[] = [
   { value: "topic", label: "Por tópico", help: "Você escolhe as áreas e os temas." },
   { value: "full_exam", label: "Prova institucional", help: "Uma instituição e um ano." },
+  {
+    value: "kros",
+    label: "Treino dirigido",
+    help: "A Fácies monta, e você escolhe a ênfase.",
+  },
 ];
 
 const CORRECAO_OPTIONS: { value: CorrectionMode; label: string; help: string }[] = [
@@ -132,8 +147,14 @@ export type FiltersBarProps = {
   onCorrectionStatusChange: (v: QuestionBankCorrectionStatus) => void;
   correctionMode: CorrectionMode;
   onCorrectionModeChange: (v: CorrectionMode) => void;
-  studyKind: StudyKind;
-  onStudyKindChange: (v: StudyKind) => void;
+  tipoSessao: TipoDeSessao;
+  onTipoSessaoChange: (v: TipoDeSessao) => void;
+  /** O preset do Treino dirigido, e o que a prévia sabe sobre as provas-alvo. */
+  krosMode: KrosMode;
+  onKrosModeChange: (v: KrosMode) => void;
+  krosBancasAlvo: string[];
+  krosBancasSemCobertura: string[];
+  krosPreviaCarregando: boolean;
   /** Inclui na prova as questoes que a banca anulou ou que estao desatualizadas. */
   includeRetired: boolean;
   onIncludeRetiredChange: (value: boolean) => void;
@@ -256,7 +277,9 @@ export default function FiltersBar(props: FiltersBarProps) {
     selectedYears, onSelectedYearsChange, includeNoYear, onIncludeNoYearChange,
     answerStatus, onAnswerStatusChange,
     correctionStatus, onCorrectionStatusChange,
-    correctionMode, onCorrectionModeChange, studyKind, onStudyKindChange,
+    correctionMode, onCorrectionModeChange, tipoSessao, onTipoSessaoChange,
+    krosMode, onKrosModeChange, krosBancasAlvo, krosBancasSemCobertura,
+    krosPreviaCarregando,
     includeRetired, onIncludeRetiredChange,
     fullExamName, onFullExamNameChange, fullExamYear, onFullExamYearChange,
     fullExamType, onFullExamTypeChange,
@@ -327,7 +350,11 @@ export default function FiltersBar(props: FiltersBarProps) {
   // Os DOIS eixos no título. Antes "Prova institucional" engolia a correção, e o
   // aluno não via como a prova seria corrigida até terminá-la.
   const modeLabel = [
-    studyKind === "full_exam" ? "Prova institucional" : "Por tópico",
+    tipoSessao === "full_exam"
+      ? "Prova institucional"
+      : tipoSessao === "kros"
+        ? "Treino dirigido"
+        : "Por tópico",
     CORRECTION_MODE_SHORT_LABEL[correctionMode],
   ].join(" · ");
   const statusLabel = deriveRealizacaoLabel(realizacaoState);
@@ -571,17 +598,17 @@ export default function FiltersBar(props: FiltersBarProps) {
           <legend className="paper-eyebrow">
             O que estudar
           </legend>
-          <div className="mt-2 grid gap-3 md:grid-cols-2">
+          <div className="mt-2 grid gap-3 md:grid-cols-3">
             {TIPO_OPTIONS.map((option) => (
               <button
                 key={option.value}
                 type="button"
-                aria-pressed={studyKind === option.value}
+                aria-pressed={tipoSessao === option.value}
                 // Só o tipo. A correção fica onde o aluno deixou.
-                onClick={() => onStudyKindChange(option.value)}
+                onClick={() => onTipoSessaoChange(option.value)}
                 className={cx(
-                  "border p-4 text-left transition-colors",
-                  studyKind === option.value
+                  "paper-control rounded-control border p-4 text-left",
+                  tipoSessao === option.value
                     ? "border-primary bg-surfaceMuted"
                     : "border-edge bg-surface hover:border-primary",
                 )}
@@ -591,6 +618,19 @@ export default function FiltersBar(props: FiltersBarProps) {
               </button>
             ))}
           </div>
+
+          {/* A ênfase só aparece depois de escolher o Treino dirigido: mostrar
+              quatro cartões a mais para quem escolheu "Por tópico" seria oferecer
+              uma decisão que não existe naquele caminho. */}
+          {tipoSessao === "kros" ? (
+            <TreinoDirigidoChooser
+              value={krosMode}
+              onChange={onKrosModeChange}
+              bancasAlvo={krosBancasAlvo}
+              bancasSemCobertura={krosBancasSemCobertura}
+              carregando={krosPreviaCarregando}
+            />
+          ) : null}
         </fieldset>
 
         <fieldset>
@@ -618,7 +658,7 @@ export default function FiltersBar(props: FiltersBarProps) {
           </div>
         </fieldset>
 
-        {studyKind === "full_exam" ? (
+        {tipoSessao === "full_exam" ? (
           <div className="grid gap-3 border-t border-edge pt-4 md:grid-cols-[1fr_7rem_11rem]">
             <label className="space-y-1.5">
               <span className="paper-eyebrow">Instituição</span>
@@ -657,7 +697,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         {/* So aparece na prova institucional: e o unico recorte onde "o resto
             daquela prova" quer dizer alguma coisa. Num estudo por tema, questao
             sem gabarito valido seria ruido. */}
-        {studyKind === "full_exam" ? (
+        {tipoSessao === "full_exam" ? (
           <label className="flex cursor-pointer items-start gap-3 border-t border-edge pt-4">
             <input
               type="checkbox"

@@ -5,7 +5,6 @@ import Link from "next/link";
 import type { Banca } from "@/lib/facies";
 import { registrarEvento } from "@/lib/faciesFunnel";
 import { CopiarImagem } from "./CopiarImagem";
-import { GateEmail } from "./GateEmail";
 import { FaciesReport } from "./FaciesReport";
 
 /**
@@ -20,7 +19,14 @@ import { FaciesReport } from "./FaciesReport";
  * para quem abriu o link no corredor — as outras bancas têm página própria,
  * gerada estática.
  */
-export function FaciesPicker({ bancas }: { bancas: Banca[] }) {
+export function FaciesPicker({
+  bancas,
+  onBancaChange,
+}: {
+  bancas: Banca[];
+  /** Publica a banca ativa para quem monta a página posicionar o gate. */
+  onBancaChange?: (banca: Banca) => void;
+}) {
   const [ativa, setAtiva] = useState(0);
   const banca = bancas[ativa];
   const rotulos = rotularSemAmbiguidade(bancas);
@@ -30,6 +36,12 @@ export function FaciesPicker({ bancas }: { bancas: Banca[] }) {
   useEffect(() => {
     registrarEvento("facies_vista");
   }, []);
+
+  // Publica a banca ativa, inclusive a INICIAL: quem monta a pagina precisa
+  // dela antes de qualquer clique, senao o gate no fim nasce sem destino.
+  useEffect(() => {
+    if (banca) onBancaChange?.(banca);
+  }, [banca, onBancaChange]);
 
   if (!banca) return null;
 
@@ -83,10 +95,16 @@ export function FaciesPicker({ bancas }: { bancas: Banca[] }) {
         </a>
       </div>
 
-      {/* O gate vive AQUI, dentro do picker, porque precisa saber qual banca
-          esta na tela: o e-mail sem a banca perde metade do valor -- e' ele que
-          diz para quem a leitura semanal deve ser escrita. */}
-      <GateEmail banca={banca.institution_key} />
+      {/* O gate de e-mail SAIU daqui.
+          Ele precisa da banca na tela — e' ele que diz para quem a leitura
+          semanal deve ser escrita — e por isso morava dentro do picker. Só que
+          isso o punha entre o relatório e a ponte, ou seja: no instante mais
+          caro da página. Quem acaba de ver a fácies da própria prova está no
+          pico de interesse, e a página gastava esse pico pedindo e-mail.
+
+          Agora o picker publica qual banca está ativa (`onBancaChange`) e quem
+          monta a página decide ONDE o gate entra. Na home ele entra no fim,
+          como saída para quem não vai assinar hoje. */}
     </div>
   );
 }

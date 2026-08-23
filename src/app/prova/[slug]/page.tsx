@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProvaReport } from "@/components/facies/ProvaReport";
@@ -8,6 +7,7 @@ import { Contagem } from "@/components/facies/Contagem";
 import { ContarVisita } from "@/components/facies/ContarVisita";
 import { provaPorSlug, todasAsProvas } from "@/lib/provas";
 import { SITE_NAME } from "@/lib/site";
+import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
 
 /**
  * Uma página por prova (§11.1).
@@ -49,11 +49,7 @@ export default async function PaginaDaProva({ params }: Props) {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pb-16 sm:px-6">
-      <nav className="py-6">
-        <Link href="/" className="text-sm text-primary">
-          ← Fácies
-        </Link>
-      </nav>
+      <CabecalhoPublico comLink />
 
       <header className="pb-8">
         <span className="paper-eyebrow">
@@ -82,6 +78,7 @@ export default async function PaginaDaProva({ params }: Props) {
         sigla={prova.sigla}
         aplicacao={prova.aplicacao_prevista}
         cadernos={prova.cadernos_previstos}
+        aplicacoesDiretas={prova.profundidade.aplicacoes_diretas}
       />
 
       <div className="mt-6">

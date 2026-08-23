@@ -46,13 +46,35 @@ test('"nao avaliado" e "zero" sao estados distintos', () => {
   assert.match(fonte, /case "medido":\s*\n\s*return `\$\{Math\.round\(medida\.fracao \* 100\)\}%`;/);
 });
 
-test("abaixo do piso a tela mostra a CONTAGEM, nunca a taxa", () => {
-  const semBase = fonte.match(/case "sem_base":\s*\n\s*return ([^;]+);/);
+test("abaixo do piso o valor NAO e numero nenhum", () => {
+  // A regra ficou mais forte do que era. Antes o ramo mostrava a contagem
+  // ("3 de 5"); numa tela cheia de taxas isso lê como TRÊS ACERTOS EM CINCO —
+  // exatamente o número que o §13.3 existe para não mostrar. Agora o valor em
+  // destaque diz só que não há base, e o `n` vai para a linha de contexto.
+  const rotulo = fonte.match(/export function rotuloSemBase[\s\S]*?return ([^;]+);/);
+  assert.ok(rotulo, "`rotuloSemBase` sumiu");
+  assert.doesNotMatch(rotulo[1], /100|%/);
+  assert.match(rotulo[1], /menos de/);
+
+  // E o ramo passa por ele, em vez de escrever a própria versão: já houve três
+  // grafias diferentes da mesma regra neste produto.
+  const semBase = fonte.match(/case "sem_base":[\s\S]*?return ([^;]+);/);
   assert.ok(semBase, "o ramo `sem_base` de `valorDaMedida` sumiu");
-  // A prova é negativa e é a que importa: o ramo não pode conter uma
-  // multiplicação por 100 nem um sinal de porcentagem.
-  assert.doesNotMatch(semBase[1], /100|%/);
-  assert.match(semBase[1], /medida\.n/);
+  assert.match(semBase[1], /rotuloSemBase\(\)/);
+});
+
+test("uma grafia so para 'sem base', no app e no funil publico", () => {
+  // "menos de 5", "<5" e "3 de 5" conviveram para a MESMA regra, em componentes
+  // com a mesma forma de linha. Regra de exibição que se escreve de três jeitos
+  // não é uma regra, são três — e quem lê não tem como saber que são a mesma.
+  for (const rel of [
+    "../../src/components/facies/FaciesReport.tsx",
+    "../../src/components/facies/ProvaReport.tsx",
+  ]) {
+    const src = readFileSync(new URL(rel, import.meta.url), "utf8");
+    assert.match(src, /menos de \{PISO_N_CELULA\}/, `${rel} nao usa a grafia unica`);
+    assert.doesNotMatch(src, /&lt;\{PISO_N_CELULA\}/, `${rel} ainda usa "<n"`);
+  }
 });
 
 test("comparacao exige base nos DOIS lados", () => {

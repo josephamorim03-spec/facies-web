@@ -10,7 +10,6 @@ import { IntentSubNav } from "@/components/student/IntentSubNav";
 import PwaRegister from "@/components/PwaRegister";
 import { ToastProvider } from "@/lib/useToast";
 import { Toast } from "@/components/Toast";
-import { isStudyImportImmersivePath } from "@/lib/studyImportRuntime";
 import { getAuthToken } from "@/lib/auth";
 import { api } from "@/lib/api/shared/http";
 import { getProfile } from "@/lib/api";
@@ -32,6 +31,7 @@ import { startSessionKeepalive } from "@/lib/sessionKeepalive";
 import { getStudentPageTitle } from "@/lib/navConfig";
 import { QueryProvider } from "@/lib/QueryProvider";
 import { MotionConfig } from "motion/react";
+import { deveEsconderChrome } from "@/lib/chromeVisibility";
 
 type BuildVersionPayload = {
   commit_sha: string;
@@ -59,24 +59,6 @@ function scheduleIdleNavigationWarmup(task: () => void): () => void {
   }
   const timeoutId = window.setTimeout(task, 550);
   return () => window.clearTimeout(timeoutId);
-}
-
-function shouldHideNavigationChrome(pathname: string): boolean {
-  return (
-    pathname === "/" ||
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/auth") ||
-    // Superficies PUBLICAS da Facies. Sem estas duas linhas, a pagina que o
-    // visitante anonimo abre pelo link do grupo aparece com a barra lateral do
-    // app autenticado do lado — chrome de um produto que ele ainda nao tem.
-    pathname.startsWith("/facies") ||
-    pathname.startsWith("/prova") ||
-    pathname === ACTIVATE_ROUTE ||
-    // Immersive question/simulado runner: hide the full chrome (desktop sidebar
-    // included). The session page keeps its own visible "Sair" affordance.
-    pathname.startsWith("/banco/sessao") ||
-    isStudyImportImmersivePath(pathname)
-  );
 }
 
 function fallbackTitle(pathname: string): string {
@@ -173,7 +155,7 @@ function BuildVersionBadge() {
 function AppShellInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname() ?? "";
-  const hideNavigationChrome = shouldHideNavigationChrome(pathname);
+  const hideNavigationChrome = deveEsconderChrome(pathname);
   const isDesktopNavigation = useDesktopNavigationMode();
   const blockedNavigationPathRef = useRef<string | null>(null);
   const [userDisplayName, setUserDisplayName] = useState<string | null>(null);

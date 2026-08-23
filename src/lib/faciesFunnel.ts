@@ -19,7 +19,11 @@ export type EventoFacies =
   | "facies_banca_trocada"
   | "facies_copiada"
   | "facies_pagina_aberta"
-  | "diagnostico_clicado";
+  | "diagnostico_clicado"
+  //: Clique no card da prova em destaque da home. Sem ele, a transicao
+  //: home -> /prova/[slug] era cega: dava para saber quantos viam a home e
+  //: nao quantos seguiam para a prova nacional, que e o atalho da maioria.
+  | "destaque_clicado";
 
 /**
  * O BFF recusa mutação sem este header (proteção de origem). Não é opcional:

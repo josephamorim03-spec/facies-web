@@ -39,11 +39,17 @@ export function GateEmail({ banca }: { banca: string | null }) {
   return (
     <section className="rounded-surface border border-edge bg-surfaceMuted p-5 sm:p-6">
       <p className="text-base text-ink">
-        Salvar esta fácies e acompanhar a evolução edição a edição.
+        Salvar esta fácies — e saber quando a Fácies abrir.
       </p>
+      {/* Os DOIS motivos, e os dois têm mecanismo: os gatilhos de leitura
+          (edital, nova edição, mudança de padrão, base fechou) e o de abertura
+          (assinatura_abriu), em app/services/facies_notice.py. Sem o quinto
+          gatilho, a segunda metade desta frase seria promessa sem nada por trás
+          — a mesma classe de afirmação que já saiu desta página duas vezes. */}
       <p className="mt-1 text-sm text-muted">
-        Avisamos quando a fácies desta prova for atualizada — não em outra hora.
-        Para sair, um clique no link que vai em todo e-mail.
+        Avisamos quando a leitura desta prova mudar, e quando o app abrir para
+        assinatura. Nada entre isso — e para sair, um clique no link que vai em todo
+        e-mail.
       </p>
       <form className="mt-4 flex flex-wrap gap-2" onSubmit={enviar} noValidate>
         <label className="sr-only" htmlFor="email-facies">

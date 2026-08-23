@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FaciesReport } from "@/components/facies/FaciesReport";
@@ -6,6 +5,7 @@ import { CopiarImagem } from "@/components/facies/CopiarImagem";
 import { ContarVisita } from "@/components/facies/ContarVisita";
 import { bancaPorSlug, janela, todasAsBancas } from "@/lib/facies";
 import { SITE_NAME } from "@/lib/site";
+import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
 
 /**
  * Uma página por banca — o ativo de SEO do §12.2.
@@ -51,11 +51,7 @@ export default async function PaginaDaBanca({ params }: Props) {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pb-16 sm:px-6">
-      <nav className="py-6">
-        <Link href="/" className="text-sm text-primary">
-          ← Fácies
-        </Link>
-      </nav>
+      <CabecalhoPublico comLink />
 
       <header className="pb-8">
         <span className="paper-eyebrow">
