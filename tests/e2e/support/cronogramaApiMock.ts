@@ -235,7 +235,22 @@ function createDb(): DbState {
         total_questions: 100,
         correct_questions: 70,
         user_weight: 3,
-        performed_at: toDateTimeFromISO(tomorrow),
+        // `today`, e não `tomorrow`. Duas razões, e a primeira já bastaria:
+        //
+        // 1. Um estudo `performed_at` no futuro é impossível — ninguém realizou
+        //    um simulado amanhã. O fixture afirmava isso desde sempre.
+        // 2. `weeklyOpsMetrics` conta as questões da semana corrente
+        //    (segunda–domingo). No DOMINGO, `tomorrow` é segunda e cai na semana
+        //    SEGUINTE: a soma virava 50 em vez de 150 e o teste da meta semanal
+        //    reprovava. Ou seja, este teste passava de segunda a sábado e
+        //    quebrava aos domingos — e ninguém veria até rodar num domingo.
+        //
+        // ⚠️ Sobra uma fragilidade irmã, não resolvida aqui: `study_review_done_1`
+        // fica em `yesterday`, que às SEGUNDAS é domingo da semana anterior. A
+        // soma cai para 130 e o mesmo teste reprova. Consertar isso exige ancorar
+        // o fixture na segunda-feira da semana em vez de no relógio real, o que
+        // muda a base de datas de cinco specs.
+        performed_at: toDateTimeFromISO(today),
         created_at: now,
         accuracy: 70,
         is_review: false,
@@ -328,6 +343,152 @@ function createDb(): DbState {
   };
 }
 
+/**
+ * `/api/student/agenda` derivada do MESMO `db` que serve o resto do mock.
+ *
+ * Antes esta rota caía no fallback e voltava `{}` com 200. Como `{}` é truthy,
+ * o `if (!agenda)` do `CronogramaWeekView` deixava passar e a página morria em
+ * `agenda.days.find(...)` — quinze testes vermelhos com um erro que não cita a
+ * agenda em lugar nenhum.
+ *
+ * Derivar do `db` e não de um payload fixo é o ponto: um segundo conjunto de
+ * dados divergiria do primeiro na primeira edição, e aí o cronograma mostraria
+ * uma coisa na semana e outra no mês — sem nenhum teste reprovando.
+ */
+function buildStudentAgenda(db: DbState, dateFrom: string, dateTo: string) {
+  const hoje = todayISO();
+  const dias = Math.max(
+    1,
+    Math.round(
+      (new Date(`${dateTo}T12:00:00`).getTime() - new Date(`${dateFrom}T12:00:00`).getTime()) /
+        86_400_000,
+    ) + 1,
+  );
+  const datas = Array.from({ length: dias }, (_, i) => plusDays(dateFrom, i));
+
+  const capacidades = {
+    can_start: true,
+    can_reschedule: true,
+    can_edit: false,
+    can_delete: false,
+  };
+
+  const itensDoDia = (data: string) => {
+    const revisoes = [...db.pendingTasks, ...db.doneTasks]
+      .filter((t) => t.due_date === data)
+      .map((t) => ({
+        occurrence_id: `review_task:${t.task_id}`,
+        date: data,
+        source: "review_queue" as const,
+        kind: "review_task" as const,
+        status: (t.status === "done"
+          ? "done"
+          : t.is_overdue
+            ? "overdue"
+            : "pending") as "done" | "overdue" | "pending",
+        title: `Revisar ${t.theme}`,
+        area: t.area,
+        rationale: null,
+        href: "/banco",
+        estimated_minutes: 20,
+        expected_questions: t.expected_questions,
+        completed_questions: 0,
+        plan_activity_id: null,
+        review_task_id: t.task_id,
+        directed_study_id: null,
+        session_id: null,
+        event_id: null,
+        capabilities: capacidades,
+      }));
+
+    // Eventos de rotina repetem por dia da semana; os pontuais têm data fixa.
+    const diaDaSemana = new Date(`${data}T12:00:00`).getDay();
+    const eventos = db.events
+      .filter((e) =>
+        e.event_type === "routine"
+          ? e.weekday === diaDaSemana && (e.active_until === null || data <= e.active_until)
+          : e.event_date === data,
+      )
+      .map((e) => ({
+        occurrence_id: `calendar_event:${e.event_id}:${data}`,
+        date: data,
+        source: "calendar" as const,
+        kind: "calendar_event" as const,
+        status: "scheduled" as const,
+        title: e.label,
+        area: null,
+        rationale: null,
+        href: null,
+        estimated_minutes: 0,
+        expected_questions: 0,
+        completed_questions: 0,
+        plan_activity_id: null,
+        review_task_id: null,
+        directed_study_id: null,
+        session_id: null,
+        event_id: e.event_id,
+        capabilities: { ...capacidades, can_edit: true, can_delete: true },
+      }));
+
+    return [...revisoes, ...eventos];
+  };
+
+  const days = datas.map((data) => {
+    const items = itensDoDia(data);
+    const feitos = items.filter((i) => i.status === "done").length;
+    const atrasados = items.filter((i) => i.status === "overdue").length;
+    return {
+      date: data,
+      is_today: data === hoje,
+      planned_minutes: items.reduce((soma, i) => soma + i.estimated_minutes, 0),
+      planned_questions: items.reduce((soma, i) => soma + i.expected_questions, 0),
+      recommended_questions: null,
+      completed_items: feitos,
+      total_items: items.length,
+      overdue_items: atrasados,
+      overloaded: false,
+      items,
+    };
+  });
+
+  const totalItens = days.reduce((soma, d) => soma + d.total_items, 0);
+  const totalFeitos = days.reduce((soma, d) => soma + d.completed_items, 0);
+
+  // Meta e progresso saem do `db`, não de constantes. Eu tinha escrito 350/0
+  // fixos aqui — o que contradiz o parágrafo acima e reintroduz exatamente a
+  // divergência que ele diz evitar: a semana mostraria 350 e o mês 300, e o
+  // teste da meta semanal (`db.weeklyGoal = 300`, estudos somando 150) reprovaria
+  // sem nenhuma pista de que a culpa era do mock.
+  const feitasNaSemana = db.studies
+    .filter((e) => {
+      const dia = e.performed_at.slice(0, 10);
+      return dia >= dateFrom && dia <= dateTo;
+    })
+    .reduce((soma, e) => soma + e.total_questions, 0);
+
+  return {
+    contract_version: "student-agenda-v1" as const,
+    generated_at: `${hoje}T12:00:00Z`,
+    status: "complete" as const,
+    timezone: "America/Sao_Paulo",
+    today: hoje,
+    date_from: dateFrom,
+    date_to: dateTo,
+    summary: {
+      completed_items: totalFeitos,
+      total_items: totalItens,
+      overdue_items: days.reduce((soma, d) => soma + d.overdue_items, 0),
+      questions_done_week: feitasNaSemana,
+      weekly_goal_questions: db.weeklyGoal,
+      weekly_progress_pct:
+        db.weeklyGoal > 0 ? Math.round((feitasNaSemana / db.weeklyGoal) * 100) : 0,
+    },
+    overdue: days.flatMap((d) => d.items.filter((i) => i.status === "overdue")),
+    days,
+    missing_sources: [],
+  };
+}
+
 function findTask(db: DbState, taskId: string): ReviewTask | null {
   return db.pendingTasks.find((t) => t.task_id === taskId)
     ?? db.doneTasks.find((t) => t.task_id === taskId)
@@ -353,8 +514,12 @@ function buildSuggestionItems(db: DbState) {
     }));
 }
 
-export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
+export async function mockCronogramaApi(
+  page: Page,
+): Promise<{ db: DbState; naoMockadas: Set<string> }> {
   const db = createDb();
+  /** Rotas que caíram no fallback. Quem investiga um teste vermelho olha aqui. */
+  const naoMockadas = new Set<string>();
 
   await page.route("**/api/**", async (route) => {
     const request = route.request();
@@ -436,6 +601,11 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
     }
     if (method === "GET" && path === "/api/question-bank/sessions") {
       return json(route, []);
+    }
+    if (method === "GET" && path === "/api/student/agenda") {
+      const de = url.searchParams.get("date_from") ?? todayISO();
+      const ate = url.searchParams.get("date_to") ?? plusDays(de, 6);
+      return json(route, buildStudentAgenda(db, de, ate));
     }
     if (
       method === "GET" &&
@@ -728,11 +898,23 @@ export async function mockCronogramaApi(page: Page): Promise<{ db: DbState }> {
       return json(route, clone(suggestion));
     }
 
-    // Safe fallback for unrelated API calls in this page
+    // O fallback devolve `{}` com 200 — e isso NÃO é seguro, apesar do nome que
+    // tinha antes. Uma rota que ninguém mockou passa a responder um payload
+    // válido-porém-vazio, e o erro só aparece camadas adiante, sem citar a rota:
+    // `/api/student/agenda` caía aqui, o `CronogramaWeekView` fazia
+    // `agenda.days.find(...)` e a página inteira morria com "Cannot read
+    // properties of undefined (reading 'find')". Catorze testes vermelhos, e
+    // nenhuma pista apontando para o mock.
+    //
+    // Mantemos o `{}` porque vários specs dependem dele para rotas que a tela
+    // realmente ignora — trocar por 404 aqui teria alcance grande demais. O que
+    // muda é a PISTA: a rota não coberta passa a se anunciar no stdout do teste.
+    naoMockadas.add(`${method} ${path}`);
+    console.warn(`[cronogramaApiMock] rota nao mockada, devolvendo {}: ${method} ${path}`);
     return json(route, {});
   });
 
-  return { db };
+  return { db, naoMockadas };
 }
 
 export function currentTodayISO(): string {

@@ -139,7 +139,17 @@ export function CronogramaWeekView({
       </div>
     );
   }
-  if (!agenda) {
+  // O guard olha os CAMPOS, e não só o objeto. `if (!agenda)` já estava aqui e
+  // parecia suficiente, mas um payload truncado passa por ele — `{}` é truthy — e
+  // o `agenda.days.find` logo abaixo derruba a página inteira com "Cannot read
+  // properties of undefined (reading 'find')". O aluno perde o cronograma
+  // inteiro, não o pedaço que faltou.
+  //
+  // Isto não é hipótese: é o que acontecia sob o mock do e2e, e derrubava 14
+  // testes de uma vez com um erro que não menciona a agenda em lugar nenhum.
+  // Nada garante que só um mock produza payload incompleto — proxy que trunca,
+  // deploy com contrato antigo e resposta parcial fazem o mesmo.
+  if (!agenda || !Array.isArray(agenda.days) || !agenda.summary) {
     return <Alert variant="danger">Não foi possível carregar esta semana.</Alert>;
   }
 

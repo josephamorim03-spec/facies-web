@@ -65,6 +65,20 @@ async function assertCalendarViewportNoCutAndSmallGap(page: Page) {
   expect(gap).toBeLessThanOrEqual(3.2);
 }
 
+/**
+ * Todo teste daqui abre `?view=month` explicitamente.
+ *
+ * Este arquivo é sobre a grade mensal no retrato: altura da célula, marcadores
+ * sem reticências, viewport que não corta a sexta linha, tooltip do olho. Ele
+ * navegava para `/cronograma` seco porque, quando foi escrito, o mês era o
+ * padrão. Não é mais: `page.tsx` faz `rawView === "month" ? "month" : "week"`,
+ * então qualquer URL sem o parâmetro cai na semana — e quinze testes passaram a
+ * procurar `[data-month-title]` numa tela que não o tem.
+ *
+ * Depender do padrão para escolher a tela é o defeito: a asserção fica refém de
+ * uma decisão de produto que ninguém prometeu manter. Pedir a tela pelo nome
+ * sobrevive à próxima troca de padrão.
+ */
 test.describe("Cronograma mobile portrait UX", () => {
   const mobileDevice = devices["iPhone 13"];
   test.use({
@@ -81,7 +95,7 @@ test.describe("Cronograma mobile portrait UX", () => {
 
   test("constancia e uma janela de 7 dias, com os protegidos ao lado", async ({ page }) => {
     await mockCronogramaApi(page);
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     const streak = page.locator("[data-streak-mode='active']");
     await expect(streak).toBeVisible();
@@ -98,13 +112,22 @@ test.describe("Cronograma mobile portrait UX", () => {
 
   test("header vertical integra setas ao mes, remove botao numerico e abre seletor", async ({ page }) => {
     await mockCronogramaApi(page);
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     const monthTitle = page.locator("[data-month-title='true']").first();
     await expect(monthTitle).toBeVisible();
     await expect(page.getByLabel(/M.s anterior/i).first()).toBeVisible();
     await expect(page.getByLabel(/Pr.ximo m.s/i).first()).toBeVisible();
-    await expect(page.getByLabel("Ir para Hoje")).toBeVisible();
+    // O botão "Ir para Hoje" saiu do header do mês — a string não existe mais em
+    // `src/` inteiro. O caminho de volta ao presente passou a ser o
+    // `ViewModeSwitch`, que no mês oferece "Hoje" e leva para `/hoje`.
+    //
+    // ⚠️ Não é a mesma coisa, e vale registrar: o antigo trazia ESTE calendário
+    // de volta ao mês corrente; o novo troca de tela. Quem navegou três meses
+    // para a frente ainda não tem como voltar sem sair da grade. Substituí a
+    // asserção pelo que de fato existe em vez de apagá-la — apagar esconderia a
+    // diferença.
+    await expect(page.getByRole("link", { name: "Hoje" }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: /^\d{1,2}$/ })).toHaveCount(0);
 
     const monthTitleBox = await monthTitle.boundingBox();
@@ -155,7 +178,7 @@ test.describe("Cronograma mobile portrait UX", () => {
   test("dia com revisao mostra icone de flashcards e evento passado (pontual e rotina) fica concluido sem drag", async ({ page }) => {
     await mockCronogramaApi(page);
     const pastISO = plusDays(todayISO(), -1);
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     await expect(page.getByTestId("calendar-flashcards-icon").first()).toBeVisible();
 
@@ -178,14 +201,14 @@ test.describe("Cronograma mobile portrait UX", () => {
     const pastISO = plusDays(todayISO(), -1);
     delete db.turboCardsByDate[pastISO];
 
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     await expect(page.locator(`[data-testid='calendar-flashcards-icon'][data-cell-iso='${pastISO}']`)).toHaveCount(0);
   });
 
   test("tooltip de cards abre no clique e fecha por timeout ou interacao externa", async ({ page }) => {
     await mockCronogramaApi(page);
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     const flashcardsIcon = page.getByTestId("calendar-flashcards-icon").first();
     await expect(flashcardsIcon).toBeVisible();
@@ -206,7 +229,7 @@ test.describe("Cronograma mobile portrait UX", () => {
 
   test("meta semanal mostra percentual e permite edicao direta", async ({ page }) => {
     const { db } = await mockCronogramaApi(page);
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     const weeklyGoal = page.getByLabel("Progresso da meta semanal");
     await expect(weeklyGoal).toContainText(/150 de 300 quest/i);
@@ -224,7 +247,7 @@ test.describe("Cronograma mobile portrait UX", () => {
 
   test("card para revisar hoje explicita a fila global do banco", async ({ page }) => {
     await mockCronogramaApi(page);
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     const panel = page.getByLabel("Para revisar hoje");
     await expect(panel).toContainText("1 tarefa · 3 questões na fila global do banco");
@@ -248,7 +271,7 @@ test.describe("Cronograma mobile portrait UX", () => {
         { ...baseStudy, study_id: "study_dense_3", theme: "Tema denso 3", correct_questions: 16 },
       );
     }
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     await expect(page.locator(`[data-testid='calendar-day-overflow'][data-cell-iso='${selectedISO}']`)).toHaveCount(0);
 
@@ -278,7 +301,7 @@ test.describe("Cronograma mobile portrait UX", () => {
         });
       }
     }
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
     await expect(page.locator(`[data-testid='calendar-day-overflow'][data-cell-iso='${selectedISO}']`)).toHaveCount(0);
   });
 
@@ -300,7 +323,7 @@ test.describe("Cronograma mobile portrait UX", () => {
       }
     }
 
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     await expect(page.locator(`[data-testid='calendar-day-overflow'][data-cell-iso='${selectedISO}']`)).toHaveCount(0);
     await expect(page.locator(`[data-cell-iso='${selectedISO}'] [data-testid='calendar-day-dot']`)).toHaveCount(7);
@@ -310,11 +333,16 @@ test.describe("Cronograma mobile portrait UX", () => {
   test("clicar em revisao concluida abre popup de resumo readonly", async ({ page }) => {
     await mockCronogramaApi(page);
     const doneISO = plusDays(todayISO(), -1);
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     await page.locator(`[data-cell-iso='${doneISO}'] [data-dot-kind='done']`).first().click();
 
-    await expect(page.getByText("Revisao concluida")).toBeVisible();
+    // Com acento. A tela renderiza "Revisão concluída" (`CalendarSections.tsx`),
+    // e `getByText` não normaliza diacríticos — a versão sem acento não casava
+    // com coisa nenhuma. O resto do arquivo escreve sem acento por convenção nos
+    // NOMES dos testes, e a convenção vazou para dentro de uma asserção, onde a
+    // string precisa ser a do produto.
+    await expect(page.getByText("Revisão concluída")).toBeVisible();
     await expect(page.getByText("15/20")).toBeVisible();
     await expect(page.getByText("75%")).toBeVisible();
   });
@@ -323,7 +351,7 @@ test.describe("Cronograma mobile portrait UX", () => {
     await mockCronogramaApi(page);
     const selectedISO = todayISO();
     const examISO = plusDays(selectedISO, 1);
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     await page.locator(`[data-cell-iso='${selectedISO}'] [data-dot-kind='initial']`).first().click();
     await expect(page.getByText("CM · Estudo inicial")).toBeVisible();
@@ -353,7 +381,7 @@ test.describe("Cronograma mobile portrait UX", () => {
       await mockBrowserClock(page, instante);
       const { db } = await mockCronogramaApi(page);
       db.streak.streak_at_risk = true;
-      await page.goto("/cronograma");
+      await page.goto("/cronograma?view=month");
 
       await expect(page.locator("[data-streak-mode='active']")).toBeVisible();
       await expect(page.locator("[data-streak-at-risk='true']")).toHaveCount(0);
@@ -364,7 +392,7 @@ test.describe("Cronograma mobile portrait UX", () => {
   test("acoes olho/+ e fluxo de compromisso no +", async ({ page }) => {
     const { db } = await mockCronogramaApi(page);
     const selectedISO = todayISO();
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     await page.locator(`[data-cell-iso='${selectedISO}']`).first().click();
 
@@ -420,7 +448,7 @@ test.describe("Cronograma mobile portrait UX", () => {
   test("mes de 6 linhas com olho aberto nao corta ultima linha e nao cria espaco morto", async ({ page }) => {
     await mockBrowserClock(page, "2026-03-15T12:00:00-03:00");
     await mockCronogramaApi(page);
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     const viewport = page.locator("[data-calendar-viewport='true']");
     await expect(viewport).toHaveAttribute("data-calendar-active-rows", "6");
@@ -450,7 +478,7 @@ test.describe("Cronograma mobile landscape UX", () => {
   });
 
   test("a janela sobrevive ao horizontal sem virar outra coisa", async ({ page }) => {
-    await page.goto("/cronograma");
+    await page.goto("/cronograma?view=month");
 
     const streak = page.locator("[data-streak-mode='active']");
     await expect(streak).toBeVisible();

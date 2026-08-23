@@ -159,7 +159,19 @@ test.describe("student agenda alignment", () => {
     await expect(page.locator("[data-week-strip='true'] [data-week-day]")).toHaveCount(7);
     await expect(page.locator("[data-current-day='true']")).toBeVisible();
     await expect(page.locator("[data-week-detail='true']")).toHaveAttribute("data-detail-date", currentTodayISO());
-    await expect(page.getByText("12 dias seguidos")).toBeVisible();
+    // A constância é "N de 7 dias", e não um contador de dias seguidos. Este
+    // teste exigia "12 dias seguidos" — a cópia do contador ilimitado que
+    // `CronogramaStreakCard` removeu de propósito (um contador que zera na
+    // primeira falta tem todo o valor em não ser quebrado, e isso é aversão à
+    // perda). O fixture já servia `weekly_study_days: 5` e
+    // `weekly_protected_days: 2`; só a asserção ficou para trás.
+    //
+    // Os protegidos entram na asserção porque são a metade que sustenta a
+    // outra: sem eles "5 de 7" lê como duas desistências.
+    const constancia = page.locator("[data-streak-mode='active']");
+    await expect(constancia).toContainText("5 de 7 dias");
+    await expect(constancia).toContainText("2 protegidos");
+    await expect(constancia).not.toContainText("seguidos");
     await expect(page.getByRole("link", { name: "Abrir preferências" })).toBeVisible();
 
     const anotherDay = page.locator("[data-week-day]:not([data-current-day='true'])").first();
