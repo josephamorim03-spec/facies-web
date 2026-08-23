@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Banca } from "@/lib/facies";
 import { registrarEvento } from "@/lib/faciesFunnel";
-import { CopiarImagem } from "./CopiarImagem";
+import { Compartilhar } from "./Compartilhar";
 import { FaciesReport } from "./FaciesReport";
 
 /**
@@ -46,7 +46,7 @@ export function FaciesPicker({
   if (!banca) return null;
 
   return (
-    <div className="grid gap-4">
+    <div id="seletor" className="grid gap-4 scroll-mt-6">
       <div className="flex flex-wrap gap-2" role="group" aria-label="Escolha a prova institucional">
         {bancas.map((opcao, indice) => {
           const selecionada = indice === ativa;
@@ -80,11 +80,14 @@ export function FaciesPicker({
 
       <FaciesReport banca={banca} />
 
-      {/* O print e a unidade de compartilhamento: fica junto do dado, nao no
-          rodape. Quem acabou de ler o numero e quem quer mandar para o grupo. */}
+      {/* Compartilhar fica junto do dado, nao no rodape: quem acabou de ler o
+          numero e quem quer mandar para o grupo. O link vai para a PAGINA da
+          banca, e nao para a home — quem recebe cai direto na leitura que o
+          remetente estava vendo, e a previa do WhatsApp e a mesma imagem. */}
       <div className="flex flex-wrap items-center gap-3">
-        <CopiarImagem
+        <Compartilhar
           imagem={`/facies/${banca.slug}/opengraph-image`}
+          url={`/facies/${banca.slug}`}
           nome={banca.nome}
         />
         <a

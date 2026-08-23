@@ -111,6 +111,27 @@ export function bancaPorSlug(slug: string): Banca | undefined {
   return DATASET.bancas.find((banca) => banca.slug === slug);
 }
 
+/**
+ * A janela que a base INTEIRA cobre — do ano mais antigo ao mais recente.
+ *
+ * Existe para a home poder dizer "de quando é isto" ao lado de "quanto é isto".
+ * Contagem sem recorte de tempo não responde a pergunta que quem compra faz
+ * primeiro, e é a mesma disciplina do `janela()` por banca logo abaixo: número
+ * nesta página nunca aparece sem o seu denominador.
+ *
+ * Derivada, nunca digitada: some sozinha do ar quando a base for regerada, e
+ * não vira uma segunda verdade sobre o mesmo dado.
+ */
+export function janelaNacional(): string | null {
+  const anos = DATASET.bancas.flatMap((banca) =>
+    banca.primeiro_ano && banca.ultimo_ano ? [banca.primeiro_ano, banca.ultimo_ano] : [],
+  );
+  if (anos.length === 0) return null;
+  const min = Math.min(...anos);
+  const max = Math.max(...anos);
+  return min === max ? String(min) : `${min}–${max}`;
+}
+
 /** Janela declarada da base, para a página nunca exibir número sem denominador. */
 export function janela(banca: Banca): string {
   if (!banca.primeiro_ano || !banca.ultimo_ano) return "janela não declarada";

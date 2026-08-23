@@ -18,6 +18,11 @@ export type EventoFacies =
   | "facies_vista"
   | "facies_banca_trocada"
   | "facies_copiada"
+  //: Intencao de compartilhar por LINK (bandeja nativa, WhatsApp, copiar link).
+  //: Separado de `facies_copiada`, que continua sendo so o print: as duas
+  //: circulam de formas diferentes e a serie historica da copia precisa
+  //: continuar comparavel com ela mesma.
+  | "facies_compartilhada"
   | "facies_pagina_aberta"
   | "diagnostico_clicado"
   //: Clique no card da prova em destaque da home. Sem ele, a transicao

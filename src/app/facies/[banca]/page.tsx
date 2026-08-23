@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FaciesReport } from "@/components/facies/FaciesReport";
-import { CopiarImagem } from "@/components/facies/CopiarImagem";
+import { Compartilhar } from "@/components/facies/Compartilhar";
 import { ContarVisita } from "@/components/facies/ContarVisita";
 import { bancaPorSlug, janela, todasAsBancas } from "@/lib/facies";
 import { SITE_NAME } from "@/lib/site";
@@ -57,12 +57,13 @@ export default async function PaginaDaBanca({ params }: Props) {
         <span className="paper-eyebrow">
           A fácies da prova · {janela(banca)}
         </span>
-        <h1 className="mt-3 max-w-[24ch] font-serif text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-4xl">
+        <h1 className="mt-3 max-w-[24ch] font-serif text-3xl/[1.35] font-semibold tracking-tight text-ink sm:text-4xl/[1.35]">
           {banca.nome}
         </h1>
         <div className="mt-5">
-          <CopiarImagem
+          <Compartilhar
             imagem={`/facies/${banca.slug}/opengraph-image`}
+            url={`/facies/${banca.slug}`}
             nome={banca.nome}
           />
         </div>

@@ -49,12 +49,12 @@ export function DepoisDeEntrar() {
       <span className="paper-eyebrow">Depois de entrar</span>
       <h2
         id="depois-de-entrar"
-        className="mt-3 max-w-[26ch] font-serif text-2xl font-semibold leading-snug text-ink sm:text-3xl"
+        className="mt-3 max-w-[26ch] font-serif text-2xl/snug font-semibold text-ink sm:text-3xl/snug"
       >
         A leitura da prova vira a sua rotina.
       </h2>
 
-      <ol className="mt-8 grid gap-6 sm:grid-cols-3">
+      <ol className="mt-8 grid max-w-[62ch] gap-6 sm:max-w-none sm:grid-cols-3">
         {PASSOS.map((passo) => (
           <li key={passo.n}>
             <span className="font-mono text-xs text-muted">{passo.n}</span>
@@ -66,8 +66,22 @@ export function DepoisDeEntrar() {
         ))}
       </ol>
 
-      <figure className="mt-8">
-        <div className="overflow-hidden rounded-surface border border-edge">
+      {/* A figura ocupa a MEDIDA INTEIRA, e a prosa acima não.
+          O contraste de largura é o que faz a captura ler como objeto e não como
+          mais um parágrafo — e é sinal premium a custo zero de tom: nenhuma cor
+          nova, nenhuma curva nova, nenhuma promessa nova. Esta é a única imagem
+          da página e a prova mais persuasiva que ela tem. */}
+      {/* `shadow-soft` e não `.paper-overlay`: a penumbra de overlay
+          (`0 4px 16px`, 12%) é a de coisa que FLUTUA — menu, popover, diálogo.
+          Uma figura no fluxo da página não flutua, e a sombra mais pesada a
+          descolava do papel em vez de assentá-la nele. `--soft-shadow` são duas
+          camadas de 6% e 4%, que é o peso de um objeto pousado.
+
+          Nos dois casos a penumbra some no tema escuro (`none` para ambos os
+          tokens, `globals.css:198-199`) — sombra escura sobre fundo escuro não
+          separa nada, e a separação lá vem de `surface > paper` mais a borda. */}
+      <figure className="mt-10">
+        <div className="overflow-hidden rounded-surface border border-edge shadow-soft">
           {/* `unoptimized`: a imagem já sai do gerador no tamanho e na densidade
               certos, e o pipeline de otimização do Next só acrescentaria uma
               recodificação com perda sobre um PNG de texto — onde ela mais

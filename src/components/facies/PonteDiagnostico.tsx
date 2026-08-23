@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 
-import { GateEmail } from "@/components/facies/GateEmail";
 import { registrarEvento } from "@/lib/faciesFunnel";
 
 /**
@@ -63,7 +62,7 @@ export function PonteDiagnostico({ banca }: { banca: string | null }) {
     <section className="mt-12" aria-labelledby="ponte-titulo">
       {/* A cena. Curta de propósito: quem viveu se reconhece na primeira linha,
           e alongar vira lamento. */}
-      <p className="max-w-[44ch] font-serif text-2xl font-semibold leading-snug text-ink sm:text-3xl">
+      <p className="max-w-[44ch] font-serif text-2xl/snug font-semibold text-ink sm:text-3xl/snug">
         23h40, pós-plantão. Você abre a plataforma, vê cento e trinta mil questões e
         quarenta filtros, e fecha sem estudar.
       </p>
@@ -72,9 +71,15 @@ export function PonteDiagnostico({ banca }: { banca: string | null }) {
       </h2>
 
       {/* O artefato — a "peça principal" do §"O anúncio é o artefato". */}
-      <figure className="mt-8 rounded-surface border border-edge border-l-2 border-l-primary bg-surface p-6 sm:p-8">
+      {/* Este bloco tem PERMISSAO de ser o maior da pagina, e e o unico.
+          Ele tinha exatamente o mesmo peso dos outros seis cartoes — mesma
+          superficie, mesma borda, mesmo respiro — e por isso a pagina inteira
+          lia como documento: sete blocos de peso identico nao tem climax. O
+          fundo mais escuro o separa dos `bg-surface`, e a penumbra e a unica
+          da pagina. */}
+      <figure className="paper-overlay mt-8 rounded-surface border border-edge border-l-2 border-l-primary bg-surfaceMuted p-6 sm:p-10">
         <span className="paper-eyebrow">A Fácies abre assim</span>
-        <blockquote className="mt-4 max-w-[48ch] font-serif text-xl leading-relaxed text-ink sm:text-2xl">
+        <blockquote className="mt-4 max-w-[48ch] font-serif text-2xl/relaxed text-ink sm:text-3xl/relaxed">
           Você está de pós-plantão e tem cerca de 40 min. Nas duas últimas questões de
           pré-eclâmpsia você marcou rápido demais e errou — e o tema é cobrado pela sua
           prova-alvo. <strong className="font-semibold">Faça estas 12.</strong>
@@ -86,31 +91,35 @@ export function PonteDiagnostico({ banca }: { banca: string | null }) {
         </figcaption>
       </figure>
 
-      {/* A ação primária é o e-mail, e não o login.
+      {/* O GATE DE E-MAIL SAIU DAQUI, e foi para o fim da página.
 
-          Não existe caminho self-serve: quem clicava em "Começar pela sua prova"
-          entrava com Google — criando conta — e caía em "Ativar Acesso: chave
-          recebida do seu mentor". Atrito máximo, valor zero, e uma primeira
-          impressão ruim num produto cujo ativo é credibilidade. Pior: o botão
-          contradizia a própria página, que diz logo abaixo que a assinatura
-          ainda não abriu.
+          Ele morava neste ponto com a justificativa de ocupar o instante de
+          maior interesse. A justificativa estava certa e o lugar estava errado:
+          logo ABAIXO desta seção vêm as três telas do produto e a captura do
+          `/hoje` — que é a prova mais persuasiva da página inteira. Pedir o
+          e-mail aqui gastava o pico antes de mostrar o que se está comprando, e
+          quem dissesse não já tinha dito não quando a prova chegava.
 
-          O e-mail é a única conversão que se completa hoje, então ele ocupa o
-          instante de maior interesse. O login vira link discreto, para quem já
-          tem chave. Quando a assinatura abrir, a hierarquia se inverte de volta. */}
-      <div className="mt-8">
-        <GateEmail banca={banca} />
-        <p className="mt-4 text-sm text-muted">
-          Já tem chave de acesso?{" "}
-          <Link
-            href="/login"
-            onClick={() => registrarEvento("diagnostico_clicado", banca)}
-            className="text-primary underline underline-offset-4"
-          >
-            Entrar
-          </Link>
-        </p>
-      </div>
+          Agora a ordem é: cena → artefato → produto → é/não é → acesso → gate.
+          O gate encosta no parágrafo que diz que a assinatura ainda não abriu, e
+          vira a resposta natural dele ("saber quando a Fácies abrir"), em vez de
+          uma interrupção no meio do argumento.
+
+          O login continua link discreto: não existe caminho self-serve, e quem
+          clicava em "Começar pela sua prova" criava conta com o Google e caía em
+          "Ativar Acesso: chave recebida do seu mentor" — atrito máximo, valor
+          zero, numa primeira impressão cujo ativo é credibilidade. Quando a
+          assinatura abrir, a hierarquia se inverte de volta. */}
+      <p className="mt-8 text-sm text-muted">
+        Já tem chave de acesso?{" "}
+        <Link
+          href="/login"
+          onClick={() => registrarEvento("diagnostico_clicado", banca)}
+          className="text-primary underline underline-offset-4"
+        >
+          Entrar
+        </Link>
+      </p>
     </section>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProvaReport } from "@/components/facies/ProvaReport";
-import { CopiarImagem } from "@/components/facies/CopiarImagem";
+import { Compartilhar } from "@/components/facies/Compartilhar";
 import { GateEmail } from "@/components/facies/GateEmail";
 import { Contagem } from "@/components/facies/Contagem";
 import { ContarVisita } from "@/components/facies/ContarVisita";
@@ -55,7 +55,7 @@ export default async function PaginaDaProva({ params }: Props) {
         <span className="paper-eyebrow">
           A fácies da prova · grátis, sem cadastro
         </span>
-        <h1 className="mt-3 max-w-[20ch] font-serif text-4xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl">
+        <h1 className="mt-3 max-w-[20ch] font-serif text-4xl/[1.45] font-semibold tracking-tight text-ink sm:text-5xl/[1.45]">
           A fácies do {prova.sigla}.
         </h1>
         <p className="mt-4 max-w-[58ch] text-lg text-muted">
@@ -63,8 +63,9 @@ export default async function PaginaDaProva({ params }: Props) {
           foi lido.
         </p>
         <div className="mt-5">
-          <CopiarImagem
+          <Compartilhar
             imagem={`/prova/${prova.slug}/opengraph-image`}
+            url={`/prova/${prova.slug}`}
             nome={prova.sigla}
           />
         </div>
