@@ -749,6 +749,20 @@ export default function PostExamReview({
                       </div>
                     )}
 
+                    {/* Gabarito duplo: a banca aceitou mais de uma alternativa.
+                        Ao contrário da anulada, a decisão AQUI é da banca e está
+                        no gabarito dela — por isso o texto afirma, não pondera.
+                        Sem este aviso, quem marcou a segunda aceita vê "acertou"
+                        sem entender por quê, e desconfia do nosso gabarito. */}
+                    {item.dual_answer && (
+                      <div className="mt-3 rounded-control border border-edge bg-surfaceMuted p-3">
+                        <p className="paper-eyebrow">Duas alternativas corretas</p>
+                        <p className="mt-1 text-sm leading-relaxed text-ink">
+                          {item.dual_answer.nota}
+                        </p>
+                      </div>
+                    )}
+
                     {activeTab === "erros" && selectedDiagnosis && (
                       <div id={trapId} className="mt-3 border border-warning/50 bg-[var(--wash-atencao)] p-3">
                         <p className="paper-eyebrow text-warning">Hipótese do erro</p>
