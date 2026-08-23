@@ -1,6 +1,13 @@
 import { ImageResponse } from "next/og";
-import { bancaPorSlug, desvioNacional, janela, NACIONAL, todasAsBancas } from "@/lib/facies";
+import {
+  bancaPorSlug,
+  formatosDistintivos,
+  janela,
+  NACIONAL,
+  todasAsBancas,
+} from "@/lib/facies";
 import { HOST_VISIVEL } from "@/lib/site";
+import { encurtar } from "@/lib/encurtar";
 
 /**
  * A imagem que circula — e ela é a MESMA nos dois canais.
@@ -19,7 +26,12 @@ import { HOST_VISIVEL } from "@/lib/site";
  * mais fáceis de calcular.
  */
 
-export const alt = "A fácies da prova";
+// O `alt` do Next é export estático por rota: não dá para citar a banca nem a
+// prova. Então ele descreve o que o cartão CONTÉM — "A fácies da prova" sozinho
+// não diz nada que o título do link já não diga, e alt existe justamente para
+// quem não vê a imagem.
+export const alt =
+  "Cartão da fácies da banca: janela de anos, total de questões e os três números mais característicos — formato do item, assunto que mais cai e distribuição por área.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -91,7 +103,7 @@ export default async function Imagem({ params }: { params: Promise<{ banca: stri
             maxWidth: 1000,
           }}
         >
-          {banca.nome.length > 68 ? banca.nome.slice(0, 66) + "…" : banca.nome}
+          {encurtar(banca.nome, 68)}
         </div>
 
         <div style={{ display: "flex", fontSize: 22, color: FRACA, marginTop: 10 }}>
@@ -136,7 +148,9 @@ export default async function Imagem({ params }: { params: Promise<{ banca: stri
           }}
         >
           <div style={{ display: "flex" }}>
-            <span style={{ color: MARCA, fontWeight: 700 }}>Fácies</span>
+            <span style={{ color: TINTA, fontWeight: 700 }}>F</span>
+            <span style={{ color: MARCA, fontWeight: 700 }}>á</span>
+            <span style={{ color: TINTA, fontWeight: 700 }}>cies</span>
             <span style={{ marginLeft: 10 }}>· inteligência de prova</span>
           </div>
           <div style={{ display: "flex" }}>{HOST_VISIVEL}</div>
@@ -162,17 +176,16 @@ function tresNumeros(banca: ReturnType<typeof bancaPorSlug>) {
   if (!banca) return [];
   const saida: { valor: string; rotulo: string; nota?: string }[] = [];
 
-  const porDesvio = banca.formato.distribuicao
-    .filter((linha) => linha.codigo !== "direta")
-    .map((linha) => ({ linha, desvio: desvioNacional(linha.codigo, linha.pct) }))
-    .sort((a, b) => Math.abs(b.desvio) - Math.abs(a.desvio));
-
-  for (const { linha, desvio } of porDesvio) {
-    if (saida.length >= 2 || Math.abs(desvio) < 3) break;
+  // Mesmo critério da página, de propósito: `formatosDistintivos` é o ponto
+  // único de decisão. Antes esta imagem filtrava por |desvio| >= 3 e a página
+  // não filtrava nada — a versão que circula no WhatsApp era mais criteriosa
+  // que a que o aluno lia.
+  for (const linha of formatosDistintivos(banca)) {
+    if (saida.length >= 2) break;
     saida.push({
-      valor: `${linha.pct.toFixed(0)}%`,
+      valor: `${linha.pct.toFixed(1)}%`,
       rotulo: linha.rotulo,
-      nota: `média nacional ${(linha.pct - desvio).toFixed(0)}%`,
+      nota: `média nacional ${(NACIONAL.formato_pct[linha.codigo] ?? 0).toFixed(1)}%`,
     });
   }
 
@@ -203,7 +216,7 @@ function tresNumeros(banca: ReturnType<typeof bancaPorSlug>) {
     if (!linha.exibivel) continue;
     saida.push({
       valor: String(linha.n),
-      rotulo: linha.rotulo.length > 34 ? linha.rotulo.slice(0, 32) + "…" : linha.rotulo,
+      rotulo: encurtar(linha.rotulo, 34),
       nota:
         posicao === 1
           ? "questões no assunto que mais cai"

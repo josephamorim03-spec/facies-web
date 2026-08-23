@@ -1,5 +1,6 @@
 import type { Banca } from "@/lib/facies";
-import { desvioNacional, janela, NACIONAL, PISO_N_CELULA } from "@/lib/facies";
+import { formatosDistintivos, janela, NACIONAL, PISO_N_CELULA } from "@/lib/facies";
+import { cohenH } from "@/lib/distintividade";
 
 /**
  * A Fácies da prova, em três painéis.
@@ -57,16 +58,40 @@ function Barra({ pct }: { pct: number }) {
       className="block h-2 w-full overflow-hidden rounded-control border border-rule bg-paper"
       aria-hidden="true"
     >
+      {/* A UNICA animacao do funil, e ela EXPLICA.
+          Quando o seletor troca de banca, as barras vao para a nova largura em
+          vez de saltar. Isso torna visivel que o relatorio foi RECALCULADO para
+          a prova escolhida — que e a afirmacao central da pagina, e ate aqui
+          acontecia sem nenhum sinal.
+          O §8.4 permite animacao que explica e proibe a que celebra: sem reveal
+          on scroll, sem entrada de pagina, sem contador subindo. Numa pagina que
+          vende medicao, enfeite corroi o que ela afirma.
+          O bloco global de `prefers-reduced-motion` no fim do globals.css ja zera
+          isto para quem pediu menos movimento. */}
       <span
         className="block h-full bg-primary"
-        style={{ width: `${Math.max(0, Math.min(100, pct))}%` }}
+        style={{
+          width: `${Math.max(0, Math.min(100, pct))}%`,
+          transition: "width var(--motion-slow) var(--ease-paper)",
+        }}
       />
     </span>
   );
 }
 
 export function FaciesReport({ banca }: { banca: Banca }) {
-  const naoDireta = banca.formato.distribuicao.filter((linha) => linha.codigo !== "direta");
+  // Só o que é característico DESTA banca. Antes a página listava a
+  // distribuição inteira e o aluno lia "correlacionar colunas 0% -0", que são
+  // 5 questões em 1.486 — nenhuma informação, ocupando a mesma linha visual de
+  // um achado real. O critério vive em `formatoDistintivo` e é o MESMO que o
+  // cartão de OpenGraph usa.
+  const distintivos = formatosDistintivos(banca);
+  // Nº de alternativas é ficha técnica, não leitura de prova: saber que a
+  // prova tem 5 alternativas não muda o que se estuda, e o aluno descobre no
+  // primeiro minuto. Fica o fato dominante, sem comparação com a média.
+  const alternativaDominante = [...banca.formato.alternativas].sort(
+    (a, b) => b.qtd - a.qtd,
+  )[0];
 
   return (
     <div className="rounded-surface border border-edge bg-surface">
@@ -101,11 +126,10 @@ export function FaciesReport({ banca }: { banca: Banca }) {
           titulo="Como as questões são feitas"
           nota="exato · sem estimativa"
         >
-          {naoDireta.length > 0 ? (
+          {distintivos.length > 0 ? (
             <ul className="mb-5 grid gap-3">
-              {naoDireta.map((linha) => {
-                const desvio = desvioNacional(linha.codigo, linha.pct);
-                const relevante = Math.abs(desvio) >= 3;
+              {distintivos.map((linha) => {
+                const h = cohenH(linha.pct, NACIONAL.formato_pct[linha.codigo] ?? 0);
                 return (
                   <li
                     key={linha.codigo}
@@ -114,10 +138,9 @@ export function FaciesReport({ banca }: { banca: Banca }) {
                     <span className="text-sm text-ink">{linha.rotulo}</span>
                     <Barra pct={linha.pct} />
                     <span className="font-mono text-xs tabular-nums text-muted">
-                      {linha.pct.toFixed(0)}%{" "}
-                      <span className={relevante ? "text-accent" : ""}>
-                        {desvio > 0 ? "+" : ""}
-                        {desvio.toFixed(0)}
+                      {linha.pct.toFixed(1)}%{" "}
+                      <span className="text-accent">
+                        {h > 0 ? "acima" : "abaixo"} da média
                       </span>
                     </span>
                   </li>
@@ -126,24 +149,25 @@ export function FaciesReport({ banca }: { banca: Banca }) {
             </ul>
           ) : (
             <p className="mb-5 text-sm text-muted">
-              Todas as questões desta banca são de múltipla escolha direta.
+              No formato das questões, esta banca segue o padrão nacional — o que
+              já é uma informação: não há pegadinha de enunciado para treinar
+              aqui, e o preparo se decide pelo conteúdo.
             </p>
           )}
 
-          <div className="flex flex-wrap gap-2">
-            {banca.formato.alternativas.map((alt) => (
-              <span
-                key={alt.n}
-                className="rounded-control border border-rule px-3 py-1.5 text-sm text-ink"
-              >
-                <b className="font-mono">{alt.pct.toFixed(0)}%</b> com{" "}
-                {alt.n === 2 ? "certo/errado" : `${alt.n} alternativas`}
-              </span>
-            ))}
-          </div>
+          <p className="text-sm text-muted">
+            {alternativaDominante
+              ? `${alternativaDominante.pct.toFixed(0)}% das questões têm ${
+                  alternativaDominante.n === 2
+                    ? "formato certo/errado"
+                    : `${alternativaDominante.n} alternativas`
+                }.`
+              : null}
+          </p>
           <p className="mt-3 text-xs text-muted">
-            O número ao lado da barra é a diferença para a média nacional
-            ({NACIONAL.total.toLocaleString("pt-BR")} questões).
+            Aparecem apenas os formatos em que esta banca se afasta das{" "}
+            {NACIONAL.total.toLocaleString("pt-BR")} questões de referência com
+            margem que a base sustenta.
           </p>
         </Painel>
 

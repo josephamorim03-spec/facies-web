@@ -22,6 +22,7 @@
  */
 
 import dados from "@/data/facies/facies.json";
+import { cohenH, proporcaoDistintiva } from "@/lib/distintividade";
 
 export type FormatoLinha = {
   codigo: string;
@@ -101,19 +102,35 @@ export function bancaPorSlug(slug: string): Banca | undefined {
   return DATASET.bancas.find((banca) => banca.slug === slug);
 }
 
-/**
- * O quanto esta banca se afasta da média nacional naquele formato.
- *
- * É o número que carrega a tese da página: sem ele, "7% pedem a incorreta" é
- * trivia. Com ele, é leitura de prova.
- */
-export function desvioNacional(codigo: string, pct: number): number {
-  return Math.round((pct - (NACIONAL.formato_pct[codigo] ?? 0)) * 10) / 10;
-}
-
 /** Janela declarada da base, para a página nunca exibir número sem denominador. */
 export function janela(banca: Banca): string {
   if (!banca.primeiro_ano || !banca.ultimo_ano) return "janela não declarada";
   if (banca.primeiro_ano === banca.ultimo_ano) return String(banca.primeiro_ano);
   return `${banca.primeiro_ano}–${banca.ultimo_ano}`;
+}
+
+/**
+ * As linhas de formato que merecem a tela, da mais característica para a menos.
+ *
+ * **Ponto único de decisão.** O cartão de OpenGraph tinha a própria regra e a
+ * página não tinha nenhuma — a versão que circula no WhatsApp era mais
+ * criteriosa que a que o aluno lia. Os dois consomem esta função.
+ */
+export function formatoDistintivo(linha: FormatoLinha, base: number): boolean {
+  if (linha.codigo === "direta") return false;
+  return proporcaoDistintiva(
+    linha.qtd,
+    base,
+    linha.pct,
+    NACIONAL.formato_pct[linha.codigo] ?? 0,
+  );
+}
+
+export function formatosDistintivos(banca: Banca): FormatoLinha[] {
+  const base = banca.questoes_total;
+  const forca = (linha: FormatoLinha) =>
+    Math.abs(cohenH(linha.pct, NACIONAL.formato_pct[linha.codigo] ?? 0));
+  return banca.formato.distribuicao
+    .filter((linha) => formatoDistintivo(linha, base))
+    .sort((a, b) => forca(b) - forca(a));
 }
