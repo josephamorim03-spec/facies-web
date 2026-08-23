@@ -172,108 +172,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/ops/access-keys/batch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Batch Create */
-        post: operations["batch_create_ops_access_keys_batch_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ops/access-keys": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Keys */
-        get: operations["list_keys_ops_access_keys_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ops/access-keys/{key_id}/revoke": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Revoke Key */
-        post: operations["revoke_key_ops_access_keys__key_id__revoke_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ops/access-keys/{key_id}/hard-delete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Hard Delete Key */
-        post: operations["hard_delete_key_ops_access_keys__key_id__hard_delete_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ops/access-keys/{key_id}/extend": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Extend Key */
-        post: operations["extend_key_ops_access_keys__key_id__extend_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/access-keys/redeem": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Redeem Key */
-        post: operations["redeem_key_access_keys_redeem_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/auth/session": {
         parameters: {
             query?: never;
@@ -504,6 +402,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/account/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Sessions
+         * @description As sessoes vivas do titular.
+         *
+         *     `session_id` e' o `family_id`, e nao o hash do token: o hash E' a credencial
+         *     (com outro sal, mas mesma sensibilidade), e devolve-lo daria ao cliente uma
+         *     peca que ele nao precisa ter. `family_id` identifica a sessao sem servir
+         *     para nada alem disso.
+         */
+        get: operations["list_sessions_account_sessions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/account/sessions/revoke-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke All Sessions
+         * @description Derruba TODAS as sessoes, inclusive a que fez esta chamada.
+         *
+         *     Nao existe "todas menos esta" porque este endpoint nao consegue saber qual e'
+         *     "esta": o refresh token viaja num cookie `HttpOnly` com path `/api/auth` e
+         *     nao chega aqui. Um "todas menos esta" que na verdade derruba todas seria
+         *     pior que a versao honesta -- e quem clica isto suspeita de conta invadida,
+         *     caso em que derrubar tambem a propria sessao e' o comportamento certo.
+         *
+         *     `revoke_user` ja existia no repo. O access token corrente sobrevive ate
+         *     expirar (<=1h, sem estado por usuario nos tokens); o que morre aqui e' a
+         *     capacidade de renovar.
+         */
+        post: operations["revoke_all_sessions_account_sessions_revoke_all_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/stats": {
         parameters: {
             query?: never;
@@ -535,6 +488,57 @@ export interface paths {
         get: operations["list_audit_log_admin_ops_audit_log_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/entitlements/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar Direitos */
+        get: operations["listar_direitos_ops_entitlements__user_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/entitlements/grant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Conceder */
+        post: operations["conceder_ops_entitlements_grant_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/entitlements/{entitlement_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revogar */
+        post: operations["revogar_ops_entitlements__entitlement_id__revoke_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3869,15 +3873,6 @@ export interface components {
             /** Items */
             items?: components["schemas"]["ItemQualityOut"][];
         };
-        /** BatchCreateIn */
-        BatchCreateIn: {
-            /** Mentor Label */
-            mentor_label: string;
-            /** Quantity */
-            quantity: number;
-            /** Duration Days */
-            duration_days: number;
-        };
         /** CadernoDraftNotePayloadOut */
         CadernoDraftNotePayloadOut: {
             /**
@@ -4505,6 +4500,44 @@ export interface components {
              */
             confirm_impact: boolean;
         };
+        /** EntitlementListOut */
+        EntitlementListOut: {
+            /** User Id */
+            user_id: string;
+            /** Has Active Access */
+            has_active_access: boolean;
+            /** Access Until */
+            access_until?: string | null;
+            /** Entitlements */
+            entitlements: components["schemas"]["EntitlementOut"][];
+        };
+        /** EntitlementOut */
+        EntitlementOut: {
+            /** Entitlement Id */
+            entitlement_id: string;
+            /** User Id */
+            user_id: string;
+            /** Feature Scope */
+            feature_scope: string;
+            /** Source Kind */
+            source_kind: string;
+            /** Source Id */
+            source_id?: string | null;
+            /** Starts At */
+            starts_at: string;
+            /** Ends At */
+            ends_at?: string | null;
+            /** Revoked At */
+            revoked_at?: string | null;
+            /** Created At */
+            created_at: string;
+            /** Created By */
+            created_by?: string | null;
+            /** Note */
+            note?: string | null;
+            /** Is Active */
+            is_active: boolean;
+        };
         /**
          * EvolutionAssociationOut
          * @description Associação observada, sempre como intervalo.
@@ -4850,11 +4883,6 @@ export interface components {
             /** Granularity */
             granularity?: ("atomic" | "micro" | "macro") | null;
         };
-        /** ExtendIn */
-        ExtendIn: {
-            /** Extra Days */
-            extra_days: number;
-        };
         /** FinalizationResultOut */
         FinalizationResultOut: {
             /** Study Id */
@@ -4912,6 +4940,18 @@ export interface components {
         FunnelOut: {
             /** Ok */
             ok: boolean;
+        };
+        /**
+         * GrantIn
+         * @description Cortesia concedida pelo operador: testador, parceiro, disputa de reembolso.
+         */
+        GrantIn: {
+            /** User Id */
+            user_id: string;
+            /** Days */
+            days: number;
+            /** Reason */
+            reason?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -7033,6 +7073,18 @@ export interface components {
             /** Quality Flags */
             quality_flags?: string[];
         };
+        /**
+         * QuestionBankDualAnswerOut
+         * @description Alternativas que a banca aceitou como corretas nesta questao.
+         */
+        QuestionBankDualAnswerOut: {
+            /** Accepted */
+            accepted: string[];
+            /** Fonte Do Gabarito */
+            fonte_do_gabarito: string;
+            /** Nota */
+            nota: string;
+        };
         /** QuestionBankEditorialProfileOut */
         QuestionBankEditorialProfileOut: {
             /** Editorial State */
@@ -8019,6 +8071,7 @@ export interface components {
              */
             is_outdated: boolean;
             annulled_justification?: components["schemas"]["QuestionBankAnnulledJustificationOut"] | null;
+            dual_answer?: components["schemas"]["QuestionBankDualAnswerOut"] | null;
             /**
              * Reported Problem
              * @default false
@@ -8625,11 +8678,6 @@ export interface components {
          * @enum {string}
          */
         Rating: "AGAIN" | "HARD" | "GOOD" | "EASY";
-        /** RedeemIn */
-        RedeemIn: {
-            /** Key Code */
-            key_code: string;
-        };
         /** RefreshSessionRequest */
         RefreshSessionRequest: {
             /** Refresh Token */
@@ -8774,6 +8822,11 @@ export interface components {
             /** Due Date */
             due_date?: string | null;
         };
+        /** RevokeSessionsOut */
+        RevokeSessionsOut: {
+            /** Revoked */
+            revoked: number;
+        };
         /**
          * RoutineCheckinDayOut
          * @description Resposta de um dia: o registro (se houver) e o que o calendário prevê.
@@ -8904,6 +8957,30 @@ export interface components {
             reason?: string | null;
             /** Blocks */
             blocks: components["schemas"]["ScheduleBlockOut"][];
+        };
+        /** SessionListOut */
+        SessionListOut: {
+            /** Sessions */
+            sessions: components["schemas"]["SessionOut"][];
+        };
+        /**
+         * SessionOut
+         * @description Uma sessao viva.
+         *
+         *     SEM `user_agent` e SEM `ip`: a tabela guarda os dois so como hash, e e' assim
+         *     que fica. Mostrar "Chrome no Windows, São Paulo" exigiria reter o dado cru --
+         *     trocaria a privacidade do titular pelo conforto de reconhecer a linha. As
+         *     datas ja respondem a pergunta que importa: "tem sessao que eu nao abri?"
+         */
+        SessionOut: {
+            /** Session Id */
+            session_id: string;
+            /** Created At */
+            created_at: string;
+            /** Last Used At */
+            last_used_at?: string | null;
+            /** Expires At */
+            expires_at: string;
         };
         /** SessionOverridesOut */
         SessionOverridesOut: {
@@ -11234,214 +11311,6 @@ export interface operations {
             };
         };
     };
-    batch_create_ops_access_keys_batch_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-Ops-Token"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BatchCreateIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_keys_ops_access_keys_get: {
-        parameters: {
-            query?: {
-                q?: string | null;
-                status?: string | null;
-                mentor_label?: string | null;
-            };
-            header?: {
-                "X-Ops-Token"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    revoke_key_ops_access_keys__key_id__revoke_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-Ops-Token"?: string | null;
-            };
-            path: {
-                key_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    hard_delete_key_ops_access_keys__key_id__hard_delete_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-Ops-Token"?: string | null;
-            };
-            path: {
-                key_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    extend_key_ops_access_keys__key_id__extend_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-Ops-Token"?: string | null;
-            };
-            path: {
-                key_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ExtendIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    redeem_key_access_keys_redeem_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RedeemIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     create_auth_session_auth_session_post: {
         parameters: {
             query?: never;
@@ -11904,6 +11773,68 @@ export interface operations {
             };
         };
     };
+    list_sessions_account_sessions_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_all_sessions_account_sessions_revoke_all_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevokeSessionsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     admin_stats_admin_stats_get: {
         parameters: {
             query?: never;
@@ -11960,6 +11891,109 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_direitos_ops_entitlements__user_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Ops-Token"?: string | null;
+            };
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntitlementListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conceder_ops_entitlements_grant_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Ops-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GrantIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntitlementOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revogar_ops_entitlements__entitlement_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Ops-Token"?: string | null;
+            };
+            path: {
+                entitlement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */
