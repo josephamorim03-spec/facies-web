@@ -110,7 +110,7 @@ async function authorizeAdmin(request: NextRequest, requestId: string): Promise<
   return null;
 }
 
-export async function proxyAdminAccessKeys(
+export async function proxyAdmin(
   request: NextRequest,
   opsPath: string,
   init?: { method?: string; body?: BodyInit | null },

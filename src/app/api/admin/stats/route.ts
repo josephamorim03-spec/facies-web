@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
-import { proxyAdminAccessKeys } from "../access-keys/_adminProxy";
+import { proxyAdmin } from "../_shared/adminProxy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  return proxyAdminAccessKeys(request, "/admin/stats", { method: "GET" });
+  return proxyAdmin(request, "/admin/stats", { method: "GET" });
 }

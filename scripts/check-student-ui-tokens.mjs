@@ -35,7 +35,8 @@ const PAPER_SURFACES = [
   // app migrava. Entra agora para nao regredir de novo.
   "src/app/admin/layout.tsx",
   "src/app/admin/page.tsx",
-  "src/app/admin/keys/page.tsx",
+  "src/app/conta/page.tsx",
+  "src/app/admin/acessos/page.tsx",
   "src/app/admin/audit/page.tsx",
   "src/app/admin/question-bank/page.tsx",
   "src/app/admin/question-bank/_components/AdminOverview.tsx",

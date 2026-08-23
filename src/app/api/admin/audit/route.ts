@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { proxyAdminAccessKeys } from "../access-keys/_adminProxy";
+import { proxyAdmin } from "../_shared/adminProxy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   if (action) params.set("action", action);
   if (targetType) params.set("target_type", targetType);
   const qs = params.toString();
-  return proxyAdminAccessKeys(
+  return proxyAdmin(
     request,
     `/admin/ops/audit-log${qs ? `?${qs}` : ""}`,
     { method: "GET" },

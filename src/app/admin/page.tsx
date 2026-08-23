@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
-import { adminGetStats, AdminStats } from "@/lib/api/domains/access-keys";
+import { adminGetStats, AdminStats } from "@/lib/api/domains/admin";
 import { LoadingLine } from "@/components/ui/LoadBar";
 import {
   BarChart,
@@ -156,30 +156,27 @@ function ReviewsChart({
   );
 }
 
-// ─── Key Distribution Pie ───────────────────────────────────────────────────
+// ─── Situacao dos acessos ───────────────────────────────────────────────────
 
 function KeyDistributionChart({
-  available,
   active,
   expired,
   revoked,
 }: {
-  available: number;
   active: number;
   expired: number;
   revoked: number;
 }) {
   const data = [
-    { name: "Disponíveis", value: available, color: COLORS.green },
-    { name: "Ativas", value: active, color: COLORS.blue },
-    { name: "Expiradas", value: expired, color: COLORS.gray },
-    { name: "Revogadas", value: revoked, color: COLORS.red },
+    { name: "Ativos", value: active, color: COLORS.blue },
+    { name: "Vencidos", value: expired, color: COLORS.gray },
+    { name: "Revogados", value: revoked, color: COLORS.red },
   ].filter((d) => d.value > 0);
 
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-48 text-sm text-muted">
-        Nenhuma chave cadastrada.
+        Nenhum acesso concedido ainda.
       </div>
     );
   }
@@ -266,17 +263,26 @@ function TopUsersTable({
   );
 }
 
-// ─── Mentor Label Breakdown ─────────────────────────────────────────────────
+//: `source_kind` do backend em português. `access_key` e' legado: nada novo
+//: nasce assim, e some quando os direitos migrados vencerem.
+const ROTULO_ORIGEM: Record<string, string> = {
+  subscription: "Assinatura",
+  admin_grant: "Cortesia",
+  access_key: "Chave (legado)",
+};
 
-function MentorBreakdown({
+// ─── Acesso por origem ──────────────────────────────────────────────────────
+
+/** De onde vem o acesso: assinatura, cortesia do admin, ou chave migrada. */
+function AcessoPorOrigem({
   data,
 }: {
-  data: AdminStats["access_keys"]["by_mentor_label"];
+  data: AdminStats["access"]["by_source"];
 }) {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-24 text-sm text-muted">
-        Nenhuma mentoria cadastrada.
+        Nenhum acesso concedido ainda.
       </div>
     );
   }
@@ -287,16 +293,13 @@ function MentorBreakdown({
         <thead>
           <tr className="border-b border-edge text-left">
             <th className="paper-eyebrow pb-2 pr-3">
-              Mentoria
+              Origem
             </th>
             <th className="paper-eyebrow pb-2 pr-3 text-right">
               Total
             </th>
-            <th className="paper-eyebrow pb-2 pr-3 text-success text-right">
-              Disp.
-            </th>
             <th className="paper-eyebrow pb-2 pr-3 text-info text-right">
-              Ativas
+              Ativos
             </th>
             <th className="paper-eyebrow pb-2 text-right">
               Inat.
@@ -306,17 +309,14 @@ function MentorBreakdown({
         <tbody>
           {data.map((m) => (
             <tr
-              key={m.label}
+              key={m.source}
               className="border-b border-edge/50 last:border-0"
             >
               <td className="py-1.5 pr-3 text-xs text-ink">
-                {m.label}
+                {ROTULO_ORIGEM[m.source] ?? m.source}
               </td>
               <td className="py-1.5 pr-3 text-xs text-ink text-right">
                 {m.total}
-              </td>
-              <td className="py-1.5 pr-3 text-xs text-success text-right">
-                {m.available}
               </td>
               <td className="py-1.5 pr-3 text-xs text-info text-right">
                 {m.active}
@@ -371,7 +371,7 @@ export default function AdminDashboardPage() {
     );
   }
 
-  const { users, access_keys: keys, review_activity: activity, storage } = stats;
+  const { users, access: acesso, review_activity: activity, storage } = stats;
 
   return (
     <div className="space-y-8">
@@ -398,14 +398,9 @@ export default function AdminDashboardPage() {
           }
         />
         <StatCard
-          label="Chaves Ativas"
-          value={keys.active}
-          sub={`${keys.available} disponíveis · ${keys.redeemed_last_30_days} resgatadas (30d)`}
-          trend={
-            keys.active > 0
-              ? { direction: "up", label: `média ${keys.avg_duration_days} dias` }
-              : undefined
-          }
+          label="Acessos Ativos"
+          value={acesso.active}
+          sub={`${acesso.granted_last_30_days} concedidos (30d)`}
         />
       </div>
 
@@ -415,35 +410,32 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatCard label="Total registrados" value={users.total} />
           <StatCard
-            label="Com chave ativa"
-            value={users.with_active_key}
-            sub="acesso liberado"
+            label="Com acesso ativo"
+            value={users.with_active_access}
+            sub="podem entrar"
           />
           <StatCard
-            label="Sem chave"
-            value={users.without_key}
-            sub="nunca resgataram"
+            label="Nunca tiveram"
+            value={users.never_had_access}
+            sub="sem direito emitido"
           />
           <StatCard
-            label="Chave expirada"
-            value={users.expired_key}
-            sub="acesso bloqueado"
+            label="Acesso vencido"
+            value={users.expired_access}
+            sub="tiveram e perderam"
           />
         </div>
       </div>
 
-      {/* ── Access Keys section ─────────────────────────────────────────── */}
+      {/* ── Acesso ──────────────────────────────────────────────────────── */}
       <div>
-        <SectionTitle>Chaves de Acesso</SectionTitle>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatCard
-            label="Disponíveis"
-            value={keys.available}
-            sub={`de ${keys.total} total`}
-          />
-          <StatCard label="Ativas" value={keys.active} sub="em uso" />
-          <StatCard label="Expiradas" value={keys.expired} />
-          <StatCard label="Revogadas" value={keys.revoked} />
+        <SectionTitle>Acesso</SectionTitle>
+        {/* Sem "Disponíveis": chave podia existir sem dono — estoque a
+            distribuir — e direito é sempre de alguém. */}
+        <div className="grid grid-cols-3 gap-4">
+          <StatCard label="Ativos" value={acesso.active} sub={`de ${acesso.total} total`} />
+          <StatCard label="Vencidos" value={acesso.expired} />
+          <StatCard label="Revogados" value={acesso.revoked} />
         </div>
       </div>
 
@@ -455,14 +447,13 @@ export default function AdminDashboardPage() {
           <ReviewsChart data={activity.daily_last_14_days} />
         </div>
 
-        {/* Key distribution pie */}
+        {/* Distribuição do acesso */}
         <div className="bg-surface border border-edge p-5">
-          <SectionTitle>Distribuição de Chaves</SectionTitle>
+          <SectionTitle>Situação dos acessos</SectionTitle>
           <KeyDistributionChart
-            available={keys.available}
-            active={keys.active}
-            expired={keys.expired}
-            revoked={keys.revoked}
+            active={acesso.active}
+            expired={acesso.expired}
+            revoked={acesso.revoked}
           />
         </div>
       </div>
@@ -475,10 +466,10 @@ export default function AdminDashboardPage() {
           <TopUsersTable users={activity.top_users_last_30_days} />
         </div>
 
-        {/* Mentor breakdown */}
+        {/* Acesso por origem */}
         <div className="bg-surface border border-edge p-5">
-          <SectionTitle>Chaves por Mentoria</SectionTitle>
-          <MentorBreakdown data={keys.by_mentor_label} />
+          <SectionTitle>Acesso por origem</SectionTitle>
+          <AcessoPorOrigem data={acesso.by_source} />
         </div>
       </div>
 

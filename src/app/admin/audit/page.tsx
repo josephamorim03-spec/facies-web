@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import {
   adminGetAuditLog,
   AuditEntry,
-} from "@/lib/api/domains/access-keys";
+} from "@/lib/api/domains/admin";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
