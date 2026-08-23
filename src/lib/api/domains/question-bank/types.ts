@@ -519,6 +519,17 @@ export type QuestionBankSessionItem = {
     justificativa: string;
     is_inferencia: boolean;
   } | null;
+  /**
+   * Gabarito DUPLO: a banca aceitou mais de uma alternativa, reconhecendo o
+   * proprio erro. Nao e anulacao -- a questao vale e pontua, e marcar qualquer
+   * uma das aceitas conta como acerto. Diferente de `annulled_justification`,
+   * aqui nao ha hedge: a decisao esta no gabarito da banca.
+   */
+  dual_answer?: {
+    accepted: string[];
+    fonte_do_gabarito: string;
+    nota: string;
+  } | null;
   reported_problem: boolean;
   report_type: QuestionBankReportType | null;
   report_reason: string | null;
