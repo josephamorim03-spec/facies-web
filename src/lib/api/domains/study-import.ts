@@ -220,7 +220,7 @@ export type UserProfile = {
   confidence_timing: "post_session" | "per_question";
   has_chosen_feedback_default: boolean;
   has_completed_initial_goal_setup: boolean;
-  access_status: "active" | "expired" | "pending_key";
+  access_status: "active" | "expired" | "inactive";
 };
 
 export async function getProfile(token: string): Promise<UserProfile> {

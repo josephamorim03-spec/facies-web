@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut as LogOut } from "lucide-react";
+import { LogOut as LogOut, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -46,6 +47,22 @@ export function ContaSection() {
         >
           Sair da conta
         </Button>
+      </div>
+
+      {/* A porta para `/conta`: sessões ativas, exportar os dados e excluir a
+          conta. Os dois últimos são direitos de LGPD cujo backend existia e
+          nunca teve tela — só se alcançavam por `curl`. */}
+      <div className="mt-4 border-t border-rule pt-4">
+        <Link
+          href="/conta"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-primary"
+        >
+          <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+          Conta e privacidade
+        </Link>
+        <p className="mt-1 text-xs leading-5 text-muted">
+          Sessões ativas, exportar seus dados e excluir a conta.
+        </p>
       </div>
 
       <ConfirmDialog

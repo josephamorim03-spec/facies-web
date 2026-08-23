@@ -239,6 +239,16 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       pathname === "/" ||
       pathname.startsWith("/login") ||
       pathname.startsWith("/auth") ||
+      // `/conta` fica FORA do portão de acesso, de propósito. É onde o titular
+      // exporta os dados, encerra sessões e exclui a conta — direitos que a LGPD
+      // garante ao titular, não ao assinante. Bloquear por status de assinatura
+      // transformaria "cancelou, perdeu o acesso" em "cancelou, perdeu o direito".
+      //
+      // O backend já decidiu isso: `/account` é montado fora de
+      // `require_active_access` (ver o comentário em `app/main.py`). Sem esta
+      // linha o frontend contradizia o backend e a tela ficava inalcançável
+      // justamente para quem mais precisa dela.
+      pathname.startsWith("/conta") ||
       pathname === ACTIVATE_ROUTE ||
       pathname === INITIAL_GOAL_SETUP_ROUTE
     ) {
