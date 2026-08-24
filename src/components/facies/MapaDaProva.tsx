@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PISO_N_CELULA } from "@/lib/facies";
-import { areaDoAssunto } from "@/lib/areaDoAssunto";
+import { resolveDisplayArea } from "@/lib/areaDisplay";
 import { AREA_FULL_LABELS, AREA_VAR } from "@/lib/areaIdentity";
 
 /**
@@ -23,22 +23,21 @@ import { AREA_FULL_LABELS, AREA_VAR } from "@/lib/areaIdentity";
  * sobrevive é o que o protótipo já fazia mais forte, e que a lista numerada não
  * fazia: **tamanho é incidência**, e a prova inteira cabe num olhar.
  *
- * ## A cor é a grande área, e ela custou um dicionário
+ * ## A cor vem da MESMA fonte que a barra ao lado
  *
- * O dataset não traz área por assunto: a linha é `{rotulo, n, exibivel}` e não
- * há campo de área, tema ou especialidade em lugar nenhum. Minha primeira
- * conclusão foi que colorir era inviável, e ela estava errada por um erro de
- * medida — contei 2.115 LINHAS (15 assuntos × 141 bancas) quando o que importa
- * é quantos rótulos DISTINTOS existem. São 191.
+ * Por um tempo ela veio de um dicionário curado no frontend
+ * (`lib/areaDoAssunto.ts`, 191 rótulos), porque o dataset não trazia a área do
+ * assunto. Funcionava e estava errado por construção: virou uma SEGUNDA fonte de
+ * verdade, e ela discordava do grafo do kbank em 12.103 questões.
  *
- * Inferir do texto com `inferAreaFromText` resolve só 23,7%, e falha em coisas
- * óbvias ("Arritmias Cardíacas", "Glomerulopatias", "Imunizações/Vacinação").
- * Curar os 191 à mão resolve 100%, e é o que `lib/areaDoAssunto.ts` faz — com
- * uma checagem em `tests/unit` que falha quando a base traz rótulo novo, para
- * a lacuna aparecer no CI em vez de virar célula cinza em silêncio.
+ * O efeito era visível na mesma tela. "Neoplasias do Sistema Digestivo" saía
+ * laranja (Cirurgia) aqui no mapa e contava como Clínica Médica na barra logo
+ * abaixo — mesmo assunto, mesma página, duas áreas. O mesmo valia para Esôfago,
+ * Estômago, Pâncreas e Intestinos.
  *
- * O mapa é interino: o certo é o `build_facies_dataset.py` (kbank) emitir a
- * área junto do assunto, lendo o pai direto do grafo.
+ * Agora `build_facies_dataset.py` emite `area` em cada linha de `mais_cai`,
+ * lida do `node_path` do nó primário — exatamente o campo que alimenta a
+ * distribuição por área. Uma fonte, e o dicionário foi apagado.
  */
 
 /** Quanto da tinta da marca entra na célula mais cobrada. */
@@ -46,7 +45,14 @@ const TINTA_MAX = 34;
 /** E na menos cobrada, para nenhuma célula sumir no fundo. */
 const TINTA_MIN = 8;
 
-type Linha = { rotulo: string; n: number; exibivel: boolean };
+type Linha = {
+  rotulo: string;
+  n: number;
+  exibivel: boolean;
+  /** A grande área, vinda do MESMO grafo que alimenta a distribuição do painel
+   *  ao lado. Ver o comentário sobre a fonte única, acima. */
+  area?: string | null;
+};
 
 /**
  * O tamanho da célula, por posição no ranking.
@@ -102,7 +108,7 @@ export function MapaDaProva({
           células de 2×2 não seriam preenchidos pelas pequenas. */}
       <ul className="grid grid-cols-6 gap-1 [grid-auto-flow:dense] [grid-auto-rows:4.5rem] sm:[grid-auto-rows:5rem]">
         {ordenadas.map((linha, indice) => {
-          const area = areaDoAssunto(linha.rotulo);
+          const area = linha.area ? resolveDisplayArea(null, linha.area) : null;
           const cor = area ? AREA_VAR[area] : "var(--color-primary)";
           const intensidade =
             TINTA_MIN + (linha.n / maior) * (TINTA_MAX - TINTA_MIN);
@@ -177,9 +183,9 @@ export function MapaDaProva({
         {escolhida ? (
           <p className="text-sm text-ink">
             <b className="font-semibold">{escolhida.rotulo}</b>{" "}
-            {areaDoAssunto(escolhida.rotulo) ? (
+            {escolhida.area ? (
               <span className="text-muted">
-                · {AREA_FULL_LABELS[areaDoAssunto(escolhida.rotulo)!]}
+                · {AREA_FULL_LABELS[resolveDisplayArea(null, escolhida.area)]}
               </span>
             ) : null}{" "}
             <span className="text-muted">

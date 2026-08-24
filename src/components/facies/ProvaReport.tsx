@@ -191,7 +191,7 @@ export function ProvaReport({ prova }: { prova: Prova }) {
         <Painel
           numero="02"
           titulo="Distribuição por área"
-          nota={`peso de cada área contra a média das ${TOTAL_BANCAS} bancas`}
+          nota="a forma desta prova · assunto a assunto no painel 01"
         >
           <BarrasArea
             linhas={prova.areas.linhas.map((linha) => ({

@@ -166,7 +166,7 @@ export function FaciesReport({
           // risco da média na tela, a própria USP desmente a frase: Cirurgia
           // +9,9 e Pediatria −6,1. Manter a nota seria a página contradizendo o
           // gráfico que ela acabou de desenhar.
-          nota={`peso de cada área contra a média das ${TOTAL_BANCAS} bancas`}
+          nota="a forma desta prova · assunto a assunto no painel 01"
         >
           {/* Barra com a marca da média nacional — ver BarrasArea.tsx para o
               porquê de a comparação não ficar atrás de um clique. */}

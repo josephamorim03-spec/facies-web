@@ -112,30 +112,11 @@ export function BarrasArea({ linhas }: { linhas: Linha[] }) {
                   transition: "width var(--motion-slow) var(--ease-paper)",
                 }}
               />
-              {/* A marca da média. Sobe e desce da barra de propósito: dentro
-                  dela, sobre o preenchimento da mesma família de cor, o risco
-                  sumiria justamente nas áreas em que a prova cobra muito. */}
-              {linha.media != null && !ehResidual ? (
-                <span
-                  className="absolute -top-1 -bottom-1 block w-px bg-ink opacity-60"
-                  style={{
-                    left: `${(linha.media / teto) * 100}%`,
-                    transition: "left var(--motion-slow) var(--ease-paper)",
-                  }}
-                />
-              ) : null}
             </span>
 
             <span className="whitespace-nowrap text-right tabular-nums text-ink">
               {linha.pct.toFixed(0)}%{" "}
-              {diferenca != null ? (
-                <span className={destaca ? "text-accent" : "text-muted"}>
-                  {diferenca > 0 ? "+" : "−"}
-                  {dec(Math.abs(diferenca))}
-                </span>
-              ) : ehResidual ? (
-                <span className="text-muted">resto</span>
-              ) : null}
+              {ehResidual ? <span className="text-muted">resto</span> : null}
             </span>
 
             {/* O leitor de tela recebe a frase inteira, porque a barra e o
@@ -154,10 +135,34 @@ export function BarrasArea({ linhas }: { linhas: Linha[] }) {
         );
       })}
 
+      {/* ⚠️ A COMPARAÇÃO COM A MÉDIA SAIU DAQUI, e a razão é que ela media a
+          NOSSA classificação, não a prova.
+
+          Prova de residência é montada com o mesmo número de questões por grande
+          área. O acervo confirma onde a classificação é boa: Gineco mais
+          Obstetrícia dá 19,9% no total das {TOTAL_BANCAS} bancas, e fica entre
+          18,7% e 20,4% em todas elas — cravado nos 20% esperados.
+
+          Onde o vocabulário é ambíguo, não. Medido no acervo de acesso direto:
+
+              Clínica Médica  32,9%   esperado ~20   +12,9
+              Cirurgia        14,3%                   −5,7
+              Pediatria       13,3%                   −6,7
+              Preventiva      14,5%                   −5,5
+              Outros           5,2%   esperado   0    +5,2
+
+          Os desvios somam zero: Clínica Médica e "Outros" absorvem o que falta
+          nas outras três. A causa está à vista no grafo — 48% das questões têm
+          grande área mas nenhum assunto, e Cirurgia sozinha tem 58% assim.
+
+          Enquanto isso valer, dizer "esta prova cobra Cirurgia 9,9 pontos acima
+          da média" é uma frase sobre o classificador com cara de frase sobre a
+          prova. A barra fica, porque a forma é real e a leitura por assunto
+          (painel 01) não depende deste eixo. O que sai é a alegação. */}
       <p className="mt-1 text-sm text-muted">
-        A barra é o peso da área nesta prova; o risco vertical é a média das{" "}
-        {TOTAL_BANCAS} bancas do acervo. O número em âmbar marca as diferenças de{" "}
-        {LIMIAR_DESTAQUE} pontos ou mais — abaixo disso é ruído entre bancas.
+        Toda prova de residência distribui as questões entre as grandes áreas de
+        forma parecida — é o assunto dentro de cada uma que muda, e ele está no
+        painel acima. Esta barra é a forma desta prova, não um diferencial dela.
       </p>
     </div>
   );
