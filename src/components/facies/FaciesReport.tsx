@@ -1,5 +1,5 @@
 import type { Banca } from "@/lib/facies";
-import { janela, PISO_N_CELULA, TOTAL_BANCAS } from "@/lib/facies";
+import { janela, nomeCurto, PISO_N_CELULA, TOTAL_BANCAS } from "@/lib/facies";
 import { BarrasArea } from "./BarrasArea";
 import { ComoCobra } from "./ComoCobra";
 import { MapaDaProva } from "./MapaDaProva";
@@ -71,11 +71,25 @@ export function FaciesReport({ banca }: { banca: Banca }) {
 
   return (
     <div className="rounded-surface border border-edge bg-surface">
-      {/* Cabeçalho de laudo: toda leitura declara a base de onde saiu. */}
+      {/* Cabeçalho de laudo: toda leitura declara a base de onde saiu.
+
+          ⚠️ O NOME AQUI É O CURTO, e a UF saiu. O cabeçalho repetia o rótulo do
+          edital por extenso — que a página já mostra como legenda sob o título —
+          e ainda somava um campo "UF: SP" ao lado. Resultado, na mesma tela:
+
+            titulo   ....  USP-SP
+            legenda  ....  SP - Universidade de São Paulo - USP - SP (Hospital…
+            Banca    ....  SP - Universidade de São Paulo - USP - SP (Hospital…
+            UF       ....  SP
+
+          O estado aparecia três vezes e o nome longo duas. Fica UMA de cada: o
+          nome por extenso na legenda (identidade legal, uma vez) e o curto aqui,
+          que é o que a linha de laudo precisa para dizer de quem é a leitura. A
+          UF já vive dentro do nome curto quando ela desambigua. */}
       <header className="flex flex-wrap gap-x-8 gap-y-3 border-b border-rule px-5 py-4 sm:px-6">
         <div className="flex flex-col gap-0.5">
           <Rotulo>Banca</Rotulo>
-          <b className="text-sm font-semibold text-ink lg:text-base">{banca.nome}</b>
+          <b className="text-sm font-semibold text-ink lg:text-base">{nomeCurto(banca)}</b>
         </div>
         <div className="flex flex-col gap-0.5">
           <Rotulo>Janela</Rotulo>
@@ -87,12 +101,6 @@ export function FaciesReport({ banca }: { banca: Banca }) {
             {banca.total.toLocaleString("pt-BR")} questões
           </b>
         </div>
-        {banca.uf ? (
-          <div className="flex flex-col gap-0.5">
-            <Rotulo>UF</Rotulo>
-            <b className="font-mono text-sm text-ink">{banca.uf}</b>
-          </div>
-        ) : null}
       </header>
 
       <div className="px-5 sm:px-6">

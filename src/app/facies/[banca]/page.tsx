@@ -66,7 +66,12 @@ export default async function PaginaDaBanca({ params }: Props) {
             WhatsApp e para a forma como qualquer pessoa chama a prova — mas
             sumir da página inteira faria a leitura deixar de dizer sobre QUEM
             ela é. Só troca de hierarquia. */}
-        <p className="mt-2 max-w-[60ch] text-sm text-muted">{banca.nome}</p>
+        {/* O prefixo de UF sai da legenda: o rotulo do edital comeca com
+            "SP - " e a sigla ja termina em "-SP", entao o estado aparecia duas
+            vezes numa linha que existe so para dar a identidade legal. */}
+        <p className="mt-2 max-w-[60ch] text-sm text-muted">
+          {banca.nome.replace(/^\s*[A-Za-zÀ-ÿ]{2,10}\s*-\s*/, "")}
+        </p>
       </header>
 
       <ContarVisita chave={banca.institution_key} />

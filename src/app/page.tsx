@@ -232,8 +232,19 @@ export default function Home() {
               <DepoisDeEntrar />
             </div>
 
-            {/* ── O que é e o que não é (§1.2) ─────────────────────────────── */}
-            <section className="mt-10 grid gap-px overflow-hidden rounded-surface border border-edge bg-edge sm:grid-cols-2">
+            {/* ── O que é e o que não é (§1.2) ───────────────────────────────
+                O TÍTULO FALTAVA, e a seção nascia solta.
+                Todas as outras abrem com rótulo e `h2`; esta começava direto na
+                grade de duas colunas, com "É" e "Não é" em 11px fazendo as
+                vezes de título. O leitor caía numa lista sem saber do que ela é
+                lista — e as duas colunas, sem cabeça em cima, pareciam
+                continuação da seção anterior. */}
+            <section className="mt-10">
+              <span className="paper-eyebrow">Escopo</span>
+              <h2 className="mt-3 font-serif text-2xl font-semibold text-ink">
+                O que a Fácies é, e o que ela não é
+              </h2>
+              <div className="mt-5 grid gap-px overflow-hidden rounded-surface border border-edge bg-edge sm:grid-cols-2">
               <div className="bg-surface p-5 sm:p-6">
                 <span className="paper-eyebrow">
                   É
@@ -280,6 +291,7 @@ export default function Home() {
                     Um ranking — preparação para residência já tem comparação de sobra
                   </li>
                 </ul>
+              </div>
               </div>
             </section>
 
@@ -385,20 +397,24 @@ export default function Home() {
           </FunilHome>
         </div>
 
-        {/* ── Rodapé honesto: mantenha, não suavize (§13) ────────────────
-            A frase da base FICA aqui, mesmo com os números repetidos na faixa do
-            topo. Ela carrega o critério — "pelo menos 120 questões classificadas
-            nos últimos anos" — e a faixa não tem espaço para ele sem virar
-            parágrafo. Manchete em cima, letra miúda embaixo; tirar a de baixo
-            seria trocar precisão por economia de linha. */}
+        {/* ── Rodapé ──────────────────────────────────────────────────────
+            OS DOIS AVISOS SAÍRAM DAQUI.
+
+            "A Fácies não promete aprovação e não vende conteúdo teórico" é
+            cláusula, não argumento: ela protege o fornecedor e não diz nada a
+            quem está decidindo. Fechar a página com uma ressalva legal é gastar
+            a última linha — a que fica na cabeça — desfazendo o que as outras
+            construíram. Foi para o `TermsModal`, que é onde cláusula vale.
+
+            "Base atual: N bancas…" já vive na faixa embaixo do herói, com os
+            mesmos números. Repetir no rodapé era dizer duas vezes e enfraquecer
+            as duas.
+
+            O que fica é identificação. Rodapé de página pública precisa dizer de
+            quem ela é, e mais nada. */}
         <footer className="mt-16 border-t border-rule pt-8 text-sm text-muted">
-          <p className="max-w-[70ch]">
-            A Fácies não promete aprovação e não vende conteúdo teórico. Ela mostra como a sua
-            banca cobra e organiza o seu tempo em volta disso.
-          </p>
-          <p className="mt-4 max-w-[70ch]">
-            Base atual: {total} bancas com pelo menos 120 questões classificadas nos últimos
-            anos, sobre {NACIONAL.total.toLocaleString("pt-BR")} questões de prova.
+          <p>
+            {SITE_NAME} · {SITE_QUALIFICADOR}
           </p>
         </footer>
       </main>

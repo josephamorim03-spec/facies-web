@@ -54,6 +54,8 @@ O aplicativo adota medidas razoáveis para proteger as informações inseridas p
 
 O aplicativo é uma ferramenta de apoio ao estudo. O usuário permanece responsável pela forma como utiliza os conteúdos, análises e sugestões fornecidos pela plataforma.
 
+A Fácies não promete aprovação em qualquer processo seletivo e não comercializa conteúdo teórico. O que ela oferece é a leitura de como cada prova cobra e a organização do tempo de estudo em volta disso.
+
 9. Atualizações destes Termos
 
 Estes Termos de Uso poderão ser atualizados periodicamente para refletir melhorias, ajustes operacionais ou alterações nas funcionalidades do aplicativo.
