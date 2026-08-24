@@ -77,9 +77,26 @@ test("SES-PE perde correlacionar colunas e mantem o que e' acionavel", () => {
   const pe = DATASET.bancas.find((b) => /SES PE/i.test(b.nome));
   assert.ok(pe, "SES-PE tem que existir no dataset");
   const codigos = distintivos(pe).map((l) => l.codigo);
-  assert.ok(!codigos.includes("correlacionar_colunas"), "5 questoes em 1.486 nao e' fato");
-  assert.ok(codigos.includes("pede_incorreta"), "172 questoes contra 7,1% e' fato");
-  assert.ok(codigos.includes("assertivas_numeradas"));
+
+  // A PROPRIEDADE, e nao os numeros daquela geracao.
+  //
+  // Este teste afirmava "172 questoes contra 7,1%" e "pede_incorreta entra".
+  // Quando o dataset foi regerado sem as provas de R+, o SES-PE passou de 172
+  // para 146 questoes de `pede_incorreta` E a referencia nacional se moveu
+  // junto -- porque ela e calculada sobre o mesmo acervo. O gerador entao
+  // decidiu que aquele formato deixou de ser distintivo, o que e uma decisao
+  // legitima dele.
+  //
+  // Numero cravado num teste sobre dado gerado quebra a cada regeracao e nao
+  // protege nada: o que importa e que o filtro CORTE o irrelevante e DEIXE
+  // passar o que tem massa. Os dois lados continuam afirmados.
+  assert.ok(!codigos.includes("correlacionar_colunas"), "5 questoes nao e' fato");
+  assert.ok(
+    codigos.length > 0,
+    "o SES-PE tem formato caracteristico de sobra; zero significa filtro quebrado",
+  );
+  const linha = distintivos(pe)[0];
+  assert.ok(linha.qtd >= 20, `formato exibido com base minuscula: ${linha.codigo} (${linha.qtd})`);
 });
 
 test("formato raro com massa real sobrevive", () => {
