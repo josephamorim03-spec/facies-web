@@ -119,18 +119,9 @@ export function FaciesReport({ banca }: { banca: Banca }) {
             O que sobrou são os dois painéis que respondem perguntas de decisão:
             O QUE cai e DE QUE ÁREA. A leitura de formato continua existindo em
             `formatosDistintivos` e na página da banca, para quem for atrás. */}
-        {/* ── PAINEL 01 — como a banca monta a questão, quando isso distingue */}
+        {/* ── PAINEL 01 — a fácies propriamente dita ────────────────────── */}
         <Painel
           numero="01"
-          titulo="Como esta banca cobra"
-          nota="exato · sem estimativa"
-        >
-          <ComoCobra banca={banca} />
-        </Painel>
-
-        {/* ── PAINEL 02 — a fácies propriamente dita ────────────────────── */}
-        <Painel
-          numero="02"
           titulo="O que mais cai"
           nota={`${banca.mais_cai.base.toLocaleString("pt-BR")} questões classificadas · ${banca.mais_cai.cobertura.toFixed(0)}% da base`}
         >
@@ -155,9 +146,9 @@ export function FaciesReport({ banca }: { banca: Banca }) {
           ) : null}
         </Painel>
 
-        {/* ── PAINEL 2 — a área contra a média do acervo ────────────────── */}
+        {/* ── PAINEL 02 — a área contra a média do acervo ───────────────── */}
         <Painel
-          numero="03"
+          numero="02"
           titulo="Distribuição por área"
           // A NOTA ANTERIOR ficou FALSA quando a barra ganhou a média.
           //
@@ -173,6 +164,15 @@ export function FaciesReport({ banca }: { banca: Banca }) {
               porquê de a comparação não ficar atrás de um clique. */}
           <BarrasArea linhas={banca.areas.linhas} />
         </Painel>
+        {/* ── PAINEL 03 — como a banca monta a questão, quando isso distingue */}
+        <Painel
+          numero="03"
+          titulo="Como esta banca cobra"
+          nota="exato · sem estimativa"
+        >
+          <ComoCobra banca={banca} />
+        </Painel>
+
       </div>
     </div>
   );

@@ -1,14 +1,25 @@
 import type { LinhaSerie, Prova } from "@/lib/provas";
-import { PESO_CORRELATA, PISO_N_CELULA, ROTULO_FORMATO } from "@/lib/provas";
+import { PESO_CORRELATA, PISO_N_CELULA } from "@/lib/provas";
 import { dec } from "@/lib/decimal";
+import { TOTAL_BANCAS } from "@/lib/facies";
+import { BarrasArea } from "./BarrasArea";
 
 /**
  * O laudo de uma prova, com a base composta declarada na própria tela.
  *
- * A ordem dos painéis segue o §5.5: **profundidade primeiro**. Quando a prova é
- * nova, a pergunta que o visitante faz antes de qualquer outra é "isso aqui tem
- * muita coisa por baixo?" — e profundidade percebida não vem de anos, vem de
- * volume rotulado.
+ * ## A ordem mudou: LEITURA primeiro, método depois
+ *
+ * Ela seguia o §5.5 — "profundidade primeiro", porque a prova é nova e o
+ * visitante quer saber se há coisa por baixo. O raciocínio vale, mas produzia um
+ * efeito que ninguém queria: esta página abria com metodologia enquanto a página
+ * de banca abria com a leitura, e quem clicava em "Ver a fácies completa" caía em
+ * telas de estrutura diferente conforme tivesse escolhido o ENAMED ou uma
+ * institucional.
+ *
+ * Agora as duas abrem igual — o que mais cai, depois a distribuição por área — e
+ * o que é exclusivo da prova (de onde vem a base, e o que autoriza usar provas
+ * parecidas) vem depois, como nota de método. A profundidade continua declarada
+ * na mesma tela; deixa de ser a primeira coisa lida.
  *
  * O que esta tela recusa a fazer: chamar de "tendência" o que se apoia numa
  * única aplicação direta, e esconder que a validação das fontes correlatas
@@ -84,7 +95,6 @@ export function ProvaReport({ prova }: { prova: Prova }) {
   // sem acento, e ele nao tem como saber que e' nome de campo. Renomear no
   // ponto de uso e' mais barato que enfraquecer o gate.
   const serieHistorica = val.status === "medido" ? val.historico : null;
-  const naoDireta = prova.formato.distribuicao.filter((l) => l.codigo !== "direta");
   const correlatos = serie.anos_correlatos.length;
 
   return (
@@ -112,81 +122,9 @@ export function ProvaReport({ prova }: { prova: Prova }) {
       </header>
 
       <div className="px-5 sm:px-6">
-        {/* ── 01 — profundidade, porque a prova é nova (§5.5) ──────────── */}
-        {/* O vocabulário deste painel era todo de dentro de casa — "rotulado",
-            "diretas", "correlatas", "aplicações na série". São os nomes dos
-            campos do gerador, e nenhum deles é como um estudante fala. O dado é
-            o mesmo; muda quem consegue ler. */}
-        <Painel numero="01" titulo="De onde vem esta leitura" nota="o que já foi lido, questão a questão">
-          <div className="grid gap-px overflow-hidden rounded-control border border-rule bg-rule sm:grid-cols-4">
-            {[
-              [
-                prof.questoes_rotuladas.toLocaleString("pt-BR"),
-                "questões lidas e classificadas",
-                `${prof.diretas} do ${prova.sigla} · ${prof.correlatas.toLocaleString("pt-BR")} de provas parecidas`,
-              ],
-              [
-                String(prof.aplicacoes_na_serie),
-                "provas analisadas",
-                `${prof.aplicacoes_diretas} ${
-                  prof.aplicacoes_diretas === 1 ? "é do próprio" : "são do próprio"
-                } ${prova.sigla}`,
-              ],
-              [
-                prof.subtemas_mapeados.toLocaleString("pt-BR"),
-                "assuntos mapeados",
-                `${serie.linhas.length} exibidos aqui`,
-              ],
-              [
-                `${prova.formato.alternativas[0]?.n ?? "—"}`,
-                "alternativas por questão",
-                `${prova.questoes_declaradas} questões no edital`,
-              ],
-            ].map(([valor, chave, meta]) => (
-              <div key={chave} className="bg-paper p-4">
-                <div className="font-mono text-2xl leading-tight text-ink">{valor}</div>
-                <div className="mt-0.5 text-sm text-muted">{chave}</div>
-                <div className="mt-2 font-mono text-micro text-muted">{meta}</div>
-              </div>
-            ))}
-          </div>
-        </Painel>
-
-        {/* ── 02 — o formato, medido SÓ na fonte direta ────────────────── */}
+        {/* ── 01 — o que mais cai, pela série composta ─────────────────── */}
         <Painel
-          numero="02"
-          titulo="Como as questões são feitas"
-          nota={`exato · ${prova.formato.base} questões da própria prova`}
-        >
-          <div className="flex flex-wrap gap-2">
-            {prova.formato.alternativas.map((alt) => (
-              <span
-                key={alt.n}
-                className="rounded-control border border-rule px-3 py-1.5 text-sm text-ink"
-              >
-                <b className="font-mono">{alt.pct.toFixed(0)}%</b> com {alt.n} alternativas
-              </span>
-            ))}
-            {naoDireta.map((linha) => (
-              <span
-                key={linha.codigo}
-                className="rounded-control border border-rule px-3 py-1.5 text-sm text-ink"
-              >
-                <b className="font-mono">{linha.pct.toFixed(0)}%</b>{" "}
-                {ROTULO_FORMATO[linha.codigo] ?? linha.codigo}
-              </span>
-            ))}
-          </div>
-          <p className="mt-3 text-xs text-muted">
-            Medido apenas nas {prova.formato.base} questões da própria prova. As fontes
-            correlatas servem para prever assunto, não para descrever forma — o ENARE usa
-            cinco alternativas e somá-lo aqui diria que esta prova tem cinco.
-          </p>
-        </Painel>
-
-        {/* ── 03 — o que mais cai, pela série composta ─────────────────── */}
-        <Painel
-          numero="03"
+          numero="01"
           titulo="O que mais cai"
           nota={`${serie.universo.toLocaleString("pt-BR")} assuntos na série · as 15 são gratuitas`}
         >
@@ -236,6 +174,82 @@ export function ProvaReport({ prova }: { prova: Prova }) {
           </p>
         </Painel>
 
+        {/* ── 02 — a área contra a média do acervo ────────────────────────
+            ESTE PAINEL ESTAVA DUAS VERSÕES ATRÁS da página de banca.
+
+            Eram barras em petróleo sem comparação nenhuma — a mesma forma que a
+            página de banca abandonou por não informar: "Clínica 37%" não diz se
+            37% é muito, e sem o denominador o painel é decorativo. Agora as duas
+            páginas usam o MESMO componente, com a marca da média das bancas
+            dentro da barra.
+
+            E a nota dizia "contexto · varia pouco entre provas", herdada da
+            medição de Jaccard — que é sobre a ORDEM do top-7 ser igual, não
+            sobre os PESOS. Com a média na tela a própria frase se desmente. É a
+            mesma correção que a página de banca já tinha recebido; esta ficou
+            para trás porque o componente era outro. */}
+        <Painel
+          numero="02"
+          titulo="Distribuição por área"
+          nota={`peso de cada área contra a média das ${TOTAL_BANCAS} bancas`}
+        >
+          <BarrasArea
+            linhas={prova.areas.linhas.map((linha) => ({
+              rotulo: linha.rotulo,
+              n: linha.qtd,
+              pct: linha.pct,
+            }))}
+          />
+        </Painel>
+        {/* ── 03 — de onde vem a base (§5.5) ──────────────────────────── */}
+        {/* O vocabulário deste painel era todo de dentro de casa — "rotulado",
+            "diretas", "correlatas", "aplicações na série". São os nomes dos
+            campos do gerador, e nenhum deles é como um estudante fala. O dado é
+            o mesmo; muda quem consegue ler. */}
+        <Painel numero="03" titulo="De onde vem esta leitura" nota="o que já foi lido, questão a questão">
+          <div className="grid gap-px overflow-hidden rounded-control border border-rule bg-rule sm:grid-cols-3">
+            {[
+              [
+                prof.questoes_rotuladas.toLocaleString("pt-BR"),
+                "questões lidas e classificadas",
+                `${prof.diretas} do ${prova.sigla} · ${prof.correlatas.toLocaleString("pt-BR")} de provas parecidas`,
+              ],
+              [
+                String(prof.aplicacoes_na_serie),
+                "provas analisadas",
+                `${prof.aplicacoes_diretas} ${
+                  prof.aplicacoes_diretas === 1 ? "é do próprio" : "são do próprio"
+                } ${prova.sigla}`,
+              ],
+              [
+                prof.subtemas_mapeados.toLocaleString("pt-BR"),
+                "assuntos mapeados",
+                `${serie.linhas.length} exibidos aqui`,
+              ],
+            ].map(([valor, chave, meta]) => (
+              <div key={chave} className="bg-paper p-4">
+                <div className="font-mono text-2xl leading-tight text-ink">{valor}</div>
+                <div className="mt-0.5 text-sm text-muted">{chave}</div>
+                <div className="mt-2 font-mono text-micro text-muted">{meta}</div>
+              </div>
+            ))}
+          </div>
+        </Painel>
+
+        {/* O PAINEL DE FORMATO SAIU DAQUI, e o motivo e de DADO, nao de gosto.
+
+            Ele mostrava "X% com 4 alternativas" — ficha tecnica: verdadeira, e
+            a pessoa descobre no primeiro minuto de prova. A pagina da banca tem
+            o painel equivalente ("Como esta banca cobra"), mas la ele so exibe
+            formato que DISTINGUE a banca das outras, por Wilson mais tamanho de
+            efeito mais um piso de relevancia.
+
+            Esse painel nao pode existir aqui: `formato.distribuicao` da prova
+            tem uma entrada so, `{codigo:"direta"}`, e `formatoDistintivo`
+            retorna false para ela por construcao. Nao ha o que comparar — nao
+            porque o ENAMED siga o padrao, mas porque a quebra por formato nao
+            e emitida para ele. Fingir o painel com a ficha tecnica era
+            preencher o buraco com o que sobrava. */}
         {/* ── 04 — a validação, com o n na cara ────────────────────────── */}
         {val.status === "medido" ? (
           <Painel numero="04" titulo="Por que dá para usar provas parecidas">
@@ -305,32 +319,6 @@ export function ProvaReport({ prova }: { prova: Prova }) {
           </Painel>
         ) : null}
 
-        {/* ── 05 — área, como contexto ─────────────────────────────────── */}
-        <Painel
-          numero="05"
-          titulo="Distribuição por área"
-          nota="contexto · varia pouco entre provas"
-        >
-          <ul className="grid gap-2">
-            {prova.areas.linhas.map((linha) => (
-              <li
-                key={linha.rotulo}
-                className="grid grid-cols-[minmax(8rem,13rem)_1fr_auto] items-center gap-3"
-              >
-                <span className="text-sm text-ink">{linha.rotulo}</span>
-                <span className="block h-2 w-full overflow-hidden rounded-control border border-rule bg-paper">
-                  <span
-                    className="block h-full bg-primary"
-                    style={{ width: `${Math.min(100, linha.pct)}%` }}
-                  />
-                </span>
-                <span className="font-mono text-xs tabular-nums text-muted">
-                  {linha.pct.toFixed(0)}%
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Painel>
       </div>
     </div>
   );
