@@ -175,7 +175,7 @@ export function FaciesPicker({
           cada uma continua sendo lida pelo componente que entende os seus
           números. A leitura profunda do ENAMED segue em `/prova/[slug]`, para
           onde o link abaixo aponta. */}
-      {mostrandoProva ? <DestaqueProva prova={prova} /> : <FaciesReport banca={banca!} />}
+      {mostrandoProva ? <DestaqueProva prova={prova} /> : <FaciesReport banca={banca!} limiteAssuntos={8} />}
 
       {/* Compartilhar fica junto do dado, nao no rodape: quem acabou de ler o
           numero e quem quer mandar para o grupo. O link vai para a PAGINA da

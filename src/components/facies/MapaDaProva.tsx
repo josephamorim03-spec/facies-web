@@ -62,10 +62,33 @@ function tamanho(indice: number): string {
   return "col-span-3 sm:col-span-1";
 }
 
-export function MapaDaProva({ linhas }: { linhas: Linha[] }) {
+/**
+ * Quantos assuntos a home mostra.
+ *
+ * O botão "Ver a fácies completa da USP-SP" levava a uma página com o laudo
+ * IDÊNTICO ao da home — medido byte a byte: 1808 caracteres dos dois lados. A
+ * palavra "completa" não entregava nada, e clicar era perda de tempo.
+ *
+ * O dataset tem 15 assuntos por banca e nem um a mais, então "completa" não pode
+ * significar mais dado. Significa o RESTO do que já existe: a home mostra os 8
+ * que decidem o estudo e a página da banca mostra os 15. É o mesmo corte que o
+ * protótipo fazia com o botão "Ver as 15".
+ */
+const NA_HOME = 8;
+
+export function MapaDaProva({
+  linhas,
+  limite,
+}: {
+  linhas: Linha[];
+  /** Sem limite, mostra tudo — é o que a página da banca faz. */
+  limite?: number;
+}) {
   const [aberta, setAberta] = useState<string | null>(null);
 
-  const ordenadas = [...linhas].sort((a, b) => b.n - a.n);
+  const todas = [...linhas].sort((a, b) => b.n - a.n);
+  const ordenadas = limite ? todas.slice(0, limite) : todas;
+  const escondidas = todas.length - ordenadas.length;
   if (ordenadas.length === 0) return null;
 
   const maior = ordenadas[0].n || 1;
@@ -178,6 +201,12 @@ export function MapaDaProva({ linhas }: { linhas: Linha[] }) {
           <p className="text-sm text-muted">
             O tamanho de cada bloco é o quanto o assunto cai nesta prova. Toque
             para ver quantas questões. Bloco tracejado apareceu poucas vezes.
+            {escondidas > 0 ? (
+              <>
+                {" "}
+                Há mais {escondidas} assuntos na leitura completa.
+              </>
+            ) : null}
           </p>
         )}
       </div>

@@ -67,7 +67,15 @@ function Painel({
 }
 
 
-export function FaciesReport({ banca }: { banca: Banca }) {
+export function FaciesReport({
+  banca,
+  limiteAssuntos,
+}: {
+  banca: Banca;
+  /** A home passa 8; a pagina da banca nao passa, e mostra os 15. E o que faz
+   *  "Ver a facies completa" entregar alguma coisa. */
+  limiteAssuntos?: number;
+}) {
 
   return (
     <div className="rounded-surface border border-edge bg-surface">
@@ -132,7 +140,7 @@ export function FaciesReport({ banca }: { banca: Banca }) {
               bloco vira a peca que circula em print. A ordem nao se perde: ela
               e o tamanho, e a posicao exata aparece no clique. */}
           {banca.mais_cai.linhas.length > 0 ? (
-            <MapaDaProva linhas={banca.mais_cai.linhas} />
+            <MapaDaProva linhas={banca.mais_cai.linhas} limite={limiteAssuntos} />
           ) : (
             <p className="text-sm text-muted">
               Base insuficiente para listar assuntos nesta banca.
