@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Banca } from "@/lib/facies";
+import { rotuloCurado } from "@/lib/facies";
 import type { Prova } from "@/lib/provas";
 import { registrarEvento } from "@/lib/faciesFunnel";
 import { Compartilhar } from "./Compartilhar";
@@ -170,7 +171,8 @@ export function FaciesPicker({
  * que é a desambiguação que o próprio edital usa e que não exige curadoria.
  */
 function rotularSemAmbiguidade(bancas: Banca[]): string[] {
-  const brutos = bancas.map((banca) => sigla(banca.nome));
+  // O curado vence a heuristica. Ver `rotuloCurado` em lib/facies.ts.
+  const brutos = bancas.map((banca) => rotuloCurado(banca.slug) ?? sigla(banca.nome));
   const contagem = new Map<string, number>();
   for (const bruto of brutos) contagem.set(bruto, (contagem.get(bruto) ?? 0) + 1);
 

@@ -1,25 +1,34 @@
 import type { Banca } from "@/lib/facies";
-import { formatosDistintivos, janela, NACIONAL, PISO_N_CELULA } from "@/lib/facies";
-import { cohenH } from "@/lib/distintividade";
-import { dec } from "@/lib/decimal";
+import { janela, PISO_N_CELULA } from "@/lib/facies";
 import { MosaicoAreas } from "./MosaicoAreas";
 
 /**
- * A Fácies da prova, em três painéis.
+ * A Fácies da prova, em DOIS painéis — eram quatro.
  *
- * A ORDEM é resultado de medição, não de gosto. `measure_raio_x_readiness.py`
- * mediu a sobreposição do top-15 entre pares de bancas (Jaccard):
+ * ## Por que os dois que saíram saíram
+ *
+ * "Como as questões são feitas" (01) e "Leitura" (04) foram removidos. O
+ * primeiro listava formatos em que a banca se afasta da média nacional, e para
+ * a maioria das bancas a resposta era "segue o padrão" — verdadeiro, e sem
+ * nenhuma consequência sobre o que estudar. O segundo era prosa gerada sobre os
+ * mesmos números que os painéis restantes já mostram.
+ *
+ * O custo não era só espaço: o 01 empurrava o mosaico, que é a peça que se
+ * compartilha, para a terceira dobra da página.
+ *
+ * ## O que sobra, e por que nesta ordem
+ *
+ * `measure_raio_x_readiness.py` mediu a sobreposição do top-15 entre pares de
+ * bancas (Jaccard):
  *
  *     especialidade ... 1,00  -> todas as bancas têm o MESMO top-7
  *     tema ............ 0,67
  *     subtema ......... 0,20  -> aqui mora a fácies
  *
- * E o formato do item discrimina mais forte que qualquer um deles, com exatidão
- * total e custo zero: SES DF é 93% certo/errado contra 5% nacional. Por isso o
- * perfil estrutural vem primeiro e a distribuição por área vem por último.
- *
- * Liderar com a área — que é o que o protótipo fazia — provaria o contrário do
- * que a página afirma: mostraria a mesma tela para todas as bancas.
+ * Por isso "o que mais cai" (subtema) vem primeiro: é o único painel que mostra
+ * uma tela diferente para cada banca. A distribuição por área vem depois e é
+ * declarada como CONTEXTO na própria nota — ela não discrimina, mas é a peça
+ * que o olho lê de relance e a que circula em print.
  */
 
 function Rotulo({ children }: { children: React.ReactNode }) {
@@ -53,47 +62,8 @@ function Painel({
   );
 }
 
-/** Barra proporcional. Sem imagem e sem caractere: largura é o dado. */
-function Barra({ pct }: { pct: number }) {
-  return (
-    <span
-      className="block h-2 w-full overflow-hidden rounded-control border border-rule bg-paper"
-      aria-hidden="true"
-    >
-      {/* A UNICA animacao do funil, e ela EXPLICA.
-          Quando o seletor troca de banca, as barras vao para a nova largura em
-          vez de saltar. Isso torna visivel que o relatorio foi RECALCULADO para
-          a prova escolhida — que e a afirmacao central da pagina, e ate aqui
-          acontecia sem nenhum sinal.
-          O §8.4 permite animacao que explica e proibe a que celebra: sem reveal
-          on scroll, sem entrada de pagina, sem contador subindo. Numa pagina que
-          vende medicao, enfeite corroi o que ela afirma.
-          O bloco global de `prefers-reduced-motion` no fim do globals.css ja zera
-          isto para quem pediu menos movimento. */}
-      <span
-        className="block h-full bg-primary"
-        style={{
-          width: `${Math.max(0, Math.min(100, pct))}%`,
-          transition: "width var(--motion-slow) var(--ease-paper)",
-        }}
-      />
-    </span>
-  );
-}
 
 export function FaciesReport({ banca }: { banca: Banca }) {
-  // Só o que é característico DESTA banca. Antes a página listava a
-  // distribuição inteira e o aluno lia "correlacionar colunas 0% -0", que são
-  // 5 questões em 1.486 — nenhuma informação, ocupando a mesma linha visual de
-  // um achado real. O critério vive em `formatoDistintivo` e é o MESMO que o
-  // cartão de OpenGraph usa.
-  const distintivos = formatosDistintivos(banca);
-  // Nº de alternativas é ficha técnica, não leitura de prova: saber que a
-  // prova tem 5 alternativas não muda o que se estuda, e o aluno descobre no
-  // primeiro minuto. Fica o fato dominante, sem comparação com a média.
-  const alternativaDominante = [...banca.formato.alternativas].sort(
-    (a, b) => b.qtd - a.qtd,
-  )[0];
 
   return (
     <div className="rounded-surface border border-edge bg-surface">
@@ -122,60 +92,24 @@ export function FaciesReport({ banca }: { banca: Banca }) {
       </header>
 
       <div className="px-5 sm:px-6">
-        {/* ── PAINEL 1 — o que mais discrimina, e é exato ───────────────── */}
-        <Painel
-          numero="01"
-          titulo="Como as questões são feitas"
-          nota="exato · sem estimativa"
-        >
-          {distintivos.length > 0 ? (
-            <ul className="mb-5 grid gap-3">
-              {distintivos.map((linha) => {
-                const h = cohenH(linha.pct, NACIONAL.formato_pct[linha.codigo] ?? 0);
-                return (
-                  <li
-                    key={linha.codigo}
-                    className="grid grid-cols-[minmax(8rem,11rem)_1fr_auto] items-center gap-3"
-                  >
-                    <span className="text-sm text-ink lg:text-base">{linha.rotulo}</span>
-                    <Barra pct={linha.pct} />
-                    <span className="font-mono text-sm tabular-nums text-muted">
-                      {dec(linha.pct)}%{" "}
-                      <span className="text-accent">
-                        {h > 0 ? "acima" : "abaixo"} da média
-                      </span>
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p className="mb-5 text-sm text-muted">
-              No formato das questões, esta banca segue o padrão nacional — o que
-              já é uma informação: não há pegadinha de enunciado para treinar
-              aqui, e o preparo se decide pelo conteúdo.
-            </p>
-          )}
+        {/* O PAINEL "COMO AS QUESTÕES SÃO FEITAS" SAIU, e o "LEITURA" tambem.
 
-          <p className="text-base text-muted">
-            {alternativaDominante
-              ? `${alternativaDominante.pct.toFixed(0)}% das questões têm ${
-                  alternativaDominante.n === 2
-                    ? "formato certo/errado"
-                    : `${alternativaDominante.n} alternativas`
-                }.`
-              : null}
-          </p>
-          <p className="mt-3 text-sm text-muted">
-            Aparecem apenas os formatos em que esta banca se afasta das{" "}
-            {NACIONAL.total.toLocaleString("pt-BR")} questões de referência com
-            margem que a base sustenta.
-          </p>
-        </Painel>
+            Os dois eram os painéis 01 e 04. O primeiro listava formatos em que
+            a banca se afasta da média nacional; na prática ele dizia, para a
+            maioria das bancas, que ela segue o padrão — informação verdadeira e
+            sem consequência nenhuma para quem estuda. O segundo era prosa
+            gerada sobre os mesmos números que os outros painéis já mostram.
 
+            Nenhum dos dois mudava o que o aluno faria a seguir, e ocupavam as
+            duas posições mais caras da página: o 01 empurrava o mosaico — que é
+            a peça que se compartilha — para a terceira dobra.
+
+            O que sobrou são os dois painéis que respondem perguntas de decisão:
+            O QUE cai e DE QUE ÁREA. A leitura de formato continua existindo em
+            `formatosDistintivos` e na página da banca, para quem for atrás. */}
         {/* ── PAINEL 2 — a fácies propriamente dita ─────────────────────── */}
         <Painel
-          numero="02"
+          numero="01"
           titulo="O que mais cai"
           nota={`${banca.mais_cai.base.toLocaleString("pt-BR")} questões classificadas · ${banca.mais_cai.cobertura.toFixed(0)}% da base`}
         >
@@ -216,7 +150,7 @@ export function FaciesReport({ banca }: { banca: Banca }) {
 
         {/* ── PAINEL 3 — contexto. Não discrimina (Jaccard 1,00). ───────── */}
         <Painel
-          numero="03"
+          numero="02"
           titulo="Distribuição por área"
           nota="contexto · quase igual em todas as bancas"
         >
@@ -228,41 +162,7 @@ export function FaciesReport({ banca }: { banca: Banca }) {
               sendo desperdiçada num painel inteiro em petróleo. */}
           <MosaicoAreas linhas={banca.areas.linhas} />
         </Painel>
-
-        {/* ── Leitura: derivada dos números, nunca escrita à mão ────────── */}
-        {banca.leitura.length > 0 ? (
-          <Painel numero="04" titulo="Leitura">
-            <ul className="grid gap-3">
-              {banca.leitura.map((frase) => (
-                <li
-                  key={frase}
-                  className="paper-reading border-l-2 border-primary pl-4 text-base/relaxed text-ink lg:text-lg/relaxed"
-                  dangerouslySetInnerHTML={{ __html: negrito(frase) }}
-                />
-              ))}
-            </ul>
-          </Painel>
-        ) : null}
       </div>
     </div>
   );
-}
-
-/**
- * Converte o `**negrito**` da leitura gerada.
- *
- * `dangerouslySetInnerHTML` aqui é seguro e a razão precisa ficar escrita: a
- * string NÃO vem do usuário nem do banco em tempo de requisição — ela é montada
- * por `build_facies_dataset.py` a partir de números, com o texto fixo no código
- * do gerador. O único conteúdo variável são dígitos e nomes de formato de um
- * vocabulário fechado. Ainda assim, escapo tudo antes e só depois reintroduzo o
- * `<strong>`, para que uma mudança futura no gerador não vire injeção.
- */
-function negrito(texto: string): string {
-  const escapado = texto
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-  return escapado.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 }

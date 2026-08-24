@@ -103,8 +103,98 @@ export function todasAsBancas(): Banca[] {
   return DATASET.bancas;
 }
 
+/** Quantas bancas o acervo cobre. Derivado, para a comparacao poder citar o
+ *  denominador sem ninguem digitar "141" numa string. */
+export const TOTAL_BANCAS = DATASET.bancas.length;
+
+/**
+ * As bancas dos chips da home. CURADA, e não `slice(0, 6)`.
+ *
+ * O corte por volume punha SES-DF em primeiro e o Revalida/INEP em quinto —
+ * ordem do ACERVO, não da intenção de quem chega. Quem abre a página está
+ * decidindo onde prestar, e a lista tem de parecer com o mercado que ele
+ * disputa: São Paulo concentra as vagas mais concorridas, e a home não
+ * mencionava Unicamp nem UNIFESP.
+ *
+ * Prefixo, e não slug inteiro: os slugs carregam o nome do hospital por extenso
+ * ("...-hospital-das-clinicas-da-faculdade-de-medici") e são truncados de forma
+ * imprevisível. Casar por prefixo sobrevive à regeneração da base.
+ */
+/**
+ * O RÓTULO VEM JUNTO, e não da heurística de sigla.
+ *
+ * `FaciesPicker.sigla()` pega o trecho em caixa alta mais longo do nome do
+ * edital, e o próprio comentário dela admite que curar 141 bancas é trabalho
+ * editorial que não foi feito. O resultado aparecia nos chips: a Unicamp virava
+ * **"FCM"** (de "Faculdade de Ciências Médicas", que está entre parênteses no
+ * nome) e a Santa Casa virava **"SCMSP"** — nomes que ninguém usa para falar
+ * dessas provas.
+ *
+ * Curar 141 continua fora de alcance. Curar SEIS não é: são exatamente as que a
+ * home mostra, e são as que decidem a primeira impressão. A heurística segue
+ * valendo para todas as outras.
+ */
+const DESTAQUE_PREFIXOS: { prefixo: string; rotulo: string }[] = [
+  { prefixo: "sp-universidade-de-sao-paulo-usp-sp", rotulo: "USP-SP" },
+  { prefixo: "sp-universidade-estadual-de-campinas-unicamp", rotulo: "Unicamp" },
+  { prefixo: "sp-universidade-federal-de-sao-paulo-unifesp", rotulo: "UNIFESP" },
+  { prefixo: "sp-santa-casa-de-misericordia-de-sao-paulo-scmsp", rotulo: "Santa Casa" },
+  { prefixo: "rs-associacao-medica-do-rio-grande-do-sul-amrigs", rotulo: "AMRIGS" },
+  { prefixo: "rj-universidade-federal-do-rio-de-janeiro-ufrj", rotulo: "UFRJ" },
+];
+
+/** O rótulo curado da banca, quando existe. `null` devolve o seletor à
+ *  heurística — que continua sendo o caminho das outras 135. */
+export function rotuloCurado(slug: string): string | null {
+  return DESTAQUE_PREFIXOS.find((d) => slug.startsWith(d.prefixo))?.rotulo ?? null;
+}
+
 export function bancasEmDestaque(): Banca[] {
-  return DATASET.bancas.slice(0, DESTAQUES);
+  const escolhidas = DESTAQUE_PREFIXOS.map(({ prefixo }) =>
+    DATASET.bancas.find((banca) => banca.slug.startsWith(prefixo)),
+  ).filter((banca): banca is Banca => banca != null);
+
+  // Rede de segurança: se um prefixo caducar numa regeneração da base, a banca
+  // sumiria da home em silêncio e a fileira de chips encolheria sem ninguém
+  // perceber. Completar por volume mantém a home sempre com `DESTAQUES` chips.
+  for (const banca of DATASET.bancas) {
+    if (escolhidas.length >= DESTAQUES) break;
+    if (!escolhidas.includes(banca)) escolhidas.push(banca);
+  }
+  return escolhidas.slice(0, DESTAQUES);
+}
+
+/**
+ * Incidência média por área no acervo INTEIRO.
+ *
+ * É o denominador que transforma "Cirurgia 24%" em informação. Sozinho, 24% não
+ * diz se a banca cobra muito ou pouco; contra os 14,5% da média, diz que esta
+ * prova cobra quase dez pontos a mais — que é literalmente a fácies dela.
+ *
+ * Derivada da própria base, nunca digitada: a soma bate com `NACIONAL.total`
+ * por construção, porque percorre as mesmas bancas que alimentam aquele número.
+ * Conferido: 100.601 questões em 141 bancas.
+ *
+ * O `Map` é montado uma vez, na primeira chamada — são 141 bancas × 7 áreas, e
+ * refazer a conta a cada célula do mosaico seria trabalho repetido à toa.
+ */
+let mediaPorArea: Map<string, number> | null = null;
+
+export function mediaNacionalDaArea(rotulo: string): number | null {
+  if (mediaPorArea == null) {
+    const soma = new Map<string, number>();
+    let geral = 0;
+    for (const banca of DATASET.bancas) {
+      for (const linha of banca.areas?.linhas ?? []) {
+        soma.set(linha.rotulo, (soma.get(linha.rotulo) ?? 0) + linha.n);
+        geral += linha.n;
+      }
+    }
+    mediaPorArea = new Map(
+      geral > 0 ? [...soma].map(([nome, n]) => [nome, (n / geral) * 100]) : [],
+    );
+  }
+  return mediaPorArea.get(rotulo) ?? null;
 }
 
 export function bancaPorSlug(slug: string): Banca | undefined {

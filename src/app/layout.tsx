@@ -2,7 +2,7 @@ import "./globals.css";
 import AppShell from "@/components/AppShell";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { THEME_KEY } from "@/lib/storage-keys";
-import { IBM_Plex_Mono, Instrument_Sans, Source_Serif_4 } from "next/font/google";
+import { Azeret_Mono, Instrument_Sans, Source_Serif_4 } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 
 import { SITE_NAME, SITE_QUALIFICADOR, SITE_URL } from "@/lib/site";
@@ -30,7 +30,21 @@ const instrumentSans = Instrument_Sans({
 
 // Mono de DADO, e só: número, tempo, percentual. Deixou de vestir o chrome
 // inteiro. `latin` cobre a acentuação pt-BR.
-const ibmPlexMono = IBM_Plex_Mono({
+//
+// ERA IBM Plex Mono, e saiu POR CAUSA DO ZERO: o dela é pontilhado (um ponto
+// no centro do contador). Num produto cujo argumento inteiro é medição, o
+// algarismo mais frequente da página carregava um enfeite que a 11px lê como
+// sujeira e a 24px lê como decisão de terminal.
+//
+// Comparei oito monoespaçadas renderizando o mesmo número. Só três têm o zero
+// limpo: Azeret, Roboto Mono e Courier Prime. Spline Sans Mono e Space Mono
+// repetem o ponto; Martian Mono e DM Mono cortam com barra, que é a mesma
+// classe de enfeite. Azeret ganha por ser geométrica e aberta — pertence ao
+// repertório de impresso, e não ao de console.
+//
+// ⚠️ Ela é MAIS LARGA que a Plex. Onde a mono aparece em 11px com texto ao
+// lado, conferir se a linha não quebra — foi conferido em 390px e 1280px.
+const azeretMono = Azeret_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   display: "swap",
@@ -112,7 +126,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${sourceSerif.variable} ${instrumentSans.variable} ${ibmPlexMono.variable}`}
+      className={`${sourceSerif.variable} ${instrumentSans.variable} ${azeretMono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
