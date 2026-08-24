@@ -67,8 +67,12 @@ test("uma grafia so para 'sem base', no app e no funil publico", () => {
   // "menos de 5", "<5" e "3 de 5" conviveram para a MESMA regra, em componentes
   // com a mesma forma de linha. Regra de exibição que se escreve de três jeitos
   // não é uma regra, são três — e quem lê não tem como saber que são a mesma.
+  // O alvo SEGUE O CODIGO: a grafia saiu do `FaciesReport` quando a lista
+  // numerada virou o mapa, e ficou em `MapaDaProva`. Guard que aponta para
+  // arquivo onde a regra nao mora mais nao protege nada — so falha alto e
+  // ensina a ignorar a suite.
   for (const rel of [
-    "../../src/components/facies/FaciesReport.tsx",
+    "../../src/components/facies/MapaDaProva.tsx",
     "../../src/components/facies/ProvaReport.tsx",
   ]) {
     const src = readFileSync(new URL(rel, import.meta.url), "utf8");

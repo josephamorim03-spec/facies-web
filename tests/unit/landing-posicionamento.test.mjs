@@ -136,7 +136,17 @@ test("a home mostra a CENA e uma recomendacao com o porque", () => {
   // (`question_bank_cognitive`, sem flag). A demanda por no com contagem NAO
   // chega a tela — ver a lista NAO_ALCANCAVEL abaixo.
   assert.match(ponte, /prova-alvo|prova alvo/i, "o artefato precisa citar a prova-alvo");
-  assert.match(ponte, /r[áa]pido demais/i, "o artefato precisa citar o tipo do erro");
+  // ERA /rapido demais/. Esse guard passou a EXIGIR a acusacao: uma afirmacao
+  // sobre como a pessoa leu, feita logo depois do erro dela. O artefato agora
+  // cita o fato sem julgar — o assunto caiu e voce errou — e e isso que o teste
+  // afirma. Guard que congela a copy errada e pior que guard nenhum, porque
+  // impede o conserto e parece rigor.
+  assert.match(ponte, /errou|erro/i, "o artefato precisa citar o erro concreto");
+  assert.doesNotMatch(
+    ponte,
+    /r[áa]pido demais|sem ler|antes de (a )?leitura/i,
+    "o artefato nao pode acusar a pessoa de como leu",
+  );
   // "Exemplo" explícito: um artefato assim, sem rótulo, é indistinguível de um
   // print de conta real — e anúncio vira obrigação contratual (CDC art. 30/37).
   assert.match(ponte, /Exemplo\./, "o artefato precisa ser marcado como exemplo");

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { PISO_N_CELULA } from "@/lib/facies";
+import { areaDoAssunto } from "@/lib/areaDoAssunto";
+import { AREA_FULL_LABELS, AREA_VAR } from "@/lib/areaIdentity";
 
 /**
  * O mapa da prova — cada célula é um assunto, o tamanho é a incidência.
@@ -21,27 +23,22 @@ import { PISO_N_CELULA } from "@/lib/facies";
  * sobrevive é o que o protótipo já fazia mais forte, e que a lista numerada não
  * fazia: **tamanho é incidência**, e a prova inteira cabe num olhar.
  *
- * ## A cor NÃO é por grande área, e isso é medido
+ * ## A cor é a grande área, e ela custou um dicionário
  *
- * O protótipo colore por grande área. Tentei e não dá — ainda:
- * `mais_cai.linhas` é `{rotulo, n, exibivel}` e o dataset não tem NENHUM campo
- * de área, tema ou especialidade (conferido em todas as chaves). A única saída
- * seria inferir do texto com `inferAreaFromText`, e medi-la nos 2.115 assuntos
- * reais do acervo:
+ * O dataset não traz área por assunto: a linha é `{rotulo, n, exibivel}` e não
+ * há campo de área, tema ou especialidade em lugar nenhum. Minha primeira
+ * conclusão foi que colorir era inviável, e ela estava errada por um erro de
+ * medida — contei 2.115 LINHAS (15 assuntos × 141 bancas) quando o que importa
+ * é quantos rótulos DISTINTOS existem. São 191.
  *
- *     resolvidos: 502 de 2.115  (23,7%)
+ * Inferir do texto com `inferAreaFromText` resolve só 23,7%, e falha em coisas
+ * óbvias ("Arritmias Cardíacas", "Glomerulopatias", "Imunizações/Vacinação").
+ * Curar os 191 à mão resolve 100%, e é o que `lib/areaDoAssunto.ts` faz — com
+ * uma checagem em `tests/unit` que falha quando a base traz rótulo novo, para
+ * a lacuna aparecer no CI em vez de virar célula cinza em silêncio.
  *
- * Três em cada quatro células cairiam em cinza, e as falhas não são casos de
- * borda — "Arritmias Cardíacas", "Glomerulopatias", "Imunizações/Vacinação" e
- * "Rastreamento do câncer de colo do útero" não resolvem. Os padrões daquela
- * função são feitos para nomes de ÁREA, não para nomes clínicos. Colorir assim
- * erraria a maioria das células com aparência de autoridade, que é o defeito
- * que esta página menos pode ter.
- *
- * Então a intensidade acompanha a INCIDÊNCIA, que é o dado que temos. Quando o
- * `build_facies_dataset.py` (kbank) passar a emitir a grande área por assunto —
- * a relação existe no grafo, só não viaja no JSON — a cor troca de eixo em uma
- * linha e o mapa fica idêntico ao do protótipo.
+ * O mapa é interino: o certo é o `build_facies_dataset.py` (kbank) emitir a
+ * área junto do assunto, lendo o pai direto do grafo.
  */
 
 /** Quanto da tinta da marca entra na célula mais cobrada. */
@@ -82,6 +79,8 @@ export function MapaDaProva({ linhas }: { linhas: Linha[] }) {
           células de 2×2 não seriam preenchidos pelas pequenas. */}
       <ul className="grid grid-cols-6 gap-1 [grid-auto-flow:dense] [grid-auto-rows:4.5rem] sm:[grid-auto-rows:5rem]">
         {ordenadas.map((linha, indice) => {
+          const area = areaDoAssunto(linha.rotulo);
+          const cor = area ? AREA_VAR[area] : "var(--color-primary)";
           const intensidade =
             TINTA_MIN + (linha.n / maior) * (TINTA_MAX - TINTA_MIN);
           const estaAberta = linha.rotulo === aberta;
@@ -93,7 +92,7 @@ export function MapaDaProva({ linhas }: { linhas: Linha[] }) {
                 type="button"
                 aria-expanded={estaAberta}
                 onClick={() => setAberta(estaAberta ? null : linha.rotulo)}
-                title={linha.rotulo}
+                title={area ? `${linha.rotulo} — ${AREA_FULL_LABELS[area]}` : linha.rotulo}
                 className={`paper-control flex h-full w-full flex-col overflow-hidden rounded-control border p-2 text-left transition ${
                   // Tracejada = abaixo do piso, e é o mesmo estado que o
                   // protótipo usa para "ainda não avaliado". Aqui significa
@@ -102,7 +101,13 @@ export function MapaDaProva({ linhas }: { linhas: Linha[] }) {
                   linha.exibivel ? "border-edge" : "border-dashed border-edge"
                 } ${estaAberta ? "outline outline-2 -outline-offset-2 outline-accent" : ""}`}
                 style={{
-                  background: `color-mix(in srgb, var(--color-primary) ${intensidade}%, var(--color-surface))`,
+                  background: `color-mix(in srgb, ${cor} ${intensidade}%, var(--color-surface))`,
+                  // O filete cheio na borda esquerda é o unico lugar onde a cor
+                  // da area aparece SATURADA: como limite grafico o piso e 3:1,
+                  // que a paleta entrega com folga. No preenchimento ela fica
+                  // lavada, porque ali por cima vai texto.
+                  borderLeftColor: cor,
+                  borderLeftWidth: "3px",
                 }}
               >
                 {/* ⚠️ SEM `block` AQUI, e a razão é a mesma armadilha de sempre.
@@ -149,11 +154,24 @@ export function MapaDaProva({ linhas }: { linhas: Linha[] }) {
         {escolhida ? (
           <p className="text-sm text-ink">
             <b className="font-semibold">{escolhida.rotulo}</b>{" "}
+            {areaDoAssunto(escolhida.rotulo) ? (
+              <span className="text-muted">
+                · {AREA_FULL_LABELS[areaDoAssunto(escolhida.rotulo)!]}
+              </span>
+            ) : null}{" "}
             <span className="text-muted">
               · {posicao}º assunto mais cobrado ·{" "}
-              {escolhida.exibivel
-                ? `${escolhida.n} questões`
-                : `menos de ${PISO_N_CELULA} questões, abaixo do piso para publicar o número`}
+              {/* A GRAFIA É ÚNICA no produto inteiro, e há um guard sobre ela:
+                  "menos de 5", "<5" e "3 de 5" já conviveram para a MESMA regra
+                  e quem lia não tinha como saber que eram a mesma coisa.
+                  A forma canônica é esta, em JSX — escrita dentro de template
+                  literal (`${PISO_N_CELULA}`) ela deixa de casar com o guard,
+                  que foi exatamente o que aconteceu aqui. */}
+              {escolhida.exibivel ? (
+                `${escolhida.n} questões`
+              ) : (
+                <>menos de {PISO_N_CELULA} questões, abaixo do piso para publicar o número</>
+              )}
             </span>
           </p>
         ) : (

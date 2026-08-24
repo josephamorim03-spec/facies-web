@@ -79,15 +79,37 @@ export function PonteDiagnostico({ banca }: { banca: string | null }) {
           da pagina. */}
       <figure className="paper-overlay mt-8 rounded-surface border border-edge border-l-2 border-l-primary bg-surfaceMuted p-6 sm:p-10">
         <span className="paper-eyebrow">A Fácies abre assim</span>
+        {/* ⚠️ DUAS COISAS SAÍRAM DESTE ARTEFATO, e as duas por bons motivos.
+            Quem for repor, leia antes.
+
+            1. OS MINUTOS. Dizia "você está de pós-plantão e tem cerca de 40
+               min", três linhas abaixo de uma cena que começa em "23h40". O
+               leitor faz a conta errada na hora — 23h40 mais 40 minutos — e
+               para de ler o argumento para resolver a aritmética. Os 40 min
+               eram o tempo DELE, não um horário, e nada na frase dizia isso.
+
+               Some também porque prever minutos com precisão é promessa cara: o
+               `_predicted_capacity` estima, e estimativa exibida como número
+               seco vira compromisso que a primeira semana desmente.
+               "Pós-plantão" fica: ele é DETECTADO no calendário, não previsto.
+
+            2. A ACUSAÇÃO. Dizia que a resposta saiu antes de a leitura fechar —
+               isto é, uma afirmação sobre COMO a pessoa leu, feita logo depois
+               do erro dela. Mesmo na voz de treinador continua sendo o sistema
+               dizendo ao aluno o que ele fez de errado consigo mesmo, e isso
+               gera ansiedade e raiva, não estudo.
+
+               O que sobra é FATO sem julgamento: o assunto caiu, você errou, a
+               sua prova cobra muito isso. Nenhuma das três partes é opinião
+               sobre a pessoa. */}
         <blockquote className="mt-4 max-w-[48ch] font-serif text-2xl/relaxed text-ink sm:text-3xl/relaxed">
-          Você está de pós-plantão e tem cerca de 40 min. Nas duas últimas questões de
-          pré-eclâmpsia a resposta saiu antes de a leitura fechar — e o tema é cobrado pela sua
-          prova-alvo. <strong className="font-semibold">Faça estas 12.</strong>
+          Você está de pós-plantão. Pré-eclâmpsia caiu nas suas duas últimas sessões e você
+          errou as duas — e é dos assuntos que a sua prova-alvo mais cobra.{" "}
+          <strong className="font-semibold">Comece por estas 12.</strong>
         </blockquote>
         <figcaption className="mt-4 max-w-[54ch] text-sm text-muted">
-          Exemplo. Os minutos vêm do seu calendário, o pós-plantão é detectado, e o tempo de
-          leitura é medido contra o tamanho do enunciado — nenhuma das quatro partes é você
-          quem digita.
+          Exemplo. O pós-plantão é detectado no seu calendário e o peso do assunto vem da sua
+          prova-alvo — nenhuma das duas partes é você quem digita.
         </figcaption>
       </figure>
 

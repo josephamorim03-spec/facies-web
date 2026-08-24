@@ -67,7 +67,13 @@ test("o escuro ancora na marca, e a marca passa no contraste", () => {
   // 4,5:1 contra o fundo escuro mais claro dos tres -- `check-contrast-tokens`
   // e quem manda no digito, este teste so impede a ancora de sumir.
   const darkBlock = css.match(/\.dark\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
-  assert.match(darkBlock, /--color-primary:\s*#38A096/i);
+  // O HEX SAIU DAQUI, e o próprio comentário acima já dizia por quê: quem manda
+  // no dígito é o `check-contrast-tokens`, que mede o valor contra todos os
+  // fundos. Este teste fixava #38A096 e passou a reprovar quando a paleta subiu
+  // de luminância — reprovando uma mudança que o gate de contraste tinha
+  // aprovado. Dois guards discordando sobre o mesmo número, e o mais burro
+  // ganhando. O que ele protege é a ÂNCORA existir, não qual é o teal.
+  assert.match(darkBlock, /--color-primary:\s*#[0-9A-Fa-f]{6}/);
   assert.match(darkBlock, /--color-primary-ink:\s*#0F1112/i);
 });
 
