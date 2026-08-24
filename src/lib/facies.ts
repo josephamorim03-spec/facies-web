@@ -149,6 +149,98 @@ export function rotuloCurado(slug: string): string | null {
   return DESTAQUE_PREFIXOS.find((d) => slug.startsWith(d.prefixo))?.rotulo ?? null;
 }
 
+/**
+ * Nomes que a estrutura do rótulo do edital não resolve.
+ *
+ * A regra abaixo funciona porque quase todo nome segue
+ * `UF - Nome por extenso - SIGLA qualificador (hospital)`. Estes não seguem, e
+ * inventar heurística para eles quebraria os outros 139.
+ */
+const NOME_CURTO_FIXO: { prefixo: string; nome: string }[] = [
+  { prefixo: "exame-nacional-de-residencia-medica-ebserh", nome: "ENARE" },
+  { prefixo: "revalida-nacional-instituto-nacional", nome: "Revalida" },
+];
+
+/**
+ * O nome CURTO da banca — o que aparece em título, chip e cartão.
+ *
+ * `banca.nome` é o rótulo do edital, e ele é longo por obrigação legal:
+ * "SP - Universidade de São Paulo - USP - SP (Hospital das Clínicas da
+ * Faculdade de Medici". Usá-lo cru produzia títulos como "A fácies da SP -
+ * Universidade de São Paulo - USP - SP (Hospital…" — que não cabe em aba, não
+ * cabe em prévia de WhatsApp e não é como ninguém chama a prova.
+ *
+ * A estrutura do rótulo é regular o bastante para extrair:
+ *
+ *   1. cai o prefixo de UF  ("SP - ")
+ *   2. cai o que está entre parênteses (o hospital-sede)
+ *   3. do que sobra, a CAUDA depois do primeiro " - " é a sigla com o seu
+ *      qualificador — "USP - SP" vira "USP-SP", "SES DF" vira "SES-DF"
+ *   4. sem cauda (ou com cauda longa demais), fica o nome limpo inteiro
+ *
+ * Medido nas 141: 139 nomes distintos, média de 7,3 caracteres. A heurística
+ * anterior — pegar o trecho em caixa alta mais longo — dava 19 colisões
+ * (sete bancas viravam "SMS", cinco viravam "SES") e cortava no meio da palavra
+ * quando não achava sigla ("Faculdade de Medic").
+ *
+ * Colisão resolve por UF, como o edital faz. Se ainda assim empatar, volta o
+ * nome inteiro: dois botões com o mesmo texto é pior que um botão comprido.
+ */
+export function nomeCurto(banca: Banca): string {
+  const fixo = NOME_CURTO_FIXO.find((n) => banca.slug.startsWith(n.prefixo));
+  if (fixo) return fixo.nome;
+
+  const curto = extrairNomeCurto(banca.nome);
+  if (contarNomeCurto(curto) === 1) return curto;
+
+  const comUf = banca.uf ? `${curto}-${banca.uf}` : curto;
+  if (contarNomeCurto(comUf, true) === 1) return comUf;
+
+  return limparNome(banca.nome);
+}
+
+function limparNome(nome: string): string {
+  return nome
+    .replace(/^\s*[A-Za-zÀ-ÿ]{2,10}\s*-\s*/, "")
+    .replace(/\s*\([^)]*\)\s*/g, " ")
+    .trim();
+}
+
+function extrairNomeCurto(nome: string): string {
+  const limpo = limparNome(nome);
+  const partes = limpo
+    .split(/\s+-\s+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (partes.length >= 2) {
+    const cauda = partes.slice(1).join("-");
+    // 24 caracteres: acima disso a "sigla" não é sigla, é outro nome por
+    // extenso — e aí o nome principal informa mais.
+    if (cauda.length <= 24) return cauda.replace(/\s+/g, "-");
+  }
+  return partes[0] || limpo;
+}
+
+/** Quantas bancas produzem este mesmo nome curto. Memoizado: são 141 nomes e a
+ *  contagem é consultada uma vez por chip, título e cartão. */
+let indiceNomeCurto: Map<string, number> | null = null;
+let indiceComUf: Map<string, number> | null = null;
+
+function contarNomeCurto(candidato: string, comUf = false): number {
+  if (indiceNomeCurto == null) {
+    indiceNomeCurto = new Map();
+    indiceComUf = new Map();
+    for (const banca of DATASET.bancas) {
+      const curto = extrairNomeCurto(banca.nome);
+      indiceNomeCurto.set(curto, (indiceNomeCurto.get(curto) ?? 0) + 1);
+      const chave = banca.uf ? `${curto}-${banca.uf}` : curto;
+      indiceComUf.set(chave, (indiceComUf.get(chave) ?? 0) + 1);
+    }
+  }
+  const indice = comUf ? indiceComUf! : indiceNomeCurto;
+  return indice.get(candidato) ?? 0;
+}
+
 export function bancasEmDestaque(): Banca[] {
   const escolhidas = DESTAQUE_PREFIXOS.map(({ prefixo }) =>
     DATASET.bancas.find((banca) => banca.slug.startsWith(prefixo)),

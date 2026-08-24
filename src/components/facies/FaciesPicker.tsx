@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Banca } from "@/lib/facies";
-import { rotuloCurado } from "@/lib/facies";
+import { nomeCurto, rotuloCurado } from "@/lib/facies";
 import type { Prova } from "@/lib/provas";
 import { registrarEvento } from "@/lib/faciesFunnel";
 import { Compartilhar } from "./Compartilhar";
@@ -64,8 +64,8 @@ export function FaciesPicker({
 
   const mostrandoProva = prova != null && ativa === PROVA;
   const alvo = mostrandoProva
-    ? { imagem: `/prova/${prova.slug}/opengraph-image`, url: `/prova/${prova.slug}`, nome: prova.sigla, link: "Abrir a página do " + prova.sigla }
-    : { imagem: `/facies/${banca!.slug}/opengraph-image`, url: `/facies/${banca!.slug}`, nome: banca!.nome, link: "Abrir a página desta banca" };
+    ? { imagem: `/prova/${prova.slug}/opengraph-image`, url: `/prova/${prova.slug}`, nome: prova.sigla, link: "Ver a fácies completa do " + prova.sigla }
+    : { imagem: `/facies/${banca!.slug}/opengraph-image`, url: `/facies/${banca!.slug}`, nome: banca!.nome, link: "Ver a fácies completa da " + nomeCurto(banca!) };
 
   return (
     <div id="seletor" className="grid gap-4 scroll-mt-6">
@@ -172,14 +172,21 @@ export function FaciesPicker({
           prova ou da banca, e nao para a home — quem recebe cai direto na
           leitura que o remetente estava vendo, e a previa do WhatsApp e a mesma
           imagem. */}
+      {/* UM primario cheio, e o compartilhar como secundario ao lado.
+          Antes os dois eram fracos: o compartilhar era um botao de borda e o
+          "ver a facies completa" era LINK DE TEXTO sublinhado, no fim da linha.
+          Nenhum dos dois pedia o clique, e a acao mais valiosa da pagina — abrir
+          a leitura inteira da prova que a pessoa acabou de escolher — era a mais
+          discreta das duas. */}
       <div className="flex flex-wrap items-center gap-3">
-        <Compartilhar imagem={alvo.imagem} url={alvo.url} nome={alvo.nome} />
         <a
           href={alvo.url}
-          className="text-sm text-primary underline underline-offset-4"
+          onClick={() => registrarEvento("facies_pagina_aberta", chave)}
+          className="paper-control inline-flex min-h-11 items-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)]"
         >
           {alvo.link}
         </a>
+        <Compartilhar imagem={alvo.imagem} url={alvo.url} nome={alvo.nome} />
       </div>
 
       {/* O gate de e-mail SAIU daqui.

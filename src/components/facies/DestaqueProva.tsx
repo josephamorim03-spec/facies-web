@@ -1,4 +1,3 @@
-import { LinkDestaque } from "./LinkDestaque";
 import type { Prova } from "@/lib/provas";
 import { Contagem } from "./Contagem";
 import { BarrasArea } from "./BarrasArea";
@@ -149,9 +148,12 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
           aplicacoesDiretas={prova.profundidade.aplicacoes_diretas}
         />
 
-        <LinkDestaque slug={prova.slug} chave={prova.exam_key}>
-          Ver a fácies do {prova.sigla}
-        </LinkDestaque>
+        {/* O BOTÃO SAIU DAQUI, e não virou link discreto: ele DUPLICAVA.
+            Com o ENAMED selecionado a página tinha "Ver a fácies do ENAMED"
+            cheio, aqui dentro, e logo abaixo "Abrir a página do ENAMED" em
+            texto — dois caminhos para o mesmo destino, um deles quase invisível.
+            O CTA agora é único e mora no seletor, que é quem sabe se o alvo é
+            prova ou banca. */}
       </div>
     </section>
   );

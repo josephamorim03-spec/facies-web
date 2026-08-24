@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { FaciesReport } from "@/components/facies/FaciesReport";
 import { Compartilhar } from "@/components/facies/Compartilhar";
 import { ContarVisita } from "@/components/facies/ContarVisita";
-import { bancaPorSlug, janela, todasAsBancas } from "@/lib/facies";
+import { bancaPorSlug, janela, nomeCurto, todasAsBancas } from "@/lib/facies";
 import { SITE_NAME } from "@/lib/site";
 import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
 
@@ -30,10 +30,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!banca) return { title: { absolute: SITE_NAME } };
 
   const destaque = banca.leitura[0]?.replace(/\*\*/g, "") ?? "";
-  const titulo = `A fácies da ${banca.nome}`;
+  const curto = nomeCurto(banca);
+  const titulo = `A fácies da ${curto}`;
   const descricao =
     destaque ||
-    `Como a ${banca.nome} cobra: formato das questões, o que mais cai e distribuição por área, sobre ${banca.total} questões.`;
+    `Como a ${curto} cobra: formato das questões, o que mais cai e distribuição por área, sobre ${banca.total} questões.`;
   const caminho = `/facies/${banca.slug}`;
 
   return {
@@ -58,20 +59,31 @@ export default async function PaginaDaBanca({ params }: Props) {
           A fácies da prova · {janela(banca)}
         </span>
         <h1 className="mt-3 max-w-[24ch] font-serif text-3xl/[1.35] font-semibold tracking-tight text-ink sm:text-4xl/[1.35]">
-          {banca.nome}
+          {nomeCurto(banca)}
         </h1>
-        <div className="mt-5">
-          <Compartilhar
-            imagem={`/facies/${banca.slug}/opengraph-image`}
-            url={`/facies/${banca.slug}`}
-            nome={banca.nome}
-          />
-        </div>
+        {/* O nome do EDITAL fica, mas como legenda. Ele é a identidade legal da
+            banca e some do título por ser longo demais para aba, para prévia de
+            WhatsApp e para a forma como qualquer pessoa chama a prova — mas
+            sumir da página inteira faria a leitura deixar de dizer sobre QUEM
+            ela é. Só troca de hierarquia. */}
+        <p className="mt-2 max-w-[60ch] text-sm text-muted">{banca.nome}</p>
       </header>
 
       <ContarVisita chave={banca.institution_key} />
 
       <FaciesReport banca={banca} />
+
+      {/* COMPARTILHAR DEPOIS DA LEITURA, e nao antes dela.
+          Ele morava no cabecalho, colado no titulo: a pagina pedia para a
+          pessoa mandar para o grupo uma leitura que ela ainda nao tinha visto.
+          Aqui embaixo o pedido chega quando ha o que compartilhar. */}
+      <div className="mt-8">
+          <Compartilhar
+            imagem={`/facies/${banca.slug}/opengraph-image`}
+            url={`/facies/${banca.slug}`}
+            nome={nomeCurto(banca)}
+          />
+        </div>
 
       <p className="mt-8 max-w-[70ch] text-sm text-muted">
         A Fácies não promete aprovação e não vende conteúdo teórico. Ela mostra como a sua

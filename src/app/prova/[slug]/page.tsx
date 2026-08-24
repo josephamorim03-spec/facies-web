@@ -30,7 +30,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // O nome do produto não precisa ser o texto do `<title>` (§3.2): quem busca
   // digita o nome da prova, não o da ferramenta. O `template` do layout põe a
   // marca no fim, onde ela identifica sem competir.
-  const titulo = `${prova.sigla} — o que mais cai, e como a prova cobra`;
+  // UMA estrutura só para as duas famílias de página.
+  //
+  // Este título era `"ENAMED — o que mais cai, e como a prova cobra"` enquanto
+  // a página de banca dizia `"A fácies da {nome}"`. Duas formas diferentes para
+  // a mesma coisa, e a da prova punha a sigla ANTES da palavra que nomeia o
+  // produto — então o link colado no grupo abria com "ENAMED" e a marca chegava
+  // depois, quando chegava. O `template` do layout já acrescenta a marca no
+  // fim; o que faltava era o começo ser igual nos dois lados.
+  const titulo = `A fácies do ${prova.sigla}`;
   const descricao = `A fácies do ${prova.sigla}: ${prova.profundidade.questoes_rotuladas.toLocaleString("pt-BR")} questões rotuladas em ${prova.profundidade.aplicacoes_na_serie} aplicações. Grátis, sem cadastro.`;
   const caminho = `/prova/${prova.slug}`;
 
@@ -62,18 +70,23 @@ export default async function PaginaDaProva({ params }: Props) {
           Como esta prova cobra: o formato das questões, o que mais cai e de que base isso
           foi lido.
         </p>
-        <div className="mt-5">
-          <Compartilhar
-            imagem={`/prova/${prova.slug}/opengraph-image`}
-            url={`/prova/${prova.slug}`}
-            nome={prova.sigla}
-          />
-        </div>
       </header>
 
       <ContarVisita chave={prova.exam_key} />
 
       <ProvaReport prova={prova} />
+
+      {/* COMPARTILHAR DEPOIS DA LEITURA, e não antes dela.
+          Ele morava no cabeçalho, colado no título: a página pedia para a
+          pessoa mandar para o grupo uma leitura que ela ainda não tinha visto.
+          Aqui embaixo o pedido chega quando já existe o que compartilhar. */}
+      <div className="mt-8">
+        <Compartilhar
+          imagem={`/prova/${prova.slug}/opengraph-image`}
+          url={`/prova/${prova.slug}`}
+          nome={prova.sigla}
+        />
+      </div>
 
       <Contagem
         sigla={prova.sigla}
