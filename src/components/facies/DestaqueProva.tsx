@@ -1,6 +1,7 @@
 import { LinkDestaque } from "./LinkDestaque";
 import type { Prova } from "@/lib/provas";
 import { Contagem } from "./Contagem";
+import { MosaicoAreas } from "./MosaicoAreas";
 import { dec } from "@/lib/decimal";
 
 /**
@@ -87,6 +88,59 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
             </div>
           </div>
         </div>
+
+        {/* A DISTRIBUIÇÃO POR ÁREA VEM JUNTO, e a falta dela era um defeito
+            visível em produção.
+
+            O ENAMED é a seleção PADRÃO do seletor. Enquanto este componente
+            mostrava só os três números e a contagem regressiva, quem abria a
+            página não via relatório nenhum — o mosaico só aparecia depois de
+            clicar numa institucional, que é o oposto de pôr a isca na primeira
+            tela. Medido em produção: seleção ENAMED renderizava 0 painéis
+            contra os 4 de qualquer banca.
+
+            SÓ este painel atravessa, e não o relatório inteiro. `Prova` e
+            `Banca` parecem próximas e não são:
+
+              areas.linhas   {rotulo, qtd, pct}     ≡ {rotulo, n, pct}   ✅ mapeia
+              mais_cai       score PONDERADO (11,8)  vs contagem crua     ❌ não
+              leitura        não existe na prova                          ❌ não
+
+            Empurrar `mais_cai` para o mesmo renderizador faria um score
+            ponderado ser lido como número de questões — inventaria precisão que
+            o dado não tem, que é o defeito que esta página menos pode ter. A
+            leitura profunda do ENAMED continua em `/prova/[slug]`. */}
+        <section aria-labelledby="destaque-areas" className="mt-6 border-t border-rule pt-6">
+          <div className="mb-4 flex flex-wrap items-baseline gap-x-3">
+            <span className="paper-eyebrow">Distribuição por área</span>
+            <h3 id="destaque-areas" className="sr-only">
+              Distribuição por área do {prova.sigla}
+            </h3>
+            {/* ⚠️ A BASE DESTE PAINEL É 90, E NÃO AS 2.031.
+
+                A primeira versão desta legenda dizia "2.031 questões rotuladas",
+                que é `profundidade.questoes_rotuladas` — o total da SÉRIE inteira,
+                somando as correlatas. Mas `areas.linhas` soma exatamente 90, que
+                é `base.direta.questoes`: a distribuição por área é medida só na
+                aplicação direta do ENAMED.
+
+                Pendurar o número grande numa medida feita sobre o pequeno é a
+                precisão fabricada que esta página existe para recusar — e a
+                conta desmentia a legenda em qualquer célula (37% de 2.031 não dá
+                33). Peguei no screenshot, não no tipo: os dois números são
+                `number` e nada no compilador reclamaria. */}
+            <span className="text-sm text-muted">
+              {prova.base.direta.questoes} questões da aplicação direta
+            </span>
+          </div>
+          <MosaicoAreas
+            linhas={prova.areas.linhas.map((linha) => ({
+              rotulo: linha.rotulo,
+              n: linha.qtd,
+              pct: linha.pct,
+            }))}
+          />
+        </section>
 
         <Contagem
           sigla={prova.sigla}
