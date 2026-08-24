@@ -113,18 +113,24 @@ export function ProvaReport({ prova }: { prova: Prova }) {
 
       <div className="px-5 sm:px-6">
         {/* ── 01 — profundidade, porque a prova é nova (§5.5) ──────────── */}
-        <Painel numero="01" titulo="Profundidade da base" nota="o que já está rotulado">
+        {/* O vocabulário deste painel era todo de dentro de casa — "rotulado",
+            "diretas", "correlatas", "aplicações na série". São os nomes dos
+            campos do gerador, e nenhum deles é como um estudante fala. O dado é
+            o mesmo; muda quem consegue ler. */}
+        <Painel numero="01" titulo="De onde vem esta leitura" nota="o que já foi lido, questão a questão">
           <div className="grid gap-px overflow-hidden rounded-control border border-rule bg-rule sm:grid-cols-4">
             {[
               [
                 prof.questoes_rotuladas.toLocaleString("pt-BR"),
-                "questões rotuladas",
-                `${prof.diretas} diretas · ${prof.correlatas.toLocaleString("pt-BR")} correlatas`,
+                "questões lidas e classificadas",
+                `${prof.diretas} do ${prova.sigla} · ${prof.correlatas.toLocaleString("pt-BR")} de provas parecidas`,
               ],
               [
                 String(prof.aplicacoes_na_serie),
-                "aplicações na série",
-                `${prof.aplicacoes_diretas} direta${prof.aplicacoes_diretas === 1 ? "" : "s"}`,
+                "provas analisadas",
+                `${prof.aplicacoes_diretas} ${
+                  prof.aplicacoes_diretas === 1 ? "é do próprio" : "são do próprio"
+                } ${prova.sigla}`,
               ],
               [
                 prof.subtemas_mapeados.toLocaleString("pt-BR"),
@@ -187,7 +193,12 @@ export function ProvaReport({ prova }: { prova: Prova }) {
           <div className="mb-4 flex flex-wrap gap-x-6 gap-y-2">
             <span className="flex items-center gap-2">
               <span className="h-3.5 w-[5px] bg-muted opacity-40" />
-              <Rotulo>fontes correlatas · peso {PESO_CORRELATA}</Rotulo>
+              {/* O peso exato (0,4) saía com ponto decimal inglês e, pior, não
+                  dizia nada a quem lê: "contam 0.4" não é uma quantidade que
+                  alguém consiga interpretar de relance. O número continua no
+                  painel 04, onde há espaço para explicá-lo; a legenda só precisa
+                  dizer a direção. */}
+              <Rotulo>provas parecidas · contam menos</Rotulo>
             </span>
             <span className="flex items-center gap-2">
               <span className="h-3.5 w-2 bg-primary" />
@@ -219,15 +230,15 @@ export function ProvaReport({ prova }: { prova: Prova }) {
             ))}
           </ol>
           <p className="mt-3 text-xs text-muted">
-            O número é a contagem bruta na série inteira. A ordem usa o peso das
-            correlatas, então uma linha pode ficar acima de outra com total maior — é a
-            aplicação direta pesando mais, e as barras mostram isso.
+            O número é a contagem total. A ordem dá mais peso ao que caiu na própria
+            prova, então uma linha pode ficar acima de outra com total maior — as barras
+            mostram de onde veio cada uma.
           </p>
         </Painel>
 
         {/* ── 04 — a validação, com o n na cara ────────────────────────── */}
         {val.status === "medido" ? (
-          <Painel numero="04" titulo="O que autoriza usar as fontes correlatas">
+          <Painel numero="04" titulo="Por que dá para usar provas parecidas">
             <div className="grid gap-px overflow-hidden rounded-control border border-rule bg-rule sm:grid-cols-3">
               {[
                 [`${dec(val.acerto_pct)}%`, "do que a prova cobrou estava no top-30"],
@@ -242,12 +253,12 @@ export function ProvaReport({ prova }: { prova: Prova }) {
             </div>
             <p className="paper-reading mt-4 border-l-2 border-accent pl-4 text-sm leading-relaxed text-ink">
               <b>
-                Esta validação repousa sobre {val.edicoes_diretas} aplicação direta, de{" "}
-                {val.de} questões.
+                Esta conferência foi feita sobre {val.edicoes_diretas} prova do próprio{" "}
+                {prova.sigla}, de {val.de} questões.
               </b>{" "}
-              Um número bom com base de uma edição ainda é sorte até prova em contrário, e
-              dizemos isso primeiro para que não digam por nós. A regra é a mesma que
-              permite tirar as correlatas: se deixarem de prever bem, elas saem — não se
+              Um número bom com base de uma prova só ainda é sorte até prova em contrário, e
+              dizemos isso primeiro para que não digam por nós. A regra vale nos dois
+              sentidos: se as provas parecidas deixarem de prever bem, elas saem — não se
               ajusta o peso para o número voltar a ser bonito.
             </p>
 
@@ -258,15 +269,30 @@ export function ProvaReport({ prova }: { prova: Prova }) {
                 defensável: quem duvida de um ponto medido uma vez tem razão. */}
             {serieHistorica?.status === "medido" ? (
               <div className="mt-4 rounded-control border border-rule bg-surfaceMuted p-4">
+                {/* "mediana" e "treinando" saíram, e nenhum dos dois perdeu
+                    precisão no caminho.
+
+                    Mediana é o valor do meio: metade das edições ficou acima
+                    dele, metade abaixo. Dizer isso por extenso ocupa uma linha e
+                    dispensa que o leitor saiba a palavra — e a palavra é o tipo
+                    de termo que faz quem não é da área parar de ler, que é
+                    exatamente o custo que a página não pode pagar aqui.
+
+                    "Treinando só com o passado" é vocabulário de quem constrói
+                    modelo. O que ele quer dizer é que a lista de cada edição foi
+                    montada sem olhar a prova que ela ia prever — o que é
+                    justamente o ponto, e é mais forte dito assim. */}
                 <p className="text-sm text-ink">
-                  <b>O mesmo método, medido em {serieHistorica.medicoes} edições anteriores.</b>{" "}
-                  Treinando só com o passado de cada uma: mediana de{" "}
-                  <span className="font-mono">{dec(serieHistorica.mediana)}x</span>, e{" "}
+                  <b>O mesmo método, testado em {serieHistorica.medicoes} edições anteriores.</b>{" "}
+                  Em cada uma, a lista foi montada sem olhar a prova que ela ia prever. Em
+                  metade das edições o resultado ficou acima de{" "}
+                  <span className="font-mono">{dec(serieHistorica.mediana)}x</span>, e nas{" "}
+                  {serieHistorica.recentes} mais recentes ficou entre{" "}
                   <span className="font-mono">
-                    {dec(serieHistorica.recentes_minimo)}x a{" "}
+                    {dec(serieHistorica.recentes_minimo)}x e{" "}
                     {dec(serieHistorica.recentes_maximo)}x
-                  </span>{" "}
-                  nas {serieHistorica.recentes} mais recentes.
+                  </span>
+                  .
                 </p>
                 <p className="mt-2 text-sm text-muted">
                   O mínimo já foi{" "}

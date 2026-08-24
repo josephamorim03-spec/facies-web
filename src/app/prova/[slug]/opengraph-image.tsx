@@ -127,7 +127,7 @@ export default async function Imagem({ params }: { params: Promise<{ slug: strin
 
         <div style={{ display: "flex", fontSize: 22, color: FRACA, marginTop: 10 }}>
           {prova.profundidade.diretas} questões da própria prova ·{" "}
-          {prova.profundidade.correlatas.toLocaleString("pt-BR")} de provas correlatas
+          {prova.profundidade.correlatas.toLocaleString("pt-BR")} de provas parecidas
         </div>
 
         <div style={{ display: "flex", flex: 1, gap: 28, marginTop: 40 }}>

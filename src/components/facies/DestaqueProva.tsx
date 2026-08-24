@@ -63,8 +63,11 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
               {/* O `n` acompanha o número aqui também. Um lift de 4x sem a
                   ressalva de que a base direta é uma edição seria a mesma
                   precisão fabricada que a página inteira recusa. */}
+              {/* "aplicação direta" é como o gerador chama o dado; não é como
+                  ninguém fala. Quem lê quer saber quantas provas do ENAMED já
+                  aconteceram, e a resposta é uma. */}
               <div className="mt-2 font-mono text-micro text-muted">
-                sobre {val.edicoes_diretas} aplicação direta
+                sobre {val.edicoes_diretas} prova do {prova.sigla} já aplicada
               </div>
             </div>
           ) : null}
@@ -73,8 +76,21 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
               {prova.profundidade.subtemas_mapeados.toLocaleString("pt-BR")}
             </div>
             <div className="mt-0.5 text-sm text-muted">assuntos mapeados</div>
+            {/* "4 alternativas por questão" SAIU daqui.
+                É ficha técnica: verdadeira, e a pessoa descobre no primeiro
+                minuto de prova. Não muda o que ela estuda, e ocupava a linha de
+                apoio de um número que merece contexto de verdade — quantos
+                assuntos concentram a prova.
+
+                O critério é o mesmo do painel "Como esta banca cobra": dado de
+                formato só aparece quando distingue esta prova das outras. */}
+            {/* ⚠️ "aparecem abaixo" seria FALSO aqui: este componente mostra a
+                distribuição por área e a contagem regressiva, e não a lista de
+                assuntos — ela vive na página da prova. Escrevi a frase errada
+                primeiro e o typecheck passou, porque `mais_cai.linhas` existe no
+                tipo; o que não existe é o render. */}
             <div className="mt-2 font-mono text-micro text-muted">
-              {prova.formato.alternativas[0]?.n ?? "—"} alternativas por questão
+              lista completa na página do {prova.sigla}
             </div>
           </div>
           {/* ⚠️ ESTE NÚMERO PRECISA DIZER DE QUE ELE É FEITO.
@@ -93,11 +109,18 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
             <div className="font-mono text-2xl leading-tight text-ink">
               {prova.profundidade.questoes_rotuladas.toLocaleString("pt-BR")}
             </div>
-            <div className="mt-0.5 text-sm text-muted">questões rotuladas</div>
+            {/* "rotuladas" é palavra de dentro de casa: o aluno não sabe o que
+                é rotular uma questão. O que ele entende é que alguém leu cada
+                uma e disse de que assunto ela é — que é literalmente o que
+                acontece. Mesma coisa com "correlatas": vira "parecidas", e a
+                frase logo abaixo diz QUAIS são. */}
+            <div className="mt-0.5 text-sm text-muted">
+              questões lidas e classificadas por assunto
+            </div>
             <div className="mt-2 font-mono text-micro text-muted">
               {prova.profundidade.diretas} do {prova.sigla} ·{" "}
               {prova.profundidade.correlatas.toLocaleString("pt-BR")} de provas
-              correlatas
+              parecidas
             </div>
           </div>
         </div>
@@ -112,10 +135,13 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
             fontes mudar no gerador, a frase acompanha em vez de virar mentira. */}
         {prova.base.correlatas.length > 0 ? (
           <p className="mt-4 max-w-[62ch] text-sm text-muted">
-            O {prova.sigla} teve {prova.profundidade.aplicacoes_diretas} aplicação até
-            agora, então a leitura soma as provas que ele substituiu —{" "}
-            {prova.base.correlatas.map((c) => c.nome).join(" e ")} —, que seguem a mesma
-            matriz e entram com peso menor no cálculo.
+            O {prova.sigla} só foi aplicado{" "}
+            {prova.profundidade.aplicacoes_diretas === 1
+              ? "uma vez"
+              : `${prova.profundidade.aplicacoes_diretas} vezes`}{" "}
+            até agora. Para não ler uma prova só, a análise soma as provas que ele
+            substituiu — {prova.base.correlatas.map((c) => c.nome).join(" e ")} —, que
+            cobram o mesmo conteúdo. Elas contam menos que o próprio {prova.sigla}.
           </p>
         ) : null}
 

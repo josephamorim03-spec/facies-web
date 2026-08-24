@@ -170,14 +170,14 @@ export function MapaDaProva({ linhas }: { linhas: Linha[] }) {
               {escolhida.exibivel ? (
                 `${escolhida.n} questões`
               ) : (
-                <>menos de {PISO_N_CELULA} questões, abaixo do piso para publicar o número</>
+                <>menos de {PISO_N_CELULA} questões — poucas para mostrar o número</>
               )}
             </span>
           </p>
         ) : (
           <p className="text-sm text-muted">
-            O tamanho de cada bloco é a incidência do assunto nesta prova. Toque
-            para ver a contagem. Bloco tracejado tem base abaixo do piso.
+            O tamanho de cada bloco é o quanto o assunto cai nesta prova. Toque
+            para ver quantas questões. Bloco tracejado apareceu poucas vezes.
           </p>
         )}
       </div>
