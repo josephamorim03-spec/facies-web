@@ -110,9 +110,19 @@ export function FaciesPicker({
                 <span className="paper-eyebrow text-primary">selecionada</span>
               ) : null}
             </span>
+            {/* MESMA GRANDEZA DOS OUTROS CHIPS: questões e janela de anos.
+                Este dizia "90 questões · 9 aplicações" enquanto os vizinhos
+                diziam "2.483 questões · 2017–2026" — duas unidades diferentes na
+                mesma fileira, e a única comparável (o ano) faltava justamente no
+                primeiro cartão.
+
+                O número que entra é o da aplicação DIRETA, não os 2.031 da
+                série: é ele que corresponde ao que os outros chips mostram, e
+                pôr 2.031 aqui compararia a série inteira de uma prova com a
+                contagem crua das outras. Que a base direta seja pequena é
+                verdade, e a página inteira já a carrega. */}
             <span className="mt-1 block font-mono text-micro text-muted">
-              {prova.base.direta.questoes} questões ·{" "}
-              {prova.profundidade.aplicacoes_na_serie} aplicações
+              {prova.base.direta.questoes} questões · {prova.base.direta.anos.join("–")}
             </span>
           </button>
         ) : null}

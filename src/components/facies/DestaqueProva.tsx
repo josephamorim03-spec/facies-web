@@ -77,16 +77,47 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
               {prova.formato.alternativas[0]?.n ?? "—"} alternativas por questão
             </div>
           </div>
+          {/* ⚠️ ESTE NÚMERO PRECISA DIZER DE QUE ELE É FEITO.
+              Antes eram três grandezas diferentes espalhadas pela tela, sem
+              nada ligando uma à outra: "90 questões da aplicação direta" no
+              painel de área, "9 aplicações" no chip e "2.031 questões
+              rotuladas" aqui. Quem lê tenta reconciliar e não consegue — se são
+              9 aplicações de uma prova de 100 questões, por que 2.031? A conta
+              não fecha porque as 9 aplicações não são todas do ENAMED.
+
+              A composição está no dado (`diretas` + `correlatas` = 2.031) e
+              agora está na tela. Deliberadamente NÃO divido por aplicação: é a
+              divisão que o leitor tenta fazer e que produz um número errado,
+              porque as correlatas não têm o mesmo tamanho de caderno. */}
           <div className="bg-paper p-4">
             <div className="font-mono text-2xl leading-tight text-ink">
               {prova.profundidade.questoes_rotuladas.toLocaleString("pt-BR")}
             </div>
             <div className="mt-0.5 text-sm text-muted">questões rotuladas</div>
             <div className="mt-2 font-mono text-micro text-muted">
-              {prova.profundidade.aplicacoes_na_serie} aplicações na série
+              {prova.profundidade.diretas} do {prova.sigla} ·{" "}
+              {prova.profundidade.correlatas.toLocaleString("pt-BR")} de provas
+              correlatas
             </div>
           </div>
         </div>
+
+        {/* O QUE SÃO AS "PROVAS CORRELATAS", em uma frase.
+            Sem isto o número de cima é um salto de fé: o leitor vê 2.031
+            aparecer numa prova que teve UMA aplicação e conclui, com razão, que
+            alguém inflou a contagem. A explicação é curta e verificável, e a
+            página que vende medição não pode ter um número que ela não explica.
+
+            Gerada do dado (`base.correlatas`), não escrita à mão: se a lista de
+            fontes mudar no gerador, a frase acompanha em vez de virar mentira. */}
+        {prova.base.correlatas.length > 0 ? (
+          <p className="mt-4 max-w-[62ch] text-sm text-muted">
+            O {prova.sigla} teve {prova.profundidade.aplicacoes_diretas} aplicação até
+            agora, então a leitura soma as provas que ele substituiu —{" "}
+            {prova.base.correlatas.map((c) => c.nome).join(" e ")} —, que seguem a mesma
+            matriz e entram com peso menor no cálculo.
+          </p>
+        ) : null}
 
         {/* A DISTRIBUIÇÃO POR ÁREA VEM JUNTO, e a falta dela era um defeito
             visível em produção.
