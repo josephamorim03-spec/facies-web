@@ -1,0 +1,164 @@
+import { mediaNacionalDaArea, TOTAL_BANCAS } from "@/lib/facies";
+import { resolveDisplayArea } from "@/lib/areaDisplay";
+import { AREA_VAR } from "@/lib/areaIdentity";
+import { dec } from "@/lib/decimal";
+
+/**
+ * Distribuição por área, com a MÉDIA NACIONAL marcada dentro da barra.
+ *
+ * ## Por que a marca é o painel inteiro
+ *
+ * "Cirurgia 24%" não informa: o aluno não tem como saber se 24% é muito. O que
+ * responde a pergunta é o denominador — a média das bancas do acervo. Antes
+ * disso, este painel era decorativo por mais bonito que ficasse.
+ *
+ * Duas formas anteriores erraram o alvo por razões opostas:
+ *
+ *   1. **Sete barras em petróleo.** Mostravam a proporção e nada mais: sem
+ *      comparação, sem cor de área, sem hierarquia entre a maior e a menor.
+ *   2. **Treemap colorido.** Ganhou cor e virou peça de print, mas a comparação
+ *      com a média ficou atrás de um CLIQUE — e o que vende é justamente ela.
+ *      Informação que exige interação para aparecer não aparece.
+ *
+ * A barra com marca resolve os dois: a largura é a incidência desta prova, o
+ * risco vertical é a média do acervo, e a distância entre os dois é a fácies.
+ * Tudo de relance, sem clique.
+ *
+ * ## O âmbar tem limiar, e ele não é estético
+ *
+ * O delta só muda de cor a partir de 3 pontos percentuais. Abaixo disso a
+ * diferença é ruído de amostragem entre bancas e destacá-la treinaria o leitor
+ * a ver padrão onde não há. É a mesma disciplina do `formatoDistintivo`, que só
+ * exibe formato quando a margem se sustenta na base.
+ */
+
+/** A partir de quantos pontos percentuais a diferença merece cor. */
+const LIMIAR_DESTAQUE = 3;
+
+/**
+ * "Outros" NÃO recebe delta, e isso corrigiu um erro que a primeira renderização
+ * mostrou de cara.
+ *
+ * No ENAMED ele aparecia com **+8,1 em âmbar** — o segundo maior destaque do
+ * painel. Mas "Outros" é o resto: o que a rotulagem ainda não encaixou em
+ * nenhuma das seis áreas. Um desvio grande ali diz que ESTA leitura tem mais
+ * questões sem classificar, e não que a prova cobra mais de alguma coisa.
+ * Tratá-lo como achado é fabricar um padrão a partir de uma lacuna — o oposto
+ * do que o limiar de 3 pontos existe para evitar.
+ *
+ * Ele continua VISÍVEL, porque escondê-lo faria os percentuais não fecharem em
+ * 100 e a barra passaria a mentir sobre a própria base. O que sai é a
+ * comparação, substituída por uma palavra que diz o que ele é.
+ */
+const RESIDUAL = "OU";
+
+type Linha = { rotulo: string; n: number; pct: number };
+
+export function BarrasArea({ linhas }: { linhas: Linha[] }) {
+  const comMedia = linhas
+    .filter((linha) => linha.pct > 0)
+    .map((linha) => ({ ...linha, media: mediaNacionalDaArea(linha.rotulo) }))
+    .sort((a, b) => b.pct - a.pct);
+
+  if (comMedia.length === 0) return null;
+
+  // A escala acomoda a maior das DUAS grandezas, senão uma marca de média acima
+  // do pico da prova cairia fora da barra — que é justamente o caso mais
+  // interessante ("esta prova cobra muito menos que as outras").
+  const teto =
+    Math.max(...comMedia.map((l) => Math.max(l.pct, l.media ?? 0))) + 4;
+
+  return (
+    <div className="grid gap-3">
+      {comMedia.map((linha) => {
+        const area = resolveDisplayArea(null, linha.rotulo);
+        const cor = AREA_VAR[area] ?? AREA_VAR.OU;
+        const ehResidual = area === RESIDUAL;
+        const diferenca =
+          ehResidual || linha.media == null ? null : linha.pct - linha.media;
+        const destaca =
+          diferenca != null && Math.abs(diferenca) >= LIMIAR_DESTAQUE;
+
+        return (
+          <div
+            key={linha.rotulo}
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 text-sm sm:grid-cols-[minmax(7rem,11rem)_minmax(0,1fr)_auto]"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              {/* Quadrado da cor da área: marca gráfica, piso 3:1, que a paleta
+                  recalibrada entrega com folga. A cor NUNCA vai no texto. */}
+              <span
+                aria-hidden="true"
+                className="h-2.5 w-2.5 shrink-0 rounded-control"
+                style={{ background: cor }}
+              />
+              <span className="truncate text-ink" title={linha.rotulo}>
+                {linha.rotulo}
+              </span>
+            </span>
+
+            {/* A barra ocupa a linha inteira no celular: espremida ao lado do
+                nome numa tela de 390px ela fica com ~60px e deixa de comunicar
+                proporção, que é a única coisa que ela faz. */}
+            <span
+              aria-hidden="true"
+              className="relative order-last col-span-2 block h-3 rounded-control border border-rule bg-paper sm:order-none sm:col-span-1"
+            >
+              <span
+                className="absolute inset-y-0 left-0 block"
+                style={{
+                  width: `${(linha.pct / teto) * 100}%`,
+                  background: cor,
+                  transition: "width var(--motion-slow) var(--ease-paper)",
+                }}
+              />
+              {/* A marca da média. Sobe e desce da barra de propósito: dentro
+                  dela, sobre o preenchimento da mesma família de cor, o risco
+                  sumiria justamente nas áreas em que a prova cobra muito. */}
+              {linha.media != null && !ehResidual ? (
+                <span
+                  className="absolute -top-1 -bottom-1 block w-px bg-ink opacity-60"
+                  style={{
+                    left: `${(linha.media / teto) * 100}%`,
+                    transition: "left var(--motion-slow) var(--ease-paper)",
+                  }}
+                />
+              ) : null}
+            </span>
+
+            <span className="whitespace-nowrap text-right tabular-nums text-ink">
+              {linha.pct.toFixed(0)}%{" "}
+              {diferenca != null ? (
+                <span className={destaca ? "text-accent" : "text-muted"}>
+                  {diferenca > 0 ? "+" : "−"}
+                  {dec(Math.abs(diferenca))}
+                </span>
+              ) : ehResidual ? (
+                <span className="text-muted">resto</span>
+              ) : null}
+            </span>
+
+            {/* O leitor de tela recebe a frase inteira, porque a barra e o
+                risco não dizem nada para quem não os enxerga. */}
+            <span className="sr-only">
+              {linha.n.toLocaleString("pt-BR")} questões.
+              {ehResidual
+                ? " Resto: o que a rotulagem ainda não encaixou numa das áreas."
+                : linha.media != null
+                  ? ` A média das ${TOTAL_BANCAS} bancas do acervo é ${dec(
+                      linha.media,
+                    )}%.`
+                  : ""}
+            </span>
+          </div>
+        );
+      })}
+
+      <p className="mt-1 text-sm text-muted">
+        A barra é o peso da área nesta prova; o risco vertical é a média das{" "}
+        {TOTAL_BANCAS} bancas do acervo. O número em âmbar marca as diferenças de{" "}
+        {LIMIAR_DESTAQUE} pontos ou mais — abaixo disso é ruído entre bancas.
+      </p>
+    </div>
+  );
+}

@@ -1,6 +1,6 @@
 import type { Banca } from "@/lib/facies";
-import { janela, PISO_N_CELULA } from "@/lib/facies";
-import { MosaicoAreas } from "./MosaicoAreas";
+import { janela, PISO_N_CELULA, TOTAL_BANCAS } from "@/lib/facies";
+import { BarrasArea } from "./BarrasArea";
 
 /**
  * A Fácies da prova, em DOIS painéis — eram quatro.
@@ -13,8 +13,8 @@ import { MosaicoAreas } from "./MosaicoAreas";
  * nenhuma consequência sobre o que estudar. O segundo era prosa gerada sobre os
  * mesmos números que os painéis restantes já mostram.
  *
- * O custo não era só espaço: o 01 empurrava o mosaico, que é a peça que se
- * compartilha, para a terceira dobra da página.
+ * O custo não era só espaço: o 01 empurrava a distribuição por área, que é a
+ * peça que se compartilha, para a terceira dobra da página.
  *
  * ## O que sobra, e por que nesta ordem
  *
@@ -25,10 +25,12 @@ import { MosaicoAreas } from "./MosaicoAreas";
  *     tema ............ 0,67
  *     subtema ......... 0,20  -> aqui mora a fácies
  *
- * Por isso "o que mais cai" (subtema) vem primeiro: é o único painel que mostra
- * uma tela diferente para cada banca. A distribuição por área vem depois e é
- * declarada como CONTEXTO na própria nota — ela não discrimina, mas é a peça
- * que o olho lê de relance e a que circula em print.
+ * Por isso "o que mais cai" (subtema) vem primeiro: é onde a fácies é mais
+ * fina. A distribuição por área vem depois — e deixou de ser mero contexto
+ * quando ganhou a marca da média do acervo: a USP aparece com Cirurgia +9,9 e
+ * Pediatria −6,1, que discrimina bastante. O Jaccard 1,00 é sobre a ORDEM do
+ * top-7 ser a mesma, não sobre os PESOS coincidirem — duas afirmações
+ * diferentes que a nota antiga confundia.
  */
 
 function Rotulo({ children }: { children: React.ReactNode }) {
@@ -101,8 +103,8 @@ export function FaciesReport({ banca }: { banca: Banca }) {
             gerada sobre os mesmos números que os outros painéis já mostram.
 
             Nenhum dos dois mudava o que o aluno faria a seguir, e ocupavam as
-            duas posições mais caras da página: o 01 empurrava o mosaico — que é
-            a peça que se compartilha — para a terceira dobra.
+            duas posições mais caras da página: o 01 empurrava a distribuição
+            por área — a peça que se compartilha — para a terceira dobra.
 
             O que sobrou são os dois painéis que respondem perguntas de decisão:
             O QUE cai e DE QUE ÁREA. A leitura de formato continua existindo em
@@ -148,19 +150,23 @@ export function FaciesReport({ banca }: { banca: Banca }) {
           ) : null}
         </Painel>
 
-        {/* ── PAINEL 3 — contexto. Não discrimina (Jaccard 1,00). ───────── */}
+        {/* ── PAINEL 2 — a área contra a média do acervo ────────────────── */}
         <Painel
           numero="02"
           titulo="Distribuição por área"
-          nota="contexto · quase igual em todas as bancas"
+          // A NOTA ANTERIOR ficou FALSA quando a barra ganhou a média.
+          //
+          // Ela dizia "contexto · quase igual em todas as bancas", herdado da
+          // medição de Jaccard 1,00 — que é sobre a ORDEM do top-7 de
+          // especialidades ser a mesma, e não sobre os PESOS coincidirem. Com o
+          // risco da média na tela, a própria USP desmente a frase: Cirurgia
+          // +9,9 e Pediatria −6,1. Manter a nota seria a página contradizendo o
+          // gráfico que ela acabou de desenhar.
+          nota={`peso de cada área contra a média das ${TOTAL_BANCAS} bancas`}
         >
-          {/* Mosaico, e não sete barras.
-              A incidência por área é a única coisa desta página que é
-              genuinamente uma PARTE DO TODO, e o olho lê área muito mais rápido
-              que comprimento de barra. De quebra, é o painel que dá cor à
-              página: as sete grandes áreas já têm paleta própria, e ela estava
-              sendo desperdiçada num painel inteiro em petróleo. */}
-          <MosaicoAreas linhas={banca.areas.linhas} />
+          {/* Barra com a marca da média nacional — ver BarrasArea.tsx para o
+              porquê de a comparação não ficar atrás de um clique. */}
+          <BarrasArea linhas={banca.areas.linhas} />
         </Painel>
       </div>
     </div>

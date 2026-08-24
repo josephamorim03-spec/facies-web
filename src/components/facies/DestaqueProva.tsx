@@ -1,7 +1,7 @@
 import { LinkDestaque } from "./LinkDestaque";
 import type { Prova } from "@/lib/provas";
 import { Contagem } from "./Contagem";
-import { MosaicoAreas } from "./MosaicoAreas";
+import { BarrasArea } from "./BarrasArea";
 import { dec } from "@/lib/decimal";
 
 /**
@@ -94,7 +94,7 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
 
             O ENAMED é a seleção PADRÃO do seletor. Enquanto este componente
             mostrava só os três números e a contagem regressiva, quem abria a
-            página não via relatório nenhum — o mosaico só aparecia depois de
+            página não via relatório nenhum — a distribuição só aparecia depois de
             clicar numa institucional, que é o oposto de pôr a isca na primeira
             tela. Medido em produção: seleção ENAMED renderizava 0 painéis
             contra os 4 de qualquer banca.
@@ -133,7 +133,7 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
               {prova.base.direta.questoes} questões da aplicação direta
             </span>
           </div>
-          <MosaicoAreas
+          <BarrasArea
             linhas={prova.areas.linhas.map((linha) => ({
               rotulo: linha.rotulo,
               n: linha.qtd,

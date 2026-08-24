@@ -232,6 +232,55 @@ export default function Home() {
               <DepoisDeEntrar />
             </div>
 
+            {/* ── Objeções ────────────────────────────────────────────────
+                Quatro objeções REAIS, respondidas em uma frase cada.
+
+                A página tratava objeção só por omissão — dizia o que o produto
+                é e o que não é, e deixava a dúvida de quem já paga um cursinho
+                sem resposta nenhuma. Quem chega por link de grupo chega com
+                essas quatro na cabeça, e uma delas basta para fechar a aba.
+
+                Nenhuma promete: a primeira reconhece o cursinho em vez de
+                atacá-lo, a segunda aponta para a leitura que já está aberta
+                acima, a terceira compara com banco de questões pelo que a
+                Fácies faz a MAIS (e não pelo preço, que não existe aqui), e a
+                quarta descreve o planejador que o motor de fato tem. */}
+            <section className="mt-10">
+              <span className="paper-eyebrow">
+                O que costumam perguntar antes de assinar
+              </span>
+              <h2 className="mt-3 font-serif text-2xl font-semibold text-ink">
+                Quatro objeções, sem rodeio
+              </h2>
+              <div className="mt-5 grid gap-px overflow-hidden rounded-surface border border-edge bg-edge sm:grid-cols-2">
+                {[
+                  {
+                    q: "Já pago um cursinho.",
+                    r: "Exatamente. A Fácies não substitui o extensivo — ela mostra onde aplicar o que você já está aprendendo, na ordem que a sua prova cobra.",
+                  },
+                  {
+                    q: "Todo mundo diz que é personalizado.",
+                    r: "Por isso não pedimos que você acredite. A leitura da sua prova está aberta aqui em cima, inteira e sem cadastro.",
+                  },
+                  {
+                    q: "Banco de questões eu acho de graça.",
+                    r: "Questão qualquer um tem. Saber que a sua prova cobra Cirurgia dez pontos acima da média das outras, não.",
+                  },
+                  {
+                    q: "Não tenho tempo.",
+                    r: "O sistema parte disso. O plantão é detectado no calendário, e em dia de escala longa a sessão encolhe em vez de acumular dívida.",
+                  },
+                ].map((item) => (
+                  <div key={item.q} className="bg-surface p-5 sm:p-6">
+                    <q className="block font-serif text-lg leading-snug text-ink">
+                      {item.q}
+                    </q>
+                    <p className="mt-3 text-sm leading-6 text-muted">{item.r}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             {/* ── O que é e o que não é (§1.2) ─────────────────────────────── */}
             <section className="mt-10 grid gap-px overflow-hidden rounded-surface border border-edge bg-edge sm:grid-cols-2">
               <div className="bg-surface p-5 sm:p-6">

@@ -9,6 +9,7 @@ import { registrarEvento } from "@/lib/faciesFunnel";
 import { Compartilhar } from "./Compartilhar";
 import { DestaqueProva } from "./DestaqueProva";
 import { FaciesReport } from "./FaciesReport";
+import { FaixaAreas } from "./FaixaAreas";
 
 /**
  * Seletor de banca da home.
@@ -68,7 +69,19 @@ export function FaciesPicker({
 
   return (
     <div id="seletor" className="grid gap-4 scroll-mt-6">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Escolha a prova">
+      {/* CARTÃO, e não pílula — e a faixa colorida é a razão inteira.
+          A fileira de pílulas dizia só o NOME, então a página afirmava que cada
+          prova tem uma fácies e o seletor mostrava sete rótulos idênticos. Com
+          a faixa, duas provas de perfil diferente ficam visivelmente diferentes
+          ANTES de abrir qualquer uma — que é a tese da página acontecendo no
+          primeiro olhar, e não depois de dois cliques.
+
+          A largura de cada segmento é o peso da grande área. Ver FaixaAreas. */}
+      <div
+        className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4"
+        role="group"
+        aria-label="Escolha a prova"
+      >
         {/* O ENAMED É O PRIMEIRO CHIP, e não mais um cartão separado acima.
             Ele e o seletor faziam a MESMA coisa — mostrar a fácies de uma prova
             — em duas superfícies diferentes, uma competindo com a outra, e o
@@ -84,13 +97,23 @@ export function FaciesPicker({
               setAtiva(PROVA);
               registrarEvento("destaque_clicado", prova.exam_key);
             }}
-            className={`paper-control rounded-control border px-3 py-2 text-sm font-semibold transition ${
+            className={`paper-control block rounded-surface border p-3 text-left transition ${
               mostrandoProva
-                ? "border-primary bg-primary text-primaryInk"
-                : "border-primary bg-surface text-primary hover:bg-surfaceMuted"
+                ? "border-primary bg-surfaceMuted"
+                : "border-edge bg-surface hover:bg-surfaceMuted"
             }`}
           >
-            {prova.sigla}
+            <FaixaAreas linhas={prova.areas.linhas} />
+            <span className="mt-3 flex flex-wrap items-baseline gap-x-2">
+              <b className="text-sm font-semibold text-ink">{prova.sigla}</b>
+              {mostrandoProva ? (
+                <span className="paper-eyebrow text-primary">selecionada</span>
+              ) : null}
+            </span>
+            <span className="mt-1 block font-mono text-micro text-muted">
+              {prova.base.direta.questoes} questões ·{" "}
+              {prova.profundidade.aplicacoes_na_serie} aplicações
+            </span>
           </button>
         ) : null}
         {bancas.map((opcao, indice) => {
@@ -105,21 +128,31 @@ export function FaciesPicker({
                 setAtiva(indice);
                 registrarEvento("facies_banca_trocada", opcao.institution_key);
               }}
-              className={`paper-control rounded-control border px-3 py-2 text-sm transition ${
+              className={`paper-control block rounded-surface border p-3 text-left transition ${
                 selecionada
-                  ? "border-primary bg-primary font-semibold text-primaryInk"
-                  : "border-edge bg-surface text-ink hover:bg-surfaceMuted"
+                  ? "border-primary bg-surfaceMuted"
+                  : "border-edge bg-surface hover:bg-surfaceMuted"
               }`}
             >
-              {rotulo}
+              <FaixaAreas linhas={opcao.areas.linhas} />
+              <span className="mt-3 flex flex-wrap items-baseline gap-x-2">
+                <b className="text-sm font-semibold text-ink">{rotulo}</b>
+                {selecionada ? (
+                  <span className="paper-eyebrow text-primary">selecionada</span>
+                ) : null}
+              </span>
+              <span className="mt-1 block font-mono text-micro text-muted">
+                {opcao.total.toLocaleString("pt-BR")} questões · {opcao.primeiro_ano}–
+                {opcao.ultimo_ano}
+              </span>
             </button>
           );
         })}
         <Link
           href="/facies"
-          className="paper-control rounded-control border border-edge bg-surface px-3 py-2 text-sm text-muted hover:bg-surfaceMuted"
+          className="paper-control flex items-center justify-center rounded-surface border border-dashed border-edge bg-surface p-3 text-sm text-muted transition hover:bg-surfaceMuted"
         >
-          buscar outra
+          Ver as outras bancas
         </Link>
       </div>
 

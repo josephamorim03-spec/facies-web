@@ -176,7 +176,7 @@ export function bancasEmDestaque(): Banca[] {
  * Conferido: 100.601 questões em 141 bancas.
  *
  * O `Map` é montado uma vez, na primeira chamada — são 141 bancas × 7 áreas, e
- * refazer a conta a cada célula do mosaico seria trabalho repetido à toa.
+ * refazer a conta a cada barra do painel seria trabalho repetido à toa.
  */
 let mediaPorArea: Map<string, number> | null = null;
 
