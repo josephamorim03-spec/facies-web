@@ -1,6 +1,7 @@
 import type { Banca } from "@/lib/facies";
 import { janela, PISO_N_CELULA, TOTAL_BANCAS } from "@/lib/facies";
 import { BarrasArea } from "./BarrasArea";
+import { MapaDaProva } from "./MapaDaProva";
 
 /**
  * A Fácies da prova, em DOIS painéis — eram quatro.
@@ -115,28 +116,14 @@ export function FaciesReport({ banca }: { banca: Banca }) {
           titulo="O que mais cai"
           nota={`${banca.mais_cai.base.toLocaleString("pt-BR")} questões classificadas · ${banca.mais_cai.cobertura.toFixed(0)}% da base`}
         >
+          {/* MAPA, e nao a lista numerada.
+              Os dois mostram `mais_cai`, mas a lista pedia leitura linha a
+              linha para responder "o que pesa mais aqui" — e a resposta e
+              justamente a forma. No mapa a prova inteira cabe num olhar, e o
+              bloco vira a peca que circula em print. A ordem nao se perde: ela
+              e o tamanho, e a posicao exata aparece no clique. */}
           {banca.mais_cai.linhas.length > 0 ? (
-            <ol className="grid gap-0">
-              {banca.mais_cai.linhas.map((linha, indice) => (
-                <li
-                  key={linha.rotulo}
-                  className="flex items-baseline gap-3 border-b border-rule py-2 last:border-b-0"
-                >
-                  <span className="w-7 shrink-0 font-mono text-sm text-muted">
-                    {String(indice + 1).padStart(2, "0")}
-                  </span>
-                  <span className="flex-1 text-base/snug text-ink lg:text-lg/snug">{linha.rotulo}</span>
-                  {/* Sem `n`, sem número. É a invariante do §14.2.3. */}
-                  {linha.exibivel ? (
-                    <span className="font-mono text-base tabular-nums text-ink lg:text-lg">{linha.n}</span>
-                  ) : (
-                    <span className="text-sm text-muted">
-                      menos de {PISO_N_CELULA}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ol>
+            <MapaDaProva linhas={banca.mais_cai.linhas} />
           ) : (
             <p className="text-sm text-muted">
               Base insuficiente para listar assuntos nesta banca.
