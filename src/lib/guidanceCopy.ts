@@ -54,52 +54,71 @@ export type CognitiveAutopsyCopy = GuidanceLabel & {
   rule: string;
 };
 
+/**
+ * ⚠️ A VOZ AQUI DESCREVE O EVENTO, NUNCA QUALIFICA O ALUNO.
+ *
+ * Os sete rótulos diziam o que a PESSOA fez de errado — "Respondeu rápido
+ * demais", "Confiou demais", "Faltou base". Cada um é um adjetivo sobre quem
+ * está lendo, entregue no pior momento possível: logo depois do erro. Lido em
+ * sequência, numa sessão de 100 questões, isso vira repreensão.
+ *
+ * A regra nova é simples e dá para conferir linha a linha: **descreva o que
+ * aconteceu com a RESPOSTA, e aponte o próximo movimento.** "A resposta saiu
+ * antes de a leitura fechar" tem exatamente a mesma informação diagnóstica que
+ * "respondeu rápido demais" e nenhuma acusação — e é mais precisa, porque é o
+ * que o classificador realmente mede.
+ *
+ * O que NÃO muda: as chaves (`impulsive_haste`…) são contrato com o backend e
+ * com `schema.d.ts`. Renomear aqui quebraria a classificação, não o tom.
+ *
+ * `forcingQuestion` e `rule` já estavam em voz de treinador e ficam como estão.
+ */
 const COGNITIVE_AUTOPSY: Record<string, CognitiveAutopsyCopy> = {
   impulsive_haste: {
-    label: "Respondeu rápido demais",
-    phrase: "O erro parece ter vindo de pressa antes de completar a leitura.",
+    label: "Leitura fechou cedo",
+    phrase: "A resposta saiu antes de a leitura do enunciado terminar.",
     forcingQuestion: "Qual dado do enunciado você ainda precisava conferir?",
     rule: "Antes de marcar, releia idade, tempo de evolução, negações e exceções.",
     tone: "attention",
   },
   premature_closure: {
-    label: "Fechou cedo",
-    phrase: "Você provavelmente aceitou uma hipótese atraente cedo demais.",
+    label: "A primeira hipótese venceu",
+    phrase: "A hipótese mais atraente foi aceita antes das concorrentes entrarem.",
     forcingQuestion: "Que achado faria você abandonar essa primeira hipótese?",
     rule: "Obrigue uma alternativa contrária antes de confirmar a resposta.",
     tone: "attention",
   },
   distractor_seduction: {
-    label: "Caiu no distrator",
-    phrase: "A alternativa escolhida parecia boa, mas desviava do alvo da questão.",
+    label: "A alternativa vizinha atraiu",
+    phrase: "A alternativa marcada era plausível, mas respondia outra pergunta.",
     forcingQuestion: "O que essa alternativa explicava e o que ela deixava sem explicar?",
     rule: "Compare a alternativa com o dado central, não apenas com um detalhe familiar.",
     tone: "attention",
   },
   fine_discrimination_gap: {
-    label: "Faltou discriminação fina",
-    phrase: "Você chegou perto, mas faltou separar duas alternativas parecidas.",
+    label: "Faltou o critério de desempate",
+    phrase: "A escolha chegou às duas finalistas e parou antes de separá-las.",
     forcingQuestion: "Qual diferença mínima separava as duas finalistas?",
     rule: "Nomeie o critério que desempata antes de marcar.",
     tone: "attention",
   },
   overconfident: {
-    label: "Confiou demais",
-    phrase: "A confiança veio maior que a evidência disponível.",
+    label: "Confiança acima da evidência",
+    phrase: "A certeza declarada ficou à frente do que o enunciado sustentava.",
     forcingQuestion: "O que justificava tanta confiança nessa escolha?",
     rule: "Se a justificativa não couber em uma frase, reduza a confiança.",
     tone: "attention",
   },
   knowledge_gap: {
-    label: "Faltou base",
-    phrase: "O erro aponta uma base que ainda não estava firme o suficiente.",
+    label: "Base ainda não firme",
+    phrase: "O erro aponta um conceito-base que ainda não está automático.",
     forcingQuestion: "Qual conceito-base precisava estar automático aqui?",
     rule: "Revise o conceito curto antes de buscar questões mais difíceis.",
     tone: "critical",
   },
   implementation_gap: {
-    label: "Faltou aplicar",
-    phrase: "Você reconhecia a base, mas ela não virou decisão na hora da questão.",
+    label: "A base não virou conduta",
+    phrase: "O conceito estava reconhecido, mas não chegou a virar decisão na questão.",
     forcingQuestion: "Em que passo a teoria deixou de virar conduta?",
     rule: "Treine casos irmãos para transformar conhecimento em decisão.",
     tone: "attention",

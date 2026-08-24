@@ -81,12 +81,12 @@ export function PonteDiagnostico({ banca }: { banca: string | null }) {
         <span className="paper-eyebrow">A Fácies abre assim</span>
         <blockquote className="mt-4 max-w-[48ch] font-serif text-2xl/relaxed text-ink sm:text-3xl/relaxed">
           Você está de pós-plantão e tem cerca de 40 min. Nas duas últimas questões de
-          pré-eclâmpsia você marcou rápido demais e errou — e o tema é cobrado pela sua
+          pré-eclâmpsia a resposta saiu antes de a leitura fechar — e o tema é cobrado pela sua
           prova-alvo. <strong className="font-semibold">Faça estas 12.</strong>
         </blockquote>
         <figcaption className="mt-4 max-w-[54ch] text-sm text-muted">
-          Exemplo. Os minutos vêm do seu calendário, o pós-plantão é detectado, e “rápido
-          demais” é medido contra o tamanho do enunciado — nenhuma das quatro partes é você
+          Exemplo. Os minutos vêm do seu calendário, o pós-plantão é detectado, e o tempo de
+          leitura é medido contra o tamanho do enunciado — nenhuma das quatro partes é você
           quem digita.
         </figcaption>
       </figure>

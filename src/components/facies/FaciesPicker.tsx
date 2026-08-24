@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Banca } from "@/lib/facies";
+import type { Prova } from "@/lib/provas";
 import { registrarEvento } from "@/lib/faciesFunnel";
 import { Compartilhar } from "./Compartilhar";
+import { DestaqueProva } from "./DestaqueProva";
 import { FaciesReport } from "./FaciesReport";
 
 /**
@@ -19,16 +21,26 @@ import { FaciesReport } from "./FaciesReport";
  * para quem abriu o link no corredor — as outras bancas têm página própria,
  * gerada estática.
  */
+/** Índice sentinela da prova nacional, que não vive no array de bancas. */
+const PROVA = -1;
+
 export function FaciesPicker({
   bancas,
-  onBancaChange,
+  prova,
+  onChaveChange,
 }: {
   bancas: Banca[];
-  /** Publica a banca ativa para quem monta a página posicionar o gate. */
-  onBancaChange?: (banca: Banca) => void;
+  /** A prova nacional, se houver. Vira o primeiro chip e a seleção inicial. */
+  prova?: Prova | null;
+  /** Publica a chave ativa para quem monta a página posicionar o gate. */
+  onChaveChange?: (chave: string | null) => void;
 }) {
-  const [ativa, setAtiva] = useState(0);
-  const banca = bancas[ativa];
+  // Abre na prova nacional quando ela existe: depois da convergência
+  // regulatória é a prova de entrada da maioria, e abrir numa institucional
+  // seria organizar a página pela estrutura do acervo em vez da pergunta de
+  // quem chegou.
+  const [ativa, setAtiva] = useState<number>(prova ? PROVA : 0);
+  const banca = bancas[ativa === PROVA ? 0 : ativa];
   const rotulos = rotularSemAmbiguidade(bancas);
 
   // Uma vez por visita, e nao a cada troca: `facies_vista` conta VISITA, e
@@ -37,17 +49,49 @@ export function FaciesPicker({
     registrarEvento("facies_vista");
   }, []);
 
-  // Publica a banca ativa, inclusive a INICIAL: quem monta a pagina precisa
+  // Publica a chave ativa, inclusive a INICIAL: quem monta a pagina precisa
   // dela antes de qualquer clique, senao o gate no fim nasce sem destino.
+  // Com a prova no seletor a chave deixou de ser sempre uma instituicao — quem
+  // salva o e-mail vendo o ENAMED quer noticia do ENAMED.
+  const chave = ativa === PROVA ? (prova?.exam_key ?? null) : (banca?.institution_key ?? null);
   useEffect(() => {
-    if (banca) onBancaChange?.(banca);
-  }, [banca, onBancaChange]);
+    onChaveChange?.(chave);
+  }, [chave, onChaveChange]);
 
-  if (!banca) return null;
+  if (!banca && !prova) return null;
+
+  const mostrandoProva = prova != null && ativa === PROVA;
+  const alvo = mostrandoProva
+    ? { imagem: `/prova/${prova.slug}/opengraph-image`, url: `/prova/${prova.slug}`, nome: prova.sigla, link: "Abrir a página do " + prova.sigla }
+    : { imagem: `/facies/${banca!.slug}/opengraph-image`, url: `/facies/${banca!.slug}`, nome: banca!.nome, link: "Abrir a página desta banca" };
 
   return (
     <div id="seletor" className="grid gap-4 scroll-mt-6">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Escolha a prova institucional">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Escolha a prova">
+        {/* O ENAMED É O PRIMEIRO CHIP, e não mais um cartão separado acima.
+            Ele e o seletor faziam a MESMA coisa — mostrar a fácies de uma prova
+            — em duas superfícies diferentes, uma competindo com a outra, e o
+            efeito era empurrar a isca para o terceiro lugar da página. Como
+            chip, a prova que quase todo mundo presta abre a leitura já na
+            primeira tela e as institucionais viram o caso particular que o
+            §1.5 diz que elas são. */}
+        {prova ? (
+          <button
+            type="button"
+            aria-pressed={mostrandoProva}
+            onClick={() => {
+              setAtiva(PROVA);
+              registrarEvento("destaque_clicado", prova.exam_key);
+            }}
+            className={`paper-control rounded-control border px-3 py-2 text-sm font-semibold transition ${
+              mostrandoProva
+                ? "border-primary bg-primary text-primaryInk"
+                : "border-primary bg-surface text-primary hover:bg-surfaceMuted"
+            }`}
+          >
+            {prova.sigla}
+          </button>
+        ) : null}
         {bancas.map((opcao, indice) => {
           const selecionada = indice === ativa;
           const rotulo = rotulos[indice];
@@ -78,23 +122,29 @@ export function FaciesPicker({
         </Link>
       </div>
 
-      <FaciesReport banca={banca} />
+      {/* UMA superfície, dois conteúdos — e NÃO um renderizador só.
+          `Prova` e `Banca` parecem próximas e não são: `mais_cai` da prova é um
+          score PONDERADO sobre uma série de aplicações, e o da banca é a
+          contagem crua de questões. Espremer as duas no mesmo painel exibiria o
+          score como se fosse `n`, que é exatamente a precisão fabricada que
+          esta página recusa. Então o que se unifica é a superfície e o seletor;
+          cada uma continua sendo lida pelo componente que entende os seus
+          números. A leitura profunda do ENAMED segue em `/prova/[slug]`, para
+          onde o link abaixo aponta. */}
+      {mostrandoProva ? <DestaqueProva prova={prova} /> : <FaciesReport banca={banca!} />}
 
       {/* Compartilhar fica junto do dado, nao no rodape: quem acabou de ler o
           numero e quem quer mandar para o grupo. O link vai para a PAGINA da
-          banca, e nao para a home — quem recebe cai direto na leitura que o
-          remetente estava vendo, e a previa do WhatsApp e a mesma imagem. */}
+          prova ou da banca, e nao para a home — quem recebe cai direto na
+          leitura que o remetente estava vendo, e a previa do WhatsApp e a mesma
+          imagem. */}
       <div className="flex flex-wrap items-center gap-3">
-        <Compartilhar
-          imagem={`/facies/${banca.slug}/opengraph-image`}
-          url={`/facies/${banca.slug}`}
-          nome={banca.nome}
-        />
+        <Compartilhar imagem={alvo.imagem} url={alvo.url} nome={alvo.nome} />
         <a
-          href={`/facies/${banca.slug}`}
+          href={alvo.url}
           className="text-sm text-primary underline underline-offset-4"
         >
-          Abrir a página desta banca
+          {alvo.link}
         </a>
       </div>
 

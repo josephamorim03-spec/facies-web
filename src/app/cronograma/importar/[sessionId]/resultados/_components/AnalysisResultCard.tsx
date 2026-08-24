@@ -334,8 +334,8 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                     {normalized.errorsByLevel.beginner && <p><strong>Iniciante:</strong> {normalized.errorsByLevel.beginner}</p>}
                     {normalized.errorsByLevel.intermediate && <p><strong>Intermediário:</strong> {normalized.errorsByLevel.intermediate}</p>}
                     {normalized.errorsByLevel.advanced && <p><strong>Avançado:</strong> {normalized.errorsByLevel.advanced}</p>}
-                    {normalized.errorsByLevel.byHaste && <p><strong>Por pressa:</strong> {normalized.errorsByLevel.byHaste}</p>}
-                    {normalized.errorsByLevel.byOverconfidence && <p><strong>Por excesso de confiança:</strong> {normalized.errorsByLevel.byOverconfidence}</p>}
+                    {normalized.errorsByLevel.byHaste && <p><strong>Leitura fechou cedo:</strong> {normalized.errorsByLevel.byHaste}</p>}
+                    {normalized.errorsByLevel.byOverconfidence && <p><strong>Confiança acima da evidência:</strong> {normalized.errorsByLevel.byOverconfidence}</p>}
                   </div>
                 </div>
               )}

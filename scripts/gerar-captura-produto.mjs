@@ -60,7 +60,7 @@ const TODAY = {
     // o rótulo "cobrada pela sua prova alvo" de _target_relevance, que usa
     // board_code — esse É gravado.
     rationale:
-      "Nas duas últimas questões de pré-eclâmpsia você marcou rápido demais e errou — e o tema é cobrado pela sua prova-alvo.",
+      "Nas duas últimas questões de pré-eclâmpsia a resposta saiu antes de a leitura fechar — e o tema é cobrado pela sua prova-alvo.",
     cta_label: "Começar bloco",
     href: "/banco",
     estimated_minutes: 35,

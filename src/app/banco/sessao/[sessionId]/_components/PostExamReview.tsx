@@ -536,10 +536,10 @@ export default function PostExamReview({
                 </div>
                 <div className="mt-2 space-y-1 text-xs text-muted">
                   {diagnosis.impulsive_count >= 2 && (
-                    <p>• {diagnosis.impulsive_count} questão(ões) rápidas e erradas.</p>
+                    <p>• Em {diagnosis.impulsive_count}, a resposta saiu antes de a leitura fechar.</p>
                   )}
                   {diagnosis.overconfident_count >= 2 && (
-                    <p>• {diagnosis.overconfident_count} questão(ões) com excesso de confiança.</p>
+                    <p>• Em {diagnosis.overconfident_count}, a confiança ficou acima da evidência.</p>
                   )}
                 </div>
               </div>

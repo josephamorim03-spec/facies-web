@@ -61,6 +61,42 @@ const RULES = [
     allow: /paper-eyebrow/,
   },
   {
+    label:
+      "text-marcaDisplay sem tamanho grande — o acento de display so vale a 24px+ (WCAG texto grande, piso 3:1)",
+    // `--color-marca-display` compra ~50% mais separacao da tinta EM TROCA do
+    // piso de 3:1, que so se aplica a texto grande. Em 14px ele vira uma
+    // violacao de contraste que nenhum gate de token pega: o
+    // `check-contrast-tokens` mede a COR, e a cor esta certa — quem erra e' o
+    // tamanho em que ela foi escrita. Este e o unico lugar onde os dois se
+    // encontram.
+    //
+    // O `allow` e' que carrega a regra: a linha passa se tiver um tamanho de
+    // 2xl para cima, em qualquer breakpoint.
+    pattern: /\btext-marcaDisplay\b/,
+    allow: /text-(?:2xl|3xl|4xl|5xl|6xl|7xl)|(?:sm|md|lg|xl):text-(?:2xl|3xl|4xl|5xl|6xl|7xl)/,
+    catches: 'className="text-sm text-marcaDisplay"',
+    ignores: 'className="text-3xl text-marcaDisplay"',
+    // O `allow` exige a cor e o tamanho na MESMA linha, e isso nao cobre os dois
+    // sitios legitimos que existem hoje — em ambos o tamanho e' real, so' nao
+    // esta' na mesma linha:
+    //
+    //   - no `h1` da home o tamanho vive no elemento PAI (`text-4xl/[1.45]`
+    //     ... `sm:text-5xl/[1.45]`) e a cor num `<span>` interno;
+    //   - no wordmark a cor sai de uma variavel escolhida pelo MESMO `size`
+    //     que escolhe a escala, uma linha acima.
+    //
+    // Alargar o regex para "duas linhas acima" seria adivinhacao, e aceitar a
+    // conjuncao no nivel do ARQUIVO seria pior: um arquivo que tem um titulo
+    // grande em algum lugar passaria a poder usar a cor em 12px em qualquer
+    // outro. Isencao nominal, com o tamanho conferido a mao, e' o que o resto
+    // deste arquivo ja faz — e ela nao enfraquece a regra para os outros 300
+    // arquivos, que e' de onde viria o uso acidental.
+    exempt: new Map([
+      ["src/app/page.tsx", "h1 da home: 36px/48px semibold, tamanho no elemento pai"],
+      ["src/components/FaciesWordmark.tsx", "size=lg: 24/30px semibold, escolhido junto com a escala"],
+    ]),
+  },
+  {
     label: "animate-pulse — carregamento tem uma linguagem so (LoadBar/paper-skeleton)",
     pattern: /animate-pulse/,
     catches: 'className="h-16 animate-pulse"',
@@ -182,6 +218,15 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
+// Conta as isencoes POR REGRA junto com as globais. A linha dizia
+// `EXEMPT.size`, que e' so' o mapa global — e ele esta vazio. Com quatro
+// isencoes nominais vivas no arquivo (duas de versal, duas de acento de
+// display), o resumo anunciava "0 isencoes" com toda a confianca. Guard que
+// subnotifica a propria area descoberta e o mesmo defeito que a isencao caduca
+// que este arquivo ja aprendeu a barrar logo acima.
+const isencoes =
+  EXEMPT.size + RULES.reduce((total, regra) => total + (regra.exempt?.size ?? 0), 0);
+
 console.log(
-  `Geometria do sistema: ${RULES.length} regras, nenhum valor fora da escala de token (${EXEMPT.size} isencoes nominais).`,
+  `Geometria do sistema: ${RULES.length} regras, nenhum valor fora da escala de token (${isencoes} isencoes nominais).`,
 );

@@ -89,7 +89,7 @@ export const viewport: Viewport = {
   // e-ink e ja divergiam do `--color-paper` em vigor — a barra do navegador
   // pintava de uma cor que nao existia mais em nenhuma tela.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#0D4F4A" },
+    { media: "(prefers-color-scheme: light)", color: "#096F63" },
     { media: "(prefers-color-scheme: dark)", color: "#131516" },
   ],
   viewportFit: "cover",

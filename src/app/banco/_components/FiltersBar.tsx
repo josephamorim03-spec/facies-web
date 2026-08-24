@@ -367,7 +367,7 @@ export default function FiltersBar(props: FiltersBarProps) {
 
   return (
     <div className="divide-y divide-edge">
-      <section id="question-bank-topic-filters" className="space-y-4 p-4 md:p-5">
+      <section id="question-bank-topic-filters" className="scroll-alvo space-y-4 p-4 md:p-5">
         <SectionHeader
           step="1. Foco clínico"
           title="Escolha a área e os temas"
@@ -475,7 +475,7 @@ export default function FiltersBar(props: FiltersBarProps) {
         </div>
       </section>
 
-      <details id="question-bank-adjustments" className="group p-4 md:p-5">
+      <details id="question-bank-adjustments" className="scroll-alvo group p-4 md:p-5">
         <summary className="paper-control min-h-11 cursor-pointer list-none marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
           <SectionHeader
             step="2. Refinar seleção"

@@ -17,11 +17,18 @@ module.exports = {
         muted: "var(--color-muted)",
         primary: "var(--color-primary)",
         primaryInk: "var(--color-primary-ink)",
-        // Só o acento da wordmark. Separado de `primary` porque tem outro
-        // trabalho: `primary` precisa de contraste contra o FUNDO (é botão);
-        // este precisa de contraste contra a TINTA ao lado (é uma letra no meio
-        // de uma palavra). Reusar o primary dava 1,88:1 e o acento sumia.
+        // O acento da wordmark, em DOIS tokens — a divisão é por regime da
+        // WCAG, não por significado. `primary` precisa de contraste contra o
+        // FUNDO (é botão); o acento precisa contra a TINTA ao lado (é uma letra
+        // no meio de uma palavra), e quanto disso ele consegue depende do
+        // tamanho em que é escrito. O cálculo está em `globals.css`.
+        //
+        // `marca` = acento onde ele é texto PEQUENO (piso 4,5:1).
+        // `marcaDisplay` = acento a 24px+ semibold (piso 3:1) — ~50% mais
+        // separação da tinta. Usá-lo em texto pequeno é violação de contraste,
+        // e é `check-retro-geometry.mjs` quem barra.
         marca: "var(--color-marca)",
+        marcaDisplay: "var(--color-marca-display)",
         accent: "var(--color-accent)",
         accentInk: "var(--color-accent-ink)",
         success: "var(--color-success)",

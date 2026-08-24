@@ -27,7 +27,7 @@ const PASSOS = [
     n: "01",
     titulo: "Ela diz o tipo do seu erro, não só que você errou",
     texto:
-      "Pressa, excesso de confiança, distrator sedutor, discriminação fina. “Rápido demais” é medido contra o tamanho do enunciado, não contra um cronômetro fixo — e a conta fica visível.",
+      "Leitura que fechou cedo, confiança acima da evidência, alternativa vizinha, critério de desempate que faltou. O tempo de leitura é medido contra o tamanho do enunciado, não contra um cronômetro fixo — e a conta fica visível.",
   },
   {
     n: "02",
@@ -88,7 +88,7 @@ export function DepoisDeEntrar() {
               aparece. */}
           <Image
             src="/produto-hoje.png"
-            alt="A tela Hoje da Fácies: a próxima ação já dimensionada — um bloco clínico de Ginecologia e Obstetrícia de 35 minutos — com o motivo logo abaixo do título (“nas duas últimas questões de pré-eclâmpsia você marcou rápido demais e errou, e o tema é cobrado pela sua prova-alvo”) e a linha “≈ 60 min disponíveis · plantão detectado · 12h bloqueadas”."
+            alt="A tela Hoje da Fácies: a próxima ação já dimensionada — um bloco clínico de Ginecologia e Obstetrícia de 35 minutos — com o motivo logo abaixo do título (“nas duas últimas questões de pré-eclâmpsia a resposta saiu antes de a leitura fechar, e o tema é cobrado pela sua prova-alvo”) e a linha “≈ 60 min disponíveis · plantão detectado · 12h bloqueadas”."
             width={2128}
             height={1376}
             unoptimized

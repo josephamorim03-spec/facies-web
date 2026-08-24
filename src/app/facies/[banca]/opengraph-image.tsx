@@ -46,7 +46,7 @@ export function generateStaticParams() {
 const PAPEL = "#F6F6F4";
 const TINTA = "#16191C";
 const FRACA = "#5A6067";
-const MARCA = "#0D4F4A";
+const MARCA = "#0C8F7F";
 const LINHA = "#D8DAD4";
 
 export default async function Imagem({ params }: { params: Promise<{ banca: string }> }) {

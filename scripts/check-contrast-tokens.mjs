@@ -110,8 +110,23 @@ const GRAPHICAL = [
   "--area-full-exam",
 ];
 
+/**
+ * Acento de DISPLAY — texto grande, e por isso outro piso.
+ *
+ * A WCAG cobra 4,5:1 de texto corrido e 3:1 de texto grande (>=24px, ou >=18,66px
+ * em negrito). O `--color-marca-display` so aparece em 24-48px semibold — a
+ * wordmark grande e o `h1` da home — entao medi-lo contra 4,5:1 seria cobrar
+ * dele um piso que nao e' o dele. Foi essa confusao que prendeu o acento num
+ * valor onde ele nao separava da tinta: veja o calculo em `globals.css`.
+ *
+ * Quem garante que ele NAO vaza para texto pequeno e' o `check-retro-geometry`,
+ * que exige um tamanho grande na mesma linha da classe.
+ */
+const LARGE_TEXT = ["--color-marca-display"];
+
 const TEXT_MIN = 4.5;
 const COMPONENT_MIN = 3.0;
+const LARGE_TEXT_MIN = 3.0;
 
 let failures = 0;
 for (const theme of ["light", "dark"]) {
@@ -175,13 +190,70 @@ for (const theme of ["light", "dark"]) {
       }
     }
   }
+
+  for (const fg of LARGE_TEXT) {
+    const a = get(fg);
+    for (const bg of BACKGROUND) {
+      const b = get(bg);
+      if (!a || !b) {
+        failures += 1;
+        console.error(
+          `${theme}: ${!a ? fg : bg} nao resolveu para uma cor — par de display ${fg}/${bg} NAO foi medido.`,
+        );
+        continue;
+      }
+      const r = ratio(a, b);
+      if (r < LARGE_TEXT_MIN) {
+        failures += 1;
+        console.error(
+          `${theme}: display ${fg} sobre ${bg} = ${r.toFixed(2)}:1 (min ${LARGE_TEXT_MIN}) — ${a} / ${b}`,
+        );
+      }
+    }
+
+    // A PROPRIEDADE, e nao so' o piso.
+    //
+    // O piso acima diz que o acento se le sobre o fundo. Mas a razao de existir
+    // deste token e' outra: separar da TINTA ao lado, que e' o que
+    // `--color-marca` nao consegue por estar preso ao piso de 4,5:1. Um guard
+    // que so medisse o fundo aceitaria em silencio alguem devolver o display ao
+    // valor escuro — e a queixa que criou o token voltaria com o gate verde.
+    //
+    // A margem de 25% nao e' enfeite. A primeira versao desta regra so exigia
+    // "melhor que a marca", e o valor antigo (#136F66) passou por 0,03 — ele
+    // vence por arredondamento e nao entrega separacao nenhuma. O ganho real do
+    // regime de texto grande e' da ordem de 50%; cobrar metade disso deixa folga
+    // para ajuste de matiz sem deixar o token virar decoracao.
+    //
+    // Comparar com a marca em vez de cravar um numero mantem a regra valida nos
+    // DOIS temas, onde a fisica inverte: no claro o acento separa escurecendo
+    // menos, no escuro escurecendo mais.
+    const MARGEM = 1.25;
+    const ink = get("--color-ink");
+    const marca = get("--color-marca");
+    if (a && ink && marca) {
+      const doDisplay = ratio(a, ink);
+      const daMarca = ratio(marca, ink);
+      if (doDisplay < daMarca * MARGEM) {
+        failures += 1;
+        console.error(
+          `${theme}: ${fg} separa da tinta ${doDisplay.toFixed(2)}:1 — precisa de ${(daMarca * MARGEM).toFixed(2)}:1 para justificar existir ao lado de --color-marca (${daMarca.toFixed(2)}:1).`,
+        );
+      }
+    }
+  }
 }
 
 const combos =
   (FOREGROUND.length * BACKGROUND.length +
     INVERTED.length +
     COMPONENT.length +
-    GRAPHICAL.length * BACKGROUND.length) *
+    GRAPHICAL.length * BACKGROUND.length +
+    // O bucket de display, mais a comparacao com a tinta que cada um deles faz.
+    // Somar aqui nao e' cosmetica: a linha final anuncia a COBERTURA, e um
+    // bucket que roda sem entrar na conta faz o guard subnotificar o que mediu.
+    LARGE_TEXT.length * BACKGROUND.length +
+    LARGE_TEXT.length) *
   2;
 if (failures > 0) {
   console.error(`\nContraste: ${failures} de ${combos} pares abaixo do minimo.`);

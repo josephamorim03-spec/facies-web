@@ -6,6 +6,7 @@ import { FaciesPicker } from "@/components/facies/FaciesPicker";
 import { GateEmail } from "@/components/facies/GateEmail";
 import { PonteDiagnostico } from "@/components/facies/PonteDiagnostico";
 import type { Banca } from "@/lib/facies";
+import type { Prova } from "@/lib/provas";
 
 /**
  * A parte da home que depende de QUAL banca está na tela.
@@ -36,21 +37,26 @@ import type { Banca } from "@/lib/facies";
  */
 export function FunilHome({
   bancas,
+  prova,
   children,
 }: {
   bancas: Banca[];
+  prova?: Prova | null;
   children: ReactNode;
 }) {
-  const [ativa, setAtiva] = useState<Banca | null>(bancas[0] ?? null);
+  // A chave do que esta na tela, e nao mais a banca: com o ENAMED dentro do
+  // seletor, o visitante pode estar vendo uma PROVA, e quem salva o e-mail
+  // vendo o ENAMED quer noticia do ENAMED.
+  const [chave, setChave] = useState<string | null>(null);
 
   return (
     <>
-      <div className="mb-3 flex flex-wrap items-baseline gap-x-3">
-        <span className="paper-eyebrow">Ou veja uma prova institucional</span>
-      </div>
-      <FaciesPicker bancas={bancas} onBancaChange={setAtiva} />
+      {/* O rotulo "Veja uma prova institucional" SAIU: ele existia para emendar
+          o cartao do ENAMED ao seletor, e agora os dois sao um so. Os chips
+          dizem sozinhos o que sao. */}
+      <FaciesPicker bancas={bancas} prova={prova} onChaveChange={setChave} />
 
-      <PonteDiagnostico banca={ativa?.institution_key ?? null} />
+      <PonteDiagnostico banca={chave} />
 
       {children}
 
@@ -59,7 +65,7 @@ export function FunilHome({
           assinatura"), e não uma seção nova. Separá-los quebraria a única
           pergunta que a página faz. */}
       <div className="mt-4">
-        <GateEmail banca={ativa?.institution_key ?? null} />
+        <GateEmail banca={chave} />
       </div>
     </>
   );

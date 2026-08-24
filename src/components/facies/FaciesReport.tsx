@@ -2,6 +2,7 @@ import type { Banca } from "@/lib/facies";
 import { formatosDistintivos, janela, NACIONAL, PISO_N_CELULA } from "@/lib/facies";
 import { cohenH } from "@/lib/distintividade";
 import { dec } from "@/lib/decimal";
+import { MosaicoAreas } from "./MosaicoAreas";
 
 /**
  * A Fácies da prova, em três painéis.
@@ -44,8 +45,8 @@ function Painel({
     <section className="border-t border-rule py-6">
       <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <Rotulo>{numero}</Rotulo>
-        <h3 className="font-serif text-xl font-semibold text-ink">{titulo}</h3>
-        {nota ? <span className="text-sm text-muted">{nota}</span> : null}
+        <h3 className="font-serif text-xl/snug font-semibold text-ink lg:text-2xl/snug">{titulo}</h3>
+        {nota ? <span className="text-sm text-muted lg:text-base">{nota}</span> : null}
       </div>
       {children}
     </section>
@@ -100,7 +101,7 @@ export function FaciesReport({ banca }: { banca: Banca }) {
       <header className="flex flex-wrap gap-x-8 gap-y-3 border-b border-rule px-5 py-4 sm:px-6">
         <div className="flex flex-col gap-0.5">
           <Rotulo>Banca</Rotulo>
-          <b className="text-sm font-semibold text-ink">{banca.nome}</b>
+          <b className="text-sm font-semibold text-ink lg:text-base">{banca.nome}</b>
         </div>
         <div className="flex flex-col gap-0.5">
           <Rotulo>Janela</Rotulo>
@@ -136,9 +137,9 @@ export function FaciesReport({ banca }: { banca: Banca }) {
                     key={linha.codigo}
                     className="grid grid-cols-[minmax(8rem,11rem)_1fr_auto] items-center gap-3"
                   >
-                    <span className="text-sm text-ink">{linha.rotulo}</span>
+                    <span className="text-sm text-ink lg:text-base">{linha.rotulo}</span>
                     <Barra pct={linha.pct} />
-                    <span className="font-mono text-xs tabular-nums text-muted">
+                    <span className="font-mono text-sm tabular-nums text-muted">
                       {dec(linha.pct)}%{" "}
                       <span className="text-accent">
                         {h > 0 ? "acima" : "abaixo"} da média
@@ -156,7 +157,7 @@ export function FaciesReport({ banca }: { banca: Banca }) {
             </p>
           )}
 
-          <p className="text-sm text-muted">
+          <p className="text-base text-muted">
             {alternativaDominante
               ? `${alternativaDominante.pct.toFixed(0)}% das questões têm ${
                   alternativaDominante.n === 2
@@ -165,7 +166,7 @@ export function FaciesReport({ banca }: { banca: Banca }) {
                 }.`
               : null}
           </p>
-          <p className="mt-3 text-xs text-muted">
+          <p className="mt-3 text-sm text-muted">
             Aparecem apenas os formatos em que esta banca se afasta das{" "}
             {NACIONAL.total.toLocaleString("pt-BR")} questões de referência com
             margem que a base sustenta.
@@ -185,15 +186,15 @@ export function FaciesReport({ banca }: { banca: Banca }) {
                   key={linha.rotulo}
                   className="flex items-baseline gap-3 border-b border-rule py-2 last:border-b-0"
                 >
-                  <span className="w-6 shrink-0 font-mono text-xs text-muted">
+                  <span className="w-7 shrink-0 font-mono text-sm text-muted">
                     {String(indice + 1).padStart(2, "0")}
                   </span>
-                  <span className="flex-1 text-sm text-ink">{linha.rotulo}</span>
+                  <span className="flex-1 text-base/snug text-ink lg:text-lg/snug">{linha.rotulo}</span>
                   {/* Sem `n`, sem número. É a invariante do §14.2.3. */}
                   {linha.exibivel ? (
-                    <span className="font-mono text-sm tabular-nums text-ink">{linha.n}</span>
+                    <span className="font-mono text-base tabular-nums text-ink lg:text-lg">{linha.n}</span>
                   ) : (
-                    <span className="text-xs text-muted">
+                    <span className="text-sm text-muted">
                       menos de {PISO_N_CELULA}
                     </span>
                   )}
@@ -206,7 +207,7 @@ export function FaciesReport({ banca }: { banca: Banca }) {
             </p>
           )}
           {banca.mais_cai.cobertura < 60 ? (
-            <p className="mt-3 text-xs text-muted">
+            <p className="mt-3 text-sm text-muted">
               A classificação por assunto cobre {banca.mais_cai.cobertura.toFixed(0)}% desta
               banca. A lista descreve essa parte, não a prova inteira.
             </p>
@@ -219,20 +220,13 @@ export function FaciesReport({ banca }: { banca: Banca }) {
           titulo="Distribuição por área"
           nota="contexto · quase igual em todas as bancas"
         >
-          <ul className="grid gap-2">
-            {banca.areas.linhas.map((linha) => (
-              <li
-                key={linha.rotulo}
-                className="grid grid-cols-[minmax(8rem,13rem)_1fr_auto] items-center gap-3"
-              >
-                <span className="text-sm text-ink">{linha.rotulo}</span>
-                <Barra pct={linha.pct} />
-                <span className="font-mono text-xs tabular-nums text-muted">
-                  {linha.pct.toFixed(0)}%
-                </span>
-              </li>
-            ))}
-          </ul>
+          {/* Mosaico, e não sete barras.
+              A incidência por área é a única coisa desta página que é
+              genuinamente uma PARTE DO TODO, e o olho lê área muito mais rápido
+              que comprimento de barra. De quebra, é o painel que dá cor à
+              página: as sete grandes áreas já têm paleta própria, e ela estava
+              sendo desperdiçada num painel inteiro em petróleo. */}
+          <MosaicoAreas linhas={banca.areas.linhas} />
         </Painel>
 
         {/* ── Leitura: derivada dos números, nunca escrita à mão ────────── */}
@@ -242,7 +236,7 @@ export function FaciesReport({ banca }: { banca: Banca }) {
               {banca.leitura.map((frase) => (
                 <li
                   key={frase}
-                  className="paper-reading border-l-2 border-primary pl-4 text-base leading-relaxed text-ink"
+                  className="paper-reading border-l-2 border-primary pl-4 text-base/relaxed text-ink lg:text-lg/relaxed"
                   dangerouslySetInnerHTML={{ __html: negrito(frase) }}
                 />
               ))}

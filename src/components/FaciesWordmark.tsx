@@ -26,14 +26,21 @@ type Props = {
  * leitura, porque navegadores concatenam texto de elementos inline.
  */
 export function FaciesWordmark({ size = "lg", className = "" }: Props) {
-  const escala =
-    size === "lg" ? "text-2xl sm:text-3xl" : "text-sm";
+  // O TAMANHO ESCOLHE O TOKEN, e nao o contrario.
+  //
+  // A 24-30px semibold o acento e TEXTO GRANDE pela WCAG (piso 3:1), e ai cabe
+  // o `marcaDisplay`, que separa da tinta 4,41:1 em vez de 2,91:1. A 14px o
+  // piso volta a 4,5:1 e o mesmo hex viraria violacao — por isso o `sm` fica
+  // no `marca`. O calculo esta em globals.css; o guard que impede a troca
+  // errada e o check-retro-geometry.
+  const escala = size === "lg" ? "text-2xl sm:text-3xl" : "text-sm";
+  const acento = size === "lg" ? "text-marcaDisplay" : "text-marca";
 
   return (
     <span
       className={`inline-flex items-baseline whitespace-nowrap font-serif font-semibold tracking-[-0.012em] text-ink ${escala} ${className}`.trim()}
     >
-      F<i className="not-italic text-marca">á</i>cies
+      F<i className={`not-italic ${acento}`}>á</i>cies
     </span>
   );
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { RedirectIfAuthenticated } from "./_components/RedirectIfAuthenticated";
-import { DestaqueProva } from "@/components/facies/DestaqueProva";
 import { FunilHome } from "./_components/FunilHome";
 import { DepoisDeEntrar } from "@/components/facies/DepoisDeEntrar";
 import { bancasEmDestaque, janelaNacional, NACIONAL, todasAsBancas } from "@/lib/facies";
@@ -127,8 +126,24 @@ export default function Home() {
 
                  ⚠️ Quem apertar de volta: meça a coluna do "é", e confira o
                  valor COMPUTADO no navegador, não a classe no JSX. */}
+          {/* O ESPAÇO ANTES DE "cara" É INQUEBRÁVEL, e isso é do mesmo problema
+              que o resto deste bloco.
+
+              A 390px a frase caía como "Toda prova tem uma / cara. / Esta é a da
+              sua." — a palavra colorida sozinha numa linha. É exatamente a órfã
+              que o comentário acima descreve ter custado a versão anterior do
+              título, só que pior: ali a palavra órfã era da cor da tinta, aqui
+              ela é a única em petróleo da página. Órfã colorida não lê como
+              ênfase, lê como erro de composição.
+
+              `&nbsp;` amarra "uma" a "cara" e força a quebra a acontecer antes
+              das duas. Não é `text-balance`: aquele deixa a decisão com o
+              navegador, e o que precisa de garantia aqui é que a palavra da
+              marca NUNCA comece uma linha sozinha.
+
+              Medido em 390px e 1280px, tema claro e escuro. */}
           <h1 className="mt-3 max-w-[26ch] font-serif text-4xl/[1.45] font-semibold tracking-tight text-ink sm:text-5xl/[1.45]">
-            Toda prova tem uma <span className="text-marca">cara</span>.{" "}
+            Toda prova tem uma&nbsp;<span className="text-marcaDisplay">cara</span>.{" "}
             <span className="block">Esta é a da sua.</span>
           </h1>
           <p className="mt-4 max-w-[56ch] text-lg text-muted">
@@ -157,7 +172,7 @@ export default function Home() {
               coisa abaixo — quem chega de link não sabe que a página rola. */}
           <p className="mt-6 text-sm text-muted">
             <a href="#seletor" className="text-primary underline underline-offset-4">
-              Ou escolha a sua banca ↓
+              Verifique a sua banca ↓
             </a>
           </p>
         </header>
@@ -203,12 +218,6 @@ export default function Home() {
           ) : null}
         </section>
 
-        {provaEmDestaque ? (
-          <div className="mt-10">
-            <DestaqueProva prova={provaEmDestaque} />
-          </div>
-        ) : null}
-
         {/* A leitura por INSTITUICAO vem depois da prova nacional, e nao some:
             quem presta USP ou UNIFESP ainda depende dela. Virou caso
             particular, que e o que o pivo do §1.5 diz.
@@ -218,7 +227,7 @@ export default function Home() {
             como `children` e continuam server components — a home tem trafego
             de pico, e conteudo estatico nao precisa ir para o bundle. */}
         <div className="mt-10">
-          <FunilHome bancas={destaques}>
+          <FunilHome bancas={destaques} prova={provaEmDestaque}>
             <div className={ATO}>
               <DepoisDeEntrar />
             </div>

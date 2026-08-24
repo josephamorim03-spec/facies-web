@@ -29,31 +29,55 @@
      verificacao: o script de contraste conferia `muted/surface` e `ink/paper`,
      mas nunca `muted/paper`. Agora ele cruza todos os pares. */
   --color-muted: #5A6067;
-  --color-primary: #0D4F4A;
+  /* O petroleo SUBIU de luminancia, e a razao e' que contraste alto e presenca
+     visual nao sao a mesma coisa.
+
+     Era #0D4F4A: L=6,2%, S=72%. Contra o papel isso da 8,06:1 — contraste
+     altissimo — e mesmo assim ele "nao contrastava", porque a 6% de luminancia
+     ele fica a 2,10:1 da TINTA. Alto contraste com o fundo e quase nenhum com o
+     texto ao lado: lido de longe nao parecia cor, parecia tinta escura.
+
+     Este valor esta no TETO do que a funcao dele permite. O primary e' fundo de
+     botao (tinta clara sobre ele) E texto de link ao mesmo tempo; o vinculo
+     apertado e' o texto, que exige 4,5:1 sobre a `surface-muted` e portanto
+     L <= 0,1325. A 0,1226 sobra margem para o arredondamento e nada mais.
+     Medido: 4,74:1 como texto no pior fundo, 5,60:1 de tinta clara sobre ele no
+     botao, e 2,91:1 da tinta — 39% mais separacao que antes. */
+  --color-primary: #096F63;
   /* Estado :hover/:active da acao primaria. Aprofundar le como pressao; clarear
      le como desabilitado, e era o que o `brightness()` fazia. */
-  --color-primary-strong: #0A3E3A;
+  --color-primary-strong: #075349;
   --color-primary-ink: #F6F6F4;
-  /* O acento da wordmark — o `á` de Fácies — e SÓ ele.
-     Por que nao reusa `--color-primary`: o primary claro (#0D4F4A) contra a
-     tinta (#16191C) da 1,88:1. Os dois sao escuros, e o acento sumia no tema
-     branco. Este valor da 2,94:1, com 4,70:1 no pior fundo.
+  /* O acento da wordmark — o `á` de Fácies.
+     ⚠️ SAO DOIS TOKENS, e a divisao e' por REGIME DA WCAG, nao por gosto.
 
-     O TETO E' 3,03:1, e vale registrar por que: o acento tem duas exigencias
-     que puxam para lados opostos — ser escuro o bastante para 4,5:1 contra
-     fundos quase brancos, e claro o bastante para se separar de uma tinta quase
-     preta. Isso deixa uma janela de luminancia estreita (L <= 0,1325 no claro),
-     e 3,03:1 e' o maximo que cabe nela. Nao adianta procurar outro hex: se um
-     dia o acento precisar saltar mais, o caminho e' outro device (peso, marca
-     grafica), nao outra cor.
+     A versao anterior deste comentario afirmava que 3,03:1 era o "teto
+     matematico" de separacao do acento contra a tinta, e que nao adiantava
+     procurar outro hex. Estava certo — sob a premissa que ninguem tinha
+     escrito: a de que o acento precisa de 4,5:1.
 
-     Token proprio em vez de clarear o primary: o #0D4F4A tem 8,69:1 no papel e
-     e' otimo para botao — nao ha motivo para estragar isso por causa de uma
-     letra. */
-  --color-marca: #136F66;
+     4,5:1 e' o piso de TEXTO PEQUENO. O `á` da wordmark grande (24-30px
+     semibold) e a palavra "cara" do `h1` (36-48px semibold) sao TEXTO GRANDE
+     pela WCAG, cujo piso e' 3:1. Medido, sobre a `surface-muted`:
+
+       piso 4,5:1  ->  L <= 0,1325  ->  separacao maxima da tinta 3,07:1
+       piso 3,0:1  ->  L <= 0,2238  ->  separacao maxima da tinta 4,60:1
+
+     O acento estava preso numa janela que nao era a dele. */
+  --color-marca-display: #0C8F7F;
+  /* O acento onde ele E' texto pequeno: `FaciesWordmark size="sm"` (14px) e
+     `FaciesMark` (16px). Ali o piso volta a ser 4,5:1, o teto de luminancia
+     volta a L <= 0,1325 — que e' exatamente o teto do primary. Os dois
+     convergem por ARITMETICA, entao o alias diz isso em vez de repetir o hex e
+     deixar os dois divergirem na proxima mudanca. */
+  --color-marca: var(--color-primary);
   --color-accent: #915500;
   --color-accent-ink: #F6F6F4;
-  --color-success: #0D4F4A;
+  /* Acompanha o primary por DECISAO, e nao por coincidencia: os dois eram o
+     mesmo #0D4F4A escrito duas vezes, e sem o alias o sucesso teria ficado no
+     petroleo antigo enquanto o resto do sistema clareava — a cor velha
+     sobreviveria em 97 call sites. */
+  --color-success: var(--color-primary);
   --color-danger: #B3261E;
   --color-warning: #8A5200;
   --color-info: #0B4F6C;
@@ -133,12 +157,33 @@
      Escurecer multiplicando o RGB preserva a razao entre canais, entao a MATIZ
      sobrevive. E matiz e' o que faz a Okabe-Ito funcionar: ela distingue por
      tom, nao por luminancia. */
-  --area-cm:  #0072B2;  /* Okabe-Ito puro    */
-  --area-cg:  #D55E00;  /* Okabe-Ito puro    */
-  --area-go:  #B46A93;  /* de #CC79A7, 88%   */
-  --area-ob:  #B46A93;  /* divide com GO     */
-  --area-ped: #00936B;  /* de #009E73, 93%   */
-  --area-mp:  #AD7700;  /* de #E69F00, 75%   */
+  /* RECALIBRADA COM FOLGA. A versao anterior foi calibrada no PISO exato do
+     guard: quatro das sete mediam 3,03-3,05 sobre a `surface-muted`, com o
+     minimo em 3,00. Passar raspando e' o que fazia a paleta parecer lavada — a
+     cor existia, mas nao tinha presenca nenhuma. Alvo novo: ~3,6.
+
+     Duas regras que a passada anterior nao tinha:
+
+     1. NUNCA REGREDIR. O CM ja estava em 4,06 e um alvo unico de 3,6 o teria
+        ESCURECIDO menos, isto e', piorado. O alvo de cada cor e o maior entre o
+        piso novo e o que ela ja entregava.
+     2. GO era o unico outlier de saturacao (S=33% contra S=100% das outras) — e
+        e' por isso que ele destoava a olho. Subiu para 55%: firma sem virar
+        neon, que e o que S=92% fazia com esta matiz (dava um magenta #E10981).
+
+     OB DEIXA DE DIVIDIR O HEX COM GO. Eram a mesma cor, e o proprio
+     `areaIdentity.ts` registra que "quem filtra por OB precisa ver OB". Nao ha
+     oitava matiz segura disponivel: a Okabe-Ito tem 8 cores e as sobras (azul-ceu
+     e amarelo) colidem com CM e MP depois de escurecidas. Entao OB fica na
+     FAMILIA de GO com peso claramente diferente — que e' semanticamente
+     verdadeiro, ja que Obstetricia e' parte de Gineco/Obstetricia — e a
+     distincao final vem do rotulo, como manda a regra da area. */
+  --area-cm:  #0772B0;  /* Okabe-Ito H=202, 4,06 (mantido: ja tinha folga) */
+  --area-cg:  #BF5708;  /* Okabe-Ito H=26,  3,59 (era 3,03)                */
+  --area-go:  #C8418B;  /* Okabe-Ito H=327, 3,58 (era 3,03 e S=33%)        */
+  --area-ob:  #8F2A62;  /* familia de GO, 6,14 — 1,71:1 de distancia dele  */
+  --area-ped: #068663;  /* Okabe-Ito H=164, 3,57 (era 3,05)                */
+  --area-mp:  #9C6D06;  /* Okabe-Ito H=41,  3,57 (era 3,03)                */
   --area-ou:  #5A6067;  /* neutro: "Outras" nao e area, e o resto */
   /* "Prova inteira" nao e especialidade: e modo. Usa o primary para nao
      disputar matiz com as sete areas — e o primary ja passa no gate. */
@@ -164,19 +209,32 @@
      numa sessão de 100 questões. O texto fica num branco-quente. */
   --color-ink: #E4E6E4;
   --color-muted: #9AA0A2;
-  --color-primary: #38A096;
+  --color-primary: #3FB3A3;
   /* No escuro a direcao inverte: pressionar CLAREIA, porque aprofundar num
      fundo escuro faz o botao sumir. */
-  --color-primary-strong: #4FB8AD;
+  --color-primary-strong: #5FC7B8;
   --color-primary-ink: #0F1112;
-  /* No escuro a restricao INVERTE e o token existe so' para nao sumir do tema:
-     para passar 4,5:1 contra fundo escuro o acento precisa ser claro, e a tinta
-     TAMBEM e' clara (#E4E6E4) — clarear aproxima em vez de separar. Medido:
-     #2E8F86 daria 3,11:1 contra a tinta e reprovaria em 3,70:1 no fundo.
-     O valor do primary ja' e' o melhor equilibrio possivel aqui (2,52:1 contra
-     a tinta, 4,56:1 no pior fundo), entao ele fica. Depois do ajuste, o tema
-     CLARO passa a ter mais separacao que o escuro — o oposto de antes. */
-  --color-marca: #38A096;
+  /* ⚠️ ESTE COMENTARIO ESTAVA CERTO E A CONCLUSAO ERRADA, pelo mesmo motivo do
+     tema claro.
+
+     Ele dizia: "#2E8F86 daria 3,11:1 contra a tinta e REPROVARIA em 3,70:1 no
+     fundo". 3,70:1 so reprova contra o piso de 4,5:1, que e' o de texto
+     pequeno. O acento de display vive em 24-48px semibold, onde o piso da WCAG
+     e' 3:1 — e ai 3,70 passa com folga.
+
+     No escuro a fisica inverte: a tinta e' clara (#E4E6E4), entao separar dela
+     exige ESCURECER o acento, nao clarear. Medido:
+
+       #38A096 (o valor antigo)  2,52:1 da tinta
+       #2E8F82 (este)            3,12:1 da tinta, 3,80:1 no pior fundo
+       #25786D                   4,20:1 da tinta, mas 2,82:1 no fundo — reprova
+
+     Ou seja: este e' o teto real, e agora o escuro acompanha o claro em vez de
+     ficar com metade da separacao. */
+  --color-marca-display: #2E8F82;
+  /* Mesma convergencia do tema claro: como texto pequeno o piso volta a 4,5:1 e
+     o melhor valor possivel e' o proprio primary. */
+  --color-marca: var(--color-primary);
   --color-accent: #D89440;
   --color-accent-ink: #131516;
   --color-success: #4FB3A4;
@@ -204,10 +262,18 @@
   /* Paleta de área no escuro. Sem estes overrides, os hexes saturados do
      tema claro ficam ilegíveis sobre o papel #0B0C08 — é o que acontecia
      nos gráficos da Evolução. Brilhos compatíveis com fósforo, >= 4.5:1. */
+  /* No escuro a paleta JA tinha folga — de 5,61 a 8,26 sobre a surface-muted,
+     porque cor clara sobre fundo escuro sobra contraste. Entao aqui nao ha
+     recalibragem: mexer sem necessidade so' arriscaria as sete matizes.
+
+     A unica correcao e a mesma do tema claro: OB dividia o hex com GO. Ele fica
+     na familia, mais fundo e mais saturado (3,48 sobre a surface-muted, 2,03:1
+     de distancia do GO) — no escuro CLAREAR para separar nao funciona, porque
+     acima de #E0A0C0 a cor vira quase branca e deixa de ler como rosa. */
   --area-cm:  #4FA8DE;
   --area-cg:  #EE8A45;
   --area-go:  #E0A0C0;
-  --area-ob:  #E0A0C0;
+  --area-ob:  #B85C85;
   --area-ped: #43C6A0;
   --area-mp:  #F0B84A;
   --area-ou:  #9AA0A2;
@@ -376,6 +442,25 @@
 
   .paper-overlay {
     box-shadow: var(--overlay-shadow);
+  }
+
+  /* Alvo de rolagem programatica.
+     `scrollIntoView({ block: "start" })` encosta o topo do elemento no topo do
+     VIEWPORT — e no celular o topo do viewport esta atras da barra fixa de 48px
+     do `AppShell`. Resultado: a pagina rolava sozinha e o titulo do bloco focado
+     ficava embaixo da barra, que foi exatamente a queixa de "corta o titulo" na
+     montagem de sessao.
+     A aritmetica mora aqui e nao espalhada em cada chamador, pelo mesmo motivo
+     que `--nav-stack-height` existe: quando duplicada em string solta, um dos
+     lugares fica para tras. A barra some em `md`, e ai a margem zera. */
+  .scroll-alvo {
+    scroll-margin-top: calc(3rem + env(safe-area-inset-top, 0px) + 0.75rem);
+  }
+
+  @media (min-width: 768px) {
+    .scroll-alvo {
+      scroll-margin-top: 0.75rem;
+    }
   }
 
   .paper-skeleton {

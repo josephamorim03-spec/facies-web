@@ -3,7 +3,7 @@
   <!-- O acento agudo composto como paralelogramo de terminais horizontais - a
        forma que ele tem na tipografia - sobre a regua fina do laudo.
        Geometria pura: nao depende de nenhuma fonte instalada. -->
-  <rect width="32" height="32" rx="6" fill="#0D4F4A"/>
+  <rect width="32" height="32" rx="6" fill="#096F63"/>
   <path d="M10.4 19.4 H14.9 L21.9 8.4 H17.4 Z" fill="#F6F6F4"/>
   <rect x="6.8" y="24.18" width="18.4" height="1.25" fill="#F6F6F4"/>
 </svg>
