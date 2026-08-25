@@ -12,7 +12,12 @@ import Image from "next/image";
  * no código — nenhum deles promete formato de item, que é o recurso que a página
  * anunciava e o motor não tem:
  *
- *   1. `diagnostic_blueprint.py` — 3 baterias de 100, estratificadas por área.
+ *   1. `diagnostic_blueprint.py` — baterias estratificadas por área. ⚠️ A
+ *      PRIMEIRA passou a ser de 50 (o piso que ainda mede as 5 áreas) e as
+ *      outras duas seguem em 100 — e o conjunto continua atrás de
+ *      `ENABLE_ADAPTIVE_STUDY_PLAN_V1`, que é `false` em produção. Nenhum
+ *      desses números pode ser anunciado nesta página enquanto for assim;
+ *      os três passos abaixo foram escolhidos por rodarem SEM flag.
  *   2. `mastery_estimate.py` — Beta-Binomial por nó, com `is_confident`.
  *   3. `navigation_service._predicted_capacity` + `_interruption_risk` — os
  *      minutos saem do calendário e o plantão é inferido, nunca perguntado.

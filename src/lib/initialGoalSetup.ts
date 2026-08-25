@@ -9,6 +9,7 @@ export const INITIAL_GOAL_SETUP_ROUTE = "/preferencias";
 export const ONBOARDING_ROUTE = "/onboarding";
 export const DEFAULT_AUTHENTICATED_ROUTE = "/hoje";
 export const ACTIVATE_ROUTE = "/ativar-acesso";
+export const CADASTRO_ROUTE = "/cadastro/completar";
 
 export async function requiresInitialGoalSetup(token: string): Promise<boolean> {
   const profile = await getProfile(token);
@@ -37,6 +38,18 @@ async function resolveSetupRoute(token: string): Promise<string> {
 
 export async function resolveAuthenticatedLandingRoute(token: string): Promise<string> {
   const profile = await getProfile(token);
+  // A IDENTIDADE VEM ANTES DE TUDO, inclusive do acesso.
+  //
+  // Entrar pelo Google autentica, mas não cadastra: o produto ficava sabendo o
+  // e-mail e mais nada. A ordem importa — perguntar por assinatura antes de saber
+  // se a pessoa é médica ou acadêmica é oferecer sem saber o quê, e o onboarding
+  // logo abaixo dimensiona a rotina com base em quem ela é.
+  //
+  // `cadastro_completo` vem do próprio perfil (derivado de nome + nascimento +
+  // situação), então isto não custa requisição nova.
+  if (!profile.cadastro_completo) {
+    return CADASTRO_ROUTE;
+  }
   if (profile.access_status !== "active") {
     return ACTIVATE_ROUTE;
   }

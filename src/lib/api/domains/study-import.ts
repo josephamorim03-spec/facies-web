@@ -221,6 +221,15 @@ export type UserProfile = {
   has_chosen_feedback_default: boolean;
   has_completed_initial_goal_setup: boolean;
   access_status: "active" | "expired" | "inactive";
+  /**
+   * Se a identidade mínima do cadastro existe (nome, nascimento, situação
+   * profissional). Derivado no backend a partir do próprio perfil — não é um
+   * flag guardado, que divergiria do dado na primeira edição por outro caminho.
+   *
+   * É o primeiro portão de `resolveAuthenticatedLandingRoute`: entrar pelo Google
+   * autentica, mas não cadastra.
+   */
+  cadastro_completo: boolean;
 };
 
 export async function getProfile(token: string): Promise<UserProfile> {

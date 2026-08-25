@@ -7,8 +7,8 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/Skeleton";
 import { getAPIErrorDetail } from "@/lib/api";
-import { listQuestionBankBoards } from "@/lib/api/domains/question-bank";
-import type { QuestionBankBoard } from "@/lib/api/domains/question-bank/types";
+import { listQuestionBankInstitutions } from "@/lib/api/domains/question-bank";
+import type { QuestionBankInstitution } from "@/lib/api/domains/question-bank/types";
 import {
   getMyTargetExam,
   replaceMyTargetExam,
@@ -17,9 +17,26 @@ import {
 import { getErrorMessage } from "@/lib/error-utils";
 
 const MAX_TARGET_EXAMS = 3;
-const VISIBLE_BOARDS = 40;
+const VISIBLE_INSTITUTIONS = 40;
 
-type Selected = StudentTargetExamInput & { board_name: string | null };
+/**
+ * ⚠️ Esta tela lia `/question-bank/boards`, e essa lista chega VAZIA.
+ *
+ * `board_code` é NULL em 134.523 de 134.523 questões e `question_sources.board_id`
+ * em 146/146 — medido e registrado nas migrations 096 e 104 do kbank. O efeito na
+ * tela: o seletor caía no estado "o banco ainda não tem provas publicadas" para
+ * todo aluno, e sem prova declarada a personalização inteira do produto ficava
+ * desligada rio abaixo.
+ *
+ * A declaração agora é por INSTITUIÇÃO. `institution_key` cobre o acervo inteiro,
+ * é a chave da tabela de demanda por nó, e é o que o aluno reconhece: ele diz "vou
+ * prestar a USP-SP", não "vou prestar a banca tal".
+ */
+type Selected = StudentTargetExamInput & {
+  label: string;
+  recent_question_count: number | null;
+  reliable_grain: "subtheme" | "theme" | null;
+};
 
 type Props = {
   token: string;
@@ -31,17 +48,24 @@ function formatCount(value: number): string {
   return value.toLocaleString("pt-BR");
 }
 
-function yearRange(board: QuestionBankBoard): string | null {
-  const first = board.first_year;
-  const last = board.last_year;
+function yearRange(institution: QuestionBankInstitution): string | null {
+  const first = institution.first_year;
+  const last = institution.last_year;
   if (!first && !last) return null;
   if (first && last && first !== last) return `${first}–${last}`;
   return String(last ?? first);
 }
 
+// A chave da linha e a identidade da seleção: instituição quando existe, senão o
+// código de banca de uma declaração antiga. Sem isto, duas linhas legadas com
+// `institution_key` nulo colidiriam na `key` do React.
+function identity(item: Selected): string {
+  return item.institution_key || item.board_code || item.label;
+}
+
 export function TargetExamSelector({ token, mode, onSaved }: Props) {
   const [selected, setSelected] = useState<Selected[]>([]);
-  const [boards, setBoards] = useState<QuestionBankBoard[]>([]);
+  const [institutions, setInstitutions] = useState<QuestionBankInstitution[]>([]);
   const [revision, setRevision] = useState<number | null>(null);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -55,25 +79,31 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
     setLoading(true);
     setError(null);
     try {
-      // Em paralelo: a lista de bancas não depende da seleção atual, e
+      // Em paralelo: a lista de provas não depende da seleção atual, e
       // encadear as duas dobraria o tempo de tela em branco.
       const [current, available] = await Promise.all([
         getMyTargetExam(token),
-        listQuestionBankBoards(token),
+        listQuestionBankInstitutions(token),
       ]);
-      const byCode = new Map(available.map((board) => [board.board_code, board]));
+      const byKey = new Map(available.map((item) => [item.institution_key, item]));
       setSelected(
         [...current.items]
           .sort((a, b) => a.priority - b.priority)
-          .map((item) => ({
-            board_code: item.board_code,
-            exam_name: item.exam_name,
-            exam_date: item.exam_date,
-            board_name: byCode.get(item.board_code)?.board_name ?? null,
-          })),
+          .map((item) => {
+            const known = item.institution_key ? byKey.get(item.institution_key) : undefined;
+            return {
+              board_code: item.board_code,
+              institution_key: item.institution_key,
+              exam_name: item.exam_name,
+              exam_date: item.exam_date,
+              label: known?.institution_label ?? item.label ?? item.board_code,
+              recent_question_count: known?.recent_question_count ?? null,
+              reliable_grain: known?.reliable_grain ?? null,
+            };
+          }),
       );
       setRevision(current.selection_revision);
-      setBoards(available);
+      setInstitutions(available);
     } catch (cause) {
       setError(getErrorMessage(cause, "Não foi possível carregar sua prova alvo."));
     } finally {
@@ -97,32 +127,39 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
     void load();
   }, [load]);
 
-  const selectedCodes = useMemo(
-    () => new Set(selected.map((item) => item.board_code)),
+  const selectedKeys = useMemo(
+    () => new Set(selected.map((item) => item.institution_key).filter(Boolean)),
     [selected],
   );
 
   const matches = useMemo(() => {
     const term = query.trim().toLowerCase();
-    return boards
-      .filter((board) => !selectedCodes.has(board.board_code))
+    return institutions
+      .filter((item) => !selectedKeys.has(item.institution_key))
       .filter(
-        (board) =>
+        (item) =>
           !term ||
-          board.board_name.toLowerCase().includes(term) ||
-          board.board_code.toLowerCase().includes(term),
+          item.institution_label.toLowerCase().includes(term) ||
+          (item.state ?? "").toLowerCase().includes(term),
       )
-      .slice(0, VISIBLE_BOARDS);
-  }, [boards, query, selectedCodes]);
+      .slice(0, VISIBLE_INSTITUTIONS);
+  }, [institutions, query, selectedKeys]);
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
-  function add(board: QuestionBankBoard) {
+  function add(institution: QuestionBankInstitution) {
     if (selected.length >= MAX_TARGET_EXAMS) return;
     setSaved(false);
     setSelected([
       ...selected,
-      { board_code: board.board_code, exam_name: null, exam_date: null, board_name: board.board_name },
+      {
+        institution_key: institution.institution_key,
+        exam_name: null,
+        exam_date: null,
+        label: institution.institution_label,
+        recent_question_count: institution.recent_question_count,
+        reliable_grain: institution.reliable_grain,
+      },
     ]);
     setQuery("");
   }
@@ -149,7 +186,11 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
       const result = await replaceMyTargetExam(
         token,
         selected.map((item) => ({
-          board_code: item.board_code,
+          // `institution_key` quando existe; `board_code` só sobrevive para não
+          // apagar declaração antiga que nunca teve instituição.
+          ...(item.institution_key
+            ? { institution_key: item.institution_key }
+            : { board_code: item.board_code }),
           exam_name: item.exam_name?.trim() || null,
           exam_date: item.exam_date || null,
         })),
@@ -182,9 +223,9 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
     );
   }
 
-  // Banco sem banca publicada é o único estado em que esta tela não tem o que
-  // oferecer. Dizer isso é melhor do que mostrar uma busca que nunca acha nada.
-  if (!boards.length && !selected.length) {
+  // Banco sem instituição publicada é o único estado em que esta tela não tem o
+  // que oferecer. Dizer isso é melhor do que mostrar uma busca que nunca acha nada.
+  if (!institutions.length && !selected.length) {
     return (
       <Alert variant="info" className="mt-4">
         O banco de questões ainda não tem provas publicadas para escolher como alvo.
@@ -209,21 +250,35 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
       {selected.length ? (
         <ol className="divide-y divide-edge" aria-label="Provas alvo em ordem de prioridade">
           {selected.map((item, index) => (
-            <li key={item.board_code} className="space-y-3 py-4">
+            <li key={identity(item)} className="space-y-3 py-4">
               <div className="flex items-start gap-3">
                 <span className="w-6 shrink-0 pt-0.5 text-sm font-semibold text-muted">
                   {index + 1}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-ink">{item.board_name ?? item.board_code}</p>
-                  <p className="mt-1 text-xs text-muted">{item.board_code}</p>
+                  <p className="font-semibold text-ink">{item.label}</p>
+                  {/* O que esta escolha entrega, com o número que a sustenta. E o
+                      LIMITE dela junto: instituição com menos de 400 questões
+                      recentes não sustenta ranking de subtema, e prometer o grão
+                      fino ali seria vender ruído como personalização. */}
+                  {item.recent_question_count !== null ? (
+                    <p className="mt-1 text-xs text-muted">
+                      <span className="font-mono text-ink">
+                        {formatCount(item.recent_question_count)}
+                      </span>{" "}
+                      questões dos últimos 6 anos
+                      {item.reliable_grain === "theme"
+                        ? " · ajuste por área, não por subtema"
+                        : ""}
+                    </p>
+                  ) : null}
                 </div>
                 <button
                   type="button"
                   onClick={() => move(index, -1)}
                   disabled={index === 0 || !online}
                   className="p-2 text-muted disabled:opacity-25"
-                  aria-label={`Subir ${item.board_name ?? item.board_code}`}
+                  aria-label={`Subir ${item.label}`}
                 >
                   <ArrowUp className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -232,7 +287,7 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
                   onClick={() => move(index, 1)}
                   disabled={index === selected.length - 1 || !online}
                   className="p-2 text-muted disabled:opacity-25"
-                  aria-label={`Descer ${item.board_name ?? item.board_code}`}
+                  aria-label={`Descer ${item.label}`}
                 >
                   <ArrowDown className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -244,7 +299,7 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
                   }}
                   disabled={!online}
                   className="p-2 text-muted hover:text-danger disabled:opacity-25"
-                  aria-label={`Remover ${item.board_name ?? item.board_code}`}
+                  aria-label={`Remover ${item.label}`}
                 >
                   <X className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -290,28 +345,34 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Busque a prova ou instituição"
+            placeholder="Busque pela instituição ou pelo estado"
             aria-label="Buscar prova alvo"
             className="paper-control min-h-11 w-full border border-edge bg-surface px-3 text-sm text-ink"
           />
           {matches.length ? (
             <ul className="divide-y divide-edge border-y border-edge">
-              {matches.map((board) => {
-                const years = yearRange(board);
+              {matches.map((institution) => {
+                const years = yearRange(institution);
                 return (
-                  <li key={board.board_code} className="flex items-center gap-3 py-3">
+                  <li key={institution.institution_key} className="flex items-center gap-3 py-3">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-ink">{board.board_name}</p>
+                      <p className="truncate text-sm font-semibold text-ink">
+                        {institution.institution_label}
+                      </p>
                       <p className="mt-1 text-xs text-muted">
-                        {formatCount(board.question_count)} questões
+                        <span className="font-mono">
+                          {formatCount(institution.question_count)}
+                        </span>{" "}
+                        questões
                         {years ? ` · ${years}` : ""}
+                        {institution.state ? ` · ${institution.state}` : ""}
                       </p>
                     </div>
                     <Button
                       size="sm"
                       variant="outline"
                       disabled={!online}
-                      onClick={() => add(board)}
+                      onClick={() => add(institution)}
                     >
                       Adicionar
                     </Button>

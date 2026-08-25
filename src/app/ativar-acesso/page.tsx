@@ -24,10 +24,21 @@ import { LoadBar } from "@/components/ui/LoadBar";
  *
  * A saída é a Fácies, onde há algo que funciona de verdade: a leitura da prova é
  * gratuita e não depende de acesso nenhum.
+ *
+ * ## Duas telas, porque são dois estados diferentes
+ *
+ * Desde que a conta passa a nascer com uma avaliação, `expired` deixou de ser um
+ * caso de borda e virou o caminho normal: é quem usou o produto por 14 dias. Essa
+ * pessoa não precisa saber o que a Fácies é — ela acabou de usar. Precisa saber
+ * que o trabalho dela continua guardado.
+ *
+ * `status_de_acesso` já separava "nunca teve" de "teve e venceu"; o que faltava
+ * era a tela ler essa diferença em vez de dar a mesma resposta às duas.
  */
 export default function AtivarAcessoPage() {
   const router = useRouter();
   const [verificando, setVerificando] = useState(true);
+  const [venceu, setVenceu] = useState(false);
 
   useEffect(() => {
     getProfile("")
@@ -37,6 +48,7 @@ export default function AtivarAcessoPage() {
             .then((rota) => router.replace(rota))
             .catch(() => router.replace("/"));
         } else {
+          setVenceu(profile.access_status === "expired");
           setVerificando(false);
         }
       })
@@ -59,11 +71,12 @@ export default function AtivarAcessoPage() {
       <main className="w-full max-w-md">
         <span className="paper-eyebrow">Sua conta</span>
         <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
-          Seu acesso ao app não está ativo.
+          {venceu ? "Sua avaliação terminou." : "Seu acesso ao app não está ativo."}
         </h1>
         <p className="mt-3 text-sm leading-6 text-muted">
-          O app ainda não está aberto para assinatura. Sua conta continua sua — o progresso,
-          as preferências e os dados ficam onde estão, e voltam assim que o acesso for ativado.
+          {venceu
+            ? "Nada do que você fez foi perdido. As questões respondidas, o que o sistema mediu sobre você e a sua prova alvo continuam guardados, e voltam exatamente como estavam quando o acesso for reativado."
+            : "O app ainda não está aberto para assinatura. Sua conta continua sua — o progresso, as preferências e os dados ficam onde estão, e voltam assim que o acesso for ativado."}
         </p>
 
         <div className="mt-6 border-t border-rule pt-5">

@@ -59,6 +59,8 @@ export type StudentTargetExamItem = {
   priority: number;
   label: string;
   board_code: string;
+  /** A chave que efetivamente personaliza. Nula em declaracao anterior a ela. */
+  institution_key: string | null;
   exam_name: string | null;
   exam_date: string | null;
 };
@@ -71,7 +73,9 @@ export type StudentTargetExam = {
 };
 
 export type StudentTargetExamInput = {
-  board_code: string;
+  /** Uma das duas e obrigatoria. `institution_key` e a que personaliza. */
+  board_code?: string | null;
+  institution_key?: string | null;
   exam_name?: string | null;
   exam_date?: string | null;
 };

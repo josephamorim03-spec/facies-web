@@ -360,6 +360,93 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cadastro/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cadastro Status
+         * @description Se o titular pode entrar, e o que falta. Consultado no roteamento.
+         */
+        get: operations["cadastro_status_cadastro_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cadastro/identidade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Salvar Identidade
+         * @description Grava nome, nascimento, situacao profissional e o aceite.
+         *
+         *     Idempotente: reenviar corrige o que foi digitado errado. O aceite nao
+         *     duplica -- `registrar_aceite_do_vigente` ignora versao ja aceita.
+         */
+        post: operations["salvar_identidade_cadastro_identidade_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cadastro/perfil": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Salvar Perfil
+         * @description Grava o perfil declarado do onboarding. Tudo opcional; nada bloqueia.
+         */
+        post: operations["salvar_perfil_cadastro_perfil_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Documento Vigente
+         * @description A versão em vigor de um documento, em Markdown.
+         *
+         *     `publicado=False` quando ainda não há texto: a página renderiza o aviso em vez
+         *     de dar 404, porque a rota existe e a ausência é um estado do produto, não um
+         *     erro do caminho.
+         */
+        get: operations["documento_vigente_legal__kind__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/account/export": {
         parameters: {
             query?: never;
@@ -1079,6 +1166,32 @@ export interface paths {
          * @description Bancas disponíveis (com questões) p/ o aluno escolher as prioritárias.
          */
         get: operations["list_question_bank_boards_question_bank_boards_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/institutions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Question Bank Institutions
+         * @description Provas que o aluno pode declarar como alvo.
+         *
+         *     Existe porque `/boards` não serve a esse papel: `board_code` é NULL em 100%
+         *     do acervo, então a lista chegava vazia e o seletor dizia ao aluno que não
+         *     havia prova publicada. A view por instituição (migration 104 do kbank, 267
+         *     linhas em produção, liberada ao papel de leitura pela 106) estava pronta e
+         *     sem nenhum consumidor deste lado.
+         */
+        get: operations["list_question_bank_institutions_question_bank_institutions_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3873,6 +3986,46 @@ export interface components {
             /** Items */
             items?: components["schemas"]["ItemQualityOut"][];
         };
+        /**
+         * CadastroIdentidade
+         * @description O que o titular informa uma vez, e sem o que nao ha relacao a executar.
+         */
+        CadastroIdentidade: {
+            /** Full Name */
+            full_name: string;
+            /** Birth Date */
+            birth_date: string;
+            /**
+             * Professional Status
+             * @enum {string}
+             */
+            professional_status: "medico" | "academico" | "outro";
+            /** Graduation Year */
+            graduation_year?: number | null;
+            /**
+             * Accepted Terms
+             * @default false
+             */
+            accepted_terms: boolean;
+            /**
+             * Marketing Opt In
+             * @default false
+             */
+            marketing_opt_in: boolean;
+        };
+        /**
+         * CadastroStatusOut
+         * @description O que o frontend precisa para decidir se deixa entrar.
+         */
+        CadastroStatusOut: {
+            /** Cadastro Completo */
+            cadastro_completo: boolean;
+            /**
+             * Aceites Pendentes
+             * @default []
+             */
+            aceites_pendentes: string[];
+        };
         /** CadernoDraftNotePayloadOut */
         CadernoDraftNotePayloadOut: {
             /**
@@ -4499,6 +4652,26 @@ export interface components {
              * @default false
              */
             confirm_impact: boolean;
+        };
+        /**
+         * DocumentoLegalOut
+         * @description A versao em vigor de um documento, ou o aviso de que nao ha nenhuma.
+         *
+         *     `publicado=False` NAO e' erro: e' o estado atual do produto, e a pagina
+         *     renderiza o aviso. Devolver 404 faria a rota parecer quebrada e mandaria o
+         *     frontend tratar ausencia de texto como falha de rede.
+         */
+        DocumentoLegalOut: {
+            /** Kind */
+            kind: string;
+            /** Publicado */
+            publicado: boolean;
+            /** Version */
+            version?: string | null;
+            /** Effective From */
+            effective_from?: string | null;
+            /** Conteudo */
+            conteudo?: string | null;
         };
         /** EntitlementListOut */
         EntitlementListOut: {
@@ -6096,6 +6269,28 @@ export interface components {
             /** Reviews Used */
             reviews_used: number;
         };
+        /**
+         * PerfilDeclarado
+         * @description O que o onboarding pergunta DEPOIS de entrar, e que e' todo opcional.
+         *
+         *     Base legal distinta da identidade: legitimo interesse em melhorar produto e
+         *     aquisicao. Nada aqui bloqueia o uso, e por isso nada aqui e' obrigatorio.
+         *
+         *     ⚠️ Banca NAO entra aqui. `priority_boards` ja vive no perfil e o objetivo em
+         *     `student_objectives` -- e o `student_objectives_service` documenta que os dois
+         *     nao sao sinonimos. Uma terceira fonte para a mesma pergunta e' o comeco de
+         *     tres respostas diferentes.
+         */
+        PerfilDeclarado: {
+            /** Intended Specialty */
+            intended_specialty?: string | null;
+            /** Has Prep Course */
+            has_prep_course?: boolean | null;
+            /** Prep Course Name */
+            prep_course_name?: string | null;
+            /** Discovery Source */
+            discovery_source?: string | null;
+        };
         /** PerformanceAreaSummaryOut */
         PerformanceAreaSummaryOut: {
             /** Area */
@@ -6272,6 +6467,11 @@ export interface components {
              * @default active
              */
             access_status: string;
+            /**
+             * Cadastro Completo
+             * @default false
+             */
+            cadastro_completo: boolean;
         };
         /** ProfileUpdate */
         ProfileUpdate: {
@@ -7296,6 +7496,39 @@ export interface components {
             competency_events?: {
                 [key: string]: unknown;
             }[];
+        };
+        /**
+         * QuestionBankInstitutionOut
+         * @description Uma prova que o aluno pode declarar como alvo.
+         *
+         *     Substitui `QuestionBankBoardOut` neste papel. A banca ficou como camada de
+         *     exibição — `board_code` é NULL em 100% do acervo e o seletor que lia dali
+         *     mostrava lista vazia. `institution_key` cobre 126.355/126.355.
+         */
+        QuestionBankInstitutionOut: {
+            /** Institution Key */
+            institution_key: string;
+            /** Institution Label */
+            institution_label: string;
+            /** Question Count */
+            question_count: number;
+            /**
+             * Recent Question Count
+             * @default 0
+             */
+            recent_question_count: number;
+            /** First Year */
+            first_year?: number | null;
+            /** Last Year */
+            last_year?: number | null;
+            /** State */
+            state?: string | null;
+            /**
+             * Reliable Grain
+             * @default theme
+             * @enum {string}
+             */
+            reliable_grain: "subtheme" | "theme";
         };
         /** QuestionBankItemExclusionIn */
         QuestionBankItemExclusionIn: {
@@ -8408,6 +8641,39 @@ export interface components {
             /** Occurred At */
             occurred_at: string;
         };
+        /**
+         * QuestionBankTargetDemandEvidenceOut
+         * @description O número que sustenta "a sua prova cobra isto", e não só o rótulo.
+         *
+         *     Existe porque `_apply_target_demand` já calculava esta evidência e
+         *     `QuestionBankTopicOut` não a declarava — e o Pydantic descarta campo não
+         *     declarado **em silêncio**. O backend produzia, o schema jogava fora, e a tela
+         *     recebia um tópico indistinguível de um sem personalização nenhuma.
+         *
+         *     Só chega preenchido quando o aluno declarou prova alvo E a instituição tem
+         *     massa naquele grão. Ausente é o caso normal, não erro.
+         */
+        QuestionBankTargetDemandEvidenceOut: {
+            /** Institution Label */
+            institution_label?: string | null;
+            /**
+             * Recent Question Count
+             * @default 0
+             */
+            recent_question_count: number;
+            /**
+             * Institution Recent Question Count
+             * @default 0
+             */
+            institution_recent_question_count: number;
+            /** Node Role */
+            node_role?: string | null;
+            /**
+             * Score
+             * @default 0
+             */
+            score: number;
+        };
         /** QuestionBankTopicOut */
         QuestionBankTopicOut: {
             /** Knowledge Node Id */
@@ -8479,6 +8745,9 @@ export interface components {
              * @default 0
              */
             bank_demand_score: number;
+            /** Target Bank Demand Score */
+            target_bank_demand_score?: number | null;
+            target_demand_evidence?: components["schemas"]["QuestionBankTargetDemandEvidenceOut"] | null;
             /**
              * Recommendation Rank
              * @default 1
@@ -8490,6 +8759,8 @@ export interface components {
              * @enum {string}
              */
             recommendation_reason: "knowledge_gap" | "high_yield" | "under_covered" | "scheduled";
+            /** Recommendation Explanation */
+            recommendation_explanation?: string | null;
             /**
              * Ranking Policy Version
              * @default question-ranking-3-canonical-metadata-zero
@@ -9009,6 +9280,11 @@ export interface components {
             terms_accepted: boolean;
             /** Terms Version */
             terms_version: string;
+            /**
+             * Marketing Opt In
+             * @default false
+             */
+            marketing_opt_in: boolean;
             /** First Name */
             first_name?: string | null;
             /** Last Name */
@@ -9623,7 +9899,9 @@ export interface components {
         /** StudentTargetExamIn */
         StudentTargetExamIn: {
             /** Board Code */
-            board_code: string;
+            board_code?: string | null;
+            /** Institution Key */
+            institution_key?: string | null;
             /** Exam Name */
             exam_name?: string | null;
             /** Exam Date */
@@ -9639,6 +9917,8 @@ export interface components {
             label: string;
             /** Board Code */
             board_code: string;
+            /** Institution Key */
+            institution_key?: string | null;
             /** Exam Name */
             exam_name?: string | null;
             /** Exam Date */
@@ -11707,6 +11987,136 @@ export interface operations {
             };
         };
     };
+    cadastro_status_cadastro_status_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CadastroStatusOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    salvar_identidade_cadastro_identidade_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CadastroIdentidade"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CadastroStatusOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    salvar_perfil_cadastro_perfil_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PerfilDeclarado"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    documento_vigente_legal__kind__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentoLegalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     export_account_data_account_export_get: {
         parameters: {
             query?: never;
@@ -13127,6 +13537,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["QuestionBankBoardOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_question_bank_institutions_question_bank_institutions_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionBankInstitutionOut"][];
                 };
             };
             /** @description Validation Error */

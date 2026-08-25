@@ -32,13 +32,25 @@ import { registrarEvento } from "@/lib/faciesFunnel";
  *      `ENABLE_ADAPTIVE_STUDY_PLAN_V1`, que `factory.py:56` lê com default
  *      `"false"`. O `/banco` nunca cria `session_kind="kros"`.
  *
- *   ❌ "a sua banca cobrou isso em 18 das últimas 1.244 questões" — a evidência
- *      por nó está quebrada em três pontos independentes: `topic_explanation.py`
- *      não tem nenhum importador de produção; `QuestionBankTopicOut` não declara
- *      `target_demand_evidence`, então o Pydantic descarta em silêncio; e
- *      `institution_key` nunca é gravado — o INSERT de
- *      `student_objectives_repo.py:171-182` não inclui a coluna, então
- *      `_apply_target_demand` retorna cedo sempre.
+ *   ⚠️ "a sua banca cobrou isso em 18 das últimas 1.244 questões" — **a cadeia
+ *      foi consertada em 2026-08-24**, e mesmo assim a frase continua FORA desta
+ *      página. Eram cinco quebras, não três: o INSERT de
+ *      `student_objectives_repo` omitia `institution_key`; `browse_topics` nunca
+ *      chamava `_apply_target_demand`; `QuestionBankTopicOut` não declarava
+ *      `target_demand_evidence` (o Pydantic descarta calado); a consulta de
+ *      demanda não trazia `institution_label` nem `recent_question_count`; e
+ *      `topic_explanation.py` não tinha importador. Somava-se uma sexta, do lado
+ *      do kbank: o seletor de prova alvo lia `board_stats_v`, que tem 0 linhas,
+ *      enquanto `krosmed_question_bank_institutions_v` (migration 104) esperava
+ *      sem nenhum consumidor.
+ *
+ *      **Por que não voltar a afirmar aqui.** A cadeia está provada em teste de
+ *      integração ponta a ponta (`tests/test_personalizacao_por_prova_alvo.py`),
+ *      com banco de questões FALSO. Ninguém ainda observou a evidência sair no
+ *      JSON de produção, e esta página é anúncio — CDC art. 30. A ordem é: um
+ *      aluno real declara a prova, a evidência aparece em `/banco`, e SÓ ENTÃO a
+ *      frase volta para cá. Foi presumir o contrário que pôs as duas afirmações
+ *      erradas nesta página nas duas versões anteriores.
  *
  * O que sobrou é o que roda, sem flag, hoje:
  *
@@ -51,7 +63,8 @@ import { registrarEvento } from "@/lib/faciesFunnel";
  *   "cobrada pela sua prova"  → `_target_relevance` (peso 0,15 no score final) e
  *                               o rótulo "cobrada pela sua prova alvo" que o
  *                               ranking já devolve ao aluno. Usa `board_code`,
- *                               que É gravado — diferente de `institution_key`.
+ *                               que É gravado. (`institution_key` passou a ser
+ *                               gravado também, mas é o de cima que vale aqui.)
  *
  * ⚠️ O exemplo é marcado como exemplo. Um artefato assim, sem rótulo, é
  * indistinguível de um print de conta real, e o §17 trata anúncio como

@@ -28,6 +28,7 @@ import {
   type StudyKind,
   getAPIErrorMessage,
 } from "@/lib/api";
+import { motivoDoTopico } from "@/lib/motivoDoTopico";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { invalidateLearningQueries } from "@/lib/queryKeys";
@@ -154,12 +155,33 @@ function topicPathLabel(topic: QuestionBankTopic): string {
   return topic.node_name;
 }
 
-const RECOMMENDATION_REASON_LABEL: Record<QuestionBankTopic["recommendation_reason"], string> = {
-  knowledge_gap: "Lacuna de conhecimento",
-  high_yield: "Alta cobrança",
-  under_covered: "Pouco coberto",
-  scheduled: "Planejado",
-};
+/**
+ * Por que o sistema escolheu este tema — e é isto que o produto vende.
+ *
+ * A DECISÃO mora em `motivoDoTopico`, fora do JSX: ela tem um controle negativo
+ * (sem evidência, nada genérico entra no lugar do número) que precisa de teste
+ * de verdade, e regra presa dentro de componente só se testa por regex no
+ * texto-fonte — que prova que a linha existe, não que ela decide certo.
+ *
+ * Aqui fica só a forma.
+ */
+function TopicReason({ topic }: { topic: QuestionBankTopic }) {
+  const motivo = motivoDoTopico(topic);
+  if (motivo.forma === "evidencia") {
+    return (
+      <p className="mt-1.5 text-sm text-muted">
+        <span className="font-mono font-semibold tabular-nums text-ink">{motivo.cobradas}</span>
+        {" de "}
+        <span className="font-mono tabular-nums text-ink">
+          {motivo.total.toLocaleString("pt-BR")}
+        </span>
+        {" questões recentes da "}
+        {motivo.instituicao}
+      </p>
+    );
+  }
+  return <p className="mt-1.5 text-sm text-muted">{motivo.texto}</p>;
+}
 
 type RecommendedTopicsPanelProps = {
   topics: QuestionBankTopic[];
@@ -255,9 +277,7 @@ function RecommendedTopicsPanel({
                 <b className="font-mono text-xl font-semibold tabular-nums text-marca">{topic.question_count}</b>
                 <span className="text-sm text-muted">questões disponíveis</span>
               </p>
-              <p className="mt-1.5 text-sm text-muted">
-                {RECOMMENDATION_REASON_LABEL[topic.recommendation_reason]}
-              </p>
+              <TopicReason topic={topic} />
             </button>
           );
         })}

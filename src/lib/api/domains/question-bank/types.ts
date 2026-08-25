@@ -51,6 +51,26 @@ export type QuestionBankBoard = {
   last_year?: number | null;
 };
 
+/**
+ * Uma prova que o aluno pode declarar como alvo.
+ *
+ * Substitui `QuestionBankBoard` nesse papel. A lista de bancas chega VAZIA:
+ * `board_code` é NULL em 100% do acervo, então o seletor que lia dali dizia ao
+ * aluno que não havia prova publicada. `institution_key` cobre o acervo inteiro.
+ */
+export type QuestionBankInstitution = {
+  institution_key: string;
+  institution_label: string;
+  question_count: number;
+  /** Últimos 6 anos — banca muda de foco, e a média de 20 anos esconde isso. */
+  recent_question_count: number;
+  first_year?: number | null;
+  last_year?: number | null;
+  state: string | null;
+  /** Até onde o ranking desta instituição desce sem virar ruído. */
+  reliable_grain: "subtheme" | "theme";
+};
+
 export type QuestionBankSourceOption = {
   option_key: string;
   label: string;
@@ -131,12 +151,33 @@ export type QuestionBankTopic = {
   last_seen_year?: number | null;
   recurrence_score: number;
   bank_demand_score: number;
+  /** A demanda da prova ALVO, quando o aluno declarou uma. `null` é o caso normal. */
+  target_bank_demand_score?: number | null;
+  target_demand_evidence?: QuestionBankTargetDemandEvidence | null;
   board_frequency: Record<string, number>;
   charge_patterns: Record<string, number>;
   answer_types: Record<string, number>;
   recommendation_rank: number;
   recommendation_reason: "knowledge_gap" | "high_yield" | "under_covered" | "scheduled";
+  /** O motivo em uma frase, montada no backend. Nunca cita número que não tem. */
+  recommendation_explanation?: string | null;
   ranking_policy_version: string;
+};
+
+/**
+ * O número por trás de "a sua prova cobra isto".
+ *
+ * Só vem preenchido quando o aluno declarou prova alvo E a instituição tem massa
+ * naquele grão. Ausente é o caso normal — e a tela NÃO deve inventar texto
+ * genérico no lugar: um "recomendado para você" sem número é o que faz o aluno
+ * parar de acreditar no resto.
+ */
+export type QuestionBankTargetDemandEvidence = {
+  institution_label: string | null;
+  recent_question_count: number;
+  institution_recent_question_count: number;
+  node_role: string | null;
+  score: number;
 };
 
 export type QuestionBankBootstrap = {
