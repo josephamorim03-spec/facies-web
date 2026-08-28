@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { RedirectIfAuthenticated } from "./_components/RedirectIfAuthenticated";
 import { FunilHome } from "./_components/FunilHome";
+import { BuscaDeProva } from "@/components/facies/BuscaDeProva";
 import { FaixaAreas } from "@/components/facies/FaixaAreas";
 import { SecaoAposta } from "@/components/facies/SecaoAposta";
 import { SecaoNoveMedidas } from "@/components/facies/SecaoNoveMedidas";
@@ -80,10 +81,19 @@ export default function Home() {
           com fichas claras por cima). Os dois vêm do projeto de design — os
           artboards do webapp concordam com o app, só a landing inverte. */}
       <main className="paper-page pb-0">
-        <section className="sec">
-          <div className={CONT}>
-            <CabecalhoPublico />
+        {/* O CABEÇALHO FICA FORA DO HERÓI, e isso não é detalhe de marcação.
+            Ele estava dentro do `.sec`, herdando o `padding-block` de 96px do
+            ritmo de seção — então a página abria com quase 120px de nada antes
+            da wordmark. O respiro de `--bloco` existe para separar SEÇÕES; o
+            cabeçalho não é uma, é o topo do documento. */}
+        <div className={`${CONT} pt-6`}>
+          <CabecalhoPublico />
+        </div>
 
+        {/* `pt-8` e não `--bloco`: o herói já vem depois da régua do cabeçalho,
+            e o respiro cheio de seção duplicaria a separação que a régua faz. */}
+        <section className="pb-8 pt-8">
+          <div className={CONT}>
             {/* ── A FAIXA ABRE A PÁGINA — direção 1b ──────────────────────
                 As outras duas direções (1a prontuário, 1c petróleo) penduram na
                 primeira tela a frase "pesa N pontos a mais que na média das
@@ -94,7 +104,7 @@ export default function Home() {
                 caras diferentes. Abrir com a cara é mostrar a afirmação antes de
                 fazê-la. */}
             {provaEmDestaque ? (
-              <section aria-labelledby="abertura-faixa" className="mt-10">
+              <section aria-labelledby="abertura-faixa">
                 <h2 id="abertura-faixa" className="paper-eyebrow">
                   {/* A BASE É A APLICAÇÃO DIRETA, e não a série inteira.
                       `areas.linhas` soma exatamente `base.direta.questoes`;
@@ -133,6 +143,24 @@ export default function Home() {
               Isto aí em cima é a cara do {provaEmDestaque?.sigla ?? "ENAMED"}, medida questão
               por questão. Cada prova tem a{" "}
               <span className="text-marcaViva">sua</span> — e ela muda o que vale estudar.
+            </p>
+
+            {/* A BUSCA, que faltava. O seletor de cartões abaixo mostra quatro
+                provas em destaque e é ótimo nisso; o que ele não faz é achar a
+                SUA entre 141. Quem presta a quinta lia que existe uma leitura
+                da prova dele e não tinha como pedi-la — falha cara numa página
+                cuja tese é "a sua prova". */}
+            <BuscaDeProva />
+
+            {/* A DICA DE ROLAGEM voltou. Eu a removi no porte, e ela não era
+                decoração: quem chega por link compartilhado não sabe que a
+                página continua. A v7 tem a mesma linha ("↓ a cara completa do
+                ENAMED, logo abaixo") pelo mesmo motivo. */}
+            <p className="mt-9 flex items-center gap-2.5 text-sm text-muted">
+              <span aria-hidden="true">↓</span>
+              {provaEmDestaque
+                ? `a cara completa do ${provaEmDestaque.sigla}, logo abaixo`
+                : "a leitura completa, logo abaixo"}
             </p>
           </div>
         </section>

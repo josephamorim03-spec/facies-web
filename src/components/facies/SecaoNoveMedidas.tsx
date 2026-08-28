@@ -83,9 +83,15 @@ function Numero({
 }) {
   return (
     <div>
-      <div className="font-mono text-3xl text-ink">{valor}</div>
-      <div className="mt-1 text-base text-ink">{rotulo}</div>
-      <p className="mt-1 text-sm text-muted">{nota}</p>
+      {/* 26px no celular, 40px a partir de 760px — a escala de `.numeros` da
+          v7. `tabular-nums` porque estes números ficam empilhados numa grade:
+          sem largura fixa de algarismo, as colunas não alinham e o painel lê
+          como desleixo num produto cujo argumento é medição. */}
+      <div className="font-mono text-[26px] leading-none tabular-nums text-ink sm:text-[40px]">
+        {valor}
+      </div>
+      <div className="mt-2 text-base text-ink">{rotulo}</div>
+      <p className="mt-1.5 text-sm text-muted">{nota}</p>
     </div>
   );
 }
@@ -111,7 +117,11 @@ export function SecaoNoveMedidas({ prova }: { prova?: Prova | null }) {
           aberto. Não é opinião de quem passou nem lembrança de quem fez a prova.
         </p>
 
-        <div className="mt-10 grid gap-6 border-y border-rule py-6 sm:grid-cols-3">
+        {/* 2 colunas no celular e 4 no desktop — a grade de `.numeros`. Três
+            colunas era a minha leitura, não a do desenho: com 2 no celular os
+            números ficam lado a lado em vez de empilhados, e o trio lê como
+            painel de medida em vez de lista. */}
+        <div className="mt-10 grid grid-cols-2 gap-6 border-y border-rule py-6 sm:gap-7 lg:grid-cols-4">
           <Numero
             valor={String(MEDIDAS.length)}
             rotulo="medidas em cada questão"

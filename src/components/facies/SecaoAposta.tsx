@@ -1,3 +1,4 @@
+import { ContagemGigante } from "./ContagemGigante";
 import { RotuloSecao } from "./RotuloSecao";
 import { dec } from "@/lib/decimal";
 import type { Prova } from "@/lib/provas";
@@ -86,7 +87,13 @@ export function SecaoAposta({ prova }: { prova: Prova }) {
           o que ficou de fora.
         </p>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+        {/* A COMPOSIÇÃO É A DA v7: à esquerda o que fica guardado e a linha do
+            tempo; à direita a contagem gigante. Eu tinha empilhado tudo em
+            largura cheia e trocado a contagem por um link — a informação
+            chegava e a função se perdia, porque é o número crescendo que dá
+            urgência à seção sem uma linha de texto. */}
+        <div className="mt-10 grid items-start gap-10 lg:grid-cols-[1fr_auto]">
+          <div className="grid gap-6">
           {/* Véu, e não cartão sólido: dentro da faixa nenhuma superfície clara
               cheia, senão o bloco recorta um buraco e a faixa vira moldura. */}
           <div className="veu p-5 sm:p-6">
@@ -131,23 +138,47 @@ export function SecaoAposta({ prova }: { prova: Prova }) {
               </p>
             </div>
           ) : null}
+
+            {/* A linha do tempo. `<ol>` porque a ordem É a informação, e a
+                ÚLTIMA linha é a que importa — é onde a conta é publicada.
+                A v7 marca só ela com `destaque`. */}
+            <ol className="space-y-4">
+              {LINHA_DO_TEMPO.map((etapa, indice) => {
+                const ultima = indice === LINHA_DO_TEMPO.length - 1;
+                return (
+                  <li
+                    key={etapa.quando}
+                    className={`flex flex-col gap-1 sm:flex-row sm:gap-5 ${
+                      ultima ? "border-l-2 border-[color:var(--veu-borda)] pl-4 sm:pl-5" : ""
+                    }`}
+                  >
+                    <span className="shrink-0 font-mono text-base sm:w-16">{etapa.quando}</span>
+                    <span
+                      className={`max-w-[58ch] text-base ${ultima ? "" : "apoio"}`}
+                    >
+                      {etapa.o_que}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+
+          {/* A coluna da contagem. `lg:w-auto` porque a `.gigante` define a
+              própria largura — é o número que manda no espaço, não o contrário. */}
+          <div className="lg:min-w-[18rem]">
+            <ContagemGigante alvoIso={prevista} />
+            <p className="mt-6 border-t border-[color:var(--veu-borda)] pt-5 text-base">
+              <a href="#aviso" className="link-alvo underline underline-offset-4">
+                Quero receber no dia {curta(publicacao)} ↓
+              </a>
+            </p>
+            <p className="apoio mt-4 text-sm">
+              Só escrevemos quando algo muda na sua prova. Umas cinco vezes por ciclo, no
+              máximo.
+            </p>
+          </div>
         </div>
-
-        {/* A linha do tempo. `<ol>` porque a ordem É a informação. */}
-        <ol className="mt-10 space-y-4">
-          {LINHA_DO_TEMPO.map((etapa) => (
-            <li key={etapa.quando} className="flex flex-col gap-1 sm:flex-row sm:gap-5">
-              <span className="shrink-0 font-mono text-base sm:w-16">{etapa.quando}</span>
-              <span className="apoio max-w-[62ch] text-base">{etapa.o_que}</span>
-            </li>
-          ))}
-        </ol>
-
-        <p className="mt-10 border-t border-[color:var(--veu-borda)] pt-6 text-base">
-          <a href="#aviso" className="underline underline-offset-4">
-            Receba a leitura no dia {curta(publicacao)}, junto com o resultado da aposta ↓
-          </a>
-        </p>
       </div>
     </section>
   );

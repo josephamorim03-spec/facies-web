@@ -69,19 +69,38 @@ export function FaciesPicker({
 
   return (
     <div id="seletor" className="grid gap-4 scroll-mt-6">
-      {/* CARTÃO, e não pílula — e a faixa colorida é a razão inteira.
-          A fileira de pílulas dizia só o NOME, então a página afirmava que cada
-          prova tem uma fácies e o seletor mostrava sete rótulos idênticos. Com
-          a faixa, duas provas de perfil diferente ficam visivelmente diferentes
-          ANTES de abrir qualquer uma — que é a tese da página acontecendo no
-          primeiro olhar, e não depois de dois cliques.
+      {/* ── PÍLULA, e não cartão — e a condição que decidia isso MUDOU ──────
+          Este seletor foi cartão com faixa colorida, e a razão era boa: a
+          página afirma que cada prova tem cara própria, e sete rótulos
+          idênticos não mostravam nada. A faixa fazia a tese acontecer no
+          primeiro olhar.
 
-          A largura de cada segmento é o peso da grande área. Ver FaixaAreas. */}
+          O que mudou é que a tese passou a acontecer ACIMA. A direção `1b` do
+          projeto de design abriu a página com a faixa da prova em destaque, em
+          76px de altura e com legenda nomeada — grande, legível, uma só. Com
+          ela ali, os quatro cartões viraram a MESMA afirmação repetida em
+          miniatura, empurrando a busca e a leitura para baixo.
+
+          Então a faixa subiu e o seletor encolheu para o que a v7 desenha: a
+          `.atalhos`, uma fileira de pílulas com o nome. `flex-wrap` e não
+          grade — grade de 4 colunas ESTICA cada pílula até a coluna, e um
+          retângulo largo com duas palavras dentro volta a ler como cartão.
+          A pílula tem a largura do próprio nome; é isso que a faz parecer
+          atalho e não item de catálogo.
+
+          ⚠️ O NÚMERO SAIU de dentro delas, e isto é a correção de um problema
+          que este arquivo já tinha documentado: o ENAMED mostrava a base da
+          aplicação DIRETA (90) ao lado do acervo inteiro das bancas (1.060,
+          1.137). São grandezas diferentes na mesma fileira, e lado a lado a
+          prova nacional parecia a menor de todas. A v7 põe só o nome na
+          pílula, e a contagem certa de cada uma aparece no painel abaixo,
+          onde há espaço para dizer de que ela é contagem. */}
       <div
-        className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4"
+        className="flex flex-wrap items-center gap-2"
         role="group"
         aria-label="Escolha a prova"
       >
+        <span className="paper-eyebrow mr-1">mais buscadas</span>
         {/* O ENAMED É O PRIMEIRO CHIP, e não mais um cartão separado acima.
             Ele e o seletor faziam a MESMA coisa — mostrar a fácies de uma prova
             — em duas superfícies diferentes, uma competindo com a outra, e o
@@ -97,33 +116,13 @@ export function FaciesPicker({
               setAtiva(PROVA);
               registrarEvento("destaque_clicado", prova.exam_key);
             }}
-            className={`paper-control block rounded-surface border p-3 text-left transition ${
+            className={`paper-control inline-flex min-h-11 items-center gap-2 rounded-surface border px-4 py-2.5 text-sm font-medium transition ${
               mostrandoProva
-                ? "border-primary bg-surfaceMuted"
-                : "border-edge bg-surface hover:bg-surfaceMuted"
+                ? "border-primary bg-primary text-primaryInk"
+                : "border-rule bg-transparent text-ink hover:border-muted"
             }`}
           >
-            <FaixaAreas linhas={prova.areas.linhas} />
-            <span className="mt-3 flex flex-wrap items-baseline gap-x-2">
-              <b className="text-sm font-semibold text-ink">{prova.sigla}</b>
-              {mostrandoProva ? (
-                <span className="paper-eyebrow text-primary">selecionada</span>
-              ) : null}
-            </span>
-            {/* MESMA GRANDEZA DOS OUTROS CHIPS: questões e janela de anos.
-                Este dizia "90 questões · 9 aplicações" enquanto os vizinhos
-                diziam "2.483 questões · 2017–2026" — duas unidades diferentes na
-                mesma fileira, e a única comparável (o ano) faltava justamente no
-                primeiro cartão.
-
-                O número que entra é o da aplicação DIRETA, não os 2.031 da
-                série: é ele que corresponde ao que os outros chips mostram, e
-                pôr 2.031 aqui compararia a série inteira de uma prova com a
-                contagem crua das outras. Que a base direta seja pequena é
-                verdade, e a página inteira já a carrega. */}
-            <span className="mt-1 block font-mono text-micro text-muted">
-              {prova.base.direta.questoes} questões · {prova.base.direta.anos.join("–")}
-            </span>
+            {prova.sigla}
           </button>
         ) : null}
         {bancas.map((opcao, indice) => {
@@ -138,31 +137,25 @@ export function FaciesPicker({
                 setAtiva(indice);
                 registrarEvento("facies_banca_trocada", opcao.institution_key);
               }}
-              className={`paper-control block rounded-surface border p-3 text-left transition ${
+              className={`paper-control inline-flex min-h-11 items-center gap-2 rounded-surface border px-4 py-2.5 text-sm font-medium transition ${
                 selecionada
-                  ? "border-primary bg-surfaceMuted"
-                  : "border-edge bg-surface hover:bg-surfaceMuted"
+                  ? "border-primary bg-primary text-primaryInk"
+                  : "border-rule bg-transparent text-ink hover:border-muted"
               }`}
             >
-              <FaixaAreas linhas={opcao.areas.linhas} />
-              <span className="mt-3 flex flex-wrap items-baseline gap-x-2">
-                <b className="text-sm font-semibold text-ink">{rotulo}</b>
-                {selecionada ? (
-                  <span className="paper-eyebrow text-primary">selecionada</span>
-                ) : null}
-              </span>
-              <span className="mt-1 block font-mono text-micro text-muted">
-                {opcao.total.toLocaleString("pt-BR")} questões · {opcao.primeiro_ano}–
-                {opcao.ultimo_ano}
-              </span>
+              {rotulo}
             </button>
           );
         })}
+        {/* LINK, e não mais um chip tracejado. Ele não é uma prova — é a saída
+            para a lista inteira, e vesti-lo de chip o fazia disputar com as
+            provas de verdade como se fosse a oitava opção. É a `.linkish` da
+            v7: sublinhado, sem borda, sem fundo. */}
         <Link
           href="/facies"
-          className="paper-control flex items-center justify-center rounded-surface border border-dashed border-edge bg-surface p-3 text-sm text-muted transition hover:bg-surfaceMuted"
+          className="link-alvo ml-1 text-sm text-marcaViva underline underline-offset-4"
         >
-          Ver as outras bancas
+          ver todas
         </Link>
       </div>
 

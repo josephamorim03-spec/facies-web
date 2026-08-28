@@ -480,42 +480,61 @@
      responsivo é emitido depois na folha, então `sm:text-*` sobrescreveria
      qualquer `leading-*` escrito ao lado. Já custou uma entrelinha de 1,0 em
      produção que ninguém via no JSX. */
-  .paper-page h1 {
+  /* ⚠️ `:not(.paper-eyebrow)` NÃO É DEFENSIVO — é a correção de um bug que foi
+     para produção.
+
+     A v7 estiliza `h1/h2/h3` nus porque a marcação dela nunca põe classe de
+     rótulo num heading. A nossa põe: o rótulo de abertura é um `h2` porque
+     ESTRUTURALMENTE é um cabeçalho de seção, e ele carrega `.paper-eyebrow`
+     para ser 11px em mono.
+
+     Seletor de elemento dentro de classe tem especificidade (0,1,1);
+     `.paper-eyebrow` tem (0,1,0). O elemento ganha. Resultado em produção: o
+     rótulo "ENAMED · 90 questões · o peso de cada área" saiu em 28px versal
+     com tracking de .08em — ocupando duas linhas e gritando mais que o `h1`.
+
+     É a mesma família da armadilha que esta base já documentou (o `text-*` do
+     Tailwind vencendo `leading-*`), e eu a reintroduzi por outro caminho:
+     escrevi a regra olhando o CSS do desenho em vez de olhar a MINHA marcação.
+     A lição não é "use :not" — é que classe utilitária e seletor de elemento
+     no mesmo escopo sempre vão disputar, e quem perde é a que tem menos
+     especificidade, não a que foi escrita depois. */
+  .paper-page h1:not(.paper-eyebrow) {
     font-size: 38px;
     line-height: 1.38;
     letter-spacing: -0.02em;
   }
 
-  .paper-page h2 {
+  .paper-page h2:not(.paper-eyebrow) {
     font-size: 28px;
     line-height: 1.32;
     letter-spacing: -0.015em;
     margin-bottom: 20px;
   }
 
-  .paper-page h3 {
+  .paper-page h3:not(.paper-eyebrow) {
     font-size: 19px;
     line-height: 1.35;
   }
 
   @media (min-width: 760px) {
-    .paper-page h1 {
+    .paper-page h1:not(.paper-eyebrow) {
       font-size: 76px;
       letter-spacing: -0.03em;
     }
 
-    .paper-page h2 {
+    .paper-page h2:not(.paper-eyebrow) {
       font-size: 46px;
       margin-bottom: 28px;
     }
 
-    .paper-page h3 {
+    .paper-page h3:not(.paper-eyebrow) {
       font-size: 21px;
     }
   }
 
   @media (min-width: 1040px) {
-    .paper-page h1 {
+    .paper-page h1:not(.paper-eyebrow) {
       font-size: 96px;
     }
   }
@@ -524,6 +543,25 @@
      desenhar borda nenhuma. */
   .sec--sup {
     background: var(--color-surface);
+  }
+
+  /* ALVO DE TOQUE de 44px — handoff §5, "incluindo links textuais".
+     Vale para o link que age como CTA, e não para link dentro de prosa: um
+     `min-height` em toda âncora esticaria a linha do parágrafo e quebraria a
+     entrelinha da leitura. Por isso é uma classe, e não um seletor de `a`.
+     `inline-flex` para a altura valer sem o link virar bloco. */
+  .link-alvo {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Todo número em mono nesta página é DADO EMPILHADO — percentual de área,
+     contagem, data. Sem largura fixa de algarismo as colunas não alinham,
+     porque o `1` da proporcional é mais estreito que os outros. Numa página
+     cujo argumento inteiro é medição, coluna torta lê como desleixo. */
+  .paper-page .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 
   /* ══ A FAIXA PETRÓLEO ═══════════════════════════════════════════════════

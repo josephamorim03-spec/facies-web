@@ -18,10 +18,20 @@
  */
 export function RotuloSecao({ numero, children }: { numero: string; children: React.ReactNode }) {
   return (
-    <div className="paper-eyebrow flex items-baseline gap-2">
-      <span aria-hidden="true" className="text-marcaViva">
+    // `items-center` e não `items-baseline`: o traço não tem linha de base, e
+    // alinhá-lo por ela o joga para o pé do texto.
+    <div className="paper-eyebrow flex items-center gap-3">
+      {/* O tracking do número é MAIOR que o do rótulo (.14em contra .08em), e
+          isso não é descuido do desenho: o número tem dois caracteres e, no
+          espaçamento do rótulo, ele fecha num bloco que lê como uma palavra
+          curta em vez de uma numeração. */}
+      <span aria-hidden="true" className="tracking-[0.14em] text-marcaViva">
         {numero}
       </span>
+      {/* O TRAÇO, que estava faltando. 36×2px na cor da régua — é ele que faz
+          o rótulo ler como cabeçalho de documento numerado em vez de duas
+          palavras soltas. Some para quem ouve: não carrega informação. */}
+      <span aria-hidden="true" className="h-0.5 w-9 shrink-0 bg-rule" />
       <span>{children}</span>
     </div>
   );

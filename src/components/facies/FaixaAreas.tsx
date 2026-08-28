@@ -51,8 +51,13 @@ const ALTURAS = {
   chip: "h-6 gap-px",
   /** prévia do topo: 56px no celular, 76px no desktop */
   previa: "h-14 gap-0.5 sm:h-[76px]",
-  /** bloco de leitura: 84px */
-  leitura: "h-[84px] gap-0.5",
+  /** bloco de leitura: 84px no celular, 150px no desktop.
+   *
+   * O salto é grande de propósito. Na prévia a faixa é uma miniatura que
+   * convida; no bloco de leitura ela É o objeto da frase, e a 84px num monitor
+   * ela volta a parecer miniatura — o leitor procura o gráfico "de verdade"
+   * abaixo dela e não encontra nada. */
+  leitura: "h-[84px] gap-0.5 sm:h-[150px]",
 } as const;
 
 export function FaixaAreas({
@@ -141,18 +146,27 @@ export function FaixaAreas({
           `aria-hidden` porque a faixa acima já leva a mesma informação no
           `aria-label` — sem isso o leitor de tela ouviria os sete percentuais
           duas vezes seguidas. */}
+      {/* GRADE, e não `flex-wrap`. Com sete áreas de nome longo, o wrap produz
+          uma linha cheia e outra com dois itens soltos, e o olho perde a
+          correspondência com a ordem da faixa. A grade de 1 → 2 → 3 colunas
+          mantém as posições estáveis em qualquer largura, que é o que permite
+          ler a legenda como índice da faixa e não como lista avulsa. */}
       <ul
         aria-hidden="true"
-        className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-muted"
+        className="mt-4 grid grid-cols-1 gap-2 text-sm text-muted sm:grid-cols-2 lg:grid-cols-3"
       >
         {segmentos.map(({ area, ...linha }) => (
-          <li key={linha.rotulo} className="flex items-center gap-1.5">
+          <li key={linha.rotulo} className="flex items-center gap-2 whitespace-nowrap">
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-control"
               style={{ background: AREA_VAR[area] ?? AREA_VAR.OU }}
             />
             {AREA_FULL_LABELS[area]}
-            <span className="font-mono text-ink">{linha.pct.toFixed(0)}%</span>
+            {/* `tabular-nums`: sem isso os percentuais dançam de linha para
+                linha, porque o `1` da proporcional é mais estreito que os
+                outros algarismos — e uma coluna de números desalinhada num
+                produto que vende medição lê como desleixo. */}
+            <span className="font-mono tabular-nums text-ink">{linha.pct.toFixed(0)}%</span>
           </li>
         ))}
       </ul>

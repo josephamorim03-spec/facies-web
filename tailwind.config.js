@@ -16,6 +16,11 @@ module.exports = {
         ink: "var(--color-ink)",
         muted: "var(--color-muted)",
         primary: "var(--color-primary)",
+        // O estado :hover/:active da ação primária. O token existia em
+        // `globals.css` desde sempre e NUNCA teve entrada aqui — então
+        // `hover:bg-primaryStrong` não gerava CSS nenhum e o botão não
+        // respondia ao ponteiro, em silêncio.
+        primaryStrong: "var(--color-primary-strong)",
         primaryInk: "var(--color-primary-ink)",
         // O acento da wordmark, em DOIS tokens — a divisão é por regime da
         // WCAG, não por significado. `primary` precisa de contraste contra o
