@@ -120,7 +120,15 @@ export function FaixaAreas({
         return (
           <span
             key={linha.rotulo}
-            title={`${AREA_FULL_LABELS[area]} ${linha.pct.toFixed(0)}%`}
+            /* SEM `title`. O balão nativo do navegador é do NAVEGADOR, não do
+               desenho: a v7 tem um `title` no arquivo inteiro e nenhum nos
+               segmentos. Ele desenhava uma caixa branca por cima da faixa —
+               visível na captura de produção — e o handoff diz por que não:
+               "a leitura do mapa fica FORA da grade, em região viva; balão
+               sobre grade some atrás do dedo no celular".
+
+               Quem carrega a leitura é a legenda abaixo e o `aria-label` da
+               faixa. Os dois dizem o mesmo, e melhor. */
             style={{
               // `flexBasis` proporcional em vez de `width`: com o `gap` entre
               // sete segmentos, larguras em porcentagem somariam mais que 100%

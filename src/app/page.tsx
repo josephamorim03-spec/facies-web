@@ -65,7 +65,10 @@ export const metadata: Metadata = {
 };
 
 /** O contêiner único da v7: 1080px com a goteira em token. */
-const CONT = "mx-auto w-full max-w-5xl px-[var(--gutter)]";
+// 1080px é o `.cont` do desenho, MEDIDO nele renderizado. `max-w-5xl` são
+// 1024 — 56px a menos, que em 1440 encolhe a coluna inteira e faz a manchete
+// quebrar antes do ponto onde o desenho a quebra.
+const CONT = "mx-auto w-full max-w-[1080px] px-[var(--gutter)]";
 
 export default function Home() {
   const destaques = bancasEmDestaque();
@@ -139,7 +142,7 @@ export default function Home() {
               Você sabe o que a sua prova cobra?
             </h1>
 
-            <p className="mt-5 max-w-[56ch] text-lg text-muted">
+            <p className="lede mt-5 text-muted">
               Isto aí em cima é a cara do {provaEmDestaque?.sigla ?? "ENAMED"}, medida questão
               por questão. Cada prova tem a{" "}
               <span className="text-marcaViva">sua</span> — e ela muda o que vale estudar.

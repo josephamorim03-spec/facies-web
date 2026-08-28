@@ -459,21 +459,31 @@
   }
 
   /* ══ ESCALA TIPOGRÁFICA DA PÁGINA PÚBLICA ═══════════════════════════════
-     Os TAMANHOS são os da v7: 38 → 76 (760px) → 96 (1040px) no h1, 28 → 46 no
-     h2. A ENTRELINHA não é, e a razão é aritmética, não gosto.
+     TAMANHO E ENTRELINHA SÃO OS DO DESENHO, medidos nele RENDERIZADO — não
+     lidos do CSS dele. A diferença não é preciosismo: transcrever produziu
+     três valores errados que só apareceram ao renderizar.
 
-     A v7 pede 1,08 no celular e 1,02 no desktop. Com a Source Serif 4 — a
-     fonte de manchete que o próprio design escolheu — a descendente desce
-     0,335em abaixo da linha de base e o acento de maiúscula sobe 0,95em acima
-     dela. A descendente da linha N invade o acento da linha N+1 quando
+       h1   38 / 1,08   →  76 / 1,02 (760)  →  96 (1040)
+       h2   28          →  46 (760)         →  54 (1040)   <- o 54 faltava
+       h3   17 fixo                                        <- eu subia p/ 21
 
-         entrelinha < 0,95 + 0,335 = 1,285
+     ⚠️ A ENTRELINHA VOLTOU PARA A DO DESENHO, e a correção anterior era minha.
 
-     Ou seja: 1,02 e 1,08 encostam SEMPRE que um acento cair sob uma
-     descendente — e em português isso não é raro, é o caso comum. O repo já
-     tinha chegado a 1,38 medindo captura de tela (o "p" de "prova" caindo
-     sobre o "é" de "Esta"); a conta acima chega ao mesmo lugar por outro
-     caminho, e é por isso que o valor medido fica.
+     Eu tinha imposto 1,38 a partir de um limiar TEÓRICO: a Source Serif 4
+     desce 0,335em na descendente e sobe 0,95em no acento, logo abaixo de
+     1,285 as duas tintas se cruzariam. A conta está certa e a aplicação
+     estava errada — ela vale para o par (descendente, acento) que de fato
+     caia um sobre o outro, e a manchete real quebra em "…o que a / sua prova
+     cobra?", cuja segunda linha não tem acento nenhum.
+
+     Resultado: o herói ficou 35% mais alto que o do design, por uma colisão
+     que não acontecia. Limiar global cobra o preço em toda manchete para
+     proteger as poucas que precisam.
+
+     Quem vigia isso agora é `scripts/spec-do-design.mjs`, que mede a
+     SOBREPOSIÇÃO REAL de linha na página renderizada. Quando uma manchete
+     colidir de verdade, o conserto é NELA — quebra declarada, como o `&nbsp;`
+     que a home já usa — e não na escala inteira.
 
      A escala é declarada em `font-size`/`line-height` no MESMO bloco, e não em
      utilitário do Tailwind: `text-5xl` carrega line-height junto e o
@@ -501,25 +511,40 @@
      especificidade, não a que foi escrita depois. */
   .paper-page h1:not(.paper-eyebrow) {
     font-size: 38px;
-    line-height: 1.38;
+    line-height: 1.08;
     letter-spacing: -0.02em;
   }
 
   .paper-page h2:not(.paper-eyebrow) {
     font-size: 28px;
-    line-height: 1.32;
+    line-height: 1.14;
     letter-spacing: -0.015em;
     margin-bottom: 20px;
   }
 
+  /* O h3 é FIXO em 17px em toda largura. Ele subia para 19 e depois 21 aqui,
+     que foi invenção minha: medido no desenho renderizado, ele não se move em
+     nenhum dos quatro pontos de quebra. Um h3 crescendo junto com o h1 come a
+     distância entre os dois níveis, e a hierarquia achata justamente onde há
+     mais espaço para mostrá-la. */
+  /* A LEDE: 17px no celular, 19px a partir de 760. `text-lg` do Tailwind é
+     18px fixo — perto o bastante para eu não ter olhado, e errado nos dois
+     pontos de quebra. É a classe `.chamada` do desenho. */
+  .paper-page .lede {
+    font-size: 17px;
+    line-height: 1.55;
+    max-width: 54ch;
+  }
+
   .paper-page h3:not(.paper-eyebrow) {
-    font-size: 19px;
+    font-size: 17px;
     line-height: 1.35;
   }
 
   @media (min-width: 760px) {
     .paper-page h1:not(.paper-eyebrow) {
       font-size: 76px;
+      line-height: 1.02;
       letter-spacing: -0.03em;
     }
 
@@ -528,14 +553,21 @@
       margin-bottom: 28px;
     }
 
-    .paper-page h3:not(.paper-eyebrow) {
-      font-size: 21px;
+    .paper-page .lede {
+      font-size: 19px;
     }
   }
 
+  /* O TERCEIRO DEGRAU, que a transcrição perdeu. O h2 vai a 54px a partir de
+     1040 — só apareceu medindo o desenho renderizado nessa largura. Ler o CSS
+     dava 46 e parava ali. */
   @media (min-width: 1040px) {
     .paper-page h1:not(.paper-eyebrow) {
       font-size: 96px;
+    }
+
+    .paper-page h2:not(.paper-eyebrow) {
+      font-size: 54px;
     }
   }
 
