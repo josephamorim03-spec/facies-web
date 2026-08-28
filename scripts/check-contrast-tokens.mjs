@@ -196,6 +196,65 @@ for (const theme of ["light", "dark"]) {
     }
   }
 
+  /**
+   * A FAIXA PETROLEO, e ela e o buraco que este arquivo tinha.
+   *
+   * Todo o resto aqui cruza token OPACO contra token OPACO. A `.sec--marca` nao
+   * e feita assim: ela empilha veus com ALFA sobre o `--color-primary`, e o
+   * valor que o olho recebe so existe depois da composicao. Nenhum par de
+   * tokens descreve essa cor, entao ela passava por baixo do gate inteiro.
+   *
+   * Medido quando a faixa foi construida, com os percentuais que o handoff
+   * pede: o apoio a 74% dava 3,82 sobre a faixa e 3,08 sobre o veu, e a borda
+   * a 30% dava 1,80 — abaixo dos 3:1 de limite de componente. Os tres numeros
+   * sao invisiveis para um gate que so le hex.
+   *
+   * As porcentagens sao LIDAS do CSS, e nao repetidas aqui: um valor copiado
+   * diverge do arquivo na primeira mudanca e o gate passa a medir uma faixa
+   * que nao existe mais.
+   */
+  const faixa = css.match(/\.sec--marca\s*\{([\s\S]*?)\n\s{2}\}/)?.[1] ?? "";
+  const alfa = (nome) => {
+    const m = faixa.match(
+      new RegExp(`--${nome}:\\s*color-mix\\(in srgb, var\\(--color-primary-ink\\) (\\d+)%`),
+    );
+    return m ? Number(m[1]) / 100 : null;
+  };
+  const compor = (frente, fundo, a) => {
+    const px = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const [f, b] = [px(frente), px(fundo)];
+    return (
+      "#" +
+      [0, 1, 2]
+        .map((i) => Math.round(a * f[i] + (1 - a) * b[i]).toString(16).padStart(2, "0"))
+        .join("")
+    );
+  };
+
+  const banda = get("--color-primary");
+  const tintaBanda = get("--color-primary-ink");
+  for (const [nome, minimo, rotulo] of [
+    ["veu", TEXT_MIN, "tinta cheia sobre o veu"],
+    ["veu-borda", COMPONENT_MIN, "borda do veu contra a faixa"],
+  ]) {
+    const a = alfa(nome);
+    if (a == null) {
+      failures += 1;
+      console.error(`${theme}: --${nome} nao foi encontrado em .sec--marca — NAO foi medido.`);
+      continue;
+    }
+    const composto = compor(tintaBanda, banda, a);
+    // O veu e FUNDO (mede-se a tinta sobre ele); a borda e MARCA (mede-se ela
+    // contra a faixa). Sao dois regimes, e por isso dois minimos.
+    const r = nome === "veu" ? ratio(tintaBanda, composto) : ratio(composto, banda);
+    if (r < minimo) {
+      failures += 1;
+      console.error(
+        `${theme}: faixa petroleo — ${rotulo} = ${r.toFixed(2)}:1 (min ${minimo}) — ${nome} a ${(a * 100).toFixed(0)}%`,
+      );
+    }
+  }
+
   for (const fg of LARGE_TEXT) {
     const a = get(fg);
     for (const bg of BACKGROUND) {

@@ -426,6 +426,181 @@
 }
 
 @layer components {
+  /* ══ A PÁGINA PÚBLICA ═══════════════════════════════════════════════════
+     A landing INVERTE papel e superfície, e isso não é divergência — é
+     contexto. Medido nos dois arquivos do projeto de design:
+
+       landing v7          fundo #F6F6F4  ·  elevado #EDEEEA
+       artboards do webapp tela  #EDEEEA  ·  cartão  #F6F6F4
+       este repositório    paper #EDEEEA  ·  surface #F6F6F4
+
+     O webapp desenhado CONCORDA com o app; só a landing inverte. E faz
+     sentido: a landing é documento, e documento é papel claro com blocos
+     assentados por cima. O app é bancada, e ali a ficha é que é clara.
+
+     A inversão vive aqui, num escopo, em vez de virar um terceiro par de
+     tokens. Assim `bg-paper` e `bg-surface` continuam significando "fundo" e
+     "superfície" em todo lugar, e quem muda é o valor, não o nome. */
+  .paper-page {
+    --color-paper: #F6F6F4;
+    --color-surface: #EDEEEA;
+    background: var(--color-paper);
+  }
+
+  .dark .paper-page {
+    --color-paper: #131516;
+    --color-surface: #1C1F21;
+  }
+
+  /* O ritmo de seção da v7. `--bloco` já salta de 56 para 96px em 760px, então
+     a classe não precisa de variante responsiva: ela lê o token. */
+  .sec {
+    padding-block: var(--bloco);
+  }
+
+  /* ══ ESCALA TIPOGRÁFICA DA PÁGINA PÚBLICA ═══════════════════════════════
+     Os TAMANHOS são os da v7: 38 → 76 (760px) → 96 (1040px) no h1, 28 → 46 no
+     h2. A ENTRELINHA não é, e a razão é aritmética, não gosto.
+
+     A v7 pede 1,08 no celular e 1,02 no desktop. Com a Source Serif 4 — a
+     fonte de manchete que o próprio design escolheu — a descendente desce
+     0,335em abaixo da linha de base e o acento de maiúscula sobe 0,95em acima
+     dela. A descendente da linha N invade o acento da linha N+1 quando
+
+         entrelinha < 0,95 + 0,335 = 1,285
+
+     Ou seja: 1,02 e 1,08 encostam SEMPRE que um acento cair sob uma
+     descendente — e em português isso não é raro, é o caso comum. O repo já
+     tinha chegado a 1,38 medindo captura de tela (o "p" de "prova" caindo
+     sobre o "é" de "Esta"); a conta acima chega ao mesmo lugar por outro
+     caminho, e é por isso que o valor medido fica.
+
+     A escala é declarada em `font-size`/`line-height` no MESMO bloco, e não em
+     utilitário do Tailwind: `text-5xl` carrega line-height junto e o
+     responsivo é emitido depois na folha, então `sm:text-*` sobrescreveria
+     qualquer `leading-*` escrito ao lado. Já custou uma entrelinha de 1,0 em
+     produção que ninguém via no JSX. */
+  .paper-page h1 {
+    font-size: 38px;
+    line-height: 1.38;
+    letter-spacing: -0.02em;
+  }
+
+  .paper-page h2 {
+    font-size: 28px;
+    line-height: 1.32;
+    letter-spacing: -0.015em;
+    margin-bottom: 20px;
+  }
+
+  .paper-page h3 {
+    font-size: 19px;
+    line-height: 1.35;
+  }
+
+  @media (min-width: 760px) {
+    .paper-page h1 {
+      font-size: 76px;
+      letter-spacing: -0.03em;
+    }
+
+    .paper-page h2 {
+      font-size: 46px;
+      margin-bottom: 28px;
+    }
+
+    .paper-page h3 {
+      font-size: 21px;
+    }
+  }
+
+  @media (min-width: 1040px) {
+    .paper-page h1 {
+      font-size: 96px;
+    }
+  }
+
+  /* Seção sobre superfície elevada. Alterna com a lisa para dar ritmo sem
+     desenhar borda nenhuma. */
+  .sec--sup {
+    background: var(--color-surface);
+  }
+
+  /* ══ A FAIXA PETRÓLEO ═══════════════════════════════════════════════════
+     Regra do handoff §2, e ela é uma regra de FORMA, não de cor:
+
+       > Dentro da faixa petróleo, nenhuma superfície clara sólida. Cartões são
+       > véus brancos translúcidos (9% a 13%) com borda a 30% e texto claro. A
+       > única exceção é o botão: fundo claro sólido com texto verde.
+
+     O motivo é que um cartão branco sólido sobre o petróleo recorta um buraco
+     na faixa e a faixa deixa de ser uma superfície — vira moldura. O véu deixa
+     o petróleo atravessar, e o bloco continua pertencendo à faixa.
+
+     Os véus saem de `color-mix` sobre o token da tinta clara, e não de um
+     `rgba()` literal: assim eles acompanham o tema em vez de fixar um branco
+     que só existe no claro. */
+  /* ⚠️ OS PERCENTUAIS SÃO MEDIDOS, e dois deles não são os do handoff.
+     O gate de contraste cruza token OPACO contra token OPACO — véu com alfa
+     passa por baixo dele. Composto à mão sobre a faixa, com o piso da WCAG:
+
+       véu       tinta cheia sobre ele
+        9%   4,71 claro · 6,25 escuro   <- piso da faixa do handoff, passa
+       11%   4,51 claro                  <- raspando
+       13%   4,32 claro                  <- TETO do handoff, REPROVA
+
+     Então o véu fica em 9%, que é o piso do intervalo que o próprio handoff
+     declara ("9% a 13%") e o único ponto dele com folga real.
+
+     A BORDA subiu de 30% para 60%. A 30% ela media 1,80 contra a faixa, e
+     borda é limite de componente: a WCAG 1.4.11 cobra 3:1. A 60% dá 3,05 no
+     claro e 3,44 no escuro. Não é liberdade com o desenho — a 1,80 a borda
+     simplesmente não se vê, que é o oposto do que o handoff quer dela. */
+  .sec--marca {
+    background: var(--color-primary);
+    color: var(--color-primary-ink);
+    --veu: color-mix(in srgb, var(--color-primary-ink) 9%, transparent);
+    --veu-borda: color-mix(in srgb, var(--color-primary-ink) 60%, transparent);
+  }
+
+  /* NÃO EXISTE TIER DE APOIO TRANSLÚCIDO NESTA FAIXA, e isso é aritmética.
+     A tinta clara sobre o petróleo dá 5,60 — é todo o contraste disponível.
+     Qualquer alfa abaixo de 100% no tema claro cai sob o piso de texto: a 74%
+     (o valor da v7 é 72%) mede 3,82 sobre a faixa e 3,08 sobre o véu.
+
+     Ou seja: aqui a hierarquia não pode vir de opacidade. Ela vem de ESCALA —
+     o apoio é menor, não mais apagado. É a mesma disciplina que já vale para a
+     sigla de área, que se escreve em tinta cheia com a cor na barra ao lado. */
+  .sec--marca .apoio {
+    color: var(--color-primary-ink);
+    font-size: 0.9375rem;
+  }
+
+  .sec--marca .paper-eyebrow {
+    color: var(--color-primary-ink);
+  }
+
+  /* O véu: é o `km-card` de dentro da faixa. */
+  .sec--marca .veu {
+    background: var(--veu);
+    border: 1px solid var(--veu-borda);
+    border-radius: var(--radius-surface);
+  }
+
+  /* A ÚNICA superfície sólida permitida na faixa, e ela é o botão. Inverte:
+     fundo claro, texto no petróleo. */
+  .sec--marca .btn-inverso {
+    background: var(--color-primary-ink);
+    border-color: var(--color-primary-ink);
+    color: var(--color-primary);
+  }
+
+  .sec--marca hr,
+  .sec--marca .regua {
+    border-color: var(--veu-borda);
+    background: var(--veu-borda);
+  }
+
   /* Superfície canônica. Eram CINCO regras byte-a-byte idênticas
      (.km-card, .km-panel, .surface-hero, .surface-panel, .paper-surface),
      resultado de deriva histórica. Viraram uma regra com os seletores que

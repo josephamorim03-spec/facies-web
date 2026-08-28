@@ -51,12 +51,19 @@ export function FunilHome({
 
   return (
     <>
-      {/* O rotulo "Veja uma prova institucional" SAIU: ele existia para emendar
-          o cartao do ENAMED ao seletor, e agora os dois sao um so. Os chips
-          dizem sozinhos o que sao. */}
-      <FaciesPicker bancas={bancas} prova={prova} onChaveChange={setChave} />
+      {/* O SELETOR E A PONTE GANHARAM CONTÊINER PRÓPRIO, e os `children` não.
+          É o que a composição em faixas da v7 exige: uma seção de fundo cheio
+          (`sec--sup`, `sec--marca`) precisa sangrar até a borda da janela, e um
+          contêiner comum em volta de tudo cortaria a faixa no meio. Então cada
+          seção traz o seu, e aqui ficam só estes dois. */}
+      <div className="mx-auto w-full max-w-5xl px-[var(--gutter)] pb-[var(--bloco)]">
+        {/* O rotulo "Veja uma prova institucional" SAIU: ele existia para emendar
+            o cartao do ENAMED ao seletor, e agora os dois sao um so. Os chips
+            dizem sozinhos o que sao. */}
+        <FaciesPicker bancas={bancas} prova={prova} onChaveChange={setChave} />
 
-      <PonteDiagnostico banca={chave} />
+        <PonteDiagnostico banca={chave} />
+      </div>
 
       {children}
 
@@ -64,7 +71,7 @@ export function FunilHome({
           acesso que fecha o `children` ("o app ainda não está aberto para
           assinatura"), e não uma seção nova. Separá-los quebraria a única
           pergunta que a página faz. */}
-      <div className="mt-4">
+      <div className="mx-auto w-full max-w-5xl px-[var(--gutter)] pb-[var(--bloco)]">
         <GateEmail banca={chave} />
       </div>
     </>
