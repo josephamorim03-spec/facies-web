@@ -25,6 +25,7 @@ const PAPER_SURFACES = [
   "src/components/charts/studyChartTooltip.ts",
   "src/components/student/StudentActionSurface.tsx",
   "src/components/student/StudentExperienceUI.tsx",
+  "src/app/banco/sessao/[sessionId]/_components/SaidaDaSessao.tsx",
   "src/app/hoje/_components/TodayBackupActions.tsx",
   "src/app/hoje/_components/TodayEmptyState.tsx",
   "src/app/hoje/_components/TodayPrimaryAction.tsx",

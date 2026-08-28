@@ -45,7 +45,7 @@ import {
 import { useAuthToken } from "@/lib/useAuthToken";
 import { invalidateLearningQueries } from "@/lib/queryKeys";
 import { Alert } from "@/components/ui/Alert";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { SaidaDaSessao } from "./_components/SaidaDaSessao";
 import FixacaoRound from "./_components/FixacaoRound";
 import QuickNoteModal from "./_components/QuickNoteModal";
 import FocusedQuestion from "./_components/FocusedQuestion";
@@ -992,6 +992,13 @@ export default function SessionPage() {
     currentItem.is_correct === null ? null : currentItem.is_correct ? "correct" : "incorrect";
   const sessionKindLabel = session.study_kind === "full_exam" ? "Prova" : "Simulado";
   const examLabel = [sessionDisplayLabel, session.area].filter(Boolean).join(" · ") || "Sessao";
+  // O placar que torna as três saídas distinguíveis (artboard 13b). Conta pelos
+  // ITENS e não por `unanswered_question_numbers`: aquele campo é a fila de
+  // navegação e pode estar defasado de uma resposta que acabou de sair daqui,
+  // e um diálogo que diz "6 respondidas" logo depois da sétima é pior que
+  // diálogo nenhum.
+  const respondidas = session.items.filter((item) => Boolean(item.selected_option)).length;
+  const pendentes = Math.max(0, total - respondidas);
 
   function navigateTo(pos: number) {
     questionStartTimeRef.current = Date.now();
@@ -1278,16 +1285,26 @@ export default function SessionPage() {
         onFeedbackRevealPolicyChange={applyFeedbackRevealPolicy}
         onSaveFeedbackRevealPolicyDefault={saveFeedbackRevealPolicyDefault}
       />
-      <ConfirmDialog
+      {/* TRÊS SAÍDAS, e não duas — artboard 13b.
+          O diálogo anterior oferecia "Continuar" ou "Sair", e o "Sair" tomava
+          por conta própria uma decisão que o aluno não tomou: deixava a sessão
+          pendente sem dizer isso nem oferecer a alternativa. Quem sai às 23h40
+          com 7 de 24 quer que as 7 sejam corrigidas — e essa ação já existia
+          (`finalize`), só não era oferecida no momento da saída. */}
+      <SaidaDaSessao
         open={simExitConfirmOpen}
-        title="Sair do simulado?"
-        message="Ele fica salvo — você pode retomar quando quiser em Questões ou no Histórico."
-        cancelLabel="Continuar simulado"
-        confirmLabel="Sair"
-        onCancel={() => setSimExitConfirmOpen(false)}
-        onConfirm={() => {
+        respondidas={respondidas}
+        pendentes={pendentes}
+        proximaPosicao={currentPosition}
+        rotuloSessao={sessionKindLabel.toLowerCase()}
+        onContinuar={() => setSimExitConfirmOpen(false)}
+        onDeixarPendente={() => {
           setSimExitConfirmOpen(false);
           router.push("/banco");
+        }}
+        onEncerrar={() => {
+          setSimExitConfirmOpen(false);
+          void finalize();
         }}
       />
       {showMap && (
