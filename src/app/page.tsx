@@ -89,13 +89,13 @@ export default function Home() {
             ritmo de seção — então a página abria com quase 120px de nada antes
             da wordmark. O respiro de `--bloco` existe para separar SEÇÕES; o
             cabeçalho não é uma, é o topo do documento. */}
-        <div className={`${CONT} pt-6`}>
+        <div className={`${CONT} pt-3`}>
           <CabecalhoPublico />
         </div>
 
         {/* `pt-8` e não `--bloco`: o herói já vem depois da régua do cabeçalho,
             e o respiro cheio de seção duplicaria a separação que a régua faz. */}
-        <section className="pb-8 pt-8">
+        <section className="pb-8 pt-4">
           <div className={CONT}>
             {/* ── A FAIXA ABRE A PÁGINA — direção 1b ──────────────────────
                 As outras duas direções (1a prontuário, 1c petróleo) penduram na
@@ -117,7 +117,7 @@ export default function Home() {
                   o peso de cada área
                 </h2>
                 <FaixaAreas
-                  className="mt-3"
+                  className="mt-2"
                   altura="previa"
                   legenda
                   rotulo={`Peso de cada área na ${provaEmDestaque.sigla}`}
@@ -138,11 +138,11 @@ export default function Home() {
                 armadilha que já custou uma entrelinha de 1,0 em produção —
                 `sm:text-5xl` carrega line-height junto e vence qualquer
                 `leading-*` escrito ao lado. */}
-            <h1 className="mt-8 max-w-[16ch] font-serif font-semibold text-ink">
+            <h1 className="mt-4 max-w-[16ch] font-serif font-semibold text-ink">
               Você sabe o que a sua prova cobra?
             </h1>
 
-            <p className="lede mt-5 text-muted">
+            <p className="lede mt-3 text-muted">
               Isto aí em cima é a cara do {provaEmDestaque?.sigla ?? "ENAMED"}, medida questão
               por questão. Cada prova tem a{" "}
               <span className="text-marcaViva">sua</span> — e ela muda o que vale estudar.
@@ -159,7 +159,7 @@ export default function Home() {
                 decoração: quem chega por link compartilhado não sabe que a
                 página continua. A v7 tem a mesma linha ("↓ a cara completa do
                 ENAMED, logo abaixo") pelo mesmo motivo. */}
-            <p className="mt-9 flex items-center gap-2.5 text-sm text-muted">
+            <p className="mt-5 flex items-center gap-2.5 text-sm text-muted">
               <span aria-hidden="true">↓</span>
               {provaEmDestaque
                 ? `a cara completa do ${provaEmDestaque.sigla}, logo abaixo`

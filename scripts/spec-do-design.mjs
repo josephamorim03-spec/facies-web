@@ -67,8 +67,19 @@ const ASPECTOS = [
   { nome: "h3 tamanho", design: "h3", nosso: "h3:not(.paper-eyebrow)", prop: "font-size" },
   { nome: "rótulo tamanho", design: ".label", nosso: ".paper-eyebrow", prop: "font-size" },
   { nome: "rótulo tracking", design: ".label", nosso: ".paper-eyebrow", prop: "letter-spacing" },
-  { nome: "faixa altura", design: ".strip--previa", nosso: "[role='img']", prop: "altura" },
-  { nome: "lede", design: ".chamada", nosso: "h1:not(.paper-eyebrow) + p", prop: "font-size" },
+  // ⚠️ `faixa altura` e `lede` SAIRAM desta lista, e a razao e' que a v7 nao e'
+  // a referencia deles.
+  //
+  // A v7 desenha o heroi da linhagem `1a`: h1 primeiro, faixa como PREVIA
+  // (`.strip--previa`, 76px) e lede de 19px sustentando o titulo. A direcao
+  // escolhida foi a `1b`, onde a faixa ABRE a pagina (64px em 390) e a lede vem
+  // depois do titulo explicando o que se acabou de ver (15px).
+  //
+  // Sao composicoes diferentes com os mesmos nomes de elemento. Comparar as
+  // duas aqui era o que produzia a desproporcao: eu media a nossa faixa contra
+  // a previa da v7 e concluia que estava certa.
+  //
+  // Quem cobre esses dois e' o modo `--ritmo`, contra o artboard `1b`.
 ];
 
 function argumento(nome, padrao) {
@@ -201,10 +212,90 @@ async function specDoArtboard(pagina, id) {
   }, id);
 }
 
+/**
+ * O RITMO VERTICAL — a dimensão que este extrator não media, e por isso
+ * autorizava.
+ *
+ * O diff saiu VAZIO enquanto a página tinha espaço morto no topo. Não foi
+ * defeito de medição: era ausência dela. `ASPECTOS` só tinha tamanho de fonte e
+ * largura de contêiner, então todo espaçamento passava livre — e guard que não
+ * mede uma dimensão é guard que a autoriza.
+ *
+ * Medir espaço por SELETOR não funciona aqui: os artboards não têm classe
+ * nenhuma, só `div` com estilo inline. O que funciona é comparar a SEQUÊNCIA
+ * de vãos entre elementos de texto consecutivos, que é justamente o que o olho
+ * lê como ritmo.
+ *
+ * ⚠️ A escala do artboard entra na conta. O conteúdo vive dentro de um
+ * `transform: scale(0.88)`; sem dividir, todo vão sai 12% menor.
+ */
+async function ritmoVertical(pagina, seletorRaiz, escalaConhecida = null) {
+  return pagina.evaluate(
+    ([raizSel, escalaDada]) => {
+      // ⚠️ `#1b` NAO e seletor CSS valido — identificador nao pode comecar com
+      // digito. `getElementById` aceita; `querySelector` levanta. Os artboards
+      // do design sao todos assim (`8b`, `13a`, `1b`), entao a excecao e a
+      // regra aqui.
+      const codigo = raizSel.charCodeAt(1);
+      const idNumerico = raizSel[0] === "#" && codigo >= 48 && codigo <= 57;
+      const raiz = idNumerico
+        ? document.getElementById(raizSel.slice(1))
+        : document.querySelector(raizSel);
+      if (!raiz) return { erro: `raiz ${raizSel} nao encontrada` };
+
+      let escala = escalaDada;
+      if (escala == null) {
+        const escalado = [...raiz.querySelectorAll("*")].find(
+          (e) => getComputedStyle(e).transform !== "none",
+        );
+        const m = escalado ? getComputedStyle(escalado).transform : "none";
+        escala = m === "none" ? 1 : Number(m.split("(")[1].split(",")[0]) || 1;
+      }
+
+      // Só elementos que CARREGAM texto proprio, na ordem em que aparecem na
+      // tela. Contêiner nao entra: o vao que importa e' entre o que se le.
+      const blocos = [];
+      for (const elemento of raiz.querySelectorAll("*")) {
+        const proprio = [...elemento.childNodes].some(
+          (n) => n.nodeType === 3 && n.textContent.trim(),
+        );
+        // INLINE NAO CONTA. Um `span` dentro do paragrafo tem texto proprio e
+        // caixa menor que a linha que o contem, entao ele mede o vao a partir
+        // do lugar errado — e infla o resultado com a entrelinha que sobra.
+        // Foi assim que a lede aparecia a 50px da busca quando a distancia
+        // real era outra.
+        if (getComputedStyle(elemento).display.startsWith("inline")) continue;
+        const caixa = elemento.getBoundingClientRect();
+        if (caixa.height < 2) continue;
+        const ehFaixa = elemento.getAttribute("role") === "img" || caixa.height > 40;
+        if (!proprio && !ehFaixa) continue;
+        blocos.push({
+          topo: caixa.top,
+          base: caixa.bottom,
+          texto: (elemento.textContent || "").trim().replace(/\s+/g, " ").slice(0, 26) || "[faixa]",
+        });
+      }
+      blocos.sort((a, b) => a.topo - b.topo);
+
+      // Aninhados produzem vao negativo (o filho comeca dentro do pai). Só
+      // interessam os irmaos visuais, entao o vao negativo e' descartado.
+      const vaos = [];
+      for (let i = 0; i < blocos.length - 1; i += 1) {
+        const vao = (blocos[i + 1].topo - blocos[i].base) / escala;
+        if (vao < -1) continue;
+        vaos.push({ de: blocos[i].texto, para: blocos[i + 1].texto, vao: Math.round(vao) });
+      }
+      return { escala, vaos: vaos.slice(0, 12) };
+    },
+    [seletorRaiz, escalaConhecida],
+  );
+}
+
 const design = argumento("design", DESIGN_PADRAO);
 const alvo = argumento("alvo", "https://facies.app/");
 const soDesign = process.argv.includes("--so-design");
 const artboard = argumento("artboard", null);
+const ritmo = process.argv.includes("--ritmo");
 
 if (!existsSync(design)) {
   console.error(`Arquivo do design nao encontrado: ${design}`);
@@ -212,6 +303,47 @@ if (!existsSync(design)) {
 }
 
 const navegador = await chromium.launch();
+
+/**
+ * Modo RITMO — a abertura contra o artboard `1b`, em 390px.
+ *
+ * ⚠️ A referência do herói NÃO é o herói da v7. Você escolheu a direção `1b`
+ * (a faixa abre a página), e a v7 desenha a outra composição — h1 primeiro,
+ * faixa como prévia. Eu misturei as duas: peguei a composição do `1b` e a
+ * escala de desktop da v7, e o resultado é uma combinação que não existe em
+ * lugar nenhum do design.
+ *
+ * O `1b` só existe em 390px, então é ali que a comparação vale. Acima disso o
+ * alvo é a PROPORÇÃO (faixa ÷ h1 ≈ 1,6), não o número.
+ */
+if (ritmo) {
+  const contexto = await navegador.newContext({ viewport: { width: 390, height: 1200 } });
+  const pagina = await contexto.newPage();
+
+  await pagina.goto(pathToFileURL(design).href, { waitUntil: "domcontentloaded" });
+  await pagina.waitForTimeout(2500);
+  const alvoArtboard = artboard ? `#${artboard}` : ".cont";
+  const doDesign = await ritmoVertical(pagina, alvoArtboard);
+
+  await pagina.goto(alvo, { waitUntil: "networkidle" });
+  await pagina.evaluate(() => document.fonts.ready);
+  const nosso = await ritmoVertical(pagina, "main", 1);
+
+  console.log(`\nRITMO @390  — design: ${alvoArtboard}`);
+  console.log("\n  DESENHO");
+  for (const v of doDesign.vaos ?? []) {
+    console.log(`    ${String(v.vao).padStart(4)}px   ${v.de} -> ${v.para}`);
+  }
+  console.log("\n  NOSSO");
+  for (const v of nosso.vaos ?? []) {
+    console.log(`    ${String(v.vao).padStart(4)}px   ${v.de} -> ${v.para}`);
+  }
+  const maiorDesign = Math.max(0, ...(doDesign.vaos ?? []).map((v) => v.vao));
+  const maiorNosso = Math.max(0, ...(nosso.vaos ?? []).map((v) => v.vao));
+  console.log(`\n  maior vao — desenho ${maiorDesign}px · nosso ${maiorNosso}px`);
+  await navegador.close();
+  process.exit(maiorNosso > maiorDesign * 1.3 ? 1 : 0);
+}
 
 // Modo artboard: uma tela do app, e nada de comparar — aqui a saida E a
 // especificacao, para eu construir a partir dela em vez de ler o CSS.

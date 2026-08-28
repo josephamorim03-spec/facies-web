@@ -49,8 +49,24 @@ const ORDEM: string[] = ["CM", "CG", "PD", "GO", "OB", "MP", "OU"];
 const ALTURAS = {
   /** miniatura do chip — a que já existia */
   chip: "h-6 gap-px",
-  /** prévia do topo: 56px no celular, 76px no desktop */
-  previa: "h-14 gap-0.5 sm:h-[76px]",
+  /** A ABERTURA da direção `1b`: 64px no celular, 150px a partir de 1040.
+   *
+   * ⚠️ Estes números NÃO são os da `.strip--previa` da v7 (56/76), e a
+   * diferença é de função. Na v7 a faixa é PRÉVIA: ela vem depois do `h1` e
+   * anuncia o que há abaixo. Na `1b` ela é a ABERTURA — a primeira coisa da
+   * página, e o argumento inteiro em uma imagem.
+   *
+   * Medido no artboard `1b` (390px): faixa 64px, `h1` 38px. A faixa é **1,68×**
+   * o corpo do título. Eu tinha 76px de faixa com `h1` de 96px — razão 0,79, o
+   * inverso — porque misturei a composição da `1b` com a escala de desktop da
+   * v7. Essa combinação não existe em desenho nenhum, e era a desproporção que
+   * se via na tela.
+   *
+   * O `1b` só existe em 390px, então o desktop segue a PROPORÇÃO e não o
+   * número: 150px de faixa com `h1` de 96px dá 1,56, perto dos 1,68 do
+   * artboard. 150px é a altura que a v7 já usa no bloco de leitura, onde a
+   * faixa também é o assunto — não é valor inventado. */
+  previa: "h-16 gap-0.5 lg:h-[150px]",
   /** bloco de leitura: 84px no celular, 150px no desktop.
    *
    * O salto é grande de propósito. Na prévia a faixa é uma miniatura que
@@ -154,14 +170,18 @@ export function FaixaAreas({
           `aria-hidden` porque a faixa acima já leva a mesma informação no
           `aria-label` — sem isso o leitor de tela ouviria os sete percentuais
           duas vezes seguidas. */}
-      {/* GRADE, e não `flex-wrap`. Com sete áreas de nome longo, o wrap produz
-          uma linha cheia e outra com dois itens soltos, e o olho perde a
-          correspondência com a ordem da faixa. A grade de 1 → 2 → 3 colunas
-          mantém as posições estáveis em qualquer largura, que é o que permite
-          ler a legenda como índice da faixa e não como lista avulsa. */}
+      {/* FLUI EM LINHA, e não em grade — e a grade era minha, não do desenho.
+          Medido no artboard `1b`: a legenda dele corre inline, cerca de dois
+          itens por linha em 390px, com 6px de respiro vertical.
+
+          Eu tinha trocado para grade de 1 → 2 → 3 colunas argumentando que o
+          wrap deixava itens órfãos. O argumento vale em 1280; no CELULAR a
+          grade de uma coluna empilha SETE linhas, mais que o dobro da altura
+          do desenho — e essa foi a maior parcela do espaço morto da abertura.
+          Otimizei a largura em que eu estava olhando e piorei a que importa. */}
       <ul
         aria-hidden="true"
-        className="mt-4 grid grid-cols-1 gap-2 text-sm text-muted sm:grid-cols-2 lg:grid-cols-3"
+        className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-muted"
       >
         {segmentos.map(({ area, ...linha }) => (
           <li key={linha.rotulo} className="flex items-center gap-2 whitespace-nowrap">

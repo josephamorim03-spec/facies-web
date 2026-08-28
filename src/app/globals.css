@@ -530,8 +530,12 @@
   /* A LEDE: 17px no celular, 19px a partir de 760. `text-lg` do Tailwind é
      18px fixo — perto o bastante para eu não ter olhado, e errado nos dois
      pontos de quebra. É a classe `.chamada` do desenho. */
+  /* A lede da composicao 1b e 15px, e nao a de 17-19 da v7.
+     Sao ledes de heroi diferentes: na v7 ela sustenta um h1 que abre a pagina;
+     na 1b ela vem depois da faixa E do titulo, explicando o que se acabou de
+     ver. Terceiro nivel de leitura pede corpo menor. */
   .paper-page .lede {
-    font-size: 17px;
+    font-size: 15px;
     line-height: 1.55;
     max-width: 54ch;
   }
@@ -554,7 +558,7 @@
     }
 
     .paper-page .lede {
-      font-size: 19px;
+      font-size: 17px;
     }
   }
 
