@@ -146,9 +146,65 @@ async function sobreposicao(pagina) {
   });
 }
 
+/**
+ * Modo ARTBOARD — a especificação das telas do app, medida e não lida.
+ *
+ * `Webapp - telas.dc.html` é HTML de verdade: cada tela é um elemento com `id`
+ * (`8b`, `13a`, …) e renderiza. Isso torna as 22 telas tratáveis pelo mesmo
+ * método da landing, em vez de eu transcrever CSS 22 vezes — que é como
+ * nasceram o `h2` em 46, o contêiner em 1024 e o `h3` crescente.
+ *
+ * ⚠️ A CAIXA VEM ESCALADA, O ESTILO NÃO. O conteúdo é 390×844 dentro de um
+ * `transform: scale(0.88)`. `getComputedStyle` ignora transform, então
+ * `font-size` e cor saem verdadeiros; `getBoundingClientRect` não ignora, e sai
+ * multiplicado. Sem dividir pela escala, toda medida de caixa sai 12% menor —
+ * e 12% é pouco o bastante para parecer certo e errado o bastante para
+ * desalinhar tudo.
+ */
+async function specDoArtboard(pagina, id) {
+  return pagina.evaluate((idAlvo) => {
+    const raiz = document.getElementById(idAlvo);
+    if (!raiz) return { erro: `artboard ${idAlvo} nao existe` };
+
+    const escalado = [...raiz.querySelectorAll("*")].find(
+      (e) => getComputedStyle(e).transform !== "none",
+    );
+    const matriz = escalado ? getComputedStyle(escalado).transform : "none";
+    const escala = matriz === "none" ? 1 : Number(matriz.split("(")[1].split(",")[0]) || 1;
+    const tela = escalado ?? raiz;
+
+    const familias = new Map();
+    const tamanhos = new Map();
+    const cores = new Map();
+    for (const elemento of tela.querySelectorAll("*")) {
+      const estilo = getComputedStyle(elemento);
+      const temTexto = [...elemento.childNodes].some(
+        (n) => n.nodeType === 3 && n.textContent.trim(),
+      );
+      if (!temTexto) continue;
+      const conta = (mapa, chave) => mapa.set(chave, (mapa.get(chave) ?? 0) + 1);
+      conta(familias, estilo.fontFamily.split(",")[0].replace(/["']/g, ""));
+      conta(tamanhos, `${estilo.fontSize}/${estilo.fontWeight}`);
+      conta(cores, estilo.color);
+    }
+    const top = (mapa) =>
+      [...mapa.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} (${n})`);
+
+    return {
+      escala,
+      largura_desenho: Math.round(tela.getBoundingClientRect().width / escala),
+      altura_desenho: Math.round(tela.getBoundingClientRect().height / escala),
+      familias: top(familias),
+      tamanhos: top(tamanhos).slice(0, 12),
+      cores: top(cores).slice(0, 10),
+    };
+  }, id);
+}
+
 const design = argumento("design", DESIGN_PADRAO);
 const alvo = argumento("alvo", "https://facies.app/");
 const soDesign = process.argv.includes("--so-design");
+const artboard = argumento("artboard", null);
 
 if (!existsSync(design)) {
   console.error(`Arquivo do design nao encontrado: ${design}`);
@@ -156,6 +212,22 @@ if (!existsSync(design)) {
 }
 
 const navegador = await chromium.launch();
+
+// Modo artboard: uma tela do app, e nada de comparar — aqui a saida E a
+// especificacao, para eu construir a partir dela em vez de ler o CSS.
+if (artboard) {
+  const contexto = await navegador.newContext({ viewport: { width: 1400, height: 1000 } });
+  const pagina = await contexto.newPage();
+  await pagina.goto(pathToFileURL(design).href, { waitUntil: "domcontentloaded" });
+  await pagina.waitForTimeout(2500);
+  const spec = await specDoArtboard(pagina, artboard);
+  console.log(`
+artboard ${artboard}`);
+  console.log(JSON.stringify(spec, null, 2));
+  await navegador.close();
+  process.exit(spec.erro ? 2 : 0);
+}
+
 let diferencas = 0;
 
 for (const largura of QUEBRAS) {

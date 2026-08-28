@@ -162,6 +162,37 @@ const RULES = [
   },
   {
     label:
+      "title= em componente publico — balao nativo do navegador nao e do desenho; a leitura vive FORA do elemento",
+    /**
+     * O `title` desenha uma caixa DO NAVEGADOR sobre o elemento, e ela nao
+     * existe em desenho nenhum. `FaixaAreas` punha um em cada segmento, e o
+     * resultado apareceu numa captura de producao: um balao branco por cima da
+     * faixa colorida, tapando justamente o que ele descrevia.
+     *
+     * O handoff diz por que nao, e a razao e de USO e nao de estetica:
+     * "a leitura do mapa fica FORA da grade, em regiao viva; balao sobre grade
+     * some atras do dedo no celular". No toque o `title` nem aparece — ou
+     * seja, ele entrega no desktop uma informacao que o celular nao tem.
+     *
+     * Medido: a v7 inteira tem UM `title`, e nenhum nos segmentos da faixa.
+     *
+     * O que substitui: rotulo visivel ao lado (a legenda) e `aria-label` no
+     * elemento. Os dois funcionam em toque, em teclado e em leitor de tela.
+     * ⚠️ ESCOPO, e nao isencao — a distincao importa neste arquivo.
+     * Isencao e por ARQUIVO e diz "aqui a regra valeria e nao vale"; escopo diz
+     * ONDE a regra existe. Esta e uma regra do projeto de design, e o design
+     * governa a superficie publica. No app, `title` em botao de icone tem uso
+     * legitimo (dica para ponteiro, ao lado do `aria-label`), e ampliar a
+     * proibicao ate la seria a regra decidindo fora do seu dominio: acusa 8
+     * arquivos que nao tem nada a ver com o desenho da landing.
+     */
+    escopo: /^src\/(components\/facies|app\/page\.tsx)/,
+    pattern: /\btitle=/,
+    catches: "<span title={rotulo} />",
+    ignores: "<span aria-label={rotulo} />",
+  },
+  {
+    label:
       "text-white/bg-white — cor fora do tema; o gate de contraste so mede token contra token",
     pattern: /\b(?:text|bg|border|ring)-white\b/,
     catches: 'className="bg-success text-white"',
@@ -235,6 +266,10 @@ for (const file of walk(SRC)) {
     // Comentario nao desenha nada, e varios explicam justamente o que saiu.
     if (/^\s*(\/\/|\*|\/\*)/.test(line)) continue;
     for (const rule of RULES) {
+      // `escopo` delimita ONDE a regra existe; `exempt` diz quem escapa dela
+      // onde ela existe. Sao coisas diferentes, e so a segunda precisa ser
+      // nominal — uma regra sem dominio declarado acaba decidindo fora dele.
+      if (rule.escopo && !rule.escopo.test(rel)) continue;
       if (!rule.pattern.test(line)) continue;
       if (rule.exempt?.has(rel)) continue;
       if (rule.allow?.test(line)) continue;

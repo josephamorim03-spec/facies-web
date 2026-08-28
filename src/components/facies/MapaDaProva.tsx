@@ -121,7 +121,12 @@ export function MapaDaProva({
                 type="button"
                 aria-expanded={estaAberta}
                 onClick={() => setAberta(estaAberta ? null : linha.rotulo)}
-                title={area ? `${linha.rotulo} — ${AREA_FULL_LABELS[area]}` : linha.rotulo}
+                /* `aria-label` e nao `title`. O handoff nomeia este caso: "a
+                   leitura do mapa fica FORA da grade; balao sobre grade some
+                   atras do dedo no celular". O rotulo acessivel entrega a area
+                   a quem ouve, e a cor do filete a entrega a quem ve — sem
+                   caixa nenhuma por cima da celula. */
+                aria-label={area ? `${linha.rotulo} — ${AREA_FULL_LABELS[area]}` : linha.rotulo}
                 className={`paper-control flex h-full w-full flex-col overflow-hidden rounded-control border p-2 text-left transition ${
                   // Tracejada = abaixo do piso, e é o mesmo estado que o
                   // protótipo usa para "ainda não avaliado". Aqui significa

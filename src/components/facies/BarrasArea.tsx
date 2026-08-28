@@ -92,7 +92,11 @@ export function BarrasArea({ linhas }: { linhas: Linha[] }) {
                 className="h-2.5 w-2.5 shrink-0 rounded-control"
                 style={{ background: cor }}
               />
-              <span className="truncate text-ink" title={linha.rotulo}>
+              {/* Sem `truncate` e sem `title`: o par dos dois esconde texto e
+                  devolve a leitura so ao PONTEIRO — no toque nao ha o que
+                  passar por cima. Nome de area e curto; se faltar largura, a
+                  quebra e melhor que o corte com dica escondida. */}
+              <span className="text-ink">
                 {linha.rotulo}
               </span>
             </span>
