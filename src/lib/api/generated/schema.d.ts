@@ -2773,6 +2773,36 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/student/competency-mastery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Competency Mastery
+         * @description A maestria do aluno por competência — o eixo "você" do mapa da prova.
+         *
+         *     Mora em `/student` porque é leitura sobre o ALUNO, e é aqui que o acesso já
+         *     é decidido uma vez só (`dependencies=_active` no `main`). Um prefixo próprio
+         *     duplicaria o guard, que é exatamente o que `require_active_access` existe
+         *     para impedir.
+         *
+         *     ⚠️ A sessão do banco de questões é OPCIONAL, e o caminho sem ela é normal.
+         *     Em ambiente sem `QUESTION_BANK_DATABASE_URL` a projeção não existe; a
+         *     resposta sai vazia com `attempts_considered` preenchido, que é o que
+         *     permite à tela dizer "ainda não sei" em vez de "você não estudou".
+         */
+        get: operations["get_competency_mastery_student_competency_mastery_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/student/evolution": {
         parameters: {
             query?: never;
@@ -4544,6 +4574,58 @@ export interface components {
              * Format: date-time
              */
             end_at: string;
+        };
+        /**
+         * CompetencyMasteryItemOut
+         * @description Uma competência, com a evidência que a sustenta ao lado da estimativa.
+         *
+         *     ``attempts`` viaja junto com ``mastery`` de propósito: número sem o seu
+         *     ``n`` é a precisão fabricada que este produto recusa em todo o resto, e a
+         *     tela precisa poder dizer "52% em 4 respostas" em vez de só "52%".
+         */
+        CompetencyMasteryItemOut: {
+            /** Objective Id */
+            objective_id: string;
+            /** Label */
+            label: string;
+            /** Primary Subtheme */
+            primary_subtheme?: string | null;
+            /**
+             * Competency Question Count
+             * @default 0
+             */
+            competency_question_count: number;
+            /** Attempts */
+            attempts: number;
+            /** Correct */
+            correct: number;
+            /** Mastery */
+            mastery: number;
+            /** Uncertainty */
+            uncertainty: number;
+            /**
+             * Certeza
+             * @enum {string}
+             */
+            certeza: "medido" | "estimado" | "nao_avaliado";
+        };
+        /**
+         * CompetencyMasteryOut
+         * @description A leitura inteira, com o que ela NÃO consegue afirmar declarado.
+         */
+        CompetencyMasteryOut: {
+            /**
+             * Contract Version
+             * @default competency-mastery-v1
+             * @constant
+             */
+            contract_version: "competency-mastery-v1";
+            /** Observation Floor */
+            observation_floor: number;
+            /** Attempts Considered */
+            attempts_considered: number;
+            /** Items */
+            items: components["schemas"]["CompetencyMasteryItemOut"][];
         };
         /**
          * DescadastroIn
@@ -16870,6 +16952,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentExperienceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_competency_mastery_student_competency_mastery_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompetencyMasteryOut"];
                 };
             };
             /** @description Validation Error */
