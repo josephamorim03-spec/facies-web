@@ -1,4 +1,5 @@
 import { RotuloSecao } from "./RotuloSecao";
+import { CONT_LANDING } from "@/lib/site";
 
 /**
  * Seção 05 da v7 — "sem letra miúda": o que funciona hoje, o que chega, e o que
@@ -88,7 +89,7 @@ function Coluna({
 export function SecaoSemLetraMiuda() {
   return (
     <section className="sec">
-      <div className="mx-auto w-full max-w-5xl px-[var(--gutter)]">
+      <div className={CONT_LANDING}>
         <RotuloSecao numero="05">sem letra miúda</RotuloSecao>
         <h2 className="mt-3 max-w-[24ch] font-serif font-semibold text-ink">
           O que você recebe hoje — e o que ainda não está pronto.

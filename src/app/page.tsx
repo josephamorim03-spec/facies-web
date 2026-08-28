@@ -9,7 +9,7 @@ import { SecaoOndeEncaixa } from "@/components/facies/SecaoOndeEncaixa";
 import { SecaoSemLetraMiuda } from "@/components/facies/SecaoSemLetraMiuda";
 import { bancasEmDestaque, todasAsBancas } from "@/lib/facies";
 import { todasAsProvas } from "@/lib/provas";
-import { SITE_NAME, SITE_QUALIFICADOR } from "@/lib/site";
+import { CONT_LANDING, SITE_NAME, SITE_QUALIFICADOR } from "@/lib/site";
 import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
 
 /**
@@ -64,11 +64,9 @@ export const metadata: Metadata = {
   },
 };
 
-/** O contêiner único da v7: 1080px com a goteira em token. */
-// 1080px é o `.cont` do desenho, MEDIDO nele renderizado. `max-w-5xl` são
-// 1024 — 56px a menos, que em 1440 encolhe a coluna inteira e faz a manchete
-// quebrar antes do ponto onde o desenho a quebra.
-const CONT = "mx-auto w-full max-w-[1080px] px-[var(--gutter)]";
+/** O contêiner único da v7 vive em `@/lib/site` — as cinco seções usam o
+ *  mesmo, e era a repetição do literal que as deixava 56px mais estreitas. */
+const CONT = CONT_LANDING;
 
 export default function Home() {
   const destaques = bancasEmDestaque();
@@ -88,8 +86,15 @@ export default function Home() {
             Ele estava dentro do `.sec`, herdando o `padding-block` de 96px do
             ritmo de seção — então a página abria com quase 120px de nada antes
             da wordmark. O respiro de `--bloco` existe para separar SEÇÕES; o
-            cabeçalho não é uma, é o topo do documento. */}
-        <div className={`${CONT} pt-3`}>
+            cabeçalho não é uma, é o topo do documento.
+
+            E SEM `pt-*`: o `pt-3` que estava aqui punha 12px acima da wordmark
+            que nenhuma outra página tem. `/facies`, `/facies/[banca]`, `/prova/
+            [slug]` e o documento legal põem `<CabecalhoPublico />` como primeiro
+            filho do `<main>`, com o `py-5` do próprio componente e mais nada.
+            Navegar da home para a lista de bancas fazia a marca pular. O topo do
+            documento é o mesmo em todo o funil público. */}
+        <div className={CONT}>
           <CabecalhoPublico />
         </div>
 
@@ -113,8 +118,8 @@ export default function Home() {
                       `areas.linhas` soma exatamente `base.direta.questoes`;
                       pendurar aqui o total da série faria a conta desmentir a
                       legenda em qualquer segmento. */}
-                  {provaEmDestaque.sigla} · {provaEmDestaque.base.direta.questoes} questões ·
-                  o peso de cada área
+                  {provaEmDestaque.sigla} · {provaEmDestaque.base.direta.questoes} questões
+                  já analisadas
                 </h2>
                 <FaixaAreas
                   className="mt-2"
@@ -142,10 +147,21 @@ export default function Home() {
               Você sabe o que a sua prova cobra?
             </h1>
 
+            {/* A CHAMADA É A DA v7, palavra por palavra. A que estava aqui
+                ("Isto aí em cima é a cara do…") era paráfrase minha, escrita para
+                amarrar a lede à faixa que a 1b põe acima. Ela funcionava, e custava
+                o argumento: a da v7 nomeia as três medidas (peso por área, assunto
+                que repete, como escreve) e fecha em "de graça, agora", que é a
+                única promessa que a página pode cumprir na própria tela.
+
+                O "Não “o que costuma cair em residência”" de abertura é o que
+                separa a Fácies de cursinho na primeira linha lida. */}
             <p className="lede mt-3 text-muted">
-              Isto aí em cima é a cara do {provaEmDestaque?.sigla ?? "ENAMED"}, medida questão
-              por questão. Cada prova tem a{" "}
-              <span className="text-marcaViva">sua</span> — e ela muda o que vale estudar.
+              Não “o que costuma cair em residência”. A{" "}
+              <span className="text-marcaViva">sua</span> prova: quanto ela pesa em cada
+              área, quais assuntos ela repete todo ano, e até como ela escreve as
+              questões. Nós medimos isso questão por questão — e mostramos de graça,
+              agora.
             </p>
 
             {/* A BUSCA, que faltava. O seletor de cartões abaixo mostra quatro
@@ -165,6 +181,17 @@ export default function Home() {
                 ? `a cara completa do ${provaEmDestaque.sigla}, logo abaixo`
                 : "a leitura completa, logo abaixo"}
             </p>
+
+            {/* O SELO VOLTOU. Ele existia, e eu o perdi numa das reescritas do
+                herói — o tipo de regressão que nenhum guard pega, porque
+                remover conteúdo não quebra nada.
+
+                A v7 tem `.selo-livre` e o artboard `1b` também, os dois em 11px
+                mono. A posição é a do `1b`: por último, depois da busca. É a
+                remoção de um obstáculo, e obstáculo só pesa depois de existir
+                vontade — no topo ele responderia uma pergunta que o leitor
+                ainda não fez. */}
+            <p className="paper-eyebrow mt-4">grátis · sem cadastro</p>
           </div>
         </section>
 
@@ -188,12 +215,21 @@ export default function Home() {
           <section className="sec" id="aviso">
             <div className={CONT}>
               <h2 className="font-serif font-semibold text-ink">Acesso</h2>
+              {/* A CENA DO PLANTÃO SAIU. Ela dizia "quem estuda em janela
+                  irregular — plantão, pós-plantão, noite curta", e era o último
+                  resto de uma página que se explicava pela rotina do leitor. A
+                  v7 não faz isso: ela diz o que o produto É e deixa o leitor se
+                  reconhecer sozinho.
+
+                  O que fica é a cunha — para quem isto serve e para quem não —
+                  que continua valendo porque poupa a leitura de quem não é
+                  desta fase, e afasta quem pediria reembolso. */}
               <p className="max-w-[58ch] text-base text-muted">
-                A Fácies é para quem estuda em janela irregular — plantão, pós-plantão, noite
-                curta — e está em <span className="text-ink">consolidação e revisão</span>,
-                não em primeiro aprendizado. Questão não ensina do zero: para primeiro
-                contato, videoaula é melhor. A teoria vem de fora por desenho; você já tem o
-                conteúdo, e a Fácies diz o que fazer com ele.
+                A Fácies é para quem está em{" "}
+                <span className="text-ink">consolidação e revisão</span>, não em primeiro
+                aprendizado. Questão não ensina do zero: para primeiro contato, videoaula é
+                melhor. A teoria vem de fora por desenho — você já tem o conteúdo, e a Fácies
+                diz o que fazer com ele.
               </p>
               <div className="mt-6 rounded-surface border border-edge bg-surface p-5 sm:p-6">
                 <p className="text-base text-ink">

@@ -29,7 +29,8 @@ export function CabecalhoPublico({ comLink = false }: { comLink?: boolean }) {
   );
 
   return (
-    <div className="border-b border-rule py-5">
+    // A `.topo` da v7: marca à esquerda, espaço, e a ação à direita.
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-rule py-3">
       {comLink ? (
         <Link
           href="/"
@@ -43,6 +44,19 @@ export function CabecalhoPublico({ comLink = false }: { comLink?: boolean }) {
         // lugar nenhum.
         marca
       )}
+
+      {/* O CTA DO TOPO, que faltava. A `.topo` da v7 tem um botão "Ver a minha
+          prova" à direita da marca, e ele não é decorativo: quem chega por link
+          compartilhado cai numa página que rola, e o topo é onde o olho começa.
+
+          Leva à busca, e não a um cadastro — é o que a v7 faz, e é o único
+          destino que existe hoje. */}
+      <a
+        href="#busca"
+        className="ml-auto inline-flex min-h-11 items-center rounded-control border border-primary bg-primary px-4 text-sm font-semibold text-primaryInk transition hover:border-primaryStrong hover:bg-primaryStrong"
+      >
+        Ver a minha prova
+      </a>
     </div>
   );
 }

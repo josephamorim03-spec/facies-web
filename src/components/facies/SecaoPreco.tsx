@@ -1,4 +1,5 @@
 import { RotuloSecao } from "./RotuloSecao";
+import { CONT_LANDING } from "@/lib/site";
 
 /**
  * Seção 06 da v7 — "preço".
@@ -86,7 +87,7 @@ const GARANTIAS = [
 export function SecaoPreco() {
   return (
     <section className="sec sec--sup">
-      <div className="mx-auto w-full max-w-5xl px-[var(--gutter)]">
+      <div className={CONT_LANDING}>
         <RotuloSecao numero="06">preço</RotuloSecao>
         <h2 className="mt-3 max-w-[22ch] font-serif font-semibold text-ink">
           Custa menos que a inscrição da prova.

@@ -63,10 +63,21 @@ const ALTURAS = {
    * se via na tela.
    *
    * O `1b` só existe em 390px, então o desktop segue a PROPORÇÃO e não o
-   * número: 150px de faixa com `h1` de 96px dá 1,56, perto dos 1,68 do
-   * artboard. 150px é a altura que a v7 já usa no bloco de leitura, onde a
-   * faixa também é o assunto — não é valor inventado. */
-  previa: "h-16 gap-0.5 lg:h-[150px]",
+   * número.
+   *
+   * ⚠️ E A PROPORÇÃO SE MEDE CONTRA O `h1` ATUAL, não contra o que ele era.
+   * Eu tinha posto 150px derivando 1,56 de um `h1` de 96px. O `h1` foi reduzido
+   * depois para 34/54/64 (desvio aprovado, registrado em
+   * `scripts/spec-do-design.mjs`), e com 64px a mesma faixa de 150 dá **2,34** —
+   * a faixa passando a dominar muito mais do que no desenho.
+   *
+   * 108px é 1,68 × 64: a razão exata do artboard contra o `h1` que a página tem
+   * hoje. No celular ficam os 64px literais do `1b`.
+   *
+   * A lição: número derivado de outro número não sobrevive à mudança do
+   * primeiro. Se o `h1` mudar de novo, esta altura muda junto — e é por isso
+   * que a conta está escrita aqui em vez de só o resultado. */
+  previa: "h-16 gap-0.5 lg:h-[108px]",
   /** bloco de leitura: 84px no celular, 150px no desktop.
    *
    * O salto é grande de propósito. Na prévia a faixa é uma miniatura que

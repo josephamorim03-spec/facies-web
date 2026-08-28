@@ -1,4 +1,5 @@
 import { RotuloSecao } from "./RotuloSecao";
+import { CONT_LANDING } from "@/lib/site";
 
 /**
  * Seção 04 da v7 — "onde isto se encaixa".
@@ -32,7 +33,7 @@ const BANCO = [
 export function SecaoOndeEncaixa() {
   return (
     <section className="sec sec--sup">
-      <div className="mx-auto w-full max-w-5xl px-[var(--gutter)]">
+      <div className={CONT_LANDING}>
         <RotuloSecao numero="04">onde isto se encaixa</RotuloSecao>
         <h2 className="mt-3 max-w-[20ch] font-serif font-semibold text-ink">
           Isto não é mais um banco de questões.

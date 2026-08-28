@@ -60,3 +60,24 @@ export const HOST_VISIVEL = SITE_URL.replace(/^https?:\/\//, "");
 export function urlAbsoluta(caminho = "/"): string {
   return `${SITE_URL}${caminho.startsWith("/") ? caminho : `/${caminho}`}`;
 }
+
+/**
+ * O contêiner da landing, num lugar só.
+ *
+ * 1080px é o `.cont` do projeto de design, MEDIDO nele renderizado — não lido
+ * do CSS. `max-w-5xl` do Tailwind são 1024: 56px a menos, perto o bastante
+ * para passar despercebido e errado o bastante para a manchete quebrar antes
+ * do ponto onde o desenho a quebra.
+ *
+ * ⚠️ Existe como constante porque a divergência JÁ ACONTECEU. O herói, o
+ * cabeçalho e o rodapé foram corrigidos para 1080 numa rodada; as cinco seções
+ * (`SecaoAposta`, `SecaoNoveMedidas`, `SecaoOndeEncaixa`, `SecaoSemLetraMiuda`,
+ * `SecaoPreco`) ficaram em `max-w-5xl` porque cada uma repetia o literal. O
+ * resultado era a coluna estreitando 56px ao rolar do herói para a primeira
+ * seção — o tipo de defeito que ninguém aponta e todo mundo sente.
+ *
+ * O guard `verificar:design` mede `main > div`, que é o cabeçalho: ele nunca
+ * teria visto as seções. Constante compartilhada é o que fecha isso, não mais
+ * um teste.
+ */
+export const CONT_LANDING = "mx-auto w-full max-w-[1080px] px-[var(--gutter)]";

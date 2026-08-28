@@ -2,6 +2,7 @@ import { ContagemGigante } from "./ContagemGigante";
 import { RotuloSecao } from "./RotuloSecao";
 import { dec } from "@/lib/decimal";
 import type { Prova } from "@/lib/provas";
+import { CONT_LANDING } from "@/lib/site";
 
 /**
  * Seção 02 da v7 — "nossa aposta, por escrito". A faixa petróleo.
@@ -76,7 +77,7 @@ export function SecaoAposta({ prova }: { prova: Prova }) {
 
   return (
     <section className="sec sec--marca">
-      <div className="mx-auto w-full max-w-5xl px-[var(--gutter)]">
+      <div className={CONT_LANDING}>
         <RotuloSecao numero="02">nossa aposta, por escrito</RotuloSecao>
         <h2 className="mt-3 max-w-[26ch] font-serif font-semibold">
           Vamos dizer antes o que achamos que cai. E depois mostrar quanto erramos.

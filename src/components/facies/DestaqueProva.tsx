@@ -30,8 +30,24 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
 
       <div className="px-5 py-6 sm:px-6">
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
-          <h2 className="font-serif text-3xl font-semibold tracking-tight text-ink">
-            {prova.sigla}
+          {/* O TÍTULO É O DO DESENHO: "A cara do ENAMED." A sigla sozinha
+              rotulava o cartão sem dizer o que ele mostra, e era a única linha
+              da página em que a tese ("cada prova tem uma cara") aparecia como
+              etiqueta em vez de afirmação.
+
+              ⚠️ O artigo é masculino porque hoje só existe o ENAMED, e
+              `ProvaReport.tsx` já assume o mesmo. Quando entrar a primeira
+              prova feminina ("a USP", "a UNIFESP"), isto vira dado da prova —
+              não `sigla.endsWith`, que erra em UNIFESP e acerta em USP por
+              acidente.
+
+              `text-3xl` SAIU porque era classe morta: `.paper-page
+              h2:not(.paper-eyebrow)` tem especificidade (0,2,1) e o utilitário
+              (0,1,0) — a folha vencia e o cartão saía a 38px, do tamanho de um
+              título de seção. Deixar a classe ali fazia o JSX prometer 30px que
+              o navegador nunca entregou. */}
+          <h2 className="font-serif font-semibold tracking-tight text-ink">
+            A cara do {prova.sigla}.
           </h2>
           <span className="text-sm text-muted">
             vale para o ENARE e para a 1ª etapa do Revalida
@@ -189,6 +205,20 @@ export function DestaqueProva({ prova }: { prova: Prova }) {
               {prova.base.direta.questoes} questões da aplicação direta
             </span>
           </div>
+          {/* COMO SE LÊ A FAIXA — a chamada da seção 01 do desenho.
+
+              Faltava, e a falta ficou cara quando a direção 1b pôs a faixa
+              para ABRIR a página: o leitor encontra uma barra colorida antes
+              de qualquer texto que diga o que ela é.
+
+              ⚠️ A segunda metade da frase do desenho — "o número ao lado
+              mostra a diferença para a média das outras provas" — NÃO vem
+              junto. Comparação com a média nacional foi proibida num turno
+              posterior do próprio projeto, e é a mesma frase que tirou as
+              direções 1a e 1c da mesa. */}
+          <p className="mb-4 max-w-[58ch] text-sm text-muted">
+            Cada faixa é uma grande área. A largura é o quanto ela vale na prova.
+          </p>
           <BarrasArea
             linhas={prova.areas.linhas.map((linha) => ({
               rotulo: linha.rotulo,

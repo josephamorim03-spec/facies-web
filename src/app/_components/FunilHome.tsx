@@ -4,7 +4,6 @@ import { useState, type ReactNode } from "react";
 
 import { FaciesPicker } from "@/components/facies/FaciesPicker";
 import { GateEmail } from "@/components/facies/GateEmail";
-import { PonteDiagnostico } from "@/components/facies/PonteDiagnostico";
 import type { Banca } from "@/lib/facies";
 import type { Prova } from "@/lib/provas";
 
@@ -62,7 +61,23 @@ export function FunilHome({
             dizem sozinhos o que sao. */}
         <FaciesPicker bancas={bancas} prova={prova} onChaveChange={setChave} />
 
-        <PonteDiagnostico banca={chave} />
+        {/* ⚠️ A PONTE SAIU DO FLUXO — `PonteDiagnostico` continua no repo, sem
+            call site.
+
+            Ela era a cena de conversao da pagina antiga: "23h40, pos-plantao,
+            voce abre a plataforma, ve cento e trinta mil questoes e fecha sem
+            estudar", seguida do print do produto. Argumento por OBJECAO, que
+            e exatamente o que o porte da v7 substituiu por demonstracao.
+
+            E ela carregava quase toda a copy de plantao da landing. A v7
+            menciona plantao UMA vez, numa linha da lista de comparacao; aqui
+            era uma secao inteira construida em cima disso.
+
+            ⚠️ Ela levava o unico link para `/login` da pagina publica. A v7
+            tambem nao tem nenhum — ela e site de marketing e o acesso vive em
+            outro lugar. `RedirectIfAuthenticated` continua mandando quem tem
+            sessao para o app; quem perdeu a sessao entra por `/login` direto.
+            Se isso incomodar, o lugar do link e o topo, ao lado do CTA. */}
       </div>
 
       {children}

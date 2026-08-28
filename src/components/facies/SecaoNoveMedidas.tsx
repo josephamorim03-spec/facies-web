@@ -1,5 +1,6 @@
 import { RotuloSecao } from "./RotuloSecao";
 import type { Prova } from "@/lib/provas";
+import { CONT_LANDING } from "@/lib/site";
 
 /**
  * Seção 03 da v7 — "o que ninguém mede": as nove dimensões de forma.
@@ -101,7 +102,7 @@ export function SecaoNoveMedidas({ prova }: { prova?: Prova | null }) {
 
   return (
     <section className="sec">
-      <div className="mx-auto w-full max-w-5xl px-[var(--gutter)]">
+      <div className={CONT_LANDING}>
         <RotuloSecao numero="03">o que ninguém mede</RotuloSecao>
         <h2 className="mt-3 max-w-[22ch] font-serif font-semibold text-ink">
           Você não presta “residência”. Você presta uma prova.

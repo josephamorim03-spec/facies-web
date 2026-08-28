@@ -509,15 +509,33 @@
      A lição não é "use :not" — é que classe utilitária e seletor de elemento
      no mesmo escopo sempre vão disputar, e quem perde é a que tem menos
      especificidade, não a que foi escrita depois. */
+  /* ⚠️ DESVIO DELIBERADO DO DESENHO — a escala aqui NAO e' a da v7.
+
+     Medido no desenho renderizado (`npm run verificar:design --so-design`):
+     h1 38/76/96 e h2 28/46/54 nos pontos de quebra 390/760/1040. A nossa
+     folha reproduzia isso fielmente. O usuario pediu menor em 2026-08-28,
+     duas rodadas seguidas, e essa e' uma decisao de gosto que cabe a ele.
+
+     Ficou: h1 34/54/64, h2 24/34/38 — uma reducao de ~33% no topo da
+     escala, mantendo a razao h1:h2 do desenho (1,78 la, 1,68 aqui) para
+     nao achatar a hierarquia junto.
+
+     A entrelinha subiu de leve (1,02 -> 1,05 em 760) porque corpo menor
+     pede mais respiro — mas SO de leve: subir entrelinha por limiar
+     teorico ja' engordou este heroi em 35% uma vez.
+
+     `verificar:design` conhece este desvio e o declara em vez de
+     reprovar. Se a escala do desenho voltar a valer, e' la' que se
+     desfaz. */
   .paper-page h1:not(.paper-eyebrow) {
-    font-size: 38px;
-    line-height: 1.08;
+    font-size: 34px;
+    line-height: 1.1;
     letter-spacing: -0.02em;
   }
 
   .paper-page h2:not(.paper-eyebrow) {
-    font-size: 28px;
-    line-height: 1.14;
+    font-size: 24px;
+    line-height: 1.18;
     letter-spacing: -0.015em;
     margin-bottom: 20px;
   }
@@ -547,14 +565,14 @@
 
   @media (min-width: 760px) {
     .paper-page h1:not(.paper-eyebrow) {
-      font-size: 76px;
-      line-height: 1.02;
+      font-size: 54px;
+      line-height: 1.05;
       letter-spacing: -0.03em;
     }
 
     .paper-page h2:not(.paper-eyebrow) {
-      font-size: 46px;
-      margin-bottom: 28px;
+      font-size: 34px;
+      margin-bottom: 24px;
     }
 
     .paper-page .lede {
@@ -562,16 +580,17 @@
     }
   }
 
-  /* O TERCEIRO DEGRAU, que a transcrição perdeu. O h2 vai a 54px a partir de
-     1040 — só apareceu medindo o desenho renderizado nessa largura. Ler o CSS
-     dava 46 e parava ali. */
+  /* O TERCEIRO DEGRAU existe porque a transcricao o perdeu: medindo o desenho
+     renderizado em 1040 o h2 sobe de novo, coisa que ler o CSS nao mostrava.
+     A PROPORCAO e' do desenho; os VALORES nao sao mais. Ver a nota de desvio
+     acima do bloco do h1. */
   @media (min-width: 1040px) {
     .paper-page h1:not(.paper-eyebrow) {
-      font-size: 96px;
+      font-size: 64px;
     }
 
     .paper-page h2:not(.paper-eyebrow) {
-      font-size: 54px;
+      font-size: 38px;
     }
   }
 

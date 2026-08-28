@@ -113,7 +113,7 @@ export function BuscaDeProva() {
   const itemAtivoId = listaVisivel ? `${listaId}-${Math.min(ativo, sugestoes.length - 1)}` : undefined;
 
   return (
-    <div className="relative mt-6 max-w-[620px]">
+    <div id="busca" className="relative mt-6 max-w-[620px] scroll-mt-6">
       <label htmlFor={campoId} className="paper-eyebrow">
         Qual prova você vai fazer?
       </label>

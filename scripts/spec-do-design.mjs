@@ -82,6 +82,32 @@ const ASPECTOS = [
   // Quem cobre esses dois e' o modo `--ritmo`, contra o artboard `1b`.
 ];
 
+/**
+ * DESVIOS APROVADOS -- diferencas que sao decisao, nao defeito.
+ *
+ * O criterio de pronto continua sendo diff vazio; o que muda e' que uma escolha
+ * consciente para de disfarcar de erro. Sem esta lista havia so' duas saidas
+ * ruins: conviver com um guard permanentemente vermelho, que em uma semana
+ * ninguem mais le, ou apagar o aspecto do mapa -- que e' perder a MEDIDA junto
+ * com o alerta.
+ *
+ * Por isso o desvio continua sendo IMPRESSO, com o motivo ao lado. Um desvio
+ * que some da tela vira, seis meses depois, um defeito que ninguem sabe
+ * explicar.
+ *
+ * Entrada nova precisa de data e de quem decidiu: "porque sim" nao e' motivo,
+ * e sem dono nao ha' como saber se ainda vale.
+ */
+const DESVIOS_APROVADOS = new Map([
+  ["h1 tamanho", "usuario pediu menor, 2026-08-28: 38/76/96 -> 34/54/64"],
+  ["h1 entrelinha", "acompanha o h1 menor: 1,08/1,02 -> 1,10/1,05"],
+  // Consequencia aritmetica, nao segunda decisao: o `letter-spacing` e'
+  // declarado em `em` e vale -0,02/-0,03 nos DOIS lados. O px muda porque o
+  // corpo mudou. Conferido nos quatro pontos de quebra.
+  ["h1 tracking", "mesmo valor em `em` do desenho; o px segue o corpo menor"],
+  ["h2 tamanho", "acompanha o h1, preservando a razao h1:h2: 28/46/54 -> 24/34/38"],
+]);
+
 function argumento(nome, padrao) {
   const achado = process.argv.find((a) => a.startsWith(`--${nome}=`));
   return achado ? achado.slice(nome.length + 3) : padrao;
@@ -145,7 +171,34 @@ async function sobreposicao(pagina) {
       if (titulo.classList.contains("paper-eyebrow")) continue;
       const faixa = document.createRange();
       faixa.selectNodeContents(titulo);
-      const linhas = [...faixa.getClientRects()].filter((r) => r.height > 4);
+      const brutos = [...faixa.getClientRects()].filter((r) => r.height > 4);
+
+      // AGRUPA POR LINHA VISUAL, e nao por no de texto.
+      //
+      // `getClientRects()` devolve um retangulo por no. Um titulo escrito como
+      // `A cara do {prova.sigla}.` tem TRES nos na MESMA linha, e o detector
+      // lia os tres como linhas empilhadas -- sobreposicao de 100%, num titulo
+      // que cabe inteiro numa linha so'. Falso positivo garantido para qualquer
+      // heading com interpolacao ou <span> dentro.
+      //
+      // A chave e' o topo arredondado: retangulos da mesma linha compartilham
+      // `top`, com fracao de subpixel. 1px de tolerancia cobre isso sem juntar
+      // linhas de verdade, que estao a dezenas de px de distancia.
+      const porLinha = new Map();
+      for (const r of brutos) {
+        const chave = Math.round(r.top);
+        const atual = porLinha.get(chave);
+        if (atual) {
+          atual.top = Math.min(atual.top, r.top);
+          atual.bottom = Math.max(atual.bottom, r.bottom);
+        } else {
+          porLinha.set(chave, { top: r.top, bottom: r.bottom });
+        }
+      }
+      const linhas = [...porLinha.values()]
+        .sort((a, b) => a.top - b.top)
+        .map((r) => ({ ...r, height: r.bottom - r.top }));
+
       let pior = 0;
       for (let i = 0; i < linhas.length - 1; i += 1) {
         const razao = (linhas[i].bottom - linhas[i + 1].top) / linhas[i].height;
@@ -382,13 +435,21 @@ for (const largura of QUEBRAS) {
   const nosso = await medir(pagina, "nosso");
   const sobreNosso = await sobreposicao(pagina);
 
-  const linhas = ASPECTOS.map((a) => a.nome).filter(
+  const todasAsDifs = ASPECTOS.map((a) => a.nome).filter(
     (nome) => String(doDesign[nome]) !== String(nosso[nome]),
   );
+  // Desvio declarado sai da conta de reprovacao, mas NAO some da tela.
+  const linhas = todasAsDifs.filter((nome) => !DESVIOS_APROVADOS.has(nome));
+  const declarados = todasAsDifs.filter((nome) => DESVIOS_APROVADOS.has(nome));
 
   console.log(`\n@${largura}px`);
+  for (const nome of declarados) {
+    console.log(
+      `  desv ${nome.padEnd(16)} design=${String(doDesign[nome]).padEnd(12)} nosso=${nosso[nome]}  (${DESVIOS_APROVADOS.get(nome)})`,
+    );
+  }
   if (linhas.length === 0) {
-    console.log("  sem diferenca");
+    console.log(declarados.length ? "  sem diferenca fora dos desvios" : "  sem diferenca");
   } else {
     for (const nome of linhas) {
       diferencas += 1;
