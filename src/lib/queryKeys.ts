@@ -10,6 +10,9 @@ export const queryKeys = {
   questionBankBoards: ["question-bank", "boards"] as const,
   cardsOverview: (area?: string) => ["cards", "overview", area ?? "all"] as const,
   planning: ["planning"] as const,
+  // O objetivo do aluno muda quando ele o troca, nao durante a sessao — por
+  // isso chave propria e `staleTime` longo em quem consulta.
+  studentObjectives: ["student", "objectives"] as const,
 };
 
 export const questionBankInvalidationKeys = [

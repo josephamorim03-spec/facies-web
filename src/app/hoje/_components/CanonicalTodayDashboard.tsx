@@ -9,7 +9,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
-import { getStudentToday } from "@/lib/api";
+import { getMyObjectivesV2, getStudentToday } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentAgenda } from "@/features/student-agenda/useStudentAgenda";
@@ -20,6 +20,7 @@ import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
 // tamanho do dia — agora é INFERIDO e exibido como contexto da próxima ação, não
 // como um formulário antes dela. `TodayDimensioning` é uma linha, e a conta por
 // trás dela abre a um toque.
+import { AlvoEContagem, objetivoPrincipal } from "@/components/AlvoEContagem";
 import { TodayBackupActions } from "./TodayBackupActions";
 import { TodayDimensioning } from "./TodayDimensioning";
 import { TodayEmptyState } from "./TodayEmptyState";
@@ -64,6 +65,16 @@ export function CanonicalTodayDashboard() {
     staleTime: 10_000,
   });
   const today = todayQuery.data;
+  // A prova-alvo do topo (artboard 8b). `staleTime` longo de propósito: um
+  // objetivo muda quando o aluno o troca, não durante a sessão de estudo — e
+  // esta consulta não pode competir com a do dia, que é a que segura a tela.
+  const objetivosQuery = useQuery({
+    queryKey: queryKeys.studentObjectives,
+    queryFn: () => getMyObjectivesV2(token),
+    enabled: tokenResolved,
+    staleTime: 300_000,
+  });
+  const alvo = objetivoPrincipal(objetivosQuery.data?.items);
   // The compatibility field still owns the learner-local date until the Today
   // contract itself gains a timezone-aware date. Its item list is never read.
   const localDate = today?.schedule_preview.date ?? "";
@@ -122,8 +133,19 @@ export function CanonicalTodayDashboard() {
 
   return (
     <div className="space-y-5 md:space-y-6">
+      {/* ── A ABERTURA É A DO ARTBOARD 8b ────────────────────────────────
+          O desenho abre com a PROVA-ALVO e a data, e não com cumprimento —
+          nem em 8b (dia por começar) nem em 13e (dia começado). A escolha tem
+          consequência: quem abre o app às 23h40 depois do plantão recebe
+          primeiro o que decide o dia dele, não uma saudação.
+
+          O cumprimento fica logo abaixo, menor. Tirá-lo por inteiro seria ir
+          além do desenho: o artboard não o desenha, mas também não desenha
+          nenhuma tela com nome de aluno — ele não representa o caso, e a regra
+          para ausência é herdar o que existe. */}
       <header>
-        <h1 className="font-serif text-3xl font-semibold leading-tight text-ink md:text-4xl">
+        <AlvoEContagem objetivo={alvo} />
+        <h1 className="mt-2 font-serif text-3xl font-semibold leading-tight text-ink md:text-4xl">
           {greeting(studentFirstName)}
         </h1>
       </header>

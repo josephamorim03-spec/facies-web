@@ -16,6 +16,7 @@ const PAPER_SURFACES = [
   "src/components/ui/Surface.tsx",
   "src/components/ui/Tabs.tsx",
   "src/components/ui/Tooltip.tsx",
+  "src/components/AlvoEContagem.tsx",
   "src/components/AppShell.tsx",
   "src/components/Nav.tsx",
   "src/components/MobileTabBar.tsx",
