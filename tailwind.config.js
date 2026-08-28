@@ -23,10 +23,15 @@ module.exports = {
         // no meio de uma palavra), e quanto disso ele consegue depende do
         // tamanho em que é escrito. O cálculo está em `globals.css`.
         //
-        // `marca` = acento onde ele é texto PEQUENO (piso 4,5:1).
+        // `marcaViva` = a marca como TINTA (link, número de seção, selo, e o
+        // acento onde ele é texto pequeno). É o eixo do handoff de design:
+        // superfície que se preenche × tinta que se lê. `primary` é a
+        // superfície; este é a tinta.
+        // `marca` = alias histórico de `marcaViva`, mantido pelos call sites.
         // `marcaDisplay` = acento a 24px+ semibold (piso 3:1) — ~50% mais
         // separação da tinta. Usá-lo em texto pequeno é violação de contraste,
         // e é `check-retro-geometry.mjs` quem barra.
+        marcaViva: "var(--color-marca-viva)",
         marca: "var(--color-marca)",
         marcaDisplay: "var(--color-marca-display)",
         accent: "var(--color-accent)",

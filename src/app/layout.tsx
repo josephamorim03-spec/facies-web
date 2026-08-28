@@ -44,6 +44,17 @@ const instrumentSans = Instrument_Sans({
 //
 // ⚠️ Ela é MAIS LARGA que a Plex. Onde a mono aparece em 11px com texto ao
 // lado, conferir se a linha não quebra — foi conferido em 390px e 1280px.
+//
+// ⚠️ DIVERGE DO HANDOFF DE DESIGN DE PROPÓSITO, e não por descuido.
+// `facies-design-handoff.md` §1 pede DM Mono, "escolhida por ter zero sem ponto
+// no miolo; a IBM Plex Mono foi descartada por isso". O CRITÉRIO é o mesmo que
+// levou a Plex embora daqui — o design e o código chegaram nele
+// independentemente. A divergência é só na resposta: a DM Mono resolve o ponto
+// e devolve uma BARRA, que é a mesma classe de enfeite no mesmo algarismo. A
+// Azeret não tem nem um nem outro.
+// Ou seja: isto aplica a regra do design com mais rigor do que a fonte que o
+// design escolheu. NÃO trocar de volta para DM Mono sem antes olhar o zero das
+// duas lado a lado, em 11px.
 const azeretMono = Azeret_Mono({
   subsets: ["latin"],
   variable: "--font-mono",

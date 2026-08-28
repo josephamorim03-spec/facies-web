@@ -6,6 +6,7 @@ import { bancasEmDestaque, janelaNacional, NACIONAL, todasAsBancas } from "@/lib
 import { todasAsProvas } from "@/lib/provas";
 import { SITE_NAME, SITE_QUALIFICADOR } from "@/lib/site";
 import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
+import { FaixaAreas } from "@/components/facies/FaixaAreas";
 
 /**
  * A home É a Fácies (§12.1).
@@ -69,9 +70,49 @@ export default function Home() {
 
         {/* ── Tese ────────────────────────────────────────────────────── */}
         <header className="pt-10 sm:pt-14">
-          <span className="paper-eyebrow">
-            Grátis, sem cadastro
-          </span>
+          {/* A FAIXA ABRE A PÁGINA. É a direção `1b` do projeto de design, e a
+              escolha entre as três não foi de gosto.
+
+              As outras duas (`1a` prontuário, `1c` petróleo) abrem com o texto e
+              penduram na primeira tela a frase "preventiva pesa 5 pontos a mais
+              que na média das outras" — uma comparação com a média nacional que
+              o próprio projeto de design proibiu depois, num turno posterior:
+              enquanto metade das questões tem grande área e nenhum assunto, essa
+              frase é sobre o CLASSIFICADOR com cara de frase sobre a prova. A
+              `1b` é a única das três que já nasce sem ela.
+
+              O argumento da ordem: a página inteira afirma que provas têm caras
+              diferentes. Abrir com a cara é mostrar a afirmação antes de fazê-la
+              — quem chega por link de grupo tem paciência de segundos, e a
+              primeira coisa que vê passa a ser a evidência, não a promessa.
+
+              O rótulo "Grátis, sem cadastro" desceu para o fim do bloco pelo
+              mesmo motivo: ele é a remoção de um obstáculo, e obstáculo só pesa
+              depois de existir vontade. */}
+          {provaEmDestaque ? (
+            <section aria-labelledby="abertura-faixa" className="mb-8">
+              <h2 id="abertura-faixa" className="paper-eyebrow">
+                {/* A BASE É A APLICAÇÃO DIRETA, e não a série inteira.
+                    `areas.linhas` soma exatamente `base.direta.questoes`; pendurar
+                    aqui o total da série (que inclui as correlatas) faria a conta
+                    desmentir a legenda em qualquer segmento. O projeto de design
+                    escreve "820 questões" neste rótulo, mas aquele número veio de
+                    um dataset de exemplo — o que vale é o que a base mede. */}
+                {provaEmDestaque.sigla} · {provaEmDestaque.base.direta.questoes} questões ·
+                o peso de cada área
+              </h2>
+              <FaixaAreas
+                className="mt-3"
+                altura="previa"
+                legenda
+                rotulo={`Peso de cada área na ${provaEmDestaque.sigla}`}
+                linhas={provaEmDestaque.areas.linhas.map((linha) => ({
+                  rotulo: linha.rotulo,
+                  pct: linha.pct,
+                }))}
+              />
+            </section>
+          ) : null}
           {/* A quebra é DECLARADA, não sorteada pela medida.
               Antes: `max-w-[19ch]` com uma frase de 26 caracteres. A largura
               decidia onde cortar, e caía antes de "fácies." — a palavra que
@@ -171,9 +212,23 @@ export default function Home() {
               custado caro. O que faltava não era ênfase, era dizer que existe
               coisa abaixo — quem chega de link não sabe que a página rola. */}
           <p className="mt-6 text-sm text-muted">
-            <a href="#seletor" className="text-primary underline underline-offset-4">
+            <a href="#seletor" className="text-marcaViva underline underline-offset-4">
               Verifique a sua banca ↓
             </a>
+          </p>
+          {/* PÍLULA PORQUE É RÓTULO, e o handoff nomeia este caso: "raio cheio
+              só em etiquetas NÃO clicáveis — 'grátis · sem cadastro', economia
+              no Pix". Todo controle fica no raio de 3px; o que não se aperta
+              pode ser cápsula.
+
+              Era um `paper-eyebrow` em versal no TOPO do bloco. Desceu por
+              ordem (a `1b` põe a remoção de obstáculo por último) e trocou de
+              forma porque versal é idioma de rótulo de seção, e isto não abre
+              seção nenhuma — é um selo. */}
+          <p className="mt-6">
+            <span className="inline-flex items-center rounded-full border border-rule bg-surface px-3 py-1 text-sm text-muted">
+              grátis · sem cadastro
+            </span>
           </p>
         </header>
 

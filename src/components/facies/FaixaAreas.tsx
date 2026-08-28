@@ -35,12 +35,53 @@ import { AREA_FULL_LABELS, AREA_VAR } from "@/lib/areaIdentity";
  */
 const ORDEM: string[] = ["CM", "CG", "PD", "GO", "OB", "MP", "OU"];
 
+/**
+ * As três alturas do handoff de design (§3), e elas não são decoração.
+ *
+ * A faixa muda de função com o tamanho: dentro do chip ela é uma miniatura que
+ * serve para COMPARAR provas de relance, e ali rótulo não cabe; na abertura da
+ * página ela é a assinatura, e no bloco de leitura ela é o objeto da frase.
+ *
+ * O `gap` acompanha: 1px na miniatura, porque a 24px de altura dois pixels de
+ * vão comem um segmento estreito inteiro; 2px nas grandes, que é o valor que o
+ * handoff pede e onde ele efetivamente separa matizes vizinhas.
+ */
+const ALTURAS = {
+  /** miniatura do chip — a que já existia */
+  chip: "h-6 gap-px",
+  /** prévia do topo: 56px no celular, 76px no desktop */
+  previa: "h-14 gap-0.5 sm:h-[76px]",
+  /** bloco de leitura: 84px */
+  leitura: "h-[84px] gap-0.5",
+} as const;
+
 export function FaixaAreas({
   linhas,
   className = "",
+  altura = "chip",
+  rotulo,
+  legenda = false,
 }: {
   linhas: { rotulo: string; pct: number }[];
   className?: string;
+  altura?: keyof typeof ALTURAS;
+  /**
+   * Rótulo acessível. Quando presente, a faixa deixa de ser decorativa e passa
+   * a `role="img"` — é o que o handoff §5 exige de "cor nunca é o único
+   * portador de significado".
+   *
+   * Continua OPCIONAL, e o padrão continua sendo `aria-hidden`, porque dentro
+   * do chip o nome da banca já está no botão que a contém: ler sete percentuais
+   * antes de cada chip tornaria a lista impraticável.
+   */
+  rotulo?: string;
+  /**
+   * A legenda com nome e percentual sob a faixa. Vive AQUI, e não em quem
+   * chama, porque depende da mesma `ORDEM` e do mesmo recorte de segmentos —
+   * duas listas ordenadas por regras que só por convenção coincidem acabam
+   * divergindo, e a legenda passaria a nomear a cor errada.
+   */
+  legenda?: boolean;
 }) {
   const segmentos = linhas
     .filter((linha) => linha.pct > 0)
@@ -51,12 +92,24 @@ export function FaixaAreas({
   const total = segmentos.reduce((soma, linha) => soma + linha.pct, 0);
   if (total <= 0) return null;
 
-  return (
+  // O rótulo acessível é a própria leitura da faixa, em palavras: quem não vê a
+  // cor recebe a mesma informação na mesma ordem.
+  const descricao = rotulo
+    ? `${rotulo}: ${segmentos
+        .map(({ area, ...linha }) => `${AREA_FULL_LABELS[area]} ${linha.pct.toFixed(0)}%`)
+        .join(", ")}`
+    : undefined;
+
+  const barra = (
     <span
-      aria-hidden="true"
-      // `gap` de 1px sobre o fundo da régua: separa segmentos de matiz vizinha
-      // sem introduzir borda nem cor nova.
-      className={`flex h-6 w-full overflow-hidden rounded-control bg-rule gap-px ${className}`.trim()}
+      role={descricao ? "img" : undefined}
+      aria-label={descricao}
+      aria-hidden={descricao ? undefined : true}
+      // `gap` sobre o fundo da régua: separa segmentos de matiz vizinha sem
+      // introduzir borda nem cor nova.
+      className={`flex w-full overflow-hidden rounded-control bg-rule ${ALTURAS[altura]} ${
+        legenda ? "" : className
+      }`.trim()}
     >
       {segmentos.map(({ area, ...linha }) => {
         return (
@@ -64,9 +117,9 @@ export function FaixaAreas({
             key={linha.rotulo}
             title={`${AREA_FULL_LABELS[area]} ${linha.pct.toFixed(0)}%`}
             style={{
-              // `flexBasis` proporcional em vez de `width`: com o `gap` de 1px
-              // entre sete segmentos, larguras em porcentagem somariam mais que
-              // 100% e o último seria cortado.
+              // `flexBasis` proporcional em vez de `width`: com o `gap` entre
+              // sete segmentos, larguras em porcentagem somariam mais que 100%
+              // e o último seria cortado.
               flex: `${linha.pct} 1 0%`,
               background: AREA_VAR[area] ?? AREA_VAR.OU,
             }}
@@ -74,5 +127,35 @@ export function FaixaAreas({
         );
       })}
     </span>
+  );
+
+  if (!legenda) return barra;
+
+  return (
+    <div className={className}>
+      {barra}
+      {/* A legenda repete a ORDEM da faixa, e o ponto de cor fica ANTES do nome
+          para que o olho ligue os dois sem procurar. O percentual vai em mono:
+          é dado, e a mono é a textura de dado do sistema.
+
+          `aria-hidden` porque a faixa acima já leva a mesma informação no
+          `aria-label` — sem isso o leitor de tela ouviria os sete percentuais
+          duas vezes seguidas. */}
+      <ul
+        aria-hidden="true"
+        className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-muted"
+      >
+        {segmentos.map(({ area, ...linha }) => (
+          <li key={linha.rotulo} className="flex items-center gap-1.5">
+            <span
+              className="h-2.5 w-2.5 shrink-0 rounded-control"
+              style={{ background: AREA_VAR[area] ?? AREA_VAR.OU }}
+            />
+            {AREA_FULL_LABELS[area]}
+            <span className="font-mono text-ink">{linha.pct.toFixed(0)}%</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

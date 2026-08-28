@@ -2,9 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* KROS/DOS — terminal chapado com gramática Win95.
-   Tema claro = papel/tinta com seleção navy. Tema escuro = fósforo âmbar.
-   Os dois são autênticos: o Win95 não tem dark mode de verdade, o DOS tem. */
+/* FÁCIES — prontuário bem diagramado. Papel, tinta, régua, laudo.
+   Tema claro = papel e tinta. Tema escuro = o mesmo laudo com a luz baixa;
+   ele existe porque parte do uso é às 3h da manhã, não por estilo.
+
+   ⚠️ O cabeçalho anterior dizia "KROS/DOS — terminal chapado com gramática
+   Win95", e a linha do raio dizia "Zero em tudo. Não existe canto arredondado"
+   logo acima de valores 2/3/4px. As duas frases já estavam mortas: o
+   `check-retro-geometry.mjs` registra que a identidade mudou e que as quatro
+   regras retrô saíram. Comentário que descreve um sistema que não existe mais é
+   pior que comentário nenhum — ele é lido como intenção. */
 :root {
   color-scheme: light;
   /* `paper` é o "desktop" atrás da janela; `surface` é o interior dela, e é
@@ -65,12 +72,33 @@
 
      O acento estava preso numa janela que nao era a dele. */
   --color-marca-display: #0C8F7F;
-  /* O acento onde ele E' texto pequeno: `FaciesWordmark size="sm"` (14px) e
-     `FaciesMark` (16px). Ali o piso volta a ser 4,5:1, o teto de luminancia
-     volta a L <= 0,1325 — que e' exatamente o teto do primary. Os dois
-     convergem por ARITMETICA, entao o alias diz isso em vez de repetir o hex e
-     deixar os dois divergirem na proxima mudanca. */
-  --color-marca: var(--color-primary);
+  /* A MARCA COMO TINTA — o eixo que o handoff de design chama de `--marca-viva`.
+     Ele vale para o acento onde ele e' texto pequeno (`FaciesWordmark size="sm"`,
+     `FaciesMark`), e tambem para link, numero de secao, selo e etiqueta.
+
+     O eixo do design e' melhor que o antigo e por isso foi adotado: o token
+     divide-se por PAPEL (superficie que se preenche × tinta que se le), nao por
+     tamanho de fonte. `--color-primary` e' a superficie — fundo de botao e de
+     faixa. Este e' a tinta. Um call site sabe dizer se esta pintando ou
+     escrevendo; nao sabe dizer em que tamanho o texto vai sair.
+
+     O VALOR do design (#12786E) NAO entrou como veio, e a razao e' medida: ele
+     foi calibrado contra os dois fundos da landing (#F6F6F4 e #EDEEEA), onde da
+     4,93 e 4,58. O app tem um terceiro, mais escuro — `surface-muted` #E3E4DF —
+     e ali o mesmo hex cai para 4,17, abaixo do piso de texto.
+
+     Este e' o #12786E escurecido por MULTIPLICACAO do RGB (fator 0,954), que e'
+     o mesmo metodo com que a paleta de area foi corrigida: multiplicar preserva
+     a razao entre canais, entao a MATIZ do design sobrevive intacta. Medido:
+     4,52 no pior fundo (surface-muted) e 3,05 de separacao da tinta — contra
+     2,91 do valor anterior, e um teto teorico de 3,07 para qualquer verde que
+     precise passar 4,5:1 aqui. Ou seja: e' a cor do design, no limite do que a
+     WCAG permite para texto pequeno. */
+  --color-marca-viva: #117269;
+  /* O alias existe para os call sites de `text-marca` migrarem sozinhos. Nao
+     repetir o hex aqui: dois literais iguais divergem na proxima mudanca, e foi
+     exatamente assim que o `success` quase ficou no petroleo antigo. */
+  --color-marca: var(--color-marca-viva);
   --color-accent: #915500;
   --color-accent-ink: #F6F6F4;
   /* Acompanha o primary por DECISAO, e nao por coincidencia: os dois eram o
@@ -107,13 +135,25 @@
      Só CONTROLE recebe relevo. Painel, card, moldura e superfície de leitura
      seguem chapados em 1px: relevo aqui carrega informação ("isto se aperta"),
      e aplicá-lo em tudo o transformaria em textura. */
-  /* Zero em tudo. Não existe canto arredondado neste sistema. */
+  /* Escala curta de papel: o suficiente para o controle não ser uma lasca, e
+     nunca tanto que a superfície leia como cápsula. O handoff pede 3px como
+     raio único; a escala mantém três degraus porque o app tem três escalas de
+     objeto que a landing não tem (controle, painel, herói).
+     A regra que vale nos dois: PÍLULA É RÓTULO, BOTÃO É RETÂNGULO — raio cheio
+     só em etiqueta não clicável. */
   --radius-control: 2px;
   --radius-surface: 3px;
   --radius-hero: 4px;
   --reading-measure: 68ch;
   --content-wide: 72rem;
   --space-page: clamp(1rem, 2vw, 1.5rem);
+  /* Ritmo da landing, vindo do handoff. `--gutter` é a margem lateral e
+     `--bloco` o respiro entre seções; os dois saltam no mesmo ponto de quebra
+     (760px) em que a página passa a admitir colunas. Ficam aqui, e não soltos
+     na landing, porque a página da banca e a de prova precisam do mesmo ritmo —
+     três cópias do valor divergiriam na primeira mudança. */
+  --gutter: 20px;
+  --bloco: 56px;
   --motion-fast: 120ms;
   --motion-base: 180ms;
   --motion-slow: 240ms;
@@ -232,9 +272,17 @@
      Ou seja: este e' o teto real, e agora o escuro acompanha o claro em vez de
      ficar com metade da separacao. */
   --color-marca-display: #2E8F82;
-  /* Mesma convergencia do tema claro: como texto pequeno o piso volta a 4,5:1 e
-     o melhor valor possivel e' o proprio primary. */
-  --color-marca: var(--color-primary);
+  /* A marca como TINTA no escuro. Aqui o valor do design entrou COMO VEIO
+     (#45B3A6): medido contra os cinco fundos escuros, o pior e' 5,67 sobre o
+     `wash-selecao` — folga larga, porque cor clara sobre fundo escuro sobra
+     contraste. Nao houve o que corrigir, entao nada foi corrigido.
+
+     A separacao da tinta cai para 2,03, e isso e' fisica do tema e nao defeito
+     do valor: no escuro a tinta ja e' clara (#E4E6E4), entao qualquer verde
+     legivel sobre o fundo se aproxima dela. Quem carrega a distincao aqui e' o
+     `--color-marca-display`, que escurece de proposito. */
+  --color-marca-viva: #45B3A6;
+  --color-marca: var(--color-marca-viva);
   --color-accent: #D89440;
   --color-accent-ink: #131516;
   --color-success: #4FB3A4;
@@ -280,6 +328,19 @@
   --area-full-exam: var(--color-primary);
 }
 
+/* O ponto de quebra do handoff, e o ÚNICO: é aqui que a página passa a admitir
+   colunas, e é aqui que o ritmo abre. Um só valor para as duas coisas, porque
+   são a mesma decisão vista de dois ângulos.
+
+   Fica FORA de `:root`/`.dark` de propósito — o ritmo não depende do tema, e
+   repeti-lo nos dois blocos faria o escuro divergir na próxima mudança. */
+@media (min-width: 760px) {
+  :root {
+    --gutter: 32px;
+    --bloco: 96px;
+  }
+}
+
 @layer base {
   html,
   body {
@@ -304,6 +365,30 @@
 
   hr {
     @apply border-edge;
+  }
+
+  /* NÚMERO E MANCHETE NÃO QUEBRAM NO MEIO — regra do handoff §2.
+     "overflow-wrap: normal em valores, gigantes e títulos; quebra por palavra
+     no resto; hifenização automática desligada."
+
+     O alvo é o valor que a página existe para mostrar. "2.483" partido em
+     "2.48 / 3" não é um número feio: é um número ERRADO por um instante, e num
+     produto cujo argumento inteiro é medição isso custa mais do que a linha
+     larga que ele evita.
+
+     `hyphens: none` no `html` e não no `body`: o algoritmo de hifenização é
+     herdado, e um `hyphens: auto` que aparecesse num contêiner intermediário
+     ganharia do `body` por proximidade. O resto do texto continua quebrando por
+     palavra, que é o padrão — nada aqui trava a quebra da prosa. */
+  html {
+    hyphens: none;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-mono {
+    overflow-wrap: normal;
   }
 
   /* Campo com CONTORNO, não com relevo invertido. O afundado do Win98 dizia

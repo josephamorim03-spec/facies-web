@@ -119,9 +119,39 @@ const RULES = [
   {
     label:
       "raio fora da escala — use rounded-control/surface/hero, que leem os --radius-*",
-    pattern: /\brounded-(?:[tblr]{1,2}-)?(?:none|sm|md|lg|xl|2xl|3xl|full)\b|\brounded-\[/,
+    // `full` SAIU desta alternacao e ganhou regra propria logo abaixo. Ele nao
+    // e' "fora da escala": e' um valor que o sistema admite num caso nomeado.
+    pattern: /\brounded-(?:[tblr]{1,2}-)?(?:none|sm|md|lg|xl|2xl|3xl)\b|\brounded-\[/,
     catches: 'className="px-2 rounded-lg"',
     ignores: 'className="px-2 rounded-control"',
+  },
+  {
+    label:
+      "pilula em elemento CLICAVEL — o handoff diz: pilula e rotulo, botao e retangulo; controle usa rounded-control",
+    /**
+     * A regra nova do handoff de design, e ela nao e' "raio cheio e proibido".
+     * E' mais fina que isso:
+     *
+     *   > Pilula e rotulo, botao e retangulo. Raio cheio so em etiquetas NAO
+     *   > clicaveis ("gratis · sem cadastro", economia no Pix). Todo controle
+     *   > usa --raio de 3px, inclusive os atalhos de prova.
+     *
+     * Antes, `rounded-full` estava na mesma alternacao dos raios fora de escala
+     * e era barrado em todo lugar — o que impedia a etiqueta que o proprio
+     * design pede. Barrar o caso legitimo empurra quem escreve para a isencao
+     * nominal, e isencao e o que este arquivo passa o tempo todo tentando nao
+     * acumular.
+     *
+     * O `allow` deixa passar a linha que NAO tem marca de interatividade. E uma
+     * heuristica de linha, nao analise de arvore: se o elemento e o `rounded-full`
+     * moram na mesma linha — que e' o caso normal em JSX — ela acerta. Um botao
+     * que quebre a tag e a classe em linhas diferentes escapa, e por isso a
+     * regra e' um piso contra a reincidencia distraida, nao uma prova.
+     */
+    pattern: /\brounded-full\b/,
+    allow: /^(?!.*(?:<button|<a[\s>]|<Link|onClick|role="button"|role='button')).*$/,
+    catches: '<button className="rounded-full px-3">Filtrar</button>',
+    ignores: '<span className="rounded-full px-3 py-1">gratis · sem cadastro</span>',
   },
   {
     label:

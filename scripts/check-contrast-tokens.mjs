@@ -46,6 +46,11 @@ const FOREGROUND = [
   // O acento da wordmark. Entra como TEXTO (4,5:1) e nao como grafico:
   // e uma letra que se le, no meio de uma palavra que se le.
   "--color-marca",
+  // A marca como TINTA, o eixo do handoff de design. Entra por VALOR e nao so'
+  // pelo alias: `--color-marca` resolve para ca hoje, mas se alguem apontar o
+  // alias para outro lugar amanha, este token sairia da cobertura sem ninguem
+  // ver — que e' o modo de falha que este arquivo inteiro existe para impedir.
+  "--color-marca-viva",
   "--color-accent",
   "--color-success",
   "--color-danger",
