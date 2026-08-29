@@ -15,43 +15,42 @@ export const AREA_SHORT_LABELS: Record<DisplayArea, string> = {
 };
 
 /**
- * O nome curto do DESIGN — terceira forma, e não substituta de nenhuma das duas.
+ * O nome da área no REGISTRO da landing: o institucional, em minúscula.
  *
- * O pacote de design não escreve os nomes institucionais em lugar nenhum, nem na
- * landing nem no webapp. O artboard `1b` traz a legenda assim:
+ * ## Ele já foi o nome curto do design, e voltou inteiro em três passos
  *
- *     clínica 26%   preventiva 22%   pediatria 19%   GO 18%   cirurgia 15%
+ * O pacote de design escreve curto em todos os artboards — `clínica`,
+ * `cirurgia`, `preventiva`, `GO`. Foi o que este mapa trouxe primeiro, e ele
+ * resolveu um problema real: a legenda ganhou mais itens por linha no celular.
  *
- * Enquanto isso a página imprimia "Ginecologia e Obstetrícia 19%". Fundir OB em
- * GO e continuar com o nome por extenso atendia metade do pedido: o que
- * simplifica de verdade é a palavra curta.
+ * O usuário reverteu, um por vez: `GO` em 2026-08-29 (a única sigla que exige
+ * traduzir, logo na primeira tela, antes de a página ter ganhado confiança), e
+ * logo depois `clínica`, `cirurgia` e `preventiva`. O argumento vale para as
+ * três pelo mesmo motivo: sozinhas elas são AMBÍGUAS num contexto médico —
+ * "clínica" é qualquer consultório, "cirurgia" é o ato, "preventiva" é adjetivo
+ * sem substantivo. "Clínica Médica" e "Medicina Preventiva" são os nomes das
+ * disciplinas, e é assim que estão em todo edital que o aluno já leu.
  *
- * ⚠️ GO É A EXCEÇÃO, e é uma exceção PEDIDA. O design escreve "GO"; o usuário
- * pediu o nome por extenso em 2026-08-29. A razão é boa: as outras cinco são
- * palavras que o aluno lê sem traduzir ("clínica", "cirurgia"), e "GO" é a única
- * que exige conhecer a sigla — logo na primeira tela, antes de a página ter
- * ganhado qualquer confiança.
+ * ## DERIVADO, e não uma segunda lista
  *
- * Fica em minúscula como as demais: aqui é nome, não título.
+ * Depois da reversão as sete entradas ficaram idênticas a `AREA_FULL_LABELS`,
+ * mudando só a caixa — conferido entrada por entrada. Duas listas gêmeas que
+ * "devem" concordar por convenção é exatamente o defeito que este arquivo já
+ * documenta uma vez: havia um `AREA_HEX` paralelo ao `AREA_VAR`, e GO saía
+ * `#7B0F6B` no gráfico da Evolução e `#8F3F7D` na pílula do calendário, na
+ * mesma sessão.
  *
- * ⚠️ E ele é VISUAL, só. Quem ouve a página não tem a barra colorida ao lado
- * para desambiguar "GO", e "clínica" sozinha é ambígua num contexto médico —
- * então `aria-label` e leitor de tela continuam recebendo `AREA_FULL_LABELS`.
- * É por isso que este mapa é o terceiro, e não uma troca: as três formas servem
- * a três leitores diferentes (olho, ouvido, e a sigla dos gráficos densos).
+ * Derivando, renomear uma área é uma edição só. Se algum dia a landing precisar
+ * DIVERGIR do nome institucional — e não só da caixa —, aí sim volta a ser um
+ * mapa próprio; o gatilho é a divergência existir, não a possibilidade dela.
+ *
+ * ⚠️ Continua sendo VISUAL. `aria-label` e leitor de tela recebem
+ * `AREA_FULL_LABELS` com a caixa original: minúscula é decisão de composição da
+ * página, e quem ouve não tem composição nenhuma.
  */
-export const AREA_LANDING_LABELS: Record<DisplayArea, string> = {
-  CM: "clínica",
-  CG: "cirurgia",
-  PD: "pediatria",
-  GO: "ginecologia e obstetrícia",
-  // OB não aparece sozinha na landing (é fundida em GO por
-  // `fundirObstetriciaEmGo`), mas o mapa é total: uma entrada faltando viraria
-  // `undefined` renderizado como vazio no dia em que a fusão for desligada.
-  OB: "obstetrícia",
-  MP: "preventiva",
-  OU: "outras",
-};
+export const AREA_LANDING_LABELS: Record<DisplayArea, string> = Object.fromEntries(
+  Object.entries(AREA_FULL_LABELS).map(([area, nome]) => [area, nome.toLowerCase()]),
+) as Record<DisplayArea, string>;
 
 /**
  * Cor de área — FONTE ÚNICA.
