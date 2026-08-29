@@ -55,8 +55,11 @@ import {
  */
 const ENUNCIADO: { texto: string; marca?: Chave }[] = [
   {
+    // A âncora é `dados`, e não `tamanho`: este trecho é a enumeração de
+    // achados clínicos — idade, queixa, tempo. `tamanho` é propriedade do
+    // enunciado INTEIRO e não tem onde se ancorar sem mentir sobre o recorte.
     texto: "Mulher de 28 anos procura a unidade básica com atraso menstrual de 8 semanas",
-    marca: "tamanho",
+    marca: "dados",
   },
   { texto: ". Refere náuseas matinais, " },
   { texto: "sem", marca: "negacoes" },
@@ -72,9 +75,28 @@ const ENUNCIADO: { texto: string; marca?: Chave }[] = [
   { texto: " neste momento?" },
 ];
 
-const ALTERNATIVAS = [
-  { letra: "A", texto: "Solicitar ultrassonografia obstétrica e iniciar o pré-natal na mesma consulta" },
-  { letra: "B", texto: "Iniciar o pré-natal, solicitar os exames de rotina e agendar retorno" },
+/**
+ * As alternativas também se ancoram — e precisam.
+ *
+ * `paralelismo` é a única medida cujo objeto NÃO está no enunciado: ela olha as
+ * alternativas entre si. Sem âncora aqui, acender "Paralelismo entre
+ * alternativas" não destacaria nada na tela, e a lista voltaria a ser uma lista
+ * de nomes — que é o defeito que esta seção inteira existe para corrigir.
+ *
+ * A e B são o par: as duas abrem prescrevendo o pré-natal e divergem no exame
+ * que pedem junto. É textualmente o que a medida mede.
+ */
+const ALTERNATIVAS: { letra: string; texto: string; marca?: Chave }[] = [
+  {
+    letra: "A",
+    texto: "Solicitar ultrassonografia obstétrica e iniciar o pré-natal na mesma consulta",
+    marca: "paralelismo",
+  },
+  {
+    letra: "B",
+    texto: "Iniciar o pré-natal, solicitar os exames de rotina e agendar retorno",
+    marca: "paralelismo",
+  },
   { letra: "C", texto: "Encaminhar ao pré-natal de alto risco para confirmação da idade gestacional" },
   { letra: "D", texto: "Repetir o teste em duas semanas antes de qualquer conduta" },
 ];
@@ -94,6 +116,17 @@ export function QuestaoAnotada({ dados }: { dados: DadosDaProva }) {
   const [fixada, setFixada] = useState<Chave | null>(null);
   const [sobre, setSobre] = useState<Chave | null>(null);
   const [eixo, setEixo] = useState<"prova" | "questao">("prova");
+  /**
+   * A questão começa FECHADA, e a razão é de ordem de leitura.
+   *
+   * Aberta por padrão, a seção põe um enunciado clínico inteiro entre a
+   * manchete ("o que ninguém mede") e a lista que a sustenta. Quem chega
+   * lê a questão como se ela fosse o assunto — e ela não é: ela é a PROVA do
+   * assunto, e prova se oferece a quem já ouviu a afirmação.
+   *
+   * Fechada, a seção diz o que mede; aberta sob demanda, mostra medindo.
+   */
+  const [questaoAberta, setQuestaoAberta] = useState(false);
   const ativa = fixada ?? sobre;
   const marcas = marcasDaProva(dados);
 
@@ -101,9 +134,37 @@ export function QuestaoAnotada({ dados }: { dados: DadosDaProva }) {
     setFixada((atual) => (atual === chave ? null : chave));
 
   return (
-    <div className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_1fr]">
+    <div
+      /* A ANIMAÇÃO É DE GRADE, e é o truque que evita JavaScript de altura.
+         `grid-rows-[0fr]` → `[1fr]` (e as colunas no desktop) são transicionáveis
+         porque os dois lados têm o mesmo número de trilhas — o filho leva
+         `overflow-hidden` e a altura resolve sozinha, sem medir nada.
+         500ms com `ease-out`: some rápido no fim, que é o que faz um movimento
+         parecer discreto em vez de lento.
+
+         `motion-reduce:transition-none` não é enfeite de acessibilidade: quem
+         liga "reduzir movimento" no sistema costuma ter razão clínica para
+         isso, e esta é uma página de medicina. */
+      className={`mt-10 grid gap-8 overflow-hidden transition-[grid-template-rows,grid-template-columns] duration-500 ease-out motion-reduce:transition-none lg:grid-rows-[auto] ${
+        questaoAberta
+          ? "grid-rows-[1fr_auto] lg:grid-cols-[1.1fr_1fr]"
+          : "grid-rows-[0fr_auto] lg:grid-cols-[0fr_1fr]"
+      }`}
+    >
       {/* ── A questão ────────────────────────────────────────────────── */}
-      <figure className="rounded-surface border border-edge bg-surface p-5 sm:p-6">
+      <figure
+        /* `inert`, e NÃO `aria-hidden`. A questão fechada continua no DOM, e
+           dentro dela há um botão por marca: `aria-hidden` sobre conteúdo
+           focável é violação direta — o leitor de tela some com o elemento e o
+           Tab continua parando nele, deixando quem navega por teclado num foco
+           invisível. `inert` faz as duas coisas de uma vez. */
+        inert={!questaoAberta}
+        /* `min-w-0` e `min-h-0` são obrigatórios: sem eles o item de grade
+           assume a largura/altura do conteúdo e a trilha `0fr` não fecha. */
+        className={`min-h-0 min-w-0 rounded-surface border border-edge bg-surface transition-opacity duration-500 ease-out motion-reduce:transition-none ${
+          questaoAberta ? "p-5 opacity-100 sm:p-6" : "border-0 p-0 opacity-0"
+        }`}
+      >
         <figcaption className="paper-eyebrow flex flex-wrap items-baseline gap-x-3">
           {/* A ETIQUETA É OBRIGATÓRIA e é do desenho: "escrita por nós".
               Sem ela, um enunciado com marcas de medição em cima lê como
@@ -154,53 +215,103 @@ export function QuestaoAnotada({ dados }: { dados: DadosDaProva }) {
         </p>
 
         <ol className="mt-4 space-y-1.5 text-base text-ink">
-          {ALTERNATIVAS.map((alternativa) => (
-            <li key={alternativa.letra} className="flex gap-2">
-              <span className="font-mono text-muted">{alternativa.letra}</span>
-              <span>{alternativa.texto}</span>
-            </li>
-          ))}
+          {ALTERNATIVAS.map((alternativa) => {
+            const acesa = alternativa.marca != null && ativa === alternativa.marca;
+            return (
+              <li
+                key={alternativa.letra}
+                className={`flex gap-2 rounded-control px-1 transition ${
+                  acesa ? "bg-[color:var(--wash-selecao)]" : ""
+                }`}
+              >
+                <span className="font-mono text-muted">{alternativa.letra}</span>
+                <span>{alternativa.texto}</span>
+              </li>
+            );
+          })}
         </ol>
       </figure>
 
       {/* ── As marcas ────────────────────────────────────────────────── */}
       <div>
-        {/* O SELETOR DE EIXO é a interação do artboard `4a`: os valores passam a
-            mostrar ESTA questão, e a leitura da prova recua. É a demonstração
-            do argumento — a mesma medida existe no item e no agregado, e é o
-            agregado que vira a "cara" da prova.
-
-            Sem número no rótulo de propósito: "os nove valores" virou falso no
-            dia em que a lista passou a ter sete, e ninguém percebeu. */}
+        {/* O BOTÃO QUE ABRE, e o eixo que só existe depois dele.
+            Fechado, "esta questão" apontaria para uma questão que não está na
+            tela — um controle que promete uma comparação impossível de ver. */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="paper-eyebrow mr-1">os valores mostram</span>
-          {(
-            [
-              ["prova", "a prova"],
-              ["questao", "esta questão"],
-            ] as const
-          ).map(([chave, rotulo]) => (
-            <button
-              key={chave}
-              type="button"
-              aria-pressed={eixo === chave}
-              onClick={() => setEixo(chave)}
-              className={`paper-control inline-flex min-h-11 items-center rounded-surface border px-3.5 py-2 text-sm font-medium transition ${
-                eixo === chave
-                  ? "border-primary bg-primary text-primaryInk"
-                  : "border-rule bg-transparent text-ink hover:border-muted"
+          <button
+            type="button"
+            aria-expanded={questaoAberta}
+            onClick={() => {
+              const abrindo = !questaoAberta;
+              setQuestaoAberta(abrindo);
+              // Fechar a questão devolve o eixo à prova: os valores "desta
+              // questão" sem a questão à vista são sete números sem referente.
+              if (!abrindo) {
+                setEixo("prova");
+                setFixada(null);
+              }
+            }}
+            className="paper-control inline-flex min-h-11 items-center gap-2 rounded-surface border border-primary bg-primary px-3.5 py-2 text-sm font-medium text-primaryInk transition hover:brightness-[1.04]"
+          >
+            {/* O sinal gira em vez de trocar de glifo: dois caracteres
+                diferentes piscam na troca, um que gira lê como o mesmo objeto
+                mudando de estado. */}
+            <span
+              aria-hidden="true"
+              className={`inline-block font-mono transition-transform duration-500 ease-out motion-reduce:transition-none ${
+                questaoAberta ? "rotate-45" : ""
               }`}
             >
-              {rotulo}
-            </button>
-          ))}
+              +
+            </span>
+            {questaoAberta ? "esconder a questão" : "ver numa questão"}
+          </button>
+
+          {/* O SELETOR DE EIXO é a interação do artboard `4a`: os valores passam
+              a mostrar ESTA questão, e a leitura da prova recua. É a
+              demonstração do argumento — a mesma medida existe no item e no
+              agregado, e é o agregado que vira a "cara" da prova.
+
+              Sem número no rótulo de propósito: "os nove valores" virou falso no
+              dia em que a lista passou a ter sete, e ninguém percebeu. */}
+          <div
+            inert={!questaoAberta}
+            className={`flex flex-wrap items-center gap-2 transition-opacity duration-500 ease-out motion-reduce:transition-none ${
+              questaoAberta ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
+          >
+            <span className="paper-eyebrow mx-1">mostrar</span>
+            {(
+              [
+                ["prova", "a prova"],
+                ["questao", "esta questão"],
+              ] as const
+            ).map(([chave, rotulo]) => (
+              <button
+                key={chave}
+                type="button"
+                aria-pressed={eixo === chave}
+                onClick={() => setEixo(chave)}
+                className={`paper-control inline-flex min-h-11 items-center rounded-surface border px-3.5 py-2 text-sm font-medium transition ${
+                  eixo === chave
+                    ? "border-primary bg-primary text-primaryInk"
+                    : "border-rule bg-transparent text-ink hover:border-muted"
+                }`}
+              >
+                {rotulo}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* A INSTRUÇÃO É CURTA E EXISTE. Sem ela, a ligação entre a lista e o
-            texto marcado só é descoberta por acidente — e no celular, onde não
-            há hover para acidentar, não é descoberta nunca. */}
+        {/* A INSTRUÇÃO É CURTA E EXISTE — e só vale com a questão aberta. Sem
+            ela, a ligação entre a lista e o texto marcado só é descoberta por
+            acidente, e no celular, onde não há hover para acidentar, não é
+            descoberta nunca. */}
         <p className="mt-2 text-sm text-muted">
-          Toque numa medida para ver onde ela aparece na questão.
+          {questaoAberta
+            ? "Toque numa medida para ver onde ela aparece na questão."
+            : `As ${marcas.length} medidas, uma a uma. Abra a questão para ver cada uma no texto.`}
         </p>
 
         <ul className="mt-4 divide-y divide-rule border-y border-rule">

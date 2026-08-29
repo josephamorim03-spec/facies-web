@@ -30,12 +30,33 @@
  * (formato, assunto exato). É a ordem em que um leitor humano encontraria cada
  * coisa.
  *
- * ⚠️ SAÍRAM "Quantos dados clínicos" e "Alternativas parecidas": nunca foram
- * computadas em lugar nenhum do faciesbank, nem por regra nem por IA. Medido em
- * 2026-08-28: `trap_pattern`, o campo que mais perto chegaria de "alternativas
- * parecidas", dispara em 0,7% do acervo e é um vocabulário fechado de seis
- * armadilhas de farmacologia, não uma medida de proximidade. Voltam quando
- * forem computadas — acrescentar aqui já ajusta o painel e a numeração.
+ * ## As duas que voltaram, e por que sair foi certo e voltar também
+ *
+ * "Quantos dados clínicos" e "Alternativas parecidas" foram REMOVIDAS daqui
+ * porque não eram computadas em lugar nenhum do faciesbank. Estava certo: a
+ * página anunciava nove e entregava sete.
+ *
+ * Voltaram porque passaram a existir. `scripts/backfill_medidas_de_forma.py`
+ * (commit `c881b01`, "as medidas de forma passam a existir no acervo") grava
+ * `n_dados_clinicos`, `densidade_dados_clinicos` e `paralelismo_alternativas`
+ * em `metadata->'charge_profile'`, com as funções em `charge_heuristics.py`.
+ *
+ * ⚠️ A SEGUNDA MUDOU DE NOME, e a mudança é do faciesbank, não minha.
+ * "Alternativas parecidas" sugere proximidade DIAGNÓSTICA — e o campo mede
+ * proximidade TEXTUAL (`difflib.SequenceMatcher`). "Dengue" e "Chikungunya" são
+ * textualmente distantes e clinicamente vizinhas; "Amoxicilina 500 mg 8/8h" e
+ * "Amoxicilina 875 mg 12/12h" são o inverso. O que a medida vê bem é
+ * PARALELISMO: alternativas que repetem a estrutura e mudam num detalhe — a
+ * questão discrimina por detalhe, não por conceito. É informação útil, e é a
+ * única que o número sustenta.
+ *
+ * ⚠️ Nenhuma das duas tem valor de PROVA, como cinco das outras: o gerador do
+ * dataset (`build_facies_dataset.py`) recalcula o formato na hora e não lê
+ * `charge_profile`. Medida existe, valor não é publicado — que é exatamente o
+ * que a linha "medida, ainda não publicada" diz.
+ *
+ * Ainda ficam de fora medidas que o acervo já computa e o desenho não lista:
+ * `n_alternatives`, `reasoning_type` (eixo pedagógico) e `trap_pattern`.
  *
  * ## ESTA LISTA É A FONTE ÚNICA, e isso conserta um defeito que já aconteceu
  *
@@ -58,7 +79,9 @@ export const ORDEM = [
   "incorreta",
   "negacoes",
   "imagem",
+  "dados",
   "formato",
+  "paralelismo",
   "pede",
   "assunto",
 ] as const;
@@ -148,10 +171,25 @@ const MEDIDA: Record<Chave, { nome: string; porque: string; naQuestao: string }>
     porque: "Foto, traçado, exame. Estudar só por texto prepara mal para prova de imagem.",
     naQuestao: "não",
   },
+  dados: {
+    nome: "Quantos dados clínicos",
+    // ⚠️ A metade "e quantas existem só para confundir" NÃO entra na frase.
+    // Contar achados com valor é uma coisa; saber quais restringem o
+    // diagnóstico é outra, e a contagem não sabe. Prometer a segunda com o
+    // número da primeira é a classe de afirmação que esta seção existe para não
+    // fazer.
+    porque: "Quantas informações com valor a questão dá — idade, sinal vital, exame.",
+    naQuestao: "6 — idade, atraso, náusea, PA, teste, ausências",
+  },
   formato: {
     nome: "Formato da resposta",
     porque: "Alternativa direta, combinação de assertivas, verdadeiro ou falso.",
     naQuestao: "alternativa direta",
+  },
+  paralelismo: {
+    nome: "Paralelismo entre alternativas",
+    porque: "Alternativas que repetem a estrutura e mudam num detalhe: discrimina por detalhe, não por conceito.",
+    naQuestao: "alto — A e B repetem “iniciar o pré-natal”",
   },
   pede: {
     nome: "O que a questão pede",
@@ -182,6 +220,8 @@ export function marcasDaProva(dados: DadosDaProva): Marca[] {
     },
     negacoes: null,
     imagem: null,
+    dados: null,
+    paralelismo: null,
     formato: dados.dominante
       ? { valor: `${pct(dados.dominante.pct)} ${dados.dominante.rotulo}`, base: nasDiretas }
       : null,

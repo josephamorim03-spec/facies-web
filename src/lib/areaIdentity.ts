@@ -26,9 +26,13 @@ export const AREA_SHORT_LABELS: Record<DisplayArea, string> = {
  * GO e continuar com o nome por extenso atendia metade do pedido: o que
  * simplifica de verdade é a palavra curta.
  *
- * ⚠️ `GO` fica em CAIXA ALTA porque é sigla, não palavra — é assim no `1b` e nas
- * telas do webapp. As outras são minúsculas: são nomes, e a folha inteira desta
- * página trata rótulo como texto corrido, não como título.
+ * ⚠️ GO É A EXCEÇÃO, e é uma exceção PEDIDA. O design escreve "GO"; o usuário
+ * pediu o nome por extenso em 2026-08-29. A razão é boa: as outras cinco são
+ * palavras que o aluno lê sem traduzir ("clínica", "cirurgia"), e "GO" é a única
+ * que exige conhecer a sigla — logo na primeira tela, antes de a página ter
+ * ganhado qualquer confiança.
+ *
+ * Fica em minúscula como as demais: aqui é nome, não título.
  *
  * ⚠️ E ele é VISUAL, só. Quem ouve a página não tem a barra colorida ao lado
  * para desambiguar "GO", e "clínica" sozinha é ambígua num contexto médico —
@@ -40,7 +44,7 @@ export const AREA_LANDING_LABELS: Record<DisplayArea, string> = {
   CM: "clínica",
   CG: "cirurgia",
   PD: "pediatria",
-  GO: "GO",
+  GO: "ginecologia e obstetrícia",
   // OB não aparece sozinha na landing (é fundida em GO por
   // `fundirObstetriciaEmGo`), mas o mapa é total: uma entrada faltando viraria
   // `undefined` renderizado como vazio no dia em que a fusão for desligada.
