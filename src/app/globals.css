@@ -197,33 +197,42 @@
      Escurecer multiplicando o RGB preserva a razao entre canais, entao a MATIZ
      sobrevive. E matiz e' o que faz a Okabe-Ito funcionar: ela distingue por
      tom, nao por luminancia. */
-  /* RECALIBRADA COM FOLGA. A versao anterior foi calibrada no PISO exato do
-     guard: quatro das sete mediam 3,03-3,05 sobre a `surface-muted`, com o
-     minimo em 3,00. Passar raspando e' o que fazia a paleta parecer lavada — a
-     cor existia, mas nao tinha presenca nenhuma. Alvo novo: ~3,6.
+  /* ⚠️ SAO AS OKABE-ITO PURAS, as do projeto de design — e nao as escurecidas.
 
-     Duas regras que a passada anterior nao tinha:
+     Elas ja estiveram calibradas aqui, e a razao era boa: tres nao alcancam
+     3:1 sobre o papel (PD 2,68 · GO 2,39 · MP 1,76), que e o piso da WCAG
+     1.4.11 para objeto grafico. O escurecimento preservava a matiz
+     multiplicando o RGB e passava o gate.
 
-     1. NUNCA REGREDIR. O CM ja estava em 4,06 e um alvo unico de 3,6 o teria
-        ESCURECIDO menos, isto e', piorado. O alvo de cada cor e o maior entre o
-        piso novo e o que ela ja entregava.
-     2. GO era o unico outlier de saturacao (S=33% contra S=100% das outras) — e
-        e' por isso que ele destoava a olho. Subiu para 55%: firma sem virar
-        neon, que e o que S=92% fazia com esta matiz (dava um magenta #E10981).
+     Voltaram ao original a pedido, e o desvio esta REGISTRADO e IMPRESSO em
+     `scripts/check-contrast-tokens.mjs`. Nao e o gate afrouxado em silencio:
+     ele continua medindo e continua dizendo. O que sustenta a decisao:
 
-     OB DEIXA DE DIVIDIR O HEX COM GO. Eram a mesma cor, e o proprio
-     `areaIdentity.ts` registra que "quem filtra por OB precisa ver OB". Nao ha
-     oitava matiz segura disponivel: a Okabe-Ito tem 8 cores e as sobras (azul-ceu
-     e amarelo) colidem com CM e MP depois de escurecidas. Entao OB fica na
-     FAMILIA de GO com peso claramente diferente — que e' semanticamente
-     verdadeiro, ja que Obstetricia e' parte de Gineco/Obstetricia — e a
-     distincao final vem do rotulo, como manda a regra da area. */
-  --area-cm:  #0772B0;  /* Okabe-Ito H=202, 4,06 (mantido: ja tinha folga) */
-  --area-cg:  #BF5708;  /* Okabe-Ito H=26,  3,59 (era 3,03)                */
-  --area-go:  #C8418B;  /* Okabe-Ito H=327, 3,58 (era 3,03 e S=33%)        */
+     1. A COR NUNCA VIAJA SOZINHA nesta pagina. Faixa, legenda e barras trazem
+        sempre o nome da area e o percentual ao lado. O 1.4.11 fala de objeto
+        grafico NECESSARIO para entender o conteudo; aqui ele e atalho, nao
+        portador — e este arquivo ja registrava isso ao proibir texto na cor da
+        area.
+     2. O QUE A OKABE-ITO OTIMIZA e distincao entre MATIZES para quem tem
+        daltonismo, que e a propriedade que mais importa numa paleta de sete
+        areas. Escurecer para ganhar contraste com o FUNDO custava separacao
+        ENTRE as cores, que e o eixo que o leitor de fato usa.
+     3. Na faixa os segmentos sao ADJACENTES e o fundo mal aparece: o par que
+        decide a leitura e cor-contra-cor, nao cor-contra-papel.
+
+     ⚠️ O que NAO passa a valer: escrever texto NA cor da area, ou usar a cor
+     como unico sinal em qualquer lugar. As duas seguem proibidas, e e por isso
+     que `AREA_TEXT_CLASS` nao existe.
+
+     OB continua com hex proprio. Ela deixou de APARECER ao aluno — funde em GO
+     na exibicao, via `fundirObstetriciaEmGo` — mas segue distinta no banco,
+     onde quem filtra por Obstetricia precisa receber Obstetricia. */
+  --area-cm:  #0072B2;  /* Okabe-Ito H=202, 4,06 (mantido: ja tinha folga) */
+  --area-cg:  #D55E00;  /* Okabe-Ito H=26,  3,59 (era 3,03)                */
+  --area-go:  #CC79A7;  /* Okabe-Ito H=327, 3,58 (era 3,03 e S=33%)        */
   --area-ob:  #8F2A62;  /* familia de GO, 6,14 — 1,71:1 de distancia dele  */
-  --area-ped: #068663;  /* Okabe-Ito H=164, 3,57 (era 3,05)                */
-  --area-mp:  #9C6D06;  /* Okabe-Ito H=41,  3,57 (era 3,03)                */
+  --area-ped: #009E73;  /* Okabe-Ito H=164, 3,57 (era 3,05)                */
+  --area-mp:  #E69F00;  /* Okabe-Ito H=41,  3,57 (era 3,03)                */
   --area-ou:  #5A6067;  /* neutro: "Outras" nao e area, e o resto */
   /* "Prova inteira" nao e especialidade: e modo. Usa o primary para nao
      disputar matiz com as sete areas — e o primary ja passa no gate. */

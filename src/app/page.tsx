@@ -100,7 +100,7 @@ export default function Home() {
 
         {/* `pt-8` e não `--bloco`: o herói já vem depois da régua do cabeçalho,
             e o respiro cheio de seção duplicaria a separação que a régua faz. */}
-        <section className="pb-8 pt-4">
+        <section className="pb-[var(--bloco)] pt-4">
           <div className={CONT}>
             {/* ── A FAIXA ABRE A PÁGINA — direção 1b ──────────────────────
                 As outras duas direções (1a prontuário, 1c petróleo) penduram na
@@ -117,15 +117,27 @@ export default function Home() {
                   {/* A BASE É A APLICAÇÃO DIRETA, e não a série inteira.
                       `areas.linhas` soma exatamente `base.direta.questoes`;
                       pendurar aqui o total da série faria a conta desmentir a
-                      legenda em qualquer segmento. */}
+                      legenda em qualquer segmento.
+
+                      ⚠️ E A FRASE PRECISA SER DIFERENTE da da seção 03. As duas
+                      diziam "questões já analisadas" — aqui sobre 90, lá sobre
+                      1.717. Mesma frase, dois números, na mesma página: lê como
+                      erro, e quem duvida de um número duvida do resto. Aqui é a
+                      aplicação; lá é a série. */}
                   {provaEmDestaque.sigla} · {provaEmDestaque.base.direta.questoes} questões
-                  já analisadas
+                  da aplicação
+                  {provaEmDestaque.base.direta.anos.length === 1
+                    ? ` de ${provaEmDestaque.base.direta.anos[0]}`
+                    : ""}
                 </h2>
                 <FaixaAreas
                   className="mt-2"
                   altura="previa"
                   legenda
-                  rotulo={`Peso de cada área na ${provaEmDestaque.sigla}`}
+                  // "Peso por disciplina", e não "peso de cada área": "área" é a
+                  // palavra do edital, e é exatamente a que faz o leitor esperar
+                  // cinco fatias de 20%.
+                  rotulo={`Peso por disciplina na ${provaEmDestaque.sigla}`}
                   linhas={provaEmDestaque.areas.linhas.map((linha) => ({
                     rotulo: linha.rotulo,
                     pct: linha.pct,
@@ -143,7 +155,7 @@ export default function Home() {
                 armadilha que já custou uma entrelinha de 1,0 em produção —
                 `sm:text-5xl` carrega line-height junto e vence qualquer
                 `leading-*` escrito ao lado. */}
-            <h1 className="mt-4 max-w-[16ch] font-serif font-semibold text-ink">
+            <h1 className="mt-10 max-w-[16ch] font-serif font-semibold text-ink">
               Você sabe o que a sua prova cobra?
             </h1>
 
@@ -156,7 +168,7 @@ export default function Home() {
 
                 O "Não “o que costuma cair em residência”" de abertura é o que
                 separa a Fácies de cursinho na primeira linha lida. */}
-            <p className="lede mt-3 text-muted">
+            <p className="lede mt-3 text-muted sm:mt-5">
               Não “o que costuma cair em residência”. A{" "}
               <span className="text-marcaViva">sua</span> prova: quanto ela pesa em cada
               área, quais assuntos ela repete todo ano, e até como ela escreve as
@@ -175,7 +187,7 @@ export default function Home() {
                 decoração: quem chega por link compartilhado não sabe que a
                 página continua. A v7 tem a mesma linha ("↓ a cara completa do
                 ENAMED, logo abaixo") pelo mesmo motivo. */}
-            <p className="mt-5 flex items-center gap-2.5 text-sm text-muted">
+            <p className="mt-10 flex items-center gap-2.5 text-sm text-muted">
               <span aria-hidden="true">↓</span>
               {provaEmDestaque
                 ? `a cara completa do ${provaEmDestaque.sigla}, logo abaixo`

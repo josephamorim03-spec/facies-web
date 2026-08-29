@@ -22,7 +22,7 @@
  */
 
 import dados from "@/data/facies/facies.json";
-import { cohenH, decidirExibicao } from "@/lib/distintividade";
+import { BASE_MINIMA, cohenH, decidirExibicao } from "@/lib/distintividade";
 
 export type FormatoLinha = {
   codigo: string;
@@ -64,6 +64,40 @@ export type Banca = {
     linhas: { rotulo: string; n: number; exibivel: boolean }[];
   };
   areas: {
+    cobertura: number;
+    base: number;
+    linhas: { rotulo: string; n: number; pct: number }[];
+  };
+  /** Quantas das `questoes_total` são anuladas.
+   *
+   *  Elas voltaram a CONTAR sem voltar a ser SERVIDAS (migration 118): o
+   *  ENARE tem 100 questões por edição e a leitura dizia 90, porque a projeção
+   *  que alimenta o gerador exclui anulada. O total agora bate com a prova, e
+   *  `mais_cai`/`formato` seguem sem elas — anulada não representa o que a
+   *  banca cobra. */
+  questoes_anuladas: number;
+  /** A prova desta banca ainda existe, e se não, o aluno faz qual?
+   *
+   *  `null` quando ninguém decidiu — 138 das 141 hoje. NÃO é "está ativa":
+   *  preencher por omissão afirmaria, sobre a informação mais cara de errar
+   *  desta página, o que ninguém verificou. */
+  situacao: {
+    situacao: "ativa" | "aderiu_enare" | "processo_unificado" | "extinta";
+    alvo_atual: string | null;
+    ultima_edicao: number | null;
+    nota: string | null;
+    fonte: string | null;
+  } | null;
+  /** O MESMO acervo lido pelo eixo da PROVA, e não da disciplina médica.
+   *
+   *  `câncer de esôfago` vive sob Clínica Médica na árvore e cai no caderno de
+   *  Cirurgia — os dois eixos discordam por desenho (migration 119).
+   *
+   *  ⚠️ `cobertura` é a metade honesta do número: hoje ela fica entre 1,2% e
+   *  9% (mediana 4,1%), porque só 8 nós estão mapeados. O ENARE aparece como
+   *  "100% Cirurgia" sobre cobertura de 4,3% — sem mostrar a cobertura, essa
+   *  barra parece um achado. Campo NOVO ao lado de `areas`, não substituto. */
+  blocos: {
     cobertura: number;
     base: number;
     linhas: { rotulo: string; n: number; pct: number }[];
@@ -265,9 +299,14 @@ export function bancasEmDestaque(): Banca[] {
  *
  * Derivada da própria base, nunca digitada: a soma bate com `NACIONAL.total`
  * por construção, porque percorre as mesmas bancas que alimentam aquele número.
- * Conferido: 100.601 questões em 141 bancas.
  *
- * O `Map` é montado uma vez, na primeira chamada — são 141 bancas × 7 áreas, e
+ * ⚠️ Aqui havia "Conferido: 100.601 questões em 141 bancas", e o dataset já
+ * tinha sido regerado duas vezes desde então — a contagem mudou nas duas. Não
+ * adianta trocar pelo número do dia: o invariante é o que está escrito acima
+ * ("bate com `NACIONAL.total`"), e ele se verifica sozinho. Contagem fixa em
+ * comentário é afirmação com prazo de validade.
+ *
+ * O `Map` é montado uma vez, na primeira chamada — é o acervo inteiro × 7 áreas, e
  * refazer a conta a cada barra do painel seria trabalho repetido à toa.
  */
 let mediaPorArea: Map<string, number> | null = null;
@@ -347,3 +386,85 @@ export function formatosDistintivos(banca: Banca): FormatoLinha[] {
     .filter((linha) => formatoDistintivo(linha, base))
     .sort((a, b) => forca(b) - forca(a));
 }
+
+/**
+ * O EXTREMO do acervo para um formato — a banca que mais o usa.
+ *
+ * Existe para um zero poder ser lido. "0%" sozinho não informa nada: pode ser a
+ * medida não ter rodado, o formato não existir no país, ou a prova ser mesmo
+ * uma exceção. Com a régua ao lado (nacional 7,2%, extremo 29,2%) as três
+ * leituras se separam sozinhas.
+ *
+ * Derivado, nunca digitado — mesma disciplina de `mediaNacionalDaArea`: some
+ * sozinho quando o dataset for regerado, em vez de virar uma segunda verdade.
+ */
+let extremoPorFormato: Map<string, number> | null = null;
+
+/**
+ * ⚠️ DOIS FILTROS, e a conferência provou que os dois são necessários.
+ *
+ * Sem filtro nenhum, o extremo de "pede a incorreta" sai **31%** — da FHEMIG,
+ * que tem 517 questões mas só **197 com formato classificado (38%)**. Não é
+ * base pequena: 197 sustenta uma proporção. É base SELECIONADA — 31% daquelas
+ * 197, e ninguém sabe se as outras 320 se parecem com elas.
+ *
+ * Com o piso de cobertura, o extremo é **29,2%**, do HECI: 428 questões, 96%
+ * classificadas. O número quase não muda; o que muda é ele ser um fato sobre a
+ * banca em vez de um fato sobre qual subconjunto foi rotulado.
+ *
+ * O corte é 50% porque o resultado é o MESMO de 50 a 95 — medido. Escolher 90
+ * seria mais severo sem comprar nada, e descartaria 30 bancas à toa.
+ *
+ * ⚠️ MEDIDO NO DATASET DE 2026-08-28 13:xx, e a regeração das 15:04 CONSERTOU
+ * o caso: a cobertura mínima subiu de 14,8% para 90,7%, e a FHEMIG deixou de
+ * existir como exceção. Procurar hoje pelos 38% não acha nada.
+ *
+ * O filtro fica assim mesmo. Ele custa uma linha, e a próxima regeração pode
+ * reintroduzir o buraco sem avisar ninguém — extremo é a estatística que mais
+ * atrai o caso defeituoso, porque basta UM. Guard que só existe enquanto o bug
+ * está visível é guard que sai justamente antes de ser preciso.
+ */
+const COBERTURA_MINIMA_DE_FORMATO = 50;
+
+export function extremoNacionalDoFormato(codigo: string): number | null {
+  if (extremoPorFormato == null) {
+    const maximo = new Map<string, number>();
+    for (const banca of DATASET.bancas) {
+      const linhas = banca.formato?.distribuicao ?? [];
+      // A base do percentual é a soma das linhas, NÃO `questoes_total`: o `pct`
+      // do gerador é calculado sobre o que foi classificado. Usar o total aqui
+      // compararia um número com o denominador de outro.
+      const base = linhas.reduce((soma, linha) => soma + linha.qtd, 0);
+      const cobertura = banca.questoes_total > 0 ? (base / banca.questoes_total) * 100 : 0;
+      if (base < BASE_MINIMA || cobertura < COBERTURA_MINIMA_DE_FORMATO) continue;
+      for (const linha of linhas) {
+        const atual = maximo.get(linha.codigo) ?? 0;
+        if (linha.pct > atual) maximo.set(linha.codigo, linha.pct);
+      }
+    }
+    extremoPorFormato = maximo;
+  }
+  return extremoPorFormato.get(codigo) ?? null;
+}
+
+/**
+ * ⚠️ PONTO CEGO CONHECIDO de `formatosDistintivos`: ausência não vira linha.
+ *
+ * A função itera `banca.formato.distribuicao`, e o gerador só emite linha para
+ * o formato que **ocorreu**. Um formato com `qtd 0` não existe naquela lista,
+ * então nenhum ajuste de filtro faz a função dizer "esta prova não usa um
+ * formato que 7,2% do acervo usa" — ela não tem sobre o que iterar.
+ *
+ * Não é hipotético: para o ENAMED o fato mais característico É um zero. Nenhuma
+ * das 90 questões pede a incorreta, contra 7,2% nacional e 29,2% no extremo.
+ *
+ * A correção é iterar as chaves de `NACIONAL.formato_pct` em vez da
+ * distribuição, aplicando a mesma `decidirExibicao`. Ela **não está aqui de
+ * propósito**: escrevi a função, e ela não teria chamador de verdade. A seção
+ * 03 mostra o zero com a régua ao lado (contexto, que não precisa de corte
+ * estatístico), e o painel que precisaria da versão "notável" é o de banca, que
+ * pede decisão de UI própria. Função exportada sem caminho vivo é o que este
+ * repositório já pagou caro para aprender a não fazer.
+ *
+ * Quando o painel de banca for mexido, começar por aqui.
+ */

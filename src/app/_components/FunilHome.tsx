@@ -6,6 +6,7 @@ import { FaciesPicker } from "@/components/facies/FaciesPicker";
 import { GateEmail } from "@/components/facies/GateEmail";
 import type { Banca } from "@/lib/facies";
 import type { Prova } from "@/lib/provas";
+import { CONT_LANDING } from "@/lib/site";
 
 /**
  * A parte da home que depende de QUAL banca está na tela.
@@ -55,7 +56,7 @@ export function FunilHome({
           (`sec--sup`, `sec--marca`) precisa sangrar até a borda da janela, e um
           contêiner comum em volta de tudo cortaria a faixa no meio. Então cada
           seção traz o seu, e aqui ficam só estes dois. */}
-      <div className="mx-auto w-full max-w-5xl px-[var(--gutter)] pb-[var(--bloco)]">
+      <div className={`${CONT_LANDING} pb-[var(--bloco)]`}>
         {/* O rotulo "Veja uma prova institucional" SAIU: ele existia para emendar
             o cartao do ENAMED ao seletor, e agora os dois sao um so. Os chips
             dizem sozinhos o que sao. */}
@@ -86,7 +87,7 @@ export function FunilHome({
           acesso que fecha o `children` ("o app ainda não está aberto para
           assinatura"), e não uma seção nova. Separá-los quebraria a única
           pergunta que a página faz. */}
-      <div className="mx-auto w-full max-w-5xl px-[var(--gutter)] pb-[var(--bloco)]">
+      <div className={`${CONT_LANDING} pb-[var(--bloco)]`}>
         <GateEmail banca={chave} />
       </div>
     </>

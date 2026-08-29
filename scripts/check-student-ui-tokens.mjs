@@ -19,6 +19,7 @@ const PAPER_SURFACES = [
   "src/components/AlvoEContagem.tsx",
   "src/components/facies/BuscaDeProva.tsx",
   "src/components/facies/ContagemGigante.tsx",
+  "src/components/facies/QuestaoAnotada.tsx",
   "src/components/facies/RotuloSecao.tsx",
   "src/components/AppShell.tsx",
   "src/components/Nav.tsx",

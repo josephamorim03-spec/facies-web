@@ -133,7 +133,39 @@ const TEXT_MIN = 4.5;
 const COMPONENT_MIN = 3.0;
 const LARGE_TEXT_MIN = 3.0;
 
+/**
+ * DESVIOS APROVADOS — medidos, impressos, e com dono.
+ *
+ * Não é o gate afrouxado: o par continua sendo calculado e continua saindo na
+ * tela, com o motivo ao lado. O que muda é que ele para de reprovar o build.
+ *
+ * Sem esta lista havia só duas saídas ruins: conviver com um guard
+ * permanentemente vermelho — que em uma semana ninguém mais lê — ou apagar o
+ * par do mapa, que é perder a MEDIDA junto com o alerta.
+ *
+ * Entrada nova precisa de data e motivo. "Porque sim" não é motivo, e sem data
+ * não há como saber se ainda vale.
+ */
+const DESVIOS_APROVADOS = new Map([
+  [
+    "--area-go",
+    "2026-08-28, a pedido: Okabe-Ito pura, a cor do projeto de design. A cor " +
+      "nunca viaja sozinha (nome e % ao lado) e na faixa os segmentos sao " +
+      "adjacentes, entao o par que decide a leitura e cor-contra-cor.",
+  ],
+  [
+    "--area-ped",
+    "2026-08-28, a pedido: idem --area-go.",
+  ],
+  [
+    "--area-mp",
+    "2026-08-28, a pedido: idem --area-go. E a que mais desvia (1,76 sobre a " +
+      "surface-muted) — se alguma precisar voltar a ser calibrada, e esta.",
+  ],
+]);
+
 let failures = 0;
+const desviosVistos = [];
 for (const theme of ["light", "dark"]) {
   const t = tokens(theme);
   const light = tokens("light");
@@ -188,10 +220,19 @@ for (const theme of ["light", "dark"]) {
       }
       const r = ratio(a, b);
       if (r < COMPONENT_MIN) {
-        failures += 1;
-        console.error(
-          `${theme}: marca ${fg} sobre ${bg} = ${r.toFixed(2)}:1 (min ${COMPONENT_MIN}) — ${a} / ${b}`,
-        );
+        const desvio = DESVIOS_APROVADOS.get(fg);
+        if (desvio) {
+          // Impresso, sempre. Um desvio que some da tela vira, seis meses
+          // depois, um defeito que ninguem sabe explicar.
+          desviosVistos.push(
+            `${theme}: ${fg} sobre ${bg} = ${r.toFixed(2)}:1 — ${desvio}`,
+          );
+        } else {
+          failures += 1;
+          console.error(
+            `${theme}: marca ${fg} sobre ${bg} = ${r.toFixed(2)}:1 (min ${COMPONENT_MIN}) — ${a} / ${b}`,
+          );
+        }
       }
     }
   }
@@ -319,8 +360,18 @@ const combos =
     LARGE_TEXT.length * BACKGROUND.length +
     LARGE_TEXT.length) *
   2;
+// Os desvios saem ANTES do veredito, e saem sempre — inclusive quando tudo
+// passa. Um desvio que so aparece quando algo falha e um desvio que ninguem le.
+if (desviosVistos.length > 0) {
+  console.log(`Contraste: ${desviosVistos.length} pares abaixo do minimo, APROVADOS:`);
+  for (const linha of desviosVistos) console.log(`  - ${linha}`);
+}
+
 if (failures > 0) {
   console.error(`\nContraste: ${failures} de ${combos} pares abaixo do minimo.`);
   process.exit(1);
 }
-console.log(`Contraste: ${combos} pares de token dentro do minimo.`);
+console.log(
+  `Contraste: ${combos - desviosVistos.length} de ${combos} pares dentro do minimo` +
+    (desviosVistos.length > 0 ? `, ${desviosVistos.length} aprovados acima.` : "."),
+);

@@ -1,6 +1,6 @@
 import { mediaNacionalDaArea, TOTAL_BANCAS } from "@/lib/facies";
 import { resolveDisplayArea } from "@/lib/areaDisplay";
-import { AREA_VAR } from "@/lib/areaIdentity";
+import { AREA_VAR, fundirObstetriciaEmGo } from "@/lib/areaIdentity";
 import { dec } from "@/lib/decimal";
 
 /**
@@ -55,7 +55,17 @@ const RESIDUAL = "OU";
 type Linha = { rotulo: string; n: number; pct: number };
 
 export function BarrasArea({ linhas }: { linhas: Linha[] }) {
-  const comMedia = linhas
+  // OB entra em GO antes da media: `mediaNacionalDaArea` e por ROTULO, e
+  // pedi-la para as duas separadas devolveria duas medias que nao somam a do
+  // par. A fusao vem primeiro para que a media seja pedida uma vez, ja com o
+  // rotulo unificado.
+  const unidas = fundirObstetriciaEmGo(
+    linhas,
+    (rotulo) => resolveDisplayArea(null, rotulo),
+    (a, b) => ({ ...a, n: a.n + b.n, pct: a.pct + b.pct }),
+  );
+
+  const comMedia = unidas
     .filter((linha) => linha.pct > 0)
     .map((linha) => ({ ...linha, media: mediaNacionalDaArea(linha.rotulo) }))
     .sort((a, b) => b.pct - a.pct);
@@ -119,8 +129,7 @@ export function BarrasArea({ linhas }: { linhas: Linha[] }) {
             </span>
 
             <span className="whitespace-nowrap text-right tabular-nums text-ink">
-              {linha.pct.toFixed(0)}%{" "}
-              {ehResidual ? <span className="text-muted">resto</span> : null}
+              {linha.pct.toFixed(0)}%
             </span>
 
             {/* O leitor de tela recebe a frase inteira, porque a barra e o
@@ -163,10 +172,27 @@ export function BarrasArea({ linhas }: { linhas: Linha[] }) {
           da média" é uma frase sobre o classificador com cara de frase sobre a
           prova. A barra fica, porque a forma é real e a leitura por assunto
           (painel 01) não depende deste eixo. O que sai é a alegação. */}
+      {/* ⚠️ A NOTA PRECISA RESPONDER "POR QUE NÃO É 20% CADA?".
+          A anterior dizia que toda prova distribui de forma parecida — e logo
+          acima dela o leitor via 37,8% em Clínica Médica. Ela não explicava a
+          diferença; ela a tornava mais estranha.
+
+          A resposta é que são dois eixos. O edital divide a prova em BLOCOS; a
+          barra mede o que cada questão COBRA. Quem lê "área" pensa no bloco do
+          edital, então a nota precisa nomear a diferença em voz alta — e é
+          barata: uma frase resolve uma suspeita que contamina os outros
+          painéis.
+
+          O eixo de bloco existe no dado (`blocos`, migration 119 do kbank) e
+          está com 1,2% a 9% de cobertura, mediana 4,1 — nenhuma banca acima de
+          50%. Publicar uma distribuição em cima disso seria inventar. Quando a
+          cobertura subir, esta nota vira um segundo gráfico. */}
       <p className="mt-1 text-sm text-muted">
-        Toda prova de residência distribui as questões entre as grandes áreas de
-        forma parecida — é o assunto dentro de cada uma que muda, e ele está no
-        painel acima. Esta barra é a forma desta prova, não um diferencial dela.
+        O edital divide a prova em blocos de tamanho parecido. Esta barra mede
+        outra coisa: o que cada questão <strong className="font-normal text-ink">cobra</strong>.
+        Clínica Médica pesa mais porque é o guarda-chuva mais largo — e “Outros”
+        só existe aqui, porque nem toda questão cabe numa das cinco. É a forma
+        desta prova, não um diferencial dela.
       </p>
     </div>
   );

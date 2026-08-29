@@ -1,5 +1,5 @@
 import { resolveDisplayArea } from "@/lib/areaDisplay";
-import { AREA_FULL_LABELS, AREA_VAR } from "@/lib/areaIdentity";
+import { AREA_FULL_LABELS, AREA_VAR, fundirObstetriciaEmGo } from "@/lib/areaIdentity";
 
 /**
  * A assinatura da prova numa faixa só — a `.strip` do protótipo.
@@ -115,7 +115,15 @@ export function FaixaAreas({
    */
   legenda?: boolean;
 }) {
-  const segmentos = linhas
+  // OB entra em GO ANTES de qualquer outra coisa: a ordem e o total dependem
+  // do resultado da fusao, nao do contrario.
+  const unidas = fundirObstetriciaEmGo(
+    linhas,
+    (rotulo) => resolveDisplayArea(null, rotulo),
+    (a, b) => ({ ...a, pct: a.pct + b.pct }),
+  );
+
+  const segmentos = unidas
     .filter((linha) => linha.pct > 0)
     .map((linha) => ({ ...linha, area: resolveDisplayArea(null, linha.rotulo) }))
     .sort((a, b) => ORDEM.indexOf(a.area) - ORDEM.indexOf(b.area));
@@ -125,9 +133,16 @@ export function FaixaAreas({
   if (total <= 0) return null;
 
   // O rótulo acessível é a própria leitura da faixa, em palavras: quem não vê a
-  // cor recebe a mesma informação na mesma ordem.
+  // cor recebe a mesma informação na mesma ordem — e o EIXO junto, senão quem
+  // usa leitor de tela recebe sete percentuais sem saber do que eles são
+  // percentual. A nota visual abaixo diz o mesmo para quem enxerga.
+  //
+  // O eixo entra aqui SÓ quando não há legenda. Com legenda, a nota logo abaixo
+  // diz a mesma coisa em texto real, e repetir faria o leitor de tela ouvir a
+  // frase duas vezes seguidas.
+  const eixo = legenda ? "" : ", medido pelo que cada questão cobra e não pelos blocos do edital";
   const descricao = rotulo
-    ? `${rotulo}: ${segmentos
+    ? `${rotulo}${eixo}: ${segmentos
         .map(({ area, ...linha }) => `${AREA_FULL_LABELS[area]} ${linha.pct.toFixed(0)}%`)
         .join(", ")}`
     : undefined;
@@ -209,6 +224,19 @@ export function FaixaAreas({
           </li>
         ))}
       </ul>
+      {/* O EIXO, dito uma vez, na primeira tela.
+          Esta faixa é a primeira coisa da página e mostra percentuais desiguais
+          por área. Quem conhece o edital sabe que os blocos são de tamanho
+          parecido, e a leitura imediata é "está errado" — na abertura, antes de
+          qualquer argumento. Uma linha aqui compra a página inteira.
+
+          Não `aria-hidden`, e é por isso que o `descricao` acima omite o eixo
+          quando há legenda: esta frase é o texto real que o leitor de tela
+          encontra logo depois da faixa. */}
+      <p className="mt-2 text-sm text-muted">
+        Medido pelo que cada questão cobra — não pelos blocos do edital, que têm
+        tamanho parecido entre si.
+      </p>
     </div>
   );
 }

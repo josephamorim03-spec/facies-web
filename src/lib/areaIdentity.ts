@@ -38,6 +38,49 @@ export const AREA_VAR: Record<DisplayArea, string> = {
 
 export const AREA_FULL_EXAM_VAR = "var(--area-full-exam)";
 
+/**
+ * OB entra em GO **para o aluno**, e continua separada no banco.
+ *
+ * A separação existe por uma razão boa e interna: `OB` é código próprio em
+ * `VALID_AREAS`, e quem filtra por Obstetrícia precisa receber Obstetrícia.
+ * Isso não muda.
+ *
+ * O que não se sustenta é mostrá-la ao aluno na mesma lista que "Ginecologia e
+ * Obstetrícia". A legenda saía com as duas em sequência — "Ginecologia e
+ * Obstetrícia 11%" e logo abaixo "Obstetrícia 8%" — e lida em voz alta soa
+ * como duplicata, não como duas coisas. Na cabeça de quem estuda, GO é uma
+ * área; a divisão é do nosso acervo, não da prova dele.
+ *
+ * ⚠️ SÓ PARA EXIBIÇÃO. Não usar em filtro, seleção nem contagem que volte ao
+ * banco — ali as duas continuam distintas, e fundi-las esconderia questão de
+ * Obstetrícia de quem pediu Obstetrícia.
+ */
+export function fundirObstetriciaEmGo<T extends { rotulo: string }>(
+  linhas: T[],
+  resolver: (rotulo: string) => DisplayArea,
+  somar: (a: T, b: T) => T,
+): T[] {
+  const saida: T[] = [];
+  let indiceGo = -1;
+  for (const linha of linhas) {
+    const area = resolver(linha.rotulo);
+    if (area !== "GO" && area !== "OB") {
+      saida.push(linha);
+      continue;
+    }
+    if (indiceGo < 0) {
+      // A primeira das duas define a POSIÇÃO na lista e o rótulo. Como a ordem
+      // de chegada é por incidência, a maior das duas fica — e é ela que o
+      // aluno já reconhece.
+      indiceGo = saida.length;
+      saida.push({ ...linha, rotulo: AREA_FULL_LABELS.GO });
+      continue;
+    }
+    saida[indiceGo] = somar(saida[indiceGo], linha);
+  }
+  return saida;
+}
+
 // OB apontava para a cor do GO aqui e para `--area-ob` no `AREA_VAR` — a mesma
 // área com duas cores dependendo de quem perguntasse. OB é código próprio em
 // `VALID_AREAS`, e quem filtra por OB precisa ver OB.
