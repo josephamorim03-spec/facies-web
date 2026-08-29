@@ -2,7 +2,9 @@ export type StudentIntent =
   | "today"
   | "bank"
   | "cards"
-  | "profile";
+  | "profile"
+  | "routine"
+  | "account";
 
 export type StudentNavIcon = StudentIntent;
 
@@ -37,13 +39,25 @@ const INTENTS: Record<
   StudentIntent,
   { path: string; label: string; icon: StudentNavIcon }
 > = {
-  today: { path: "/hoje", label: "Início", icon: "today" },
+  // Os rotulos do desenho sao "hoje", "banco", "evolucao", "rotina", "conta".
+  // Ficam em Caixa Alta AQUI porque este campo vira titulo de pagina e
+  // breadcrumb (`route()`, abaixo) — "voce esta em hoje" nao se escreve assim.
+  // A barra inferior os rebaixa por CSS, que e onde o desenho pede minuscula.
+  today: { path: "/hoje", label: "Hoje", icon: "today" },
   bank: { path: "/banco", label: "Banco", icon: "bank" },
   cards: { path: "/cards", label: "Cards", icon: "cards" },
   // A aba abre em Evolucao, nao em Preferencias: e a tela que o aluno consulta
   // com frequencia. O rotulo diz "Perfil" porque nomeia a AREA (voce e seus
   // dados), e a linha de filhos resolve a ambiguidade no mesmo olhar.
-  profile: { path: "/evolucao", label: "Perfil", icon: "profile" },
+  // "Evolucao", e nao "Perfil": o desenho nomeia a tela pelo que ela MOSTRA. O
+  // "voce e seus dados" que o rotulo antigo cobria virou duas abas — `rotina`
+  // (a sua semana) e `conta` (assinatura e provas).
+  profile: { path: "/evolucao", label: "Evolução", icon: "profile" },
+  // `14a` "Minha rotina": a semana padrao com os plantoes, e o plano ate a
+  // prova. Sao as duas abas de dentro do artboard, e viram os dois filhos.
+  routine: { path: "/preferencias", label: "Rotina", icon: "routine" },
+  // `12c` "Conta e assinatura".
+  account: { path: "/conta", label: "Conta", icon: "account" },
 };
 
 //: Filhos de cada aba. Sao eles que dao titulo a pagina: com o Cronograma
@@ -53,16 +67,10 @@ const INTENTS: Record<
 //: `next.config.js` resolve antes do roteamento de arquivos, entao o aluno nunca
 //: para nessas URLs e a entrada nunca casaria com nada.
 const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
-  today: [
-    { href: "/hoje", label: "Hoje", matches: ["/hoje", "/today", "/semana"] },
-    // Rotulo "Cronograma" e nao "Calendario": e o nome que a tela usa com o
-    // aluno e o diretorio real da rota. `/calendario` e 308 desde antes.
-    {
-      href: "/cronograma",
-      label: "Cronograma",
-      matches: ["/cronograma", "/agenda-operacional", "/desempenho", "/trilha"],
-    },
-  ],
+  // O Hoje ficou SEM filhos: o Cronograma mudou para `routine`, junto com a
+  // semana padrao, que e como o `14a` os apresenta — as duas abas de dentro de
+  // "Minha rotina". O Hoje volta a ser um destino so, que e o que o `8b` mostra.
+  today: [],
   bank: [
     { href: "/banco", label: "Montar sessão", matches: ["/banco"] },
     { href: "/banco/historico", label: "Histórico", matches: ["/banco/historico"] },
@@ -71,10 +79,19 @@ const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
     { href: "/cards", label: "Montar sessão", matches: ["/cards"] },
     { href: "/cards/registros", label: "Pesquisar", matches: ["/cards/registros"] },
   ],
-  profile: [
-    { href: "/evolucao", label: "Evolução", matches: ["/evolucao", "/estatisticas"] },
-    { href: "/preferencias", label: "Preferências", matches: ["/preferencias", "/rotina-e-metas"] },
+  // Sem filhos: `/preferencias` saiu para `routine`, e `/estatisticas` e
+  // caminho legado da propria Evolucao (fica em LEGACY_PATHS).
+  profile: [],
+  routine: [
+    // Os rotulos sao os das duas abas do artboard `14a`.
+    { href: "/preferencias", label: "Minha semana", matches: ["/preferencias", "/rotina-e-metas"] },
+    {
+      href: "/cronograma",
+      label: "O plano até a prova",
+      matches: ["/cronograma", "/agenda-operacional", "/desempenho", "/trilha"],
+    },
   ],
+  account: [],
 };
 
 //: Caminhos legados que o navegador ainda RENDERIZA e que precisam acender a
@@ -82,13 +99,33 @@ const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
 //: ninguem para neles. `/provas` tambem sai — ele redireciona por conta propria
 //: para o historico.
 const LEGACY_PATHS: Record<StudentIntent, string[]> = {
-  today: ["/today", "/semana", "/agenda-operacional", "/desempenho", "/trilha", "/onboarding"],
+  // `/agenda-operacional`, `/desempenho` e `/trilha` mudaram de aba junto com o
+  // Cronograma: eles sao o plano, e o plano agora mora em Rotina.
+  today: ["/today", "/semana", "/onboarding"],
   bank: [],
   cards: [],
-  profile: ["/estatisticas", "/rotina-e-metas"],
+  profile: ["/estatisticas"],
+  routine: ["/agenda-operacional", "/desempenho", "/trilha", "/rotina-e-metas"],
+  account: [],
 };
 
-const INTENT_ORDER: StudentIntent[] = ["today", "bank", "cards", "profile"];
+// A ordem e a do desenho: hoje · [mapa] · banco · evolucao · rotina · conta.
+//
+// `mapa` (artboard `9a`, a facies da banca dentro do app) NAO entra ainda: a
+// tela nao existe, e ligar o objetivo do aluno (`institution_id`) a banca do
+// dataset (`institution_key`) e investigacao propria que pode nao casar. Aba
+// para uma tela vazia e pior que aba ausente. Entra quando a tela entrar.
+//
+// `cards` fica na lista para as ROTAS continuarem resolvendo; quem o tira da
+// barra e `INTENTS_VISIVEIS`, mais abaixo.
+const INTENT_ORDER: StudentIntent[] = [
+  "today",
+  "bank",
+  "cards",
+  "profile",
+  "routine",
+  "account",
+];
 
 function normalizePathname(pathname: string): string {
   const [withoutHash] = pathname.split("#", 1);

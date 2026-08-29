@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
 import { useState } from "react";
-import { Calendar as CalendarDays, CircleUser as CircleUserRound, House as House, NotepadText as Layers3, Library as LibraryBig } from "lucide-react";
+import { Calendar as CalendarDays, ChartLine as ChartLine, CircleUser as CircleUserRound, House as House, NotepadText as Layers3, Library as LibraryBig } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 
 import { FastNavLink } from "@/components/FastNavLink";
@@ -19,7 +19,12 @@ const ICON_MAP: Record<StudentNavIcon, ComponentType<SVGProps<SVGSVGElement>>> =
   today: House,
   bank: LibraryBig,
   cards: Layers3,
-  profile: CircleUserRound,
+  // A pessoa saiu da Evolucao e foi para a Conta, que e onde ela significa
+  // alguma coisa (assinatura, provas, dados). Evolucao passa a ser o grafico,
+  // que e o que a tela mostra.
+  profile: ChartLine,
+  routine: CalendarDays,
+  account: CircleUserRound,
 };
 
 /** Distancia acumulada antes de esconder/mostrar. Abaixo disto o scroll de
@@ -146,7 +151,12 @@ export function MobileTabBar() {
               ].join(" ")}
             >
               <Icon className="h-5 w-5" aria-hidden="true" />
-              <span className="text-[11px] font-medium leading-tight">{item.shortLabel}</span>
+              {/* MINUSCULA por CSS, e nao no dado: o mesmo `shortLabel` vira titulo
+                  de pagina e breadcrumb, onde "você está em hoje" nao se
+                  escreve assim. O desenho pede minuscula na barra e so nela. */}
+              <span className="text-[11px] font-medium lowercase leading-tight">
+                {item.shortLabel}
+              </span>
             </FastNavLink>
           );
         })}

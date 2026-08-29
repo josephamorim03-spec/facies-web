@@ -19,7 +19,7 @@ function childOf(pathname, href) {
   return getIntentChildren(pathname).find((child) => child.href === href) ?? null;
 }
 
-test("a navegacao e tres destinos, na ordem da barra", () => {
+test("a navegacao e cinco destinos, na ordem do desenho", () => {
   // Eram cinco. A Rota saiu porque a tela dela era uma PERGUNTA — quanto tempo
   // voce tem, com que energia — e a pergunta morreu: o tamanho do dia agora vem
   // do calendario e do comportamento observado, e aparece como contexto da
@@ -27,9 +27,10 @@ test("a navegacao e tres destinos, na ordem da barra", () => {
   // Os flashcards saíram da barra em 2026-08-29 — a feature ficou de molho,
   // atrás de `NEXT_PUBLIC_FLASHCARDS` (default "0"). A rota `/cards` continua
   // existindo e redirecionando; o que sumiu foi o caminho até ela.
+  // A ordem e a do desenho menos `mapa`, que so entra quando a tela existir.
   assert.deepEqual(
     NAV_ITEMS.map((item) => item.href),
-    ["/hoje", "/banco", "/evolucao"],
+    ["/hoje", "/banco", "/evolucao", "/preferencias", "/conta"],
   );
   // Uma barra so: no mobile e a barra inferior, no desktop o menu bar. Sem
   // divisorias, porque nao ha mais agrupamento por pergunta.
@@ -41,7 +42,7 @@ test("nem Kros nem Rota sobrevivem como rotulo de menu", () => {
   // a propria aba. Os dois enderecos continuam 308 para o Hoje, entao ninguem
   // que os tenha salvos cai em 404 — mas nenhum dos dois volta ao menu.
   const labels = NAV_ITEMS.map((item) => item.shortLabel);
-  assert.deepEqual(labels, ["Início", "Banco", "Perfil"]);
+  assert.deepEqual(labels, ["Hoje", "Banco", "Evolução", "Rotina", "Conta"]);
   assert.equal(findItem("/kros"), null);
   assert.equal(findItem("/rota"), null);
 });
@@ -49,7 +50,9 @@ test("nem Kros nem Rota sobrevivem como rotulo de menu", () => {
 test("each tab owns its children", () => {
   assert.deepEqual(
     getIntentChildren("/hoje").map((child) => child.href),
-    ["/hoje", "/cronograma"],
+    // O Hoje ficou sem filhos: o Cronograma mudou para Rotina, junto com a
+    // semana padrao, que e como o artboard `14a` os apresenta.
+    [],
   );
   assert.deepEqual(
     getIntentChildren("/banco").map((child) => child.href),
@@ -61,19 +64,23 @@ test("each tab owns its children", () => {
   );
   assert.deepEqual(
     getIntentChildren("/evolucao").map((child) => child.href),
-    ["/evolucao", "/preferencias"],
+    // A Evolucao tambem ficou sem filhos: `/preferencias` foi para Rotina e
+    // `/estatisticas` e caminho legado dela mesma.
+    [],
   );
   // `/rota` nao e mais destino nenhum: sem intencao, sem filhos.
   assert.deepEqual(getIntentChildren("/rota"), []);
 });
 
 test("a child route lights its parent tab", () => {
-  assert.equal(isNavItemActive("/cronograma", findItem("/hoje")), true);
+  assert.equal(isNavItemActive("/cronograma", findItem("/preferencias")), true);
   assert.equal(isNavItemActive("/banco/historico", findItem("/banco")), true);
   // A linha de `/cards/registros` saiu com a aba: `findItem("/cards")` devolve
   // `null` agora, e o teste passaria a afirmar sobre um item que nao existe.
   // Volta junto com a feature, quando `NEXT_PUBLIC_FLASHCARDS` voltar a "1".
-  assert.equal(isNavItemActive("/preferencias", findItem("/evolucao")), true);
+  // `/preferencias` mudou de aba junto com o Cronograma: as duas sao "Minha
+  // rotina" no artboard `14a`.
+  assert.equal(isNavItemActive("/preferencias", findItem("/preferencias")), true);
   assert.equal(isNavItemActive("/banco/sessao/abc", findItem("/banco")), true);
 });
 
@@ -93,18 +100,19 @@ test("page titles come from the child, not from the parent tab", () => {
   // de "Inicio" — que e exatamente o problema que o programa de design existe
   // para resolver: menu, titulo e URL dizendo a mesma coisa.
   assert.equal(getStudentPageTitle("/hoje"), "Hoje");
-  assert.equal(getStudentPageTitle("/cronograma"), "Cronograma");
+  assert.equal(getStudentPageTitle("/cronograma"), "O plano até a prova");
   assert.equal(getStudentPageTitle("/banco/historico"), "Histórico");
   assert.equal(getStudentPageTitle("/cards/registros"), "Pesquisar");
-  assert.equal(getStudentPageTitle("/preferencias"), "Preferências");
+  // O titulo vem do filho, e o filho agora se chama como a aba do artboard.
+  assert.equal(getStudentPageTitle("/preferencias"), "Minha semana");
 });
 
 test("renderable legacy routes keep activating their canonical destination", () => {
   assert.equal(isNavItemActive("/today", findItem("/hoje")), true);
   assert.equal(isNavItemActive("/semana", findItem("/hoje")), true);
-  assert.equal(isNavItemActive("/desempenho", findItem("/hoje")), true);
+  assert.equal(isNavItemActive("/desempenho", findItem("/preferencias")), true);
   assert.equal(isNavItemActive("/estatisticas/relatorio", findItem("/evolucao")), true);
-  assert.equal(isNavItemActive("/rotina-e-metas", findItem("/evolucao")), true);
+  assert.equal(isNavItemActive("/rotina-e-metas", findItem("/preferencias")), true);
 });
 
 test("unreachable 308 aliases are deliberately absent from the nav registry", () => {
@@ -129,7 +137,7 @@ test("unreachable 308 aliases are deliberately absent from the nav registry", ()
 });
 
 test("the active child label names the current section", () => {
-  assert.equal(getActiveChildLabel("/cronograma"), "Cronograma");
+  assert.equal(getActiveChildLabel("/cronograma"), "O plano até a prova");
   assert.equal(getActiveChildLabel("/banco/historico"), "Histórico");
   assert.equal(getActiveChildLabel("/rota"), null);
 });
