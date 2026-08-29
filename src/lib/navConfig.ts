@@ -241,8 +241,31 @@ function navItem(intent: StudentIntent): NavItemConfig {
 //
 // Alterar esta ordem exige atualizar `tests/unit/navConfig.test.mjs` e
 // `PRIMARY_NAV_ROUTES` em `components/AppShell.tsx`.
+/**
+ * Os flashcards estao fora de producao, e saem SO DA PORTA.
+ *
+ * `NEXT_PUBLIC_FLASHCARDS` (default "0", declarado em `next.config.js`) esconde
+ * a aba. O par obrigatorio e `FLASHCARDS_ENABLED` no backend, que impede a
+ * agenda de oferecer o bloco "Revisar cards no ponto" -- uma chave sem a outra
+ * deixa metade da feature ligada.
+ *
+ * ⚠️ O FILTRO E AQUI, e nao em `INTENT_ORDER`. Aquela lista tambem monta a
+ * tabela de rotas (`STUDENT_ROUTES`, linhas 127-136): tirar `cards` dela faria
+ * `/cards` deixar de RESOLVER, e o redirect que existe para ela dependeria de
+ * uma rota que o mapa nao conhece mais. As rotas continuam existindo; o que
+ * some e o caminho ate elas.
+ *
+ * Religar e virar a env. Nao ha codigo a reescrever, que era a condicao do
+ * "deixar de molho" -- 30 arquivos no front e 62 no backend citam flashcards.
+ */
+const FLASHCARDS_LIGADOS = process.env.NEXT_PUBLIC_FLASHCARDS === "1";
+
+const INTENTS_VISIVEIS: StudentIntent[] = INTENT_ORDER.filter(
+  (intent) => intent !== "cards" || FLASHCARDS_LIGADOS,
+);
+
 export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
-  { items: INTENT_ORDER.map(navItem) },
+  { items: INTENTS_VISIVEIS.map(navItem) },
 ];
 
 export const NAV_ITEMS: NavItemConfig[] = NAV_GROUPS_CONFIG[0].items;

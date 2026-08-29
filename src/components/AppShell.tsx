@@ -7,6 +7,7 @@ import Nav, { SidebarNav } from "@/components/Nav";
 import { MobileTabBar, hasChildRow } from "@/components/MobileTabBar";
 import { CommandBar } from "@/components/CommandBar";
 import { IntentSubNav } from "@/components/student/IntentSubNav";
+import { NAV_ITEMS } from "@/lib/navConfig";
 import PwaRegister from "@/components/PwaRegister";
 import { ToastProvider } from "@/lib/useToast";
 import { Toast } from "@/components/Toast";
@@ -40,9 +41,13 @@ type BuildVersionPayload = {
 };
 
 const SHOW_BUILD_BADGE = process.env.NEXT_PUBLIC_SHOW_BUILD_BADGE === "1";
-// Mesma ordem de NAV_GROUPS_CONFIG (lib/navConfig.ts) — define a prioridade do
-// warm-up ocioso, então segue a ordem em que os destinos aparecem no menu.
-const PRIMARY_NAV_ROUTES = ["/hoje", "/banco", "/cards", "/evolucao"];
+// DERIVADO de `NAV_ITEMS` — a lista literal que estava aqui pedia, num
+// comentário, para ser mantida igual à ordem do menu à mão. Ela já divergiu: os
+// flashcards saíram da barra e `/cards` continuava sendo pré-aquecido, gastando
+// banda ociosa com uma tela que o aluno não alcança mais.
+//
+// É a prioridade do warm-up ocioso, então a ordem do menu É a regra certa.
+const PRIMARY_NAV_ROUTES = NAV_ITEMS.map((item) => item.href);
 
 type IdleCallbackHandle = number;
 type WindowWithIdleCallback = Window & {

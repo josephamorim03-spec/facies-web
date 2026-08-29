@@ -19,14 +19,17 @@ function childOf(pathname, href) {
   return getIntentChildren(pathname).find((child) => child.href === href) ?? null;
 }
 
-test("a navegacao e quatro destinos, na ordem da barra", () => {
+test("a navegacao e tres destinos, na ordem da barra", () => {
   // Eram cinco. A Rota saiu porque a tela dela era uma PERGUNTA — quanto tempo
   // voce tem, com que energia — e a pergunta morreu: o tamanho do dia agora vem
   // do calendario e do comportamento observado, e aparece como contexto da
   // proxima acao no Hoje.
+  // Os flashcards saíram da barra em 2026-08-29 — a feature ficou de molho,
+  // atrás de `NEXT_PUBLIC_FLASHCARDS` (default "0"). A rota `/cards` continua
+  // existindo e redirecionando; o que sumiu foi o caminho até ela.
   assert.deepEqual(
     NAV_ITEMS.map((item) => item.href),
-    ["/hoje", "/banco", "/cards", "/evolucao"],
+    ["/hoje", "/banco", "/evolucao"],
   );
   // Uma barra so: no mobile e a barra inferior, no desktop o menu bar. Sem
   // divisorias, porque nao ha mais agrupamento por pergunta.
@@ -38,7 +41,7 @@ test("nem Kros nem Rota sobrevivem como rotulo de menu", () => {
   // a propria aba. Os dois enderecos continuam 308 para o Hoje, entao ninguem
   // que os tenha salvos cai em 404 — mas nenhum dos dois volta ao menu.
   const labels = NAV_ITEMS.map((item) => item.shortLabel);
-  assert.deepEqual(labels, ["Início", "Banco", "Cards", "Perfil"]);
+  assert.deepEqual(labels, ["Início", "Banco", "Perfil"]);
   assert.equal(findItem("/kros"), null);
   assert.equal(findItem("/rota"), null);
 });
@@ -67,7 +70,9 @@ test("each tab owns its children", () => {
 test("a child route lights its parent tab", () => {
   assert.equal(isNavItemActive("/cronograma", findItem("/hoje")), true);
   assert.equal(isNavItemActive("/banco/historico", findItem("/banco")), true);
-  assert.equal(isNavItemActive("/cards/registros", findItem("/cards")), true);
+  // A linha de `/cards/registros` saiu com a aba: `findItem("/cards")` devolve
+  // `null` agora, e o teste passaria a afirmar sobre um item que nao existe.
+  // Volta junto com a feature, quando `NEXT_PUBLIC_FLASHCARDS` voltar a "1".
   assert.equal(isNavItemActive("/preferencias", findItem("/evolucao")), true);
   assert.equal(isNavItemActive("/banco/sessao/abc", findItem("/banco")), true);
 });

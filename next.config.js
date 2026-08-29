@@ -54,6 +54,11 @@ const nextConfig = {
   // explicito continua possivel por env.
   env: {
     NEXT_PUBLIC_STUDENT_AGENDA_V1: process.env.NEXT_PUBLIC_STUDENT_AGENDA_V1 ?? "1",
+    // Flashcards fora de producao, de molho para voltar depois. Desligado por
+    // padrao, e o par desta chave e `FLASHCARDS_ENABLED` no backend: uma sem a
+    // outra deixa metade da feature ligada -- aba escondida com a agenda ainda
+    // oferecendo o bloco, ou o inverso.
+    NEXT_PUBLIC_FLASHCARDS: process.env.NEXT_PUBLIC_FLASHCARDS ?? "0",
   },
   outputFileTracingRoot: __dirname,
   turbopack: {
@@ -68,6 +73,22 @@ const nextConfig = {
     ];
   },
   async redirects() {
+    // Os flashcards estao de molho (`NEXT_PUBLIC_FLASHCARDS`, default "0"). Com
+    // a chave desligada, tudo que levava a eles passa a levar ao Hoje.
+    //
+    // ⚠️ `permanent: false`. As outras entradas desta lista sao 308 porque a
+    // rota velha nunca mais volta; estas voltam quando a feature voltar, e um
+    // 308 fica CACHEADO no navegador do aluno -- ele continuaria caindo no Hoje
+    // depois de religarmos, sem nada no servidor explicando por que.
+    //
+    // ⚠️ E o redirect e AQUI, nao na pagina. Tentei primeiro um `redirect()`
+    // dentro de `cards/page.tsx`: o build continuou pre-renderizando a tela
+    // normalmente (`registros.html` com o Caderno dentro, `x-nextjs-prerender:
+    // 1`), inclusive depois de apagar `.next` e reconstruir do zero. Este bloco
+    // e o mecanismo que o repo ja usa para `/kros`, `/rota` e `/calendario`, e e
+    // verificavel por `curl -I`.
+    const flashcards = process.env.NEXT_PUBLIC_FLASHCARDS === "1";
+    const paraOsCards = (destino) => (flashcards ? destino : "/hoje");
     return [
       // Link curto por prova. O canal deste produto e o print colado em
       // grupo, e link longo com parametro morre no boca a boca (§11.3).
@@ -83,10 +104,18 @@ const nextConfig = {
         destination: "/banco/sessao/:sessionId",
         permanent: true,
       },
-      { source: "/revisar", destination: "/cards", permanent: true },
-      { source: "/cards-adaptativos", destination: "/cards", permanent: true },
-      { source: "/revisao-turbo", destination: "/cards", permanent: true },
-      { source: "/caderno", destination: "/cards/registros", permanent: true },
+      { source: "/revisar", destination: paraOsCards("/cards"), permanent: flashcards },
+      { source: "/cards-adaptativos", destination: paraOsCards("/cards"), permanent: flashcards },
+      { source: "/revisao-turbo", destination: paraOsCards("/cards"), permanent: flashcards },
+      { source: "/caderno", destination: paraOsCards("/cards/registros"), permanent: flashcards },
+      // As duas rotas vivas dos flashcards. Ficam FORA da lista quando a chave
+      // esta ligada, senao `/cards` redirecionaria para si mesmo em laco.
+      ...(flashcards
+        ? []
+        : [
+            { source: "/cards", destination: "/hoje", permanent: false },
+            { source: "/cards/registros", destination: "/hoje", permanent: false },
+          ]),
       { source: "/acompanhar", destination: "/evolucao", permanent: true },
       { source: "/estatisticas", destination: "/evolucao", permanent: true },
       { source: "/dados-e-relatorios", destination: "/evolucao", permanent: true },
