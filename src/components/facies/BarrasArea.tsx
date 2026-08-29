@@ -1,6 +1,6 @@
 import { mediaNacionalDaArea, TOTAL_BANCAS } from "@/lib/facies";
 import { resolveDisplayArea } from "@/lib/areaDisplay";
-import { AREA_VAR, fundirObstetriciaEmGo } from "@/lib/areaIdentity";
+import { AREA_LANDING_LABELS, AREA_VAR, fundirObstetriciaEmGo } from "@/lib/areaIdentity";
 import { dec } from "@/lib/decimal";
 
 /**
@@ -106,8 +106,13 @@ export function BarrasArea({ linhas }: { linhas: Linha[] }) {
                   devolve a leitura so ao PONTEIRO — no toque nao ha o que
                   passar por cima. Nome de area e curto; se faltar largura, a
                   quebra e melhor que o corte com dica escondida. */}
+              {/* O nome CURTO do design, e não `linha.rotulo` cru do dataset.
+                  O dataset traz "Clínica Médica", "Ginecologia"; o pacote de
+                  design escreve "clínica", "GO". Passar pelo mapa também
+                  normaliza as variações de grafia entre bancas — o rótulo cru
+                  vinha direto do gerador. */}
               <span className="text-ink">
-                {linha.rotulo}
+                {AREA_LANDING_LABELS[area]}
               </span>
             </span>
 
@@ -136,8 +141,12 @@ export function BarrasArea({ linhas }: { linhas: Linha[] }) {
                 risco não dizem nada para quem não os enxerga. */}
             <span className="sr-only">
               {linha.n.toLocaleString("pt-BR")} questões.
+              {/* "Outras", e não "Resto". O rótulo visível dizia "resto" e saiu
+                  a pedido; esta linha ficou para trás porque é invisível — e
+                  quem ouve a página recebia duas palavras para a mesma coisa,
+                  sem a barra ao lado para ligar uma à outra. */}
               {ehResidual
-                ? " Resto: o que a rotulagem ainda não encaixou numa das áreas."
+                ? " Outras: o que a rotulagem ainda não encaixou numa das áreas."
                 : linha.media != null
                   ? ` A média das ${TOTAL_BANCAS} bancas do acervo é ${dec(
                       linha.media,

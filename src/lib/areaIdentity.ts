@@ -15,6 +15,41 @@ export const AREA_SHORT_LABELS: Record<DisplayArea, string> = {
 };
 
 /**
+ * O nome curto do DESIGN — terceira forma, e não substituta de nenhuma das duas.
+ *
+ * O pacote de design não escreve os nomes institucionais em lugar nenhum, nem na
+ * landing nem no webapp. O artboard `1b` traz a legenda assim:
+ *
+ *     clínica 26%   preventiva 22%   pediatria 19%   GO 18%   cirurgia 15%
+ *
+ * Enquanto isso a página imprimia "Ginecologia e Obstetrícia 19%". Fundir OB em
+ * GO e continuar com o nome por extenso atendia metade do pedido: o que
+ * simplifica de verdade é a palavra curta.
+ *
+ * ⚠️ `GO` fica em CAIXA ALTA porque é sigla, não palavra — é assim no `1b` e nas
+ * telas do webapp. As outras são minúsculas: são nomes, e a folha inteira desta
+ * página trata rótulo como texto corrido, não como título.
+ *
+ * ⚠️ E ele é VISUAL, só. Quem ouve a página não tem a barra colorida ao lado
+ * para desambiguar "GO", e "clínica" sozinha é ambígua num contexto médico —
+ * então `aria-label` e leitor de tela continuam recebendo `AREA_FULL_LABELS`.
+ * É por isso que este mapa é o terceiro, e não uma troca: as três formas servem
+ * a três leitores diferentes (olho, ouvido, e a sigla dos gráficos densos).
+ */
+export const AREA_LANDING_LABELS: Record<DisplayArea, string> = {
+  CM: "clínica",
+  CG: "cirurgia",
+  PD: "pediatria",
+  GO: "GO",
+  // OB não aparece sozinha na landing (é fundida em GO por
+  // `fundirObstetriciaEmGo`), mas o mapa é total: uma entrada faltando viraria
+  // `undefined` renderizado como vazio no dia em que a fusão for desligada.
+  OB: "obstetrícia",
+  MP: "preventiva",
+  OU: "outras",
+};
+
+/**
  * Cor de área — FONTE ÚNICA.
  *
  * Havia um `AREA_HEX` paralelo com hexes fixos. Os 8 divergiam destes, e 14 dos

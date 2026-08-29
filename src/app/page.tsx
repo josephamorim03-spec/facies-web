@@ -155,7 +155,17 @@ export default function Home() {
                 armadilha que já custou uma entrelinha de 1,0 em produção —
                 `sm:text-5xl` carrega line-height junto e vence qualquer
                 `leading-*` escrito ao lado. */}
-            <h1 className="mt-10 max-w-[16ch] font-serif font-semibold text-ink">
+            {/* `mt-4`, e nao `mt-10`. MEDIDO no artboard `1b`: entre a legenda
+                da faixa e o `h1` o desenho tem vao ZERO — o titulo encosta no
+                que acabou de ser mostrado, e e essa colagem que faz a faixa ler
+                como assunto da manchete em vez de enfeite acima dela.
+
+                Nosso vao era 40px, mais a nota do eixo entre os dois: quase 50
+                pixels da primeira tela do celular gastos em nada, e foi disso
+                que o usuario reclamou duas vezes. Nao vai a zero porque, ao
+                contrario do desenho, existe a nota no meio e ela precisa nao
+                grudar no titulo. */}
+            <h1 className="mt-4 max-w-[16ch] font-serif font-semibold text-ink">
               Você sabe o que a sua prova cobra?
             </h1>
 
@@ -187,7 +197,11 @@ export default function Home() {
                 decoração: quem chega por link compartilhado não sabe que a
                 página continua. A v7 tem a mesma linha ("↓ a cara completa do
                 ENAMED, logo abaixo") pelo mesmo motivo. */}
-            <p className="mt-10 flex items-center gap-2.5 text-sm text-muted">
+            {/* 24px, nao 40. O `1b` nao tem dica de rolagem nenhuma — ela e
+                nossa, e continua valendo (quem chega por link compartilhado
+                nao sabe que a pagina segue). Mas ela nao merece o maior vao do
+                heroi. */}
+            <p className="mt-6 flex items-center gap-2.5 text-sm text-muted">
               <span aria-hidden="true">↓</span>
               {provaEmDestaque
                 ? `a cara completa do ${provaEmDestaque.sigla}, logo abaixo`

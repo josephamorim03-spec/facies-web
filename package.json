@@ -24,7 +24,7 @@
     "capture:design": "node scripts/capture-design-redesign.mjs",
     "test:e2e:smoke": "node scripts/run-smoke-e2e.mjs",
     "test:e2e:ui": "playwright test --ui",
-    "verificar:design": "node scripts/spec-do-design.mjs"
+    "verificar:design": "node scripts/spec-do-design.mjs && node scripts/spec-do-design.mjs --ritmo --artboard=1b --design=\"C:/Users/josep/Downloads/Fácies design handoff/Primeira Tela - Direções.dc.html\""
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",

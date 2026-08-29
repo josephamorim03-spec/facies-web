@@ -345,7 +345,19 @@ async function ritmoVertical(pagina, seletorRaiz, escalaConhecida = null) {
 }
 
 const design = argumento("design", DESIGN_PADRAO);
-const alvo = argumento("alvo", "https://facies.app/");
+/**
+ * O ALVO PADRAO E O SERVIDOR LOCAL, e ja foi producao.
+ *
+ * Enquanto era `https://facies.app/`, este script mediu o site NO AR toda
+ * vez que alguem rodou `npm run verificar:design` para conferir uma mudanca
+ * local. Ele imprimia "a pagina bate com o desenho" com toda a confianca —
+ * sobre um deploy que nao continha a mudanca. Foi reportado assim ao usuario
+ * duas vezes na mesma sessao.
+ *
+ * O padrao passa a ser o que se esta editando. Para medir producao de
+ * proposito: `--alvo=https://facies.app/`.
+ */
+const alvo = argumento("alvo", "http://localhost:3000/");
 const soDesign = process.argv.includes("--so-design");
 const artboard = argumento("artboard", null);
 const ritmo = process.argv.includes("--ritmo");
@@ -354,6 +366,13 @@ if (!existsSync(design)) {
   console.error(`Arquivo do design nao encontrado: ${design}`);
   process.exit(2);
 }
+
+// ⚠️ O CABECALHO NAO E DECORACAO. A confusao que motivou tudo isto — reportar
+// "bate com o desenho" medindo producao — passou despercebida porque a saida
+// nunca dizia o que estava sendo comparado com o que. Agora diz, sempre, antes
+// de qualquer numero.
+console.log(`  desenho: ${design}`);
+console.log(`  alvo:    ${alvo}`);
 
 const navegador = await chromium.launch();
 
@@ -377,6 +396,18 @@ if (ritmo) {
   await pagina.waitForTimeout(2500);
   const alvoArtboard = artboard ? `#${artboard}` : ".cont";
   const doDesign = await ritmoVertical(pagina, alvoArtboard);
+  // ⚠️ FALHAR ALTO. Este `erro` ja existia e ninguem o lia: o print abaixo
+  // itera `vaos ?? []`, entao raiz nao encontrada virava uma secao DESENHO
+  // vazia, `maiorDesign = 0`, e a comparacao passava a aprovar/reprovar
+  // contra o nada. O `#1b` vive em "Primeira Tela - Direcoes", nao no v7 que
+  // e o `--design` padrao — o modo estava quebrado desde que foi escrito.
+  if (doDesign.erro) {
+    console.error(`RITMO: nao consegui ler o desenho — ${doDesign.erro}`);
+    console.error(`  arquivo: ${design}`);
+    console.error("  o artboard vive no mesmo arquivo? use --design=<caminho>");
+    await navegador.close();
+    process.exit(1);
+  }
 
   await pagina.goto(alvo, { waitUntil: "networkidle" });
   await pagina.evaluate(() => document.fonts.ready);

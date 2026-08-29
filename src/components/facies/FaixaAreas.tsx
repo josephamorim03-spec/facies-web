@@ -1,5 +1,10 @@
 import { resolveDisplayArea } from "@/lib/areaDisplay";
-import { AREA_FULL_LABELS, AREA_VAR, fundirObstetriciaEmGo } from "@/lib/areaIdentity";
+import {
+  AREA_FULL_LABELS,
+  AREA_LANDING_LABELS,
+  AREA_VAR,
+  fundirObstetriciaEmGo,
+} from "@/lib/areaIdentity";
 
 /**
  * A assinatura da prova numa faixa só — a `.strip` do protótipo.
@@ -215,7 +220,9 @@ export function FaixaAreas({
               className="h-2.5 w-2.5 shrink-0 rounded-control"
               style={{ background: AREA_VAR[area] ?? AREA_VAR.OU }}
             />
-            {AREA_FULL_LABELS[area]}
+            {/* O nome CURTO do design. O `aria-label` da faixa acima continua
+                com o nome por extenso — ver `AREA_LANDING_LABELS`. */}
+            {AREA_LANDING_LABELS[area]}
             {/* `tabular-nums`: sem isso os percentuais dançam de linha para
                 linha, porque o `1` da proporcional é mais estreito que os
                 outros algarismos — e uma coluna de números desalinhada num
@@ -233,7 +240,7 @@ export function FaixaAreas({
           Não `aria-hidden`, e é por isso que o `descricao` acima omite o eixo
           quando há legenda: esta frase é o texto real que o leitor de tela
           encontra logo depois da faixa. */}
-      <p className="mt-2 text-sm text-muted">
+      <p className="mt-1.5 text-sm text-muted">
         Medido pelo que cada questão cobra — não pelos blocos do edital, que têm
         tamanho parecido entre si.
       </p>
