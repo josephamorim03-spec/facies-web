@@ -403,6 +403,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cadastro/aceite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registrar Aceite
+         * @description Aceita os documentos vigentes SEM repetir a identidade.
+         *
+         *     Por que nao reusar `POST /identidade`: la o aceite so' e' gravavel junto com
+         *     nome, nascimento e situacao profissional. Isso serve o cadastro inicial e
+         *     quebra o RE-aceite -- publicar uma versao nova dos Termos obrigaria toda a
+         *     base a redigitar a identidade inteira para concordar com um texto.
+         *
+         *     Existe tambem porque quem entra por Google nunca passou pelo cadastro local,
+         *     e portanto nunca teve aceite gravado. Em producao google-only, isso e' todo
+         *     mundo. Esta rota e' o unico caminho por onde essa base pode aceitar.
+         *
+         *     Fica FORA do portao de acesso, como o resto deste router e pelo mesmo motivo
+         *     (ver o topo do arquivo): exigir acesso ativo para aceitar o contrato que
+         *     habilita a compra fecharia o circulo.
+         *
+         *     Idempotente: `registrar_aceite_do_vigente` ignora versao ja aceita, entao
+         *     reenviar nao vira log de cliques.
+         */
+        post: operations["registrar_aceite_cadastro_aceite_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cadastro/perfil": {
         parameters: {
             query?: never;
@@ -3768,6 +3804,23 @@ export interface components {
             /** Deleted */
             deleted: boolean;
         };
+        /**
+         * AceiteIn
+         * @description Aceite dos documentos vigentes, sem repetir a identidade.
+         *
+         *     O corpo e' minimo de proposito: o cliente so consegue dizer "aceito", e QUAL
+         *     documento e' resolvido pelo servidor (ver `legal_document_service`). Nao ha
+         *     campo de versao aqui, e nao deve haver -- foi exatamente o `terms_version` no
+         *     payload que o servico removeu, porque cliente em cache registraria versao
+         *     antiga e cliente hostil registraria qualquer uma.
+         */
+        AceiteIn: {
+            /**
+             * Accepted
+             * @default false
+             */
+            accepted: boolean;
+        };
         /** AdaptiveModelContext */
         AdaptiveModelContext: {
             /** Projection Run Id */
@@ -6549,6 +6602,8 @@ export interface components {
              * @default active
              */
             access_status: string;
+            /** Access Expires At */
+            access_expires_at?: string | null;
             /**
              * Cadastro Completo
              * @default false
@@ -7611,6 +7666,31 @@ export interface components {
              * @enum {string}
              */
             reliable_grain: "subtheme" | "theme";
+            situacao?: components["schemas"]["QuestionBankInstitutionStatusOut"] | null;
+            proxima_prova?: components["schemas"]["QuestionBankProximaProvaOut"] | null;
+        };
+        /**
+         * QuestionBankInstitutionStatusOut
+         * @description A situação da prova de uma instituição, com para-onde-ir e procedência.
+         *
+         *     Vem de `institution_exam_status` (migration 120 do kbank), que existe porque
+         *     bancas grandes pararam de aplicar prova própria: a UFPR não aplica desde
+         *     2022, e quem quer aquela vaga hoje faz o ENAMED.
+         */
+        QuestionBankInstitutionStatusOut: {
+            /**
+             * Situacao
+             * @enum {string}
+             */
+            situacao: "ativa" | "aderiu_enare" | "processo_unificado" | "extinta";
+            /** Alvo Atual */
+            alvo_atual?: string | null;
+            /** Ultima Edicao Conhecida */
+            ultima_edicao_conhecida?: number | null;
+            /** Nota */
+            nota?: string | null;
+            /** Fonte */
+            fonte?: string | null;
         };
         /** QuestionBankItemExclusionIn */
         QuestionBankItemExclusionIn: {
@@ -7816,6 +7896,25 @@ export interface components {
              * @default 0
              */
             corrected_questions: number;
+        };
+        /**
+         * QuestionBankProximaProvaOut
+         * @description A data da próxima aplicação, e se ela aguenta ser afirmada.
+         *
+         *     ⚠️ `confirmada` é `True` só quando a origem é `edital`. `confirmed` dobra o
+         *     peso de urgência do objetivo no plano, e o relato de um cursinho é bom para
+         *     PREENCHER o campo — não para afirmar.
+         */
+        QuestionBankProximaProvaOut: {
+            /** Data */
+            data: string;
+            /** Origem */
+            origem?: string | null;
+            /**
+             * Confirmada
+             * @default false
+             */
+            confirmada: boolean;
         };
         /** QuestionBankQualityInspectionFlagOut */
         QuestionBankQualityInspectionFlagOut: {
@@ -12112,6 +12211,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CadastroIdentidade"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CadastroStatusOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    registrar_aceite_cadastro_aceite_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AceiteIn"];
             };
         };
         responses: {
