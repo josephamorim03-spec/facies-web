@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import RecaptchaCheckbox from "@/components/RecaptchaCheckbox";
 import { GoogleSection } from "./GoogleSection";
@@ -31,7 +32,6 @@ export type SignupFormProps = {
   googleError: string;
   installState: string;
   onSignup: () => void;
-  onShowTerms: () => void;
   onSwitchView: (view: "login" | "signup" | "forgot" | "verify") => void;
 };
 
@@ -61,7 +61,6 @@ export function SignupForm({
   googleError,
   installState,
   onSignup,
-  onShowTerms,
   onSwitchView,
 }: SignupFormProps) {
   const inputCls =
@@ -98,11 +97,19 @@ export function SignupForm({
       <input
         type="password"
         className={inputCls}
-        placeholder="Senha (mínimo 8 caracteres)"
+        placeholder="Senha"
         autoComplete="new-password"
+        aria-describedby="regra-senha"
         value={signupPassword}
         onChange={(event) => setSignupPassword(event.target.value)}
       />
+      {/* A REGRA INTEIRA, ANTES DE ERRAR. O placeholder dizia "mínimo 8
+          caracteres" e `is_password_valid` exige 12 com maiúscula, minúscula e
+          dígito: quem seguisse o campo era recusado sem saber por quê, e a
+          mensagem do servidor chega depois de já ter digitado tudo. */}
+      <p id="regra-senha" className="text-xs leading-5 text-muted">
+        Mínimo 12 caracteres, com maiúscula, minúscula e número.
+      </p>
       <input
         type="password"
         className={inputCls}
@@ -125,14 +132,22 @@ export function SignupForm({
           onChange={(event) => setSignupTermsAccepted(event.target.checked)}
         />
         <span className="text-center">
-          Li e concordo com os{" "}
-          <button
-            type="button"
-            className="text-ink underline underline-offset-2 hover:text-muted transition-colors"
-            onClick={onShowTerms}
+          Li e aceito os{" "}
+          <Link
+            href="/termos"
+            target="_blank"
+            className="text-ink underline underline-offset-2 transition-colors hover:text-muted"
           >
-            Termos de uso
-          </button>
+            Termos de Uso
+          </Link>{" "}
+          e a{" "}
+          <Link
+            href="/privacidade"
+            target="_blank"
+            className="text-ink underline underline-offset-2 transition-colors hover:text-muted"
+          >
+            Política de Privacidade
+          </Link>
         </span>
       </div>
 

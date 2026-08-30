@@ -1,0 +1,216 @@
+"use client";
+
+import { useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { SignupForm } from "@/app/login/_components/SignupForm";
+import { useGoogleSignIn } from "@/app/login/_hooks/useGoogleSignIn";
+import { signupLocalAccount } from "@/lib/api/domains/auth";
+import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
+
+/**
+ * A via de e-mail do cadastro.
+ *
+ * ## O que esta tela pede, e o que ela NÃO pede
+ *
+ * Só e-mail, senha e nome. **Identidade (nascimento, situação profissional) fica
+ * para `/cadastro/completar`**, depois da verificação do e-mail — coletar dado
+ * pessoal antes de provar posse do endereço é coletar de quem talvez não seja o
+ * titular. Os dois caminhos, Google e e-mail, convergem naquela tela.
+ *
+ * ## O aceite linka, não abre modal
+ *
+ * O `TermsModal` tinha o texto dos Termos embutido no componente: sem versão,
+ * sem hash e sem registro de qual texto foi aceito. Agora aponta para `/termos`
+ * e `/privacidade`, que servem a versão vigente de `app/legal/` e conferem o
+ * SHA-256 antes de exibir. Uma fonte só.
+ *
+ * ⚠️ O `terms_version` do payload é vestígio do caminho antigo. Quem resolve a
+ * versão é o SERVIDOR, contra o que está publicado — ver
+ * `legal_document_service.registrar_aceite_do_vigente`.
+ *
+ * ## Pré-requisito de configuração
+ *
+ * `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` precisa existir, senão o `SignupForm` mostra
+ * "Cadastro indisponível" e o botão não envia. É fail-closed de propósito: o
+ * backend recusa signup sem captcha (`verify_recaptcha_token` devolve `False`
+ * quando falta segredo), e um formulário que enviasse mesmo assim só produziria
+ * erro depois de a pessoa ter digitado tudo.
+ */
+export default function CadastroPage() {
+  const router = useRouter();
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "";
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaResetCounter, setCaptchaResetCounter] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [aguardandoVerificacao, setAguardandoVerificacao] = useState(false);
+  const [error, setError] = useState("");
+
+  const { googleButtonRef, googleError } = useGoogleSignIn({
+    googleClientId,
+    view: "signup",
+    rememberDevice: false,
+  });
+
+  // `installState` só existe para o banner de PWA da tela de login. Aqui não há
+  // banner, então o espaçamento extra que ele reserva não se aplica.
+  const installState = "hidden";
+  const passwordsMismatch =
+    confirmPassword.length > 0 && password !== confirmPassword;
+
+  const canSubmit = useMemo(() => {
+    if (busy || !recaptchaSiteKey) return false;
+    if (!email.trim() || !password || !confirmPassword) return false;
+    if (password !== confirmPassword) return false;
+    if (!termsAccepted || !captchaToken) return false;
+    return true;
+  }, [
+    busy,
+    recaptchaSiteKey,
+    email,
+    password,
+    confirmPassword,
+    termsAccepted,
+    captchaToken,
+  ]);
+
+  async function handleSignup() {
+    if (!canSubmit) return;
+    setBusy(true);
+    setError("");
+    try {
+      await signupLocalAccount({
+        email: email.trim(),
+        password,
+        confirm_password: confirmPassword,
+        captcha_token: captchaToken,
+        terms_accepted: termsAccepted,
+        // Vestígio do caminho antigo: o servidor ignora este valor e resolve a
+        // versão vigente por conta própria. Mantido porque o contrato ainda o
+        // exige e as três colunas de `local_accounts` ainda o consomem.
+        terms_version: "servidor",
+        first_name: firstName.trim() || undefined,
+        last_name: lastName.trim() || undefined,
+      });
+      // A conta existe e o e-mail saiu. A sessão só nasce quando o link for
+      // aberto — e é `/auth/verify-email` que consome o token e leva adiante.
+      //
+      // SEM query aqui: aquela página lê `?token=`, e mandar `?email=` faria ela
+      // tentar verificar um token que não existe e pintar erro logo depois de um
+      // cadastro que deu certo.
+      setAguardandoVerificacao(true);
+    } catch (e) {
+      const detalhe = e instanceof Error ? e.message : "";
+      setError(detalhe || "Não consegui criar a conta. Confira os dados e tente de novo.");
+      // O token do captcha é de uso único: sem resetar, a segunda tentativa
+      // falha sozinha e parece problema do formulário.
+      setCaptchaToken("");
+      setCaptchaResetCounter((n) => n + 1);
+      setBusy(false);
+    }
+  }
+
+  // A conta foi criada e o e-mail saiu. Trocar a tela inteira, em vez de mostrar
+  // um aviso acima do formulário, é o que evita a pessoa reenviar o cadastro
+  // achando que não funcionou — e um segundo envio devolveria 409.
+  if (aguardandoVerificacao) {
+    return (
+      <div className="min-h-screen bg-paper px-4 pb-16">
+        <main className="mx-auto w-full max-w-md">
+          <CabecalhoPublico />
+          <div className="pt-10">
+            <span className="paper-eyebrow">Conta criada</span>
+            <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
+              Confirme seu e-mail para continuar.
+            </h1>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              Enviamos um link para <span className="text-ink">{email.trim()}</span>. Abra
+              ele para confirmar a conta — o link vale uma vez e expira.
+            </p>
+            <p className="mt-4 text-sm leading-6 text-muted">
+              Não chegou? Confira o spam. Você também pode pedir outro na{" "}
+              <Link href="/auth/verify-email" className="font-semibold text-primary">
+                página de verificação
+              </Link>
+              .
+            </p>
+            <p className="mt-8 text-xs leading-5 text-muted">
+              Enquanto isso, a leitura da sua prova continua liberada e não depende de
+              conta.{" "}
+              <Link href="/" className="underline underline-offset-2">
+                Ver a fácies
+              </Link>
+              .
+            </p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-paper px-4 pb-16">
+      <main className="mx-auto w-full max-w-md">
+        <CabecalhoPublico />
+
+        <div className="pt-6">
+          <span className="paper-eyebrow">Criar conta</span>
+          <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
+            Comece pela sua prova.
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            A leitura da fácies é gratuita e não exige conta. A conta serve para o que vem
+            depois: medir onde você está e dimensionar o que estudar.
+          </p>
+        </div>
+
+        <div className="mt-8">
+          <SignupForm
+            signupFirstName={firstName}
+            setSignupFirstName={setFirstName}
+            signupLastName={lastName}
+            setSignupLastName={setLastName}
+            signupEmail={email}
+            setSignupEmail={setEmail}
+            signupPassword={password}
+            setSignupPassword={setPassword}
+            signupConfirmPassword={confirmPassword}
+            setSignupConfirmPassword={setConfirmPassword}
+            signupPasswordsMismatch={passwordsMismatch}
+            signupTermsAccepted={termsAccepted}
+            setSignupTermsAccepted={setTermsAccepted}
+            signupCaptchaToken={captchaToken}
+            setSignupCaptchaToken={setCaptchaToken}
+            signupCaptchaResetCounter={captchaResetCounter}
+            signupBusy={busy}
+            signupError={error}
+            signupCanSubmit={canSubmit}
+            recaptchaSiteKey={recaptchaSiteKey}
+            googleClientId={googleClientId}
+            googleButtonRef={googleButtonRef}
+            googleError={googleError}
+            installState={installState}
+            onSignup={handleSignup}
+            onSwitchView={() => router.push("/login")}
+          />
+        </div>
+
+        <p className="mt-8 text-xs leading-5 text-muted">
+          A Fácies não promete aprovação e não vende conteúdo teórico.{" "}
+          <Link href="/" className="underline underline-offset-2">
+            Ver a fácies da sua prova
+          </Link>
+          .
+        </p>
+      </main>
+    </div>
+  );
+}
