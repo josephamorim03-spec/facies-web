@@ -15,12 +15,7 @@ import { getAuthToken } from "@/lib/auth";
 import { api } from "@/lib/api/shared/http";
 import { getProfile } from "@/lib/api";
 import { getBlockedRedirectSessionKey } from "@/lib/storage-keys";
-import {
-  ACTIVATE_ROUTE,
-  INITIAL_GOAL_SETUP_ROUTE,
-  ONBOARDING_ROUTE,
-  resolveBlockingRoute,
-} from "@/lib/initialGoalSetup";
+import { ACTIVATE_ROUTE, INITIAL_GOAL_SETUP_ROUTE } from "@/lib/initialGoalSetup";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { NavbarProvider, NavbarContext } from "@/lib/NavbarContext";
 import { StudentExperienceProvider } from "@/lib/StudentExperienceContext";
@@ -265,13 +260,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       // justamente para quem mais precisa dela.
       pathname.startsWith("/conta") ||
       pathname === ACTIVATE_ROUTE ||
-      pathname === INITIAL_GOAL_SETUP_ROUTE ||
-      // As telas de setup precisam estar isentas do proprio guard que manda
-      // para elas. Sem estas duas linhas, o aluno mandado para
-      // `/cadastro/completar` era imediatamente rebotado daqui para
-      // `/preferencias`, e o cadastro nunca podia ser concluido.
-      pathname.startsWith("/cadastro") ||
-      pathname === ONBOARDING_ROUTE
+      pathname === INITIAL_GOAL_SETUP_ROUTE
     ) {
       return;
     }
@@ -281,32 +270,24 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
 
     let active = true;
     getProfile(token)
-      .then(async (profile) => {
+      .then((profile) => {
         if (!active) return;
         if (profile.display_name) setUserDisplayName(profile.display_name);
         if (profile.photo_url) setUserPhotoUrl(profile.photo_url);
-
-        // A escada de bloqueio tem UMA definicao, em `initialGoalSetup`. Aqui
-        // havia uma copia dela que ignorava `cadastro_completo` e mandava
-        // sempre para `/preferencias` -- era essa divergencia que rebotava o
-        // aluno novo. O perfil ja buscado vai junto para nao repetir o GET.
-        const blocking = await resolveBlockingRoute(token, profile);
-        if (!active || !blocking) return;
-
-        // A marcacao de "cheguei desviado" so vale para o setup inicial: e ela
-        // que faz a tela seguinte saber que o aluno foi tirado de outro lugar,
-        // em vez de ter vindo por conta propria.
-        if (blocking === INITIAL_GOAL_SETUP_ROUTE || blocking === ONBOARDING_ROUTE) {
-          if (blockedNavigationPathRef.current !== pathname) {
-            blockedNavigationPathRef.current = pathname;
-            try {
-              sessionStorage.setItem(redirectSessionKey, "1");
-            } catch {
-              // ignore
-            }
+        if (profile.access_status !== "active") {
+          router.replace(ACTIVATE_ROUTE);
+          return;
+        }
+        if (profile.has_completed_initial_goal_setup) return;
+        if (blockedNavigationPathRef.current !== pathname) {
+          blockedNavigationPathRef.current = pathname;
+          try {
+            sessionStorage.setItem(redirectSessionKey, "1");
+          } catch {
+            // ignore
           }
         }
-        router.replace(blocking);
+        router.replace(INITIAL_GOAL_SETUP_ROUTE);
       })
       .catch(() => {
         // noop: keep current route when guard check fails transiently
