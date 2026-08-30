@@ -142,7 +142,7 @@ export default function TrilhaPage() {
   if (unavailable || !plan) {
     return (
       <main className="space-y-5">
-        <h1 className="font-serif text-3xl font-semibold text-ink">Trilha</h1>
+        <h1 className="font-serif font-semibold text-ink">Trilha</h1>
         <EmptyState
           title="Sua trilha ainda não existe"
           description="Responda o questionário inicial para a Fácies montar seu cronograma."
@@ -162,7 +162,7 @@ export default function TrilhaPage() {
     <main className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-serif text-3xl font-semibold text-ink">Trilha</h1>
+          <h1 className="font-serif font-semibold text-ink">Trilha</h1>
           {/* Rótulo sempre com o número que o produziu: os limiares são
               heurística não validada (KROS-007). */}
           <p className="mt-1 text-sm text-muted">

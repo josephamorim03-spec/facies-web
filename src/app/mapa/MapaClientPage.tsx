@@ -128,7 +128,7 @@ export function MapaClientPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="font-serif text-2xl font-semibold text-ink sm:text-3xl">
+        <h1 className="font-serif font-semibold text-ink">
           A cara da {facies.data.nome}
         </h1>
         {/* A janela e o denominador da leitura, e o handoff pede que numero

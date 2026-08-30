@@ -536,6 +536,55 @@
      `verificar:design` conhece este desvio e o declara em vez de
      reprovar. Se a escala do desenho voltar a valer, e' la' que se
      desfaz. */
+  /* ── A ESCALA DO APP ──────────────────────────────────────────────────
+     Medida nos artboards renderizados de `Webapp - telas.dc.html`, nao
+     transcrita do CSS deles: `8b` 25px, `8d` 22px, `8c` 19px no enunciado,
+     16px no titulo de bloco.
+
+     ELA EXISTE PORQUE NAO EXISTIA. A landing tem a dela em `.paper-page`
+     desde sempre; o app era Tailwind solto, arquivo por arquivo, e sete
+     arquivos escolheram `text-3xl`/`text-4xl` (30 e 36px) sem nada os
+     contradizer -- 20% a 44% acima do teto do desenho, na primeira linha
+     de cada tela.
+
+     ⚠️ `font-size` e `line-height` no MESMO bloco, sempre. Esta e a
+     armadilha que ja custou uma entrelinha de 1,0 em producao: as classes
+     `text-*` do Tailwind carregam line-height junto, e a responsiva vem
+     depois na folha -- um `leading-*` escrito ao lado perde em silencio,
+     com a classe no DOM e o lint verde.
+
+     ⚠️ Elemento dentro de classe tem especificidade (0,1,1) e vence
+     utilitario (0,1,0). O `:not(.paper-eyebrow)` da landing existe porque
+     um rotulo marcado como `h2` saiu a 28px em producao. Aqui a mesma
+     protecao, pelo mesmo motivo. */
+  .tela-app h1:not(.paper-eyebrow) {
+    font-size: 25px;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+
+  .tela-app h2:not(.paper-eyebrow) {
+    font-size: 22px;
+    line-height: 1.24;
+    letter-spacing: -0.01em;
+  }
+
+  /* 16px e 500, e nao 600: no `8b` o titulo do bloco convive com o porque
+     logo abaixo, e peso cheio faria a lista inteira competir consigo. */
+  .tela-app h3:not(.paper-eyebrow) {
+    font-size: 16px;
+    line-height: 1.35;
+    font-weight: 500;
+  }
+
+  /* O enunciado da questao — `8c`, 19px em serifa.
+     Serifa aqui nao e estilo: e o unico bloco do app que se LE em vez de
+     se escanear, e a `.paper-reading` ja resolve familia e entrelinha. O
+     que faltava era o corpo, que herdava 16 da folha. */
+  .tela-app .paper-reading {
+    font-size: 19px;
+  }
+
   .paper-page h1:not(.paper-eyebrow) {
     font-size: 34px;
     line-height: 1.1;

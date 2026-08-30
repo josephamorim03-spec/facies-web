@@ -15,7 +15,12 @@ import { getAuthToken } from "@/lib/auth";
 import { api } from "@/lib/api/shared/http";
 import { getProfile } from "@/lib/api";
 import { getBlockedRedirectSessionKey } from "@/lib/storage-keys";
-import { ACTIVATE_ROUTE, INITIAL_GOAL_SETUP_ROUTE } from "@/lib/initialGoalSetup";
+import {
+  ACTIVATE_ROUTE,
+  INITIAL_GOAL_SETUP_ROUTE,
+  ONBOARDING_ROUTE,
+  resolveBlockingRoute,
+} from "@/lib/initialGoalSetup";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { NavbarProvider, NavbarContext } from "@/lib/NavbarContext";
 import { StudentExperienceProvider } from "@/lib/StudentExperienceContext";
@@ -205,13 +210,18 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       : showMobileTopBar
         ? "calc(100svh - env(safe-area-inset-top, 0px) - 5rem - var(--nav-stack-height))"
         : "calc(100svh - max(1.5rem, env(safe-area-inset-top, 0px)) - 1.25rem - var(--nav-stack-height))";
+  // `tela-app` ancora a ESCALA DE TEXTO do app, do mesmo jeito que
+  // `.paper-page` ancora a da landing. Vai em toda variante, inclusive na
+  // imersiva (`hideNavigationChrome`): a sessao de questoes e justamente onde
+  // o enunciado precisa dos 19px do artboard `8c`, e ela e a que esconde a
+  // casca. Ver o bloco `.tela-app` em `globals.css`.
   const mainClassName = hideNavigationChrome
-    ? "min-h-screen"
+    ? "tela-app min-h-screen"
     : isDesktopNavigation
-      ? "max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8"
+      ? "tela-app max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8"
       : showMobileTopBar
-        ? `max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] ${mobileBottomPad}`
-        : `max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] ${mobileBottomPad}`;
+        ? `tela-app max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] ${mobileBottomPad}`
+        : `tela-app max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] ${mobileBottomPad}`;
 
   useEffect(() => {
     if (pathname === INITIAL_GOAL_SETUP_ROUTE) {
@@ -255,7 +265,13 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       // justamente para quem mais precisa dela.
       pathname.startsWith("/conta") ||
       pathname === ACTIVATE_ROUTE ||
-      pathname === INITIAL_GOAL_SETUP_ROUTE
+      pathname === INITIAL_GOAL_SETUP_ROUTE ||
+      // As telas de setup precisam estar isentas do proprio guard que manda
+      // para elas. Sem estas duas linhas, o aluno mandado para
+      // `/cadastro/completar` era imediatamente rebotado daqui para
+      // `/preferencias`, e o cadastro nunca podia ser concluido.
+      pathname.startsWith("/cadastro") ||
+      pathname === ONBOARDING_ROUTE
     ) {
       return;
     }
@@ -265,24 +281,32 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
 
     let active = true;
     getProfile(token)
-      .then((profile) => {
+      .then(async (profile) => {
         if (!active) return;
         if (profile.display_name) setUserDisplayName(profile.display_name);
         if (profile.photo_url) setUserPhotoUrl(profile.photo_url);
-        if (profile.access_status !== "active") {
-          router.replace(ACTIVATE_ROUTE);
-          return;
-        }
-        if (profile.has_completed_initial_goal_setup) return;
-        if (blockedNavigationPathRef.current !== pathname) {
-          blockedNavigationPathRef.current = pathname;
-          try {
-            sessionStorage.setItem(redirectSessionKey, "1");
-          } catch {
-            // ignore
+
+        // A escada de bloqueio tem UMA definicao, em `initialGoalSetup`. Aqui
+        // havia uma copia dela que ignorava `cadastro_completo` e mandava
+        // sempre para `/preferencias` -- era essa divergencia que rebotava o
+        // aluno novo. O perfil ja buscado vai junto para nao repetir o GET.
+        const blocking = await resolveBlockingRoute(token, profile);
+        if (!active || !blocking) return;
+
+        // A marcacao de "cheguei desviado" so vale para o setup inicial: e ela
+        // que faz a tela seguinte saber que o aluno foi tirado de outro lugar,
+        // em vez de ter vindo por conta propria.
+        if (blocking === INITIAL_GOAL_SETUP_ROUTE || blocking === ONBOARDING_ROUTE) {
+          if (blockedNavigationPathRef.current !== pathname) {
+            blockedNavigationPathRef.current = pathname;
+            try {
+              sessionStorage.setItem(redirectSessionKey, "1");
+            } catch {
+              // ignore
+            }
           }
         }
-        router.replace(INITIAL_GOAL_SETUP_ROUTE);
+        router.replace(blocking);
       })
       .catch(() => {
         // noop: keep current route when guard check fails transiently

@@ -65,6 +65,33 @@ export function AgendaItemRow({ item }: { item: StudentAgendaItem }) {
           {item.expected_questions > 0 ? `${item.expected_questions} questões · ` : ""}
           {item.estimated_minutes > 0 ? `${item.estimated_minutes} min` : "Agenda"}
         </p>
+        {/* O PORQUE, que existia e nunca aparecia.
+
+            `item.rationale` chega do backend desde sempre e era usado numa linha
+            so — como pista para `resolveDisplayArea` adivinhar a cor da area.
+            O dado estava na tela sem nunca ser lido por ninguem.
+
+            A anotacao do artboard `8b` diz por que ele importa: "Cada bloco do
+            dia diz POR QUE esta ali, com uma frase que cita a prova ou o seu
+            historico. Sem isso a sessao vira uma lista."
+
+            13px (`text-nota`) e o tamanho medido no artboard, e o degrau que o
+            Tailwind nao tem — em 12 a frase vira rodape, em 14 compete com o
+            titulo do bloco.
+
+            ⚠️ SEM `truncate`, ao contrario das linhas acima. A frase e o
+            argumento; cortada no meio ela vira ruido com reticencias. Ela
+            quebra em duas linhas quando precisar.
+
+            ⚠️ E o nosso conteudo ainda esta AQUEM do desenho. O `8b` diz "A
+            UNIFESP cobrou em 4 das ultimas 5 provas. Voce acerta 52%" — duas
+            citacoes, banca e historico. `student_agenda.py` hoje devolve frases
+            como "Revisao programada pelo ciclo de aprendizagem", que explica o
+            mecanismo e nao a pessoa. Exibir o que existe e melhor que esconder,
+            e deixa a lacuna visivel em vez de teorica. */}
+        {item.rationale ? (
+          <p className="mt-1 text-nota text-muted">{item.rationale}</p>
+        ) : null}
       </div>
       <span
         className={`shrink-0 text-xs font-semibold ${

@@ -79,6 +79,16 @@ module.exports = {
       // legivel em celular, que e' onde este produto e' usado.
       fontSize: {
         micro: ["11px", { lineHeight: "1.35" }],
+        /* O degrau que o Tailwind nao tem: a escala dele pula de 12 para 14.
+         *
+         * Medido nos artboards do app: 13px e o tamanho do PORQUE de cada bloco
+         * do dia ("A UNIFESP cobrou em 4 das ultimas 5 provas") e o das
+         * contagens ("8 q") — os dois elementos que o `8b` mais repete. Em 12px
+         * a frase vira nota de rodape e some; em 14px ela compete com o titulo
+         * do bloco, que tem 16.
+         *
+         * A entrelinha e a do desenho: 19,5px sobre 13 da exatamente 1,5. */
+        nota: ["13px", { lineHeight: "1.5" }],
       },
       fontFamily: {
         sans: [

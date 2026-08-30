@@ -230,7 +230,7 @@ export default function PostExamReview({
               <p className="paper-eyebrow">
                 O que você fez · {resultLabel}
               </p>
-              <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight">
+              <h1 className="mt-1 font-serif font-semibold">
                 {sessionDisplayLabel}
               </h1>
               <div className="mt-4 border border-primary/30 bg-[var(--wash-selecao)] p-4">

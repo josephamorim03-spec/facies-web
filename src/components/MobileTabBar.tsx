@@ -152,6 +152,17 @@ export function MobileTabBar() {
               ].join(" ")}
             >
               <Icon className="h-5 w-5" aria-hidden="true" />
+              {/* ⚠️ 11px, e o DESENHO PEDE 10 — desvio aprovado em 2026-08-30.
+
+                  O piso de 11px (`text-micro`) e do sistema e existe por
+                  medida, nao por gosto: abaixo dele a leitura em tela de
+                  celular comeca a falhar para quem tem baixa visao. Rotulo de
+                  aba e texto permanente de navegacao — o pior lugar do produto
+                  para economizar um pixel de legibilidade.
+
+                  Um pixel nao muda a composicao; a decisao esta registrada aqui
+                  para que a proxima leitura do artboard nao a trate como erro a
+                  consertar. */}
               {/* MINUSCULA por CSS, e nao no dado: o mesmo `shortLabel` vira titulo
                   de pagina e breadcrumb, onde "você está em hoje" nao se
                   escreve assim. O desenho pede minuscula na barra e so nela. */}

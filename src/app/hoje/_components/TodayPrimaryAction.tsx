@@ -46,7 +46,8 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
               ) : null}
             </div>
             <div>
-              <h2 className="font-serif text-3xl font-semibold leading-tight text-ink sm:text-4xl">
+              {/* Escala em `.tela-app h2` — ver `globals.css`. */}
+              <h2 className="font-serif font-semibold text-ink">
                 {action.title}
               </h2>
               {/* `font-serif` explicito. Era obrigatorio quando `--font-sans`

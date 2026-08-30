@@ -25,7 +25,12 @@ test("o sistema expoe os contratos de leitura, movimento e raio", () => {
 });
 
 test("clinical reading is left aligned, capped at the measure, and stays serif", () => {
-  const readingRule = css.match(/\.paper-reading\s*\{([\s\S]*?)\}/)?.[1] ?? "";
+  // ⚠️ A regra BASE, ancorada no início da linha. Sem a âncora, este `match`
+  // pegava a primeira ocorrência do texto `.paper-reading {` na folha — e desde
+  // que a escala do app existe, essa ocorrência é `.tela-app .paper-reading`,
+  // que só declara `font-size`. O teste reprovava com a propriedade intacta:
+  // quem quebrou foi a extração, não o sistema.
+  const readingRule = css.match(/^\s*\.paper-reading\s*\{([\s\S]*?)\}/m)?.[1] ?? "";
   assert.match(readingRule, /max-width:\s*var\(--reading-measure\)/);
   assert.match(readingRule, /text-align:\s*left/);
   assert.doesNotMatch(readingRule, /justify/);

@@ -121,6 +121,41 @@ export function CanonicalTodayDashboard() {
     [...(agenda?.overdue ?? []), ...(day?.items ?? [])],
     primaryOccurrenceId,
   );
+  /**
+   * A manchete do `8b`: "Hoje sao 24 questoes, cerca de 35 minutos".
+   *
+   * Os dois numeros sao os que a tela ja tinha e nao mostrava juntos: as
+   * questoes somam o `expected_questions` da acao principal com o dos blocos
+   * restantes, e os minutos vem de `today_load.estimated_minutes`.
+   *
+   * ⚠️ "cerca de" nao e enfeite. `estimated_minutes` e estimativa, e o proprio
+   * `TodayDimensioning` existe para abrir a conta por tras dela — anunciar "35
+   * minutos" seco seria decreto com cara de dado.
+   *
+   * ⚠️ E a frase DEGRADA em vez de mentir. Sem questoes contadas ela fala so de
+   * tempo; sem tempo, so de questoes; sem os dois, some e a tela abre na acao
+   * principal, que e o que ela tem a dizer. Numero inventado para completar a
+   * frase seria pior que frase curta.
+   */
+  // ⚠️ Sobre a lista COMPLETA, e nao `uniqueRemaining`. Aquela exclui a acao
+  // principal de proposito (ela ja tem lugar proprio na tela), e somar so o
+  // resto daria um dia menor do que ele e — justamente na frase que diz o
+  // tamanho do dia. `StudentTodayAction` nao expoe `expected_questions`, mas o
+  // bloco dela esta na agenda: e de la que o numero sai.
+  const questoesDoDia = uniqueAgendaItems(
+    [...(agenda?.overdue ?? []), ...(day?.items ?? [])],
+    null,
+  ).reduce((soma, item) => soma + (item.expected_questions ?? 0), 0);
+  const minutosDoDia = today.today_load.estimated_minutes ?? 0;
+  const tamanhoDoDia = (() => {
+    const q = questoesDoDia > 0 ? `${questoesDoDia} ${questoesDoDia === 1 ? "questão" : "questões"}` : null;
+    const m = minutosDoDia > 0 ? `cerca de ${minutosDoDia} minutos` : null;
+    if (q && m) return `Hoje são ${q}, ${m}`;
+    if (q) return `Hoje são ${q}`;
+    if (m) return `Hoje, ${m}`;
+    return null;
+  })();
+
   const backupActions = today.backup_actions.filter(
     (action) =>
       !action.agenda_occurrence_id ||
@@ -133,21 +168,23 @@ export function CanonicalTodayDashboard() {
 
   return (
     <div className="space-y-5 md:space-y-6">
-      {/* ── A ABERTURA É A DO ARTBOARD 8b ────────────────────────────────
-          O desenho abre com a PROVA-ALVO e a data, e não com cumprimento —
-          nem em 8b (dia por começar) nem em 13e (dia começado). A escolha tem
-          consequência: quem abre o app às 23h40 depois do plantão recebe
-          primeiro o que decide o dia dele, não uma saudação.
+      {/* A PRIMEIRA LINHA E A PROVA E O PRAZO, e a manchete e o TAMANHO DO DIA.
 
-          O cumprimento fica logo abaixo, menor. Tirá-lo por inteiro seria ir
-          além do desenho: o artboard não o desenha, mas também não desenha
-          nenhuma tela com nome de aluno — ele não representa o caso, e a regra
-          para ausência é herdar o que existe. */}
+          O cumprimento ("Bom dia, Joseph") saiu a pedido do usuario em
+          2026-08-30. O argumento que estava aqui — "o artboard nao desenha
+          nenhuma tela com nome de aluno, entao ele nao representa o caso" —
+          nao se sustentou: nenhum dos 22 artboards tem cumprimento, e o `8b`
+          usa a linha mais valiosa da tela para dizer o tamanho do dia.
+
+          Um cumprimento nao ajuda a decidir nada. "Hoje sao 24 questoes, cerca
+          de 35 minutos" e a unica frase que responde a pergunta com que o aluno
+          abre o app. */}
       <header>
         <AlvoEContagem objetivo={alvo} />
-        <h1 className="mt-2 font-serif text-3xl font-semibold leading-tight text-ink md:text-4xl">
-          {greeting(studentFirstName)}
-        </h1>
+        {/* Sem classe de tamanho: a escala vive em `.tela-app h1`, com font-size
+            e line-height no mesmo bloco. Era `text-3xl md:text-4xl` (30 e 36px)
+            contra os 25px medidos no artboard `8b`. */}
+        <h1 className="mt-2 font-serif font-semibold text-ink">{tamanhoDoDia}</h1>
       </header>
 
       {partial ? (
@@ -186,7 +223,10 @@ export function CanonicalTodayDashboard() {
             ao empate, com mais tinta. */}
         <div className="bg-[var(--wash-selecao)] px-2 text-center sm:px-4">
           <p className="paper-eyebrow">Semana</p>
-          <p className="mt-1 font-serif text-3xl font-semibold leading-none text-marca">
+          {/* Numero e MONO, nao serifa: os artboards `9a`/`9b` poem a metrica em
+              DM Mono a 46px, e a landing ja trata numero como dado pela mesma
+              regra. Ele continua grande — o desenho tambem o mantem. */}
+          <p className="mt-1 font-mono text-3xl font-semibold leading-none tabular-nums text-marca">
             {pct(agenda?.summary?.weekly_progress_pct ?? today.progress_snapshot.weekly_progress_pct)}
           </p>
           <p className="mt-1.5 text-xs text-muted">da meta</p>
