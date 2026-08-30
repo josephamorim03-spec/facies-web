@@ -64,6 +64,28 @@ export async function salvarIdentidade(
 }
 
 /**
+ * Aceita os documentos vigentes **sem repetir a identidade**.
+ *
+ * `salvarIdentidade` também grava aceite, mas só junto com nome, nascimento e
+ * situação profissional. Isso serve o cadastro inicial e quebra o re-aceite:
+ * publicar uma versão nova dos Termos obrigaria toda a base a redigitar a
+ * identidade inteira para concordar com um texto.
+ *
+ * É também o único caminho de aceite para quem entra por Google — essa conta
+ * nunca passa pelo cadastro local, e em produção google-only isso é todo mundo.
+ *
+ * Não há campo de versão, e não deve haver: quem resolve qual documento está
+ * vigente é o servidor.
+ */
+export async function registrarAceite(token = ""): Promise<CadastroStatus> {
+  return api<CadastroStatus>("/api/cadastro/aceite", {
+    method: "POST",
+    headers: authHeader(token),
+    body: JSON.stringify({ accepted: true }),
+  });
+}
+
+/**
  * Perfil declarado do onboarding. Tudo opcional, e **campo omitido não apaga o
  * que já estava** — o formulário é parcial por natureza, e zerar o omitido
  * transformaria "não respondi agora" em "respondi que não".
