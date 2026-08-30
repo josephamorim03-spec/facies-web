@@ -187,4 +187,21 @@ const nextConfig = {
   },
 };
 
+/**
+ * Limitador de workers da geracao estatica, para maquina com pouca RAM.
+ *
+ * O build gera 323 paginas estaticas e cada rota `opengraph-image` renderiza uma
+ * imagem por libvips. Com 7 workers em paralelo isso pede varios GB, e numa
+ * maquina de 7,7 GB com o editor aberto o build morre com
+ * `vips_tracked: out of memory` -- em paginas DIFERENTES a cada tentativa, que e'
+ * a assinatura de falta de recurso e nao de defeito no codigo.
+ *
+ * Sem `NEXT_BUILD_CPUS` no ambiente, nada muda: `undefined` deixa o Next escolher
+ * como sempre escolheu. E' um escape para build local, nao uma mudanca de padrao.
+ */
+const cpusDoBuild = Number(process.env.NEXT_BUILD_CPUS) || undefined;
+if (cpusDoBuild) {
+  nextConfig.experimental = { ...(nextConfig.experimental || {}), cpus: cpusDoBuild };
+}
+
 module.exports = nextConfig;

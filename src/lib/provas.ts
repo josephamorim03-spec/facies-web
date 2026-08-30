@@ -14,6 +14,15 @@ import dados from "@/data/facies/provas.json";
 
 export type LinhaSerie = {
   rotulo: string;
+  /** A grande área do subtema. As DIRETAS mandam; a correlata só preenche o que
+   *  a direta não viu.
+   *
+   *  Opcional porque um subtema pode não ter especialidade classificada — e
+   *  porque até 2026-08-30 ela era `null` em TODAS as linhas: o campo já era
+   *  emitido, mas a população que o alimenta não carregava `especialidade`.
+   *  Campo que existe e nunca chega preenchido é pior que campo ausente, então
+   *  o tipo diz que pode faltar. */
+  area?: string | null;
   score: number;
   diretas: number;
   correlatas: number;

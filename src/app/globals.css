@@ -792,8 +792,24 @@
      Mono porque rotulo e' DADO, nao prosa: a mesma familia dos numeros, tempos e
      percentuais. O tracking de .08em e o da folha; o de .14em vinha do
      versalete do KROS/DOS e era largo demais para 11px em mono. */
+  /* ⚠️ PESO 400, e não 500 — medido nos DOIS desenhos.
+
+     O rótulo estava em `font-medium`, e ele é o elemento mais repetido do
+     produto: sozinho respondia por 101 das divergências que o
+     `verificar:design-app` acusou nas seis telas.
+
+       webapp (22 artboards) ..  rótulo em caixa alta = 11px / 400
+       landing (v7, `.label`) .. 11px / 400 / ls 0.88px / DM Mono
+
+     E a regra é maior que este rótulo: no desenho do webapp a **mono nunca é
+     negrito**. Todo tamanho dela aparece só em 400 — 11px 150x, 12px 94x, 10px
+     58x, 14px 56x, 13px 48x. A variação de peso vive na sans, nos títulos.
+     Meio grau a mais aqui fazia a mono competir com o que ela deveria rotular.
+
+     O `tracking` FICA: os 0,88px do `.label` da v7 são exatamente 0,08em em
+     11px. Foi só o peso que divergiu. */
   .paper-eyebrow {
-    @apply font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted;
+    @apply font-mono text-[11px] font-normal uppercase tracking-[0.08em] text-muted;
     line-height: 1.35;
   }
 

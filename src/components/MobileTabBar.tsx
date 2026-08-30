@@ -163,10 +163,39 @@ export function MobileTabBar() {
                   Um pixel nao muda a composicao; a decisao esta registrada aqui
                   para que a proxima leitura do artboard nao a trate como erro a
                   consertar. */}
-              {/* MINUSCULA por CSS, e nao no dado: o mesmo `shortLabel` vira titulo
-                  de pagina e breadcrumb, onde "você está em hoje" nao se
-                  escreve assim. O desenho pede minuscula na barra e so nela. */}
-              <span className="text-[11px] font-medium lowercase leading-tight">
+              {/* ⚠️ MAIUSCULA, MONO, PESO 400 — e a linha anterior dizia o
+                  contrario, por ter lido o desenho no DADO em vez do render.
+
+                  O comentario que estava aqui afirmava "o desenho pede
+                  minuscula na barra e so nela". Medido no artboard `14a`
+                  (y=805, as seis abas, repetido em 5 artboards — 30
+                  ocorrencias):
+
+                      hoje mapa banco evolução rotina conta
+                      10px / peso 400 / DM Mono / caixa alta por text-transform
+
+                  O texto-FONTE e minusculo; o RENDER e maiusculo. Quem leu o
+                  artboard leu a string e concluiu "minuscula" — a armadilha que
+                  este repositorio ja nomeou: a spec vem do desenho renderizado,
+                  nao da leitura dele.
+
+                  O tratamento resultante ja existe como token: `.paper-eyebrow`
+                  e' exatamente mono + caixa alta + 11px + peso 400. A barra deixa de
+                  ser a excecao e passa a usar o mesmo vocabulario do resto.
+
+                  A TRANSFORMACAO CONTINUA EM CSS, nunca no dado: o mesmo
+                  `shortLabel` vira titulo de pagina e breadcrumb, onde "você
+                  está em HOJE" nao se escreve assim — e o checker de copy
+                  pt-BR le o DOM, que segue acentuado.
+
+                  Os 11px seguem sendo desvio aprovado (ver a nota acima); o que
+                  mudou foram peso, familia e caixa. */}
+              {/* ⚠️ `text-current` NAO e' redundante: `.paper-eyebrow` embute
+                  `text-muted`, e sem isto a aba ATIVA perderia o `text-primary`
+                  que o link define acima — a barra ficaria sem indicar onde
+                  voce esta. A cor continua vindo do estado, no elemento pai;
+                  o token entra so pela forma. */}
+              <span className="paper-eyebrow leading-tight text-current">
                 {item.shortLabel}
               </span>
             </FastNavLink>

@@ -7,6 +7,7 @@ const TABS = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/acessos", label: "Acesso", exact: false },
   { href: "/admin/question-bank", label: "Banco de Questões", exact: false },
+  { href: "/admin/midia", label: "Mídia", exact: false },
   { href: "/admin/audit", label: "Auditoria", exact: false },
 ];
 

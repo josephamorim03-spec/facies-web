@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-08-29T23:08:17.060137+00:00",
+  "gerado_em": "2026-08-30T22:28:02.042983+00:00",
   "peso_correlata": 0.4,
   "piso_n_celula": 5,
   "provas": [
@@ -11,38 +11,38 @@
         "cobertura": 100.0,
         "linhas": [
           {
-            "pct": 37.8,
-            "qtd": 34,
+            "pct": 37.0,
+            "qtd": 37,
             "rotulo": "Clínica Médica"
           },
           {
-            "pct": 13.3,
-            "qtd": 12,
+            "pct": 13.0,
+            "qtd": 13,
             "rotulo": "Outros"
           },
           {
-            "pct": 11.1,
+            "pct": 11.0,
+            "qtd": 11,
+            "rotulo": "Pediatria"
+          },
+          {
+            "pct": 10.0,
             "qtd": 10,
             "rotulo": "Ginecologia"
           },
           {
-            "pct": 11.1,
+            "pct": 10.0,
+            "qtd": 10,
+            "rotulo": "Cirurgia"
+          },
+          {
+            "pct": 10.0,
             "qtd": 10,
             "rotulo": "Medicina Preventiva"
           },
           {
-            "pct": 10.0,
+            "pct": 9.0,
             "qtd": 9,
-            "rotulo": "Pediatria"
-          },
-          {
-            "pct": 8.9,
-            "qtd": 8,
-            "rotulo": "Cirurgia"
-          },
-          {
-            "pct": 7.8,
-            "qtd": 7,
             "rotulo": "Obstetrícia"
           }
         ]
@@ -74,15 +74,15 @@
           {
             "n": 4,
             "pct": 100.0,
-            "qtd": 90
+            "qtd": 100
           }
         ],
-        "base": 90,
+        "base": 100,
         "distribuicao": [
           {
             "codigo": "direta",
             "pct": 100.0,
-            "qtd": 90
+            "qtd": 100
           }
         ]
       },
@@ -103,6 +103,7 @@
         "cobertura_direta": 100.0,
         "linhas": [
           {
+            "area": "Clínica Médica",
             "correlatas": 23,
             "diretas": 2,
             "exibivel": true,
@@ -122,6 +123,7 @@
             "total_serie": 25
           },
           {
+            "area": "Ginecologia",
             "correlatas": 20,
             "diretas": 3,
             "exibivel": true,
@@ -141,6 +143,7 @@
             "total_serie": 23
           },
           {
+            "area": "Outros",
             "correlatas": 23,
             "diretas": 1,
             "exibivel": true,
@@ -160,6 +163,7 @@
             "total_serie": 24
           },
           {
+            "area": "Clínica Médica",
             "correlatas": 16,
             "diretas": 3,
             "exibivel": true,
@@ -179,6 +183,7 @@
             "total_serie": 19
           },
           {
+            "area": "Pediatria",
             "correlatas": 20,
             "diretas": 1,
             "exibivel": true,
@@ -198,6 +203,7 @@
             "total_serie": 21
           },
           {
+            "area": "Clínica Médica",
             "correlatas": 17,
             "diretas": 2,
             "exibivel": true,
@@ -217,6 +223,7 @@
             "total_serie": 19
           },
           {
+            "area": "Ginecologia",
             "correlatas": 16,
             "diretas": 2,
             "exibivel": true,
@@ -236,6 +243,7 @@
             "total_serie": 18
           },
           {
+            "area": "Cirurgia",
             "correlatas": 13,
             "diretas": 3,
             "exibivel": true,
@@ -255,6 +263,7 @@
             "total_serie": 16
           },
           {
+            "area": "Clínica Médica",
             "correlatas": 17,
             "diretas": 1,
             "exibivel": true,
@@ -274,6 +283,7 @@
             "total_serie": 18
           },
           {
+            "area": "Clínica Médica",
             "correlatas": 14,
             "diretas": 2,
             "exibivel": true,
@@ -293,6 +303,7 @@
             "total_serie": 16
           },
           {
+            "area": "Medicina Preventiva",
             "correlatas": 16,
             "diretas": 1,
             "exibivel": true,
@@ -312,6 +323,7 @@
             "total_serie": 17
           },
           {
+            "area": "Cirurgia",
             "correlatas": 16,
             "diretas": 1,
             "exibivel": true,
@@ -331,6 +343,7 @@
             "total_serie": 17
           },
           {
+            "area": "Clínica Médica",
             "correlatas": 16,
             "diretas": 1,
             "exibivel": true,
@@ -350,6 +363,7 @@
             "total_serie": 17
           },
           {
+            "area": "Clínica Médica",
             "correlatas": 18,
             "diretas": 0,
             "exibivel": true,
@@ -369,6 +383,7 @@
             "total_serie": 18
           },
           {
+            "area": "Outros",
             "correlatas": 13,
             "diretas": 2,
             "exibivel": true,

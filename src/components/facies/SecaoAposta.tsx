@@ -1,6 +1,7 @@
 import { ContagemGigante } from "./ContagemGigante";
 import { RotuloSecao } from "./RotuloSecao";
 import { dec } from "@/lib/decimal";
+import { dataDoRegistro, previsaoPorExamKey } from "@/lib/previsao";
 import type { Prova } from "@/lib/provas";
 import { CONT_LANDING } from "@/lib/site";
 
@@ -65,6 +66,20 @@ export function SecaoAposta({ prova, numero }: { prova: Prova; numero: string })
   const v = prova.validacao;
   const medido = v.status === "medido" ? v : null;
 
+  /**
+   * O REGISTRO JÁ EXISTE, e a frase precisava parar de prometê-lo.
+   *
+   * Esta seção dizia "registro com data e código de verificação, publicado até
+   * 12.09" — futuro derivado da véspera da prova. A previsão do ENAMED foi
+   * registrada em 30/08 e tem página própria; continuar prometendo o que já
+   * aconteceu é a única frase da seção que reprovaria no teste do guia de texto
+   * ("é verdade hoje? não 'vai ser' — hoje").
+   *
+   * A promessa fica para prova SEM previsão registrada: quando a segunda entrar,
+   * a seção continua correta antes e depois do registro, sem edição.
+   */
+  const previsao = previsaoPorExamKey(prova.exam_key);
+
   const LINHA_DO_TEMPO = [
     { quando: curta(prevista), o_que: "Você faz a prova" },
     { quando: curta(gabarito), o_que: "O Inep divulga as questões e o gabarito" },
@@ -105,7 +120,20 @@ export function SecaoAposta({ prova, numero }: { prova: Prova; numero: string })
               lista — é o que impede a conta de ser puxada a nosso favor.
             </p>
             <p className="apoio mt-4 border-t border-[color:var(--veu-borda)] pt-4 text-sm">
-              Registro com data e código de verificação, publicado até {curta(registro)}.
+              {previsao ? (
+                <>
+                  Registrada em {dataDoRegistro(previsao.registered_at)}, com código de
+                  verificação.{" "}
+                  <a
+                    href={`/prova/${prova.slug}/aposta`}
+                    className="link-alvo underline underline-offset-4"
+                  >
+                    Ver a lista e o código →
+                  </a>
+                </>
+              ) : (
+                <>Registro com data e código de verificação, publicado até {curta(registro)}.</>
+              )}
             </p>
           </div>
 
