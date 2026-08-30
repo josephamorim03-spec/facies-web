@@ -101,3 +101,28 @@ export async function resetLocalPassword(payload: {
 
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Quais formas de entrar existem NESTE ambiente.
+//
+// A tela de login precisa saber se oferece "criar conta por e-mail", e a única
+// fonte dessa verdade é `AUTH_MODE`, no backend. A alternativa seria um
+// `NEXT_PUBLIC_LOCAL_AUTH_ENABLED` aqui — dois lugares para o mesmo fato, que
+// divergem no primeiro deploy em que alguém lembra de um e esquece do outro.
+
+export type ModosDeAuth = {
+  local_auth: boolean;
+  google: boolean;
+};
+
+/**
+ * Nunca lança. Se a consulta falhar, quem chama decide o padrão — e o padrão
+ * seguro é NÃO oferecer o cadastro por e-mail: mostrar um caminho que talvez não
+ * exista é pior que esconder um que existe.
+ */
+export async function obterModosDeAuth(): Promise<ModosDeAuth | null> {
+  try {
+    return await api<ModosDeAuth>("/api/auth/modes");
+  } catch {
+    return null;
+  }
+}

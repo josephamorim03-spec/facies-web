@@ -1,11 +1,13 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { clearAuthToken } from "@/lib/auth";
 import { resolveAuthenticatedLandingRoute } from "@/lib/initialGoalSetup";
 import { loginLocalAccount } from "@/lib/api";
 import { useGoogleSignIn } from "./_hooks/useGoogleSignIn";
+import { obterModosDeAuth } from "@/lib/api/domains/auth";
 import { useInstallPrompt } from "./_hooks/useInstallPrompt";
 import { LoginForm } from "./_components/LoginForm";
 import { GoogleSection } from "./_components/GoogleSection";
@@ -40,6 +42,20 @@ function LoginPageContent() {
   const [rememberDevice, setRememberDevice] = useState(false);
   const [loginBusy, setLoginBusy] = useState(false);
   const [loginError, setLoginError] = useState("");
+  // Se esta instalação oferece cadastro por e-mail. Começa FALSO: mostrar um
+  // caminho que talvez não exista é pior que esconder um que existe, e a
+  // resposta chega em milissegundos.
+  const [cadastroLocalDisponivel, setCadastroLocalDisponivel] = useState(false);
+
+  useEffect(() => {
+    let vivo = true;
+    obterModosDeAuth().then((modos) => {
+      if (vivo && modos) setCadastroLocalDisponivel(modos.local_auth);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, []);
 
   const { googleButtonRef, googleError, setGoogleError } = useGoogleSignIn({
     googleClientId,
@@ -175,6 +191,20 @@ function LoginPageContent() {
                     />
                     <span>Lembrar neste dispositivo</span>
                   </label>
+                  {/* A via de e-mail, e SÓ quando ela existe de verdade.
+                      `AUTH_MODE` vive no backend; a tela pergunta em vez de
+                      duplicar o flag aqui — dois lugares para o mesmo fato
+                      divergem no primeiro deploy em que um é atualizado e o
+                      outro não. */}
+                  {cadastroLocalDisponivel ? (
+                    <p className="pt-1 text-center text-sm text-muted">
+                      Prefere e-mail e senha?{" "}
+                      <Link href="/cadastro" className="font-semibold text-ink underline underline-offset-2">
+                        Criar conta
+                      </Link>
+                    </p>
+                  ) : null}
+
                 </div>
               )}
             </div>
