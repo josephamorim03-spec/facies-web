@@ -1,0 +1,985 @@
+{
+  "aplicacao_referencia": "2026-09-13",
+  "atualizacoes": [
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 290,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "Portaria Conjunta SAES/SCTIE 29/2025 - relatorio n 1046",
+          "url": "https://www.gov.br/conitec/pt-br/midias/relatorios/portaria/2025/portaria-conjunta-saes-sctie-no-29-de-27-de-novembro-de-2025"
+        },
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC - indice de recomendacoes 2025",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 5,
+      "resumo": "Novo PCDT de DPOC. Portaria Conjunta SAES/SCTIE 29 de 27/11/2025.",
+      "slug": "conitec-1046-pcdt-dpoc",
+      "subtemas": [
+        "Doença Pulmonar Obstrutiva Crônica (DPOC)"
+      ],
+      "titulo": "PCDT Doenca Pulmonar Obstrutiva Cronica",
+      "vigencia": "2025-11-27"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 339,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2025 - relatorio n 1048",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 5,
+      "resumo": "Protocolo clinico e diretrizes terapeuticas para acidentes ofidicos. Portaria SECTICS/MS 83/2025.",
+      "slug": "conitec-1048-pcdt-acidentes-ofidicos",
+      "subtemas": [
+        "Animais peçonhentos"
+      ],
+      "titulo": "PCDT Acidentes Ofidicos",
+      "vigencia": "2025-10-09"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 346,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2025 - relatorio n 1034",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "calendario_vacinal",
+      "relevancia": 5,
+      "resumo": "Incorporacao da hexavalente acelular ate 6a11m29d em imunodeprimidos e condicoes especiais. Portaria SECTICS/MS 70/2025.",
+      "slug": "conitec-1034-vacina-hexavalente-imunodeprimidos",
+      "subtemas": [
+        "Imunizações/Vacinação",
+        "Vacinas"
+      ],
+      "titulo": "Vacina hexavalente acelular para criancas imunodeprimidas",
+      "vigencia": "2025-10-02"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 647,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2024 - relatorio n 896",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 5,
+      "resumo": "CONITEC relatorio n 896. Portaria Conjunta SAES/SECTICS/MS 17/2024.",
+      "slug": "conitec-896-pcdt-cancer-mama",
+      "subtemas": [
+        "Rastreamento do câncer de mama",
+        "Câncer de mama"
+      ],
+      "titulo": "PCDT Cancer de Mama",
+      "vigencia": "2024-12-05"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 919,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2024 - relatorio n 878",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 5,
+      "resumo": "CONITEC relatorio n 878. Portaria SECTICS/MS 03/2024.",
+      "slug": "conitec-878-testagem-hpv-rastreio-colo",
+      "subtemas": [
+        "Rastreamento do câncer de colo do útero",
+        "Câncer de colo do útero"
+      ],
+      "titulo": "Testagem molecular para deteccao de HPV e rastreamento do cancer do colo do utero",
+      "vigencia": "2024-03-08"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 926,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2024 - relatorio n 882",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 5,
+      "resumo": "CONITEC relatorio n 882. Portaria SECTICS/MS 07/2024.",
+      "slug": "conitec-882-pcdt-dm2",
+      "subtemas": [
+        "Diabetes"
+      ],
+      "titulo": "PCDT Diabete Melito tipo 2 (atualizacao)",
+      "vigencia": "2024-03-01"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 996,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2023 - relatorio n 871",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        }
+      ],
+      "nivel": "calendario_vacinal",
+      "relevancia": 5,
+      "resumo": "CONITEC relatorio n 871. Portaria SECTICS/MS 72/2023.",
+      "slug": "conitec-871-vacina-dengue",
+      "subtemas": [
+        "Arboviroses",
+        "Vacinas",
+        "Imunizações/Vacinação"
+      ],
+      "titulo": "Vacina dengue tetravalente atenuada",
+      "vigencia": "2023-12-22"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1003,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2023 - relatorio n 722",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 5,
+      "resumo": "CONITEC relatorio n 722. Portaria Conjunta SECTICS/SAES/MS 29/2023.",
+      "slug": "conitec-722-pcdt-avc-isquemico",
+      "subtemas": [
+        "Acidentes Vasculares Cerebrais (AVC)"
+      ],
+      "titulo": "PCDT Acidente Vascular Cerebral Isquemico Agudo",
+      "vigencia": "2023-12-15"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1003,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2023 - relatorio n 825",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 5,
+      "resumo": "CONITEC relatorio n 825. Portaria Conjunta SECTICS/SAES/MS 32/2023.",
+      "slug": "conitec-825-pcdt-asma",
+      "subtemas": [
+        "Asma"
+      ],
+      "titulo": "PCDT Asma",
+      "vigencia": "2023-12-15"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1059,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2023 - relatorio n 853",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 5,
+      "resumo": "CONITEC relatorio n 853. Portaria SECTICS/MS 56/2023.",
+      "slug": "conitec-853-pcdt-hiv-adultos",
+      "subtemas": [
+        "HIV/Aids"
+      ],
+      "titulo": "PCDT Manejo da infeccao pelo HIV em adultos - Modulo 1 Tratamento",
+      "vigencia": "2023-10-20"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1525,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2022 - relatorio n 749",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2022"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 5,
+      "resumo": "CONITEC relatorio n 749. Portaria SCTIE/MS 67/2022.",
+      "slug": "conitec-749-pcdt-hanseniase",
+      "subtemas": [
+        "Hanseníase"
+      ],
+      "titulo": "PCDT Hanseniase",
+      "vigencia": "2022-07-11"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1599,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2022 - relatorio n 724",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2022"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 5,
+      "resumo": "CONITEC relatorio n 724. Portaria SCTIE/MS 40/2022.",
+      "slug": "conitec-724-contraceptivos-injetaveis",
+      "subtemas": [
+        "Planejamento familiar"
+      ],
+      "titulo": "Contraceptivos injetaveis mensais",
+      "vigencia": "2022-04-28"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1714,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2022 - relatorio n 677",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2022"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 5,
+      "resumo": "CONITEC relatorio n 677. Portaria SCTIE/MS 79/2021.",
+      "slug": "conitec-677-trombectomia-avc",
+      "subtemas": [
+        "Acidentes Vasculares Cerebrais (AVC)"
+      ],
+      "titulo": "Trombectomia mecanica para AVC isquemico agudo (ampliacao de uso)",
+      "vigencia": "2022-01-03"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 276,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2025 - relatorio n 944",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 4,
+      "resumo": "Protocolo clinico e diretrizes terapeuticas. Portaria SAES/SCTIE/MS 25/2025.",
+      "slug": "conitec-944-pcdt-adenocarcinoma-colon-reto",
+      "subtemas": [
+        "Neoplasias do Sistema Digestivo"
+      ],
+      "titulo": "PCDT Adenocarcinoma de Colon e Reto",
+      "vigencia": "2025-12-11"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 314,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2025 - relatorio n 1054",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 4,
+      "resumo": "Incorporacao de esquema antirretroviral em dose unica diaria. Portaria SECTICS/MS 89/2025.",
+      "slug": "conitec-1054-bictegravir-hiv",
+      "subtemas": [
+        "HIV/Aids"
+      ],
+      "titulo": "Bictegravir/entricitabina/tenofovir alafenamida para HIV",
+      "vigencia": "2025-11-03"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 653,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2024 - relatorio n 948",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 948. Portaria SECTICS/MS 59/2024.",
+      "slug": "conitec-948-insulinas-prolongada-dm2",
+      "subtemas": [
+        "Diabetes"
+      ],
+      "titulo": "Insulinas analogas de acao prolongada para DM2",
+      "vigencia": "2024-11-29"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 664,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2024 - relatorio n 939",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 939. Portaria SECTICS/MS 55/2024.",
+      "slug": "conitec-939-pcdt-prep-atualizacao",
+      "subtemas": [
+        "HIV/Aids"
+      ],
+      "titulo": "PCDT PrEP oral a infeccao pelo HIV (atualizacao)",
+      "vigencia": "2024-11-18"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 717,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2024 - relatorio n 808",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 808. Portaria Conjunta SAES/SECTICS/MS 10/2024.",
+      "slug": "conitec-808-pcdt-ic-fe-reduzida",
+      "subtemas": [
+        "Insuficiência Cardíaca"
+      ],
+      "titulo": "PCDT Insuficiencia Cardiaca com fracao de ejecao reduzida",
+      "vigencia": "2024-09-26"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 717,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2024 - relatorio n 827",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 827. Portaria Conjunta SAES/SECTICS/MS 11/2024.",
+      "slug": "conitec-827-pcdt-progressao-drc",
+      "subtemas": [
+        "Doença Renal Crônica"
+      ],
+      "titulo": "PCDT Estrategias para atenuar a progressao da doenca renal cronica",
+      "vigencia": "2024-09-26"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 886,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2024 - relatorio n 883",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 883. Portaria SECTICS/MS 14/2024.",
+      "slug": "conitec-883-pcdt-pep",
+      "subtemas": [
+        "HIV/Aids",
+        "Hepatites Virais"
+      ],
+      "titulo": "PCDT PEP a infeccao pelo HIV, IST e hepatites virais (atualizacao)",
+      "vigencia": "2024-04-10"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 891,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2024 - relatorio n 880",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 880. Portaria SECTICS/MS 13/2024.",
+      "slug": "conitec-880-htlv-prenatal",
+      "subtemas": [
+        "Assistência pré-natal"
+      ],
+      "titulo": "Deteccao pre-natal de HTLV 1/2 em gestantes",
+      "vigencia": "2024-04-05"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1087,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2023 - relatorio n 849",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 849. Portaria SECTICS/MS 49/2023.",
+      "slug": "conitec-849-pretomanida-tb-resistente",
+      "subtemas": [
+        "Tuberculose (TB)",
+        "Tuberculose"
+      ],
+      "titulo": "Pretomanida para tuberculose resistente",
+      "vigencia": "2023-09-22"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1166,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2023 - relatorio n 831",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 831. Portaria SECTICS/MS 38/2023.",
+      "slug": "conitec-831-raltegravir-transmissao-vertical",
+      "subtemas": [
+        "Assistência pré-natal",
+        "HIV/Aids"
+      ],
+      "titulo": "Raltegravir granulado para profilaxia da transmissao vertical do HIV",
+      "vigencia": "2023-07-05"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1210,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2023 - relatorio n 807",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 807. Portaria SECTICS/MS 25/2023.",
+      "slug": "conitec-807-pcdt-hepatite-b",
+      "subtemas": [
+        "Hepatites Virais"
+      ],
+      "titulo": "PCDT Hepatite B e coinfeccoes (atualizacao)",
+      "vigencia": "2023-05-22"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1221,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2023 - relatorio n 817",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 817. Portaria SECTICS/MS 22/2023.",
+      "slug": "conitec-817-mrpa-diagnostico-has",
+      "subtemas": [
+        "Hipertensão Arterial Sistêmica (HAS)"
+      ],
+      "titulo": "Monitorizacao residencial da pressao arterial para diagnostico de hipertensao",
+      "vigencia": "2023-05-11"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1257,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2023 - relatorio n 802",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 802. Portaria SECTICS/MS 09/2023.",
+      "slug": "conitec-802-dapagliflozina-dm2",
+      "subtemas": [
+        "Diabetes"
+      ],
+      "titulo": "Dapagliflozina para diabete melito tipo 2",
+      "vigencia": "2023-04-05"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1375,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2022 - relatorio n 781",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2022"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 781. Portaria SCTIE/MS 171/2022.",
+      "slug": "conitec-781-igra-iltb",
+      "subtemas": [
+        "Tuberculose (TB)",
+        "Tuberculose"
+      ],
+      "titulo": "Teste IGRA para infeccao latente por M. tuberculosis (ampliacao de uso)",
+      "vigencia": "2022-12-08"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1447,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2022 - relatorio n 773",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2022"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 773. Portaria SCTIE/MS 106/2022.",
+      "slug": "conitec-773-dapagliflozina-drc",
+      "subtemas": [
+        "Doença Renal Crônica"
+      ],
+      "titulo": "Dapagliflozina para doenca renal cronica",
+      "vigencia": "2022-09-27"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1475,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2022 - relatorio n 739",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2022"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 739. Portaria SCTIE/MS 90/2022.",
+      "slug": "conitec-739-pcdt-prep-hiv",
+      "subtemas": [
+        "HIV/Aids"
+      ],
+      "titulo": "PCDT PrEP de risco a infeccao pelo HIV (atualizacao)",
+      "vigencia": "2022-08-30"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1525,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2022 - relatorio n 734",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2022"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 734. Portaria SCTIE/MS 63/2022.",
+      "slug": "conitec-734-dapagliflozina-icfer",
+      "subtemas": [
+        "Insuficiência Cardíaca"
+      ],
+      "titulo": "Dapagliflozina para IC com fracao de ejecao reduzida",
+      "vigencia": "2022-07-11"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1714,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2022 - relatorio n 681",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2022"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 4,
+      "resumo": "CONITEC relatorio n 681. Portaria Conjunta SCTIE/SAES/MS 23/2021.",
+      "slug": "conitec-681-pcdt-tev-gestantes",
+      "subtemas": [
+        "Profilaxia do Tromboembolismo Venoso",
+        "Trombofilia na gestação"
+      ],
+      "titulo": "PCDT Prevencao de tromboembolismo venoso em gestantes com trombofilia",
+      "vigencia": "2022-01-03"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 258,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2025 - relatorio n 1058",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 3,
+      "resumo": "Amplia tratamento pangenotipico para a faixa pediatrica. Portaria SCTIE/MS 95/2025.",
+      "slug": "conitec-1058-sofosbuvir-velpatasvir-pediatrico",
+      "subtemas": [
+        "Hepatites Virais"
+      ],
+      "titulo": "Sofosbuvir/velpatasvir para hepatite C cronica em criancas de 3 a 11 anos",
+      "vigencia": "2025-12-29"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 258,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2025 - relatorio n 1059",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "exclusao_conitec",
+      "relevancia": 3,
+      "resumo": "DESINCORPORACAO de esquemas antigos de hepatite C. Portaria SCTIE/MS 93/2025.",
+      "slug": "conitec-1059-exclusao-ledipasvir-elbasvir",
+      "subtemas": [
+        "Hepatites Virais"
+      ],
+      "titulo": "Exclusao de ledipasvir/sofosbuvir e elbasvir/grazoprevir para hepatite C",
+      "vigencia": "2025-12-29"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 290,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "Portaria Conjunta SAES/SCTIE 28/2025 - relatorio n 1047",
+          "url": "https://www.gov.br/conitec/pt-br/midias/protocolos/pcdt-da-dermatite-atopica/@@display-file/file"
+        },
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC - indice de recomendacoes 2025",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 3,
+      "resumo": "Novo PCDT de dermatite atopica. Portaria Conjunta SAES/SCTIE 28 de 27/11/2025.",
+      "slug": "conitec-1047-pcdt-dermatite-atopica",
+      "subtemas": [
+        "Dermatoses eczematosas"
+      ],
+      "titulo": "PCDT Dermatite Atopica",
+      "vigencia": "2025-11-27"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 290,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "Portaria Conjunta SAES/SCTIE 27/2025 - relatorio n 1051",
+          "url": "https://www.gov.br/conitec/pt-br/midias/relatorios/2025/relatorio-de-recomendacao-no-1-051-pcdt-da-doenca-de-alzheimer/@@display-file/file"
+        },
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC - indice de recomendacoes 2025",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 3,
+      "resumo": "Atualizacao do PCDT de Alzheimer. Portaria Conjunta SAES/SCTIE 27 de 27/11/2025, DOU 28/11.",
+      "slug": "conitec-1051-pcdt-alzheimer",
+      "subtemas": [
+        "Demências"
+      ],
+      "titulo": "PCDT Doenca de Alzheimer",
+      "vigencia": "2025-11-27"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 314,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2025 - relatorio n 1055",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 3,
+      "resumo": "Incorporacao adjuvante em linfonodo positivo com alto risco de recorrencia. Portaria SECTICS/MS 88/2025.",
+      "slug": "conitec-1055-abemaciclibe-mama-precoce",
+      "subtemas": [
+        "Câncer de mama"
+      ],
+      "titulo": "Abemaciclibe para cancer de mama precoce HR+/HER2- de alto risco",
+      "vigencia": "2025-11-03"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 1007,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2023 - relatorio n 732",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 3,
+      "resumo": "CONITEC relatorio n 732. Portaria Conjunta SECTICS/SAES/MS 28/2023.",
+      "slug": "conitec-732-pcdt-glaucoma",
+      "subtemas": [
+        "Glaucoma"
+      ],
+      "titulo": "PCDT Glaucoma",
+      "vigencia": "2023-12-11"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 282,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2025 - relatorio n 1056",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 2,
+      "resumo": "Portaria SCTIE/MS 90/2025.",
+      "slug": "conitec-1056-c4d-rejeicao-transplante-hepatico",
+      "subtemas": [
+        "Transplante Hepático e Hepatectomia"
+      ],
+      "titulo": "Pesquisa de C4d e anti-HLA para rejeicao de transplante hepatico",
+      "vigencia": "2025-12-05"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 327,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2025 - relatorio n 1042",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 2,
+      "resumo": "Portaria SECTICS/MS 84/2025.",
+      "slug": "conitec-1042-sirolimo-transplante-hepatico",
+      "subtemas": [
+        "Transplante Hepático e Hepatectomia"
+      ],
+      "titulo": "Sirolimo para imunossupressao em transplante hepatico",
+      "vigencia": "2025-10-21"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 339,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2025 - relatorio n 1039",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 2,
+      "resumo": "Portaria SECTICS/MS 79/2025.",
+      "slug": "conitec-1039-micofenolato-sindrome-nefrotica",
+      "subtemas": [
+        "Glomerulopatias"
+      ],
+      "titulo": "Micofenolato para sindrome nefrotica primaria em criancas e adolescentes",
+      "vigencia": "2025-10-09"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 347,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2025 - relatorio n 1040",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "nivel": "incorporacao_conitec",
+      "relevancia": 2,
+      "resumo": "Incorporacao para corticodependencia e recaida frequente. Portaria SECTICS/MS 77/2025.",
+      "slug": "conitec-1040-rituximabe-sindrome-nefrotica",
+      "subtemas": [
+        "Glomerulopatias"
+      ],
+      "titulo": "Rituximabe para sindrome nefrotica corticodependente em criancas",
+      "vigencia": "2025-10-01"
+    },
+    {
+      "ambito": "nacional",
+      "classe": "normativa",
+      "dias_antes_da_prova": 864,
+      "fontes": [
+        {
+          "papel": "primaria",
+          "titulo": "CONITEC 2024 - relatorio n 892",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "nivel": "pcdt",
+      "relevancia": 2,
+      "resumo": "CONITEC relatorio n 892. Portaria Conjunta SAES/SECTICS/MS 05/2024.",
+      "slug": "conitec-892-pcdt-fibrose-cistica",
+      "subtemas": [
+        "Fibrose Cística"
+      ],
+      "titulo": "PCDT Fibrose Cistica",
+      "vigencia": "2024-05-02"
+    }
+  ],
+  "cobertura_das_fontes": [
+    {
+      "fonte": "conitec",
+      "nome": "CONITEC — recomendações",
+      "papel": "primaria",
+      "varrido_ate": null
+    },
+    {
+      "fonte": "pcdt",
+      "nome": "PCDT — Ministério da Saúde",
+      "papel": "primaria",
+      "varrido_ate": null
+    },
+    {
+      "fonte": "boletim_svsa",
+      "nome": "Boletins epidemiológicos SVSA/MS",
+      "papel": "primaria",
+      "varrido_ate": null
+    },
+    {
+      "fonte": "noticias_ms",
+      "nome": "Notícias do Ministério da Saúde",
+      "papel": "gatilho_nacional",
+      "varrido_ate": null
+    },
+    {
+      "fonte": "anvisa",
+      "nome": "ANVISA — alertas e segurança",
+      "papel": "primaria",
+      "varrido_ate": null
+    },
+    {
+      "fonte": "inca",
+      "nome": "INCA — notícias",
+      "papel": "primaria",
+      "varrido_ate": null
+    },
+    {
+      "fonte": "opas",
+      "nome": "OPAS/OMS — alertas epidemiológicos",
+      "papel": "primaria",
+      "varrido_ate": null
+    },
+    {
+      "fonte": "sociedades",
+      "nome": "Sociedades brasileiras (Febrasgo, SBIm, SBC, SBD, SBP, SBI)",
+      "papel": "primaria",
+      "varrido_ate": null
+    },
+    {
+      "fonte": "cursinhos",
+      "nome": "Cursinhos e blogs (descoberta apenas)",
+      "papel": "secundaria",
+      "varrido_ate": null
+    }
+  ],
+  "fontes_nunca_varridas": [
+    "conitec",
+    "pcdt",
+    "boletim_svsa",
+    "noticias_ms",
+    "anvisa",
+    "inca",
+    "opas",
+    "sociedades",
+    "cursinhos"
+  ],
+  "gerado_em": "2026-08-30T04:37:09.770245+00:00",
+  "metodo": {
+    "artefato": "artifacts/raio-x/backtest-pressao-20260830.json",
+    "entra_no_score": false,
+    "por_que": "O termo de pressao foi medido contra 14 alvos fora de amostra e reprovado: ganho de 0,2-0,4% onde o criterio exigia 5%. Este painel informa a mudanca; ele nao preve que ela sera cobrada."
+  }
+}

@@ -3,49 +3,41 @@ import { QuestaoAnotada } from "./QuestaoAnotada";
 // `"use client"`, o Next entrega ao servidor um proxy que se serializa como
 // texto de erro — e foi isso que o painel exibiu em 40px. Tipo pode cruzar a
 // fronteira; valor, não.
-import { TOTAL_DE_MARCAS, type DadosDaProva } from "./medidasDaQuestao";
+import { TOTAL_DE_MARCAS, type DadosDoAcervo } from "./medidasDaQuestao";
 import { RotuloSecao } from "./RotuloSecao";
-import { NACIONAL, extremoNacionalDoFormato } from "@/lib/facies";
-import { ROTULO_FORMATO, type Prova } from "@/lib/provas";
+import { NACIONAL, TOTAL_BANCAS, extremoNacionalDoFormato } from "@/lib/facies";
+import { ROTULO_FORMATO } from "@/lib/provas";
 import { CONT_LANDING } from "@/lib/site";
 
 /**
- * Seção 03 da v7 — "o que ninguém mede": as nove dimensões de forma.
+ * Seção "o que ninguém mede": as nove dimensões de forma.
  *
  * A manchete é a que o guia de texto manda usar AQUI e em nenhum outro lugar:
  * "você não presta 'residência' — você presta uma prova" foi descartada para o
  * topo por ser combativa demais, e recomendada para a abertura deste bloco,
  * "onde ela tem contexto para não soar arrogante".
  *
- * ## Os números são os REAIS, não os do desenho
+ * ## OS NÚMEROS SÃO DO ACERVO, e não mais do ENAMED
  *
- * A v7 escreve "820 questões já analisadas" e se declara protótipo com números
- * ilustrativos. Aqui o número vem de `profundidade.questoes_rotuladas` — a
- * série inteira, que é exatamente o que a legenda da v7 descreve ("do próprio
- * ENAMED e das provas que ele substituiu"): as diretas mais as correlatas.
+ * Esta seção mostrava a fácies de uma prova específica: "100% múltipla escolha
+ * direta em 90 questões de 2026", "291 assuntos em 1.717 questões da série". Era
+ * um laudo do ENAMED no meio de uma home que não é sobre o ENAMED — e pior, num
+ * bloco cuja tese é justamente que a média não serve para ninguém e que cada
+ * prova tem cara própria.
  *
- * ⚠️ NÃO trocar por `base.direta.questoes`. São medidas de coisas diferentes e
- * o repositório já registra o estrago de confundi-las: a distribuição por área
- * é medida só na aplicação direta, e pendurar o número da série numa conta
- * feita sobre o pequeno faz a legenda desmentir a própria célula. Aqui a
- * afirmação é sobre o tamanho da série, e o rótulo diz isso com essas
- * palavras.
+ * O que a seção precisa provar aqui não é a cara de UMA prova: é que a medição
+ * existe, e em que escala. Por isso os valores passam a ser do acervo inteiro,
+ * com o extremo ao lado — é o extremo que transforma "7,3% pedem a incorreta" de
+ * média morna em prova de que as provas divergem. A fácies de cada prova
+ * continua sendo o que as páginas de destino entregam, uma por prova.
  *
- * ⚠️ O rótulo NÃO pode voltar a ser "questões já analisadas": o herói usa uma
- * frase quase igual para as 90 da aplicação direta, e as duas juntas fizeram a
- * página exibir 90 e 1.717 sob o mesmo nome. Foi lido como erro de fora, e com
- * razão.
+ * ## O número da seção NÃO é escrito aqui
  *
- * ## O terceiro número do trio é uma decisão em aberto do design
- *
- * `facies-design-handoff.md` §7 lista, entre "o que falta decidir com olho, não
- * com código": *"se o trio mantém o terceiro item, que é uma alfinetada e
- * contradiz levemente a recomendação do banco gratuito"*. Ficou como a v7
- * escreveu. Vale saber o custo: a seção 04 ganha a força que tem por
- * RECOMENDAR o concorrente, e uma alfinetada duas seções antes cobra parte
- * dessa credibilidade adiantado.
+ * Ele chega por prop, de `app/page.tsx`, onde a ordem das seções é uma lista só.
+ * Escrito à mão em cada componente, ele já deixou um buraco: a seção 01 foi
+ * removida do fluxo e a página passou a numerar 02, 03, 04, 05 — começando no
+ * dois, sem nada explicando por quê.
  */
-
 
 function Numero({
   valor,
@@ -72,57 +64,44 @@ function Numero({
 }
 
 /**
- * O que a prova mede, montado no SERVIDOR e passado pronto.
+ * O que o acervo mede, montado no SERVIDOR e passado pronto.
  *
  * `QuestaoAnotada` é client component (tem estado de hover e de eixo). Se ela
- * importasse `@/lib/facies` para buscar a régua nacional, os 797 KB de
- * `facies.json` entrariam no bundle do navegador para render três números. A
- * fronteira certa é esta: o servidor lê o dataset, o cliente recebe os valores.
+ * importasse `@/lib/facies` para buscar a régua, os 797 KB de `facies.json`
+ * entrariam no bundle do navegador para render três números. A fronteira certa é
+ * esta: o servidor lê o dataset, o cliente recebe os valores.
  */
-function dadosDaProva(prova: Prova): DadosDaProva {
-  const distribuicao = prova.formato.distribuicao;
-  const base = prova.formato.base;
-  const incorreta = distribuicao.find((linha) => linha.codigo === "pede_incorreta");
-  const dominante = distribuicao.reduce<(typeof distribuicao)[number] | null>(
-    (maior, linha) => (maior == null || linha.pct > maior.pct ? linha : maior),
+function dadosDoAcervo(): DadosDoAcervo {
+  const distribuicao = Object.entries(NACIONAL.formato_pct);
+  const dominante = distribuicao.reduce<[string, number] | null>(
+    (maior, linha) => (maior == null || linha[1] > maior[1] ? linha : maior),
     null,
   );
-  const anos = prova.base.direta.anos;
 
   return {
-    sigla: prova.sigla,
-    diretas: base,
-    // Só nomeia o ano quando há UMA aplicação direta. Com duas, "de 2026"
-    // seria falso e "de 2025–2026" não cabe na linha — o rótulo genérico
-    // cobre os dois casos sem mentir em nenhum.
-    anoDireto: anos.length === 1 ? anos[0] : null,
-    serie: prova.profundidade.questoes_rotuladas,
-    subtemas: prova.profundidade.subtemas_mapeados,
+    base: NACIONAL.total,
+    bancas: TOTAL_BANCAS,
     incorreta: {
       // AUSENTE É ZERO, e é essa a leitura que faltava: o gerador não emite
-      // linha para o formato que não ocorreu, então `find` volta `undefined` —
-      // que renderizado vira vazio em vez de "0%".
-      pct: incorreta?.pct ?? 0,
-      nacional: NACIONAL.formato_pct.pede_incorreta ?? 0,
+      // linha para o formato que não ocorreu.
+      pct: NACIONAL.formato_pct.pede_incorreta ?? 0,
       extremo: extremoNacionalDoFormato("pede_incorreta"),
     },
     dominante: dominante
-      ? { rotulo: ROTULO_FORMATO[dominante.codigo] ?? dominante.codigo, pct: dominante.pct }
+      ? { rotulo: ROTULO_FORMATO[dominante[0]] ?? dominante[0], pct: dominante[1] }
       : null,
   };
 }
 
-export function SecaoNoveMedidas({ prova }: { prova?: Prova | null }) {
-  const dados = prova ? dadosDaProva(prova) : null;
-  const incorretaNacional = NACIONAL.formato_pct.pede_incorreta ?? 0;
-  const incorretaExtremo = extremoNacionalDoFormato("pede_incorreta");
+export function SecaoNoveMedidas({ numero }: { numero: string }) {
+  const dados = dadosDoAcervo();
   const fmt = (valor: number) =>
     `${valor.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
 
   return (
     <section className="sec">
       <div className={CONT_LANDING}>
-        <RotuloSecao numero="03">o que ninguém mede</RotuloSecao>
+        <RotuloSecao numero={numero}>o que ninguém mede</RotuloSecao>
         <h2 className="mt-3 max-w-[22ch] font-serif font-semibold text-ink">
           Você não presta “residência”. Você presta uma prova.
         </h2>
@@ -133,12 +112,12 @@ export function SecaoNoveMedidas({ prova }: { prova?: Prova | null }) {
             diferença entre a página afirmar que mede e mostrar a medida. */}
         <p className="max-w-[62ch] text-base text-muted">
           E cada uma tem cara própria. Umas quase nunca pedem a alternativa errada;{" "}
-          {incorretaExtremo ? (
+          {dados.incorreta.extremo ? (
             <>
-              em outra, <span className="font-mono">{fmt(incorretaExtremo)}</span> das
+              em outra, <span className="font-mono">{fmt(dados.incorreta.extremo)}</span> das
               questões pedem “assinale a incorreta” — contra{" "}
-              <span className="font-mono">{fmt(incorretaNacional)}</span> nas{" "}
-              {NACIONAL.total.toLocaleString("pt-BR")} questões com o formato lido.
+              <span className="font-mono">{fmt(dados.incorreta.pct)}</span> nas{" "}
+              {dados.base.toLocaleString("pt-BR")} questões com o formato lido.
             </>
           ) : (
             <>em outras, “assinale a incorreta” aparece o tempo todo.</>
@@ -161,30 +140,16 @@ export function SecaoNoveMedidas({ prova }: { prova?: Prova | null }) {
             rotulo="medidas em cada questão"
             nota="Do tamanho do enunciado ao assunto exato."
           />
-          {dados ? (
-            /* ⚠️ O RÓTULO MUDOU, e a mudança é a correção de um defeito real.
-               Dizia "questões já analisadas" — a MESMA frase que o herói usa
-               para as 90 da aplicação direta. Duas frases idênticas com 90 e
-               1.717 na mesma página não leem como duas medidas; leem como erro,
-               e quem desconfia de um número desconfia dos outros oito.
-
-               "Questões da série" nomeia o que o número é. A nota abaixo nomeia
-               de onde ela vem, gerada de `base.correlatas` e não escrita à mão:
-               o ENAMED tem UMA edição, e dizer "1.717 analisadas" sem dizer que
-               1.627 vêm do ENARE e do Revalida é deixar o leitor concluir que
-               existem 19 provas que ele nunca viu. */
-            <Numero
-              valor={dados.serie.toLocaleString("pt-BR")}
-              rotulo="questões da série"
-              nota={
-                prova && prova.base.correlatas.length > 0
-                  ? `As ${dados.diretas} do ${dados.sigla} mais ${prova.base.correlatas
-                      .map((correlata) => correlata.nome)
-                      .join(" e ")}, que ele substituiu.`
-                  : `Do próprio ${dados.sigla} e das provas que ele substituiu.`
-              }
-            />
-          ) : null}
+          {/* ⚠️ O RÓTULO REPETE, PALAVRA POR PALAVRA, a frase da prosa acima —
+              "questões com o formato lido". Não é descuido de redação: é a
+              mesma base, e dar dois nomes à mesma base foi exatamente o defeito
+              que fez esta página exibir 90 e 1.717 sob frases quase iguais.
+              Quem desconfia de um número desconfia dos outros oito. */}
+          <Numero
+            valor={dados.base.toLocaleString("pt-BR")}
+            rotulo="questões com o formato lido"
+            nota={`Em ${dados.bancas} bancas, de provas de todo o país.`}
+          />
           <Numero
             valor="0"
             rotulo="videoaulas"
@@ -197,13 +162,13 @@ export function SecaoNoveMedidas({ prova }: { prova?: Prova | null }) {
             O que estava aqui era uma grade com os nove nomes e o porque de
             cada um — correto e inerte. O desenho nao lista as medidas: ele as
             APLICA, numa questao de exemplo com as nove marcas em cima dela, e
-            deixa trocar o eixo entre a questao e a prova.
+            deixa trocar o eixo entre a questao e o acervo.
 
             A diferenca nao e de enfeite. Listar nomes pede que o leitor
             acredite que medimos; mostrar as marcas no texto e o unico jeito de
             ele VER a medida acontecendo. Numa secao chamada "o que ninguem
             mede", a demonstracao e o argumento inteiro. */}
-        {dados ? <QuestaoAnotada dados={dados} /> : null}
+        <QuestaoAnotada dados={dados} />
       </div>
     </section>
   );

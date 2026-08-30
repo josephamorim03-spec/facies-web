@@ -145,8 +145,15 @@ export function PonteDiagnostico({ banca }: { banca: string | null }) {
           "Ativar Acesso: chave recebida do seu mentor" — atrito máximo, valor
           zero, numa primeira impressão cujo ativo é credibilidade. Quando a
           assinatura abrir, a hierarquia se inverte de volta. */}
+      {/* "Já tem chave de acesso?" era a pergunta aqui, e ela oferecia um
+          modelo MORTO: a chave de mentor foi removida, `access_keys` sobrevive
+          só como tabela à espera do `DROP`, e não há rota de resgate em lugar
+          nenhum. Quem chegasse com uma chave na mão não teria onde usá-la.
+
+          O link segue discreto de propósito, pelo motivo do comentário acima —
+          o que mudou foi só a pergunta deixar de prometer o que não existe. */}
       <p className="mt-8 text-sm text-muted">
-        Já tem chave de acesso?{" "}
+        Já tem conta?{" "}
         <Link
           href="/login"
           onClick={() => registrarEvento("diagnostico_clicado", banca)}

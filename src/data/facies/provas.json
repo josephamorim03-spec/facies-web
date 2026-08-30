@@ -1,10 +1,11 @@
 {
-  "gerado_em": "2026-08-24T15:46:47.660616+00:00",
+  "gerado_em": "2026-08-29T23:08:17.060137+00:00",
   "peso_correlata": 0.4,
   "piso_n_celula": 5,
   "provas": [
     {
       "alternativas_declaradas": 4,
+      "aplicacao_origem": "secundaria",
       "aplicacao_prevista": "2026-09-13",
       "areas": {
         "cobertura": 100.0,
@@ -51,19 +52,19 @@
           {
             "nome": "ENARE 1a fase",
             "peso": 0.4,
-            "questoes": 467
+            "questoes": 500
           },
           {
             "nome": "Revalida / INEP",
             "peso": 0.4,
-            "questoes": 1160
+            "questoes": 1163
           }
         ],
         "direta": {
           "anos": [
             2026
           ],
-          "questoes": 90
+          "questoes": 100
         }
       },
       "cadernos_previstos": "2026-09-15",
@@ -101,6 +102,25 @@
         ],
         "cobertura_direta": 100.0,
         "linhas": [
+          {
+            "correlatas": 23,
+            "diretas": 2,
+            "exibivel": true,
+            "rotulo": "Neoplasias do Sistema Digestivo",
+            "score": 11.2,
+            "serie": [
+              1,
+              1,
+              2,
+              3,
+              8,
+              3,
+              2,
+              3,
+              2
+            ],
+            "total_serie": 25
+          },
           {
             "correlatas": 20,
             "diretas": 3,
@@ -140,25 +160,6 @@
             "total_serie": 24
           },
           {
-            "correlatas": 22,
-            "diretas": 1,
-            "exibivel": true,
-            "rotulo": "Neoplasias do Sistema Digestivo",
-            "score": 9.8,
-            "serie": [
-              1,
-              1,
-              2,
-              3,
-              8,
-              2,
-              2,
-              3,
-              1
-            ],
-            "total_serie": 23
-          },
-          {
             "correlatas": 16,
             "diretas": 3,
             "exibivel": true,
@@ -176,6 +177,25 @@
               5
             ],
             "total_serie": 19
+          },
+          {
+            "correlatas": 20,
+            "diretas": 1,
+            "exibivel": true,
+            "rotulo": "Imunizações/Vacinação",
+            "score": 9.0,
+            "serie": [
+              0,
+              0,
+              1,
+              0,
+              5,
+              2,
+              5,
+              7,
+              1
+            ],
+            "total_serie": 21
           },
           {
             "correlatas": 17,
@@ -197,23 +217,42 @@
             "total_serie": 19
           },
           {
-            "correlatas": 18,
-            "diretas": 1,
+            "correlatas": 16,
+            "diretas": 2,
             "exibivel": true,
-            "rotulo": "Imunizações/Vacinação",
+            "rotulo": "Rastreamento do câncer de colo do útero",
+            "score": 8.4,
+            "serie": [
+              1,
+              0,
+              0,
+              2,
+              4,
+              2,
+              1,
+              3,
+              5
+            ],
+            "total_serie": 18
+          },
+          {
+            "correlatas": 13,
+            "diretas": 3,
+            "exibivel": true,
+            "rotulo": "Abdome Agudo Inflamatório",
             "score": 8.2,
             "serie": [
               0,
-              0,
+              1,
+              1,
+              3,
               1,
               0,
-              4,
               2,
               5,
-              6,
-              1
+              3
             ],
-            "total_serie": 19
+            "total_serie": 16
           },
           {
             "correlatas": 17,
@@ -238,25 +277,6 @@
             "correlatas": 14,
             "diretas": 2,
             "exibivel": true,
-            "rotulo": "Rastreamento do câncer de colo do útero",
-            "score": 7.6,
-            "serie": [
-              1,
-              0,
-              0,
-              1,
-              3,
-              2,
-              1,
-              3,
-              5
-            ],
-            "total_serie": 16
-          },
-          {
-            "correlatas": 14,
-            "diretas": 2,
-            "exibivel": true,
             "rotulo": "Tuberculose (TB)",
             "score": 7.6,
             "serie": [
@@ -273,23 +293,80 @@
             "total_serie": 16
           },
           {
-            "correlatas": 13,
-            "diretas": 2,
+            "correlatas": 16,
+            "diretas": 1,
             "exibivel": true,
-            "rotulo": "Abdome Agudo Inflamatório",
-            "score": 7.2,
+            "rotulo": "Atenção Primária à Saúde (APS) no Brasil",
+            "score": 7.4,
+            "serie": [
+              1,
+              1,
+              0,
+              7,
+              2,
+              0,
+              1,
+              2,
+              3
+            ],
+            "total_serie": 17
+          },
+          {
+            "correlatas": 16,
+            "diretas": 1,
+            "exibivel": true,
+            "rotulo": "Avaliação Inicial: Vias aéreas, Ventilação e Choque",
+            "score": 7.4,
             "serie": [
               0,
               1,
               1,
+              2,
+              0,
+              1,
               3,
+              6,
+              3
+            ],
+            "total_serie": 17
+          },
+          {
+            "correlatas": 16,
+            "diretas": 1,
+            "exibivel": true,
+            "rotulo": "Hipertensão Arterial Sistêmica (HAS)",
+            "score": 7.4,
+            "serie": [
               1,
               0,
+              1,
+              3,
+              1,
+              2,
               2,
               5,
               2
             ],
-            "total_serie": 15
+            "total_serie": 17
+          },
+          {
+            "correlatas": 18,
+            "diretas": 0,
+            "exibivel": true,
+            "rotulo": "Arritmias Cardíacas",
+            "score": 7.2,
+            "serie": [
+              1,
+              1,
+              0,
+              1,
+              4,
+              3,
+              6,
+              2,
+              0
+            ],
+            "total_serie": 18
           },
           {
             "correlatas": 13,
@@ -309,119 +386,44 @@
               3
             ],
             "total_serie": 15
-          },
-          {
-            "correlatas": 13,
-            "diretas": 2,
-            "exibivel": true,
-            "rotulo": "Saúde do Idoso (geriatria)",
-            "score": 7.2,
-            "serie": [
-              1,
-              1,
-              0,
-              2,
-              1,
-              1,
-              0,
-              5,
-              4
-            ],
-            "total_serie": 15
-          },
-          {
-            "correlatas": 15,
-            "diretas": 1,
-            "exibivel": true,
-            "rotulo": "Atenção Primária à Saúde (APS) no Brasil",
-            "score": 7.0,
-            "serie": [
-              1,
-              1,
-              0,
-              7,
-              2,
-              0,
-              1,
-              1,
-              3
-            ],
-            "total_serie": 16
-          },
-          {
-            "correlatas": 15,
-            "diretas": 1,
-            "exibivel": true,
-            "rotulo": "Avaliação Inicial: Vias aéreas, Ventilação e Choque",
-            "score": 7.0,
-            "serie": [
-              0,
-              1,
-              1,
-              1,
-              0,
-              1,
-              3,
-              6,
-              3
-            ],
-            "total_serie": 16
-          },
-          {
-            "correlatas": 15,
-            "diretas": 1,
-            "exibivel": true,
-            "rotulo": "Hipertensão Arterial Sistêmica (HAS)",
-            "score": 7.0,
-            "serie": [
-              1,
-              0,
-              1,
-              3,
-              1,
-              2,
-              2,
-              4,
-              2
-            ],
-            "total_serie": 16
           }
         ],
-        "universo": 291
+        "universo": 295
       },
       "nome": "Exame Nacional de Avaliacao da Formacao Medica (ENAMED)",
       "profundidade": {
         "aplicacoes_diretas": 1,
         "aplicacoes_na_serie": 9,
-        "correlatas": 1627,
-        "diretas": 90,
-        "questoes_rotuladas": 1717,
-        "subtemas_mapeados": 291
+        "correlatas": 1663,
+        "diretas": 100,
+        "questoes_anuladas": 10,
+        "questoes_rotuladas": 1763,
+        "subtemas_mapeados": 295
       },
       "questoes_declaradas": 100,
       "sigla": "ENAMED",
       "slug": "enamed",
       "validacao": {
-        "acerto_pct": 37.8,
-        "acertos": 34,
-        "de": 90,
+        "acerto_pct": 35.0,
+        "acertos": 35,
+        "de": 100,
         "edicoes_diretas": 1,
         "grao": "subtema",
         "historico": {
-          "maximo": 2.78,
-          "mediana": 2.21,
-          "medicoes": 8,
+          "maximo": 2.8,
+          "mediana": 2.3,
+          "medicoes": 13,
           "minimo": 0.67,
           "recentes": 4,
-          "recentes_maximo": 2.78,
-          "recentes_mediana": 2.45,
-          "recentes_minimo": 2.27,
+          "recentes_maximo": 2.8,
+          "recentes_mediana": 2.33,
+          "recentes_minimo": 2.3,
           "status": "medido"
         },
-        "lift": 3.63,
-        "piso_pct": 10.4,
+        "lift": 3.4,
+        "piso_pct": 10.3,
         "status": "medido",
-        "universo": 288
+        "universo": 290
       }
     }
   ],

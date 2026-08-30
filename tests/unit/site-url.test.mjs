@@ -80,10 +80,13 @@ test("o layout declara metadataBase", () => {
 test("toda pagina publica declara canonico", () => {
   // Se uma página nova entrar no funil sem canônico, este teste avisa antes de
   // o link começar a circular.
+  // `app/facies/[banca]/page.tsx` saiu da lista porque saiu do repositório: as
+  // bancas passaram a viver em `/prova/<slug-curto>`, na mesma rota das provas,
+  // e o endereço antigo é 308 em `next.config.js`. A rota que sobrou declara o
+  // canônico das duas famílias.
   for (const rel of [
     "app/page.tsx",
     "app/facies/page.tsx",
-    "app/facies/[banca]/page.tsx",
     "app/prova/[slug]/page.tsx",
   ]) {
     const fonte = ler(rel);

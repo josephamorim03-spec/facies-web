@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 
 /**
@@ -67,17 +67,41 @@ test("uma grafia so para 'sem base', no app e no funil publico", () => {
   // "menos de 5", "<5" e "3 de 5" conviveram para a MESMA regra, em componentes
   // com a mesma forma de linha. Regra de exibição que se escreve de três jeitos
   // não é uma regra, são três — e quem lê não tem como saber que são a mesma.
-  // O alvo SEGUE O CODIGO: a grafia saiu do `FaciesReport` quando a lista
-  // numerada virou o mapa, e ficou em `MapaDaProva`. Guard que aponta para
-  // arquivo onde a regra nao mora mais nao protege nada — so falha alto e
-  // ensina a ignorar a suite.
-  for (const rel of [
-    "../../src/components/facies/MapaDaProva.tsx",
-    "../../src/components/facies/ProvaReport.tsx",
-  ]) {
-    const src = readFileSync(new URL(rel, import.meta.url), "utf8");
-    assert.match(src, /menos de \{PISO_N_CELULA\}/, `${rel} nao usa a grafia unica`);
-    assert.doesNotMatch(src, /&lt;\{PISO_N_CELULA\}/, `${rel} ainda usa "<n"`);
+  //
+  // ⚠️ O ALVO DEIXOU DE SER UMA LISTA DE ARQUIVOS, e essa é a correção.
+  //
+  // A lista tinha `MapaDaProva` e `ProvaReport`, e envelheceu duas vezes: a
+  // grafia saiu do `FaciesReport` quando a lista numerada virou mapa, e saiu do
+  // `ProvaReport` quando ele tambem adotou o mapa e parou de imprimir contagem
+  // por celula. Um guard que exige a grafia num arquivo que legitimamente nao a
+  // tem mais so falha alto e ensina a ignorar a suite — foi o que a versao
+  // anterior deste comentario ja tinha registrado, e aconteceu de novo.
+  //
+  // A regra que NAO envelhece tem duas metades: (1) a grafia canonica existe em
+  // algum lugar do funil publico, e (2) nenhuma grafia concorrente existe em
+  // lugar nenhum dele. Assim mover a regra de arquivo nao quebra o teste, e
+  // reintroduzir "<5" quebra — que e exatamente o que se quer prender.
+  const dir = new URL("../../src/components/facies/", import.meta.url);
+  const arquivos = readdirSync(dir).filter((f) => /\.tsx?$/.test(f));
+
+  const comGrafia = arquivos.filter((f) =>
+    /menos de \{PISO_N_CELULA\}/.test(readFileSync(new URL(f, dir), "utf8")),
+  );
+  assert.ok(
+    comGrafia.length > 0,
+    "a grafia canonica 'menos de {PISO_N_CELULA}' sumiu do funil publico",
+  );
+
+  for (const f of arquivos) {
+    const src = readFileSync(new URL(f, dir), "utf8");
+    assert.doesNotMatch(src, /&lt;\{PISO_N_CELULA\}/, `${f} usa a grafia "<n"`);
+    // `3 de 5`: a contagem crua no lugar da regra. O que a torna reconhecivel e
+    // o PISO ao lado, entao o padrao mira nele.
+    assert.doesNotMatch(
+      src,
+      /\{\w+\.n\} de \{PISO_N_CELULA\}/,
+      `${f} usa a grafia "n de 5"`,
+    );
   }
 });
 

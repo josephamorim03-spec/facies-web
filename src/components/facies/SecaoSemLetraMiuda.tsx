@@ -86,11 +86,11 @@ function Coluna({
   );
 }
 
-export function SecaoSemLetraMiuda() {
+export function SecaoSemLetraMiuda({ numero }: { numero: string }) {
   return (
     <section className="sec">
       <div className={CONT_LANDING}>
-        <RotuloSecao numero="05">sem letra miúda</RotuloSecao>
+        <RotuloSecao numero={numero}>sem letra miúda</RotuloSecao>
         <h2 className="mt-3 max-w-[24ch] font-serif font-semibold text-ink">
           O que você recebe hoje — e o que ainda não está pronto.
         </h2>

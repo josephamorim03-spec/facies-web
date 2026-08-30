@@ -1,5 +1,44 @@
 /** @type {import('next').NextConfig} */
 
+const faciesDataset = require("./src/data/facies/facies.json");
+const slugsCurtos = require("./src/data/facies/slugs.json");
+
+/**
+ * As 138 bancas mudaram de endereço: `/facies/<slug-longo>` virou `/prova/<curto>`.
+ *
+ * ⚠️ O 301 É AQUI, e não num `redirect()` dentro da página. Este arquivo já
+ * registra o caso (ver o bloco dos flashcards mais abaixo): um `redirect()` em
+ * `page.tsx` continuou sendo PRÉ-RENDERIZADO como HTML, inclusive depois de
+ * apagar `.next` e reconstruir do zero. O bloco `redirects()` é o mecanismo que
+ * este repositório já usa para `/kros`, `/rota` e `/calendario`, e é verificável
+ * por `curl -I`.
+ *
+ * `permanent: true` (308) porque a rota velha não volta. Os slugs longos são
+ * derivados do `institution_key` e truncados em 80 caracteres pelo gerador do
+ * kbank — impronunciáveis, e é por isso que saíram — mas eles já circulam em
+ * grupo de WhatsApp e já estão indexados. Sem estas linhas, cada link colado
+ * antes de hoje vira 404.
+ *
+ * Gerado do DADO, nunca digitado: uma lista de 138 caminhos escrita à mão
+ * envelheceria na primeira regeração do dataset.
+ */
+function redirectsDasBancas() {
+  return faciesDataset.bancas.flatMap((banca) => {
+    const curto = slugsCurtos[banca.institution_key];
+    if (!curto) return [];
+    return [
+      { source: `/facies/${banca.slug}`, destination: `/prova/${curto}`, permanent: true },
+      // A imagem de Open Graph tinha rota própria sob o slug longo, e o raspador
+      // de link do WhatsApp já a tem em cache com aquele endereço.
+      {
+        source: `/facies/${banca.slug}/opengraph-image`,
+        destination: `/prova/${curto}/opengraph-image`,
+        permanent: true,
+      },
+    ];
+  });
+}
+
 const securityHeaders = [
   ...(process.env.NODE_ENV === "production"
     ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }]
@@ -97,6 +136,8 @@ const nextConfig = {
       // Precisa estar em `PUBLIC_EXACT` do `proxy.ts` tambem -- o proxy roda
       // antes deste redirect e mandaria `/enamed` para o login.
       { source: "/enamed", destination: "/prova/enamed", permanent: true },
+      // As bancas institucionais mudaram de `/facies/<longo>` para `/prova/<curto>`.
+      ...redirectsDasBancas(),
       { source: "/praticar", destination: "/banco", permanent: true },
       { source: "/banco-de-questoes", destination: "/banco", permanent: true },
       {

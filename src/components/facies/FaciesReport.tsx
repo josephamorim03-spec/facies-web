@@ -1,8 +1,9 @@
 import type { Banca } from "@/lib/facies";
-import { janela, nomeCurto, PISO_N_CELULA, TOTAL_BANCAS } from "@/lib/facies";
+import { janela, nomeCurto } from "@/lib/facies";
 import { BarrasArea } from "./BarrasArea";
 import { ComoCobra } from "./ComoCobra";
 import { MapaDaProva } from "./MapaDaProva";
+import { CabecalhoLaudo, PainelLaudo } from "./PainelLaudo";
 
 /**
  * A Fácies da prova, em DOIS painéis — eram quatro.
@@ -35,37 +36,49 @@ import { MapaDaProva } from "./MapaDaProva";
  * diferentes que a nota antiga confundia.
  */
 
-function Rotulo({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="paper-eyebrow">
-      {children}
-    </span>
-  );
-}
+/**
+ * A linha "Base" — N de M, nunca um número sem denominador.
+ *
+ * `questoes_total` já conta as anuladas (migration 118), então é o número que
+ * bate com a prova, e é ele que a linha mostra quando não há denominador.
+ *
+ * ⚠️ O PAR COMPARÁVEL É `cobertas` × `declaradas`, nunca `questoes_total` ×
+ * `declaradas`. `declaradas` soma só as edições que TÊM denominador, enquanto
+ * `questoes_total` conta o acervo inteiro — comparar os dois é comparar
+ * conjuntos diferentes, e fazia 65 das 86 bancas caírem no ramo "sem
+ * denominador" e perderem a linha em silêncio. Com o par certo, sobram 14.
+ *
+ * `estimado` é conservador: basta UMA edição vir da moda para o total ser
+ * estimativa, e aí a tela diz "estimadas", nunca "declaradas".
+ */
+function linhaBase(banca: Banca): string {
+  const totalTxt = banca.questoes_total.toLocaleString("pt-BR");
+  const den = banca.denominador;
+  if (!den || den.declaradas == null || den.cobertas == null) {
+    return `${totalTxt} questões`;
+  }
+  const { cobertas, declaradas } = den;
+  const declaradasTxt = declaradas.toLocaleString("pt-BR");
+  const rotulo = den.estimado ? " estimadas" : " declaradas";
 
-function Painel({
-  numero,
-  titulo,
-  nota,
-  children,
-}: {
-  numero: string;
-  titulo: string;
-  nota?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="border-t border-rule py-6">
-      <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <Rotulo>{numero}</Rotulo>
-        <h3 className="font-serif text-xl/snug font-semibold text-ink lg:text-2xl/snug">{titulo}</h3>
-        {nota ? <span className="text-sm text-muted lg:text-base">{nota}</span> : null}
-      </div>
-      {children}
-    </section>
-  );
+  // SOBRA: temos MAIS do que a prova declarou. É anomalia — ou a moda errou, ou
+  // há questão atribuída a uma edição que não a teve. Some da tela era o pior
+  // desfecho: some justamente o caso que pede investigação.
+  if (cobertas > declaradas) {
+    return `${cobertas.toLocaleString("pt-BR")} questões · ${declaradasTxt}${rotulo} nas edições medidas`;
+  }
+  if (cobertas === declaradas) {
+    // "Completa" só vale para a fase que medimos. A UNICAMP fecha as 80
+    // objetivas E aplica uma fase dissertativa inteira que a leitura não cobre —
+    // dizer "cobertura completa" sem nomeá-la seria a afirmação mais cara desta
+    // linha.
+    if (den.fase_nao_coberta) {
+      return `${totalTxt} questões · fase objetiva completa; a ${den.fase_nao_coberta} não entra nesta leitura`;
+    }
+    return `${totalTxt} questões · cobertura completa das ${den.edicoes_declaradas} edições medidas`;
+  }
+  return `${cobertas.toLocaleString("pt-BR")} de ${declaradasTxt} questões${rotulo}`;
 }
-
 
 export function FaciesReport({
   banca,
@@ -94,22 +107,49 @@ export function FaciesReport({
           nome por extenso na legenda (identidade legal, uma vez) e o curto aqui,
           que é o que a linha de laudo precisa para dizer de quem é a leitura. A
           UF já vive dentro do nome curto quando ela desambigua. */}
-      <header className="flex flex-wrap gap-x-8 gap-y-3 border-b border-rule px-5 py-4 sm:px-6">
-        <div className="flex flex-col gap-0.5">
-          <Rotulo>Banca</Rotulo>
-          <b className="text-sm font-semibold text-ink lg:text-base">{nomeCurto(banca)}</b>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <Rotulo>Janela</Rotulo>
-          <b className="font-mono text-sm text-ink">{janela(banca)}</b>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <Rotulo>Base</Rotulo>
-          <b className="font-mono text-sm text-ink">
-            {banca.total.toLocaleString("pt-BR")} questões
-          </b>
-        </div>
-      </header>
+      <CabecalhoLaudo
+        campos={[
+          { rotulo: "Banca", valor: nomeCurto(banca) },
+          { rotulo: "Janela", valor: janela(banca), mono: true },
+          { rotulo: "Base", valor: linhaBase(banca), mono: true },
+        ]}
+      />
+
+      {/* As DUAS decisoes do gerador, ditas em voz alta — sem elas o numero
+          da base muda de tamanho sem explicacao (a SES-DF cai de 2.987 para 596
+          quando o seletivo de especialidade sai da conta). */}
+      <p className="border-b border-rule px-5 py-2 text-xs text-muted sm:px-6">
+        Base de acesso direto, sem os seletivos com pré-requisito. As questões
+        anuladas contam na base, mas não entram na prática.
+      </p>
+
+      {/* A BANCA MUDOU DE TAMANHO, e a leitura abaixo é de antes da mudança.
+
+          Sem esta linha o aluno da UERN treina o ritmo de uma prova de 90
+          questões para uma prova que passou a ter 100 — e nada na tela diria
+          por quê. É a única afirmação desta página sobre uma REGRA da banca, e
+          não sobre o que ela cobrou, então ela só existe com fonte: o gerador
+          não emite `mudanca` quando o valor novo veio da moda das edições. */}
+      {banca.mudanca ? (
+        <p className="border-b border-rule px-5 py-2 text-xs text-ink sm:px-6">
+          <b className="font-semibold">
+            A partir de {banca.mudanca.vigente_de} esta prova passou a ter{" "}
+            {banca.mudanca.para} questões
+          </b>{" "}
+          — antes eram {banca.mudanca.de}. A leitura abaixo é das edições
+          anteriores.{" "}
+          {banca.mudanca.fonte ? (
+            <a
+              href={banca.mudanca.fonte}
+              rel="noopener noreferrer nofollow"
+              target="_blank"
+              className="underline underline-offset-4"
+            >
+              De onde tiramos isso
+            </a>
+          ) : null}
+        </p>
+      ) : null}
 
       <div className="px-5 sm:px-6">
         {/* O PAINEL "COMO AS QUESTÕES SÃO FEITAS" SAIU, e o "LEITURA" tambem.
@@ -128,7 +168,7 @@ export function FaciesReport({
             O QUE cai e DE QUE ÁREA. A leitura de formato continua existindo em
             `formatosDistintivos` e na página da banca, para quem for atrás. */}
         {/* ── PAINEL 01 — a fácies propriamente dita ────────────────────── */}
-        <Painel
+        <PainelLaudo
           numero="01"
           titulo="O que mais cai"
           nota={`${banca.mais_cai.base.toLocaleString("pt-BR")} questões classificadas · ${banca.mais_cai.cobertura.toFixed(0)}% da base`}
@@ -152,10 +192,10 @@ export function FaciesReport({
               banca. A lista descreve essa parte, não a prova inteira.
             </p>
           ) : null}
-        </Painel>
+        </PainelLaudo>
 
         {/* ── PAINEL 02 — a área contra a média do acervo ───────────────── */}
-        <Painel
+        <PainelLaudo
           numero="02"
           titulo="Distribuição por área"
           // A NOTA ANTERIOR ficou FALSA quando a barra ganhou a média.
@@ -171,15 +211,15 @@ export function FaciesReport({
           {/* Barra com a marca da média nacional — ver BarrasArea.tsx para o
               porquê de a comparação não ficar atrás de um clique. */}
           <BarrasArea linhas={banca.areas.linhas} />
-        </Painel>
+        </PainelLaudo>
         {/* ── PAINEL 03 — como a banca monta a questão, quando isso distingue */}
-        <Painel
+        <PainelLaudo
           numero="03"
           titulo="Como esta banca cobra"
           nota="exato · sem estimativa"
         >
           <ComoCobra banca={banca} />
-        </Painel>
+        </PainelLaudo>
 
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Banca } from "@/lib/facies";
-import { nomeCurto, rotuloCurado } from "@/lib/facies";
+import { nomeCurto, rotuloCurado, slugCurto } from "@/lib/facies";
 import type { Prova } from "@/lib/provas";
 import { registrarEvento } from "@/lib/faciesFunnel";
 import { Compartilhar } from "./Compartilhar";
@@ -63,9 +63,15 @@ export function FaciesPicker({
   if (!banca && !prova) return null;
 
   const mostrandoProva = prova != null && ativa === PROVA;
+  // UMA familia de URL para as duas: `/prova/enamed` e `/prova/usp-sp`. O slug
+  // curto da banca vem de `slugs.json` (congelado); `slugCurto` devolve `null`
+  // quando ele falta, e ai o botao some em vez de apontar para lugar nenhum.
+  const slugDaBanca = banca ? slugCurto(banca) : null;
   const alvo = mostrandoProva
     ? { imagem: `/prova/${prova.slug}/opengraph-image`, url: `/prova/${prova.slug}`, nome: prova.sigla, link: "Ver a fácies completa do " + prova.sigla }
-    : { imagem: `/facies/${banca!.slug}/opengraph-image`, url: `/facies/${banca!.slug}`, nome: banca!.nome, link: "Ver a fácies completa da " + nomeCurto(banca!) };
+    : slugDaBanca
+      ? { imagem: `/prova/${slugDaBanca}/opengraph-image`, url: `/prova/${slugDaBanca}`, nome: banca!.nome, link: "Ver a fácies completa da " + nomeCurto(banca!) }
+      : null;
 
   return (
     <div id="seletor" className="grid gap-4 scroll-mt-6">
@@ -181,16 +187,18 @@ export function FaciesPicker({
           Nenhum dos dois pedia o clique, e a acao mais valiosa da pagina — abrir
           a leitura inteira da prova que a pessoa acabou de escolher — era a mais
           discreta das duas. */}
-      <div className="flex flex-wrap items-center gap-3">
-        <a
-          href={alvo.url}
-          onClick={() => registrarEvento("facies_pagina_aberta", chave)}
-          className="paper-control inline-flex min-h-11 items-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)]"
-        >
-          {alvo.link}
-        </a>
-        <Compartilhar imagem={alvo.imagem} url={alvo.url} nome={alvo.nome} />
-      </div>
+      {alvo ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <a
+            href={alvo.url}
+            onClick={() => registrarEvento("facies_pagina_aberta", chave)}
+            className="paper-control inline-flex min-h-11 items-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)]"
+          >
+            {alvo.link}
+          </a>
+          <Compartilhar imagem={alvo.imagem} url={alvo.url} nome={alvo.nome} />
+        </div>
+      ) : null}
 
       {/* O gate de e-mail SAIU daqui.
           Ele precisa da banca na tela — e' ele que diz para quem a leitura

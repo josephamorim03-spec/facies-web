@@ -34,6 +34,11 @@ export type Prova = {
   profundidade: {
     questoes_rotuladas: number;
     diretas: number;
+    /** Anuladas da fonte direta: contam na dimensão (migration 118) mas não são
+     *  servidas. São SUBCONJUNTO de `diretas`, que desde 2026-08-29 mede o que a
+     *  prova cobrou — a identidade é `questoes_declaradas === diretas`, não a
+     *  soma das duas. Diz quantas das declaradas não dá para praticar. */
+    questoes_anuladas: number;
     correlatas: number;
     aplicacoes_na_serie: number;
     aplicacoes_diretas: number;

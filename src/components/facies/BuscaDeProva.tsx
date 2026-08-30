@@ -4,7 +4,7 @@ import { useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { nomeCurto, todasAsBancas } from "@/lib/facies";
+import { bancasComPagina, nomeCurto, todasAsBancas } from "@/lib/facies";
 
 /**
  * A busca do herói — a `.busca` da v7, e o controle que faltava na página.
@@ -59,13 +59,21 @@ export function BuscaDeProva() {
   // digitada refaria 141 `normalize()` por caractere.
   const indice = useMemo(
     () =>
-      todasAsBancas().map((banca) => ({
-        slug: banca.slug,
+      // `bancasComPagina` e não `todasAsBancas`: sugerir uma banca sem slug
+      // fixado abriria `/prova/undefined`. Quem não tem endereço não entra na
+      // busca.
+      bancasComPagina().map(({ banca, slug }) => ({
+        slug,
         curto: nomeCurto(banca),
         nome: banca.nome,
         uf: banca.uf,
         questoes: banca.questoes_total,
-        busca: normalizar(`${banca.nome} ${banca.uf ?? ""}`),
+        // O NOME CURTO ENTRA NO ÍNDICE DE BUSCA, e a falta dele era um buraco
+        // real: quem digita "usp-sp" ou "unicamp" batia contra o rótulo do
+        // edital, onde "Unicamp" só aparece dentro de "Universidade Estadual de
+        // Campinas". Agora o texto que a lista EXIBE também é o texto que ela
+        // procura.
+        busca: normalizar(`${nomeCurto(banca)} ${banca.nome} ${banca.uf ?? ""}`),
       })),
     [],
   );
@@ -86,7 +94,7 @@ export function BuscaDeProva() {
   }, [indice, termo]);
 
   function abrir(slug: string) {
-    router.push(`/facies/${slug}`);
+    router.push(`/prova/${slug}`);
   }
 
   function aoTeclar(evento: React.KeyboardEvent<HTMLInputElement>) {

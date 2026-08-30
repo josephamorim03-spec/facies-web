@@ -54,7 +54,7 @@ function curta(iso: string): string {
   return `${dia}.${mes}`;
 }
 
-export function SecaoAposta({ prova }: { prova: Prova }) {
+export function SecaoAposta({ prova, numero }: { prova: Prova; numero: string }) {
   const prevista = prova.aplicacao_prevista;
   const gabarito = prova.cadernos_previstos;
   // Véspera da prova e dia seguinte ao gabarito. A v7 diz "até 12 de setembro"
@@ -78,7 +78,7 @@ export function SecaoAposta({ prova }: { prova: Prova }) {
   return (
     <section className="sec sec--marca">
       <div className={CONT_LANDING}>
-        <RotuloSecao numero="02">nossa aposta, por escrito</RotuloSecao>
+        <RotuloSecao numero={numero}>nossa aposta, por escrito</RotuloSecao>
         <h2 className="mt-3 max-w-[26ch] font-serif font-semibold">
           Vamos dizer antes o que achamos que cai. E depois mostrar quanto erramos.
         </h2>

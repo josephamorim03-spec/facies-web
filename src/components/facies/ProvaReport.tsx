@@ -1,8 +1,9 @@
-import type { LinhaSerie, Prova } from "@/lib/provas";
-import { PESO_CORRELATA, PISO_N_CELULA } from "@/lib/provas";
+import type { Prova } from "@/lib/provas";
 import { dec } from "@/lib/decimal";
-import { TOTAL_BANCAS } from "@/lib/facies";
 import { BarrasArea } from "./BarrasArea";
+import { MapaDaProva, type LinhaDoMapa } from "./MapaDaProva";
+import { CabecalhoLaudo, PainelLaudo } from "./PainelLaudo";
+import { RadarAtualizacoes } from "./RadarAtualizacoes";
 
 /**
  * O laudo de uma prova, com a base composta declarada na própria tela.
@@ -18,76 +19,34 @@ import { BarrasArea } from "./BarrasArea";
  *
  * Agora as duas abrem igual — o que mais cai, depois a distribuição por área — e
  * o que é exclusivo da prova (de onde vem a base, e o que autoriza usar provas
- * parecidas) vem depois, como nota de método. A profundidade continua declarada
- * na mesma tela; deixa de ser a primeira coisa lida.
+ * parecidas) vem depois, como nota de método.
+ *
+ * ## O PAINEL 01 VIROU MAPA, e era a última divergência de forma
+ *
+ * Ele era uma lista numerada com as barrinhas da série em cada linha. A banca já
+ * mostrava o mesmo dado como mosaico, e a diferença não era de dado — era de
+ * componente. Resultado: as duas páginas mais importantes do funil respondiam a
+ * mesma pergunta com duas formas visuais, e quem chegava por "ver a fácies
+ * completa" não reconhecia a tela.
+ *
+ * O que a lista fazia melhor não se perdeu, mudou de lugar: as barrinhas da
+ * série e a divisão direta/correlatas agora aparecem na leitura ABAIXO do mapa,
+ * no clique — que é onde a banca já mostra posição e contagem.
+ *
+ * ⚠️ `preOrdenado` é obrigatório aqui. `mais_cai.linhas` vem ordenado por
+ * `score`, que pesa MAIS o que caiu na própria aplicação direta; o mapa ordena
+ * por contagem quando ninguém diz o contrário, e isso apagaria em silêncio a
+ * única coisa que a série composta acrescenta.
+ *
+ * ⚠️ O mapa do ENAMED nasce SEM COR POR ÁREA: `provas.json` não emite `area` por
+ * assunto (só `facies.json` emite). Não é bug de render — é campo que o gerador
+ * do kbank ainda não produz deste lado. Ver `LinhaDoMapa.area`.
  *
  * O que esta tela recusa a fazer: chamar de "tendência" o que se apoia numa
  * única aplicação direta, e esconder que a validação das fontes correlatas
  * repousa sobre essa mesma aplicação. O §15.4 exige o `n` ao lado do backtest; a
- * mesma cautela vale para o número que autoriza a base composta, e o documento
- * não a exigia ali.
+ * mesma cautela vale para o número que autoriza a base composta.
  */
-
-function Rotulo({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="paper-eyebrow">
-      {children}
-    </span>
-  );
-}
-
-function Painel({
-  numero,
-  titulo,
-  nota,
-  children,
-}: {
-  numero: string;
-  titulo: string;
-  nota?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="border-t border-rule py-6">
-      <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <Rotulo>{numero}</Rotulo>
-        <h2 className="font-serif text-xl font-semibold text-ink">{titulo}</h2>
-        {nota ? <span className="text-sm text-muted">{nota}</span> : null}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-/**
- * A série por aplicação. Correlatas em cinza e finas, diretas em petróleo e
- * grossas, com um traço entre as duas.
- *
- * A separação carrega informação: sem ela a barra sugeriria que a prova tem nove
- * aplicações próprias, quando tem uma. É a mesma razão pela qual o peso aparece
- * na legenda em vez de ficar só no código.
- */
-function Serie({ linha, correlatos }: { linha: LinhaSerie; correlatos: number }) {
-  const maximo = Math.max(1, ...linha.serie);
-  return (
-    <span className="flex h-6 items-end gap-[2px]" aria-hidden="true">
-      {linha.serie.map((valor, indice) => {
-        const direta = indice >= correlatos;
-        return (
-          <span key={indice} className="flex items-end">
-            {indice === correlatos ? (
-              <span className="mr-[3px] h-6 w-px self-stretch bg-edge" />
-            ) : null}
-            <span
-              className={direta ? "w-2 bg-primary" : "w-[5px] bg-muted opacity-40"}
-              style={{ height: `${Math.max(3, (valor / maximo) * 24)}px` }}
-            />
-          </span>
-        );
-      })}
-    </span>
-  );
-}
 
 export function ProvaReport({ prova }: { prova: Prova }) {
   const { profundidade: prof, mais_cai: serie, validacao: val } = prova;
@@ -97,98 +56,84 @@ export function ProvaReport({ prova }: { prova: Prova }) {
   const serieHistorica = val.status === "medido" ? val.historico : null;
   const correlatos = serie.anos_correlatos.length;
 
+  // O ADAPTADOR: `LinhaSerie` da prova vira `LinhaDoMapa`.
+  //
+  // `n` é `total_serie` — a contagem CRUA da série, que é um número de questões
+  // de verdade. O `score` NÃO entra aqui: ele é um peso, e exibi-lo numa célula
+  // ao lado de contagens seria a precisão fabricada que esta página recusa. O
+  // score decide a ORDEM (por isso `preOrdenado`), nunca o número na tela.
+  const celulas: LinhaDoMapa[] = serie.linhas.map((linha) => ({
+    rotulo: linha.rotulo,
+    n: linha.total_serie,
+    exibivel: linha.exibivel,
+    area: null,
+    serie: {
+      valores: linha.serie,
+      correlatos,
+      nota: `${linha.diretas} desta prova · ${linha.correlatas} de provas parecidas`,
+    },
+  }));
+
   return (
     <div className="rounded-surface border border-edge bg-surface">
-      <header className="flex flex-wrap gap-x-8 gap-y-3 border-b border-rule px-5 py-4 sm:px-6">
-        <div className="flex flex-col gap-0.5">
-          <Rotulo>Prova</Rotulo>
-          <b className="text-sm font-semibold text-ink">{prova.sigla}</b>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <Rotulo>Série</Rotulo>
-          <b className="font-mono text-sm text-ink">
-            {prof.aplicacoes_na_serie} aplicações
-          </b>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <Rotulo>Base</Rotulo>
-          <b className="font-mono text-sm text-ink">
-            {prof.questoes_rotuladas.toLocaleString("pt-BR")} questões
-          </b>
-        </div>
-        <span className="paper-eyebrow self-center rounded-control border border-accent px-2 py-1 text-accent">
-          base composta
-        </span>
-      </header>
+      <CabecalhoLaudo
+        selo="base composta"
+        campos={[
+          { rotulo: "Prova", valor: prova.sigla },
+          { rotulo: "Série", valor: `${prof.aplicacoes_na_serie} aplicações`, mono: true },
+          {
+            rotulo: "Base",
+            valor: `${prof.questoes_rotuladas.toLocaleString("pt-BR")} questões`,
+            mono: true,
+          },
+        ]}
+      />
 
       <div className="px-5 sm:px-6">
         {/* ── 01 — o que mais cai, pela série composta ─────────────────── */}
-        <Painel
+        <PainelLaudo
           numero="01"
           titulo="O que mais cai"
           nota={`${serie.universo.toLocaleString("pt-BR")} assuntos na série · as 15 são gratuitas`}
         >
-          <div className="mb-4 flex flex-wrap gap-x-6 gap-y-2">
+          {celulas.length > 0 ? (
+            <MapaDaProva linhas={celulas} preOrdenado />
+          ) : (
+            <p className="text-sm text-muted">
+              Base insuficiente para listar assuntos nesta prova.
+            </p>
+          )}
+          {/* ⚠️ SÓ O QUE O MAPA NÃO DIZ SOZINHO.
+              `MapaDaProva` já imprime, na leitura abaixo da grade, o que o
+              tamanho significa, que se toca para ver a contagem e o que é um
+              bloco tracejado. Eu tinha repetido as três coisas aqui, e a página
+              ficou com três parágrafos empilhados dizendo quase o mesmo — que é
+              exatamente o entulho que este trabalho existe para tirar.
+
+              O que sobra é o único fato que o mapa NÃO tem como saber: que a
+              ordem desta prova é por peso, não por contagem. */}
+          <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
             <span className="flex items-center gap-2">
               <span className="h-3.5 w-[5px] bg-muted opacity-40" />
-              {/* O peso exato (0,4) saía com ponto decimal inglês e, pior, não
-                  dizia nada a quem lê: "contam 0.4" não é uma quantidade que
-                  alguém consiga interpretar de relance. O número continua no
-                  painel 04, onde há espaço para explicá-lo; a legenda só precisa
-                  dizer a direção. */}
-              <Rotulo>provas parecidas · contam menos</Rotulo>
+              provas parecidas · contam menos
             </span>
             <span className="flex items-center gap-2">
               <span className="h-3.5 w-2 bg-primary" />
-              <Rotulo>aplicações diretas</Rotulo>
+              aplicações diretas
             </span>
-          </div>
-
-          <ol className="grid gap-0">
-            {serie.linhas.map((linha, indice) => (
-              <li
-                key={linha.rotulo}
-                className="grid grid-cols-[1.5rem_1fr_auto_auto] items-center gap-3 border-b border-rule py-2 last:border-b-0"
-              >
-                <span className="font-mono text-xs text-muted">
-                  {String(indice + 1).padStart(2, "0")}
-                </span>
-                <span className="text-sm text-ink">{linha.rotulo}</span>
-                <Serie linha={linha} correlatos={correlatos} />
-                {linha.exibivel ? (
-                  <span className="w-10 text-right font-mono text-sm tabular-nums text-ink">
-                    {linha.total_serie}
-                  </span>
-                ) : (
-                  <span className="w-14 text-right text-xs text-muted">
-                    menos de {PISO_N_CELULA}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ol>
-          <p className="mt-3 text-xs text-muted">
-            O número é a contagem total. A ordem dá mais peso ao que caiu na própria
-            prova, então uma linha pode ficar acima de outra com total maior — as barras
-            mostram de onde veio cada uma.
           </p>
-        </Painel>
+          <p className="mt-2 max-w-[70ch] text-xs text-muted">
+            A ordem dá mais peso ao que caiu na própria prova, então um bloco pode ficar
+            antes de outro com total maior — as barrinhas do clique mostram de onde veio
+            cada uma.
+          </p>
+        </PainelLaudo>
 
         {/* ── 02 — a área contra a média do acervo ────────────────────────
-            ESTE PAINEL ESTAVA DUAS VERSÕES ATRÁS da página de banca.
-
-            Eram barras em petróleo sem comparação nenhuma — a mesma forma que a
-            página de banca abandonou por não informar: "Clínica 37%" não diz se
-            37% é muito, e sem o denominador o painel é decorativo. Agora as duas
-            páginas usam o MESMO componente, com a marca da média das bancas
-            dentro da barra.
-
-            E a nota dizia "contexto · varia pouco entre provas", herdada da
-            medição de Jaccard — que é sobre a ORDEM do top-7 ser igual, não
-            sobre os PESOS. Com a média na tela a própria frase se desmente. É a
-            mesma correção que a página de banca já tinha recebido; esta ficou
-            para trás porque o componente era outro. */}
-        <Painel
+            Mesmo componente da página de banca, com a marca da média das bancas
+            dentro da barra: "Clínica 37%" não diz se 37% é muito, e sem o
+            denominador o painel é decorativo. */}
+        <PainelLaudo
           numero="02"
           titulo="Distribuição por área"
           nota="a forma desta prova · assunto a assunto no painel 01"
@@ -200,13 +145,18 @@ export function ProvaReport({ prova }: { prova: Prova }) {
               pct: linha.pct,
             }))}
           />
-        </Painel>
+        </PainelLaudo>
+
         {/* ── 03 — de onde vem a base (§5.5) ──────────────────────────── */}
         {/* O vocabulário deste painel era todo de dentro de casa — "rotulado",
             "diretas", "correlatas", "aplicações na série". São os nomes dos
             campos do gerador, e nenhum deles é como um estudante fala. O dado é
             o mesmo; muda quem consegue ler. */}
-        <Painel numero="03" titulo="De onde vem esta leitura" nota="o que já foi lido, questão a questão">
+        <PainelLaudo
+          numero="03"
+          titulo="De onde vem esta leitura"
+          nota="o que já foi lido, questão a questão"
+        >
           <div className="grid gap-px overflow-hidden rounded-control border border-rule bg-rule sm:grid-cols-3">
             {[
               [
@@ -234,7 +184,7 @@ export function ProvaReport({ prova }: { prova: Prova }) {
               </div>
             ))}
           </div>
-        </Painel>
+        </PainelLaudo>
 
         {/* O PAINEL DE FORMATO SAIU DAQUI, e o motivo e de DADO, nao de gosto.
 
@@ -252,7 +202,7 @@ export function ProvaReport({ prova }: { prova: Prova }) {
             preencher o buraco com o que sobrava. */}
         {/* ── 04 — a validação, com o n na cara ────────────────────────── */}
         {val.status === "medido" ? (
-          <Painel numero="04" titulo="Por que dá para usar provas parecidas">
+          <PainelLaudo numero="04" titulo="Por que dá para usar provas parecidas">
             <div className="grid gap-px overflow-hidden rounded-control border border-rule bg-rule sm:grid-cols-3">
               {[
                 [`${dec(val.acerto_pct)}%`, "do que a prova cobrou estava no top-30"],
@@ -316,9 +266,13 @@ export function ProvaReport({ prova }: { prova: Prova }) {
                 </p>
               </div>
             ) : null}
-          </Painel>
+          </PainelLaudo>
         ) : null}
 
+        {/* 05 — o radar. Vem DEPOIS da validacao de proposito: ele nao entra no
+            score (medido e reprovado), entao nao pode aparecer antes do numero
+            que de fato se sustenta. */}
+        <RadarAtualizacoes numero="05" />
       </div>
     </div>
   );

@@ -22,6 +22,7 @@
  */
 
 import dados from "@/data/facies/facies.json";
+import slugsCurtos from "@/data/facies/slugs.json";
 import { BASE_MINIMA, cohenH, decidirExibicao } from "@/lib/distintividade";
 
 export type FormatoLinha = {
@@ -76,6 +77,59 @@ export type Banca = {
    *  `mais_cai`/`formato` seguem sem elas — anulada não representa o que a
    *  banca cobra. */
   questoes_anuladas: number;
+  /** O denominador da base, somado das edições de `exam_edition`.
+   *
+   *  `declaradas` é a soma do que cada edição declarou; `null` quando nenhuma
+   *  edição tem `declared_count` — ou a moda da banca é instável (edições
+   *  discordantes), ou ela ainda não foi auditada. Nesse caso a tela não
+   *  inventa o número.
+   *
+   *  `estimado` é CONSERVADOR: `true` quando QUALQUER edição da soma veio de
+   *  `inferido_moda`. Basta uma para o total ser estimativa, e a tela não pode
+   *  dizer "declarado". `edicoes_com_fonte` viaja junto para a tela poder ser
+   *  precisa em vez de binária ("1 de 6 edições com fonte").
+   *
+   *  `cobertas` é o numerador do MESMO conjunto de edições que `declaradas` —
+   *  e é com ele que a tela compara, nunca com `questoes_total`. Comparar o
+   *  total do acervo contra a soma das edições que TÊM denominador é comparar
+   *  conjuntos diferentes: fazia 65 das 86 bancas caírem em "total > declaradas"
+   *  e a tela descartava o denominador em silêncio.
+   *
+   *  Opcional (com `null`) porque o dataset em produção pode ser anterior à
+   *  mudança; o gerador emite o campo a partir desta versão. */
+  denominador?: {
+    edicoes: number;
+    edicoes_declaradas: number;
+    edicoes_com_fonte: number;
+    declaradas: number | null;
+    cobertas: number | null;
+    estimado: boolean;
+    /** A fase da prova que a leitura NÃO cobre — hoje só `"dissertativa"`.
+     *
+     *  A UNICAMP aplica respostas curtas no acesso direto, e a dissertativa não
+     *  tem alternativa nem gabarito de letra: ela não entra na contagem da fase
+     *  objetiva, e a ausência dela não é buraco. Mas dizer "cobertura completa"
+     *  sem nomeá-la afirmaria completude sobre uma prova com uma fase inteira
+     *  fora da leitura. É sinalizador, não contagem — quantas questões a fase
+     *  teve, só o edital diz. */
+    fase_nao_coberta: string | null;
+  } | null;
+  /** A banca mudou o tamanho da prova, e a mudança tem FONTE.
+   *
+   *  Medido: a UERN aplicou 90 questões de 2019 a 2025 e passa a 100 em 2026.
+   *  Quem estuda por ela lê uma fácies feita sobre as edições de 90 — a nota
+   *  existe para isso não passar em silêncio.
+   *
+   *  ⚠️ Só é emitido quando o valor NOVO tem fonte (edital ou secundária). Se os
+   *  dois lados viessem da moda das edições, a "mudança" poderia ser a nossa
+   *  inferência oscilando, e a página anunciaria uma reforma que a banca nunca
+   *  fez. `null` é o caso normal — hoje só uma banca tem mudança declarada. */
+  mudanca?: {
+    de: number;
+    para: number;
+    vigente_de: number;
+    fonte: string | null;
+  } | null;
   /** A prova desta banca ainda existe, e se não, o aluno faz qual?
    *
    *  `null` quando ninguém decidiu — 138 das 141 hoje. NÃO é "está ativa":
@@ -350,6 +404,74 @@ export function bancaPorInstitutionKey(chave: string | null | undefined): Banca 
 
 export function bancaPorSlug(slug: string): Banca | undefined {
   return DATASET.bancas.find((banca) => banca.slug === slug);
+}
+
+/**
+ * ══ A URL PÚBLICA DA BANCA ═══════════════════════════════════════════════════
+ *
+ * `banca.slug` é o slug LONGO que o gerador do kbank deriva do `institution_key`
+ * e trunca em 80 caracteres:
+ *
+ *     sp-universidade-de-sao-paulo-usp-sp-hospital-das-clinicas-da-faculdade-de-medici
+ *
+ * Ele não cabe numa mensagem, não sobrevive ao boca a boca e o truncamento corta
+ * no meio da palavra. A URL servida é a CURTA — `/prova/usp-sp` —, e ela vem de
+ * `slugs.json`, um mapa `institution_key → slug` CONGELADO.
+ *
+ * ⚠️ POR QUE CONGELADO, e não derivado de `nomeCurto` na hora: `nomeCurto`
+ * desempata consultando o dataset inteiro (`contarNomeCurto`). Uma banca nova
+ * pode virar o nome curto de outra — e a URL dela mudaria sozinha na regeração
+ * seguinte, matando em silêncio todo link já colado em grupo e toda página já
+ * indexada. O rótulo EXIBIDO pode evoluir; o endereço não.
+ *
+ * O slug longo continua existindo e tem um consumidor só: os 301 de
+ * `/facies/<longo>` em `next.config.js`, e o casamento por prefixo de
+ * `rotuloCurado`/`DESTAQUE_PREFIXOS`.
+ *
+ * Acrescentar banca: `node scripts/gerar-slugs-facies.mjs`.
+ * Os invariantes (completude, unicidade, colisão com prova, entrada órfã) são
+ * conferidos por `scripts/check-slugs-facies.mjs`, dentro do `npm run lint`.
+ */
+const SLUGS_CURTOS = slugsCurtos as Record<string, string>;
+
+/**
+ * A URL desta banca. `null` quando ela ainda não tem slug fixado — o que só
+ * acontece com dataset regerado sem rodar o gerador, e é exatamente o caso que o
+ * guard reprova. Quem chama trata como "sem página", nunca inventa endereço.
+ */
+export function slugCurto(banca: Banca): string | null {
+  return SLUGS_CURTOS[banca.institution_key] ?? null;
+}
+
+/** O caminho público da banca, pronto para `href`. `null` sem slug fixado. */
+export function caminhoDaBanca(banca: Banca): string | null {
+  const slug = slugCurto(banca);
+  return slug ? `/prova/${slug}` : null;
+}
+
+/**
+ * A banca pela URL curta. Índice montado uma vez — a rota resolve 138 bancas e
+ * varrer o array a cada requisição seria trabalho repetido à toa.
+ */
+let porSlugCurto: Map<string, Banca> | null = null;
+
+export function bancaPorSlugCurto(slug: string): Banca | undefined {
+  if (porSlugCurto == null) {
+    porSlugCurto = new Map();
+    for (const banca of DATASET.bancas) {
+      const curto = SLUGS_CURTOS[banca.institution_key];
+      if (curto) porSlugCurto.set(curto, banca);
+    }
+  }
+  return porSlugCurto.get(slug);
+}
+
+/** As bancas que têm URL — as que `generateStaticParams` pode emitir. */
+export function bancasComPagina(): { banca: Banca; slug: string }[] {
+  return DATASET.bancas.flatMap((banca) => {
+    const slug = SLUGS_CURTOS[banca.institution_key];
+    return slug ? [{ banca, slug }] : [];
+  });
 }
 
 /**
