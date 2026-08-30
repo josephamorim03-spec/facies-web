@@ -7,6 +7,7 @@ import { SecaoAposta } from "@/components/facies/SecaoAposta";
 import { SecaoNoveMedidas } from "@/components/facies/SecaoNoveMedidas";
 import { SecaoOndeEncaixa } from "@/components/facies/SecaoOndeEncaixa";
 import { SecaoSemLetraMiuda } from "@/components/facies/SecaoSemLetraMiuda";
+import { RotuloSecao } from "@/components/facies/RotuloSecao";
 import { bancasEmDestaque, todasAsBancas } from "@/lib/facies";
 import { todasAsProvas } from "@/lib/provas";
 import { CONT_LANDING, SITE_NAME, SITE_QUALIFICADOR } from "@/lib/site";
@@ -72,6 +73,43 @@ export default function Home() {
   const destaques = bancasEmDestaque();
   const provaEmDestaque = todasAsProvas()[0];
   const total = todasAsBancas().length;
+
+  /**
+   * ══ A NUMERAÇÃO DAS SEÇÕES VIVE AQUI, e em nenhum componente ═══════════════
+   *
+   * Cada seção trazia o próprio número escrito à mão, e a página abria em **02**.
+   * O 01 era do `PonteDiagnostico`, que saiu do fluxo — e ninguém renumerou,
+   * porque não havia onde: o número morava dentro do componente removido. O
+   * leitor via 02, 03, 04, 05 e um bloco sem rótulo no fim, numa página cuja
+   * forma inteira é a de documento numerado.
+   *
+   * Agora a ordem é esta lista, e o número é a POSIÇÃO nela. Remover uma seção
+   * renumera as outras sozinho; acrescentar uma no meio também. É a mesma
+   * disciplina que `medidasDaQuestao.ts` já aplica às nove medidas, e pelo mesmo
+   * motivo: numeração escrita duas vezes é numeração que diverge.
+   *
+   * A seção da aposta é condicional (depende de haver prova em destaque), então
+   * ela entra na lista só quando entra na página — senão o buraco voltaria pela
+   * outra porta.
+   *
+   * ⚠️ `SecaoPreco` continua FORA: sem checkout, preço na tela é oferta que o
+   * art. 30 do CDC obriga a sustentar. Quando ela montar, entra aqui no fim e
+   * recebe o número que sobrar.
+   */
+  const ordem = [
+    "cara",
+    ...(provaEmDestaque ? ["aposta"] : []),
+    "medidas",
+    "encaixa",
+    "letra-miuda",
+    "acesso",
+  ];
+  const numeroDa = (chave: string) => {
+    const posicao = ordem.indexOf(chave);
+    // Chave fora da lista é erro de programação, não estado possível. Rótulo
+    // vazio é melhor que numeração inventada — e some sem quebrar a linha.
+    return posicao < 0 ? "" : String(posicao + 1).padStart(2, "0");
+  };
 
   return (
     <>
@@ -221,14 +259,16 @@ export default function Home() {
           </div>
         </section>
 
-        <FunilHome bancas={destaques} prova={provaEmDestaque}>
+        <FunilHome bancas={destaques} prova={provaEmDestaque} numero={numeroDa("cara")}>
           {/* As seções estáticas entram por dentro do funil e continuam sendo
               server components: um componente cliente envolvendo a página toda
               arrastaria para o bundle conteúdo que nunca muda. */}
-          {provaEmDestaque ? <SecaoAposta prova={provaEmDestaque} /> : null}
-          <SecaoNoveMedidas prova={provaEmDestaque} />
-          <SecaoOndeEncaixa />
-          <SecaoSemLetraMiuda />
+          {provaEmDestaque ? (
+            <SecaoAposta prova={provaEmDestaque} numero={numeroDa("aposta")} />
+          ) : null}
+          <SecaoNoveMedidas numero={numeroDa("medidas")} />
+          <SecaoOndeEncaixa numero={numeroDa("encaixa")} />
+          <SecaoSemLetraMiuda numero={numeroDa("letra-miuda")} />
 
           {/* ── O aviso ─────────────────────────────────────────────────
               Fora da v7, e de propósito. A v7 fecha em preço; aqui não há
@@ -240,7 +280,11 @@ export default function Home() {
               abrir") — a adjacência é a razão da ordem. */}
           <section className="sec" id="aviso">
             <div className={CONT}>
-              <h2 className="font-serif font-semibold text-ink">Acesso</h2>
+              {/* O RÓTULO NUMERADO FALTAVA AQUI. Esta seção fechava a página com
+                  um `<h2>` solto, sem o rótulo que todas as outras têm — e como
+                  ela é a última, a numeração parecia terminar antes do fim. */}
+              <RotuloSecao numero={numeroDa("acesso")}>acesso</RotuloSecao>
+              <h2 className="mt-3 font-serif font-semibold text-ink">Acesso</h2>
               {/* A CENA DO PLANTÃO SAIU. Ela dizia "quem estuda em janela
                   irregular — plantão, pós-plantão, noite curta", e era o último
                   resto de uma página que se explicava pela rotina do leitor. A

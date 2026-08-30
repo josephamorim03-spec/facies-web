@@ -28,28 +28,47 @@ async function capturarSinais(page: import("@playwright/test").Page) {
   return sinais;
 }
 
-test("o CTA do diagnostico emite diagnostico_clicado com a banca", async ({ page }) => {
+/**
+ * ⚠️ OS DOIS TESTES ABAIXO APONTAVAM PARA UI QUE NÃO EXISTE MAIS, e ficaram
+ * vermelhos em silêncio desde `a46aae40`.
+ *
+ *   - `"Fazer o diagnóstico"` era o CTA do `PonteDiagnostico`, que saiu do fluxo
+ *     da home (o `FunilHome` registra a remoção por escrito). O componente
+ *     continua no repositório sem nenhum call site, então o link nunca renderiza
+ *     e o seletor nunca casa.
+ *   - `/Ver a fácies do/` nunca casou com o rótulo real, que é "Ver a fácies
+ *     **completa** do ENAMED".
+ *
+ * Conferido com `git show HEAD`: as duas divergências são anteriores à mudança
+ * de URL de `/facies/<longo>` para `/prova/<curto>`.
+ *
+ * O que os testes PROTEGEM continua válido e é o que sobrevive aqui: o ponto de
+ * conversão da home dispara, dispara com o nome que a allowlist aceita, e leva a
+ * chave do que estava na tela. O que mudou foi qual elemento é esse ponto.
+ */
+test("o CTA que abre a fácies emite facies_pagina_aberta com a chave", async ({ page }) => {
   const sinais = await capturarSinais(page);
   await page.goto("/");
 
-  await page.getByRole("link", { name: "Fazer o diagnóstico" }).click();
+  await page.getByRole("link", { name: /Ver a fácies completa/ }).click();
 
-  await expect
-    .poll(() => sinais.map((s) => s.evento))
-    .toContain("diagnostico_clicado");
+  await expect.poll(() => sinais.map((s) => s.evento)).toContain("facies_pagina_aberta");
 
-  const sinal = sinais.find((s) => s.evento === "diagnostico_clicado");
-  // A banca vai junto porque a taxa agregada esconde o que importa: pode ser
+  const sinal = sinais.find((s) => s.evento === "facies_pagina_aberta");
+  // A chave vai junto porque a taxa agregada esconde o que importa: pode ser
   // que a leitura de uma banca converta e a de outra não, e a diferença aponta
   // para o dado, não para a copy.
-  expect(sinal?.banca, "o evento precisa levar a banca que estava na tela").toBeTruthy();
+  expect(sinal?.banca, "o evento precisa levar a chave que estava na tela").toBeTruthy();
 });
 
-test("o CTA da prova em destaque emite destaque_clicado", async ({ page }) => {
+test("o chip da prova em destaque emite destaque_clicado", async ({ page }) => {
   const sinais = await capturarSinais(page);
   await page.goto("/");
 
-  await page.getByRole("link", { name: /Ver a fácies do/ }).click();
+  // `destaque_clicado` sai do CHIP da prova nacional, não do link do CTA — quem
+  // emite é o `onClick` do botão em `FaciesPicker`. O teste antigo clicava no
+  // link e esperava este evento, o que nunca poderia acontecer.
+  await page.getByRole("button", { name: "ENAMED", exact: true }).click();
 
   await expect.poll(() => sinais.map((s) => s.evento)).toContain("destaque_clicado");
 });

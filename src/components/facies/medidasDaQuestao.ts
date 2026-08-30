@@ -92,12 +92,12 @@ export type Chave = (typeof ORDEM)[number];
  *  discordar da lista que está logo abaixo dele. */
 export const TOTAL_DE_MARCAS = ORDEM.length;
 
-/** Uma leitura de prova: o valor, sobre o que ele foi medido, e a régua. */
-export type ValorDaProva = {
+/** Uma leitura do acervo: o valor, sobre o que ele foi medido, e a régua. */
+export type ValorDoAcervo = {
   valor: string;
   /** O denominador, sempre. Número sem base é o que gerou a confusão. */
   base: string;
-  /** Contexto do acervo. Só para formato — ver `DadosDaProva`. */
+  /** O extremo do acervo, para um número do meio poder ser lido. */
   regua?: string;
 };
 
@@ -109,40 +109,53 @@ export type Marca = {
   porque: string;
   /** O que esta questão marca. Sempre existe: a questão é nossa e é curta. */
   naQuestao: string;
-  /** O que a PROVA marca. `null` quando a medida não chega ao dataset público. */
-  naProva: ValorDaProva | null;
+  /** O que o ACERVO marca. `null` quando a medida não chega ao dataset público. */
+  noAcervo: ValorDoAcervo | null;
 };
 
 /**
- * A régua nacional, e por que ela existe SÓ para formato.
+ * ══ A MEDIDA AQUI É DO ACERVO INTEIRO, e não de uma prova ════════════════════
+ *
+ * Esta seção mostrava os números do ENAMED — "100% múltipla escolha direta em 90
+ * questões de 2026", "291 assuntos em 1.717 questões da série". Estava no meio
+ * de uma home que NÃO é sobre o ENAMED, e cujo argumento é o oposto: que cada
+ * prova tem cara própria e a média não serve para ninguém.
+ *
+ * Um laudo de uma prova específica ali fazia a seção contradizer a página. Aqui
+ * a afirmação é outra e é a certa para o lugar: **isto é medido em todo o
+ * acervo, questão por questão**. A prova de que a medida existe é a régua; a
+ * fácies de cada prova é o que as páginas de destino entregam.
+ *
+ * ## Por que a comparação com a média é legítima AQUI
  *
  * O projeto de design proibiu comparar com a média nacional, e tinha razão no
  * caso que examinou: o peso por área depende da classificação por assunto, cuja
  * cobertura é mediana de 72,7% — comparar bancas em cima disso é comparar
  * quanto cada uma foi rotulada, não quanto ela cobra.
  *
- * Formato é outro caso: os dois lados da comparação são a mesma coisa —
- * proporção entre as questões cujo formato foi lido — e a cobertura é alta e
- * uniforme. Medido em 2026-08-28, no dataset das 15:04: mediana de 97,9% por
- * banca, mínimo 90,7%. A base viaja com o número na tela (`NACIONAL.total`),
- * então quem duvidar tem o denominador à vista.
- *
- * E aqui ela não é enfeite, é o que torna um zero legível. "0%" sozinho tem
- * três leituras — a medida não rodou, o formato não existe no Brasil, ou esta
- * prova é exceção — e o leitor escolhe a pior. Com a régua ao lado, sobra uma.
+ * Formato é outro caso: os dois lados são a mesma coisa — proporção entre as
+ * questões cujo formato foi lido — e a cobertura é alta e uniforme. Medido em
+ * 2026-08-28: mediana de 97,9% por banca, mínimo 90,7%. A base viaja com o
+ * número na tela, então quem duvidar tem o denominador à vista.
  */
-export type DadosDaProva = {
-  sigla: string;
-  /** Questões da aplicação direta. Base do formato. */
-  diretas: number;
-  /** Ano da aplicação direta, quando há uma só. */
-  anoDireto: number | null;
-  /** Questões da série inteira (diretas + correlatas). Base dos subtemas. */
-  serie: number;
-  subtemas: number;
-  /** Percentual de "pede a incorreta" nesta prova, e a régua do acervo. */
-  incorreta: { pct: number; nacional: number; extremo: number | null };
-  /** O formato mais frequente da prova. */
+export type DadosDoAcervo = {
+  /**
+   * Questões com o formato lido — `NACIONAL.total`. É o denominador de TODA
+   * medida de formato desta seção, e ele aparece na tela junto com o número.
+   */
+  base: number;
+  /** Quantas bancas o acervo cobre. */
+  bancas: number;
+  /**
+   * "Pede a incorreta" no acervo, e o extremo.
+   *
+   * O extremo não é enfeite: ele é o que torna a média legível. "7,3%" sozinho
+   * não diz se as provas variam muito ou pouco — com "até 29,2% numa banca" ao
+   * lado, a frase da seção ("cada prova tem cara própria") deixa de ser
+   * afirmação e vira medida.
+   */
+  incorreta: { pct: number; extremo: number | null };
+  /** O formato mais frequente do acervo. */
   dominante: { rotulo: string; pct: number } | null;
 };
 
@@ -203,42 +216,50 @@ const MEDIDA: Record<Chave, { nome: string; porque: string; naQuestao: string }>
   },
 };
 
-export function marcasDaProva(dados: DadosDaProva): Marca[] {
-  const naSerie = `${dados.serie.toLocaleString("pt-BR")} questões da série`;
-  const nasDiretas = dados.anoDireto
-    ? `${dados.diretas} questões de ${dados.anoDireto}`
-    : `${dados.diretas} questões da aplicação direta`;
+export function marcasDoAcervo(dados: DadosDoAcervo): Marca[] {
+  // UM denominador para as duas medidas publicadas, e ele é o mesmo que a prosa
+  // da seção cita. Duas frases para a mesma base foi o que já fez esta página
+  // exibir 90 e 1.717 sob nomes quase idênticos, e ser lida como erro.
+  const noAcervo = `${dados.base.toLocaleString("pt-BR")} questões com o formato lido · ${dados.bancas} bancas`;
 
-  const leitura: Record<Chave, ValorDaProva | null> = {
+  const leitura: Record<Chave, ValorDoAcervo | null> = {
     tamanho: null,
     incorreta: {
       valor: pct(dados.incorreta.pct),
-      base: nasDiretas,
+      base: noAcervo,
       regua: dados.incorreta.extremo
-        ? `nacional ${pct(dados.incorreta.nacional)} · até ${pct(dados.incorreta.extremo)} numa banca`
-        : `nacional ${pct(dados.incorreta.nacional)}`,
+        ? `até ${pct(dados.incorreta.extremo)} numa banca`
+        : undefined,
     },
     negacoes: null,
     imagem: null,
     dados: null,
     paralelismo: null,
     formato: dados.dominante
-      ? { valor: `${pct(dados.dominante.pct)} ${dados.dominante.rotulo}`, base: nasDiretas }
+      ? { valor: `${pct(dados.dominante.pct)} ${dados.dominante.rotulo}`, base: noAcervo }
       : null,
     pede: null,
-    assunto: {
-      valor: `${dados.subtemas.toLocaleString("pt-BR")} assuntos distintos`,
-      // A BASE AQUI É OUTRA, e é o ponto do bloco inteiro: o assunto é mapeado
-      // sobre a série, o formato sobre as diretas. Sem esta linha, as duas
-      // medidas parecem se contradizer.
-      base: naSerie,
-    },
+    /**
+     * ⚠️ O ASSUNTO NÃO GANHA NÚMERO, e a ausência é deliberada.
+     *
+     * A tentação é publicar a união dos rótulos de `mais_cai` das bancas — dá
+     * 191. Mas `mais_cai` traz os QUINZE mais cobrados de cada banca, então 191
+     * é o tamanho do topo somado, não o número de assuntos distintos do acervo:
+     * só o ENAMED mapeia 291 sozinho. Publicar 191 como "assuntos distintos"
+     * seria um número errado numa seção cujo argumento inteiro é medir bem.
+     *
+     * Fica no device que a própria seção já tem ("medida, ainda não publicada"),
+     * que é honesto: a medida existe questão a questão no faciesbank, e o
+     * dataset público não a agrega. Um número nacional de verdade exige o
+     * `build_facies_dataset.py` emiti-lo.
+     */
+    assunto: null,
   };
 
   return ORDEM.map((chave, indice) => ({
     chave,
     n: String(indice + 1).padStart(2, "0"),
     ...MEDIDA[chave],
-    naProva: leitura[chave],
+    noAcervo: leitura[chave],
   }));
 }

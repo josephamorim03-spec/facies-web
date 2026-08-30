@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 
 import { FaciesPicker } from "@/components/facies/FaciesPicker";
 import { GateEmail } from "@/components/facies/GateEmail";
+import { RotuloSecao } from "@/components/facies/RotuloSecao";
 import type { Banca } from "@/lib/facies";
 import type { Prova } from "@/lib/provas";
 import { CONT_LANDING } from "@/lib/site";
@@ -38,10 +39,19 @@ import { CONT_LANDING } from "@/lib/site";
 export function FunilHome({
   bancas,
   prova,
+  numero,
   children,
 }: {
   bancas: Banca[];
   prova?: Prova | null;
+  /**
+   * O número desta seção, vindo de `app/page.tsx`.
+   *
+   * O bloco do seletor É a seção 01 da página — "a cara desta prova" —, e era a
+   * única sem rótulo. O 01 pertencia ao `PonteDiagnostico`, que saiu do fluxo, e
+   * a numeração passou a começar em 02 sem nada explicando por quê.
+   */
+  numero: string;
   children: ReactNode;
 }) {
   // A chave do que esta na tela, e nao mais a banca: com o ENAMED dentro do
@@ -60,6 +70,9 @@ export function FunilHome({
         {/* O rotulo "Veja uma prova institucional" SAIU: ele existia para emendar
             o cartao do ENAMED ao seletor, e agora os dois sao um so. Os chips
             dizem sozinhos o que sao. */}
+        <div className="mb-4">
+          <RotuloSecao numero={numero}>a cara desta prova</RotuloSecao>
+        </div>
         <FaciesPicker bancas={bancas} prova={prova} onChaveChange={setChave} />
 
         {/* ⚠️ A PONTE SAIU DO FLUXO — `PonteDiagnostico` continua no repo, sem

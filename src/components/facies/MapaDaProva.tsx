@@ -45,14 +45,73 @@ const TINTA_MAX = 34;
 /** E na menos cobrada, para nenhuma célula sumir no fundo. */
 const TINTA_MIN = 8;
 
-type Linha = {
+export type LinhaDoMapa = {
   rotulo: string;
   n: number;
   exibivel: boolean;
   /** A grande área, vinda do MESMO grafo que alimenta a distribuição do painel
-   *  ao lado. Ver o comentário sobre a fonte única, acima. */
+   *  ao lado. Ver o comentário sobre a fonte única, acima.
+   *
+   *  ⚠️ AUSENTE NA PROVA NACIONAL, e não por descuido: `provas.json` não emite
+   *  `area` por assunto — só `facies.json` emite. Sem ela a célula cai na tinta
+   *  da marca, e o mapa do ENAMED nasce monocromático. A correção é o
+   *  `build_facies_dataset.py` emitir `area` também em `mais_cai` da prova, lida
+   *  do `node_path` do nó primário, exatamente como ele já faz do lado da banca.
+   *  É trabalho no kbank. */
   area?: string | null;
+  /**
+   * A SÉRIE POR APLICAÇÃO, quando a leitura é composta.
+   *
+   * Só a prova nacional a tem: ela soma a própria aplicação direta às provas que
+   * substituiu, e sem a série a célula diria "25 questões" sem dizer que 23
+   * vieram de outras provas. A banca institucional passa `undefined` — a
+   * contagem dela é crua e a posição já basta.
+   *
+   * ⚠️ É DADO, e não um render prop. `MapaDaProva` é `"use client"` e quem o
+   * monta (`ProvaReport`, `FaciesReport`) é server component: função não
+   * atravessa essa fronteira — ela chega do outro lado como proxy e explode ao
+   * ser chamada. Este repositório já mandou para produção um `TOTAL_DE_MARCAS`
+   * serializado como texto de erro em 40px pelo mesmo motivo. Tipo cruza; valor
+   * cruza; função, não.
+   */
+  serie?: {
+    /** Uma barra por aplicação, da mais antiga para a mais recente. */
+    valores: number[];
+    /** Quantas das primeiras são correlatas — o traço separador cai aqui. */
+    correlatos: number;
+    /** A divisão em palavras: "2 desta prova · 23 de provas parecidas". */
+    nota: string;
+  } | null;
 };
+
+/**
+ * A série por aplicação. Correlatas em cinza e finas, diretas em petróleo e
+ * grossas, com um traço entre as duas.
+ *
+ * A separação carrega informação: sem ela a barra sugeriria que a prova tem nove
+ * aplicações próprias, quando tem uma.
+ */
+function Serie({ valores, correlatos }: { valores: number[]; correlatos: number }) {
+  const maximo = Math.max(1, ...valores);
+  return (
+    <span className="flex h-6 items-end gap-[2px]" aria-hidden="true">
+      {valores.map((valor, indice) => {
+        const direta = indice >= correlatos;
+        return (
+          <span key={indice} className="flex items-end">
+            {indice === correlatos ? (
+              <span className="mr-[3px] h-6 w-px self-stretch bg-edge" />
+            ) : null}
+            <span
+              className={direta ? "w-2 bg-primary" : "w-[5px] bg-muted opacity-40"}
+              style={{ height: `${Math.max(3, (valor / maximo) * 24)}px` }}
+            />
+          </span>
+        );
+      })}
+    </span>
+  );
+}
 
 /**
  * O tamanho da célula, por posição no ranking.
@@ -85,14 +144,26 @@ const NA_HOME = 8;
 export function MapaDaProva({
   linhas,
   limite,
+  preOrdenado = false,
 }: {
-  linhas: Linha[];
+  linhas: LinhaDoMapa[];
   /** Sem limite, mostra tudo — é o que a página da banca faz. */
   limite?: number;
+  /**
+   * A ordem JÁ VEIO DECIDIDA por quem chamou, e o mapa não pode mexer nela.
+   *
+   * ⚠️ Existe por causa da prova nacional. A banca ordena por contagem crua, e
+   * ordenar aqui por `n` reproduz isso. A prova ordena por `score` — um peso que
+   * conta MAIS o que caiu na própria aplicação direta e menos o que veio das
+   * provas correlatas — então uma linha pode e deve ficar acima de outra com
+   * total maior. Reordenar por `n` apagaria em silêncio a única coisa que a
+   * série composta acrescenta, e a nota de rodapé do painel viraria mentira.
+   */
+  preOrdenado?: boolean;
 }) {
   const [aberta, setAberta] = useState<string | null>(null);
 
-  const todas = [...linhas].sort((a, b) => b.n - a.n);
+  const todas = preOrdenado ? linhas : [...linhas].sort((a, b) => b.n - a.n);
   const ordenadas = limite ? todas.slice(0, limite) : todas;
   const escondidas = todas.length - ordenadas.length;
   if (ordenadas.length === 0) return null;
@@ -186,6 +257,7 @@ export function MapaDaProva({
         className="mt-3 min-h-[3rem] border-t border-rule pt-3"
       >
         {escolhida ? (
+          <>
           <p className="text-sm text-ink">
             <b className="font-semibold">{escolhida.rotulo}</b>{" "}
             {escolhida.area ? (
@@ -208,6 +280,21 @@ export function MapaDaProva({
               )}
             </span>
           </p>
+          {/* A COMPOSIÇÃO DA SÉRIE, e só quando ela existe.
+              Sem esta linha a célula do ENAMED diria "25 questões" sobre uma
+              prova que teve UMA aplicação — e quem lê concluiria, com razão, que
+              alguém inflou a contagem. As barrinhas mostram de onde veio cada
+              uma; a nota diz em palavras. */}
+          {escolhida.serie ? (
+            <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+              <Serie
+                valores={escolhida.serie.valores}
+                correlatos={escolhida.serie.correlatos}
+              />
+              <span>{escolhida.serie.nota}</span>
+            </p>
+          ) : null}
+          </>
         ) : (
           <p className="text-sm text-muted">
             O tamanho de cada bloco é o quanto o assunto cai nesta prova. Toque

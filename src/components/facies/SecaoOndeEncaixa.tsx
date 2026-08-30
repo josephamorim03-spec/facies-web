@@ -30,11 +30,11 @@ const BANCO = [
   "Seu percentual de acerto por área",
 ];
 
-export function SecaoOndeEncaixa() {
+export function SecaoOndeEncaixa({ numero }: { numero: string }) {
   return (
     <section className="sec sec--sup">
       <div className={CONT_LANDING}>
-        <RotuloSecao numero="04">onde isto se encaixa</RotuloSecao>
+        <RotuloSecao numero={numero}>onde isto se encaixa</RotuloSecao>
         <h2 className="mt-3 max-w-[20ch] font-serif font-semibold text-ink">
           Isto não é mais um banco de questões.
         </h2>

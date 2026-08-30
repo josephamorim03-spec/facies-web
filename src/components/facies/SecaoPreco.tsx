@@ -84,11 +84,11 @@ const GARANTIAS = [
   "Não vendemos conteúdo teórico e não prometemos aprovação",
 ];
 
-export function SecaoPreco() {
+export function SecaoPreco({ numero }: { numero: string }) {
   return (
     <section className="sec sec--sup">
       <div className={CONT_LANDING}>
-        <RotuloSecao numero="06">preço</RotuloSecao>
+        <RotuloSecao numero={numero}>preço</RotuloSecao>
         <h2 className="mt-3 max-w-[22ch] font-serif font-semibold text-ink">
           Custa menos que a inscrição da prova.
         </h2>

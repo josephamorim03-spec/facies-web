@@ -22,6 +22,7 @@
  */
 
 import dados from "@/data/facies/facies.json";
+import slugsCurtos from "@/data/facies/slugs.json";
 import { BASE_MINIMA, cohenH, decidirExibicao } from "@/lib/distintividade";
 
 export type FormatoLinha = {
@@ -351,6 +352,75 @@ export function bancaPorInstitutionKey(chave: string | null | undefined): Banca 
 export function bancaPorSlug(slug: string): Banca | undefined {
   return DATASET.bancas.find((banca) => banca.slug === slug);
 }
+
+/**
+ * ══ A URL PÚBLICA DA BANCA ═══════════════════════════════════════════════════
+ *
+ * `banca.slug` é o slug LONGO que o gerador do kbank deriva do `institution_key`
+ * e trunca em 80 caracteres:
+ *
+ *     sp-universidade-de-sao-paulo-usp-sp-hospital-das-clinicas-da-faculdade-de-medici
+ *
+ * Ele não cabe numa mensagem, não sobrevive ao boca a boca e o truncamento corta
+ * no meio da palavra. A URL servida é a CURTA — `/prova/usp-sp` —, e ela vem de
+ * `slugs.json`, um mapa `institution_key → slug` CONGELADO.
+ *
+ * ⚠️ POR QUE CONGELADO, e não derivado de `nomeCurto` na hora: `nomeCurto`
+ * desempata consultando o dataset inteiro (`contarNomeCurto`). Uma banca nova
+ * pode virar o nome curto de outra — e a URL dela mudaria sozinha na regeração
+ * seguinte, matando em silêncio todo link já colado em grupo e toda página já
+ * indexada. O rótulo EXIBIDO pode evoluir; o endereço não.
+ *
+ * O slug longo continua existindo e tem um consumidor só: os 301 de
+ * `/facies/<longo>` em `next.config.js`, e o casamento por prefixo de
+ * `rotuloCurado`/`DESTAQUE_PREFIXOS`.
+ *
+ * Acrescentar banca: `node scripts/gerar-slugs-facies.mjs`.
+ * Os invariantes (completude, unicidade, colisão com prova, entrada órfã) são
+ * conferidos por `scripts/check-slugs-facies.mjs`, dentro do `npm run lint`.
+ */
+const SLUGS_CURTOS = slugsCurtos as Record<string, string>;
+
+/**
+ * A URL desta banca. `null` quando ela ainda não tem slug fixado — o que só
+ * acontece com dataset regerado sem rodar o gerador, e é exatamente o caso que o
+ * guard reprova. Quem chama trata como "sem página", nunca inventa endereço.
+ */
+export function slugCurto(banca: Banca): string | null {
+  return SLUGS_CURTOS[banca.institution_key] ?? null;
+}
+
+/** O caminho público da banca, pronto para `href`. `null` sem slug fixado. */
+export function caminhoDaBanca(banca: Banca): string | null {
+  const slug = slugCurto(banca);
+  return slug ? `/prova/${slug}` : null;
+}
+
+/**
+ * A banca pela URL curta. Índice montado uma vez — a rota resolve 138 bancas e
+ * varrer o array a cada requisição seria trabalho repetido à toa.
+ */
+let porSlugCurto: Map<string, Banca> | null = null;
+
+export function bancaPorSlugCurto(slug: string): Banca | undefined {
+  if (porSlugCurto == null) {
+    porSlugCurto = new Map();
+    for (const banca of DATASET.bancas) {
+      const curto = SLUGS_CURTOS[banca.institution_key];
+      if (curto) porSlugCurto.set(curto, banca);
+    }
+  }
+  return porSlugCurto.get(slug);
+}
+
+/** As bancas que têm URL — as que `generateStaticParams` pode emitir. */
+export function bancasComPagina(): { banca: Banca; slug: string }[] {
+  return DATASET.bancas.flatMap((banca) => {
+    const slug = SLUGS_CURTOS[banca.institution_key];
+    return slug ? [{ banca, slug }] : [];
+  });
+}
+
 
 /**
  * A janela que a base INTEIRA cobre — do ano mais antigo ao mais recente.

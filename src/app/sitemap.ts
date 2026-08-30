@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { GERADO_EM, todasAsBancas } from "@/lib/facies";
+import { bancasComPagina, GERADO_EM } from "@/lib/facies";
 import { urlAbsoluta } from "@/lib/site";
 import { todasAsProvas } from "@/lib/provas";
 
@@ -47,8 +47,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
-    ...todasAsBancas().map((banca) => ({
-      url: urlAbsoluta(`/facies/${banca.slug}`),
+    // As bancas vivem no MESMO namespace das provas desde que o slug encolheu:
+    // `/prova/usp-sp`, e não mais `/facies/<80 caracteres>`. O endereço antigo
+    // continua respondendo, como 308 em `next.config.js` — mas 308 não entra em
+    // sitemap: sitemap declara canônico, e o canônico é o novo.
+    ...bancasComPagina().map(({ slug }) => ({
+      url: urlAbsoluta(`/prova/${slug}`),
       lastModified: quando,
       changeFrequency: "monthly" as const,
       priority: 0.7,

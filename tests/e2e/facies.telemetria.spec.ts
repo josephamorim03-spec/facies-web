@@ -54,7 +54,9 @@ test("a pagina de banca conta a visita com a chave da instituicao", async ({ pag
   const sinais = await capturarSinais(page);
 
   await page.goto("/facies");
-  const primeira = page.locator('a[href^="/facies/"]').first();
+  // O índice aponta para `/prova/<curto>`: banca e prova compartilham a rota
+  // desde que o slug de 80 caracteres saiu do ar.
+  const primeira = page.locator('a[href^="/prova/"]').first();
   await primeira.waitFor({ state: "visible", timeout: 15_000 });
   const destino = await primeira.getAttribute("href");
   expect(destino).toBeTruthy();

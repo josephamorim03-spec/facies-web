@@ -3,6 +3,7 @@ import { janela, nomeCurto, PISO_N_CELULA, TOTAL_BANCAS } from "@/lib/facies";
 import { BarrasArea } from "./BarrasArea";
 import { ComoCobra } from "./ComoCobra";
 import { MapaDaProva } from "./MapaDaProva";
+import { CabecalhoLaudo, PainelLaudo } from "./PainelLaudo";
 
 /**
  * A Fácies da prova, em DOIS painéis — eram quatro.
@@ -35,38 +36,6 @@ import { MapaDaProva } from "./MapaDaProva";
  * diferentes que a nota antiga confundia.
  */
 
-function Rotulo({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="paper-eyebrow">
-      {children}
-    </span>
-  );
-}
-
-function Painel({
-  numero,
-  titulo,
-  nota,
-  children,
-}: {
-  numero: string;
-  titulo: string;
-  nota?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="border-t border-rule py-6">
-      <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <Rotulo>{numero}</Rotulo>
-        <h3 className="font-serif text-xl/snug font-semibold text-ink lg:text-2xl/snug">{titulo}</h3>
-        {nota ? <span className="text-sm text-muted lg:text-base">{nota}</span> : null}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-
 export function FaciesReport({
   banca,
   limiteAssuntos,
@@ -94,22 +63,17 @@ export function FaciesReport({
           nome por extenso na legenda (identidade legal, uma vez) e o curto aqui,
           que é o que a linha de laudo precisa para dizer de quem é a leitura. A
           UF já vive dentro do nome curto quando ela desambigua. */}
-      <header className="flex flex-wrap gap-x-8 gap-y-3 border-b border-rule px-5 py-4 sm:px-6">
-        <div className="flex flex-col gap-0.5">
-          <Rotulo>Banca</Rotulo>
-          <b className="text-sm font-semibold text-ink lg:text-base">{nomeCurto(banca)}</b>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <Rotulo>Janela</Rotulo>
-          <b className="font-mono text-sm text-ink">{janela(banca)}</b>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <Rotulo>Base</Rotulo>
-          <b className="font-mono text-sm text-ink">
-            {banca.total.toLocaleString("pt-BR")} questões
-          </b>
-        </div>
-      </header>
+      <CabecalhoLaudo
+        campos={[
+          { rotulo: "Banca", valor: nomeCurto(banca) },
+          { rotulo: "Janela", valor: janela(banca), mono: true },
+          {
+            rotulo: "Base",
+            valor: `${banca.total.toLocaleString("pt-BR")} questões`,
+            mono: true,
+          },
+        ]}
+      />
 
       <div className="px-5 sm:px-6">
         {/* O PAINEL "COMO AS QUESTÕES SÃO FEITAS" SAIU, e o "LEITURA" tambem.
@@ -128,7 +92,7 @@ export function FaciesReport({
             O QUE cai e DE QUE ÁREA. A leitura de formato continua existindo em
             `formatosDistintivos` e na página da banca, para quem for atrás. */}
         {/* ── PAINEL 01 — a fácies propriamente dita ────────────────────── */}
-        <Painel
+        <PainelLaudo
           numero="01"
           titulo="O que mais cai"
           nota={`${banca.mais_cai.base.toLocaleString("pt-BR")} questões classificadas · ${banca.mais_cai.cobertura.toFixed(0)}% da base`}
@@ -152,10 +116,10 @@ export function FaciesReport({
               banca. A lista descreve essa parte, não a prova inteira.
             </p>
           ) : null}
-        </Painel>
+        </PainelLaudo>
 
         {/* ── PAINEL 02 — a área contra a média do acervo ───────────────── */}
-        <Painel
+        <PainelLaudo
           numero="02"
           titulo="Distribuição por área"
           // A NOTA ANTERIOR ficou FALSA quando a barra ganhou a média.
@@ -171,15 +135,15 @@ export function FaciesReport({
           {/* Barra com a marca da média nacional — ver BarrasArea.tsx para o
               porquê de a comparação não ficar atrás de um clique. */}
           <BarrasArea linhas={banca.areas.linhas} />
-        </Painel>
+        </PainelLaudo>
         {/* ── PAINEL 03 — como a banca monta a questão, quando isso distingue */}
-        <Painel
+        <PainelLaudo
           numero="03"
           titulo="Como esta banca cobra"
           nota="exato · sem estimativa"
         >
           <ComoCobra banca={banca} />
-        </Painel>
+        </PainelLaudo>
 
       </div>
     </div>
