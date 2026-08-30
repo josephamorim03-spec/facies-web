@@ -79,6 +79,16 @@ export type StudentTargetExamInput = {
   institution_key?: string | null;
   exam_name?: string | null;
   exam_date?: string | null;
+  /** De onde veio a data, e o que o plano pode fazer com ela.
+   *
+   *  O backend já aceitava o campo; a tela nunca o mandava, então TODO objetivo
+   *  caía no default `"estimated"` e o multiplicador cheio de urgência — que só
+   *  vale para `"confirmed"` — nunca disparou em produção.
+   *
+   *  ⚠️ `"confirmed"` só quando a data vem do EDITAL. Ela dobra o peso de
+   *  urgência do objetivo: data digitada pelo aluno, ou vinda de fonte
+   *  secundária, continua `"estimated"`. */
+  date_status?: "estimated" | "confirmed";
 };
 
 /**

@@ -69,6 +69,35 @@ export type QuestionBankInstitution = {
   state: string | null;
   /** Até onde o ranking desta instituição desce sem virar ruído. */
   reliable_grain: "subtheme" | "theme";
+  /** A prova desta instituição ainda é aplicada?
+   *
+   *  ⚠️ `null` é "ninguém decidiu", NÃO "está ativa". 135 das 138 bancas não têm
+   *  decisão, e afirmar por omissão erraria justamente onde custa mais caro: o
+   *  plano de estudo inteiro é montado sobre o alvo escolhido aqui.
+   *
+   *  Vem de `institution_exam_status` (migration 120 do kbank), que existe
+   *  porque bancas grandes pararam de aplicar prova própria — a UFPR não aplica
+   *  desde 2022, e quem quer aquela vaga hoje faz o ENAMED. */
+  situacao?: {
+    situacao: "ativa" | "aderiu_enare" | "processo_unificado" | "extinta";
+    /** Para onde ir quando a prova própria acabou. Sem isto o aviso é beco sem
+     *  saída. */
+    alvo_atual: string | null;
+    ultima_edicao_conhecida: number | null;
+    nota: string | null;
+    fonte: string | null;
+  } | null;
+  /** A próxima aplicação desta prova. `null` = não sabemos, e o aluno digita.
+   *
+   *  ⚠️ `confirmada` é `true` só quando a origem é o edital. Confirmar DOBRA o
+   *  peso de urgência do objetivo no plano de estudo, e o relato de um cursinho
+   *  é bom para preencher o campo — o aluno para de procurar e de digitar
+   *  errado — não para afirmar. */
+  proxima_prova?: {
+    data: string;
+    origem: string | null;
+    confirmada: boolean;
+  } | null;
 };
 
 export type QuestionBankSourceOption = {

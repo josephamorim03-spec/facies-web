@@ -36,7 +36,44 @@ type Selected = StudentTargetExamInput & {
   label: string;
   recent_question_count: number | null;
   reliable_grain: "subtheme" | "theme" | null;
+  situacao: QuestionBankInstitution["situacao"];
+  /** A data como veio da fonte, para detectar edição do aluno.
+   *
+   *  Se ele mudar `exam_date` para outra coisa, a data deixa de ser a do edital
+   *  e não pode continuar viajando como `"confirmed"` — o multiplicador cheio de
+   *  urgência estaria pagando por uma afirmação que a fonte não faz. */
+  exam_date_origem?: string | null;
 };
+
+/** O aviso de prova que não é mais aplicada, e para onde ir.
+ *
+ * A migration 120 do kbank criou o dado dizendo, no cabeçalho, que uma banca que
+ * aderiu ao ENARE "NÃO é escolhível como alvo — oferecer 'UFPR' na lista manda o
+ * aluno estudar para uma prova que não vai acontecer". O backend de IA já
+ * respeitava; esta tela, que a regra nomeia, não.
+ *
+ * ⚠️ A banca CONTINUA na lista. Sumir seria trocar um silêncio por outro: o
+ * aluno procura pelo nome que conhece e concluiria que não temos a prova dele. O
+ * que ele precisa é da situação ao lado do nome, com o destino.
+ */
+function AvisoSituacao({ situacao }: { situacao: QuestionBankInstitution["situacao"] }) {
+  if (!situacao || situacao.situacao === "ativa") return null;
+  const motivo =
+    situacao.situacao === "aderiu_enare"
+      ? "não aplica prova própria"
+      : situacao.situacao === "processo_unificado"
+        ? "seleciona por processo unificado"
+        : "prova extinta";
+  return (
+    <p className="mt-1 text-xs text-warning">
+      {motivo}
+      {situacao.ultima_edicao_conhecida
+        ? ` desde ${situacao.ultima_edicao_conhecida + 1}`
+        : ""}
+      {situacao.alvo_atual ? ` · quem quer esta vaga faz ${situacao.alvo_atual}` : ""}
+    </p>
+  );
+}
 
 type Props = {
   token: string;
@@ -99,6 +136,7 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
               label: known?.institution_label ?? item.label ?? item.board_code,
               recent_question_count: known?.recent_question_count ?? null,
               reliable_grain: known?.reliable_grain ?? null,
+              situacao: known?.situacao ?? null,
             };
           }),
       );
@@ -155,10 +193,20 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
       {
         institution_key: institution.institution_key,
         exam_name: null,
-        exam_date: null,
+        // A DATA VEM PREENCHIDA quando a conhecemos. O campo era "opcional" e
+        // chegava vazio, então na prática quase ninguém o preenchia — e sem data
+        // o plano vira janela rolante em vez de parar na prova.
+        //
+        // `date_status` acompanha a procedência: só o edital autoriza
+        // "confirmed", porque ele DOBRA o peso de urgência do objetivo. Fonte
+        // secundária preenche o campo e deixa como estimativa.
+        exam_date: institution.proxima_prova?.data ?? null,
+        exam_date_origem: institution.proxima_prova?.data ?? null,
+        date_status: institution.proxima_prova?.confirmada ? "confirmed" : "estimated",
         label: institution.institution_label,
         recent_question_count: institution.recent_question_count,
         reliable_grain: institution.reliable_grain,
+        situacao: institution.situacao ?? null,
       },
     ]);
     setQuery("");
@@ -193,6 +241,16 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
             : { board_code: item.board_code }),
           exam_name: item.exam_name?.trim() || null,
           exam_date: item.exam_date || null,
+          // O save NUNCA mandava isto, e o backend caía no default "estimated".
+          // Consequência: `signal_dictionary` paga o dobro de urgência para
+          // "confirmed" e nunca recebia um.
+          //
+          // Se o aluno editou a data à mão, ela deixa de ser a do edital — volta
+          // a ser estimativa, mesmo que a original estivesse confirmada.
+          date_status:
+            item.date_status === "confirmed" && item.exam_date === item.exam_date_origem
+              ? "confirmed"
+              : "estimated",
         })),
         revision,
       );
@@ -272,6 +330,7 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
                         : ""}
                     </p>
                   ) : null}
+                  <AvisoSituacao situacao={item.situacao} />
                 </div>
                 <button
                   type="button"
@@ -367,6 +426,10 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
                         {years ? ` · ${years}` : ""}
                         {institution.state ? ` · ${institution.state}` : ""}
                       </p>
+                      {/* ANTES de adicionar, e não depois: aqui é onde a escolha
+                          acontece, e o custo de descobrir tarde é um plano
+                          inteiro montado para uma prova que não vai acontecer. */}
+                      <AvisoSituacao situacao={institution.situacao} />
                     </div>
                     <Button
                       size="sm"
