@@ -13,7 +13,18 @@ const PUBLIC_PREFIXES = ["/login", "/auth/", "/api/", "/_next/", "/__nextjs", "/
 
 // `/` e EXATO, nunca prefixo. Todo caminho comeca com "/", entao "/" dentro de
 // PUBLIC_PREFIXES abriria o app inteiro sem que a linha parecesse errada.
-const PUBLIC_EXACT = new Set(["/", "/facies", "/auth", "/enamed"]);
+//
+// `/termos` e `/privacidade` sao publicas porque o BACKEND ja as declara assim:
+// `app/api/routers/legal.py` monta `/legal/{kind}` fora do portao de acesso
+// citando o Decreto 7.962 art. 3, que exige o contrato disponivel ANTES da
+// contratacao. Sem estas duas linhas o frontend contradizia o backend, e o link
+// "Termos de Uso" levava a pessoa deslogada para a tela de login -- exatamente
+// quem o decreto quer que consiga ler.
+//
+// EXATO, nao prefixo: nao ha rota filha sob nenhuma das duas, e prefixo aqui so
+// abriria espaco para uma futura `/termos/algo-privado` nascer publica sem que
+// ninguem percebesse.
+const PUBLIC_EXACT = new Set(["/", "/facies", "/auth", "/enamed", "/termos", "/privacidade"]);
 
 const PUBLIC_FILE_REGEX = /\.[^/]+$/;
 
