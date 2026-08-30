@@ -172,6 +172,35 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/modes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Auth Modes
+         * @description As formas de entrar disponiveis. Publico, sem sessao.
+         *
+         *     Existe porque a tela de login precisava saber se oferece "criar conta por
+         *     e-mail", e a UNICA fonte dessa verdade e' `AUTH_MODE`, no backend. A
+         *     alternativa seria um `NEXT_PUBLIC_LOCAL_AUTH_ENABLED` no frontend -- dois
+         *     lugares para o mesmo fato, que divergem no primeiro deploy em que alguem
+         *     lembra de um e esquece do outro.
+         *
+         *     Sem rate limit: nao ha segredo, nao ha estado, e a resposta e' a mesma para
+         *     todo mundo. Limitar isto so tornaria a tela de login fragil.
+         */
+        get: operations["auth_modes_auth_modes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/session": {
         parameters: {
             query?: never;
@@ -3993,6 +4022,23 @@ export interface components {
             done: boolean;
             /** Results */
             results?: components["schemas"]["AnalyzeSimulationErrorsProgressiveStatusItemOut"][];
+        };
+        /**
+         * AuthModesResponse
+         * @description Quais formas de entrar existem NESTE ambiente.
+         *
+         *     Publico e sem sessao: quem pergunta e' a tela de login, que por definicao
+         *     ainda nao autenticou. `/capabilities` nao serve aqui -- ele exige `user_id`.
+         *
+         *     Nao vaza nada: a existencia das rotas de auth local ja e' observavel por quem
+         *     faz um POST em `/auth/signup` e recebe 404 em vez de 422. O que este endpoint
+         *     faz e' poupar a interface de descobrir isso pelo erro.
+         */
+        AuthModesResponse: {
+            /** Local Auth */
+            local_auth: boolean;
+            /** Google */
+            google: boolean;
         };
         /** AuthSessionRequest */
         AuthSessionRequest: {
@@ -11768,6 +11814,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    auth_modes_auth_modes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthModesResponse"];
                 };
             };
         };
