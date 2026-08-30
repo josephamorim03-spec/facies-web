@@ -2,6 +2,7 @@ import { resolveDisplayArea } from "@/lib/areaDisplay";
 import {
   AREA_FULL_LABELS,
   AREA_LANDING_LABELS,
+  AREA_SHORT_LABELS,
   AREA_VAR,
   fundirObstetriciaEmGo,
 } from "@/lib/areaIdentity";
@@ -113,12 +114,15 @@ export function FaixaAreas({
    */
   rotulo?: string;
   /**
-   * A legenda com nome e percentual sob a faixa. Vive AQUI, e não em quem
-   * chama, porque depende da mesma `ORDEM` e do mesmo recorte de segmentos —
-   * duas listas ordenadas por regras que só por convenção coincidem acabam
-   * divergindo, e a legenda passaria a nomear a cor errada.
+   * `true` — nome por extenso sob a faixa, o formato da landing.
+   * `"sigla"` — `CM 24 · CIR 22`, o formato do topo do app (`8b` e `9a`).
+   *
+   * ⚠️ SIGLA NO APP, NOME NA LANDING, e a divergência é de FUNÇÃO. Na landing a
+   * faixa é o argumento e tem a linha inteira; no topo do app ela é orientação
+   * periférica em 24px, onde "ginecologia e obstetrícia" não cabe — e o aluno
+   * logado já convive com as siglas nos filtros e no banco.
    */
-  legenda?: boolean;
+  legenda?: boolean | "sigla";
 }) {
   // OB entra em GO ANTES de qualquer outra coisa: a ordem e o total dependem
   // do resultado da fusao, nao do contrario.
@@ -190,6 +194,31 @@ export function FaixaAreas({
   );
 
   if (!legenda) return barra;
+
+  // ── A legenda em SIGLA — o topo do app (`8b`, `9a`) ────────────────────
+  //
+  // `CM 24 · CIR 22 · PED 18`. Sem ponto de cor: a faixa colorida esta logo
+  // acima, e o olho liga sigla e cor pela ORDEM, que e fixa. Repetir o ponto
+  // aqui gastaria largura que a linha nao tem em 390px.
+  //
+  // O `aria-label` da faixa continua com os nomes por extenso: sigla e economia
+  // VISUAL, e quem ouve a tela nao tem largura para economizar.
+  if (legenda === "sigla") {
+    return (
+      <div className={className}>
+        {barra}
+        <p aria-hidden="true" className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-nota text-muted">
+          {segmentos.map(({ area, ...linha }) => (
+            <span key={linha.rotulo} className="whitespace-nowrap">
+              {AREA_SHORT_LABELS[area]}{" "}
+              <span className="font-mono tabular-nums text-ink">{linha.pct.toFixed(0)}</span>
+            </span>
+          ))}
+        </p>
+      </div>
+    );
+  }
+
 
   return (
     <div className={className}>

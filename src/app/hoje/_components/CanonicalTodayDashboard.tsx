@@ -21,6 +21,7 @@ import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
 // como um formulário antes dela. `TodayDimensioning` é uma linha, e a conta por
 // trás dela abre a um toque.
 import { AlvoEContagem, objetivoPrincipal } from "@/components/AlvoEContagem";
+import { FaixaDaProva } from "./FaixaDaProva";
 import { TodayBackupActions } from "./TodayBackupActions";
 import { TodayDimensioning } from "./TodayDimensioning";
 import { TodayEmptyState } from "./TodayEmptyState";
@@ -181,6 +182,10 @@ export function CanonicalTodayDashboard() {
           abre o app. */}
       <header>
         <AlvoEContagem objetivo={alvo} />
+        {/* A faixa do `8b`: a cara da prova, em sigla, todo dia. Ela se cala
+            sozinha quando nao ha prova declarada ou facies publicada — ver o
+            componente. */}
+        <FaixaDaProva />
         {/* Sem classe de tamanho: a escala vive em `.tela-app h1`, com font-size
             e line-height no mesmo bloco. Era `text-3xl md:text-4xl` (30 e 36px)
             contra os 25px medidos no artboard `8b`. */}
