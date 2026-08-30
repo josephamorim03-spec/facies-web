@@ -33,6 +33,10 @@ import {
   startSessionExpiredRedirect,
   subscribeSessionExpired,
 } from "@/lib/sessionExpiration";
+import {
+  isAccessLapseSuppressedPath,
+  subscribeAccessDenied,
+} from "@/lib/accessLapse";
 import { startSessionKeepalive } from "@/lib/sessionKeepalive";
 import { getStudentPageTitle } from "@/lib/navConfig";
 import { QueryProvider } from "@/lib/QueryProvider";
@@ -236,6 +240,22 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       setSessionExpiredOpen(true);
     });
   }, []);
+
+  // O acesso venceu com a pessoa DENTRO do app — trial terminando com a aba
+  // aberta hoje; assinatura não renovada quando houver cobrança.
+  //
+  // Vai direto para a tela de acesso, sem diálogo. A diferença para a sessão
+  // expirada é deliberada: lá o app precisa AVISAR antes de mandar para o login,
+  // porque a pessoa pode estar no meio de uma resposta e perderia o que digitou.
+  // Aqui não há nada a salvar — todas as telas por trás do portão já estão
+  // devolvendo 403, então segurar a pessoa num app que não responde mais só
+  // adiaria a única coisa que ela pode fazer.
+  useEffect(() => {
+    return subscribeAccessDenied(() => {
+      if (isAccessLapseSuppressedPath(window.location.pathname)) return;
+      router.replace(ACTIVATE_ROUTE);
+    });
+  }, [router]);
 
   // Renova a sessão antes do vencimento enquanto o aluno está no app, para que o
   // access token não expire no meio de uma ação.

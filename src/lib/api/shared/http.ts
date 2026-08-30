@@ -5,6 +5,11 @@ import {
   isSessionExpirationSuppressedPath,
   SESSION_EXPIRED_MESSAGE,
 } from "../../sessionExpiration";
+import {
+  dispatchAccessDenied,
+  isAccessDeniedApiResponse,
+  isAccessLapseSuppressedPath,
+} from "../../accessLapse";
 import { repairMojibake, repairMojibakeDeep } from "../../textEncoding";
 
 export type APIError = { message: string; status?: number; details?: unknown };
@@ -586,6 +591,23 @@ function shouldHandleSessionExpired(path: string, res: Response): boolean {
   return isSessionExpiredApiResponse(path, res);
 }
 
+/**
+ * O portão de acesso recusou (403 `access_denied`). Fica ao lado do tratamento
+ * de sessão expirada porque o modo de falha é irmão: em vez de "quem é você?",
+ * é "seu acesso acabou" — e sem isto cada painel da tela mostrava um erro
+ * genérico próprio, sem dizer o que houve.
+ *
+ * Não mexe em cookie nem em token: a sessão continua VÁLIDA, só o direito é que
+ * venceu. Derrubar a sessão aqui obrigaria a pessoa a entrar de novo para
+ * conseguir assinar, que é o contrário do que se quer.
+ */
+function handleAccessDeniedResponse(path: string, res: Response): void {
+  if (!isAccessDeniedApiResponse(res)) return;
+  if (typeof window === "undefined") return;
+  if (isAccessLapseSuppressedPath(window.location.pathname)) return;
+  dispatchAccessDenied({ path });
+}
+
 function handleSessionExpiredResponse(path: string, res: Response): void {
   if (!shouldHandleSessionExpired(path, res)) return;
   if (typeof window !== "undefined" && !isSessionExpirationSuppressedPath(window.location.pathname)) {
@@ -669,10 +691,12 @@ export async function fetchRaw(path: string, init?: APIRequestInit): Promise<Res
           continue;
         }
         handleSessionExpiredResponse(path, response);
+        handleAccessDeniedResponse(path, response);
         return response;
       }
       if (!canRetry || !retryStatuses.has(response.status) || attempt >= maxAttempts) {
         handleSessionExpiredResponse(path, response);
+        handleAccessDeniedResponse(path, response);
         return response;
       }
       const retryAfterMs = parseRetryAfterMs(response.headers.get("Retry-After"));
