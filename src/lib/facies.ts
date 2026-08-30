@@ -328,6 +328,26 @@ export function mediaNacionalDaArea(rotulo: string): number | null {
   return mediaPorArea.get(rotulo) ?? null;
 }
 
+/**
+ * A banca pela chave que o OBJETIVO do aluno carrega.
+ *
+ * `bancaPorSlug` serve a URL pública; esta serve a ponte com o app. O objetivo
+ * do aluno guarda `institution_key` (`StudentTargetExamItem`), e é a MESMA
+ * chave deste dataset: `student_objectives_service._resolve_institution` valida
+ * a chave declarada contra o vocabulário de instituições do banco de questões,
+ * que é de onde `build_facies_dataset.py` também lê. Chave inventada é recusada
+ * no onboarding, com `unknown_institution_key`.
+ *
+ * ⚠️ Devolve `null` sem drama. Uma banca pode estar no catálogo de objetivos e
+ * ainda não ter fácies publicada — o dataset só publica quem passa do piso de
+ * questões recentes. A tela precisa dizer isso, não quebrar.
+ */
+export function bancaPorInstitutionKey(chave: string | null | undefined): Banca | undefined {
+  const alvo = (chave ?? "").trim();
+  if (!alvo) return undefined;
+  return DATASET.bancas.find((banca) => banca.institution_key === alvo);
+}
+
 export function bancaPorSlug(slug: string): Banca | undefined {
   return DATASET.bancas.find((banca) => banca.slug === slug);
 }

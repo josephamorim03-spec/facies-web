@@ -4,7 +4,8 @@ export type StudentIntent =
   | "cards"
   | "profile"
   | "routine"
-  | "account";
+  | "account"
+  | "map";
 
 export type StudentNavIcon = StudentIntent;
 
@@ -44,6 +45,8 @@ const INTENTS: Record<
   // breadcrumb (`route()`, abaixo) — "voce esta em hoje" nao se escreve assim.
   // A barra inferior os rebaixa por CSS, que e onde o desenho pede minuscula.
   today: { path: "/hoje", label: "Hoje", icon: "today" },
+  // `9a` "O mapa da prova": a facies da banca-alvo do aluno, dentro do app.
+  map: { path: "/mapa", label: "Mapa", icon: "map" },
   bank: { path: "/banco", label: "Banco", icon: "bank" },
   cards: { path: "/cards", label: "Cards", icon: "cards" },
   // A aba abre em Evolucao, nao em Preferencias: e a tela que o aluno consulta
@@ -71,6 +74,7 @@ const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
   // semana padrao, que e como o `14a` os apresenta — as duas abas de dentro de
   // "Minha rotina". O Hoje volta a ser um destino so, que e o que o `8b` mostra.
   today: [],
+  map: [],
   bank: [
     { href: "/banco", label: "Montar sessão", matches: ["/banco"] },
     { href: "/banco/historico", label: "Histórico", matches: ["/banco/historico"] },
@@ -102,6 +106,7 @@ const LEGACY_PATHS: Record<StudentIntent, string[]> = {
   // `/agenda-operacional`, `/desempenho` e `/trilha` mudaram de aba junto com o
   // Cronograma: eles sao o plano, e o plano agora mora em Rotina.
   today: ["/today", "/semana", "/onboarding"],
+  map: [],
   bank: [],
   cards: [],
   profile: ["/estatisticas"],
@@ -120,6 +125,7 @@ const LEGACY_PATHS: Record<StudentIntent, string[]> = {
 // barra e `INTENTS_VISIVEIS`, mais abaixo.
 const INTENT_ORDER: StudentIntent[] = [
   "today",
+  "map",
   "bank",
   "cards",
   "profile",

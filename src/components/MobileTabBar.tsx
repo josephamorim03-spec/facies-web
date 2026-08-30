@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
 import { useState } from "react";
-import { Calendar as CalendarDays, ChartLine as ChartLine, CircleUser as CircleUserRound, House as House, NotepadText as Layers3, Library as LibraryBig } from "lucide-react";
+import { Calendar as CalendarDays, ChartLine as ChartLine, Compass as Compass, CircleUser as CircleUserRound, House as House, NotepadText as Layers3, Library as LibraryBig } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 
 import { FastNavLink } from "@/components/FastNavLink";
@@ -23,6 +23,7 @@ const ICON_MAP: Record<StudentNavIcon, ComponentType<SVGProps<SVGSVGElement>>> =
   // alguma coisa (assinatura, provas, dados). Evolucao passa a ser o grafico,
   // que e o que a tela mostra.
   profile: ChartLine,
+  map: Compass,
   routine: CalendarDays,
   account: CircleUserRound,
 };

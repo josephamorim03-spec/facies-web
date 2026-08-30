@@ -1,5 +1,6 @@
 import { api, authHeader } from "../shared/http";
 import type { QuestionBankSession } from "./question-bank";
+import type { Banca } from "@/lib/facies";
 
 // ---------------------------------------------------------------- objetivos
 
@@ -79,6 +80,27 @@ export type StudentTargetExamInput = {
   exam_name?: string | null;
   exam_date?: string | null;
 };
+
+/**
+ * A facies da banca-alvo, pela chave do objetivo do aluno.
+ *
+ * Nao passa pelo backend: o dataset e estatico e mora neste mesmo servidor
+ * Next. Ver `app/api/facies/banca/[key]/route.ts` para por que existe rota em
+ * vez de props de server component.
+ *
+ * `null` quando a banca nao tem facies publicada -- o dataset so publica quem
+ * passa do piso de questoes recentes, entao ha objetivo valido sem leitura. E
+ * um estado da tela, nao um erro.
+ */
+export async function getFaciesDaBanca(institutionKey: string): Promise<Banca | null> {
+  const resposta = await fetch(
+    `/api/facies/banca/${encodeURIComponent(institutionKey)}`,
+    { cache: "no-store" },
+  );
+  if (resposta.status === 404) return null;
+  if (!resposta.ok) throw new Error(`facies_banca_${resposta.status}`);
+  return (await resposta.json()) as Banca;
+}
 
 export async function getMyTargetExam(token: string): Promise<StudentTargetExam> {
   return api<StudentTargetExam>("/api/objectives/target-exam", {
