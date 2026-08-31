@@ -174,11 +174,31 @@ function shouldSkipCandidate(value) {
   return false;
 }
 
+// O QUE ESTA DENTRO DE `${...}` E EXPRESSAO, NUNCA TEXTO DE TELA.
+//
+// `calc(100% - ${pct(media + desvio)})` fazia o guard acusar `media -> media`
+// apontando para um NOME DE VARIAVEL. E como a cadeia do `npm run lint` e
+// `&&`, essa acusacao derrubava o eslint do repositorio inteiro por uma
+// palavra que nenhum leitor ve.
+//
+// A lista de identificadores em `shouldSkipCandidate` (className, activeTab,
+// question_patch) tratava o mesmo problema caso a caso, e por isso nunca
+// terminava. Esta regra trata pela FORMA.
+//
+// A substituicao preserva as strings literais que existam dentro da
+// interpolacao: em `${cond ? "media" : ""}` a copy continua sendo medida.
+// Sem isso a correcao abriria um buraco em vez de fechar um.
+function semExpressoes(text) {
+  return text.replace(/\$\{[^}]*\}/g, (trecho) =>
+    (trecho.match(/(["'])(?:\\.|(?!\1).)*\1/g) || []).join(" "));
+}
+
 function findTerms(text) {
   const hits = [];
+  const limpo = semExpressoes(text);
   for (const [raw, replacement] of forbidden) {
     const regex = new RegExp(`(^|[^A-Za-zÀ-ÿ])(${raw})(?=$|[^A-Za-zÀ-ÿ])`, "iu");
-    if (regex.test(text)) hits.push(`${raw} -> ${replacement}`);
+    if (regex.test(limpo)) hits.push(`${raw} -> ${replacement}`);
   }
   return hits;
 }
