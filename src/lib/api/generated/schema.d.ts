@@ -5341,14 +5341,28 @@ export interface components {
          *     `consentimento` é obrigatório e precisa vir `true`. Um formulário que assume
          *     consentimento pelo simples envio não tem prova de nada — e é exatamente o
          *     ponto em que a LGPD deixa de ser checklist e vira problema.
+         *
+         *     `Literal[True]` e não `bool`, e a diferença não é estilo. Enquanto o tipo era
+         *     `bool`, a regra existia só nesta prosa: o schema declarava que `false` era
+         *     válido, e quem recusava era um `if` dentro do router — devolvendo um
+         *     `{"ok": false}` com status 400 que não dizia qual campo estava errado. Um
+         *     fuzz de contrato sobre o OpenAPI (`tests/test_public_surface_fuzz.py`) achou
+         *     isso mandando exatamente o corpo que o schema dizia ser aceitável.
+         *
+         *     Com `Literal[True]` a regra vira parte do contrato: o OpenAPI publica
+         *     `enum: [true]`, o FastAPI devolve 422 nomeando o campo, e o tipo TypeScript
+         *     gerado impede o formulário de enviar `false` antes de a requisição sair.
          */
         InteresseIn: {
             /** Email */
             email: string;
             /** Banca */
             banca?: string | null;
-            /** Consentimento */
-            consentimento: boolean;
+            /**
+             * Consentimento
+             * @constant
+             */
+            consentimento: true;
         };
         /** ItemCreate */
         ItemCreate: {
@@ -12387,6 +12401,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DocumentoLegalOut"];
                 };
+            };
+            /** @description Tipo de documento legal desconhecido. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
