@@ -1089,6 +1089,27 @@ input[type="range"]:focus-visible {
 }
 .toast-enter { animation: toast-enter var(--motion-fast) var(--ease-paper); }
 
+/* ── Item que entra numa lista que cresceu ───────────────────────────────────
+   Medido no build de produção, seção 03 a 1280px: abrir a questão mexia CINCO
+   coisas no mesmo instante e só DUAS eram animadas. A lista saltava de 2 para 9
+   itens e de duas colunas para uma, e a linha-resumo sumia — tudo sem transição,
+   por baixo de uma animação de grade de 500ms. O olho lê isso como falha, não
+   como resposta ao clique.
+
+   Os sete itens novos passam a entrar em sequência. O atraso é aplicado por
+   índice no componente, e o total é curto de propósito: 8 × 45ms = 360ms, dentro
+   dos 500ms que a grade leva para abrir. Escalonar além disso deixaria a lista
+   ainda chegando depois de a questão já ter parado, que é o defeito oposto.
+
+   `both` para o item não piscar no estado final antes de o atraso terminar. */
+@keyframes surgir-na-lista {
+  from { transform: translateY(6px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+.surgir-na-lista {
+  animation: surgir-na-lista 320ms var(--ease-paper) both;
+}
+
 /* Tela: charts fora do viewport mas montados com largura real (não usar display:none) */
 @media screen {
   [data-print-charts] {
@@ -1168,6 +1189,12 @@ input[type="range"]:focus-visible {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    /* ⚠️ ZERAR A DURAÇÃO NÃO BASTA quando há atraso escalonado. A entrada em
+       sequência da lista da seção 03 usa `animation-delay` por índice com
+       `both`: sem esta linha, o item fica no estado inicial (invisível) até o
+       atraso vencer, e quem pediu menos movimento recebe conteúdo aparecendo
+       aos poucos durante 360ms — que é exatamente o que queria evitar. */
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }

@@ -1,3 +1,4 @@
+import { Numeral } from "./Numeral";
 import { QuestaoAnotada } from "./QuestaoAnotada";
 // ⚠️ O valor vem do módulo NÃO-cliente. Importado de `QuestaoAnotada`, que é
 // `"use client"`, o Next entrega ao servidor um proxy que se serializa como
@@ -54,9 +55,9 @@ function Numero({
           v7. `tabular-nums` porque estes números ficam empilhados numa grade:
           sem largura fixa de algarismo, as colunas não alinham e o painel lê
           como desleixo num produto cujo argumento é medição. */}
-      <div className="font-mono text-[26px] leading-none tabular-nums text-ink sm:text-[40px]">
+      <Numeral className="block text-[26px] leading-none text-ink sm:text-[40px]">
         {valor}
-      </div>
+      </Numeral>
       <div className="mt-2 text-base text-ink">{rotulo}</div>
       <p className="mt-1.5 text-sm text-muted">{nota}</p>
     </div>
@@ -114,9 +115,9 @@ export function SecaoNoveMedidas({ numero }: { numero: string }) {
           E cada uma tem cara própria. Umas quase nunca pedem a alternativa errada;{" "}
           {dados.incorreta.extremo ? (
             <>
-              em outra, <span className="font-mono">{fmt(dados.incorreta.extremo)}</span> das
+              em outra, <Numeral>{fmt(dados.incorreta.extremo)}</Numeral> das
               questões pedem “assinale a incorreta” — contra{" "}
-              <span className="font-mono">{fmt(dados.incorreta.pct)}</span> nas{" "}
+              <Numeral>{fmt(dados.incorreta.pct)}</Numeral> nas{" "}
               {dados.base.toLocaleString("pt-BR")} questões com o formato lido.
             </>
           ) : (
@@ -134,7 +135,7 @@ export function SecaoNoveMedidas({ numero }: { numero: string }) {
             colunas era a minha leitura, não a do desenho: com 2 no celular os
             números ficam lado a lado em vez de empilhados, e o trio lê como
             painel de medida em vez de lista. */}
-        <div className="mt-10 grid grid-cols-2 gap-6 border-y border-rule py-6 sm:gap-7 lg:grid-cols-4">
+        <div className="mt-10 grid grid-cols-2 gap-6 border-y border-rule py-6 sm:gap-7 lg:grid-cols-3">
           <Numero
             valor={String(TOTAL_DE_MARCAS)}
             rotulo="medidas em cada questão"

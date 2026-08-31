@@ -1,5 +1,6 @@
 "use client";
 
+import { Numeral } from "./Numeral";
 import { useState } from "react";
 
 import {
@@ -145,6 +146,10 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
   const separar = eixo === "acervo" && !questaoAberta;
   const visiveis = separar ? marcas.filter((m) => m.noAcervo) : marcas;
   const resumidas = separar ? marcas.filter((m) => !m.noAcervo) : [];
+  // Quantas ainda não têm número do acervo. Fechada, elas saem da lista e viram
+  // a linha-resumo; aberta, ficam na lista (o clique precisa delas) e a ressalva
+  // é dita uma vez na instrução.
+  const semNumero = marcas.filter((m) => !m.noAcervo).length;
 
   const alternar = (chave: Chave) =>
     setFixada((atual) => (atual === chave ? null : chave));
@@ -164,7 +169,15 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
       /* `items-start`: sem ele o item de grade estica até a altura da linha, e
          a linha é a da LISTA — que é mais alta que a questão. A caixa da questão
          saía com meia tela de vazio dentro da própria borda. */
-      className={`mt-10 grid items-start overflow-hidden transition-[grid-template-rows,grid-template-columns,gap] duration-500 ease-out motion-reduce:transition-none lg:grid-rows-[auto] ${
+      /* ⚠️ `overflow-hidden` SÓ COM A QUESTÃO FECHADA, e isso não é ajuste de
+         estilo: `position: sticky` não funciona dentro de nenhum ancestral com
+         `overflow` diferente de `visible`. Enquanto o clipe ficava aqui o tempo
+         todo, a questão grudada (logo abaixo) simplesmente não grudava — e o
+         sintoma é traiçoeiro, porque nada erra, o elemento só rola junto.
+         Fechada, o clipe continua sendo o que esconde o colapso da trilha. */
+      className={`mt-10 grid items-start transition-[grid-template-rows,grid-template-columns,gap] duration-500 ease-out motion-reduce:transition-none lg:grid-rows-[auto] ${
+        questaoAberta ? "" : "overflow-hidden"
+      } ${
         questaoAberta
           ? "gap-8 grid-rows-[1fr_auto] lg:grid-cols-[1.1fr_1fr]"
           : // ⚠️ `gap-0` FECHADO, e não `gap-8`. A trilha da questão colapsa em
@@ -195,9 +208,22 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
 
            `h-0` no próprio elemento tira a altura da conta do grid. A opacidade
            continua fazendo a transição; o que deixa de existir é a caixa. */
+        /* ⚠️ A QUESTÃO GRUDA NO TOPO, e é o conserto do buraco que dominava a
+           seção aberta. Medido no build de produção a 1280px: a questão tem
+           475px de altura e a lista tem ~1.200px. Com as duas alinhadas ao topo
+           sobravam ~700px de coluna vazia à esquerda — quase meia tela de nada,
+           bem no meio da página.
+
+           Grudada, esse espaço deixa de ser vazio e passa a ter função: a
+           interação desta seção é clicar numa das nove medidas e ver ONDE ela
+           aparece no enunciado, e isso era impossível de ver ao rolar até a
+           medida 09, porque a questão já tinha saído da tela.
+
+           Só em `lg`: abaixo disso a grade é de uma coluna e a questão fica
+           acima da lista, onde grudar não faria sentido. */
         className={`min-h-0 min-w-0 rounded-surface border border-edge bg-surface transition-opacity duration-500 ease-out motion-reduce:transition-none ${
           questaoAberta
-            ? "p-5 opacity-100 sm:p-6"
+            ? "p-5 opacity-100 sm:p-6 lg:sticky lg:top-6 lg:self-start"
             : "h-0 overflow-hidden border-0 p-0 opacity-0"
         }`}
       >
@@ -369,6 +395,16 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
             : eixo === "acervo"
               ? "O que já publicamos do acervo, medida a medida."
               : `As ${marcas.length} medidas, uma a uma. Abra a questão para ver cada uma no texto.`}
+          {/* A RESSALVA, UMA VEZ SÓ. Ela substitui as sete repetições que
+              ficavam dentro da lista. Mesma verdade — o backend mede as nove, o
+              dataset público publica duas — dita onde se lê uma vez e não sete. */}
+          {questaoAberta && eixo === "acervo" && semNumero > 0 ? (
+            <>
+              {" "}
+              Destas, <span className="text-ink">{semNumero}</span> ainda não têm número
+              publicado do acervo — o valor delas aparece no eixo “esta questão”.
+            </>
+          ) : null}
         </p>
 
         {/* ══ A LISTA ══════════════════════════════════════════════════════
@@ -387,7 +423,7 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
             questaoAberta ? "" : "lg:grid lg:grid-cols-2 lg:gap-x-8"
           }`}
         >
-          {visiveis.map((marca) => {
+          {visiveis.map((marca, indice) => {
             const acesa = ativa === marca.chave;
 
             /* ══ O CLIQUE SÓ EXISTE QUANDO ELE FAZ ALGUMA COISA ═════════════
@@ -412,14 +448,10 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
                 <span className="min-w-0">
                   <span className="block text-base text-ink">{marca.nome}</span>
                   {eixo === "questao" ? (
-                    <span className="mt-0.5 block font-mono text-sm text-ink">
-                      {marca.naQuestao}
-                    </span>
+                    <Numeral className="mt-0.5 block text-sm text-ink">{marca.naQuestao}</Numeral>
                   ) : marca.noAcervo ? (
                     <>
-                      <span className="mt-0.5 block font-mono text-sm text-ink">
-                        {marca.noAcervo.valor}
-                      </span>
+                      <Numeral className="mt-0.5 block text-sm text-ink">{marca.noAcervo.valor}</Numeral>
                       {/* O DENOMINADOR NUNCA É OPCIONAL no eixo do acervo. No
                           eixo da questão ele seria ruído — a base é a questão
                           que está ao lado, visível inteira. */}
@@ -428,21 +460,33 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
                         {marca.noAcervo.regua ? ` · ${marca.noAcervo.regua}` : ""}
                       </span>
                     </>
-                  ) : (
-                    /* O device é do próprio desenho, e é o que impede a seção
-                       de fingir: o backend mede, o dataset público ainda não
-                       publica. */
-                    <span className="mt-0.5 block text-sm text-muted">
-                      medida, ainda não publicada
-                    </span>
-                  )}
+                  ) : null /* ⚠️ AQUI FICAVA "medida, ainda não publicada", E ELA
+                       APARECIA SETE VEZES. Com a questão aberta a lista mostra
+                       as nove, e sete delas repetiam a mesma frase — logo
+                       abaixo de um número grande anunciando nove medidas por
+                       questão. Sete desmentidos empilhados não leem como
+                       transparência; leem como a seção se contradizendo.
+
+                       O fato continua dito, e uma vez só, na linha acima da
+                       lista. O fechado já tinha esse tratamento desde a rodada
+                       anterior; o aberto tinha ficado de fora, e é o estado que
+                       o leitor olha por mais tempo. */}
                   <span className="mt-1 block text-sm text-muted">{marca.porque}</span>
                 </span>
               </>
             );
 
             return (
-              <li key={marca.chave} className="border-t border-rule">
+              <li
+                key={marca.chave}
+                /* A entrada em sequência só existe com a questão ABERTA, que é
+                   o único momento em que a lista ganha itens — sete de uma vez.
+                   Os dois que já estavam na tela mantêm a identidade pela
+                   `key`, então não remontam e não animam: quem entra é quem
+                   chegou agora, que é a leitura correta do movimento. */
+                className={`border-t border-rule ${questaoAberta ? "surgir-na-lista" : ""}`}
+                style={questaoAberta ? { animationDelay: `${indice * 45}ms` } : undefined}
+              >
                 {questaoAberta ? (
                   <button
                     type="button"
