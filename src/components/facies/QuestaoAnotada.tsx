@@ -138,6 +138,14 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
   const ativa = questaoAberta ? (fixada ?? sobre) : null;
   const marcas = marcasDoAcervo(dados);
 
+  // No eixo do ACERVO, so' as medidas com valor publicado entram na lista; as
+  // outras viram uma linha so', logo abaixo. No eixo da QUESTAO todas tem valor
+  // -- a questao de exemplo esta inteira na tela -- entao nao ha o que separar.
+  // Ver o comentario sobre as sete ressalvas repetidas, mais abaixo.
+  const separar = eixo === "acervo" && !questaoAberta;
+  const visiveis = separar ? marcas.filter((m) => m.noAcervo) : marcas;
+  const resumidas = separar ? marcas.filter((m) => !m.noAcervo) : [];
+
   const alternar = (chave: Chave) =>
     setFixada((atual) => (atual === chave ? null : chave));
 
@@ -341,10 +349,26 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
             ela, a ligação entre a lista e o texto marcado só é descoberta por
             acidente, e no celular, onde não há hover para acidentar, não é
             descoberta nunca. */}
+        {/* ⚠️ NO EIXO DO ACERVO, SETE DAS NOVE DIZIAM A MESMA RESSALVA.
+            "medida, ainda não publicada" repetido sete vezes logo abaixo de um
+            número grande que anuncia "9 medidas em cada questão" não lê como
+            transparência — lê como promessa que a própria seção desmente na
+            linha seguinte, sete vezes seguidas.
+
+            O fato não mudou: o backend mede as nove, o dataset público publica
+            duas. O que muda é a forma de dizer. As duas com valor viram o corpo
+            da lista; as outras sete viram UMA linha que as nomeia, com UMA
+            ressalva. Mesma verdade, um sétimo do ruído.
+
+            No eixo da questão isso não acontece — ali todas as nove têm valor,
+            porque a questão de exemplo está inteira na tela. Por isso a divisão
+            só existe quando `eixo === "acervo"`. */}
         <p className="mt-2 text-sm text-muted">
           {questaoAberta
             ? "Toque numa medida para ver onde ela aparece na questão."
-            : `As ${marcas.length} medidas, uma a uma. Abra a questão para ver cada uma no texto.`}
+            : eixo === "acervo"
+              ? "O que já publicamos do acervo, medida a medida."
+              : `As ${marcas.length} medidas, uma a uma. Abra a questão para ver cada uma no texto.`}
         </p>
 
         {/* ══ A LISTA ══════════════════════════════════════════════════════
@@ -363,7 +387,7 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
             questaoAberta ? "" : "lg:grid lg:grid-cols-2 lg:gap-x-8"
           }`}
         >
-          {marcas.map((marca) => {
+          {visiveis.map((marca) => {
             const acesa = ativa === marca.chave;
 
             /* ══ O CLIQUE SÓ EXISTE QUANDO ELE FAZ ALGUMA COISA ═════════════
@@ -441,6 +465,23 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
             );
           })}
         </ul>
+
+        {/* AS OUTRAS SETE, EM UMA LINHA E COM UMA RESSALVA.
+            Elas estavam na lista, cada uma repetindo "medida, ainda nao
+            publicada" -- sete vezes a mesma frase logo abaixo do numero que
+            anuncia nove. Nomear as sete mantem a afirmacao verdadeira (o
+            backend mede as nove) sem gastar sete blocos para dizer que o numero
+            nao saiu. */}
+        {resumidas.length > 0 ? (
+          <p className="mt-4 max-w-[68ch] text-sm text-muted">
+            Também medimos, em cada questão:{" "}
+            <span className="text-ink">
+              {resumidas.map((m) => m.nome.toLowerCase()).join(", ")}
+            </span>
+            . Essas ainda não têm número publicado — elas entram quando a leitura
+            do acervo inteiro fechar.
+          </p>
+        ) : null}
       </div>
     </div>
   );

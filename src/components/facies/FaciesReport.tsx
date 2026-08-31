@@ -4,6 +4,7 @@ import { BarrasArea } from "./BarrasArea";
 import { ComoCobra } from "./ComoCobra";
 import { MapaDaProva } from "./MapaDaProva";
 import { CabecalhoLaudo, PainelLaudo } from "./PainelLaudo";
+import { PrevisaoDaForma } from "./PrevisaoDaForma";
 
 /**
  * A Fácies da prova, em DOIS painéis — eram quatro.
@@ -115,13 +116,49 @@ export function FaciesReport({
         ]}
       />
 
-      {/* As DUAS decisoes do gerador, ditas em voz alta — sem elas o numero
-          da base muda de tamanho sem explicacao (a SES-DF cai de 2.987 para 596
-          quando o seletivo de especialidade sai da conta). */}
-      <p className="border-b border-rule px-5 py-2 text-xs text-muted sm:px-6">
-        Base de acesso direto, sem os seletivos com pré-requisito. As questões
-        anuladas contam na base, mas não entram na prática.
-      </p>
+      {/* AS DECISOES DO GERADOR VIRARAM UM "?", e nao sumiram.
+
+          Elas precisam existir: sem elas o numero da base muda de tamanho sem
+          explicacao -- a SES-DF cai de 2.987 para 596 quando o seletivo de
+          especialidade sai da conta -- e o leitor que faz a conta por edicao
+          encontra um numero que nao e 100 e nao tem como saber por que.
+
+          Mas como paragrafo fixo elas ocupavam a linha inteira logo abaixo do
+          cabecalho, em toda banca, para uma duvida que a maioria nao tem. Como
+          `<details>` ficam a um toque de quem tem, e fora do caminho de quem
+          nao tem.
+
+          `<details>` e nao popover: esta e uma pagina de server component, e o
+          elemento nativo abre sem JavaScript, funciona com teclado e e' lido
+          corretamente por leitor de tela sem nenhum `aria-*` escrito a mao. */}
+      <details className="group border-b border-rule px-5 py-2 sm:px-6">
+        <summary className="flex cursor-pointer list-none items-center gap-2 text-xs text-muted transition hover:text-ink [&::-webkit-details-marker]:hidden">
+          <span
+            aria-hidden="true"
+            className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-control border border-edge font-mono text-micro leading-none"
+          >
+            ?
+          </span>
+          <span>De onde vem este número</span>
+        </summary>
+        <div className="mt-2 max-w-[68ch] space-y-1 text-xs text-muted">
+          <p>
+            Só o <span className="text-ink">acesso direto</span>. Os seletivos com
+            pré-requisito (R+ de Clínica, Cirurgia, Pediatria e afins) são provas
+            diferentes, com conteúdo diferente, e somá-los descreveria uma prova que
+            ninguém faz.
+          </p>
+          <p>
+            As <span className="text-ink">anuladas contam aqui</span> — elas foram
+            cobradas na prova, e a leitura mede o que a prova cobrou. Na hora de
+            treinar elas ficam de fora.
+          </p>
+          <p>
+            Por isso o total dividido pelos anos raramente dá um número redondo: as
+            edições variam de tamanho, e nem toda prova de todo ano foi publicada.
+          </p>
+        </div>
+      </details>
 
       {/* A BANCA MUDOU DE TAMANHO, e a leitura abaixo é de antes da mudança.
 
@@ -221,6 +258,16 @@ export function FaciesReport({
           <ComoCobra banca={banca} />
         </PainelLaudo>
 
+        {/* 04 — a previsao de FORMA.
+            Vem por ULTIMO de proposito: os paineis 01-03 descrevem o que a banca
+            JA' cobrou (leitura do acervo), e este e' o unico que afirma algo
+            sobre a prova que ainda nao existe. Misturar as duas coisas na mesma
+            altura da pagina apagaria a diferenca entre medir e prever.
+
+            Das cinco saidas testadas fora de amostra, foi a unica aprovada
+            (3,5 pp de erro medio). Banca com menos de 3 edicoes cai no ramo que
+            declara o motivo, em vez de sumir. */}
+        <PrevisaoDaForma numero="04" institutionKey={banca.institution_key} />
       </div>
     </div>
   );

@@ -283,8 +283,14 @@ export default function Home() {
               {/* O RÓTULO NUMERADO FALTAVA AQUI. Esta seção fechava a página com
                   um `<h2>` solto, sem o rótulo que todas as outras têm — e como
                   ela é a última, a numeração parecia terminar antes do fim. */}
-              <RotuloSecao numero={numeroDa("acesso")}>acesso</RotuloSecao>
-              <h2 className="mt-3 font-serif font-semibold text-ink">Acesso</h2>
+              {/* "ACESSO" PROMETIA O QUE A SECAO NAO ENTREGA.
+                  A ultima secao da pagina se chamava "Acesso" e a maior frase
+                  dentro dela dizia que o acesso nao esta aberto. O leitor chega
+                  ao fim, le o titulo como "aqui você entra", e recebe "ainda
+                  nao". A chave interna continua `acesso` -- e a numeracao das
+                  secoes com ela; o que muda e o que o leitor le. */}
+              <RotuloSecao numero={numeroDa("acesso")}>como começar</RotuloSecao>
+              <h2 className="mt-3 font-serif font-semibold text-ink">Como começar</h2>
               {/* A CENA DO PLANTÃO SAIU. Ela dizia "quem estuda em janela
                   irregular — plantão, pós-plantão, noite curta", e era o último
                   resto de uma página que se explicava pela rotina do leitor. A
@@ -297,18 +303,26 @@ export default function Home() {
               <p className="max-w-[58ch] text-base text-muted">
                 A Fácies é para quem está em{" "}
                 <span className="text-ink">consolidação e revisão</span>, não em primeiro
-                aprendizado. Questão não ensina do zero: para primeiro contato, videoaula é
-                melhor. A teoria vem de fora por desenho — você já tem o conteúdo, e a Fácies
-                diz o que fazer com ele.
+                aprendizado. Questão não ensina do zero: a teoria vem de fora por desenho —
+                você já tem o conteúdo, e a Fácies diz o que fazer com ele.
               </p>
+              {/* O CARTAO ESTAVA INVERTIDO, e ele e a ultima coisa da pagina.
+                  A linha grande dizia "o app ainda nao esta aberto para
+                  assinatura" e a pequena dizia que a leitura e gratuita. Ou
+                  seja: o maior tipo da ultima secao anunciava o que o leitor
+                  NAO pode fazer, e o que ele pode fazer agora ficava em corpo
+                  menor, abaixo.
+
+                  Os dois fatos continuam na tela, e a protecao do art. 30
+                  tambem -- nenhuma promessa de preco, de data ou de venda. O que
+                  troca e qual das duas frases o leitor le primeiro e maior. */}
               <div className="mt-6 rounded-surface border border-edge bg-surface p-5 sm:p-6">
                 <p className="text-base text-ink">
-                  O app ainda não está aberto para assinatura.
+                  A leitura da sua prova é gratuita, e não pede cadastro.
                 </p>
                 <p className="mt-2 max-w-[58ch] text-sm text-muted">
-                  A leitura da sua prova é gratuita e não depende disso — ela é o que está
-                  pronto, e continua sendo. Quando a assinatura abrir, as condições aparecem
-                  aqui.
+                  Ela é o que está pronto, e continua sendo. A assinatura do app ainda não
+                  abriu; quando abrir, as condições aparecem aqui antes de qualquer cobrança.
                 </p>
               </div>
             </div>

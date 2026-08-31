@@ -91,8 +91,13 @@ export function SecaoSemLetraMiuda({ numero }: { numero: string }) {
     <section className="sec">
       <div className={CONT_LANDING}>
         <RotuloSecao numero={numero}>sem letra miúda</RotuloSecao>
+        {/* O TÍTULO ABRIA PELO NEGATIVO e o bloco inteiro pendia para lá.
+            "O que você recebe hoje — e o que ainda não está pronto" põe a
+            ressalva na mesma frase da entrega, e a seção que vem depois é dois
+            terços sobre o que falta. Honestidade não exige liderar pela falta:
+            exige não escondê-la. */}
         <h2 className="mt-3 max-w-[24ch] font-serif font-semibold text-ink">
-          O que você recebe hoje — e o que ainda não está pronto.
+          O que já está pronto, sem letra miúda.
         </h2>
         {/* A MOLDURA MUDOU, e a razão é a mesma que tirou as duas linhas da
             primeira coluna. A v7 escreve "assinar agora dá acesso imediato ao
@@ -109,7 +114,11 @@ export function SecaoSemLetraMiuda({ numero }: { numero: string }) {
         <div className="mt-10 grid gap-8 md:grid-cols-3">
           <Coluna titulo="funciona hoje" itens={HOJE} tom="hoje" />
           <Coluna titulo="chega em 16 de setembro" itens={CHEGA} tom="chega" />
-          <Coluna titulo="ainda não existe" itens={AINDA_NAO} tom="nao" />
+          {/* "ainda não existe" virou "no plano, sem data" — e as duas dizem a
+              mesma coisa. A diferença é que a primeira é um pedido de desculpas
+              e a segunda é um roteiro. Continua sem data DE PROPÓSITO: data é
+              promessa, e o art. 30 do CDC vincula promessa anunciada. */}
+          <Coluna titulo="no plano, sem data" itens={AINDA_NAO} tom="nao" />
         </div>
 
         {/* ⚠️ A LINHA DE FECHO DA v7 SAIU INTEIRA: "quem assina agora paga o
@@ -121,9 +130,20 @@ export function SecaoSemLetraMiuda({ numero }: { numero: string }) {
             anunciada, e o repositório já registra ter removido daqui uma
             afirmação de preço pelo mesmo motivo. Ela volta junto com o checkout,
             no mesmo dia em que `SecaoPreco` for montada. */}
+        {/* O FECHO ERA UMA DUPLA NEGATIVA -- "o que ainda não existe / nenhuma
+            das duas está à venda" -- e era a última linha da seção. A última
+            linha é a que fica, e ela ficava dizendo o que o produto não faz.
+
+            A proteção continua inteira: nada das duas colunas está à venda, e
+            isso está escrito. O que muda é o que vem depois do ponto: a seção
+            fecha no que ESTÁ pronto e é gratuito, que é a única coisa que o
+            leitor pode fazer hoje. */}
         <p className="mt-10 max-w-[62ch] border-t border-rule pt-6 text-base text-muted">
-          A coluna do meio é compromisso com data, e a da direita é o que ainda não existe.
-          Nenhuma das duas está à venda hoje.
+          Nada da segunda e da terceira coluna está à venda — quando estiver, as
+          condições aparecem aqui antes de qualquer cobrança.{" "}
+          <span className="text-ink">
+            O que está pronto é a leitura da sua prova, e ela é gratuita.
+          </span>
         </p>
       </div>
     </section>
