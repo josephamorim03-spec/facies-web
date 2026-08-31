@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { useToast } from "@/lib/useToast";
 import { Button } from "@/components/ui/Button";
 import {
@@ -67,38 +69,50 @@ export default function AdminAuditPage() {
   const { showToast } = useToast();
   const router = useRouter();
 
-  const [entries, setEntries] = useState<AuditEntry[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [actionFilter, setActionFilter] = useState("");
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 50;
 
-  const loadAudit = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await adminGetAuditLog({
+  // Página e filtro entram na CHAVE, não numa dependência de `useCallback`. A
+  // busca refaz sozinha quando um dos dois muda, e volta do cache quando o
+  // operador retorna para a página anterior — o gesto mais comum aqui.
+  const {
+    data,
+    isPending,
+    error,
+  } = useQuery({
+    queryKey: queryKeys.adminAuditLog(page, actionFilter),
+    queryFn: () =>
+      adminGetAuditLog({
         limit: PAGE_SIZE,
         offset: page * PAGE_SIZE,
         action: actionFilter || undefined,
-      });
-      setEntries(res.entries);
-      setTotal(res.total);
-    } catch (err: unknown) {
-      const status = (err as { status: number })?.status;
-      if (status === 401 || status === 403) {
-        router.replace("/");
-        return;
-      }
-      showToast("Erro ao carregar log de auditoria.", "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, actionFilter, showToast, router]);
+      }),
+    // Log de auditoria é histórico: o que já foi escrito não muda. Refazer a
+    // busca ao voltar para a aba seria trabalho por nada.
+    refetchOnWindowFocus: false,
+    // 401/403 é veredito, não falha transitória — repetir só adia o redirect.
+    retry: (falhas, err) => {
+      const status = (err as { status?: number })?.status;
+      if (status === 401 || status === 403) return false;
+      return falhas < 2;
+    },
+  });
 
+  const entries: AuditEntry[] = data?.entries ?? [];
+  const total = data?.total ?? 0;
+  const loading = isPending;
+
+  // O efeito trata só o que é NAVEGAÇÃO e aviso; os dados vêm da query acima.
   useEffect(() => {
-    loadAudit();
-  }, [loadAudit]);
+    if (!error) return;
+    const status = (error as { status?: number })?.status;
+    if (status === 401 || status === 403) {
+      router.replace("/");
+      return;
+    }
+    showToast("Erro ao carregar log de auditoria.", "error");
+  }, [error, router, showToast]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
