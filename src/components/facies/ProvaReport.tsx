@@ -3,6 +3,7 @@ import { dec } from "@/lib/decimal";
 import { BarrasArea } from "./BarrasArea";
 import { MapaDaProva, type LinhaDoMapa } from "./MapaDaProva";
 import { CabecalhoLaudo, PainelLaudo } from "./PainelLaudo";
+import { PrevisaoDaForma } from "./PrevisaoDaForma";
 import { RadarAtualizacoes } from "./RadarAtualizacoes";
 
 /**
@@ -269,10 +270,14 @@ export function ProvaReport({ prova }: { prova: Prova }) {
           </PainelLaudo>
         ) : null}
 
-        {/* 05 — o radar. Vem DEPOIS da validacao de proposito: ele nao entra no
-            score (medido e reprovado), entao nao pode aparecer antes do numero
-            que de fato se sustenta. */}
-        <RadarAtualizacoes numero="05" />
+        {/* 05 — a previsao de FORMA. Das cinco saidas medidas, foi a unica que
+            passou (3,5 pp de erro, fora de amostra), entao ela vem ANTES do
+            radar, que nao entra no score. A ordem na tela reflete a ordem da
+            evidencia. */}
+        <PrevisaoDaForma numero="05" institutionKey="EXAME-NACIONAL-DE-RESIDENCIA" />
+
+        {/* 06 — o radar de atualizacoes: informacao datada, nao previsao. */}
+        <RadarAtualizacoes numero="06" />
       </div>
     </div>
   );
