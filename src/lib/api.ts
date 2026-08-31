@@ -394,6 +394,7 @@ export {
   searchObjectiveCatalogV2,
   getMyTargetExam,
   getFaciesDaBanca,
+  getMyCompetencyMastery,
 } from "./api/domains/study-plan";
 export type {
   StudyPlan,
@@ -411,6 +412,8 @@ export type {
   StudentObjectivesV2,
   StudentTargetExam,
   StudentTargetExamItem,
+  CompetencyMastery,
+  CompetencyMasteryItem,
 } from "./api/domains/study-plan";
 
 // Calendar domain

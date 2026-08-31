@@ -19,6 +19,7 @@ export const queryKeys = {
   // precisa da outra.
   studentTargetExam: ["student", "target-exam"] as const,
   faciesDaBanca: (chave: string) => ["facies", "banca", chave] as const,
+  competencyMastery: ["student", "competency-mastery"] as const,
   // Log de auditoria: pagina e filtro entram na CHAVE, e nao numa dependencia
   // de `useCallback`. Com isso o react-query refaz a busca sozinho quando um
   // dos dois muda, e devolve do cache quando o operador volta para a pagina
