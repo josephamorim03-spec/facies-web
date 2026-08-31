@@ -34,8 +34,10 @@ import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
  *   05 ········· sem letra miúda
  *   ············ o aviso, e o rodapé
  *
- * **A seção 06 (preço) existe em `SecaoPreco` e NÃO está montada.** Sem
- * checkout, preço na tela é oferta que o art. 30 do CDC obriga a sustentar.
+ * **A seção 06 (preço) existe em `SecaoPreco` e NÃO está montada** — mas o
+ * preço voltou, dentro do cartão de acesso. A diferença é o que se promete:
+ * `SecaoPreco` vende assinatura, e assinatura não abriu; o cartão anuncia um mês
+ * gratuito e o preço FUTURO da coorte de lançamento, que o sistema cumpre hoje.
  *
  * ## O que saiu, e por quê
  *
@@ -92,9 +94,10 @@ export default function Home() {
    * ela entra na lista só quando entra na página — senão o buraco voltaria pela
    * outra porta.
    *
-   * ⚠️ `SecaoPreco` continua FORA: sem checkout, preço na tela é oferta que o
-   * art. 30 do CDC obriga a sustentar. Quando ela montar, entra aqui no fim e
-   * recebe o número que sobrar.
+   * ⚠️ `SecaoPreco` continua FORA: ela é a seção de VENDA, e não há checkout
+   * para vender. O preço anunciado no cartão de acesso é outra coisa — condição
+   * futura, não oferta de compra agora. Quando `SecaoPreco` montar, entra aqui
+   * no fim e recebe o número que sobrar.
    */
   const ordem = [
     "cara",
@@ -316,13 +319,43 @@ export default function Home() {
                   Os dois fatos continuam na tela, e a protecao do art. 30
                   tambem -- nenhuma promessa de preco, de data ou de venda. O que
                   troca e qual das duas frases o leitor le primeiro e maior. */}
+              {/* O PREÇO VOLTOU — e agora ele é sustentável.
+                  O bloco anterior dizia que a assinatura "ainda não abriu" e
+                  nada mais, porque anunciar preço de algo incomprável é oferta
+                  que o art. 30 obriga a cumprir e não havia como cumprir.
+
+                  O que mudou não foi o checkout: foi o que se anuncia. Agora a
+                  página promete três coisas que o sistema JÁ cumpre hoje, sem
+                  linha nova de cobrança:
+
+                  1. um mês de acesso completo — `DIAS_DE_TRIAL = 30`, concedido
+                     no primeiro login, automático;
+                  2. sem cartão e sem cobrança automática — literalmente
+                     verdade, não existe meio de pagamento armazenado em lugar
+                     nenhum do sistema;
+                  3. R$ 490 no primeiro ano para quem se cadastrar agora — a
+                     coorte é `users.created_at`, que já grava quem entrou
+                     quando. A promessa é honrável com dado que já existe.
+
+                  Os dois valores são oferta vinculante (art. 30) por decisão do
+                  operador em 2026-08-30. Mudá-los para cima quebra o vínculo com
+                  quem leu — então eles não sobem sem que esta página deixe de
+                  prometê-los ANTES.
+
+                  ⚠️ Não transformar isto em contagem regressiva. A limitação é
+                  dita UMA vez, aqui; o aviso de proximidade é da interface do
+                  app, que já recebe `access_expires_at` em `GET /profile`. */}
               <div className="mt-6 rounded-surface border border-edge bg-surface p-5 sm:p-6">
-                <p className="text-base text-ink">
-                  A leitura da sua prova é gratuita, e não pede cadastro.
-                </p>
+                <p className="text-base text-ink">O primeiro mês é por nossa conta.</p>
                 <p className="mt-2 max-w-[58ch] text-sm text-muted">
-                  Ela é o que está pronto, e continua sendo. A assinatura do app ainda não
-                  abriu; quando abrir, as condições aparecem aqui antes de qualquer cobrança.
+                  Acesso completo ao app por 30 dias, sem cartão e sem cobrança
+                  automática. A leitura da sua prova segue gratuita e sem cadastro.
+                </p>
+                <p className="mt-4 max-w-[58ch] text-sm text-muted">
+                  As assinaturas ainda não abriram. Quando abrirem, quem se cadastrar
+                  agora paga{" "}
+                  <span className="text-ink">R$ 490 no primeiro ano</span>, em vez de
+                  R$ 590. Avisamos antes, e ninguém é cobrado sem contratar.
                 </p>
               </div>
             </div>

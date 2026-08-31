@@ -222,6 +222,16 @@ export type UserProfile = {
   has_completed_initial_goal_setup: boolean;
   access_status: "active" | "expired" | "inactive";
   /**
+   * Quando o acesso vivo termina, em ISO-8601 — ou `null` quando não vence
+   * (admin, direito sem prazo).
+   *
+   * É o que permite avisar o aluno **perto do fim**, em vez de manter contagem
+   * regressiva permanente na tela. A limitação é dita uma vez na home ("o
+   * primeiro mês é por nossa conta"); daí em diante o produto fica quieto até
+   * faltar pouco. Ver `DIAS_AVISO_FIM_DE_ACESSO`.
+   */
+  access_expires_at?: string | null;
+  /**
    * Se a identidade mínima do cadastro existe (nome, nascimento, situação
    * profissional). Derivado no backend a partir do próprio perfil — não é um
    * flag guardado, que divergiria do dado na primeira edição por outro caminho.

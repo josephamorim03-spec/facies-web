@@ -37,6 +37,7 @@ import {
   isAccessLapseSuppressedPath,
   subscribeAccessDenied,
 } from "@/lib/accessLapse";
+import { AvisoFimDeAcesso } from "@/components/AvisoFimDeAcesso";
 import { startSessionKeepalive } from "@/lib/sessionKeepalive";
 import { getStudentPageTitle } from "@/lib/navConfig";
 import { QueryProvider } from "@/lib/QueryProvider";
@@ -175,6 +176,10 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
   const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
+  // Vem do MESMO `getProfile` que ja carrega nome e foto -- nenhuma chamada
+  // nova no caminho quente por causa de um aviso que fica escondido 23 dias
+  // em cada 30.
+  const [acessoExpiraEm, setAcessoExpiraEm] = useState<string | null>(null);
   const showMobileTopBar = !isDesktopNavigation && shouldShowMobileTopBar(pathname, hideNavigationChrome);
   // A barra de abas segue a mesma regra do topo: some no modo imersivo (sessao
   // de questoes, runner de importacao). Tocar numa aba durante a revisao de
@@ -305,6 +310,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         if (!active) return;
         if (profile.display_name) setUserDisplayName(profile.display_name);
         if (profile.photo_url) setUserPhotoUrl(profile.photo_url);
+        setAcessoExpiraEm(profile.access_expires_at ?? null);
 
         // A escada de bloqueio tem UMA definicao, em `initialGoalSetup`. Aqui
         // havia uma copia dela que ignorava `cadastro_completo` e mandava
@@ -365,6 +371,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
           } as CSSProperties
         }
       >
+        <AvisoFimDeAcesso expiraEm={acessoExpiraEm} />
         <main className={mainClassName}>
           <Nav />
           {/* A linha de filhos so aparece no desktop: no mobile ela mora colada
