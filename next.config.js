@@ -129,6 +129,30 @@ const nextConfig = {
     const flashcards = process.env.NEXT_PUBLIC_FLASHCARDS === "1";
     const paraOsCards = (destino) => (flashcards ? destino : "/hoje");
     return [
+      // ── `www` VAI PARA O APEX ──────────────────────────────────────────
+      //
+      // `www.facies.app` respondia 200 e servia o app SEM redirecionar, o que
+      // fazia dele uma ORIGEM propria. Duas consequencias, e a segunda morde:
+      //
+      // 1. duas URLs canonicas para o mesmo conteudo, dividindo sinal de busca;
+      // 2. o "Entrar com Google" QUEBRA no `www` com `origin_mismatch`. As
+      //    origens JavaScript autorizadas do OAuth casam por igualdade exata de
+      //    esquema, dominio e porta, e curinga e' proibido -- entao `www`
+      //    precisaria de entrada propria no console do Google, e nada na tela
+      //    explicaria a falha para quem chegasse por ele.
+      //
+      // Redirecionar resolve os dois, e deixa o console com UMA origem.
+      //
+      // ⚠️ 308 aqui, ao contrario do bloco dos flashcards abaixo. Aquele e' 307
+      // porque a rota volta quando a feature voltar; este nao volta -- o host
+      // canonico do produto e' o apex, e o 308 e' o que consolida o sinal de
+      // busca no lugar certo. Um 307 manteria os dois hosts competindo.
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.facies.app" }],
+        destination: "https://facies.app/:path*",
+        permanent: true,
+      },
       // Link curto por prova. O canal deste produto e o print colado em
       // grupo, e link longo com parametro morre no boca a boca (§11.3).
       // Permanente: preserva o valor do link quando o dominio migrar.
