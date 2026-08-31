@@ -145,6 +145,7 @@ export function MapaDaProva({
   linhas,
   limite,
   preOrdenado = false,
+  dominio = null,
 }: {
   linhas: LinhaDoMapa[];
   /** Sem limite, mostra tudo — é o que a página da banca faz. */
@@ -160,6 +161,25 @@ export function MapaDaProva({
    * série composta acrescenta, e a nota de rodapé do painel viraria mentira.
    */
   preOrdenado?: boolean;
+  /**
+   * O seu domínio por subtema — o eixo "A prova e você" do artboard `12b`.
+   *
+   * A regra do desenho é uma linha: **"tamanho é incidência · preenchimento é
+   * você"**. O tamanho da célula continua vindo do posto no ranking da banca; o
+   * que muda é de onde sai a tinta. Sem isto, a grade responde "o que a prova
+   * cobra" e nada mais.
+   *
+   * A chave é `primary_subtheme`, e ela casa por construção, não por
+   * semelhança: o gerador do dataset preenche `mais_cai` com
+   * `r.primary_subtheme AS subtema`, e é a MESMA coluna que
+   * `competency_mastery` lê. Verificado nos dois lados antes de existir.
+   *
+   * ⚠️ Ausência não é zero. Subtema que você nunca respondeu fica no piso de
+   * tinta e diz isso no rótulo acessível — pintá-lo claro como quem vai mal
+   * seria transformar "não sei" em "você é ruim nisto", que é a mentira mais
+   * cara que um mapa de estudo pode contar.
+   */
+  dominio?: Map<string, { mastery: number; attempts: number }> | null;
 }) {
   const [aberta, setAberta] = useState<string | null>(null);
 
@@ -181,8 +201,25 @@ export function MapaDaProva({
         {ordenadas.map((linha, indice) => {
           const area = linha.area ? resolveDisplayArea(null, linha.area) : null;
           const cor = area ? AREA_VAR[area] : "var(--color-primary)";
-          const intensidade =
-            TINTA_MIN + (linha.n / maior) * (TINTA_MAX - TINTA_MIN);
+          // ── A TINTA QUER DIZER ATENÇÃO, nos dois eixos ──────────────────
+          //
+          // No eixo da prova ela é a incidência: mais tinta, mais a banca cobra.
+          // No eixo "você" ela é o que FALTA (`1 - mastery`), não o domínio.
+          //
+          // O desenho não decide isto — o `12b` usa placeholders e nenhuma
+          // palavra de direção. Mas pintar o domínio inverteria o sentido da
+          // tinta entre duas abas da MESMA grade: o leitor teria de reaprender a
+          // codificação ao trocar de aba, e a célula mais escura passaria a ser
+          // a que ele já sabe. Num mapa que existe para decidir o que estudar, o
+          // peso visual pertence à lacuna.
+          //
+          // ⚠️ SEM registro a fração é ZERO, e não `1 - 0`. Este é o ponto onde
+          // a conta quase mentiu: com `mastery` ausente valendo 0, "o que falta"
+          // daria 100% e o subtema nunca respondido viraria a célula mais escura
+          // da grade — exatamente o "não sei" virando "você é péssimo nisto".
+          const meu = dominio ? dominio.get(linha.rotulo) : undefined;
+          const fracao = dominio ? (meu ? 1 - meu.mastery : 0) : linha.n / maior;
+          const intensidade = TINTA_MIN + fracao * (TINTA_MAX - TINTA_MIN);
           const estaAberta = linha.rotulo === aberta;
           const grande = indice < 6;
 
@@ -197,7 +234,20 @@ export function MapaDaProva({
                    atras do dedo no celular". O rotulo acessivel entrega a area
                    a quem ouve, e a cor do filete a entrega a quem ve — sem
                    caixa nenhuma por cima da celula. */
-                aria-label={area ? `${linha.rotulo} — ${AREA_FULL_LABELS[area]}` : linha.rotulo}
+                /* A leitura do eixo "você" entra aqui porque a TINTA é a única
+                   coisa que a carrega, e tinta não se ouve. Sem esta linha, a
+                   aba inteira seria invisível para quem usa leitor de tela. */
+                aria-label={[
+                  linha.rotulo,
+                  area ? AREA_FULL_LABELS[area] : null,
+                  dominio
+                    ? meu
+                      ? `você acerta ${Math.round(meu.mastery * 100)}% em ${meu.attempts} respostas`
+                      : "você ainda não respondeu isto"
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" — ")}
                 className={`paper-control flex h-full w-full flex-col overflow-hidden rounded-control border p-2 text-left transition ${
                   // Tracejada = abaixo do piso, e é o mesmo estado que o
                   // protótipo usa para "ainda não avaliado". Aqui significa

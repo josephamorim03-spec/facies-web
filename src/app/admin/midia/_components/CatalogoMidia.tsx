@@ -24,6 +24,35 @@ function nomeDoArquivo(item: ItemCatalogo, formatoId: string): string {
   return `facies-${item.pecaId}-${item.slug}-${formatoId}.png`;
 }
 
+/**
+ * Miniatura com estado de falha.
+ *
+ * `/midia/...` fica atrás de login: se a sessão do admin expirou, a rota devolve
+ * redirect para `/login` e o `<img>` falha ao decodificar HTML. Sem isto o
+ * catálogo mostraria uma imagem quebrada em vez de dizer o que fazer.
+ */
+function Miniatura({ src, alt }: { src: string; alt: string }) {
+  const [falhou, setFalhou] = useState(false);
+  if (falhou) {
+    return (
+      <div className="flex aspect-square w-full items-center justify-center border border-edge bg-paper px-3 text-center text-xs text-muted">
+        miniatura indisponível — abra um formato para conferir
+      </div>
+    );
+  }
+  return (
+    // A rota /midia devolve o PNG; `next/image` não soma nada aqui.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      onError={() => setFalhou(true)}
+      className="aspect-square w-full border border-edge bg-paper object-cover"
+    />
+  );
+}
+
 export function CatalogoMidia({ itens }: { itens: ItemCatalogo[] }) {
   const [busca, setBusca] = useState("");
   const filtro = busca.trim().toLowerCase();
@@ -93,12 +122,9 @@ export function CatalogoMidia({ itens }: { itens: ItemCatalogo[] }) {
 
                 {miniatura ? (
                   <a href={miniatura} target="_blank" rel="noopener" className="block px-4 py-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- a rota /midia já devolve o PNG; `next/image` não soma nada aqui. */}
-                    <img
+                    <Miniatura
                       src={miniatura}
                       alt={`Peça ${item.pecaRotulo} para ${item.sigla}`}
-                      loading="lazy"
-                      className="aspect-square w-full border border-edge bg-paper object-cover"
                     />
                   </a>
                 ) : null}

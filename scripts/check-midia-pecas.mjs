@@ -10,9 +10,10 @@
  *
  *   1. **Catálogo esvaziado.** Se uma regeração de `provas.json`/`facies.json`
  *      zerar os assuntos, `/admin/midia` continua no ar — vazio, sem erro.
- *   2. **Peça em branco.** Uma banca sem formato, sem alternativa e sem assunto
- *      exibível renderiza um cartão sem número nenhum — a peça existe, mas não
- *      mostra nada.
+ *   2. **Peça sem dado.** Uma banca sem formato, sem alternativa e sem assunto
+ *      exibível não tem de onde o cartão tirar número. O filtro estatístico fino
+ *      (uma linha presente, mas descartada por `formatosDistintivos`) fica de
+ *      fora de propósito — quem vê o render final é a prova de píxel.
  *
  * Nenhum dos dois quebra o build. O primeiro mata a operação de mídia em
  * silêncio; o segundo publica uma imagem vazia.
@@ -34,7 +35,17 @@ const DADOS = join(AQUI, "..", "src", "data", "facies");
  *  catálogo encolheu a ponto de ser irreconhecível — sinal de regen quebrada. */
 const PISO_DE_ASSUNTOS = 100;
 
-function temOQueMostrar(banca) {
+/**
+ * A banca tem FONTE DE DADO para o cartão? (condição necessária, não a render).
+ *
+ * Este guard detecta o caso GROSSO — nenhum formato, nenhuma alternativa e
+ * nenhum assunto exibível: aí o cartão fica vazio com certeza. O caso FINO —
+ * uma linha de formato presente, mas que o filtro estatístico de
+ * `formatosDistintivos`/`decidirExibicao` descarta — fica de fora de propósito:
+ * replicar Wilson + h de Cohen aqui duplicaria `lib/distintividade.ts` e
+ * divergiria na primeira calibração. Quem vê o render final é a prova de píxel.
+ */
+function temFonteDeDado(banca) {
   const alternativas = (banca.formato?.alternativas ?? []).length > 0;
   const distribuicao = (banca.formato?.distribuicao ?? []).length > 0;
   const maisCai = (banca.mais_cai?.linhas ?? []).some((l) => l.exibivel);
@@ -73,12 +84,12 @@ const REGRAS = [
     ignora: { slugs: {}, bancas: [], provas: [{ slug: "x", sigla: "ENAMED" }] },
   },
   {
-    nome: "toda banca produz ao menos um numero para o cartao",
+    nome: "toda banca tem fonte de dado para o cartao",
     checar: ({ slugs, bancas }) =>
       bancas
         .filter((b) => slugs[b.institution_key])
-        .filter((b) => !temOQueMostrar(b))
-        .map((b) => `banca sem numero para a peca: ${b.institution_key} (${b.nome})`),
+        .filter((b) => !temFonteDeDado(b))
+        .map((b) => `banca sem fonte de dado para a peca: ${b.institution_key} (${b.nome})`),
     pega: {
       slugs: { X: "x" },
       bancas: [
@@ -133,5 +144,5 @@ if (problemas.length > 0) {
 
 const assuntos = provas.length + bancas.filter((b) => slugs[b.institution_key]).length;
 console.log(
-  `Midia: ${assuntos} assuntos geraveis, ${REGRAS.length} regras conferidas, nenhuma peca em branco.`,
+  `Midia: ${assuntos} assuntos geraveis, ${REGRAS.length} regras conferidas, nenhuma peca sem dado.`,
 );

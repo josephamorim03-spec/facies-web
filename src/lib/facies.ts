@@ -156,6 +156,132 @@ export type Banca = {
     base: number;
     linhas: { rotulo: string; n: number; pct: number }[];
   };
+  /** A forma da banca comparada ao ESPERADO pela composição dela (migration 129).
+   *
+   *  `formato` diz a proporção bruta. Mas assunto **prediz** forma: Urgências
+   *  Abdominais tem 35,2% de vinheta longa no acervo nacional contra 11,8% de
+   *  Epidemiologia — três vezes de amplitude. Uma banca que cobra muito Trauma
+   *  parece vinheta-pesada sem ter escolhido nada sobre forma, e o painel bruto
+   *  credita isso a ela.
+   *
+   *  A razão é `observado / esperado`, e `esperado` soma, para cada tema, quantas
+   *  questões daquele tema a banca tem vezes a taxa nacional do tema.
+   *
+   *  ⚠️ `exibivel` vem do BANCO, não é recalculado aqui — `decidirExibicao` já
+   *  defere ao servidor quando o booleano existe. Ele conjuga três condições: o
+   *  IC excluir 1, o efeito superar o ruído entre edições da própria banca, e a
+   *  conclusão sobreviver supondo que toda questão sem tema fosse perfeitamente
+   *  média.
+   *
+   *  ⚠️ MAS SÃO DOIS GATES, NÃO TRÊS. A superdispersão entre bancas é φ≈13–14,
+   *  então o IC de Poisson é estreito por ~3,7× e 79% das bancas saem
+   *  "significativas". Medido em `sonda_forma_fora_da_amostra.py`: o IC não
+   *  reprova **nenhuma** banca que o piso aprove — ele é estritamente subsumido,
+   *  e quem filtra é o piso. A defesa do piso é empírica, não teórica: fora da
+   *  amostra ele acerta a direção da edição seguinte em 89% e 84%, contra 61% e
+   *  65% do que ele reprova.
+   *
+   *  ⚠️ `{}` quando a banca não entra (abaixo de 120 questões com tema).
+   *  Ausência é resposta; a página decide o que fazer com ela. */
+  padronizada:
+    | {
+        /** Fração do acervo da banca que tinha tema e entrou na conta. */
+        cobertura: number;
+        base: number;
+        /** `tema` ou `subtema`. Bancas com estratos diferentes NÃO são
+         *  diretamente comparáveis — quem usou subtema tem controle mais forte. */
+        estrato: string;
+        linhas: {
+          medida: string;
+          razao: number | null;
+          observado: number;
+          esperado: number;
+          ic_baixo: number | null;
+          ic_alto: number | null;
+          exibivel: boolean;
+        }[];
+      }
+    | Record<string, never>;
+  /** O que os DOIS motores, juntos, concluíram sobre a forma desta prova.
+   *
+   *  `formato` e `padronizada` são medições; esta é a **decisão**. Ela existe
+   *  porque as duas respondem perguntas diferentes e o aluno precisa das duas:
+   *  o bruto diz *quanto* (a proporção contra a média nacional), o padronizado
+   *  diz *de quem é a escolha* (a proporção contra o esperado pelos assuntos
+   *  que a banca cobra, e se isso supera o ruído entre as edições dela).
+   *
+   *  Uma diferença grande que a composição explica não é característica da
+   *  banca — é característica do ASSUNTO. Quem treinar leitura de enunciado em
+   *  vez de Trauma treinou a coisa errada, e são **33** as afirmações que a
+   *  página fazia nessa condição.
+   *
+   *  ⚠️ Decidido no gerador, nunca aqui — mesmo contrato de `decidirExibicao`.
+   *  A lista já vem filtrada e ordenada por `relevancia`, e a página só desenha.
+   *
+   *  ⚠️ Opcional de propósito: dataset anterior à mudança não tem o campo, e a
+   *  seção 03 cai no caminho antigo em vez de sumir. */
+  assinatura?: AfirmacaoForma[];
+};
+
+/**
+ * Uma afirmação de forma que sobreviveu aos dois motores.
+ *
+ * `confianca` NÃO é um selo de qualidade — é qual motor pôde falar:
+ *
+ * - `consenso` — os dois medem e os dois passaram (44 linhas, só
+ *   `pede_incorreta`, a única medida que ambos cobrem).
+ * - `padronizada` — só o motor padronizado mede (60 linhas, quase todas
+ *   `vinheta_longa`). Inclui as **7 bancas com zero ocorrências**, que eram
+ *   literalmente indizíveis no motor bruto: ele itera a distribuição e um
+ *   formato que nunca ocorreu não tem linha para iterar.
+ * - `bruta` — o motor padronizado não pôde falar (16 linhas hoje, **3** quando
+ *   a migration 134 rodar). Composição **não foi descontada**, então a frase
+ *   descreve a prova sem atribuir a escolha à banca.
+ *
+ * ⚠️ `bruta` ERA a regra e vira exceção. Até a 134, o motor padronizado media só
+ * duas medidas e os outros quatro formatos saíam com um PESO extrapolado (0,593)
+ * no lugar de um veredito. Medido depois de padronizá-los: certo/errado é
+ * autoral em 7 de 7 e verdadeiro/falso em 4 de 12 — o peso único errava nas duas
+ * pontas ao mesmo tempo, subestimando um e publicando ruído do outro.
+ *
+ * ⚠️ TODAS passaram também pelo gate de TEMPO, que é ortogonal aos dois motores.
+ * Ambos agregam todos os anos e tratam banca como processo estacionário; o piso
+ * de ruído mede oscilação, não tendência. A DF-SES fez 100% certo/errado de 2016
+ * a 2023 e **zero** em 2024–2026, e a página afirmava 79% a quem vai prestar a
+ * próxima. Eram **15 das 135** afirmações, em todos os três níveis.
+ *
+ * ⚠️ Ausência de opinião não é reprovação. Tratar "o padronizado não mede
+ * certo/errado" como "o padronizado reprovou certo/errado" apagaria os quatro
+ * formatos que só o bruto vê.
+ */
+export type AfirmacaoForma = {
+  medida: string;
+  rotulo: string;
+  direcao: "mais" | "menos";
+  confianca: "consenso" | "padronizada" | "bruta";
+  /** Questões em 100 que saem diferentes do previsto. É a unidade que ordena a
+   *  lista, porque é a única que responde "isto muda meu treino?". */
+  tamanho_pp: number;
+  /** `tamanho_pp × peso`. O peso de uma afirmação só-bruta é **0,593** — a taxa
+   *  medida com que as afirmações do motor bruto sobrevivem ao teste de
+   *  autoria, e não um número escolhido. */
+  relevancia: number;
+  /** Motor bruto; `null` quando ele não mede esta medida. */
+  pct: number | null;
+  media_nacional: number | null;
+  /** Motor padronizado; `null` quando ele não mede esta medida. */
+  razao: number | null;
+  observado: number | null;
+  esperado: number | null;
+  base_estrato: number | null;
+  pct_estrato: number | null;
+  pct_esperado: number | null;
+  /** A evidência do gate de tempo: como a medida se comporta nas últimas
+   *  edições. Viaja junto porque uma afirmação que sobreviveu ao gate pode dizer
+   *  em quais edições sobreviveu, sem a tela recalcular nada. */
+  pct_recente: number | null;
+  anos_recentes: number[] | null;
+  base_recente: number | null;
 };
 
 export type Nacional = {

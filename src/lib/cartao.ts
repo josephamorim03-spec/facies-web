@@ -105,15 +105,35 @@ export function numerosDaProva(prova: Prova): Numero[] {
 export function numerosDaBanca(banca: Banca): Numero[] {
   const saida: Numero[] = [];
 
-  // Mesmo critério da página, de propósito: `formatosDistintivos` é o ponto
-  // único de decisão.
-  for (const linha of formatosDistintivos(banca)) {
-    if (saida.length >= 2) break;
-    saida.push({
-      valor: `${dec(linha.pct)}%`,
-      rotulo: linha.rotulo,
-      nota: `média nacional ${dec(NACIONAL.formato_pct[linha.codigo] ?? 0)}%`,
-    });
+  // Mesmo critério da página, de propósito — e o ponto único de decisão MUDOU:
+  // é `assinatura`, do gerador, que combina os dois motores. Deixar o cartão em
+  // `formatosDistintivos` faria circular no WhatsApp 33 afirmações que a página
+  // deixou de fazer (a composição as explicava) e esconderia 65 que ela passou a
+  // fazer. É o mesmo defeito que motivou o comentário original, invertido.
+  if (banca.assinatura) {
+    for (const linha of banca.assinatura) {
+      if (saida.length >= 2) break;
+      const atribuida = linha.confianca !== "bruta";
+      saida.push({
+        valor: `${dec(atribuida ? (linha.pct_estrato ?? 0) : (linha.pct ?? 0))}%`,
+        rotulo: linha.rotulo,
+        // A nota carrega o denominador da MESMA fonte do valor. Trocar de
+        // referência entre o número e a legenda é o erro que a imagem não
+        // deixa ninguém conferir.
+        nota: atribuida
+          ? `esperado pelos assuntos ${dec(linha.pct_esperado ?? 0)}%`
+          : `média nacional ${dec(linha.media_nacional ?? 0)}%`,
+      });
+    }
+  } else {
+    for (const linha of formatosDistintivos(banca)) {
+      if (saida.length >= 2) break;
+      saida.push({
+        valor: `${dec(linha.pct)}%`,
+        rotulo: linha.rotulo,
+        nota: `média nacional ${dec(NACIONAL.formato_pct[linha.codigo] ?? 0)}%`,
+      });
+    }
   }
 
   // `certo_errado` como FORMATO e "2 alternativas" como CONTAGEM sao a mesma

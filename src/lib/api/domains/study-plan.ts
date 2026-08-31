@@ -530,3 +530,34 @@ export async function getPlanActivityExplanation(
     { headers: authHeader(token) },
   );
 }
+
+/** Uma competencia, com a evidencia ao lado da estimativa. */
+export type CompetencyMasteryItem = {
+  objective_id: string;
+  label: string;
+  /** O subtema onde ela mora — a chave que casa com o mapa da prova. */
+  primary_subtheme: string | null;
+  competency_question_count: number;
+  attempts: number;
+  correct: number;
+  /** Posterior encolhido, 0..1. Com poucas observacoes fica perto do prior. */
+  mastery: number;
+  uncertainty: number;
+  certeza: "medido" | "estimado" | "nao_avaliado";
+};
+
+export type CompetencyMastery = {
+  contract_version: "competency-mastery-v1";
+  observation_floor: number;
+  attempts_considered: number;
+  items: CompetencyMasteryItem[];
+};
+
+/** O eixo "voce" do mapa da prova (artboard `12b`). */
+export async function getMyCompetencyMastery(token: string): Promise<CompetencyMastery> {
+  return api<CompetencyMastery>("/api/student/competency-mastery", {
+    headers: authHeader(token),
+    cache: "no-store",
+    clientCache: false,
+  });
+}

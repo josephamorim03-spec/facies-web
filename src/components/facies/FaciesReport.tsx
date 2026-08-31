@@ -1,7 +1,7 @@
 import type { Banca } from "@/lib/facies";
 import { janela, nomeCurto } from "@/lib/facies";
 import { BarrasArea } from "./BarrasArea";
-import { ComoCobra } from "./ComoCobra";
+import { ComoCobra, notaComoCobra } from "./ComoCobra";
 import { MapaDaProva } from "./MapaDaProva";
 import { CabecalhoLaudo, PainelLaudo } from "./PainelLaudo";
 import { PrevisaoDaForma } from "./PrevisaoDaForma";
@@ -253,7 +253,7 @@ export function FaciesReport({
         <PainelLaudo
           numero="03"
           titulo="Como esta banca cobra"
-          nota="exato · sem estimativa"
+          nota={notaComoCobra(banca)}
         >
           <ComoCobra banca={banca} />
         </PainelLaudo>

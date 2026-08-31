@@ -1,12 +1,12 @@
 import { ImageResponse } from "next/og";
 import { type NextRequest } from "next/server";
 
-import { PALETA, numerosDaBanca, numerosDaProva, type Numero } from "@/lib/cartao";
+import { numerosDaBanca, numerosDaProva } from "@/lib/cartao";
 import { encurtar } from "@/lib/encurtar";
 import { bancaPorSlugCurto, janela, nomeCurto } from "@/lib/facies";
 import { FORMATOS, resolverPeca, type FormatoId } from "@/lib/midia";
+import { renderCara } from "@/lib/midia/cara";
 import { provaPorSlug } from "@/lib/provas";
-import { HOST_VISIVEL, SITE_QUALIFICADOR } from "@/lib/site";
 
 /**
  * Uma peça da central de mídia — a fácies pública, nos formatos do Instagram.
@@ -29,8 +29,6 @@ import { HOST_VISIVEL, SITE_QUALIFICADOR } from "@/lib/site";
 export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ peca: string; slug: string }> };
-
-const { PAPEL, TINTA, FRACA, MARCA, LINHA } = PALETA;
 
 export async function GET(request: NextRequest, { params }: Params) {
   const { peca, slug } = await params;
@@ -55,129 +53,21 @@ export async function GET(request: NextRequest, { params }: Params) {
     : banca
       ? `${janela(banca)} · ${banca.total.toLocaleString("pt-BR")} questões`
       : "";
-  const numeros: Numero[] = prova
+  const numeros = prova
     ? numerosDaProva(prova)
     : banca
       ? numerosDaBanca(banca)
       : [];
 
-  const vertical = dim.altura > dim.largura;
-
   return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        background: PAPEL,
-        color: TINTA,
-        padding: vertical ? "88px 72px" : "56px 64px",
-      }}
-    >
-      <div style={{ display: "flex", fontSize: vertical ? 24 : 20, color: FRACA, letterSpacing: 2 }}>
-        A FÁCIES DA PROVA
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          fontSize: vertical ? 68 : 56,
-          fontWeight: 700,
-          marginTop: 14,
-          lineHeight: 1.15,
-          maxWidth: "100%",
-        }}
-      >
-        {titulo}
-      </div>
-
-      <div style={{ display: "flex", fontSize: vertical ? 24 : 20, color: FRACA, marginTop: 12 }}>
-        {legenda}
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          flex: 1,
-          flexDirection: vertical ? "column" : "row",
-          gap: vertical ? 40 : 28,
-          marginTop: vertical ? 64 : 44,
-        }}
-      >
-        {numeros.map((numero) => (
-          <div
-            key={numero.rotulo}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              flex: 1,
-              ...(vertical
-                ? { borderLeft: `3px solid ${MARCA}`, paddingLeft: 32 }
-                : { borderTop: `3px solid ${MARCA}`, paddingTop: 22 }),
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                fontSize: vertical ? 88 : 58,
-                fontWeight: 700,
-                color: MARCA,
-                lineHeight: 1,
-              }}
-            >
-              {numero.valor}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                fontSize: vertical ? 30 : 22,
-                fontWeight: 600,
-                marginTop: 16,
-                lineHeight: 1.3,
-              }}
-            >
-              {numero.rotulo}
-            </div>
-            {numero.nota ? (
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: vertical ? 24 : 18,
-                  color: FRACA,
-                  marginTop: 8,
-                  lineHeight: 1.35,
-                }}
-              >
-                {numero.nota}
-              </div>
-            ) : null}
-          </div>
-        ))}
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          borderTop: `1px solid ${LINHA}`,
-          paddingTop: 20,
-          fontSize: vertical ? 22 : 19,
-          color: FRACA,
-        }}
-      >
-        <div style={{ display: "flex" }}>
-          <span style={{ color: TINTA, fontWeight: 700 }}>F</span>
-          <span style={{ color: MARCA, fontWeight: 700 }}>á</span>
-          <span style={{ color: TINTA, fontWeight: 700 }}>cies</span>
-          <span style={{ marginLeft: 10 }}>· {SITE_QUALIFICADOR}</span>
-        </div>
-        <div style={{ display: "flex" }}>
-          {HOST_VISIVEL}
-          {assunto.caminho}
-        </div>
-      </div>
-    </div>,
+    renderCara({
+      titulo,
+      legenda,
+      numeros,
+      caminho: assunto.caminho,
+      largura: dim.largura,
+      altura: dim.altura,
+    }),
     { width: dim.largura, height: dim.altura },
   );
 }

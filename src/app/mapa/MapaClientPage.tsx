@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Skeleton } from "@/components/Skeleton";
 import { Alert } from "@/components/ui/Alert";
 import { FaciesReport } from "@/components/facies/FaciesReport";
-import { getFaciesDaBanca, getMyTargetExam } from "@/lib/api";
+import { MapaDaProva } from "@/components/facies/MapaDaProva";
+import { getFaciesDaBanca, getMyCompetencyMastery, getMyTargetExam } from "@/lib/api";
+import type { Banca } from "@/lib/facies";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
 
@@ -30,15 +33,115 @@ import { useAuthToken } from "@/lib/useAuthToken";
  *
  * ## O que esta tela AINDA nao e
  *
- * O `9a` tem tres abas -- "A prova", "A prova e voce" e "Comparar". Esta entrega
+ * O `9a` tem tres abas -- "A prova", "A prova e você" e "Comparar". Esta entrega
  * e a primeira: a leitura da prova, a mesma que a landing serve, dentro do app.
  * A segunda depende de cruzar a facies com a proficiencia do aluno
  * (`GET /student/competency-mastery`, ja no ar); a terceira, de escolher a
  * segunda banca. Anunciar as tres com uma pronta seria o defeito que a secao das
  * nove medidas custou a consertar.
  */
+/**
+ * "A prova e você" — o artboard `12b`.
+ *
+ * A regra do desenho cabe numa linha, e está escrita nele:
+ * **"tamanho é incidência · preenchimento é você"**. A grade não muda de forma;
+ * muda de onde sai a tinta.
+ *
+ * ⚠️ "Você" é AMBÍGUO, e o desenho não desfaz a ambiguidade — o `12b` usa
+ * placeholders e nenhuma palavra de direção. Preenchimento pode ser o quanto
+ * você domina ou o quanto falta, e as duas leituras pintam a grade ao contrário
+ * uma da outra.
+ *
+ * Resolvido pela coerência interna do componente: na aba da prova a tinta é
+ * incidência, ou seja, **atenção**. Se aqui ela virasse domínio, o significado
+ * da tinta inverteria entre duas abas da mesma grade. A legenda na tela diz
+ * "preenchimento é o que falta" em vez da frase do artboard, porque legenda
+ * ambígua sobre gráfico é pior que legenda que diverge do desenho.
+ *
+ * A junção é por `primary_subtheme`, e ela casa por construção: o gerador do
+ * dataset preenche `mais_cai` com `r.primary_subtheme AS subtema`, e é a mesma
+ * coluna que `competency_mastery` lê. Conferido nos dois lados antes de existir.
+ *
+ * ⚠️ A COBERTURA VAI NA TELA. O aluno tem domínio medido em alguns subtemas e em
+ * outros não, e uma grade onde metade das células está no piso por falta de dado
+ * parece uma grade onde o aluno vai mal em metade da prova. Dizer "34 dos 15
+ * assuntos têm resposta sua" é o que separa as duas leituras.
+ */
+function EixoVoce({ banca }: { banca: Banca }) {
+  const { token, tokenResolved } = useAuthToken();
+
+  const proficiencia = useQuery({
+    queryKey: queryKeys.competencyMastery,
+    queryFn: () => getMyCompetencyMastery(token),
+    enabled: tokenResolved,
+    staleTime: 60_000,
+  });
+
+  if (proficiencia.isPending) {
+    return <Skeleton className="h-64 w-full" aria-label="Proficiência carregando" />;
+  }
+  if (proficiencia.isError) {
+    return <Alert variant="danger">Não consegui ler a sua proficiência agora.</Alert>;
+  }
+
+  const itens = proficiencia.data?.items ?? [];
+  // ⚠️ `nao_avaliado` NAO entra no mapa. O posterior encolhido devolve um numero
+  // mesmo sem observacao -- ele fica perto do prior -- e pinta-lo seria afirmar
+  // desempenho onde nao houve resposta. O contrato ja separa os tres estados;
+  // aqui so' o que foi medido ou estimado sobre evidencia real vira tinta.
+  const dominio = new Map<string, { mastery: number; attempts: number }>();
+  for (const item of itens) {
+    if (!item.primary_subtheme || item.certeza === "nao_avaliado") continue;
+    const anterior = dominio.get(item.primary_subtheme);
+    // Varias competencias podem morar no mesmo subtema. Fica a de MAIS
+    // evidencia: media ponderada esconderia uma medicao boa atras de tres ruins.
+    if (!anterior || item.attempts > anterior.attempts) {
+      dominio.set(item.primary_subtheme, {
+        mastery: item.mastery,
+        attempts: item.attempts,
+      });
+    }
+  }
+
+  const assuntos = banca.mais_cai.linhas;
+  const comDado = assuntos.filter((linha) => dominio.has(linha.rotulo)).length;
+
+  if (comDado === 0) {
+    return (
+      <div className="rounded-surface border border-edge bg-surface p-6">
+        <h2 className="font-serif font-semibold text-ink">
+          Você ainda não respondeu os assuntos desta prova
+        </h2>
+        <p className="mt-2 max-w-[52ch] text-base text-muted">
+          Este mapa acende conforme você responde. Cada sessão pinta os assuntos
+          que ela tocou, e é aí que dá para ver onde a sua prova e você discordam.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="paper-eyebrow">
+        tamanho é incidência · preenchimento é o que falta
+      </p>
+      <MapaDaProva linhas={assuntos} dominio={dominio} />
+      {/* ⚠️ Esta nota é OBRIGATÓRIA, e ficou mais necessária depois de a tinta
+          passar a significar lacuna: agora o tom claro tem DOIS sentidos — você
+          domina, ou não há resposta sua. A cor sozinha não separa os dois, e sem
+          esta linha a grade fica ambígua justamente onde ela decide o estudo. */}
+      <p className="text-nota text-muted">
+        Quanto mais escuro, mais falta. {comDado} de {assuntos.length} assuntos
+        têm resposta sua; os outros ficam claros por não haver o que medir, e não
+        por você já dominá-los.
+      </p>
+    </div>
+  );
+}
+
 export function MapaClientPage() {
   const { token, tokenResolved } = useAuthToken();
+  const [eixo, setEixo] = useState<"prova" | "voce">("prova");
 
   const provaAlvo = useQuery({
     queryKey: queryKeys.studentTargetExam,
@@ -140,7 +243,43 @@ export function MapaClientPage() {
             : ""}
         </p>
       </div>
-      <FaciesReport banca={facies.data} />
+
+      {/* ── As abas do artboard `9a` ──────────────────────────────────────
+          O desenho nomeia TRES -- "A prova", "A prova e você" e "Comparar" --
+          e desenha DUAS: o `9a` mostra a primeira e o `12b` a segunda.
+          "Comparar" aparece so como botao, em nenhum artboard com conteudo.
+
+          Por isso ela nao esta aqui. Inventar o que o desenho nao decidiu foi
+          exatamente o que esta sessao passou o dia corrigindo -- e uma aba que
+          abre em nada e' pior que uma aba ausente. */}
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            ["prova", "A prova"],
+            ["voce", "A prova e você"],
+          ] as const
+        ).map(([chave, rotulo]) => (
+          <button
+            key={chave}
+            type="button"
+            aria-pressed={eixo === chave}
+            onClick={() => setEixo(chave)}
+            className={`paper-control inline-flex min-h-11 items-center rounded-surface border px-3.5 py-2 text-sm font-medium transition ${
+              eixo === chave
+                ? "border-primary bg-primary text-primaryInk"
+                : "border-rule bg-transparent text-ink hover:border-muted"
+            }`}
+          >
+            {rotulo}
+          </button>
+        ))}
+      </div>
+
+      {eixo === "prova" ? (
+        <FaciesReport banca={facies.data} />
+      ) : (
+        <EixoVoce banca={facies.data} />
+      )}
     </div>
   );
 }
