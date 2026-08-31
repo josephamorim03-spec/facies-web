@@ -311,9 +311,27 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
             onClick={() => {
               const abrindo = !questaoAberta;
               setQuestaoAberta(abrindo);
-              // Fechar a questão devolve o eixo ao acervo: os valores "desta
-              // questão" sem a questão à vista são sete números sem referente.
-              if (!abrindo) {
+              if (abrindo) {
+                /* ⚠️ ABRIR LEVA AO EIXO DA QUESTÃO, e isto é o conserto de
+                   venda desta seção.
+
+                   O eixo do acervo tem número em 2 das 9 medidas — o dataset
+                   público publica formato e subtema, e mais nada. Abrindo nele,
+                   quem clica em "ver numa questão" recebe uma lista de NOMES com
+                   definições, e sete linhas sem valor. Isso lê como documentação
+                   de um produto, não como o produto medindo.
+
+                   O eixo da questão tem os nove: "47 palavras", "2 — sem
+                   sangramento, sem dor", "alto — A e B repetem iniciar o
+                   pré-natal". São medidas concretas sobre a questão que está ao
+                   lado, com a marca acesa no texto. A seção se chama "o que
+                   ninguém mede"; é aqui que ela prova.
+
+                   O acervo continua a um toque, para quem quer a escala. */
+                setEixo("questao");
+              } else {
+                // Fechar devolve o eixo ao acervo: os valores "desta questão"
+                // sem a questão à vista são nove números sem referente.
                 setEixo("acervo");
                 setFixada(null);
               }
@@ -391,7 +409,7 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
             só existe quando `eixo === "acervo"`. */}
         <p className="mt-2 text-sm text-muted">
           {questaoAberta
-            ? "Toque numa medida para ver onde ela aparece na questão."
+            ? "Toque numa medida para ver onde ela aparece na questão — e por que ela muda o seu estudo."
             : eixo === "acervo"
               ? "O que já publicamos do acervo, medida a medida."
               : `As ${marcas.length} medidas, uma a uma. Abra a questão para ver cada uma no texto.`}
@@ -446,12 +464,26 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
                   {marca.n}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-base text-ink">{marca.nome}</span>
+                  {/* ⚠️ O NOME É O RÓTULO, O VALOR É A MEDIDA — e estava ao
+                      contrário. O nome vinha em `text-base text-ink` e o valor
+                      em `text-sm`, então cada linha lia "Tamanho do enunciado"
+                      em destaque e "47 palavras" como nota de rodapé. Nove
+                      linhas assim formam um glossário: o leitor vê a lista do
+                      que dizemos medir, e não as medidas.
+
+                      Invertido, a linha lê como laudo — rótulo pequeno em cima,
+                      medida embaixo, que é a forma que todo resultado de exame
+                      tem. É a mesma informação e vende outra coisa. */}
+                  <span className="block text-sm text-muted">{marca.nome}</span>
                   {eixo === "questao" ? (
-                    <Numeral className="mt-0.5 block text-sm text-ink">{marca.naQuestao}</Numeral>
+                    <Numeral className="mt-0.5 block text-base font-medium text-ink">
+                      {marca.naQuestao}
+                    </Numeral>
                   ) : marca.noAcervo ? (
                     <>
-                      <Numeral className="mt-0.5 block text-sm text-ink">{marca.noAcervo.valor}</Numeral>
+                      <Numeral className="mt-0.5 block text-base font-medium text-ink">
+                        {marca.noAcervo.valor}
+                      </Numeral>
                       {/* O DENOMINADOR NUNCA É OPCIONAL no eixo do acervo. No
                           eixo da questão ele seria ruído — a base é a questão
                           que está ao lado, visível inteira. */}
@@ -471,7 +503,16 @@ export function QuestaoAnotada({ dados }: { dados: DadosDoAcervo }) {
                        lista. O fechado já tinha esse tratamento desde a rodada
                        anterior; o aberto tinha ficado de fora, e é o estado que
                        o leitor olha por mais tempo. */}
-                  <span className="mt-1 block text-sm text-muted">{marca.porque}</span>
+                  {/* ⚠️ O PORQUÊ SÓ APARECE NA MEDIDA ATIVA. Ele é bom texto —
+                      "'Não', 'sem', 'exceto' — o maior produtor de erro por
+                      leitura apressada" — mas nove deles de uma vez somam nove
+                      parágrafos entre as medidas, e o olho perde a coluna de
+                      valores que a seção existe para mostrar. Aparecendo só em
+                      quem está sob o dedo ou o ponteiro, ele passa de parede a
+                      resposta: o leitor pergunta clicando. */}
+                  {acesa || !questaoAberta ? (
+                    <span className="mt-1 block text-sm text-muted">{marca.porque}</span>
+                  ) : null}
                 </span>
               </>
             );
