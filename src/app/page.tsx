@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { RedirectIfAuthenticated } from "./_components/RedirectIfAuthenticated";
 import { FunilHome } from "./_components/FunilHome";
 import { BuscaDeProva } from "@/components/facies/BuscaDeProva";
@@ -10,6 +11,7 @@ import { SecaoSemLetraMiuda } from "@/components/facies/SecaoSemLetraMiuda";
 import { RotuloSecao } from "@/components/facies/RotuloSecao";
 import { bancasEmDestaque, todasAsBancas } from "@/lib/facies";
 import { todasAsProvas } from "@/lib/provas";
+import { revisaoPorExamKey } from "@/lib/revisao";
 import { CONT_LANDING, SITE_NAME, SITE_QUALIFICADOR } from "@/lib/site";
 import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
 
@@ -75,6 +77,7 @@ export default function Home() {
   const destaques = bancasEmDestaque();
   const provaEmDestaque = todasAsProvas()[0];
   const total = todasAsBancas().length;
+  const revisao = provaEmDestaque ? revisaoPorExamKey(provaEmDestaque.exam_key) : undefined;
 
   /**
    * ══ A NUMERAÇÃO DAS SEÇÕES VIVE AQUI, e em nenhum componente ═══════════════
@@ -345,6 +348,31 @@ export default function Home() {
                   ⚠️ Não transformar isto em contagem regressiva. A limitação é
                   dita UMA vez, aqui; o aviso de proximidade é da interface do
                   app, que já recebe `access_expires_at` em `GET /profile`. */}
+              {/* O PLANO GRATUITO — questões + o ebook da Revisão Final.
+                  Vem antes do cartão de trial de propósito: é a porta sem
+                  cadastro e gratuita, e o trial (com conta + preço) é o passo
+                  seguinte. O ebook é grátis por decisão de produto. */}
+              {revisao ? (
+                <div className="mt-6 rounded-surface border border-edge bg-surface p-5 sm:p-6">
+                  <p className="paper-eyebrow">grátis · sem cadastro</p>
+                  <p className="mt-3 text-base text-ink">
+                    A última semana antes da {provaEmDestaque.sigla}.
+                  </p>
+                  <p className="mt-2 max-w-[58ch] text-sm text-muted">
+                    A nossa aposta, transformada em questões de revisão: um assunto por dia,
+                    com gabarito. Leia online ou baixe em PDF.
+                  </p>
+                  <div className="mt-5">
+                    <Link
+                      href={`/prova/${provaEmDestaque.slug}/revisao-final`}
+                      className="paper-control inline-flex min-h-11 items-center rounded-surface border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk transition hover:brightness-[1.04]"
+                    >
+                      Abrir a Revisão Final
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="mt-6 rounded-surface border border-edge bg-surface p-5 sm:p-6">
                 <p className="text-base text-ink">O primeiro mês é por nossa conta.</p>
                 <p className="mt-2 max-w-[58ch] text-sm text-muted">
