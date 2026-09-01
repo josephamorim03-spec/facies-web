@@ -5,8 +5,9 @@ import { numerosDaBanca, numerosDaProva } from "@/lib/cartao";
 import { encurtar } from "@/lib/encurtar";
 import { bancaPorSlugCurto, janela, nomeCurto } from "@/lib/facies";
 import { FORMATOS, resolverPeca, type FormatoId } from "@/lib/midia";
-import { renderCara } from "@/lib/midia/cara";
+import { dadoUnico, dadosDaRevisao, renderCara, renderDado, renderRevisao } from "@/lib/midia/cara";
 import { provaPorSlug } from "@/lib/provas";
+import { revisaoPorExamKey } from "@/lib/revisao";
 
 /**
  * Uma peça da central de mídia — a fácies pública, nos formatos do Instagram.
@@ -42,8 +43,35 @@ export async function GET(request: NextRequest, { params }: Params) {
   }
 
   const assunto = peça.assunto;
+
+  // A peça `revisao` tem dados próprios (o ebook congelado), e não a fácies.
+  if (peça.peca === "revisao") {
+    const prova = provaPorSlug(slug);
+    const revisao = prova ? revisaoPorExamKey(prova.exam_key) : undefined;
+    if (!prova || !revisao) {
+      return new Response("Peça não encontrada", { status: 404 });
+    }
+    const dados = dadosDaRevisao(revisao, prova.sigla, slug);
+    return new ImageResponse(
+      renderRevisao({ ...dados, largura: dim.largura, altura: dim.altura }),
+      { width: dim.largura, height: dim.altura },
+    );
+  }
+
   const prova = assunto.tipo === "prova" ? provaPorSlug(slug) : undefined;
   const banca = assunto.tipo === "banca" ? bancaPorSlugCurto(slug) : undefined;
+
+  // A peça `dado` (família C do handoff) mostra UM número memorável, nada mais.
+  if (peça.peca === "dado") {
+    const dado = dadoUnico(prova, banca);
+    if (!dado) {
+      return new Response("Peça não encontrada", { status: 404 });
+    }
+    return new ImageResponse(
+      renderDado({ ...dado, caminho: assunto.caminho, largura: dim.largura, altura: dim.altura }),
+      { width: dim.largura, height: dim.altura },
+    );
+  }
 
   // O que a peça mostra: para prova, base composta + lift; para banca, janela +
   // total. O trio de números vem da FONTE ÚNICA em `lib/cartao.ts`.

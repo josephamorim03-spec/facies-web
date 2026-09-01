@@ -1,5 +1,6 @@
 import { bancasComPagina, nomeCurto } from "@/lib/facies";
 import { todasAsProvas } from "@/lib/provas";
+import { revisaoPorExamKey } from "@/lib/revisao";
 
 /**
  * A central de mídia — o REGISTRO das peças geráveis.
@@ -20,27 +21,36 @@ import { todasAsProvas } from "@/lib/provas";
  * já servem a landing. Nenhuma rota nova toca o banco.
  */
 
-export type FormatoId = "feed" | "retrato" | "story";
+export type FormatoId = "feed" | "story";
 
-/** As três caixas do Instagram. 1080 de largura nos três, altura por formato. */
+/**
+ * Dois formatos, não três — o sistema de Instagram do handoff
+ * (`Instagram - modelos.dc.html`) é explícito: o quadrado saiu porque a grade do
+ * perfil é retrato, e post quadrado entra nela cortado justo no rodapé, onde vive
+ * o logotipo. 4:5 (1080×1350) vai ao feed e ao carrossel; 9:16 (1080×1920) vai
+ * ao story.
+ */
 export const FORMATOS: Record<FormatoId, { largura: number; altura: number; rotulo: string }> = {
-  feed: { largura: 1080, altura: 1080, rotulo: "Feed" },
-  retrato: { largura: 1080, altura: 1350, rotulo: "Retrato" },
-  story: { largura: 1080, altura: 1920, rotulo: "Story" },
+  feed: { largura: 1080, altura: 1350, rotulo: "Feed 4:5" },
+  story: { largura: 1080, altura: 1920, rotulo: "Story 9:16" },
 };
 
-export type PeçaId = "cara";
+export type PeçaId = "cara" | "revisao" | "dado";
 
 /**
  * As peças que a central sabe gerar.
  *
  * `cara` é o pilar 1 do doc de mídia: a mesma fácies pública, refluída nos
- * formatos do Instagram. Novas peças (`area`, `mais-cai`, `legenda`) entram
- * AQUI, como um item novo — e o catálogo e o guard passam a conhecê-las sem
- * cadastro adicional em lugar nenhum.
+ * formatos do Instagram. `revisao` é o ebook da Revisão Final — o plano
+ * gratuito "questões + ebook". `dado` é a família C do handoff: um número
+ * gigante e uma linha, para o feed lido em movimento. Uma peça nova entra AQUI
+ * como item novo, e o catálogo e a rota passam a conhecê-la sem cadastro em
+ * outro lugar.
  */
 export const PECAS: { id: PeçaId; rotulo: string }[] = [
   { id: "cara", rotulo: "A cara da prova" },
+  { id: "revisao", rotulo: "A revisão final" },
+  { id: "dado", rotulo: "Um dado só" },
 ];
 
 /** O alvo de uma peça: uma prova nacional ou uma banca institucional. */
@@ -49,7 +59,7 @@ export type Assunto =
   | { tipo: "banca"; slug: string; sigla: string; caminho: string };
 
 /**
- * Todos os assuntos geráveis — as provas nacionais e as bancas com página.
+ * Os assuntos da peça `cara` — as provas nacionais e as bancas com página.
  *
  * As duas famílias dividem o namespace `/prova/<slug>` de propósito, então o
  * `caminho` (o link gratuito que cada peça carrega) é o mesmo formato para as
@@ -72,6 +82,25 @@ export function assuntos(): Assunto[] {
   return [...provas, ...bancas];
 }
 
+/**
+ * Os assuntos de uma peça específica. Cada peça escolhe o seu universo e o seu
+ * `caminho` — `revisao` só existe para provas com ebook gerado, e o link dela é
+ * o do ebook (`/prova/<slug>/revisao-final`), não o da fácies.
+ */
+export function assuntosDaPeca(pecaId: PeçaId): Assunto[] {
+  if (pecaId === "revisao") {
+    return todasAsProvas()
+      .filter((prova) => revisaoPorExamKey(prova.exam_key) !== undefined)
+      .map((prova) => ({
+        tipo: "prova",
+        slug: prova.slug,
+        sigla: prova.sigla,
+        caminho: `/prova/${prova.slug}/revisao-final`,
+      }));
+  }
+  return assuntos();
+}
+
 export type Peça = { peca: PeçaId; assunto: Assunto };
 
 /**
@@ -81,7 +110,7 @@ export type Peça = { peca: PeçaId; assunto: Assunto };
 export function resolverPeca(pecaId: string, slug: string): Peça | undefined {
   const peca = PECAS.find((p) => p.id === pecaId);
   if (!peca) return undefined;
-  const assunto = assuntos().find((a) => a.slug === slug);
+  const assunto = assuntosDaPeca(peca.id).find((a) => a.slug === slug);
   if (!assunto) return undefined;
   return { peca: peca.id, assunto };
 }

@@ -22,8 +22,9 @@ import { ImageResponse } from "next/og.js";
 import { numerosDaBanca, numerosDaProva } from "@/lib/cartao";
 import { encurtar } from "@/lib/encurtar";
 import { bancaPorSlugCurto, janela, nomeCurto } from "@/lib/facies";
-import { renderCara } from "@/lib/midia/cara";
+import { dadoUnico, dadosDaRevisao, renderCara, renderDado, renderRevisao } from "@/lib/midia/cara";
 import { provaPorSlug } from "@/lib/provas";
+import { revisaoPorExamKey } from "@/lib/revisao";
 
 const ASSINATURA_PNG = "89504e470d0a1a0a";
 const PISO_BYTES = 10_000;
@@ -35,8 +36,8 @@ function acusa(condicao, mensagem) {
   if (!condicao) falhas.push(mensagem);
 }
 
-async function renderiza(props) {
-  const resposta = new ImageResponse(renderCara(props), {
+async function renderiza(renderFn, props) {
+  const resposta = new ImageResponse(renderFn(props), {
     width: props.largura,
     height: props.altura,
   });
@@ -68,17 +69,17 @@ const numerosUsp = usp ? numerosDaBanca(usp) : [];
 acusa(numerosEnamed.length > 0, "ENAMED sem numeros — numerosDaProva vazio");
 acusa(numerosUsp.length > 0, "usp-sp sem numeros — numerosDaBanca vazio");
 
-// ── renderiza (feed horizontal + story vertical) ─────────────────────────────
+// ── a peça "cara" (feed 4:5 + story 9:16) ───────────────────────────────────
 if (enamed) {
   const legenda = `${enamed.profundidade.diretas} questões da própria prova · ${enamed.profundidade.correlatas.toLocaleString("pt-BR")} de provas parecidas`;
   conferePng(
-    await renderiza({ titulo: enamed.sigla, legenda, numeros: numerosEnamed, caminho: "/prova/enamed", largura: 1080, altura: 1080 }),
+    await renderiza(renderCara, { titulo: enamed.sigla, legenda, numeros: numerosEnamed, caminho: "/prova/enamed", largura: 1080, altura: 1350 }),
     1080,
-    1080,
+    1350,
     "enamed-feed",
   );
   conferePng(
-    await renderiza({ titulo: enamed.sigla, legenda, numeros: numerosEnamed, caminho: "/prova/enamed", largura: 1080, altura: 1920 }),
+    await renderiza(renderCara, { titulo: enamed.sigla, legenda, numeros: numerosEnamed, caminho: "/prova/enamed", largura: 1080, altura: 1920 }),
     1080,
     1920,
     "enamed-story",
@@ -88,11 +89,52 @@ if (enamed) {
 if (usp) {
   const legenda = `${janela(usp)} · ${usp.total.toLocaleString("pt-BR")} questões`;
   conferePng(
-    await renderiza({ titulo: encurtar(nomeCurto(usp), 40), legenda, numeros: numerosUsp, caminho: "/prova/usp-sp", largura: 1080, altura: 1080 }),
+    await renderiza(renderCara, { titulo: encurtar(nomeCurto(usp), 40), legenda, numeros: numerosUsp, caminho: "/prova/usp-sp", largura: 1080, altura: 1350 }),
     1080,
-    1080,
+    1350,
     "usp-sp-feed",
   );
+}
+
+// ── a peça "revisao" (o ebook da Revisão Final) ─────────────────────────────
+if (enamed) {
+  const revisao = revisaoPorExamKey(enamed.exam_key);
+  acusa(Boolean(revisao), "ENAMED sem revisao final — revisaoPorExamKey vazio");
+  if (revisao) {
+    const dados = dadosDaRevisao(revisao, enamed.sigla, "enamed");
+    conferePng(
+      await renderiza(renderRevisao, { ...dados, largura: 1080, altura: 1350 }),
+      1080,
+      1350,
+      "enamed-revisao-feed",
+    );
+  }
+}
+
+// ── a peça "dado" (família C — um número só) ────────────────────────────────
+if (enamed) {
+  const dado = dadoUnico(enamed, undefined);
+  acusa(Boolean(dado), "ENAMED sem dado unico");
+  if (dado) {
+    conferePng(
+      await renderiza(renderDado, { ...dado, caminho: "/prova/enamed", largura: 1080, altura: 1350 }),
+      1080,
+      1350,
+      "enamed-dado-feed",
+    );
+  }
+}
+if (usp) {
+  const dado = dadoUnico(undefined, usp);
+  acusa(Boolean(dado), "usp-sp sem dado unico");
+  if (dado) {
+    conferePng(
+      await renderiza(renderDado, { ...dado, caminho: "/prova/usp-sp", largura: 1080, altura: 1350 }),
+      1080,
+      1350,
+      "usp-sp-dado-feed",
+    );
+  }
 }
 
 if (falhas.length > 0) {

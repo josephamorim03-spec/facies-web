@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { FORMATOS, PECAS, assuntos, caminhoDaPeca, type FormatoId } from "@/lib/midia";
+import { FORMATOS, PECAS, assuntosDaPeca, caminhoDaPeca, type FormatoId } from "@/lib/midia";
 import { CatalogoMidia, type ItemCatalogo } from "./_components/CatalogoMidia";
 
 /**
@@ -23,11 +23,11 @@ import { CatalogoMidia, type ItemCatalogo } from "./_components/CatalogoMidia";
 
 export const metadata: Metadata = { title: "Mídia" };
 
-const ORDEM_FORMATOS: FormatoId[] = ["feed", "retrato", "story"];
+const ORDEM_FORMATOS: FormatoId[] = ["feed", "story"];
 
 export default function AdminMidiaPage() {
   const itens: ItemCatalogo[] = PECAS.flatMap((peca) =>
-    assuntos().map((assunto) => ({
+    assuntosDaPeca(peca.id).map((assunto) => ({
       pecaId: peca.id,
       pecaRotulo: peca.rotulo,
       assuntoTipo: assunto.tipo,
