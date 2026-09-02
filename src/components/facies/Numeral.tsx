@@ -34,6 +34,46 @@
  */
 const SEPARADOR = /([.,])/;
 
+/**
+ * ⚠️ SÓ O SEPARADOR ENTRE DÍGITOS, e a primeira versão desta função errava nas
+ * duas pontas.
+ *
+ * Ela quebrava qualquer `,` ou `.` em `<span>` próprio — e span vizinho é ponto
+ * de quebra de linha. Na landing isso saiu assim, em produção:
+ *
+ *     ... em outra, 29,
+ *     2% das questões pedem ...
+ *
+ * O número partido no meio, que é pior do que o espaçamento que eu tinha ido
+ * consertar. Também apertava vírgula de PROSA — "idade, atraso, náusea" tem
+ * vírgula de lista, e ali o espaço normal está certo.
+ *
+ * Agora o texto é varrido por grupos NUMÉRICOS (`29,2`, `89.734`, `7,3`): cada
+ * grupo vira uma unidade que não quebra, e só dentro dele o separador é
+ * apertado. Fora dos grupos nada muda — a prosa quebra onde precisa, que é o
+ * que faz "6 — idade, atraso, náusea, PA, teste, ausências" caber na coluna.
+ */
+const GRUPO_NUMERICO = /(\d+(?:[.,]\d+)+)/;
+
+function apertarSeparadores(numero: string, chave: number) {
+  return (
+    // `whitespace-nowrap`: o grupo inteiro é uma palavra só para o layout.
+    <span key={chave} className="whitespace-nowrap">
+      {numero.split(SEPARADOR).map((parte, i) =>
+        parte.length === 1 && SEPARADOR.test(parte) ? (
+          // `inline-block` para a margem negativa valer nos dois lados; sem ele
+          // o navegador aplica só a horizontal do fluxo e o aperto sai torto.
+          <span key={i} className="-mx-[0.16em] inline-block">
+            {parte}
+          </span>
+        ) : (
+          <span key={i}>{parte}</span>
+        ),
+      )}
+    </span>
+  );
+}
+
 export function Numeral({
   children,
   className = "",
@@ -41,17 +81,13 @@ export function Numeral({
   children: string;
   className?: string;
 }) {
-  const partes = children.split(SEPARADOR);
+  const partes = children.split(GRUPO_NUMERICO);
 
   return (
     <span className={`font-mono tabular-nums ${className}`}>
       {partes.map((parte, indice) =>
-        SEPARADOR.test(parte) && parte.length === 1 ? (
-          // `inline-block` para a margem negativa valer nos dois lados; sem ele
-          // o navegador aplica só a horizontal do fluxo e o aperto sai torto.
-          <span key={indice} className="-mx-[0.16em] inline-block">
-            {parte}
-          </span>
+        GRUPO_NUMERICO.test(parte) ? (
+          apertarSeparadores(parte, indice)
         ) : (
           <span key={indice}>{parte}</span>
         ),

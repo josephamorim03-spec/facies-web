@@ -16,7 +16,7 @@
     "typecheck": "next typegen && tsc --noEmit -p tsconfig.json",
     "api:types": "openapi-typescript ../openapi.yaml -o src/lib/api/generated/schema.d.ts",
     "generate:kros-intro": "node scripts/generate-kros-intro-sprite.mjs",
-    "lint": "node scripts/check-mojibake.mjs && node scripts/check-portuguese-ui-copy.mjs && node scripts/check-student-ui-tokens.mjs && node scripts/check-contrast-tokens.mjs && node scripts/check-retro-geometry.mjs && node scripts/check-student-vocabulary.mjs && node scripts/check-tokens-existem.mjs && node scripts/check-client-value-imports.mjs && node scripts/check-slugs-facies.mjs && node scripts/check-midia-pecas.mjs && node --experimental-strip-types --loader ./scripts/lib/alias-loader.mjs scripts/smoke-midia-peca.mjs && eslint .",
+    "lint": "node scripts/check-mojibake.mjs && node scripts/check-portuguese-ui-copy.mjs && node scripts/check-student-ui-tokens.mjs && node scripts/check-contrast-tokens.mjs && node scripts/check-retro-geometry.mjs && node scripts/check-student-vocabulary.mjs && node scripts/check-tokens-existem.mjs && node scripts/check-client-value-imports.mjs && node scripts/check-links-internos.mjs && node scripts/check-slugs-facies.mjs && node scripts/check-midia-pecas.mjs && node --experimental-strip-types --loader ./scripts/lib/alias-loader.mjs scripts/smoke-midia-peca.mjs && eslint .",
     "smoke:midia": "node --experimental-strip-types --loader ./scripts/lib/alias-loader.mjs scripts/smoke-midia-peca.mjs",
     "lint:ui": "node scripts/check-portuguese-ui-copy.mjs && node scripts/check-student-ui-tokens.mjs && node scripts/check-student-vocabulary.mjs",
     "test:unit": "node --test --experimental-strip-types tests/unit/*.test.mjs",
@@ -24,6 +24,7 @@
     "precapture:design": "npm run build",
     "capture:design": "node scripts/capture-design-redesign.mjs",
     "test:e2e:smoke": "node scripts/run-smoke-e2e.mjs",
+    "test:e2e:auth": "node scripts/run-smoke-e2e.mjs auth.proxy-cookie.spec.ts cadastro.funil.spec.ts",
     "test:e2e:ui": "playwright test --ui",
     "verificar:design": "node scripts/spec-do-design.mjs && node scripts/spec-do-design.mjs --ritmo --artboard=1b --design=\"C:/Users/josep/Downloads/Fácies design handoff/Primeira Tela - Direções.dc.html\"",
     "verificar:design-app": "node scripts/spec-do-app.mjs"

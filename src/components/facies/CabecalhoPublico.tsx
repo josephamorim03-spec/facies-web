@@ -29,10 +29,20 @@ export function CabecalhoPublico({ comLink = false }: { comLink?: boolean }) {
   );
 
   return (
-    // Só a marca. O CTA "Ver a minha prova" que a `.topo` da v7 tem foi
-    // retirado a pedido: a busca fica a uma rolagem curta, e um botão no topo
-    // que só rola a página compete com a faixa pela primeira atenção.
-    <div className="border-b border-rule py-5">
+    // O CTA "Ver a minha prova" que a `.topo` da v7 tem continua FORA: a busca
+    // fica a uma rolagem curta, e um botão no topo que só rola a página compete
+    // com a faixa pela primeira atenção.
+    //
+    // ⚠️ "Entrar" é outra coisa, e por isso entra. O funil público inteiro não
+    // tinha NENHUMA porta de conta: o único `/login` da landing estava enterrado
+    // no meio da página, dentro do `PonteDiagnostico`. Quem já tem conta não
+    // achava por onde voltar, e quem lia o cartão do fim — que oferece o mês
+    // gratuito — não tinha onde se cadastrar.
+    //
+    // Não é navegação, então não contradiz a régua sem barra: é uma porta só, no
+    // canto, onde toda pessoa já espera encontrar. Em texto e não em botão
+    // cheio, para não disputar a primeira atenção com o herói.
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-rule py-5">
       {comLink ? (
         <Link
           href="/"
@@ -46,6 +56,12 @@ export function CabecalhoPublico({ comLink = false }: { comLink?: boolean }) {
         // lugar nenhum.
         marca
       )}
+      <Link
+        href="/login"
+        className="paper-control inline-flex min-h-11 items-center rounded-control px-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+      >
+        Entrar
+      </Link>
     </div>
   );
 }
