@@ -79,15 +79,37 @@ function extractBearerToken(raw: string | null): string {
   return parts[1]?.trim() ?? "";
 }
 
-async function tokenFromRequest(request: NextRequest): Promise<string> {
+/**
+ * O corpo é lido UMA vez.
+ *
+ * Havia dois `await request.json()` neste handler: um dentro de
+ * `tokenFromRequest` e outro para o `remember_device`. O corpo de um `Request` é
+ * um stream de leitura única — o segundo `json()` rejeita, o `.catch(() => null)`
+ * engole, e `rememberDevice` vira `false` em silêncio.
+ *
+ * Só não quebrava porque o único chamador (`establishAuthSession`) manda o token
+ * TAMBÉM no header `Authorization`, e aí o primeiro `json()` nunca chegava a
+ * rodar. Um chamador que mandasse apenas o corpo — o que o contrato permite —
+ * perderia o "manter conectado" sem nenhum erro: a sessão duraria 12 horas em
+ * vez de 30 dias, e o aluno seria deslogado sem explicação.
+ */
+type CorpoDaSessao = { accessToken: string; rememberDevice: boolean };
+
+async function lerCorpo(request: NextRequest): Promise<CorpoDaSessao> {
   const headerToken = extractBearerToken(request.headers.get("authorization"));
-  if (headerToken) return headerToken;
   const payload = await request.json().catch(() => null);
-  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
-    const accessToken = (payload as Record<string, unknown>).access_token;
-    if (typeof accessToken === "string") return accessToken.trim();
-  }
-  return "";
+  const registro =
+    payload && typeof payload === "object" && !Array.isArray(payload)
+      ? (payload as Record<string, unknown>)
+      : null;
+
+  const tokenDoCorpo =
+    typeof registro?.access_token === "string" ? registro.access_token.trim() : "";
+
+  return {
+    accessToken: headerToken || tokenDoCorpo,
+    rememberDevice: Boolean(registro?.remember_device),
+  };
 }
 
 function jsonError(code: string, status: number, requestId: string): NextResponse {
@@ -102,17 +124,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!isTrustedBrowserMutation(request)) {
     return jsonError("csrf_rejected", 403, requestId);
   }
-  const accessToken = await tokenFromRequest(request);
+
+  const { accessToken, rememberDevice } = await lerCorpo(request);
 
   if (!accessToken || accessToken.length > MAX_TOKEN_LENGTH) {
     return jsonError("invalid_session_token", 401, requestId);
   }
-
-  const payload = await request.json().catch(() => null);
-  const rememberDevice =
-    payload && typeof payload === "object" && !Array.isArray(payload)
-      ? Boolean((payload as Record<string, unknown>).remember_device)
-      : false;
 
   const validationResponse = await fetch(`${proxyTarget()}/auth/session`, {
     method: "POST",

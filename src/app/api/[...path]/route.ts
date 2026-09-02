@@ -9,6 +9,8 @@ import {
   parseEnvPositiveInt,
   setSessionCookies,
 } from "@/lib/server/sessionCookies";
+import { decidirAuthorizationUpstream } from "@/lib/server/upstreamAuth";
+import { tokenEstaExpirado } from "@/lib/server/tokenExpiry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +19,6 @@ const SESSION_EXPIRED_HEADER = "X-KrosMed-Session-Expired";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
 const INTERNAL_CSRF_VALUE = "1";
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
-const CLOCK_SKEW_SECONDS = 30;
 const HOP_BY_HOP_HEADERS = new Set([
   "connection",
   "keep-alive",
@@ -109,7 +110,15 @@ function createRequestId(seed?: string): string {
   return `req_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
 }
 
-function buildUpstreamHeaders(request: NextRequest, requestId: string): Headers {
+/**
+ * O `Authorization` que sobe ao backend vem do COOKIE, não do navegador.
+ *
+ * A regra e o histórico do buraco que ela fecha vivem em
+ * `@/lib/server/upstreamAuth` — separada daqui porque é regra de segurança, e
+ * regra de segurança que só existe dentro de um route handler é regra que
+ * ninguém testa. A matriz completa está em `tests/unit/upstream-auth.test.mjs`.
+ */
+function buildUpstreamHeaders(request: NextRequest, requestId: string, pathKey: string): Headers {
   const headers = new Headers(request.headers);
   headers.delete("host");
   headers.delete("cookie");
@@ -118,10 +127,17 @@ function buildUpstreamHeaders(request: NextRequest, requestId: string): Headers 
   headers.delete("transfer-encoding");
   headers.delete(INTERNAL_CSRF_HEADER);
 
-  const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value?.trim() || "";
-  if (sessionToken && !headers.has("authorization")) {
-    headers.set("authorization", `Bearer ${sessionToken}`);
+  const decisao = decidirAuthorizationUpstream({
+    pathKey,
+    temAuthorizationDoCliente: headers.has("authorization"),
+    sessionToken: request.cookies.get(SESSION_COOKIE_NAME)?.value ?? "",
+  });
+  if (decisao.acao === "usar-cookie") {
+    headers.set("authorization", `Bearer ${decisao.token}`);
+  } else if (decisao.acao === "remover") {
+    headers.delete("authorization");
   }
+
   headers.set("x-request-id", requestId);
   return headers;
 }
@@ -140,19 +156,11 @@ function responseWithRequestId(body: unknown, status: number, requestId: string)
   });
 }
 
-function isJwtExpired(token: string): boolean {
-  const parts = token.split(".");
-  if (parts.length !== 3) return false;
-  try {
-    const padding = "=".repeat((4 - (parts[1]!.length % 4)) % 4);
-    const payload = JSON.parse(Buffer.from(parts[1]! + padding, "base64").toString("utf8")) as Record<string, unknown>;
-    const exp = typeof payload.exp === "number" ? payload.exp : null;
-    if (exp === null) return false;
-    return Math.floor(Date.now() / 1000) - CLOCK_SKEW_SECONDS > exp;
-  } catch {
-    return false;
-  }
-}
+/* `isJwtExpired` vivia aqui e era CÓDIGO MORTO: fazia `split(".")` e exigia 3
+   partes (formato JWT), mas o cookie de sessão guarda `kros.v1.<payload>.<sig>`,
+   que dá quatro. Retornava `false` para todo token real desde que foi escrito.
+   A lógica correta, com os dois formatos e um teste por caso, está em
+   `@/lib/server/tokenExpiry`. */
 
 function rememberDeviceFromBody(body: ArrayBuffer | undefined): boolean | null {
   if (!body || body.byteLength === 0) return null;
@@ -233,7 +241,7 @@ async function proxyHandler(
   const pathKey = pathParts.join("/");
   const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value?.trim() || "";
   const refreshHint = hasRefreshHint(request);
-  if (sessionToken && isProtectedProxyPath(pathKey) && isJwtExpired(sessionToken)) {
+  if (sessionToken && isProtectedProxyPath(pathKey) && tokenEstaExpirado(sessionToken)) {
     const expiredResponse = responseWithRequestId(
       { code: "oidc_token_invalid", message: "Token expired" },
       401,
@@ -275,7 +283,7 @@ async function proxyHandler(
       upstreamUrl,
       {
         method,
-        headers: buildUpstreamHeaders(request, requestId),
+        headers: buildUpstreamHeaders(request, requestId, pathKey),
         body: requestBody && requestBody.byteLength > 0 ? requestBody : undefined,
         redirect: "manual",
         cache: "no-store",
