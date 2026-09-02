@@ -52,9 +52,9 @@ export function TrintaAssuntos({ dados }: { dados: DadosDaLanding }) {
 
   return (
     <section className="border-t border-rule py-14 sm:py-24">
-      <div className="mx-auto w-full max-w-[1080px] px-5 sm:px-8">
+      <div className="mx-auto w-full max-w-[1080px] px-[var(--gutter)]">
         <div className="max-w-[66ch]">
-          <h2 className="mb-4 max-w-[22ch] font-sans text-2xl font-semibold tracking-[-0.018em] sm:text-4xl">
+          <h2 className="mb-4 max-w-[22ch] font-sans font-semibold">
             Todo mundo diz o que vai cair. Depois.
           </h2>
           <p className="mb-4">

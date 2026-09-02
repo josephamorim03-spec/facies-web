@@ -38,9 +38,11 @@ export function Objecoes({ dados }: { dados: DadosDaLanding }) {
         // "não" a "preciso pagar" e depois esconder o teste gratuito é perder a
         // venda por excesso de modéstia.
         <>
-          Não. A fácies e os trinta assuntos são gratuitos e não pedem cadastro. E o cadastro, que
-          também é de graça e não pede cartão, abre o mapa e o plano por{" "}
-          <span className="font-mono tabular-nums">{DIAS_DE_TRIAL}</span> dias.
+          Não. A fácies e os trinta assuntos são gratuitos e não pedem cadastro. O cadastro,
+          também de graça e sem cartão, abre o mapa e o plano por{" "}
+          <span className="font-mono tabular-nums">{DIAS_DE_TRIAL}</span> dias. Depois, quem se
+          cadastrar agora paga <span className="text-ink">R$ 490 no primeiro ano</span> — e a
+          leitura da prova segue gratuita de qualquer forma.
         </>
       ),
     },
@@ -68,8 +70,8 @@ export function Objecoes({ dados }: { dados: DadosDaLanding }) {
 
   return (
     <section className="border-t border-rule py-14 sm:py-24">
-      <div className="mx-auto w-full max-w-[66ch] px-5 sm:px-8">
-        <h2 className="mb-4 max-w-[22ch] font-sans text-2xl font-semibold tracking-[-0.018em] sm:text-4xl">
+      <div className="mx-auto w-full max-w-[66ch] px-[var(--gutter)]">
+        <h2 className="mb-4 max-w-[22ch] font-sans font-semibold">
           Perguntas que você faria
         </h2>
         <dl className="m-0 border-t border-rule">

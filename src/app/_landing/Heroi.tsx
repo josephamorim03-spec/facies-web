@@ -36,8 +36,8 @@ export function Heroi({ dados }: { dados: DadosDaLanding }) {
       <CabecalhoPublico />
 
       <section className="pb-14 pt-7 sm:pb-24 sm:pt-16">
-        <div className="mx-auto w-full max-w-[1080px] px-5 sm:px-8">
-          <h1 className="mb-3.5 max-w-[16ch] font-sans text-[34px] font-semibold leading-[1.12] tracking-[-0.022em] sm:text-6xl lg:text-7xl">
+        <div className="mx-auto w-full max-w-[1080px] px-[var(--gutter)]">
+          <h1 className="mb-3.5 max-w-[16ch] font-sans font-semibold">
             Cada prova tem uma{" "}
             <em className="font-serif text-[1.12em] font-semibold not-italic leading-[0.9] tracking-[-0.01em] text-marcaViva">
               cara

@@ -57,9 +57,9 @@ export function Fecho({ dados }: { dados: DadosDaLanding }) {
 
   return (
     <section className="bg-primary py-14 text-primaryInk sm:py-24">
-      <div className="mx-auto w-full max-w-[1080px] px-5 sm:px-8">
+      <div className="mx-auto w-full max-w-[1080px] px-[var(--gutter)]">
         <div className="max-w-[66ch]">
-          <h2 className="mb-4 max-w-[22ch] font-sans text-2xl font-semibold tracking-[-0.018em] text-primaryInk sm:text-4xl">
+          <h2 className="mb-4 max-w-[22ch] font-sans font-semibold text-primaryInk">
             A revisão da última semana
           </h2>
           <p className="text-base">
@@ -144,7 +144,7 @@ export function Fecho({ dados }: { dados: DadosDaLanding }) {
             sai depois. Vem por último, quando tudo já foi entregue. */}
         <div className="mt-10 border-t border-paper/25 pt-8">
           <div className="max-w-[62ch]">
-            <h3 className="mb-1.5 font-sans text-lg font-semibold text-primaryInk">
+            <h3 className="mb-1.5 font-sans font-semibold text-primaryInk">
               Todo mundo promete acertar. Ninguém mostra a conta.
             </h3>
             <p className="mb-4 text-base text-primaryInk/85">
@@ -158,7 +158,7 @@ export function Fecho({ dados }: { dados: DadosDaLanding }) {
 
         <div className="mt-10 border-t border-paper/25 pt-8">
           <div className="max-w-[62ch]">
-            <h3 className="mb-1.5 font-sans text-lg font-semibold text-primaryInk">
+            <h3 className="mb-1.5 font-sans font-semibold text-primaryInk">
               Conhece alguém que presta dia{" "}
               <span className="font-mono tabular-nums">{dataBr.split(".")[0]}</span>?
             </h3>

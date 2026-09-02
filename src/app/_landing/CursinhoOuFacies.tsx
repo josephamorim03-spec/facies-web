@@ -19,9 +19,9 @@ export function CursinhoOuFacies({ dados }: { dados: DadosDaLanding }) {
 
   return (
     <section className="border-t border-rule py-14 sm:py-24">
-      <div className="mx-auto w-full max-w-[1080px] px-5 sm:px-8">
+      <div className="mx-auto w-full max-w-[1080px] px-[var(--gutter)]">
         <div className="max-w-[66ch]">
-          <h2 className="mb-4 max-w-[22ch] font-sans text-2xl font-semibold tracking-[-0.018em] sm:text-4xl">
+          <h2 className="mb-4 max-w-[22ch] font-sans font-semibold">
             Cursinho também prevê prova. A diferença é a conta.
           </h2>
           <p>
@@ -32,7 +32,7 @@ export function CursinhoOuFacies({ dados }: { dados: DadosDaLanding }) {
 
         <div className="mt-2 grid grid-cols-1 gap-x-10 gap-y-2 sm:grid-cols-2">
           <div>
-            <h3 className="mb-2 mt-5 font-sans text-lg font-semibold">Uma previsão de cursinho</h3>
+            <h3 className="mb-2 mt-5 font-sans font-semibold">Uma previsão de cursinho</h3>
             <ul className="m-0 list-none p-0">
               {[
                 "Sai quando o cursinho quiser, sem data de fechamento",
@@ -48,7 +48,7 @@ export function CursinhoOuFacies({ dados }: { dados: DadosDaLanding }) {
           </div>
 
           <div>
-            <h3 className="mb-2 mt-5 font-sans text-lg font-semibold">A Fácies</h3>
+            <h3 className="mb-2 mt-5 font-sans font-semibold">A Fácies</h3>
             <ul className="m-0 list-none p-0">
               <li className="border-b border-rule py-2.5 text-base first:border-t">
                 Fechou a lista em{" "}

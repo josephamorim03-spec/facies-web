@@ -1,8 +1,14 @@
-# `facies-landing-v8.html` — peça de design, não página em produção
+# `facies-landing-v8.html` — a peça de design que virou a home
 
-Um HTML autocontido, para aprovar no navegador antes de virar código. A home no
-ar continua sendo [`src/app/page.tsx`](../src/app/page.tsx), com a estrutura da
-v7. Nada aqui foi aplicado lá.
+Um HTML autocontido, feito para aprovar no navegador antes de virar código.
+
+**Ela virou.** Desde 02/09/2026 a home é a v8: [`src/app/page.tsx`](../src/app/page.tsx)
+renderiza os blocos de [`src/app/_landing/`](../src/app/_landing/), que são o
+PORTE desta peça — não ela. A diferença importa: a peça congelou cada número no
+HTML, e o porte os deriva do dataset em `_landing/dados.ts`.
+
+A peça continua aqui porque é o artefato de aprovação e o que o verificador lê.
+Divergências entre as duas estão listadas abaixo.
 
 ```
 node design/verificar-landing-v8.mjs     # as afirmações contra o dataset
@@ -72,9 +78,12 @@ quebrado. O teste em `kbank/tests/` é a autoridade.
 - **Os três estados do mapa** (medido / estimado / não avaliado) seguem o
   artboard, e não o `MapaDaProva`, que não distingue medido de estimado. Ver a
   pendência abaixo.
-- **Sem preço**, por decisão de 23/08: oferta vincula (CDC art. 30) e o checkout
-  não abriu. Diverge do `page.tsx` no ar, que anuncia preço futuro no cartão de
-  acesso.
+- **Sem preço na PEÇA**, por decisão de 23/08: oferta vincula (CDC art. 30) e o
+  checkout não abriu. ⚠️ **O porte diverge, de propósito.** Em 30/08 o operador
+  decidiu anunciar R$ 490 no primeiro ano contra R$ 590, e a home já anunciava —
+  decisão posterior, e é ela que vale. `_landing/MapaDosAssuntos.tsx` carrega a
+  cifra e o porquê. A peça não foi atualizada porque ela é o registro do que foi
+  aprovado em 23/08.
 
 ## Pendências que são de produção, não da peça
 

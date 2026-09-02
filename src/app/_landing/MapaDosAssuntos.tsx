@@ -52,9 +52,9 @@ export function MapaDosAssuntos({ dados }: { dados: DadosDaLanding }) {
 
   return (
     <section className="border-t border-rule bg-paper py-14 sm:py-24">
-      <div className="mx-auto w-full max-w-[1080px] px-5 sm:px-8">
+      <div className="mx-auto w-full max-w-[1080px] px-[var(--gutter)]">
         <div className="max-w-[66ch]">
-          <h2 className="mb-4 max-w-[22ch] font-sans text-2xl font-semibold tracking-[-0.018em] sm:text-4xl">
+          <h2 className="mb-4 max-w-[22ch] font-sans font-semibold">
             O que você ainda não viu
           </h2>
           <p>
@@ -92,7 +92,7 @@ export function MapaDosAssuntos({ dados }: { dados: DadosDaLanding }) {
         <MapaDaProva linhas={celulas} preOrdenado />
 
         <div className="mt-8 max-w-[66ch]">
-          <h3 className="mb-2 font-sans text-lg font-semibold">
+          <h3 className="mb-2 font-sans font-semibold">
             O que é grátis, e o que a assinatura acrescenta
           </h3>
           <p className="mb-4">
@@ -120,9 +120,27 @@ export function MapaDosAssuntos({ dados }: { dados: DadosDaLanding }) {
             Com cadastro, de graça e sem cartão: o mapa e o plano por{" "}
             <span className="font-mono tabular-nums">{DIAS_DE_TRIAL}</span> dias.
           </p>
+          {/* ⚠️ A CIFRA VOLTOU, e ela SUPERA a decisão de 23/08 ("sem cifra").
+              Aquela decisão existia porque anunciar preço de algo incomprável é
+              oferta que o art. 30 do CDC obriga a cumprir, e não havia como
+              cumprir. Em 30/08 o operador decidiu outra coisa e a home no ar já
+              anunciava: R$ 490 no primeiro ano para quem se cadastrar agora,
+              contra R$ 590. A promessa é honrável com dado que já existe —
+              a coorte é `users.created_at`, que grava quem entrou quando.
+
+              Portar a landing SEM a cifra teria revertido em silêncio uma
+              decisão de negócio de três dias antes, e removido da página o
+              único número que responde "quanto custa". Os dois valores são
+              oferta vinculante: subir qualquer um deles exige que esta página
+              deixe de prometê-los ANTES.
+
+              ⚠️ Não transformar em contagem regressiva. A limitação é dita UMA
+              vez, aqui; o aviso de proximidade é da interface do app, que já
+              recebe `access_expires_at` em `GET /profile`. */}
           <p>
-            Depois disso, assinatura. Ela ainda não abriu — quando abrir, o preço estará escrito
-            aqui antes de qualquer cobrança.
+            As assinaturas ainda não abriram. Quando abrirem, quem se cadastrar agora paga{" "}
+            <span className="text-ink">R$ 490 no primeiro ano</span>, em vez de R$ 590. Avisamos
+            antes, e ninguém é cobrado sem contratar.
           </p>
         </div>
       </div>

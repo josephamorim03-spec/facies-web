@@ -204,10 +204,18 @@ console.log('\n== o porte carregou a copy aprovada? ==');
   // na manchete. O porte em `src/app/_rascunho-v8/` pode perder uma frase
   // aprovada numa refatoração e nada reclama: typecheck não lê português.
   //
-  // Só roda se o porte existir. Quando ele for promovido, trocar o diretório.
-  const dir = path.join(AQUI, '..', 'src', 'app', '_rascunho-v8');
+  // ⚠️ ISTO ERA UM "if existe, senao pula", E O PULO SAIA VERDE. Na promocao a
+  // pasta virou `_landing` e a secao inteira desapareceu do relatorio sem uma
+  // linha de aviso: o verificador imprimiu "a peca confere com o dataset" tendo
+  // deixado de conferir doze frases. Guard que some quando o alvo se move e pior
+  // que guard nenhum, porque responde verde por nao ter olhado.
+  //
+  // Agora a ausencia e FALHA, e a mensagem diz onde ele procurou.
+  const dir = path.join(AQUI, '..', 'src', 'app', '_landing');
   if (!fs.existsSync(dir)) {
-    console.log('        (porte ausente — seção pulada)');
+    bad('o porte nao esta em src/app/_landing; a home em producao e '
+        + 'src/app/page.tsx, que renderiza _landing/Pagina. Se a pasta mudou de '
+        + 'nome, atualizar este caminho; se sumiu, a home perdeu os blocos');
   } else {
     const porte = fs.readdirSync(dir)
       .filter((f) => /\.tsx?$/.test(f))
@@ -229,7 +237,16 @@ console.log('\n== o porte carregou a copy aprovada? ==');
       ['objeções: quem', 'não é braço de cursinho'],
       ['fecho: a decisão', 'ninguém aprende matéria nova'],
       ['fecho: e-mail', 'Ninguém mostra a conta'],
-      ['mapa: preço', 'preço estará escrito aqui antes de qualquer cobrança'],
+      // A PECA E O PORTE DIVERGEM AQUI, DE PROPOSITO -- e a assercao mudou de
+      // lado para acompanhar. A peca foi aprovada em 23/08 SEM cifra (oferta
+      // vincula, art. 30 do CDC, e o checkout nao abriu). Em 30/08 o operador
+      // decidiu outra coisa e a home ja anunciava R$ 490 no primeiro ano contra
+      // R$ 590; a promocao carregou isso, porque reverter em silencio uma
+      // decisao de negocio de tres dias antes nao e portar, e apagar.
+      //
+      // Entao o que se exige do porte agora e a CIFRA, nao a promessa de que ela
+      // viria. Se alguem tirar o preco da pagina, isto reprova.
+      ['mapa: preço', 'R$ 490 no primeiro ano'],
     ];
     const perdidas = APROVADAS.filter(([, f]) => texto.includes(f) && !porte.includes(f));
     perdidas.length === 0
