@@ -209,57 +209,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 9.6,
-          "desvio_questoes": 9.6,
+          "desvio_questoes": 7.7,
           "media_pct": 51.5,
-          "media_questoes": 51.5
+          "media_questoes": 41.2
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.2,
-          "desvio_questoes": 2.2,
+          "desvio_questoes": 1.8,
           "media_pct": 12.2,
-          "media_questoes": 12.2
+          "media_questoes": 9.8
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.5,
-          "desvio_questoes": 3.5,
+          "desvio_questoes": 2.8,
           "media_pct": 10.5,
-          "media_questoes": 10.5
+          "media_questoes": 8.4
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.1,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 1.7,
           "media_pct": 9.9,
-          "media_questoes": 9.9
+          "media_questoes": 7.9
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.1,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 1.7,
           "media_pct": 9.0,
-          "media_questoes": 9.0
+          "media_questoes": 7.2
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 4.0,
-          "desvio_questoes": 4.0,
+          "desvio_questoes": 3.2,
           "media_pct": 4.3,
-          "media_questoes": 4.3
+          "media_questoes": 3.4
         },
         {
           "area": "Outros",
           "desvio_pct": 1.9,
-          "desvio_questoes": 1.9,
+          "desvio_questoes": 1.5,
           "media_pct": 2.5,
-          "media_questoes": 2.5
+          "media_questoes": 2.0
         }
       ],
       "edicoes": 6,
       "institution_key": "AL-HOSPITAL-MEMORIAL-ARTHUR-RAMOS-HMAR",
       "nome": "AL - Hospital Memorial Arthur Ramos - HMAR",
-      "prova_tipica": 100,
+      "prova_tipica": 80,
       "questoes": 580
     },
     {
@@ -346,57 +346,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 11.7,
-          "desvio_questoes": 9.3,
+          "desvio_questoes": 5.8,
           "media_pct": 49.2,
-          "media_questoes": 39.3
+          "media_questoes": 24.6
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.0,
-          "desvio_questoes": 2.4,
+          "desvio_questoes": 1.5,
           "media_pct": 13.8,
-          "media_questoes": 11.0
+          "media_questoes": 6.9
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 3.6,
-          "desvio_questoes": 2.9,
+          "desvio_questoes": 1.8,
           "media_pct": 10.7,
-          "media_questoes": 8.6
+          "media_questoes": 5.4
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.8,
-          "desvio_questoes": 3.1,
+          "desvio_questoes": 1.9,
           "media_pct": 8.0,
-          "media_questoes": 6.4
+          "media_questoes": 4.0
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 3.3,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 1.7,
           "media_pct": 7.8,
-          "media_questoes": 6.3
+          "media_questoes": 3.9
         },
         {
           "area": "Outros",
           "desvio_pct": 5.2,
-          "desvio_questoes": 4.2,
+          "desvio_questoes": 2.6,
           "media_pct": 5.8,
-          "media_questoes": 4.7
+          "media_questoes": 2.9
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 5.5,
-          "desvio_questoes": 4.4,
+          "desvio_questoes": 2.7,
           "media_pct": 4.7,
-          "media_questoes": 3.7
+          "media_questoes": 2.3
         }
       ],
       "edicoes": 9,
       "institution_key": "AL-SANTA-CASA-DE-MISERICORDIA-DE-MACEIO-SCMM",
       "nome": "AL - Santa Casa de Misericórdia de Maceió - SCMM",
-      "prova_tipica": 80,
+      "prova_tipica": 50,
       "questoes": 739
     },
     {
@@ -411,57 +411,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 6.5,
-          "desvio_questoes": 6.4,
+          "desvio_questoes": 5.2,
           "media_pct": 37.7,
-          "media_questoes": 37.3
+          "media_questoes": 30.1
         },
         {
           "area": "Pediatria",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 1.4,
           "media_pct": 13.8,
-          "media_questoes": 13.6
+          "media_questoes": 11.0
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 6.7,
-          "desvio_questoes": 6.7,
+          "desvio_questoes": 5.4,
           "media_pct": 13.3,
-          "media_questoes": 13.2
+          "media_questoes": 10.6
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 1.8,
-          "desvio_questoes": 1.8,
+          "desvio_questoes": 1.4,
           "media_pct": 13.0,
-          "media_questoes": 12.9
+          "media_questoes": 10.4
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 1.3,
           "media_pct": 9.9,
-          "media_questoes": 9.8
+          "media_questoes": 7.9
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.6,
-          "desvio_questoes": 1.6,
+          "desvio_questoes": 1.3,
           "media_pct": 9.8,
-          "media_questoes": 9.7
+          "media_questoes": 7.9
         },
         {
           "area": "Outros",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 1.4,
           "media_pct": 2.6,
-          "media_questoes": 2.5
+          "media_questoes": 2.0
         }
       ],
       "edicoes": 5,
       "institution_key": "AL-UNIVERSIDADE-FEDERAL-DE-ALAGOAS-UFAL-HOSPITAL-UNIVERSITARIO-PROFESSOR-ALBERTO-ANTUNES",
       "nome": "AL - Universidade Federal de Alagoas - UFAL (Hospital Universitário Professor Alberto Antunes)",
-      "prova_tipica": 99,
+      "prova_tipica": 80,
       "questoes": 459
     },
     {
@@ -484,55 +484,55 @@
           "desvio_pct": 4.1,
           "desvio_questoes": 4.1,
           "media_pct": 32.8,
-          "media_questoes": 32.8
+          "media_questoes": 32.4
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.7,
           "desvio_questoes": 3.7,
           "media_pct": 15.6,
-          "media_questoes": 15.6
+          "media_questoes": 15.4
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.4,
-          "desvio_questoes": 2.4,
+          "desvio_questoes": 2.3,
           "media_pct": 14.3,
-          "media_questoes": 14.3
+          "media_questoes": 14.1
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 1.7,
           "desvio_questoes": 1.7,
           "media_pct": 13.5,
-          "media_questoes": 13.5
+          "media_questoes": 13.3
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.3,
-          "desvio_questoes": 2.3,
+          "desvio_questoes": 2.2,
           "media_pct": 10.3,
-          "media_questoes": 10.3
+          "media_questoes": 10.2
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.0,
           "desvio_questoes": 2.0,
           "media_pct": 10.2,
-          "media_questoes": 10.2
+          "media_questoes": 10.1
         },
         {
           "area": "Outros",
           "desvio_pct": 1.9,
           "desvio_questoes": 1.9,
           "media_pct": 3.5,
-          "media_questoes": 3.5
+          "media_questoes": 3.4
         }
       ],
       "edicoes": 11,
       "institution_key": "AM-COMISSAO-ESTADUAL-DE-RESIDENCIA-MEDICA-DO-AMAZONAS-CERMAM",
       "nome": "AM - Comissão Estadual de Residência Médica do Amazonas - CERMAM",
-      "prova_tipica": 100,
+      "prova_tipica": 99,
       "questoes": 1099
     },
     {
@@ -603,72 +603,6 @@
     },
     {
       "anos": [
-        2017,
-        2018,
-        2019,
-        2020,
-        2021,
-        2022
-      ],
-      "areas": [
-        {
-          "area": "Medicina Preventiva",
-          "desvio_pct": 7.8,
-          "desvio_questoes": 2.3,
-          "media_pct": 41.0,
-          "media_questoes": 12.3
-        },
-        {
-          "area": "Clínica Médica",
-          "desvio_pct": 14.0,
-          "desvio_questoes": 4.2,
-          "media_pct": 22.5,
-          "media_questoes": 6.7
-        },
-        {
-          "area": "Outros",
-          "desvio_pct": 5.8,
-          "desvio_questoes": 1.7,
-          "media_pct": 8.7,
-          "media_questoes": 2.6
-        },
-        {
-          "area": "Pediatria",
-          "desvio_pct": 5.2,
-          "desvio_questoes": 1.6,
-          "media_pct": 8.2,
-          "media_questoes": 2.4
-        },
-        {
-          "area": "Ginecologia",
-          "desvio_pct": 3.8,
-          "desvio_questoes": 1.2,
-          "media_pct": 7.0,
-          "media_questoes": 2.1
-        },
-        {
-          "area": "Cirurgia",
-          "desvio_pct": 2.6,
-          "desvio_questoes": 0.8,
-          "media_pct": 6.5,
-          "media_questoes": 2.0
-        },
-        {
-          "area": "Obstetrícia",
-          "desvio_pct": 3.6,
-          "desvio_questoes": 1.1,
-          "media_pct": 6.0,
-          "media_questoes": 1.8
-        }
-      ],
-      "edicoes": 6,
-      "institution_key": "BA-FUNDACAO-ESTATAL-SAUDE-DA-FAMILIA-FESF-SUS",
-      "nome": "BA - Fundação Estatal Saúde da Família - FESF SUS",
-      "prova_tipica": 30,
-      "questoes": 183
-    },
-    {
-      "anos": [
         2021,
         2022,
         2023,
@@ -680,57 +614,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 6.9,
-          "desvio_questoes": 3.1,
+          "desvio_questoes": 5.2,
           "media_pct": 31.6,
-          "media_questoes": 14.2
+          "media_questoes": 23.7
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.7,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 2.8,
           "media_pct": 17.4,
-          "media_questoes": 7.8
+          "media_questoes": 13.1
         },
         {
           "area": "Pediatria",
           "desvio_pct": 6.0,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 4.5,
           "media_pct": 12.4,
-          "media_questoes": 5.6
+          "media_questoes": 9.3
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 4.6,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 3.5,
           "media_pct": 11.0,
-          "media_questoes": 5.0
+          "media_questoes": 8.3
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.5,
-          "desvio_questoes": 1.1,
+          "desvio_questoes": 1.9,
           "media_pct": 9.5,
-          "media_questoes": 4.3
+          "media_questoes": 7.1
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 5.9,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 4.4,
           "media_pct": 9.1,
-          "media_questoes": 4.1
+          "media_questoes": 6.8
         },
         {
           "area": "Outros",
           "desvio_pct": 6.1,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 4.6,
           "media_pct": 9.0,
-          "media_questoes": 4.0
+          "media_questoes": 6.7
         }
       ],
       "edicoes": 6,
       "institution_key": "BA-SISTEMA-UNICO-DE-SAUDE-SUS-BAHIA",
       "nome": "BA - Sistema Único de Saúde - SUS Bahia",
-      "prova_tipica": 45,
+      "prova_tipica": 75,
       "questoes": 300
     },
     {
@@ -815,57 +749,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.6,
-          "desvio_questoes": 2.8,
+          "desvio_questoes": 5.6,
           "media_pct": 29.2,
-          "media_questoes": 14.6
+          "media_questoes": 29.2
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 4.7,
-          "desvio_questoes": 2.4,
+          "desvio_questoes": 4.7,
           "media_pct": 17.0,
-          "media_questoes": 8.5
+          "media_questoes": 17.0
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.4,
-          "desvio_questoes": 1.2,
+          "desvio_questoes": 2.4,
           "media_pct": 15.5,
-          "media_questoes": 7.8
+          "media_questoes": 15.5
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 4.3,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 4.3,
           "media_pct": 15.0,
-          "media_questoes": 7.5
+          "media_questoes": 15.0
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.0,
-          "desvio_questoes": 1.0,
+          "desvio_questoes": 2.0,
           "media_pct": 10.0,
-          "media_questoes": 5.0
+          "media_questoes": 10.0
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.2,
-          "desvio_questoes": 1.1,
+          "desvio_questoes": 2.2,
           "media_pct": 9.8,
-          "media_questoes": 4.9
+          "media_questoes": 9.8
         },
         {
           "area": "Outros",
           "desvio_pct": 3.3,
-          "desvio_questoes": 1.6,
+          "desvio_questoes": 3.3,
           "media_pct": 3.5,
-          "media_questoes": 1.8
+          "media_questoes": 3.5
         }
       ],
       "edicoes": 6,
       "institution_key": "DF-HOSPITAL-DAS-FORCAS-ARMADAS-HFA",
       "nome": "DF - Hospital das Forças Armadas - HFA",
-      "prova_tipica": 50,
+      "prova_tipica": 100,
       "questoes": 400
     },
     {
@@ -1022,57 +956,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 8.9,
-          "desvio_questoes": 10.7,
+          "desvio_questoes": 7.1,
           "media_pct": 35.1,
-          "media_questoes": 42.1
+          "media_questoes": 28.1
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.4,
-          "desvio_questoes": 4.1,
+          "desvio_questoes": 2.8,
           "media_pct": 17.1,
-          "media_questoes": 20.5
+          "media_questoes": 13.7
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.6,
-          "desvio_questoes": 4.3,
+          "desvio_questoes": 2.9,
           "media_pct": 14.9,
-          "media_questoes": 17.9
+          "media_questoes": 12.0
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.2,
-          "desvio_questoes": 2.6,
+          "desvio_questoes": 1.8,
           "media_pct": 10.9,
-          "media_questoes": 13.1
+          "media_questoes": 8.7
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 4.4,
-          "desvio_questoes": 5.2,
+          "desvio_questoes": 3.5,
           "media_pct": 10.1,
-          "media_questoes": 12.1
+          "media_questoes": 8.1
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.6,
-          "desvio_questoes": 3.1,
+          "desvio_questoes": 2.1,
           "media_pct": 7.3,
-          "media_questoes": 8.7
+          "media_questoes": 5.8
         },
         {
           "area": "Outros",
           "desvio_pct": 2.9,
-          "desvio_questoes": 3.5,
+          "desvio_questoes": 2.3,
           "media_pct": 4.6,
-          "media_questoes": 5.5
+          "media_questoes": 3.7
         }
       ],
       "edicoes": 11,
       "institution_key": "DF-SECRETARIA-DE-SAUDE-DO-DISTRITO-FEDERAL-SES-DF",
       "nome": "DF - Secretaria de Saúde do Distrito Federal - SES DF",
-      "prova_tipica": 120,
+      "prova_tipica": 80,
       "questoes": 1220
     },
     {
@@ -1088,57 +1022,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 18.3,
-          "desvio_questoes": 21.9,
+          "desvio_questoes": 18.3,
           "media_pct": 43.9,
-          "media_questoes": 52.7
+          "media_questoes": 43.9
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 3.5,
-          "desvio_questoes": 4.3,
+          "desvio_questoes": 3.5,
           "media_pct": 13.8,
-          "media_questoes": 16.6
+          "media_questoes": 13.8
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 5.4,
-          "desvio_questoes": 6.5,
+          "desvio_questoes": 5.4,
           "media_pct": 12.1,
-          "media_questoes": 14.5
+          "media_questoes": 12.1
         },
         {
           "area": "Pediatria",
           "desvio_pct": 5.7,
-          "desvio_questoes": 6.8,
+          "desvio_questoes": 5.7,
           "media_pct": 11.7,
-          "media_questoes": 14.0
+          "media_questoes": 11.7
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 5.9,
-          "desvio_questoes": 7.1,
+          "desvio_questoes": 5.9,
           "media_pct": 11.1,
-          "media_questoes": 13.3
+          "media_questoes": 11.1
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 3.3,
-          "desvio_questoes": 4.0,
+          "desvio_questoes": 3.3,
           "media_pct": 5.1,
-          "media_questoes": 6.1
+          "media_questoes": 5.1
         },
         {
           "area": "Outros",
           "desvio_pct": 1.9,
-          "desvio_questoes": 2.3,
+          "desvio_questoes": 1.9,
           "media_pct": 2.4,
-          "media_questoes": 2.8
+          "media_questoes": 2.4
         }
       ],
       "edicoes": 6,
       "institution_key": "DF-UNIVERSIDADE-DE-BRASILIA-UNB-HOSPITAL-UNIVERSITARIO-DE-BRASILIA-HUB",
       "nome": "DF - Universidade de Brasília - UNB (Hospital Universitário de Brasília - HUB)",
-      "prova_tipica": 120,
+      "prova_tipica": 100,
       "questoes": 680
     },
     {
@@ -1185,14 +1119,14 @@
           "media_questoes": 6.5
         },
         {
-          "area": "Ginecologia",
+          "area": "Obstetrícia",
           "desvio_pct": 0.8,
           "desvio_questoes": 0.4,
           "media_pct": 10.4,
           "media_questoes": 5.2
         },
         {
-          "area": "Obstetrícia",
+          "area": "Ginecologia",
           "desvio_pct": 0.8,
           "desvio_questoes": 0.4,
           "media_pct": 10.4,
@@ -1224,57 +1158,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.3,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 3.2,
           "media_pct": 26.6,
-          "media_questoes": 13.3
+          "media_questoes": 16.0
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.1,
-          "desvio_questoes": 1.0,
+          "desvio_questoes": 1.2,
           "media_pct": 19.2,
-          "media_questoes": 9.6
+          "media_questoes": 11.5
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.1,
-          "desvio_questoes": 1.6,
+          "desvio_questoes": 1.9,
           "media_pct": 16.2,
-          "media_questoes": 8.1
+          "media_questoes": 9.7
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.0,
-          "desvio_questoes": 1.0,
+          "desvio_questoes": 1.2,
           "media_pct": 13.5,
-          "media_questoes": 6.7
+          "media_questoes": 8.1
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.2,
-          "desvio_questoes": 0.6,
+          "desvio_questoes": 0.7,
           "media_pct": 9.9,
-          "media_questoes": 4.9
+          "media_questoes": 5.9
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.2,
-          "desvio_questoes": 0.6,
+          "desvio_questoes": 0.7,
           "media_pct": 9.5,
-          "media_questoes": 4.8
+          "media_questoes": 5.7
         },
         {
           "area": "Outros",
           "desvio_pct": 2.1,
-          "desvio_questoes": 1.1,
+          "desvio_questoes": 1.3,
           "media_pct": 5.2,
-          "media_questoes": 2.6
+          "media_questoes": 3.1
         }
       ],
       "edicoes": 5,
       "institution_key": "ES-FACULDADE-BRASILEIRA-MULTIVIX-VITORIA",
       "nome": "ES - Faculdade Brasileira - Multivix Vitória",
-      "prova_tipica": 50,
+      "prova_tipica": 60,
       "questoes": 264
     },
     {
@@ -1293,57 +1227,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.1,
-          "desvio_questoes": 4.6,
+          "desvio_questoes": 5.1,
           "media_pct": 33.4,
-          "media_questoes": 30.1
+          "media_questoes": 33.4
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.9,
-          "desvio_questoes": 2.6,
+          "desvio_questoes": 2.9,
           "media_pct": 17.1,
-          "media_questoes": 15.4
+          "media_questoes": 17.1
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 7.1,
-          "desvio_questoes": 6.4,
+          "desvio_questoes": 7.1,
           "media_pct": 13.6,
-          "media_questoes": 12.2
+          "media_questoes": 13.6
         },
         {
           "area": "Pediatria",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.5,
+          "desvio_questoes": 1.7,
           "media_pct": 11.5,
-          "media_questoes": 10.4
+          "media_questoes": 11.5
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 4.2,
-          "desvio_questoes": 3.7,
+          "desvio_questoes": 4.2,
           "media_pct": 11.1,
-          "media_questoes": 10.0
+          "media_questoes": 11.1
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.4,
-          "desvio_questoes": 2.2,
+          "desvio_questoes": 2.4,
           "media_pct": 9.3,
-          "media_questoes": 8.4
+          "media_questoes": 9.3
         },
         {
           "area": "Outros",
           "desvio_pct": 2.1,
-          "desvio_questoes": 1.9,
+          "desvio_questoes": 2.1,
           "media_pct": 3.9,
-          "media_questoes": 3.5
+          "media_questoes": 3.9
         }
       ],
       "edicoes": 9,
       "institution_key": "ES-HOSPITAL-ESTADUAL-DR-JAYME-DOS-SANTOS-NEVES-HEJSN",
       "nome": "ES - Hospital Estadual Dr Jayme dos Santos Neves - HEJSN",
-      "prova_tipica": 90,
+      "prova_tipica": 100,
       "questoes": 721
     },
     {
@@ -1432,57 +1366,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.1,
-          "desvio_questoes": 4.6,
+          "desvio_questoes": 2.6,
           "media_pct": 35.2,
-          "media_questoes": 31.7
+          "media_questoes": 17.6
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 5.0,
-          "desvio_questoes": 4.5,
+          "desvio_questoes": 2.5,
           "media_pct": 14.4,
-          "media_questoes": 13.0
+          "media_questoes": 7.2
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.0,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 1.5,
           "media_pct": 13.9,
-          "media_questoes": 12.5
+          "media_questoes": 6.9
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.0,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 1.5,
           "media_pct": 12.8,
-          "media_questoes": 11.5
+          "media_questoes": 6.4
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.2,
-          "desvio_questoes": 1.9,
+          "desvio_questoes": 1.1,
           "media_pct": 11.6,
-          "media_questoes": 10.4
+          "media_questoes": 5.8
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.3,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 1.2,
           "media_pct": 9.3,
-          "media_questoes": 8.4
+          "media_questoes": 4.7
         },
         {
           "area": "Outros",
           "desvio_pct": 2.5,
-          "desvio_questoes": 2.3,
+          "desvio_questoes": 1.3,
           "media_pct": 2.8,
-          "media_questoes": 2.5
+          "media_questoes": 1.4
         }
       ],
       "edicoes": 10,
       "institution_key": "ES-HOSPITAL-EVANGELICO-DE-VILA-VELHA-HEVV",
       "nome": "ES - Hospital Evangélico de Vila Velha - HEVV",
-      "prova_tipica": 90,
+      "prova_tipica": 50,
       "questoes": 700
     },
     {
@@ -1501,9 +1435,9 @@
           "media_questoes": 16.0
         },
         {
-          "area": "Pediatria",
-          "desvio_pct": 5.4,
-          "desvio_questoes": 2.7,
+          "area": "Medicina Preventiva",
+          "desvio_pct": 5.2,
+          "desvio_questoes": 2.6,
           "media_pct": 15.0,
           "media_questoes": 7.5
         },
@@ -1515,9 +1449,9 @@
           "media_questoes": 7.5
         },
         {
-          "area": "Medicina Preventiva",
-          "desvio_pct": 5.2,
-          "desvio_questoes": 2.6,
+          "area": "Pediatria",
+          "desvio_pct": 5.4,
+          "desvio_questoes": 2.7,
           "media_pct": 15.0,
           "media_questoes": 7.5
         },
@@ -1692,57 +1626,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.1,
-          "desvio_questoes": 4.1,
+          "desvio_questoes": 2.6,
           "media_pct": 29.5,
-          "media_questoes": 23.6
+          "media_questoes": 14.7
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 1.9,
-          "desvio_questoes": 1.5,
+          "desvio_questoes": 1.0,
           "media_pct": 18.5,
-          "media_questoes": 14.8
+          "media_questoes": 9.2
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 4.1,
-          "desvio_questoes": 3.3,
+          "desvio_questoes": 2.1,
           "media_pct": 14.7,
-          "media_questoes": 11.8
+          "media_questoes": 7.3
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.2,
-          "desvio_questoes": 2.6,
+          "desvio_questoes": 1.6,
           "media_pct": 13.8,
-          "media_questoes": 11.1
+          "media_questoes": 6.9
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.3,
+          "desvio_questoes": 0.8,
           "media_pct": 11.3,
-          "media_questoes": 9.0
+          "media_questoes": 5.6
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.5,
-          "desvio_questoes": 1.2,
+          "desvio_questoes": 0.7,
           "media_pct": 7.7,
-          "media_questoes": 6.1
+          "media_questoes": 3.8
         },
         {
           "area": "Outros",
           "desvio_pct": 2.1,
-          "desvio_questoes": 1.6,
+          "desvio_questoes": 1.0,
           "media_pct": 4.5,
-          "media_questoes": 3.6
+          "media_questoes": 2.3
         }
       ],
       "edicoes": 10,
       "institution_key": "ES-UNIVERSIDADE-FEDERAL-DO-ESPIRITO-SANTO-UFES-HOSPITAL-UNIVERSITARIO-CASSIANO-ANTONIO-DE-MORAES-HUCAM",
       "nome": "ES - Universidade Federal do Espírito Santo - UFES (Hospital Universitário Cassiano Antônio de Moraes - HUCAM)",
-      "prova_tipica": 80,
+      "prova_tipica": 50,
       "questoes": 730
     },
     {
@@ -1828,57 +1762,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 10.7,
-          "desvio_questoes": 12.9,
+          "desvio_questoes": 10.7,
           "media_pct": 36.1,
-          "media_questoes": 43.3
+          "media_questoes": 36.1
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.8,
-          "desvio_questoes": 4.5,
+          "desvio_questoes": 3.8,
           "media_pct": 14.0,
-          "media_questoes": 16.8
+          "media_questoes": 14.0
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.4,
-          "desvio_questoes": 4.1,
+          "desvio_questoes": 3.4,
           "media_pct": 13.0,
-          "media_questoes": 15.6
+          "media_questoes": 13.0
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 7.7,
-          "desvio_questoes": 9.2,
+          "desvio_questoes": 7.7,
           "media_pct": 12.8,
-          "media_questoes": 15.4
+          "media_questoes": 12.8
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 4.1,
-          "desvio_questoes": 4.9,
+          "desvio_questoes": 4.1,
           "media_pct": 10.0,
-          "media_questoes": 12.1
+          "media_questoes": 10.0
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.7,
-          "desvio_questoes": 3.2,
+          "desvio_questoes": 2.7,
           "media_pct": 9.0,
-          "media_questoes": 10.8
+          "media_questoes": 9.0
         },
         {
           "area": "Outros",
           "desvio_pct": 2.9,
-          "desvio_questoes": 3.5,
+          "desvio_questoes": 2.9,
           "media_pct": 5.1,
-          "media_questoes": 6.1
+          "media_questoes": 5.1
         }
       ],
       "edicoes": 10,
       "institution_key": "GO-FUNDACAO-BANCO-DE-OLHOS-DE-GOIAS-FUBOG",
       "nome": "GO - Fundação Banco de Olhos de Goiás - FUBOG",
-      "prova_tipica": 120,
+      "prova_tipica": 100,
       "questoes": 1099
     },
     {
@@ -1898,57 +1832,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 7.4,
-          "desvio_questoes": 7.4,
+          "desvio_questoes": 5.9,
           "media_pct": 42.9,
-          "media_questoes": 42.9
+          "media_questoes": 34.3
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 4.6,
-          "desvio_questoes": 4.6,
+          "desvio_questoes": 3.7,
           "media_pct": 14.8,
-          "media_questoes": 14.8
+          "media_questoes": 11.8
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 3.2,
-          "desvio_questoes": 3.2,
+          "desvio_questoes": 2.6,
           "media_pct": 10.2,
-          "media_questoes": 10.2
+          "media_questoes": 8.2
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.8,
-          "desvio_questoes": 1.8,
+          "desvio_questoes": 1.5,
           "media_pct": 10.0,
-          "media_questoes": 10.0
+          "media_questoes": 8.0
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.7,
-          "desvio_questoes": 3.7,
+          "desvio_questoes": 2.9,
           "media_pct": 9.9,
-          "media_questoes": 9.9
+          "media_questoes": 7.9
         },
         {
           "area": "Outros",
           "desvio_pct": 5.1,
-          "desvio_questoes": 5.1,
+          "desvio_questoes": 4.1,
           "media_pct": 6.8,
-          "media_questoes": 6.8
+          "media_questoes": 5.5
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 3.0,
-          "desvio_questoes": 3.0,
+          "desvio_questoes": 2.4,
           "media_pct": 5.3,
-          "media_questoes": 5.3
+          "media_questoes": 4.3
         }
       ],
       "edicoes": 10,
       "institution_key": "GO-HOSPITAL-DE-OLHOS-APARECIDA-HOA",
       "nome": "GO - Hospital de Olhos Aparecida - HOA",
-      "prova_tipica": 100,
+      "prova_tipica": 80,
       "questoes": 917
     },
     {
@@ -2295,42 +2229,42 @@
           "desvio_pct": 2.8,
           "desvio_questoes": 2.8,
           "media_pct": 35.2,
-          "media_questoes": 35.2
+          "media_questoes": 34.8
         },
         {
           "area": "Pediatria",
           "desvio_pct": 1.8,
           "desvio_questoes": 1.8,
           "media_pct": 15.6,
-          "media_questoes": 15.6
+          "media_questoes": 15.4
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.2,
           "desvio_questoes": 2.2,
           "media_pct": 12.8,
-          "media_questoes": 12.8
+          "media_questoes": 12.7
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.6,
           "desvio_questoes": 1.6,
           "media_pct": 11.1,
-          "media_questoes": 11.1
+          "media_questoes": 10.9
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 4.6,
           "desvio_questoes": 4.6,
           "media_pct": 11.0,
-          "media_questoes": 11.0
+          "media_questoes": 10.9
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.3,
           "desvio_questoes": 1.3,
           "media_pct": 8.8,
-          "media_questoes": 8.8
+          "media_questoes": 8.7
         },
         {
           "area": "Outros",
@@ -2343,7 +2277,7 @@
       "edicoes": 4,
       "institution_key": "GO-PROCESSO-SELETIVO-UNIFICADO-PSU-GO",
       "nome": "GO - Processo Seletivo unificado - PSU GO",
-      "prova_tipica": 100,
+      "prova_tipica": 99,
       "questoes": 398
     },
     {
@@ -2433,55 +2367,55 @@
           "desvio_pct": 4.6,
           "desvio_questoes": 4.6,
           "media_pct": 35.0,
-          "media_questoes": 35.0
+          "media_questoes": 34.7
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 1.6,
           "desvio_questoes": 1.6,
           "media_pct": 16.1,
-          "media_questoes": 16.1
+          "media_questoes": 15.9
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.3,
           "desvio_questoes": 2.3,
           "media_pct": 13.2,
-          "media_questoes": 13.2
+          "media_questoes": 13.1
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.8,
           "desvio_questoes": 3.8,
           "media_pct": 12.6,
-          "media_questoes": 12.6
+          "media_questoes": 12.4
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.9,
-          "desvio_questoes": 2.9,
+          "desvio_questoes": 2.8,
           "media_pct": 9.1,
-          "media_questoes": 9.1
+          "media_questoes": 9.0
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.4,
           "desvio_questoes": 2.4,
           "media_pct": 8.0,
-          "media_questoes": 8.0
+          "media_questoes": 7.9
         },
         {
           "area": "Outros",
           "desvio_pct": 1.5,
           "desvio_questoes": 1.5,
           "media_pct": 6.0,
-          "media_questoes": 6.0
+          "media_questoes": 5.9
         }
       ],
       "edicoes": 11,
       "institution_key": "GO-SECRETARIA-DE-ESTADO-DA-SAUDE-DE-GOIAS-SES-GO",
       "nome": "GO - Secretaria de Estado da Saúde de Goiás - SES GO",
-      "prova_tipica": 100,
+      "prova_tipica": 99,
       "questoes": 1099
     },
     {
@@ -2524,14 +2458,14 @@
           "media_questoes": 11.0
         },
         {
-          "area": "Ginecologia",
+          "area": "Obstetrícia",
           "desvio_pct": 0.9,
           "desvio_questoes": 0.9,
           "media_pct": 10.4,
           "media_questoes": 10.4
         },
         {
-          "area": "Obstetrícia",
+          "area": "Ginecologia",
           "desvio_pct": 0.9,
           "desvio_questoes": 0.9,
           "media_pct": 10.4,
@@ -2565,55 +2499,55 @@
           "desvio_pct": 5.1,
           "desvio_questoes": 5.1,
           "media_pct": 30.2,
-          "media_questoes": 30.2
+          "media_questoes": 29.9
         },
         {
           "area": "Outros",
           "desvio_pct": 24.4,
-          "desvio_questoes": 24.4,
+          "desvio_questoes": 24.1,
           "media_pct": 15.1,
-          "media_questoes": 15.1
+          "media_questoes": 15.0
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.4,
           "desvio_questoes": 2.4,
           "media_pct": 13.8,
-          "media_questoes": 13.8
+          "media_questoes": 13.7
         },
         {
           "area": "Pediatria",
           "desvio_pct": 7.8,
           "desvio_questoes": 7.8,
           "media_pct": 12.6,
-          "media_questoes": 12.6
+          "media_questoes": 12.5
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.2,
           "desvio_questoes": 2.2,
           "media_pct": 10.6,
-          "media_questoes": 10.6
+          "media_questoes": 10.5
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 5.6,
           "desvio_questoes": 5.6,
           "media_pct": 9.6,
-          "media_questoes": 9.6
+          "media_questoes": 9.5
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 4.9,
-          "desvio_questoes": 4.9,
+          "desvio_questoes": 4.8,
           "media_pct": 8.0,
-          "media_questoes": 8.0
+          "media_questoes": 7.9
         }
       ],
       "edicoes": 5,
       "institution_key": "GO-UNIVERSIDADE-DE-RIO-VERDE-UNIRV",
       "nome": "GO - Universidade de Rio Verde - UNIRV",
-      "prova_tipica": 100,
+      "prova_tipica": 99,
       "questoes": 499
     },
     {
@@ -2698,16 +2632,16 @@
           "media_questoes": 25.0
         },
         {
-          "area": "Pediatria",
-          "desvio_pct": 2.9,
-          "desvio_questoes": 2.9,
+          "area": "Medicina Preventiva",
+          "desvio_pct": 1.2,
+          "desvio_questoes": 1.2,
           "media_pct": 17.3,
           "media_questoes": 17.3
         },
         {
-          "area": "Medicina Preventiva",
-          "desvio_pct": 1.2,
-          "desvio_questoes": 1.2,
+          "area": "Pediatria",
+          "desvio_pct": 2.9,
+          "desvio_questoes": 2.9,
           "media_pct": 17.3,
           "media_questoes": 17.3
         },
@@ -2791,16 +2725,16 @@
           "media_questoes": 4.4
         },
         {
-          "area": "Pediatria",
-          "desvio_pct": 5.1,
-          "desvio_questoes": 2.6,
+          "area": "Obstetrícia",
+          "desvio_pct": 5.7,
+          "desvio_questoes": 2.9,
           "media_pct": 8.4,
           "media_questoes": 4.2
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 5.7,
-          "desvio_questoes": 2.9,
+          "area": "Pediatria",
+          "desvio_pct": 5.1,
+          "desvio_questoes": 2.6,
           "media_pct": 8.4,
           "media_questoes": 4.2
         }
@@ -2850,16 +2784,16 @@
           "media_questoes": 10.9
         },
         {
-          "area": "Ginecologia",
-          "desvio_pct": 2.2,
-          "desvio_questoes": 1.8,
+          "area": "Obstetrícia",
+          "desvio_pct": 1.3,
+          "desvio_questoes": 1.0,
           "media_pct": 9.8,
           "media_questoes": 7.9
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 1.3,
-          "desvio_questoes": 1.0,
+          "area": "Ginecologia",
+          "desvio_pct": 2.2,
+          "desvio_questoes": 1.8,
           "media_pct": 9.8,
           "media_questoes": 7.9
         },
@@ -2957,57 +2891,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 4.3,
-          "desvio_questoes": 4.3,
+          "desvio_questoes": 3.4,
           "media_pct": 33.2,
-          "media_questoes": 33.2
+          "media_questoes": 26.5
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.2,
-          "desvio_questoes": 2.2,
+          "desvio_questoes": 1.7,
           "media_pct": 18.8,
-          "media_questoes": 18.8
+          "media_questoes": 15.0
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 1.8,
-          "desvio_questoes": 1.8,
+          "desvio_questoes": 1.4,
           "media_pct": 15.1,
-          "media_questoes": 15.1
+          "media_questoes": 12.1
         },
         {
           "area": "Pediatria",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 1.3,
           "media_pct": 10.8,
-          "media_questoes": 10.8
+          "media_questoes": 8.6
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 0.7,
-          "desvio_questoes": 0.7,
+          "desvio_questoes": 0.5,
           "media_pct": 10.2,
-          "media_questoes": 10.2
+          "media_questoes": 8.1
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 0.7,
-          "desvio_questoes": 0.7,
+          "desvio_questoes": 0.6,
           "media_pct": 9.3,
-          "media_questoes": 9.3
+          "media_questoes": 7.5
         },
         {
           "area": "Outros",
           "desvio_pct": 1.4,
-          "desvio_questoes": 1.4,
+          "desvio_questoes": 1.2,
           "media_pct": 2.7,
-          "media_questoes": 2.7
+          "media_questoes": 2.2
         }
       ],
       "edicoes": 6,
       "institution_key": "MA-UNIVERSIDADE-FEDERAL-DO-MARANHAO-UFMA-HOSPITAL-UNIVERSITARIO-PRESIDENTE-DUTRA",
       "nome": "MA - Universidade Federal do Maranhão - UFMA (Hospital Universitário Presidente Dutra)",
-      "prova_tipica": 100,
+      "prova_tipica": 80,
       "questoes": 580
     },
     {
@@ -3213,72 +3147,6 @@
         2016,
         2017,
         2018,
-        2019,
-        2020,
-        2021
-      ],
-      "areas": [
-        {
-          "area": "Clínica Médica",
-          "desvio_pct": 6.4,
-          "desvio_questoes": 2.6,
-          "media_pct": 36.7,
-          "media_questoes": 14.7
-        },
-        {
-          "area": "Ginecologia",
-          "desvio_pct": 2.0,
-          "desvio_questoes": 0.8,
-          "media_pct": 15.0,
-          "media_questoes": 6.0
-        },
-        {
-          "area": "Pediatria",
-          "desvio_pct": 3.4,
-          "desvio_questoes": 1.4,
-          "media_pct": 14.2,
-          "media_questoes": 5.7
-        },
-        {
-          "area": "Medicina Preventiva",
-          "desvio_pct": 3.1,
-          "desvio_questoes": 1.3,
-          "media_pct": 13.8,
-          "media_questoes": 5.5
-        },
-        {
-          "area": "Cirurgia",
-          "desvio_pct": 2.7,
-          "desvio_questoes": 1.1,
-          "media_pct": 12.9,
-          "media_questoes": 5.2
-        },
-        {
-          "area": "Obstetrícia",
-          "desvio_pct": 2.8,
-          "desvio_questoes": 1.1,
-          "media_pct": 4.2,
-          "media_questoes": 1.7
-        },
-        {
-          "area": "Outros",
-          "desvio_pct": 1.2,
-          "desvio_questoes": 0.5,
-          "media_pct": 3.3,
-          "media_questoes": 1.3
-        }
-      ],
-      "edicoes": 6,
-      "institution_key": "MG-HOSPITAL-DA-POLICIA-MILITAR-HPM-MG",
-      "nome": "MG - Hospital da Polícia Militar - HPM MG",
-      "prova_tipica": 40,
-      "questoes": 240
-    },
-    {
-      "anos": [
-        2016,
-        2017,
-        2018,
         2019
       ],
       "areas": [
@@ -3311,16 +3179,16 @@
           "media_questoes": 6.5
         },
         {
-          "area": "Ginecologia",
-          "desvio_pct": 3.0,
-          "desvio_questoes": 1.5,
+          "area": "Obstetrícia",
+          "desvio_pct": 2.2,
+          "desvio_questoes": 1.1,
           "media_pct": 9.5,
           "media_questoes": 4.8
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 2.2,
-          "desvio_questoes": 1.1,
+          "area": "Ginecologia",
+          "desvio_pct": 3.0,
+          "desvio_questoes": 1.5,
           "media_pct": 9.5,
           "media_questoes": 4.8
         },
@@ -3376,16 +3244,16 @@
           "media_questoes": 10.8
         },
         {
-          "area": "Ginecologia",
-          "desvio_pct": 2.0,
-          "desvio_questoes": 2.0,
+          "area": "Obstetrícia",
+          "desvio_pct": 1.9,
+          "desvio_questoes": 1.9,
           "media_pct": 9.2,
           "media_questoes": 9.2
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 1.9,
-          "desvio_questoes": 1.9,
+          "area": "Ginecologia",
+          "desvio_pct": 2.0,
+          "desvio_questoes": 2.0,
           "media_pct": 9.2,
           "media_questoes": 9.2
         },
@@ -3480,57 +3348,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 7.0,
-          "desvio_questoes": 7.0,
+          "desvio_questoes": 6.8,
           "media_pct": 31.8,
-          "media_questoes": 31.8
+          "media_questoes": 31.1
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 4.6,
-          "desvio_questoes": 4.6,
+          "desvio_questoes": 4.5,
           "media_pct": 17.5,
-          "media_questoes": 17.5
+          "media_questoes": 17.1
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.1,
-          "desvio_questoes": 3.1,
+          "desvio_questoes": 3.0,
           "media_pct": 16.5,
-          "media_questoes": 16.5
+          "media_questoes": 16.2
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.3,
           "desvio_questoes": 3.3,
           "media_pct": 12.3,
-          "media_questoes": 12.3
+          "media_questoes": 12.1
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 3.1,
           "desvio_questoes": 3.1,
           "media_pct": 11.8,
-          "media_questoes": 11.8
+          "media_questoes": 11.5
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 3.0,
-          "desvio_questoes": 3.0,
+          "desvio_questoes": 2.9,
           "media_pct": 7.6,
-          "media_questoes": 7.6
+          "media_questoes": 7.4
         },
         {
           "area": "Outros",
           "desvio_pct": 1.4,
           "desvio_questoes": 1.4,
           "media_pct": 2.6,
-          "media_questoes": 2.6
+          "media_questoes": 2.5
         }
       ],
       "edicoes": 7,
       "institution_key": "MG-INSTITUTO-DE-PREVIDENCIA-DOS-SERVIDORES-DO-ESTADO-DE-MINAS-GERAIS-IPSEMG",
       "nome": "MG - Instituto de Previdência dos Servidores do Estado de Minas Gerais - IPSEMG",
-      "prova_tipica": 100,
+      "prova_tipica": 98,
       "questoes": 698
     },
     {
@@ -3551,57 +3419,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.3,
-          "desvio_questoes": 5.3,
+          "desvio_questoes": 4.2,
           "media_pct": 34.1,
-          "media_questoes": 34.1
+          "media_questoes": 26.9
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.7,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 2.2,
           "media_pct": 15.0,
-          "media_questoes": 15.0
+          "media_questoes": 11.9
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 4.9,
-          "desvio_questoes": 4.9,
+          "desvio_questoes": 3.9,
           "media_pct": 14.9,
-          "media_questoes": 14.9
+          "media_questoes": 11.8
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.5,
-          "desvio_questoes": 2.5,
+          "desvio_questoes": 2.0,
           "media_pct": 12.3,
-          "media_questoes": 12.3
+          "media_questoes": 9.7
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.0,
-          "desvio_questoes": 2.0,
+          "desvio_questoes": 1.6,
           "media_pct": 10.1,
-          "media_questoes": 10.1
+          "media_questoes": 8.0
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 1.3,
           "media_pct": 9.1,
-          "media_questoes": 9.1
+          "media_questoes": 7.2
         },
         {
           "area": "Outros",
           "desvio_pct": 2.4,
-          "desvio_questoes": 2.4,
+          "desvio_questoes": 1.9,
           "media_pct": 4.5,
-          "media_questoes": 4.5
+          "media_questoes": 3.5
         }
       ],
       "edicoes": 11,
       "institution_key": "MG-PROCESSO-SELETIVO-UNIFICADO-PSU-MG",
       "nome": "MG - Processo Seletivo Unificado - PSU MG",
-      "prova_tipica": 100,
+      "prova_tipica": 79,
       "questoes": 1011
     },
     {
@@ -3814,57 +3682,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 6.9,
-          "desvio_questoes": 6.9,
+          "desvio_questoes": 3.5,
           "media_pct": 34.3,
-          "media_questoes": 34.3
+          "media_questoes": 17.2
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.2,
-          "desvio_questoes": 2.2,
+          "desvio_questoes": 1.1,
           "media_pct": 18.0,
-          "media_questoes": 18.0
+          "media_questoes": 9.0
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 3.1,
-          "desvio_questoes": 3.1,
+          "desvio_questoes": 1.5,
           "media_pct": 14.3,
-          "media_questoes": 14.3
+          "media_questoes": 7.2
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 6.5,
-          "desvio_questoes": 6.5,
+          "desvio_questoes": 3.3,
           "media_pct": 14.0,
-          "media_questoes": 14.0
+          "media_questoes": 7.0
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 0.8,
-          "desvio_questoes": 0.8,
+          "desvio_questoes": 0.4,
           "media_pct": 11.0,
-          "media_questoes": 11.0
+          "media_questoes": 5.5
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 0.5,
-          "desvio_questoes": 0.5,
+          "desvio_questoes": 0.2,
           "media_pct": 7.3,
-          "media_questoes": 7.3
+          "media_questoes": 3.7
         },
         {
           "area": "Outros",
           "desvio_pct": 0.8,
-          "desvio_questoes": 0.8,
+          "desvio_questoes": 0.4,
           "media_pct": 1.0,
-          "media_questoes": 1.0
+          "media_questoes": 0.5
         }
       ],
       "edicoes": 3,
       "institution_key": "MS-CLINICA-DE-CAMPO-GRANDE-CCG",
       "nome": "MS - Clínica de Campo Grande - CCG",
-      "prova_tipica": 100,
+      "prova_tipica": 50,
       "questoes": 250
     },
     {
@@ -4013,57 +3881,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 4.9,
-          "desvio_questoes": 2.4,
+          "desvio_questoes": 3.9,
           "media_pct": 28.2,
-          "media_questoes": 14.1
+          "media_questoes": 22.6
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.9,
-          "desvio_questoes": 2.0,
+          "desvio_questoes": 3.1,
           "media_pct": 16.3,
-          "media_questoes": 8.1
+          "media_questoes": 13.0
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.8,
-          "desvio_questoes": 1.4,
+          "desvio_questoes": 2.2,
           "media_pct": 14.7,
-          "media_questoes": 7.4
+          "media_questoes": 11.8
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 3.1,
-          "desvio_questoes": 1.6,
+          "desvio_questoes": 2.5,
           "media_pct": 13.3,
-          "media_questoes": 6.7
+          "media_questoes": 10.7
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.3,
-          "desvio_questoes": 1.2,
+          "desvio_questoes": 1.9,
           "media_pct": 10.7,
-          "media_questoes": 5.4
+          "media_questoes": 8.6
         },
         {
           "area": "Outros",
           "desvio_pct": 1.8,
-          "desvio_questoes": 0.9,
+          "desvio_questoes": 1.5,
           "media_pct": 9.3,
-          "media_questoes": 4.7
+          "media_questoes": 7.5
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.1,
-          "desvio_questoes": 1.1,
+          "desvio_questoes": 1.7,
           "media_pct": 7.4,
-          "media_questoes": 3.7
+          "media_questoes": 5.9
         }
       ],
       "edicoes": 7,
       "institution_key": "MS-SECRETARIA-MUNICIPAL-DE-SAUDE-DE-CAMPO-GRANDE-SMSCG",
       "nome": "MS - Secretaria Municipal de Saúde de Campo Grande - SMSCG",
-      "prova_tipica": 50,
+      "prova_tipica": 80,
       "questoes": 409
     },
     {
@@ -4142,57 +4010,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 1.2,
-          "desvio_questoes": 1.0,
+          "desvio_questoes": 0.7,
           "media_pct": 24.8,
-          "media_questoes": 21.8
+          "media_questoes": 14.9
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.3,
-          "desvio_questoes": 2.0,
+          "desvio_questoes": 1.4,
           "media_pct": 17.9,
-          "media_questoes": 15.7
+          "media_questoes": 10.7
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.7,
-          "desvio_questoes": 2.4,
+          "desvio_questoes": 1.6,
           "media_pct": 14.9,
-          "media_questoes": 13.1
+          "media_questoes": 9.0
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.8,
-          "desvio_questoes": 1.6,
+          "desvio_questoes": 1.1,
           "media_pct": 14.2,
-          "media_questoes": 12.5
+          "media_questoes": 8.5
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.8,
-          "desvio_questoes": 2.5,
+          "desvio_questoes": 1.7,
           "media_pct": 13.8,
-          "media_questoes": 12.2
+          "media_questoes": 8.3
         },
         {
           "area": "Outros",
           "desvio_pct": 2.6,
-          "desvio_questoes": 2.3,
+          "desvio_questoes": 1.5,
           "media_pct": 13.0,
-          "media_questoes": 11.5
+          "media_questoes": 7.8
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.0,
-          "desvio_questoes": 0.8,
+          "desvio_questoes": 0.6,
           "media_pct": 1.3,
-          "media_questoes": 1.2
+          "media_questoes": 0.8
         }
       ],
       "edicoes": 3,
       "institution_key": "MT-CENTRO-OFTALMOLOGICO-DE-CACERES-COC",
       "nome": "MT - Centro Oftalmológico de Cáceres - COC",
-      "prova_tipica": 88,
+      "prova_tipica": 60,
       "questoes": 238
     },
     {
@@ -4217,16 +4085,16 @@
           "media_questoes": 9.0
         },
         {
-          "area": "Pediatria",
-          "desvio_pct": 4.7,
-          "desvio_questoes": 2.4,
+          "area": "Cirurgia",
+          "desvio_pct": 1.9,
+          "desvio_questoes": 0.9,
           "media_pct": 14.7,
           "media_questoes": 7.3
         },
         {
-          "area": "Cirurgia",
-          "desvio_pct": 1.9,
-          "desvio_questoes": 0.9,
+          "area": "Pediatria",
+          "desvio_pct": 4.7,
+          "desvio_questoes": 2.4,
           "media_pct": 14.7,
           "media_questoes": 7.3
         },
@@ -4770,14 +4638,14 @@
           "media_questoes": 7.1
         },
         {
-          "area": "Ginecologia",
+          "area": "Obstetrícia",
           "desvio_pct": 1.3,
           "desvio_questoes": 0.7,
           "media_pct": 10.5,
           "media_questoes": 5.2
         },
         {
-          "area": "Obstetrícia",
+          "area": "Ginecologia",
           "desvio_pct": 1.3,
           "desvio_questoes": 0.7,
           "media_pct": 10.5,
@@ -4814,57 +4682,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 12.5,
-          "desvio_questoes": 6.2,
+          "desvio_questoes": 7.5,
           "media_pct": 33.4,
-          "media_questoes": 16.7
+          "media_questoes": 20.1
         },
         {
           "area": "Outros",
           "desvio_pct": 29.0,
-          "desvio_questoes": 14.5,
+          "desvio_questoes": 17.4,
           "media_pct": 13.2,
-          "media_questoes": 6.6
+          "media_questoes": 7.9
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 4.9,
-          "desvio_questoes": 2.5,
+          "desvio_questoes": 2.9,
           "media_pct": 12.2,
-          "media_questoes": 6.1
+          "media_questoes": 7.3
         },
         {
           "area": "Pediatria",
           "desvio_pct": 4.6,
-          "desvio_questoes": 2.3,
+          "desvio_questoes": 2.8,
           "media_pct": 12.0,
-          "media_questoes": 6.0
+          "media_questoes": 7.2
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 5.3,
-          "desvio_questoes": 2.6,
+          "desvio_questoes": 3.2,
           "media_pct": 10.9,
-          "media_questoes": 5.5
+          "media_questoes": 6.5
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 4.2,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 2.5,
           "media_pct": 10.7,
-          "media_questoes": 5.3
+          "media_questoes": 6.4
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 3.9,
-          "desvio_questoes": 1.9,
+          "desvio_questoes": 2.3,
           "media_pct": 7.6,
-          "media_questoes": 3.8
+          "media_questoes": 4.6
         }
       ],
       "edicoes": 10,
       "institution_key": "PB-SECRETARIA-MUNICIPAL-DE-SAUDE-DE-JOAO-PESSOA-SMS",
       "nome": "PB - Secretaria Municipal de Saúde de João Pessoa - SMS",
-      "prova_tipica": 50,
+      "prova_tipica": 60,
       "questoes": 540
     },
     {
@@ -5021,47 +4889,47 @@
           "desvio_pct": 2.2,
           "desvio_questoes": 2.2,
           "media_pct": 31.8,
-          "media_questoes": 31.8
+          "media_questoes": 32.4
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 3.1,
           "desvio_questoes": 3.1,
           "media_pct": 18.1,
-          "media_questoes": 18.1
+          "media_questoes": 18.5
         },
         {
           "area": "Pediatria",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 1.8,
           "media_pct": 14.7,
-          "media_questoes": 14.7
+          "media_questoes": 15.0
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.1,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 2.2,
           "media_pct": 13.0,
-          "media_questoes": 13.0
+          "media_questoes": 13.3
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.3,
           "desvio_questoes": 1.3,
           "media_pct": 9.8,
-          "media_questoes": 9.8
+          "media_questoes": 10.0
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.2,
           "desvio_questoes": 1.2,
           "media_pct": 9.8,
-          "media_questoes": 9.8
+          "media_questoes": 9.9
         },
         {
           "area": "Outros",
           "desvio_pct": 1.6,
-          "desvio_questoes": 1.6,
+          "desvio_questoes": 1.7,
           "media_pct": 2.8,
           "media_questoes": 2.8
         }
@@ -5069,7 +4937,7 @@
       "edicoes": 11,
       "institution_key": "PE-SECRETARIA-ESTADUAL-DE-SAUDE-DO-ESTADO-DE-PERNAMBUCO-SES-PE",
       "nome": "PE - Secretaria Estadual de Saúde do Estado de Pernambuco - SES PE",
-      "prova_tipica": 100,
+      "prova_tipica": 102,
       "questoes": 1495
     },
     {
@@ -5223,44 +5091,44 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 4.8,
-          "desvio_questoes": 4.8,
+          "desvio_questoes": 4.7,
           "media_pct": 29.1,
-          "media_questoes": 29.1
+          "media_questoes": 28.8
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.0,
-          "desvio_questoes": 2.0,
+          "desvio_questoes": 1.9,
           "media_pct": 19.8,
-          "media_questoes": 19.8
+          "media_questoes": 19.6
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.1,
           "desvio_questoes": 2.1,
           "media_pct": 16.2,
-          "media_questoes": 16.2
+          "media_questoes": 16.1
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.2,
-          "desvio_questoes": 3.2,
+          "desvio_questoes": 3.1,
           "media_pct": 14.6,
-          "media_questoes": 14.6
+          "media_questoes": 14.5
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 0.8,
           "desvio_questoes": 0.8,
           "media_pct": 9.4,
-          "media_questoes": 9.4
+          "media_questoes": 9.3
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.8,
           "desvio_questoes": 1.8,
           "media_pct": 8.2,
-          "media_questoes": 8.2
+          "media_questoes": 8.1
         },
         {
           "area": "Outros",
@@ -5273,7 +5141,7 @@
       "edicoes": 5,
       "institution_key": "PI-UNIVERSIDADE-FEDERAL-DO-PIAUI-UFPI-HOSPITAL-UNIVERSITARIO-DA-UFPI",
       "nome": "PI - Universidade Federal do Piauí - UFPI (Hospital Universitário da UFPI)",
-      "prova_tipica": 100,
+      "prova_tipica": 99,
       "questoes": 499
     },
     {
@@ -5365,57 +5233,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 4.6,
-          "desvio_questoes": 4.6,
+          "desvio_questoes": 4.5,
           "media_pct": 34.1,
-          "media_questoes": 34.1
+          "media_questoes": 33.4
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.4,
-          "desvio_questoes": 2.4,
+          "desvio_questoes": 2.3,
           "media_pct": 15.7,
-          "media_questoes": 15.7
+          "media_questoes": 15.4
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.0,
           "desvio_questoes": 2.0,
           "media_pct": 15.7,
-          "media_questoes": 15.7
+          "media_questoes": 15.4
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.7,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 2.6,
           "media_pct": 11.4,
-          "media_questoes": 11.4
+          "media_questoes": 11.2
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.7,
           "desvio_questoes": 2.7,
           "media_pct": 9.3,
-          "media_questoes": 9.3
+          "media_questoes": 9.1
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.9,
-          "desvio_questoes": 2.9,
+          "desvio_questoes": 2.8,
           "media_pct": 8.5,
-          "media_questoes": 8.5
+          "media_questoes": 8.4
         },
         {
           "area": "Outros",
           "desvio_pct": 1.8,
           "desvio_questoes": 1.8,
           "media_pct": 5.2,
-          "media_questoes": 5.2
+          "media_questoes": 5.1
         }
       ],
       "edicoes": 11,
       "institution_key": "PR-ASSOCIACAO-MEDICA-DO-PARANA-AMP",
       "nome": "PR - Associação Médica do Paraná - AMP",
-      "prova_tipica": 100,
+      "prova_tipica": 98,
       "questoes": 1092
     },
     {
@@ -5659,16 +5527,16 @@
           "media_questoes": 13.1
         },
         {
-          "area": "Ginecologia",
-          "desvio_pct": 1.2,
-          "desvio_questoes": 1.2,
+          "area": "Obstetrícia",
+          "desvio_pct": 0.9,
+          "desvio_questoes": 0.9,
           "media_pct": 9.6,
           "media_questoes": 9.6
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 0.9,
-          "desvio_questoes": 0.9,
+          "area": "Ginecologia",
+          "desvio_pct": 1.2,
+          "desvio_questoes": 1.2,
           "media_pct": 9.6,
           "media_questoes": 9.6
         },
@@ -5902,57 +5770,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.3,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 3.2,
           "media_pct": 28.0,
-          "media_questoes": 11.2
+          "media_questoes": 16.8
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 1.6,
-          "desvio_questoes": 0.6,
+          "desvio_questoes": 1.0,
           "media_pct": 19.1,
-          "media_questoes": 7.7
+          "media_questoes": 11.5
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.6,
-          "desvio_questoes": 1.4,
+          "desvio_questoes": 2.2,
           "media_pct": 14.8,
-          "media_questoes": 5.9
+          "media_questoes": 8.9
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.6,
-          "desvio_questoes": 1.0,
+          "desvio_questoes": 1.6,
           "media_pct": 14.7,
-          "media_questoes": 5.9
+          "media_questoes": 8.8
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.8,
-          "desvio_questoes": 1.1,
+          "desvio_questoes": 1.7,
           "media_pct": 10.1,
-          "media_questoes": 4.0
+          "media_questoes": 6.1
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.4,
-          "desvio_questoes": 1.0,
+          "desvio_questoes": 1.5,
           "media_pct": 8.6,
-          "media_questoes": 3.4
+          "media_questoes": 5.1
         },
         {
           "area": "Outros",
           "desvio_pct": 2.3,
-          "desvio_questoes": 0.9,
+          "desvio_questoes": 1.4,
           "media_pct": 4.7,
-          "media_questoes": 1.9
+          "media_questoes": 2.8
         }
       ],
       "edicoes": 11,
       "institution_key": "PR-SECRETARIA-MUNICIPAL-DE-SAUDE-DE-CURITIBA-SMS",
       "nome": "PR - Secretaria Municipal de Saúde de Curitiba - SMS",
-      "prova_tipica": 40,
+      "prova_tipica": 60,
       "questoes": 539
     },
     {
@@ -5975,55 +5843,55 @@
           "desvio_pct": 2.9,
           "desvio_questoes": 2.9,
           "media_pct": 26.7,
-          "media_questoes": 26.7
+          "media_questoes": 26.4
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.4,
-          "desvio_questoes": 2.4,
+          "desvio_questoes": 2.3,
           "media_pct": 18.7,
-          "media_questoes": 18.7
+          "media_questoes": 18.5
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.0,
           "desvio_questoes": 2.0,
           "media_pct": 16.5,
-          "media_questoes": 16.5
+          "media_questoes": 16.3
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.2,
           "desvio_questoes": 2.2,
           "media_pct": 15.5,
-          "media_questoes": 15.5
+          "media_questoes": 15.3
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.7,
           "desvio_questoes": 1.7,
           "media_pct": 9.9,
-          "media_questoes": 9.9
+          "media_questoes": 9.8
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.2,
           "desvio_questoes": 1.2,
           "media_pct": 9.2,
-          "media_questoes": 9.2
+          "media_questoes": 9.1
         },
         {
           "area": "Outros",
           "desvio_pct": 1.4,
           "desvio_questoes": 1.4,
           "media_pct": 3.6,
-          "media_questoes": 3.6
+          "media_questoes": 3.5
         }
       ],
       "edicoes": 11,
       "institution_key": "PR-UNIVERSIDADE-ESTADUAL-DE-LONDRINA-UEL-HOSPITAL-UNIVERSITARIO-DA-UEL",
       "nome": "PR - Universidade Estadual de Londrina - UEL (Hospital Universitário da UEL)",
-      "prova_tipica": 100,
+      "prova_tipica": 99,
       "questoes": 1048
     },
     {
@@ -6257,16 +6125,16 @@
           "media_questoes": 9.0
         },
         {
-          "area": "Ginecologia",
-          "desvio_pct": 0.0,
-          "desvio_questoes": 0.0,
+          "area": "Obstetrícia",
+          "desvio_pct": 1.0,
+          "desvio_questoes": 0.8,
           "media_pct": 10.0,
           "media_questoes": 8.0
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 1.0,
-          "desvio_questoes": 0.8,
+          "area": "Ginecologia",
+          "desvio_pct": 0.0,
+          "desvio_questoes": 0.0,
           "media_pct": 10.0,
           "media_questoes": 8.0
         },
@@ -6321,16 +6189,16 @@
           "media_questoes": 9.2
         },
         {
-          "area": "Ginecologia",
-          "desvio_pct": 2.7,
-          "desvio_questoes": 2.0,
+          "area": "Obstetrícia",
+          "desvio_pct": 2.0,
+          "desvio_questoes": 1.5,
           "media_pct": 9.0,
           "media_questoes": 6.8
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 2.0,
-          "desvio_questoes": 1.5,
+          "area": "Ginecologia",
+          "desvio_pct": 2.7,
+          "desvio_questoes": 2.0,
           "media_pct": 9.0,
           "media_questoes": 6.8
         },
@@ -6555,57 +6423,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 8.8,
-          "desvio_questoes": 8.8,
+          "desvio_questoes": 8.7,
           "media_pct": 31.0,
-          "media_questoes": 31.0
+          "media_questoes": 30.7
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.0,
-          "desvio_questoes": 3.0,
+          "desvio_questoes": 2.9,
           "media_pct": 14.3,
-          "media_questoes": 14.3
+          "media_questoes": 14.2
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 6.7,
           "desvio_questoes": 6.7,
           "media_pct": 13.3,
-          "media_questoes": 13.3
+          "media_questoes": 13.2
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 3.6,
-          "desvio_questoes": 3.6,
+          "desvio_questoes": 3.5,
           "media_pct": 11.2,
-          "media_questoes": 11.2
+          "media_questoes": 11.1
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 4.1,
           "desvio_questoes": 4.1,
           "media_pct": 11.0,
-          "media_questoes": 11.0
+          "media_questoes": 10.9
         },
         {
           "area": "Outros",
           "desvio_pct": 16.4,
-          "desvio_questoes": 16.4,
+          "desvio_questoes": 16.3,
           "media_pct": 10.8,
-          "media_questoes": 10.8
+          "media_questoes": 10.7
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 3.3,
           "desvio_questoes": 3.3,
           "media_pct": 8.4,
-          "media_questoes": 8.4
+          "media_questoes": 8.3
         }
       ],
       "edicoes": 8,
       "institution_key": "RJ-FACULDADE-DE-MEDICINA-DE-CAMPOS-FMC-HOSPITAL-ESCOLA-ALVARO-ALVIM",
       "nome": "RJ - Faculdade de Medicina de Campos - FMC (Hospital Escola Álvaro Alvim)",
-      "prova_tipica": 100,
+      "prova_tipica": 99,
       "questoes": 797
     },
     {
@@ -6950,57 +6818,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 3.7,
-          "desvio_questoes": 1.9,
+          "desvio_questoes": 3.7,
           "media_pct": 31.7,
-          "media_questoes": 15.8
+          "media_questoes": 31.7
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 1.5,
-          "desvio_questoes": 0.7,
+          "desvio_questoes": 1.5,
           "media_pct": 17.8,
-          "media_questoes": 8.9
+          "media_questoes": 17.8
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.9,
-          "desvio_questoes": 1.4,
+          "desvio_questoes": 2.9,
           "media_pct": 14.8,
-          "media_questoes": 7.4
+          "media_questoes": 14.8
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.6,
-          "desvio_questoes": 1.3,
+          "desvio_questoes": 2.6,
           "media_pct": 13.8,
-          "media_questoes": 6.9
+          "media_questoes": 13.8
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.8,
-          "desvio_questoes": 1.4,
+          "desvio_questoes": 2.8,
           "media_pct": 10.5,
-          "media_questoes": 5.2
+          "media_questoes": 10.5
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.9,
-          "desvio_questoes": 0.9,
+          "desvio_questoes": 1.9,
           "media_pct": 8.7,
-          "media_questoes": 4.3
+          "media_questoes": 8.7
         },
         {
           "area": "Outros",
           "desvio_pct": 1.9,
-          "desvio_questoes": 0.9,
+          "desvio_questoes": 1.9,
           "media_pct": 2.7,
-          "media_questoes": 1.3
+          "media_questoes": 2.7
         }
       ],
       "edicoes": 6,
       "institution_key": "RJ-HOSPITAL-NACIONAL-DO-CANCER-INCA",
       "nome": "RJ - Hospital Nacional do Câncer - INCA",
-      "prova_tipica": 50,
+      "prova_tipica": 100,
       "questoes": 350
     },
     {
@@ -7148,57 +7016,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 3.2,
-          "desvio_questoes": 1.9,
+          "desvio_questoes": 2.4,
           "media_pct": 29.6,
-          "media_questoes": 17.7
+          "media_questoes": 22.2
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 4.4,
-          "desvio_questoes": 2.6,
+          "desvio_questoes": 3.3,
           "media_pct": 17.2,
-          "media_questoes": 10.3
+          "media_questoes": 12.9
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.3,
-          "desvio_questoes": 2.0,
+          "desvio_questoes": 2.5,
           "media_pct": 17.1,
-          "media_questoes": 10.3
+          "media_questoes": 12.8
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.8,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 2.1,
           "media_pct": 14.7,
-          "media_questoes": 8.8
+          "media_questoes": 11.0
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.8,
-          "desvio_questoes": 1.1,
+          "desvio_questoes": 1.3,
           "media_pct": 13.0,
-          "media_questoes": 7.8
+          "media_questoes": 9.8
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.7,
-          "desvio_questoes": 1.6,
+          "desvio_questoes": 2.0,
           "media_pct": 5.4,
-          "media_questoes": 3.3
+          "media_questoes": 4.1
         },
         {
           "area": "Outros",
           "desvio_pct": 2.2,
-          "desvio_questoes": 1.3,
+          "desvio_questoes": 1.6,
           "media_pct": 3.0,
-          "media_questoes": 1.8
+          "media_questoes": 2.2
         }
       ],
       "edicoes": 3,
       "institution_key": "RJ-HOSPITAL-SANTA-TERESA-HST",
       "nome": "RJ - Hospital Santa Teresa - HST",
-      "prova_tipica": 60,
+      "prova_tipica": 75,
       "questoes": 195
     },
     {
@@ -7557,57 +7425,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 6.1,
-          "desvio_questoes": 6.1,
+          "desvio_questoes": 3.7,
           "media_pct": 35.1,
-          "media_questoes": 35.1
+          "media_questoes": 21.1
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.4,
-          "desvio_questoes": 2.4,
+          "desvio_questoes": 1.4,
           "media_pct": 14.1,
-          "media_questoes": 14.1
+          "media_questoes": 8.5
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 3.7,
-          "desvio_questoes": 3.7,
+          "desvio_questoes": 2.2,
           "media_pct": 13.6,
-          "media_questoes": 13.6
+          "media_questoes": 8.2
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.8,
-          "desvio_questoes": 2.8,
+          "desvio_questoes": 1.7,
           "media_pct": 13.5,
-          "media_questoes": 13.5
+          "media_questoes": 8.1
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.5,
-          "desvio_questoes": 2.5,
+          "desvio_questoes": 1.5,
           "media_pct": 11.3,
-          "media_questoes": 11.3
+          "media_questoes": 6.8
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.4,
-          "desvio_questoes": 1.4,
+          "desvio_questoes": 0.8,
           "media_pct": 8.3,
-          "media_questoes": 8.3
+          "media_questoes": 5.0
         },
         {
           "area": "Outros",
           "desvio_pct": 3.2,
-          "desvio_questoes": 3.2,
+          "desvio_questoes": 1.9,
           "media_pct": 4.1,
-          "media_questoes": 4.1
+          "media_questoes": 2.4
         }
       ],
       "edicoes": 10,
       "institution_key": "RJ-SECRETARIA-ESTADUAL-DE-SAUDE-SES-RJ",
       "nome": "RJ - Secretaria Estadual de Saúde - SES RJ",
-      "prova_tipica": 100,
+      "prova_tipica": 60,
       "questoes": 799
     },
     {
@@ -7824,57 +7692,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.4,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 2.7,
           "media_pct": 27.3,
-          "media_questoes": 10.9
+          "media_questoes": 13.7
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 4.8,
-          "desvio_questoes": 1.9,
+          "desvio_questoes": 2.4,
           "media_pct": 18.0,
-          "media_questoes": 7.2
+          "media_questoes": 9.0
         },
         {
           "area": "Pediatria",
           "desvio_pct": 1.9,
-          "desvio_questoes": 0.8,
+          "desvio_questoes": 1.0,
           "media_pct": 17.1,
-          "media_questoes": 6.8
+          "media_questoes": 8.6
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 4.7,
-          "desvio_questoes": 1.9,
+          "desvio_questoes": 2.4,
           "media_pct": 13.6,
-          "media_questoes": 5.4
+          "media_questoes": 6.8
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 6.3,
-          "desvio_questoes": 2.5,
+          "desvio_questoes": 3.2,
           "media_pct": 12.5,
-          "media_questoes": 5.0
+          "media_questoes": 6.2
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 3.4,
-          "desvio_questoes": 1.4,
+          "desvio_questoes": 1.7,
           "media_pct": 8.5,
-          "media_questoes": 3.4
+          "media_questoes": 4.2
         },
         {
           "area": "Outros",
           "desvio_pct": 2.9,
-          "desvio_questoes": 1.2,
+          "desvio_questoes": 1.5,
           "media_pct": 3.0,
-          "media_questoes": 1.2
+          "media_questoes": 1.5
         }
       ],
       "edicoes": 5,
       "institution_key": "RJ-UNITEDHEALTH-GROUP-UHG",
       "nome": "RJ - UnitedHealth Group - UHG",
-      "prova_tipica": 40,
+      "prova_tipica": 50,
       "questoes": 210
     },
     {
@@ -7944,70 +7812,6 @@
     },
     {
       "anos": [
-        2023,
-        2024,
-        2025,
-        2026
-      ],
-      "areas": [
-        {
-          "area": "Clínica Médica",
-          "desvio_pct": 4.1,
-          "desvio_questoes": 1.2,
-          "media_pct": 23.3,
-          "media_questoes": 7.0
-        },
-        {
-          "area": "Pediatria",
-          "desvio_pct": 2.4,
-          "desvio_questoes": 0.7,
-          "media_pct": 20.0,
-          "media_questoes": 6.0
-        },
-        {
-          "area": "Medicina Preventiva",
-          "desvio_pct": 2.4,
-          "desvio_questoes": 0.7,
-          "media_pct": 20.0,
-          "media_questoes": 6.0
-        },
-        {
-          "area": "Cirurgia",
-          "desvio_pct": 2.9,
-          "desvio_questoes": 0.9,
-          "media_pct": 15.0,
-          "media_questoes": 4.5
-        },
-        {
-          "area": "Ginecologia",
-          "desvio_pct": 1.4,
-          "desvio_questoes": 0.4,
-          "media_pct": 12.5,
-          "media_questoes": 3.8
-        },
-        {
-          "area": "Obstetrícia",
-          "desvio_pct": 2.4,
-          "desvio_questoes": 0.7,
-          "media_pct": 6.7,
-          "media_questoes": 2.0
-        },
-        {
-          "area": "Outros",
-          "desvio_pct": 2.8,
-          "desvio_questoes": 0.8,
-          "media_pct": 2.5,
-          "media_questoes": 0.8
-        }
-      ],
-      "edicoes": 4,
-      "institution_key": "RJ-UNIVERSIDADE-DO-ESTADO-DO-RIO-DE-JANEIRO-PRO-MFC-UERJ-HOSPITAL-UNIVERSITARIO-PEDRO-ERNESTO-HUPE",
-      "nome": "RJ - Universidade do Estado do Rio de Janeiro - (Pró-MFC) - UERJ (Hospital Universitário Pedro Ernesto - HUPE)",
-      "prova_tipica": 30,
-      "questoes": 120
-    },
-    {
-      "anos": [
         2016,
         2017,
         2018,
@@ -8024,57 +7828,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.4,
-          "desvio_questoes": 4.3,
+          "desvio_questoes": 5.4,
           "media_pct": 36.1,
-          "media_questoes": 28.9
+          "media_questoes": 36.1
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.1,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 2.1,
           "media_pct": 13.7,
-          "media_questoes": 11.0
+          "media_questoes": 13.7
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 4.0,
-          "desvio_questoes": 3.2,
+          "desvio_questoes": 4.0,
           "media_pct": 13.5,
-          "media_questoes": 10.8
+          "media_questoes": 13.5
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.3,
-          "desvio_questoes": 1.8,
+          "desvio_questoes": 2.3,
           "media_pct": 11.9,
-          "media_questoes": 9.5
+          "media_questoes": 11.9
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.2,
-          "desvio_questoes": 0.9,
+          "desvio_questoes": 1.2,
           "media_pct": 11.2,
-          "media_questoes": 8.9
+          "media_questoes": 11.2
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.1,
-          "desvio_questoes": 0.9,
+          "desvio_questoes": 1.1,
           "media_pct": 8.8,
-          "media_questoes": 7.0
+          "media_questoes": 8.8
         },
         {
           "area": "Outros",
           "desvio_pct": 2.2,
-          "desvio_questoes": 1.8,
+          "desvio_questoes": 2.2,
           "media_pct": 4.8,
-          "media_questoes": 3.8
+          "media_questoes": 4.8
         }
       ],
       "edicoes": 11,
       "institution_key": "RJ-UNIVERSIDADE-DO-ESTADO-DO-RIO-DE-JANEIRO-UERJ-HOSPITAL-UNIVERSITARIO-PEDRO-ERNESTO-HUPE",
       "nome": "RJ - Universidade do Estado do Rio de Janeiro - UERJ (Hospital Universitário Pedro Ernesto - HUPE)",
-      "prova_tipica": 80,
+      "prova_tipica": 100,
       "questoes": 939
     },
     {
@@ -8155,57 +7959,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.1,
-          "desvio_questoes": 5.1,
+          "desvio_questoes": 3.1,
           "media_pct": 31.2,
-          "media_questoes": 31.2
+          "media_questoes": 18.7
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 1.0,
-          "desvio_questoes": 1.0,
+          "desvio_questoes": 0.6,
           "media_pct": 15.8,
-          "media_questoes": 15.8
+          "media_questoes": 9.5
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 4.1,
-          "desvio_questoes": 4.1,
+          "desvio_questoes": 2.5,
           "media_pct": 13.7,
-          "media_questoes": 13.7
+          "media_questoes": 8.2
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.1,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 1.2,
           "media_pct": 13.3,
-          "media_questoes": 13.3
+          "media_questoes": 8.0
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.4,
-          "desvio_questoes": 1.4,
+          "desvio_questoes": 0.8,
           "media_pct": 10.9,
-          "media_questoes": 10.9
+          "media_questoes": 6.6
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 1.0,
           "media_pct": 10.8,
-          "media_questoes": 10.8
+          "media_questoes": 6.5
         },
         {
           "area": "Outros",
           "desvio_pct": 1.9,
-          "desvio_questoes": 1.9,
+          "desvio_questoes": 1.2,
           "media_pct": 4.2,
-          "media_questoes": 4.2
+          "media_questoes": 2.5
         }
       ],
       "edicoes": 6,
       "institution_key": "RJ-UNIVERSIDADE-FEDERAL-DO-ESTADO-DO-RIO-DE-JANEIRO-UNIRIO-HOSPITAL-UNIVERSITARIO-GAFFREE-E-GUINLE-HUGG",
       "nome": "RJ - Universidade Federal do Estado do Rio de Janeiro - UNIRIO (Hospital Universitário Gaffrée e Guinle - HUGG)",
-      "prova_tipica": 100,
+      "prova_tipica": 60,
       "questoes": 560
     },
     {
@@ -8225,57 +8029,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 2.8,
-          "desvio_questoes": 2.8,
+          "desvio_questoes": 4.2,
           "media_pct": 28.2,
-          "media_questoes": 28.2
+          "media_questoes": 42.4
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 4.5,
-          "desvio_questoes": 4.5,
+          "desvio_questoes": 6.7,
           "media_pct": 18.1,
-          "media_questoes": 18.1
+          "media_questoes": 27.1
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.0,
-          "desvio_questoes": 2.0,
+          "desvio_questoes": 3.1,
           "media_pct": 15.3,
-          "media_questoes": 15.3
+          "media_questoes": 22.9
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.4,
-          "desvio_questoes": 2.4,
+          "desvio_questoes": 3.5,
           "media_pct": 13.2,
-          "media_questoes": 13.2
+          "media_questoes": 19.8
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.0,
-          "desvio_questoes": 1.0,
+          "desvio_questoes": 1.5,
           "media_pct": 9.7,
-          "media_questoes": 9.7
+          "media_questoes": 14.5
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 2.5,
           "media_pct": 9.4,
-          "media_questoes": 9.4
+          "media_questoes": 14.1
         },
         {
           "area": "Outros",
           "desvio_pct": 5.4,
-          "desvio_questoes": 5.4,
+          "desvio_questoes": 8.0,
           "media_pct": 6.2,
-          "media_questoes": 6.2
+          "media_questoes": 9.2
         }
       ],
       "edicoes": 10,
       "institution_key": "RJ-UNIVERSIDADE-FEDERAL-DO-RIO-DE-JANEIRO-UFRJ-HOSPITAL-UNIVERSITARIO-CLEMENTINO-FRAGA-FILHO-HUCFF",
       "nome": "RJ - Universidade Federal do Rio de Janeiro - UFRJ (Hospital Universitário Clementino Fraga Filho -- HUCFF)",
-      "prova_tipica": 100,
+      "prova_tipica": 150,
       "questoes": 1100
     },
     {
@@ -8291,57 +8095,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 4.5,
-          "desvio_questoes": 3.6,
+          "desvio_questoes": 2.3,
           "media_pct": 32.2,
-          "media_questoes": 25.8
+          "media_questoes": 16.1
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.6,
-          "desvio_questoes": 2.9,
+          "desvio_questoes": 1.8,
           "media_pct": 15.2,
-          "media_questoes": 12.2
+          "media_questoes": 7.6
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.5,
-          "desvio_questoes": 2.0,
+          "desvio_questoes": 1.2,
           "media_pct": 13.9,
-          "media_questoes": 11.1
+          "media_questoes": 6.9
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.2,
-          "desvio_questoes": 2.5,
+          "desvio_questoes": 1.6,
           "media_pct": 12.4,
-          "media_questoes": 9.9
+          "media_questoes": 6.2
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 0.6,
-          "desvio_questoes": 0.5,
+          "desvio_questoes": 0.3,
           "media_pct": 10.6,
-          "media_questoes": 8.5
+          "media_questoes": 5.3
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.1,
-          "desvio_questoes": 0.9,
+          "desvio_questoes": 0.5,
           "media_pct": 9.9,
-          "media_questoes": 7.9
+          "media_questoes": 5.0
         },
         {
           "area": "Outros",
           "desvio_pct": 4.6,
-          "desvio_questoes": 3.7,
+          "desvio_questoes": 2.3,
           "media_pct": 5.8,
-          "media_questoes": 4.6
+          "media_questoes": 2.9
         }
       ],
       "edicoes": 6,
       "institution_key": "RJ-UNIVERSIDADE-FEDERAL-FLUMINENSE-UFF-HOSPITAL-UNIVERSITARIO-ANTONIO-PEDRO-HUAP",
       "nome": "RJ - Universidade Federal Fluminense - UFF (Hospital Universitário Antônio Pedro - HUAP)",
-      "prova_tipica": 80,
+      "prova_tipica": 50,
       "questoes": 480
     },
     {
@@ -8362,57 +8166,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 3.1,
-          "desvio_questoes": 2.8,
+          "desvio_questoes": 3.1,
           "media_pct": 29.7,
-          "media_questoes": 26.7
+          "media_questoes": 29.7
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.1,
-          "desvio_questoes": 2.8,
+          "desvio_questoes": 3.1,
           "media_pct": 16.3,
-          "media_questoes": 14.7
+          "media_questoes": 16.3
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.0,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 3.0,
           "media_pct": 15.6,
-          "media_questoes": 14.0
+          "media_questoes": 15.6
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 3.0,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 3.0,
           "media_pct": 14.4,
-          "media_questoes": 13.0
+          "media_questoes": 14.4
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.5,
-          "desvio_questoes": 1.3,
+          "desvio_questoes": 1.5,
           "media_pct": 11.5,
-          "media_questoes": 10.4
+          "media_questoes": 11.5
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.5,
-          "desvio_questoes": 1.3,
+          "desvio_questoes": 1.5,
           "media_pct": 8.3,
-          "media_questoes": 7.5
+          "media_questoes": 8.3
         },
         {
           "area": "Outros",
           "desvio_pct": 3.4,
-          "desvio_questoes": 3.1,
+          "desvio_questoes": 3.4,
           "media_pct": 4.1,
-          "media_questoes": 3.7
+          "media_questoes": 4.1
         }
       ],
       "edicoes": 11,
       "institution_key": "RN-UNIVERSIDADE-DO-ESTADO-DO-RIO-GRANDE-DO-NORTE-UERN",
       "nome": "RN - Universidade do Estado do Rio Grande do Norte - UERN",
-      "prova_tipica": 90,
+      "prova_tipica": 100,
       "questoes": 998
     },
     {
@@ -8437,16 +8241,16 @@
           "media_questoes": 18.0
         },
         {
-          "area": "Pediatria",
-          "desvio_pct": 1.4,
-          "desvio_questoes": 1.4,
+          "area": "Medicina Preventiva",
+          "desvio_pct": 2.9,
+          "desvio_questoes": 2.9,
           "media_pct": 15.0,
           "media_questoes": 15.0
         },
         {
-          "area": "Medicina Preventiva",
-          "desvio_pct": 2.9,
-          "desvio_questoes": 2.9,
+          "area": "Pediatria",
+          "desvio_pct": 1.4,
+          "desvio_questoes": 1.4,
           "media_pct": 15.0,
           "media_questoes": 15.0
         },
@@ -8519,16 +8323,16 @@
           "media_questoes": 14.8
         },
         {
-          "area": "Ginecologia",
-          "desvio_pct": 1.6,
-          "desvio_questoes": 1.6,
+          "area": "Obstetrícia",
+          "desvio_pct": 1.8,
+          "desvio_questoes": 1.8,
           "media_pct": 10.0,
           "media_questoes": 10.0
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 1.8,
-          "desvio_questoes": 1.8,
+          "area": "Ginecologia",
+          "desvio_pct": 1.6,
+          "desvio_questoes": 1.6,
           "media_pct": 10.0,
           "media_questoes": 10.0
         },
@@ -8693,57 +8497,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 4.6,
-          "desvio_questoes": 4.6,
+          "desvio_questoes": 4.5,
           "media_pct": 35.8,
-          "media_questoes": 35.8
+          "media_questoes": 35.4
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.2,
           "desvio_questoes": 2.2,
           "media_pct": 14.2,
-          "media_questoes": 14.2
+          "media_questoes": 14.1
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.8,
           "desvio_questoes": 2.8,
           "media_pct": 12.7,
-          "media_questoes": 12.7
+          "media_questoes": 12.6
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 3.8,
           "desvio_questoes": 3.8,
           "media_pct": 11.5,
-          "media_questoes": 11.5
+          "media_questoes": 11.4
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.8,
           "desvio_questoes": 1.8,
           "media_pct": 9.5,
-          "media_questoes": 9.5
+          "media_questoes": 9.4
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.1,
           "desvio_questoes": 1.1,
           "media_pct": 8.9,
-          "media_questoes": 8.9
+          "media_questoes": 8.8
         },
         {
           "area": "Outros",
           "desvio_pct": 3.6,
           "desvio_questoes": 3.6,
           "media_pct": 7.5,
-          "media_questoes": 7.5
+          "media_questoes": 7.4
         }
       ],
       "edicoes": 11,
       "institution_key": "RS-ASSOCIACAO-MEDICA-DO-RIO-GRANDE-DO-SUL-AMRIGS",
       "nome": "RS - Associação Médica do Rio Grande do Sul - AMRIGS",
-      "prova_tipica": 100,
+      "prova_tipica": 99,
       "questoes": 1099
     },
     {
@@ -8890,57 +8694,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 3.4,
-          "desvio_questoes": 3.4,
+          "desvio_questoes": 3.3,
           "media_pct": 29.2,
-          "media_questoes": 29.2
+          "media_questoes": 28.3
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 1.7,
           "desvio_questoes": 1.7,
           "media_pct": 15.3,
-          "media_questoes": 15.3
+          "media_questoes": 14.8
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.1,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 2.0,
           "media_pct": 14.7,
-          "media_questoes": 14.7
+          "media_questoes": 14.2
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.9,
-          "desvio_questoes": 2.9,
+          "desvio_questoes": 2.8,
           "media_pct": 12.6,
-          "media_questoes": 12.6
+          "media_questoes": 12.3
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.9,
-          "desvio_questoes": 1.9,
+          "desvio_questoes": 1.8,
           "media_pct": 9.9,
-          "media_questoes": 9.9
+          "media_questoes": 9.6
         },
         {
           "area": "Outros",
           "desvio_pct": 2.2,
-          "desvio_questoes": 2.2,
+          "desvio_questoes": 2.1,
           "media_pct": 9.7,
-          "media_questoes": 9.7
+          "media_questoes": 9.4
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.0,
           "desvio_questoes": 1.0,
           "media_pct": 8.7,
-          "media_questoes": 8.7
+          "media_questoes": 8.4
         }
       ],
       "edicoes": 5,
       "institution_key": "RS-UNIVERSIDADE-FEDERAL-DE-CIENCIAS-DA-SAUDE-DE-PORTO-ALEGRE-UFCSPA",
       "nome": "RS - Universidade Federal de Ciências da Saúde de Porto Alegre - UFCSPA",
-      "prova_tipica": 100,
+      "prova_tipica": 97,
       "questoes": 497
     },
     {
@@ -9161,55 +8965,55 @@
           "desvio_pct": 3.2,
           "desvio_questoes": 3.2,
           "media_pct": 29.6,
-          "media_questoes": 29.6
+          "media_questoes": 29.3
         },
         {
           "area": "Pediatria",
           "desvio_pct": 1.4,
           "desvio_questoes": 1.4,
           "media_pct": 18.2,
-          "media_questoes": 18.2
+          "media_questoes": 18.0
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 1.8,
           "desvio_questoes": 1.8,
           "media_pct": 14.5,
-          "media_questoes": 14.5
+          "media_questoes": 14.4
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 1.6,
           "desvio_questoes": 1.6,
           "media_pct": 13.9,
-          "media_questoes": 13.9
+          "media_questoes": 13.7
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.7,
           "desvio_questoes": 2.7,
           "media_pct": 10.7,
-          "media_questoes": 10.7
+          "media_questoes": 10.6
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.9,
           "desvio_questoes": 2.9,
           "media_pct": 10.4,
-          "media_questoes": 10.4
+          "media_questoes": 10.3
         },
         {
           "area": "Outros",
           "desvio_pct": 1.2,
           "desvio_questoes": 1.2,
           "media_pct": 2.7,
-          "media_questoes": 2.7
+          "media_questoes": 2.6
         }
       ],
       "edicoes": 6,
       "institution_key": "SE-FUNDACAO-DE-BENEFICENCIA-HOSPITAL-DE-CIRURGIA-FBHC",
       "nome": "SE - Fundação de Beneficência Hospital de Cirurgia - FBHC",
-      "prova_tipica": 100,
+      "prova_tipica": 99,
       "questoes": 598
     },
     {
@@ -9361,57 +9165,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 7.5,
-          "desvio_questoes": 7.5,
+          "desvio_questoes": 6.0,
           "media_pct": 45.6,
-          "media_questoes": 45.6
+          "media_questoes": 36.5
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 4.0,
-          "desvio_questoes": 4.0,
+          "desvio_questoes": 3.2,
           "media_pct": 16.2,
-          "media_questoes": 16.2
+          "media_questoes": 13.0
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 3.8,
-          "desvio_questoes": 3.8,
+          "desvio_questoes": 3.0,
           "media_pct": 11.8,
-          "media_questoes": 11.8
+          "media_questoes": 9.4
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.2,
-          "desvio_questoes": 2.2,
+          "desvio_questoes": 1.8,
           "media_pct": 8.7,
-          "media_questoes": 8.7
+          "media_questoes": 6.9
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.6,
-          "desvio_questoes": 2.6,
+          "desvio_questoes": 2.1,
           "media_pct": 8.2,
-          "media_questoes": 8.2
+          "media_questoes": 6.6
         },
         {
           "area": "Outros",
           "desvio_pct": 4.4,
-          "desvio_questoes": 4.4,
+          "desvio_questoes": 3.5,
           "media_pct": 6.6,
-          "media_questoes": 6.6
+          "media_questoes": 5.3
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.2,
-          "desvio_questoes": 2.2,
+          "desvio_questoes": 1.8,
           "media_pct": 2.8,
-          "media_questoes": 2.8
+          "media_questoes": 2.3
         }
       ],
       "edicoes": 7,
       "institution_key": "SP-ASSOCIACAO-DA-SANTA-CASA-DE-MISERICORDIA-DE-OURINHOS-SCO",
       "nome": "SP - Associação da Santa Casa de Misericórdia de Ourinhos - SCO",
-      "prova_tipica": 100,
+      "prova_tipica": 80,
       "questoes": 660
     },
     {
@@ -9508,16 +9312,16 @@
           "media_questoes": 32.7
         },
         {
-          "area": "Pediatria",
-          "desvio_pct": 2.0,
-          "desvio_questoes": 2.0,
+          "area": "Medicina Preventiva",
+          "desvio_pct": 5.2,
+          "desvio_questoes": 5.2,
           "media_pct": 13.9,
           "media_questoes": 13.9
         },
         {
-          "area": "Medicina Preventiva",
-          "desvio_pct": 5.2,
-          "desvio_questoes": 5.2,
+          "area": "Pediatria",
+          "desvio_pct": 2.0,
+          "desvio_questoes": 2.0,
           "media_pct": 13.9,
           "media_questoes": 13.9
         },
@@ -9583,16 +9387,16 @@
           "media_questoes": 14.6
         },
         {
-          "area": "Pediatria",
-          "desvio_pct": 2.3,
-          "desvio_questoes": 2.3,
+          "area": "Medicina Preventiva",
+          "desvio_pct": 2.9,
+          "desvio_questoes": 2.9,
           "media_pct": 14.4,
           "media_questoes": 14.4
         },
         {
-          "area": "Medicina Preventiva",
-          "desvio_pct": 2.9,
-          "desvio_questoes": 2.9,
+          "area": "Pediatria",
+          "desvio_pct": 2.3,
+          "desvio_questoes": 2.3,
           "media_pct": 14.4,
           "media_questoes": 14.4
         },
@@ -9868,14 +9672,14 @@
           "media_questoes": 6.7
         },
         {
-          "area": "Ginecologia",
+          "area": "Obstetrícia",
           "desvio_pct": 0.7,
           "desvio_questoes": 0.4,
           "media_pct": 9.7,
           "media_questoes": 4.9
         },
         {
-          "area": "Obstetrícia",
+          "area": "Ginecologia",
           "desvio_pct": 0.7,
           "desvio_questoes": 0.4,
           "media_pct": 9.7,
@@ -9917,16 +9721,16 @@
           "media_questoes": 12.7
         },
         {
-          "area": "Pediatria",
-          "desvio_pct": 3.9,
-          "desvio_questoes": 3.9,
+          "area": "Obstetrícia",
+          "desvio_pct": 1.7,
+          "desvio_questoes": 1.7,
           "media_pct": 10.7,
           "media_questoes": 10.7
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 1.7,
-          "desvio_questoes": 1.7,
+          "area": "Pediatria",
+          "desvio_pct": 3.9,
+          "desvio_questoes": 3.9,
           "media_pct": 10.7,
           "media_questoes": 10.7
         },
@@ -10438,57 +10242,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 8.7,
-          "desvio_questoes": 7.0,
+          "desvio_questoes": 4.4,
           "media_pct": 29.1,
-          "media_questoes": 23.3
+          "media_questoes": 14.6
         },
         {
           "area": "Pediatria",
           "desvio_pct": 1.8,
-          "desvio_questoes": 1.5,
+          "desvio_questoes": 0.9,
           "media_pct": 19.0,
-          "media_questoes": 15.2
+          "media_questoes": 9.5
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.3,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 1.7,
           "media_pct": 16.2,
-          "media_questoes": 13.0
+          "media_questoes": 8.1
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 5.6,
-          "desvio_questoes": 4.5,
+          "desvio_questoes": 2.8,
           "media_pct": 14.9,
-          "media_questoes": 11.9
+          "media_questoes": 7.4
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.9,
-          "desvio_questoes": 1.5,
+          "desvio_questoes": 0.9,
           "media_pct": 10.5,
-          "media_questoes": 8.4
+          "media_questoes": 5.2
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.2,
-          "desvio_questoes": 1.0,
+          "desvio_questoes": 0.6,
           "media_pct": 8.9,
-          "media_questoes": 7.2
+          "media_questoes": 4.5
         },
         {
           "area": "Outros",
           "desvio_pct": 1.9,
-          "desvio_questoes": 1.5,
+          "desvio_questoes": 1.0,
           "media_pct": 1.4,
-          "media_questoes": 1.1
+          "media_questoes": 0.7
         }
       ],
       "edicoes": 9,
       "institution_key": "SP-HOSPITAL-MUNICIPAL-DE-SAO-JOSE-DOS-CAMPOS-HM-HOSPITAL-MUNICIPAL-DR-JOSE-DE-CARVALHO-FLORENCE",
       "nome": "SP - Hospital Municipal de São José dos Campos - HM (Hospital Municipal Dr. José de Carvalho Florence)",
-      "prova_tipica": 80,
+      "prova_tipica": 50,
       "questoes": 690
     },
     {
@@ -10711,57 +10515,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 9.3,
-          "desvio_questoes": 9.3,
+          "desvio_questoes": 7.4,
           "media_pct": 34.6,
-          "media_questoes": 34.6
+          "media_questoes": 27.7
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.2,
-          "desvio_questoes": 3.2,
+          "desvio_questoes": 2.5,
           "media_pct": 14.8,
-          "media_questoes": 14.8
+          "media_questoes": 11.9
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.5,
-          "desvio_questoes": 3.5,
+          "desvio_questoes": 2.8,
           "media_pct": 14.3,
-          "media_questoes": 14.3
+          "media_questoes": 11.5
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 6.6,
-          "desvio_questoes": 6.6,
+          "desvio_questoes": 5.3,
           "media_pct": 11.2,
-          "media_questoes": 11.2
+          "media_questoes": 8.9
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.0,
-          "desvio_questoes": 2.0,
+          "desvio_questoes": 1.6,
           "media_pct": 10.2,
-          "media_questoes": 10.2
+          "media_questoes": 8.1
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.5,
-          "desvio_questoes": 2.5,
+          "desvio_questoes": 2.0,
           "media_pct": 9.3,
-          "media_questoes": 9.3
+          "media_questoes": 7.4
         },
         {
           "area": "Outros",
           "desvio_pct": 2.2,
-          "desvio_questoes": 2.2,
+          "desvio_questoes": 1.7,
           "media_pct": 5.5,
-          "media_questoes": 5.5
+          "media_questoes": 4.4
         }
       ],
       "edicoes": 10,
       "institution_key": "SP-HOSPITAL-PROFESSOR-EDMUNDO-VASCONCELOS-HPEV",
       "nome": "SP - Hospital Professor Edmundo Vasconcelos - HPEV",
-      "prova_tipica": 100,
+      "prova_tipica": 80,
       "questoes": 900
     },
     {
@@ -10843,57 +10647,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.2,
-          "desvio_questoes": 3.1,
+          "desvio_questoes": 4.2,
           "media_pct": 30.7,
-          "media_questoes": 18.4
+          "media_questoes": 24.6
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.8,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 2.3,
           "media_pct": 16.0,
-          "media_questoes": 9.6
+          "media_questoes": 12.8
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.4,
-          "desvio_questoes": 2.0,
+          "desvio_questoes": 2.7,
           "media_pct": 14.1,
-          "media_questoes": 8.4
+          "media_questoes": 11.2
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 5.0,
-          "desvio_questoes": 3.0,
+          "desvio_questoes": 4.0,
           "media_pct": 14.0,
-          "media_questoes": 8.4
+          "media_questoes": 11.2
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 3.6,
-          "desvio_questoes": 2.2,
+          "desvio_questoes": 2.9,
           "media_pct": 10.9,
-          "media_questoes": 6.5
+          "media_questoes": 8.7
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 4.2,
-          "desvio_questoes": 2.5,
+          "desvio_questoes": 3.3,
           "media_pct": 8.7,
-          "media_questoes": 5.2
+          "media_questoes": 7.0
         },
         {
           "area": "Outros",
           "desvio_pct": 2.6,
-          "desvio_questoes": 1.6,
+          "desvio_questoes": 2.1,
           "media_pct": 5.6,
-          "media_questoes": 3.4
+          "media_questoes": 4.5
         }
       ],
       "edicoes": 7,
       "institution_key": "SP-HOSPITAL-SANTO-AMARO-GUARUJA",
       "nome": "SP - Hospital Santo Amaro - Guarujá",
-      "prova_tipica": 60,
+      "prova_tipica": 80,
       "questoes": 475
     },
     {
@@ -11172,57 +10976,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 5.7,
-          "desvio_questoes": 4.0,
+          "desvio_questoes": 4.5,
           "media_pct": 29.4,
-          "media_questoes": 20.6
+          "media_questoes": 23.6
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 0.9,
-          "desvio_questoes": 0.6,
+          "desvio_questoes": 0.7,
           "media_pct": 17.5,
-          "media_questoes": 12.2
+          "media_questoes": 14.0
         },
         {
           "area": "Pediatria",
           "desvio_pct": 1.5,
-          "desvio_questoes": 1.0,
+          "desvio_questoes": 1.2,
           "media_pct": 15.1,
-          "media_questoes": 10.5
+          "media_questoes": 12.0
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 3.5,
-          "desvio_questoes": 2.5,
+          "desvio_questoes": 2.8,
           "media_pct": 13.8,
-          "media_questoes": 9.6
+          "media_questoes": 11.0
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.5,
-          "desvio_questoes": 1.7,
+          "desvio_questoes": 2.0,
           "media_pct": 9.6,
-          "media_questoes": 6.7
+          "media_questoes": 7.7
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.2,
+          "desvio_questoes": 1.4,
           "media_pct": 8.9,
-          "media_questoes": 6.2
+          "media_questoes": 7.1
         },
         {
           "area": "Outros",
           "desvio_pct": 1.7,
-          "desvio_questoes": 1.2,
+          "desvio_questoes": 1.3,
           "media_pct": 5.8,
-          "media_questoes": 4.1
+          "media_questoes": 4.7
         }
       ],
       "edicoes": 3,
       "institution_key": "SP-INSTITUTO-DE-CARDIOLOGIA-DO-ESTADO-DE-SAO-PAULO-DANTE-PAZZANESE",
       "nome": "SP - Instituto de Cardiologia do Estado de São Paulo - Dante Pazzanese",
-      "prova_tipica": 70,
+      "prova_tipica": 80,
       "questoes": 199
     },
     {
@@ -11443,57 +11247,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 4.7,
-          "desvio_questoes": 3.5,
+          "desvio_questoes": 4.7,
           "media_pct": 31.5,
-          "media_questoes": 23.6
+          "media_questoes": 31.5
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 1.6,
-          "desvio_questoes": 1.2,
+          "desvio_questoes": 1.6,
           "media_pct": 19.7,
-          "media_questoes": 14.8
+          "media_questoes": 19.7
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.4,
-          "desvio_questoes": 2.5,
+          "desvio_questoes": 3.4,
           "media_pct": 13.7,
-          "media_questoes": 10.3
+          "media_questoes": 13.7
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.8,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 2.8,
           "media_pct": 12.8,
-          "media_questoes": 9.6
+          "media_questoes": 12.8
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.8,
-          "desvio_questoes": 1.3,
+          "desvio_questoes": 1.8,
           "media_pct": 10.8,
-          "media_questoes": 8.1
+          "media_questoes": 10.8
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.0,
-          "desvio_questoes": 0.8,
+          "desvio_questoes": 1.0,
           "media_pct": 8.6,
-          "media_questoes": 6.5
+          "media_questoes": 8.6
         },
         {
           "area": "Outros",
           "desvio_pct": 1.6,
-          "desvio_questoes": 1.2,
+          "desvio_questoes": 1.6,
           "media_pct": 2.9,
-          "media_questoes": 2.1
+          "media_questoes": 2.9
         }
       ],
       "edicoes": 11,
       "institution_key": "SP-PUC-SOROCABA",
       "nome": "SP - PUC Sorocaba",
-      "prova_tipica": 75,
+      "prova_tipica": 100,
       "questoes": 924
     },
     {
@@ -11712,57 +11516,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 4.5,
-          "desvio_questoes": 3.5,
+          "desvio_questoes": 2.2,
           "media_pct": 41.6,
-          "media_questoes": 32.5
+          "media_questoes": 20.8
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.5,
-          "desvio_questoes": 2.7,
+          "desvio_questoes": 1.7,
           "media_pct": 12.3,
-          "media_questoes": 9.6
+          "media_questoes": 6.2
         },
         {
           "area": "Pediatria",
           "desvio_pct": 5.2,
-          "desvio_questoes": 4.1,
+          "desvio_questoes": 2.6,
           "media_pct": 11.6,
-          "media_questoes": 9.0
+          "media_questoes": 5.8
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 5.0,
-          "desvio_questoes": 3.9,
+          "desvio_questoes": 2.5,
           "media_pct": 11.0,
-          "media_questoes": 8.6
+          "media_questoes": 5.5
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 5.0,
-          "desvio_questoes": 3.9,
+          "desvio_questoes": 2.5,
           "media_pct": 9.3,
-          "media_questoes": 7.2
+          "media_questoes": 4.6
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 5.8,
-          "desvio_questoes": 4.6,
+          "desvio_questoes": 2.9,
           "media_pct": 8.8,
-          "media_questoes": 6.9
+          "media_questoes": 4.4
         },
         {
           "area": "Outros",
           "desvio_pct": 3.8,
-          "desvio_questoes": 3.0,
+          "desvio_questoes": 1.9,
           "media_pct": 5.4,
-          "media_questoes": 4.2
+          "media_questoes": 2.7
         }
       ],
       "edicoes": 9,
       "institution_key": "SP-SANTA-CASA-DE-MISERICORDIA-DE-MARILIA-SCMMA",
       "nome": "SP - Santa Casa de Misericórdia de Marília - SCMMA",
-      "prova_tipica": 78,
+      "prova_tipica": 50,
       "questoes": 596
     },
     {
@@ -11849,57 +11653,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 4.8,
-          "desvio_questoes": 3.8,
+          "desvio_questoes": 4.7,
           "media_pct": 27.3,
-          "media_questoes": 21.8
+          "media_questoes": 27.0
         },
         {
           "area": "Pediatria",
           "desvio_pct": 1.8,
-          "desvio_questoes": 1.4,
+          "desvio_questoes": 1.8,
           "media_pct": 18.4,
-          "media_questoes": 14.7
+          "media_questoes": 18.2
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.6,
-          "desvio_questoes": 2.1,
+          "desvio_questoes": 2.6,
           "media_pct": 16.1,
-          "media_questoes": 12.9
+          "media_questoes": 15.9
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 3.6,
-          "desvio_questoes": 2.9,
+          "desvio_questoes": 3.6,
           "media_pct": 15.9,
-          "media_questoes": 12.7
+          "media_questoes": 15.8
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.6,
-          "desvio_questoes": 1.3,
+          "desvio_questoes": 1.6,
           "media_pct": 10.9,
-          "media_questoes": 8.7
+          "media_questoes": 10.8
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.5,
-          "desvio_questoes": 1.2,
+          "desvio_questoes": 1.5,
           "media_pct": 7.6,
-          "media_questoes": 6.1
+          "media_questoes": 7.5
         },
         {
           "area": "Outros",
           "desvio_pct": 2.3,
-          "desvio_questoes": 1.8,
+          "desvio_questoes": 2.3,
           "media_pct": 3.8,
-          "media_questoes": 3.1
+          "media_questoes": 3.8
         }
       ],
       "edicoes": 7,
       "institution_key": "SP-SANTA-CASA-DE-MISERICORDIA-DE-SAO-JOSE-DOS-CAMPOS-SCMSJC",
       "nome": "SP - Santa Casa de Misericórdia de São José dos Campos - SCMSJC",
-      "prova_tipica": 80,
+      "prova_tipica": 99,
       "questoes": 577
     },
     {
@@ -12080,16 +11884,16 @@
           "media_questoes": 7.0
         },
         {
-          "area": "Ginecologia",
-          "desvio_pct": 0.6,
-          "desvio_questoes": 0.3,
+          "area": "Obstetrícia",
+          "desvio_pct": 1.5,
+          "desvio_questoes": 0.7,
           "media_pct": 9.8,
           "media_questoes": 4.9
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 1.5,
-          "desvio_questoes": 0.7,
+          "area": "Ginecologia",
+          "desvio_pct": 0.6,
+          "desvio_questoes": 0.3,
           "media_pct": 9.8,
           "media_questoes": 4.9
         },
@@ -12406,55 +12210,55 @@
           "desvio_pct": 4.0,
           "desvio_questoes": 4.7,
           "media_pct": 28.8,
-          "media_questoes": 34.2
+          "media_questoes": 34.5
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 1.0,
           "desvio_questoes": 1.2,
           "media_pct": 15.8,
-          "media_questoes": 18.8
+          "media_questoes": 18.9
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.2,
           "desvio_questoes": 2.6,
           "media_pct": 15.7,
-          "media_questoes": 18.7
+          "media_questoes": 18.9
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.4,
-          "desvio_questoes": 2.8,
+          "desvio_questoes": 2.9,
           "media_pct": 14.0,
-          "media_questoes": 16.7
+          "media_questoes": 16.8
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 1.0,
           "desvio_questoes": 1.2,
           "media_pct": 10.1,
-          "media_questoes": 12.0
+          "media_questoes": 12.1
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.0,
           "desvio_questoes": 1.2,
           "media_pct": 9.1,
-          "media_questoes": 10.8
+          "media_questoes": 10.9
         },
         {
           "area": "Outros",
           "desvio_pct": 1.9,
           "desvio_questoes": 2.3,
           "media_pct": 6.5,
-          "media_questoes": 7.7
+          "media_questoes": 7.8
         }
       ],
       "edicoes": 10,
       "institution_key": "SP-UNIVERSIDADE-DE-SAO-PAULO-USP-SP-HOSPITAL-DAS-CLINICAS-DA-FACULDADE-DE-MEDICINA-DA-USP-HC",
       "nome": "SP - Universidade de São Paulo - USP - SP (Hospital das Clínicas da Faculdade de Medicina da USP - HC)",
-      "prova_tipica": 119,
+      "prova_tipica": 120,
       "questoes": 1098
     },
     {
@@ -12475,57 +12279,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 6.1,
-          "desvio_questoes": 4.9,
+          "desvio_questoes": 4.8,
           "media_pct": 30.8,
-          "media_questoes": 24.6
+          "media_questoes": 24.3
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 2.8,
           "desvio_questoes": 2.2,
           "media_pct": 18.5,
-          "media_questoes": 14.8
+          "media_questoes": 14.6
         },
         {
           "area": "Pediatria",
           "desvio_pct": 2.3,
           "desvio_questoes": 1.8,
           "media_pct": 17.5,
-          "media_questoes": 14.0
+          "media_questoes": 13.8
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.6,
-          "desvio_questoes": 2.9,
+          "desvio_questoes": 2.8,
           "media_pct": 12.6,
-          "media_questoes": 10.1
+          "media_questoes": 9.9
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 2.5,
           "desvio_questoes": 2.0,
           "media_pct": 10.1,
-          "media_questoes": 8.1
+          "media_questoes": 8.0
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 2.5,
           "desvio_questoes": 2.0,
           "media_pct": 8.8,
-          "media_questoes": 7.1
+          "media_questoes": 7.0
         },
         {
           "area": "Outros",
           "desvio_pct": 1.9,
           "desvio_questoes": 1.5,
           "media_pct": 1.7,
-          "media_questoes": 1.4
+          "media_questoes": 1.3
         }
       ],
       "edicoes": 11,
       "institution_key": "SP-UNIVERSIDADE-DE-TAUBATE-UNITAU-HOSPITAL-UNIVERSITARIO-DE-TAUBATE",
       "nome": "SP - Universidade de Taubaté - Unitau (Hospital Universitário de Taubaté)",
-      "prova_tipica": 80,
+      "prova_tipica": 79,
       "questoes": 881
     },
     {
@@ -12543,57 +12347,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 3.8,
-          "desvio_questoes": 6.1,
+          "desvio_questoes": 3.0,
           "media_pct": 29.8,
-          "media_questoes": 47.4
+          "media_questoes": 23.8
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 1.9,
-          "desvio_questoes": 3.0,
+          "desvio_questoes": 1.5,
           "media_pct": 16.7,
-          "media_questoes": 26.6
+          "media_questoes": 13.4
         },
         {
           "area": "Pediatria",
           "desvio_pct": 3.1,
-          "desvio_questoes": 5.0,
+          "desvio_questoes": 2.5,
           "media_pct": 15.0,
-          "media_questoes": 23.9
+          "media_questoes": 12.0
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 3.2,
-          "desvio_questoes": 5.1,
+          "desvio_questoes": 2.6,
           "media_pct": 12.4,
-          "media_questoes": 19.8
+          "media_questoes": 9.9
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 0.8,
-          "desvio_questoes": 1.3,
+          "desvio_questoes": 0.6,
           "media_pct": 10.1,
-          "media_questoes": 16.0
+          "media_questoes": 8.1
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 0.6,
-          "desvio_questoes": 0.9,
+          "desvio_questoes": 0.5,
           "media_pct": 9.3,
-          "media_questoes": 14.8
+          "media_questoes": 7.4
         },
         {
           "area": "Outros",
           "desvio_pct": 2.4,
-          "desvio_questoes": 3.9,
+          "desvio_questoes": 2.0,
           "media_pct": 6.6,
-          "media_questoes": 10.6
+          "media_questoes": 5.3
         }
       ],
       "edicoes": 8,
       "institution_key": "SP-UNIVERSIDADE-ESTADUAL-DE-CAMPINAS-UNICAMP-FACULDADE-DE-CIENCIAS-MEDICAS-DA-UNICAMP-FCM-HOSPITAL-DE-CLINICAS-DA-UNICAMP",
       "nome": "SP - Universidade Estadual de Campinas - Unicamp (Faculdade de Ciências Médicas da Unicamp - FCM) (Hospital de Clínicas da Unicamp)",
-      "prova_tipica": 159,
+      "prova_tipica": 80,
       "questoes": 959
     },
     {
@@ -12845,14 +12649,14 @@
           "media_questoes": 3.5
         },
         {
-          "area": "Outros",
+          "area": "Medicina Preventiva",
           "desvio_pct": 2.8,
           "desvio_questoes": 1.4,
           "media_pct": 4.0,
           "media_questoes": 2.0
         },
         {
-          "area": "Medicina Preventiva",
+          "area": "Outros",
           "desvio_pct": 2.8,
           "desvio_questoes": 1.4,
           "media_pct": 4.0,
@@ -12948,57 +12752,57 @@
         {
           "area": "Clínica Médica",
           "desvio_pct": 3.7,
-          "desvio_questoes": 3.7,
+          "desvio_questoes": 2.7,
           "media_pct": 30.0,
-          "media_questoes": 30.0
+          "media_questoes": 22.5
         },
         {
           "area": "Medicina Preventiva",
           "desvio_pct": 3.7,
-          "desvio_questoes": 3.7,
+          "desvio_questoes": 2.8,
           "media_pct": 15.3,
-          "media_questoes": 15.3
+          "media_questoes": 11.5
         },
         {
           "area": "Pediatria",
           "desvio_pct": 1.9,
-          "desvio_questoes": 1.9,
+          "desvio_questoes": 1.4,
           "media_pct": 15.1,
-          "media_questoes": 15.1
+          "media_questoes": 11.3
         },
         {
           "area": "Cirurgia",
           "desvio_pct": 2.2,
-          "desvio_questoes": 2.2,
+          "desvio_questoes": 1.7,
           "media_pct": 13.6,
-          "media_questoes": 13.6
+          "media_questoes": 10.2
         },
         {
           "area": "Ginecologia",
           "desvio_pct": 0.7,
-          "desvio_questoes": 0.7,
+          "desvio_questoes": 0.6,
           "media_pct": 10.4,
-          "media_questoes": 10.4
+          "media_questoes": 7.8
         },
         {
           "area": "Obstetrícia",
           "desvio_pct": 1.4,
-          "desvio_questoes": 1.4,
+          "desvio_questoes": 1.0,
           "media_pct": 9.4,
-          "media_questoes": 9.4
+          "media_questoes": 7.1
         },
         {
           "area": "Outros",
           "desvio_pct": 1.6,
-          "desvio_questoes": 1.6,
+          "desvio_questoes": 1.2,
           "media_pct": 6.1,
-          "media_questoes": 6.1
+          "media_questoes": 4.5
         }
       ],
       "edicoes": 6,
       "institution_key": "TO-FUNDACAO-UNIVERSIDADE-FEDERAL-DO-TOCANTINS-UFT",
       "nome": "TO - Fundação Universidade Federal do Tocantins - UFT",
-      "prova_tipica": 100,
+      "prova_tipica": 75,
       "questoes": 575
     },
     {
@@ -13067,7 +12871,7 @@
       "questoes": 301
     }
   ],
-  "gerado_em": "2026-08-31T16:02:15.612181+00:00",
+  "gerado_em": "2026-09-02T15:36:10.458170+00:00",
   "metodo": {
     "artefatos": [
       "artifacts/raio-x/backtest-calibracao-20260831.json",
@@ -13105,6 +12909,12 @@
       "institution_key": "AP-UNIVERSIDADE-FEDERAL-DO-AMAPA-UNIFAP",
       "motivo": "menos de 3 edicoes",
       "questoes": 60
+    },
+    {
+      "edicoes": 6,
+      "institution_key": "BA-FUNDACAO-ESTATAL-SAUDE-DA-FAMILIA-FESF-SUS",
+      "motivo": "nenhuma edicao com 50+ questoes",
+      "questoes": 183
     },
     {
       "edicoes": 2,
@@ -13177,6 +12987,12 @@
       "institution_key": "MG-FUNDACAO-HOSPITALAR-DO-ESTADO-DE-MINAS-GERAIS-FHEMIG",
       "motivo": "menos de 3 edicoes",
       "questoes": 200
+    },
+    {
+      "edicoes": 6,
+      "institution_key": "MG-HOSPITAL-DA-POLICIA-MILITAR-HPM-MG",
+      "motivo": "nenhuma edicao com 50+ questoes",
+      "questoes": 240
     },
     {
       "edicoes": 1,
@@ -13345,6 +13161,12 @@
       "institution_key": "RJ-SOCIEDADE-PORTUGUESA-DE-BENEFICENCIA-DE-CAMPOS-SPBC",
       "motivo": "menos de 3 edicoes",
       "questoes": 99
+    },
+    {
+      "edicoes": 4,
+      "institution_key": "RJ-UNIVERSIDADE-DO-ESTADO-DO-RIO-DE-JANEIRO-PRO-MFC-UERJ-HOSPITAL-UNIVERSITARIO-PEDRO-ERNESTO-HUPE",
+      "motivo": "nenhuma edicao com 50+ questoes",
+      "questoes": 120
     },
     {
       "edicoes": 1,

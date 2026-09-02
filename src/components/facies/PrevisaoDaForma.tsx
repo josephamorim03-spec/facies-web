@@ -93,7 +93,7 @@ export function PrevisaoDaForma({
     <PainelLaudo
       numero={numero}
       titulo="Como a prova deve vir"
-      nota={`sobre ${forma.edicoes} edições · prova típica de ${forma.prova_tipica} questões`}
+      nota={`sobre ${forma.edicoes} edições · a última teve ${forma.prova_tipica} questões`}
     >
       <ul className="grid gap-3">
         {areas.map((a) => (
