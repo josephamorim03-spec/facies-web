@@ -7325,7 +7325,20 @@ export interface components {
             /** Ratings */
             ratings: components["schemas"]["QuestionBankConfidenceRatingIn"][];
         };
-        /** QuestionBankCorrectionIn */
+        /**
+         * QuestionBankCorrectionIn
+         * @description A correcao que o aluno escreve depois de errar.
+         *
+         *     Os tres campos livres tinham tetos DIFERENTES sem que a diferenca tivesse
+         *     motivo: `response_value` era capado em 4000 e os outros dois nao tinham
+         *     teto nenhum. Tudo aqui e' persistido direto (`question_bank_state_repo.
+         *     record_correction`) e nao passa por modelo nenhum, entao o risco nao e'
+         *     injecao -- e' um titular autenticado fazer a tabela crescer sem limite.
+         *
+         *     Os tetos abaixo sao folgados de proposito contra o uso real, medido em
+         *     2026-08-30: o unico chamador (`banco/sessao/[sessionId]/page.tsx`) manda um
+         *     `prompt` fixo de ~50 caracteres e **nao manda `metadata`**.
+         */
         QuestionBankCorrectionIn: {
             /** Prompt */
             prompt?: string | null;
