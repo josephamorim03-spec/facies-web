@@ -47,7 +47,16 @@ export type FormaDaBanca = {
   edicoes: number;
   anos: number[];
   questoes: number;
-  /** Mediana de questões por edição desta banca. */
+  /** Tamanho da ÚLTIMA edição desta banca — a base para converter os pontos
+   *  percentuais em questões.
+   *
+   *  ⚠️ Era a MEDIANA, e a troca vale 2,88 questões (732 alvos, IC 95%
+   *  [−4,30, −1,56]). Tamanho de prova muda por decisão administrativa e
+   *  PERSISTE; a mediana sobre todo o histórico nunca alcança uma mudança de
+   *  formato — PE-Secretaria previa 100 contra 199 reais por quatro anos.
+   *
+   *  O nome do campo ficou por compatibilidade com o artefato; o rótulo da tela
+   *  passou a dizer "a última teve X questões", que é o que o número é. */
   prova_tipica: number;
   areas: FaixaDeArea[];
 };
