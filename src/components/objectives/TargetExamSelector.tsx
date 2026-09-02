@@ -241,16 +241,18 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
             : { board_code: item.board_code }),
           exam_name: item.exam_name?.trim() || null,
           exam_date: item.exam_date || null,
-          // O save NUNCA mandava isto, e o backend caía no default "estimated".
-          // Consequência: `signal_dictionary` paga o dobro de urgência para
-          // "confirmed" e nunca recebia um.
+          // ⚠️ `date_status` NÃO vai, e a ausência é a correção.
           //
-          // Se o aluno editou a data à mão, ela deixa de ser a do edital — volta
-          // a ser estimativa, mesmo que a original estivesse confirmada.
-          date_status:
-            item.date_status === "confirmed" && item.exam_date === item.exam_date_origem
-              ? "confirmed"
-              : "estimated",
+          // Mandá-lo quebrava o salvamento inteiro com 422 "Extra inputs are not
+          // permitted": `StudentTargetExamIn` declara `extra="forbid"` e não tem
+          // esse campo. Não é esquecimento do backend — é regra de autoridade,
+          // escrita no próprio schema: "só uma revisão editorial publicada pode
+          // confirmar data, e o aluno não é essa autoridade".
+          //
+          // O código anterior tentava enviar `confirmed` exatamente no caso que
+          // o servidor recusa por desenho. Quem quiser que a urgência dobre para
+          // data confirmada precisa publicar a confirmação pelo caminho
+          // editorial, não pela declaração do aluno.
         })),
         revision,
       );
@@ -408,8 +410,22 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
             aria-label="Buscar prova alvo"
             className="paper-control min-h-11 w-full border border-edge bg-surface px-3 text-sm text-ink"
           />
+          {/* ⚠️ ALTURA LIMITADA, e é a correção de um bug de verdade.
+              A lista mostra até 40 instituições, cada uma com duas linhas e
+              `py-3` — mais de 3.000px. O botão "Salvar" vem DEPOIS dela no
+              fluxo do documento, então com uma ou duas provas escolhidas ele
+              era empurrado para fora da tela.
+
+              O efeito enganava: parecia que o botão só existia com as três
+              provas. Não era regra — com três, o painel de busca some
+              (`selected.length < MAX`), e aí o botão sobe para a área
+              visível. Ele nunca esteve desabilitado: a condição sempre foi
+              `selected.length === 0`.
+
+              Rolar a lista dentro de si mesma mantém a ação sempre visível,
+              independentemente de quantas provas já foram escolhidas. */}
           {matches.length ? (
-            <ul className="divide-y divide-edge border-y border-edge">
+            <ul className="max-h-72 divide-y divide-edge overflow-y-auto border-y border-edge">
               {matches.map((institution) => {
                 const years = yearRange(institution);
                 return (
