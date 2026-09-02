@@ -31,6 +31,24 @@ export type SignupFormProps = {
   googleButtonRef: React.RefObject<HTMLDivElement | null>;
   googleError: string;
   installState: string;
+  /**
+   * Se ESTA instalação aceita criar conta por e-mail e senha.
+   *
+   * ⚠️ A fonte é `AUTH_MODE`, no backend, consultada por `GET /auth/modes`. Em
+   * produção o alvo é google-only (`docs/production-readiness.md`, e
+   * `runtime_checks._security_checks` REPROVA o boot com qualquer outro valor),
+   * e nesse modo o router de auth local nem é registrado: `POST /auth/signup`
+   * responde 404. Renderizar o formulário mesmo assim é oferecer um caminho que
+   * o servidor não atende — e o botão "Criar a minha conta" da landing aponta
+   * exatamente para cá.
+   *
+   * `false` esconde só o bloco de e-mail. O botão do Google continua montado,
+   * SEMPRE, no mesmo lugar da árvore: `useGoogleSignIn` renderiza dentro de um
+   * ref e o efeito NÃO roda de novo quando este valor muda, então desmontar o
+   * contêiner enquanto a resposta de `/auth/modes` não chegou deixaria o botão
+   * sem onde nascer.
+   */
+  viaEmailDisponivel?: boolean;
   onSignup: () => void;
   onSwitchView: (view: "login" | "signup" | "forgot" | "verify") => void;
 };
@@ -60,6 +78,7 @@ export function SignupForm({
   googleButtonRef,
   googleError,
   installState,
+  viaEmailDisponivel = true,
   onSignup,
   onSwitchView,
 }: SignupFormProps) {
@@ -68,8 +87,8 @@ export function SignupForm({
   const btnLink = "text-sm text-muted hover:text-ink transition-colors";
   const formSpacingCls = `space-y-3${installState !== "hidden" ? " pb-20" : ""}`;
 
-  return (
-    <div className={formSpacingCls}>
+  const blocoEmail = (
+    <>
       <input
         type="text"
         className={inputCls}
@@ -164,15 +183,67 @@ export function SignupForm({
       )}
 
       {signupError && <p className="text-sm text-danger">{signupError}</p>}
-      <Button variant="primary" size="md" loading={signupBusy} disabled={!signupCanSubmit} onClick={onSignup} className="w-full">
+      <Button
+        variant="primary"
+        size="md"
+        loading={signupBusy}
+        disabled={!signupCanSubmit}
+        onClick={onSignup}
+        className="w-full"
+      >
         Criar conta
       </Button>
+    </>
+  );
+
+  return (
+    <div className={formSpacingCls}>
+      {/* O bloco de e-mail é CONDICIONAL; o do Google, não. Ver
+          `viaEmailDisponivel` acima: o contêiner do botão do Google precisa
+          existir na primeira renderização, antes de `/auth/modes` responder. */}
+      {viaEmailDisponivel ? blocoEmail : null}
 
       <GoogleSection
         googleClientId={googleClientId}
         googleButtonRef={googleButtonRef}
         googleError={googleError}
       />
+
+      {viaEmailDisponivel ? null : (
+        /* ⚠️ NÃO AFIRMA ACEITE, e a correção é de rigor, não de estilo.
+           Este texto já disse "Ao entrar com o Google você aceita os Termos" — e
+           `/termos` responde, hoje, "Este documento ainda não foi publicado.
+           Enquanto isso [...] nenhum aceite é pedido no cadastro". Ou seja: a
+           frase afirmava um aceite que o sistema não pede, não registra, e que a
+           própria página linkada desmente.
+
+           Quem registra aceite é `registrar_aceite_do_vigente`, e só quando há
+           versão publicada em `app/legal/` — via `/cadastro/aceite`, depois de
+           entrar. Enquanto não há documento, não há o que aceitar, e a tela não
+           pode inventar um.
+
+           O que sobra é o que o Decreto 7.962/2013 art. 3º de fato exige: o
+           contrato ACESSÍVEL antes da contratação. Os links entregam isso. */
+        <p className="pt-1 text-center text-sm leading-5 text-muted">
+          Leia os{" "}
+          <Link
+            href="/termos"
+            target="_blank"
+            className="text-ink underline underline-offset-2 transition-colors hover:text-muted"
+          >
+            Termos de Uso
+          </Link>{" "}
+          e a{" "}
+          <Link
+            href="/privacidade"
+            target="_blank"
+            className="text-ink underline underline-offset-2 transition-colors hover:text-muted"
+          >
+            Política de Privacidade
+          </Link>
+          .
+        </p>
+      )}
 
       <div className="text-center pt-1">
         <button className={btnLink} onClick={() => onSwitchView("login")}>
