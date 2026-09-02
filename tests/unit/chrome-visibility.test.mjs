@@ -4,6 +4,8 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 
+import { rotaEhPublica } from "../../src/lib/rotasPublicas.ts";
+
 /**
  * Onde o chrome do app não aparece — e por que isso mora em UM lugar.
  *
@@ -57,11 +59,18 @@ test("existe UMA regra, e os dois consumidores a importam", () => {
 });
 
 test("o proxy e o chrome tratam a colisao /prova x /provas de forma DIFERENTE", () => {
-  const proxy = ler("proxy.ts");
-  // No proxy o prefixo termina em barra: sem ela, "/provas" (rota autenticada)
-  // casaria "/prova" e passaria pelo gate. Ali a colisão é furo de autenticação.
-  assert.match(proxy, /"\/prova\/"/);
-  assert.doesNotMatch(proxy, /"\/prova",/);
+  // No guard de borda o prefixo termina em barra: sem ela, "/provas" (rota
+  // autenticada) casaria "/prova" e passaria pelo gate. Ali a colisão é furo de
+  // autenticação.
+  //
+  // A asserção passou a EXECUTAR a regra em vez de casar regex no fonte do
+  // `proxy.ts`: a lista mora em `lib/rotasPublicas.ts`, que não importa
+  // `next/server` e por isso pode ser importada aqui. Ler o fonte verificava a
+  // posição do código, não o efeito — e quebrava em refatoração sem nada ter
+  // mudado de comportamento. A bateria completa está em
+  // `proxy-public-routes.test.mjs`.
+  assert.equal(rotaEhPublica("/prova/enamed"), true, "/prova/[slug] e publica");
+  assert.equal(rotaEhPublica("/provas"), false, "/provas exige sessao");
 
   // No chrome a colisão é inofensiva e até desejável — `/provas` só redireciona,
   // e esconder a barra evita uma piscada antes do salto. Os dois arquivos
