@@ -1,0 +1,1305 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O que cai no ENAMED, medido questão por questão — Fácies</title>
+<meta name="description" content="A distribuição por área do ENAMED, como ela pergunta comparada ao esperado para os temas dela, e os 30 assuntos que registramos antes da prova, com data e código de verificação. Grátis e sem cadastro.">
+<link rel="canonical" href="https://facies.app/">
+
+<!-- O CARTAO DO LINK.
+     Este produto se distribui em grupo de WhatsApp, e link sem cartao morre em
+     grupo: vira uma URL azul que ninguem abre. O layout.tsx do repo ja avisa
+     que og:image relativo nao resolve em raspador, por isso a URL e absoluta.
+
+     ATENCAO: em producao esta imagem AINDA NAO EXISTE PARA A HOME. Ha
+     opengraph-image.tsx em app/prova/[slug]/ e em .../revisao-final/, mas
+     NENHUM na raiz — ou seja, justamente a pagina que se compartilha e a que
+     chega sem cartao. Aponto para a peca do ENAMED, que existe, ate a home
+     ter a propria. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Fácies">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:url" content="https://facies.app/">
+<meta property="og:title" content="A cara do ENAMED, medida questão por questão">
+<meta property="og:description" content="Esperávamos 43 questões pedindo a alternativa incorreta; apareceram 21. Mais de um terço da prova é clínica médica. O peso de cada área, as nove medidas e os 30 assuntos registrados antes da prova. Grátis, sem cadastro.">
+<meta property="og:image" content="https://facies.app/prova/enamed/opengraph-image">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A leitura do ENAMED: distribuição por área e os assuntos que mais se repetem.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A cara do ENAMED, medida questão por questão">
+<meta name="twitter:description" content="Esperávamos 43 questões pedindo a alternativa incorreta; apareceram 21. Medido questão por questão, em 557 da família ENARE/ENAMED. Grátis, sem cadastro.">
+<meta name="twitter:image" content="https://facies.app/prova/enamed/opengraph-image">
+<meta name="theme-color" content="#0D4F4A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#F6F6F4; --sup:#EDEEEA; --tinta:#16191C; --fraca:#5A6067;
+  --linha:#D8DAD4; --edge:#7C817A; --marca:#0D4F4A; --marca-viva:#12786E;
+  --sinal:#B26A00; --sinal-tinta:#8A5200; --wash:#F2EADA; --contra:#F6F6F4;
+  --cm:#0072B2; --cir:#D55E00; --ped:#009E73; --gin:#CC79A7;
+  --obst:#8F2A62; --prev:#E69F00; --sem:#5A6067;
+  --sans:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --serif:"Source Serif 4",Charter,Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --gutter:20px; --bloco:56px; --raio:3px;
+  --dur:200ms; --ease:cubic-bezier(.2,.6,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0; background:var(--papel); color:var(--tinta);
+  font:400 17px/1.55 var(--sans); font-synthesis-weight:none;
+  overflow-wrap:break-word; hyphens:none}
+h1,h2,h3{overflow-wrap:normal; text-wrap:balance}
+.cont{width:100%; max-width:1080px; margin-inline:auto; padding-inline:var(--gutter)}
+.med{max-width:66ch}
+.sec{padding-block:var(--bloco); border-top:1px solid var(--linha)}
+.sec--sup{background:var(--sup)}
+.oculto{position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+.pular{position:absolute; left:-9999px; top:0}
+.pular:focus{left:var(--gutter); top:8px; z-index:9; background:var(--marca);
+  color:var(--contra); padding:10px 14px; border-radius:var(--raio)}
+:focus-visible{outline:2px solid var(--marca-viva); outline-offset:3px}
+.sec--marca :focus-visible{outline-color:var(--contra)}
+
+.topo{padding-block:18px; border-bottom:1px solid var(--linha)}
+.topo__l{display:flex; flex-wrap:wrap; align-items:center;
+  justify-content:space-between; gap:6px 16px}
+/* O gap do flex cai ENTRE os filhos, e com o "á" solto como <i> ele separava as
+   letras: "F á cies". O logotipo é um filho só; o vão fica entre ele e o
+   qualificador. */
+.marca{display:inline-flex; flex-wrap:wrap; align-items:baseline; gap:2px 10px}
+.marca__n{font:600 22px/1 var(--sans); letter-spacing:-.02em; color:var(--tinta)}
+.marca__n i{font-style:normal; color:var(--marca-viva)}
+.marca small{font:400 14px/1.3 var(--sans); color:var(--fraca)}
+.entrar{display:inline-flex; align-items:center; min-height:44px; padding-inline:4px;
+  font:500 15px/1 var(--sans); color:var(--marca-viva); text-decoration:none;
+  text-underline-offset:4px}
+.entrar:hover{text-decoration:underline}
+
+.btn{display:inline-flex; align-items:center; justify-content:center; width:100%;
+  min-height:48px; padding:12px 22px; background:var(--marca); color:var(--contra);
+  font:500 17px/1 var(--sans); text-decoration:none; border:1px solid var(--marca);
+  border-radius:var(--raio); cursor:pointer; transition:background var(--dur) var(--ease)}
+.btn:hover{background:#0A3E3A}
+.btn--claro{background:var(--contra); color:var(--marca); border-color:var(--contra)}
+.btn--claro:hover{background:#fff}
+.selo{display:block; margin-top:10px; font:400 15px/1.4 var(--sans); color:var(--fraca)}
+.sec--marca .selo{color:#CFDDDA}
+.acao{margin-block:26px 0}
+
+.busca{margin:22px 0 0; max-width:520px}
+.busca label{display:block; font-size:16px; margin-bottom:6px}
+.busca input{width:100%; font:400 18px/1.4 var(--sans); color:var(--tinta);
+  background:transparent; border:0; border-bottom:2px solid var(--tinta);
+  padding:8px 2px; border-radius:0; min-height:44px}
+.busca input::placeholder{color:var(--fraca)}
+.busca input:focus-visible{outline:0; border-bottom-color:var(--marca-viva);
+  box-shadow:0 2px 0 var(--marca-viva)}
+.busca .btn{margin-top:14px}
+
+.heroi{padding-block:28px var(--bloco); border-top:0}
+h1{margin:0 0 14px; font:600 34px/1.12 var(--sans); letter-spacing:-.022em}
+/* MEDIDO, nao estimado: a altura-de-x da Source Serif 4 600 e 91 contra 102 da
+   Instrument Sans 600 no mesmo corpo. Sem correcao a palavra le MENOR que o resto
+   da manchete. "cara" nao tem ascendente nem descendente, entao casar a
+   altura-de-x e a correcao exata; o line-height segura a caixa de linha para o
+   corpo maior nao empurrar a segunda linha. */
+.cara{font-family:var(--serif); font-style:normal; font-weight:600;
+  color:var(--marca-viva); font-size:1.12em; line-height:.9; letter-spacing:-.01em}
+.chamada{margin:0; font-size:19px}
+.meta{margin:0 0 12px; font:400 13px/1.5 var(--mono); color:var(--fraca)}
+.regua{border:0; border-top:1px solid var(--linha); margin:18px 0}
+
+.opt{position:absolute; opacity:0; width:1px; height:1px; pointer-events:none}
+.lin{display:grid; grid-template-columns:1fr auto; align-items:baseline;
+  gap:2px 12px; padding-block:11px; border-bottom:1px solid var(--linha);
+  transition:opacity var(--dur) var(--ease)}
+.lin:first-child{border-top:1px solid var(--linha)}
+.lin__t{grid-row:1; grid-column:1; font-size:16px; cursor:pointer; min-height:24px;
+  display:flex; align-items:center}
+.lin__n{grid-row:1; grid-column:2; font:500 16px/1.4 var(--mono); text-align:right;
+  font-variant-numeric:tabular-nums}
+.lin__q{grid-row:2; grid-column:1/-1; display:flex; flex-wrap:wrap; gap:2px; margin-top:3px}
+.lin__q i{width:11px; height:11px; background:var(--c); display:block}
+.lin[data-a=cm]{--c:var(--cm)} .lin[data-a=sem]{--c:var(--sem)}
+.lin[data-a=ped]{--c:var(--ped)} .lin[data-a=gin]{--c:var(--gin)}
+.lin[data-a=cir]{--c:var(--cir)} .lin[data-a=prev]{--c:var(--prev)}
+.lin[data-a=obst]{--c:var(--obst)}
+.todas{display:inline-block; margin-top:14px; font-size:15px; color:var(--marca-viva);
+  cursor:pointer; text-decoration:underline; text-underline-offset:3px; min-height:24px}
+.grade:has(#a-todas:checked) .todas{color:var(--fraca); text-decoration:none; cursor:default}
+.grade:has(#a-cm:checked) .lin:not([data-a="cm"]){opacity:.25}
+.grade:has(#a-sem:checked) .lin:not([data-a="sem"]){opacity:.25}
+.grade:has(#a-ped:checked) .lin:not([data-a="ped"]){opacity:.25}
+.grade:has(#a-gin:checked) .lin:not([data-a="gin"]){opacity:.25}
+.grade:has(#a-cir:checked) .lin:not([data-a="cir"]){opacity:.25}
+.grade:has(#a-prev:checked) .lin:not([data-a="prev"]){opacity:.25}
+.grade:has(#a-obst:checked) .lin:not([data-a="obst"]){opacity:.25}
+.lin:has(:focus-visible) .lin__t,
+.grade > label:has(+ .opt:focus-visible){outline:2px solid var(--marca-viva); outline-offset:2px}
+.opt:focus-visible + .todas{outline:2px solid var(--marca-viva); outline-offset:2px}
+
+/* --- chips das provas mais buscadas --- */
+.chips{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:12px 0 0;
+  padding:0; list-style:none}
+.chips__t{display:inline-flex; align-items:center; min-height:44px; font-size:15px;
+  color:var(--fraca)}
+/* Retângulo de 3px, não pílula: o handoff nomeia este caso — "todo controle usa
+   --raio de 3px, INCLUSIVE os atalhos de prova". Raio cheio fica só em etiqueta
+   que não se clica. */
+.chip{display:inline-flex; align-items:center; min-height:44px; padding:10px 14px;
+  font:500 15px/1 var(--sans); color:var(--tinta); text-decoration:none;
+  border:1px solid var(--linha); border-radius:var(--raio); background:transparent;
+  transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease)}
+.chip:hover{border-color:var(--fraca)}
+.chip--enamed{color:var(--contra); background:var(--marca); border-color:var(--marca)}
+.chip--enamed:hover{background:#0A3E3A; border-color:#0A3E3A}
+
+
+.gancho{margin:0; font:500 24px/1.3 var(--sans); letter-spacing:-.012em; max-width:30ch}
+.gancho b{font-weight:500; color:var(--sinal-tinta)}
+.gancho span{display:block; margin-top:8px; font:400 17px/1.5 var(--sans); color:var(--fraca)}
+
+h2{margin:0 0 16px; font:600 26px/1.2 var(--sans); letter-spacing:-.018em; max-width:22ch}
+h3{margin:28px 0 8px; font:600 17px/1.35 var(--sans)}
+p{margin:0 0 16px}
+p:last-child{margin-bottom:0}
+.apoio{color:var(--fraca); font-size:16px}
+.n{font:500 1em/inherit var(--mono); font-variant-numeric:tabular-nums;
+  white-space:nowrap; overflow-wrap:normal}
+.rot{font:400 13px/1.5 var(--mono); color:var(--fraca); margin:0 0 8px}
+
+/* ---------- a questão de demonstração ---------- */
+.demo{margin-top:26px}
+.questao{padding:20px; background:var(--papel); border:1px solid var(--linha);
+  border-radius:var(--raio)}
+.sec--sup .questao{background:var(--papel)}
+.enunciado{margin:0; font:400 19px/1.62 var(--serif)}
+.enunciado span{transition:background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  border-radius:2px}
+.alts{list-style:none; margin:16px 0 0; padding:0; font:400 17px/1.5 var(--serif)}
+.alts li{display:grid; grid-template-columns:2.2ch 1fr; gap:8px; padding-block:6px;
+  transition:background var(--dur) var(--ease)}
+.alts b{font-weight:600}
+.alts .m6{border-radius:2px}
+.gab{margin:14px 0 0; font:400 15px/1.5 var(--sans); color:var(--fraca)}
+
+.nove{margin:20px 0 0; padding:0; list-style:none; border-top:1px solid var(--linha)}
+.med9{display:grid; grid-template-columns:1fr auto; gap:2px 14px; align-items:baseline;
+  padding:11px 8px; margin-inline:-8px; border-bottom:1px solid var(--linha);
+  transition:background var(--dur) var(--ease)}
+.med9 label{grid-row:1; grid-column:1; font:600 16px/1.4 var(--sans); cursor:pointer;
+  min-height:24px; display:flex; align-items:center}
+.med9 i{grid-row:2; grid-column:1/-1; font-style:normal; font-size:15px; color:var(--fraca)}
+.med9 b{grid-row:1; grid-column:2; font:500 15px/1.4 var(--mono); text-align:right;
+  font-variant-numeric:tabular-nums; white-space:nowrap}
+.demo:has(#m1:checked) .m1{background:var(--wash);box-shadow:0 1px 0 var(--sinal-tinta)}
+.demo:has(#m2:checked) .m2{background:var(--wash);box-shadow:0 1px 0 var(--sinal-tinta)}
+.demo:has(#m3:checked) .m3{background:var(--wash);box-shadow:0 1px 0 var(--sinal-tinta)}
+.demo:has(#m4:checked) .m4{background:var(--wash);box-shadow:0 1px 0 var(--sinal-tinta)}
+.demo:has(#m5:checked) .m5{background:var(--wash);box-shadow:0 1px 0 var(--sinal-tinta)}
+.demo:has(#m6:checked) .m6{background:var(--wash);box-shadow:0 1px 0 var(--sinal-tinta)}
+.demo:has(#m7:checked) .m7{background:var(--wash);box-shadow:0 1px 0 var(--sinal-tinta)}
+.demo:has(#m8:checked) .m8{background:var(--wash);box-shadow:0 1px 0 var(--sinal-tinta)}
+.demo:has(#m9:checked) .m9{background:var(--wash);box-shadow:0 1px 0 var(--sinal-tinta)}
+/* estas duas medidas leem o bloco inteiro, não um trecho */
+.demo:has(#m1:checked) .enunciado{background:var(--wash)}
+.demo:has(#m7:checked) .alts{background:var(--wash)}
+.demo:has(#m1:checked) .med9[data-m="m1"]{background:var(--wash)}
+.demo:has(#m2:checked) .med9[data-m="m2"]{background:var(--wash)}
+.demo:has(#m3:checked) .med9[data-m="m3"]{background:var(--wash)}
+.demo:has(#m4:checked) .med9[data-m="m4"]{background:var(--wash)}
+.demo:has(#m5:checked) .med9[data-m="m5"]{background:var(--wash)}
+.demo:has(#m6:checked) .med9[data-m="m6"]{background:var(--wash)}
+.demo:has(#m7:checked) .med9[data-m="m7"]{background:var(--wash)}
+.demo:has(#m8:checked) .med9[data-m="m8"]{background:var(--wash)}
+.demo:has(#m9:checked) .med9[data-m="m9"]{background:var(--wash)}
+.med9:has(:focus-visible){outline:2px solid var(--marca-viva); outline-offset:-2px}
+
+.oe{width:100%; margin:26px 0 0; border-collapse:collapse; font-size:16px; text-align:right}
+.oe caption{margin-bottom:10px; font:400 13px/1.5 var(--mono); color:var(--fraca); text-align:left}
+.oe th[scope="col"]{font:400 13px/1.5 var(--mono); color:var(--fraca); font-weight:400;
+  padding:0 0 8px; border-bottom:1px solid var(--tinta)}
+.oe th[scope="row"]{text-align:left; font-weight:400; padding:12px 12px 12px 0}
+.oe th[scope="row"] span{display:block; font:400 13px/1.5 var(--mono); color:var(--fraca)}
+.oe td{padding:12px 0 12px 12px; font:400 16px/1.4 var(--mono); font-variant-numeric:tabular-nums}
+.oe tbody tr{border-bottom:1px solid var(--linha)}
+.oe td b{font:500 16px/1.4 var(--mono); font-weight:500}
+.oe td span{display:block; font:400 13px/1.4 var(--mono); color:var(--fraca)}
+.metodo{margin:28px 0 0; padding:18px 0 0; border-top:2px solid var(--tinta); max-width:62ch}
+.metodo dt{font:600 15px/1.4 var(--sans); margin-bottom:12px}
+.metodo dd{margin:0 0 7px; font-size:16px; color:var(--fraca);
+  display:grid; grid-template-columns:auto 1fr; gap:10px}
+.metodo dd:last-child{margin-bottom:0}
+.metodo dd::before{content:"—"; color:var(--linha)}
+
+.lista{list-style:none; margin:0 0 20px; padding:0; max-width:58ch}
+.ass__s{grid-row:2; grid-column:2/-1; display:flex; align-items:flex-end; gap:2px;
+  height:24px; margin-top:4px}
+.ass__s i{display:block; width:5px; background:var(--fraca); opacity:.4}
+.ass__s i.d{width:8px; background:var(--marca); opacity:1}
+.ass__s i.sep{width:1px; height:24px; margin-right:3px; background:var(--edge); opacity:1}
+.ass{display:grid; grid-template-columns:2ch 1fr auto; align-items:baseline; gap:2px 10px;
+  padding-block:11px; border-bottom:1px solid var(--linha)}
+.ass:first-child{border-top:1px solid var(--linha)}
+.ass__p{font:400 14px/1.5 var(--mono); color:var(--fraca); text-align:right;
+  font-variant-numeric:tabular-nums}
+.ass__t{font-size:16px}
+.ass__v{font:500 15px/1.5 var(--mono); font-variant-numeric:tabular-nums}
+.resto{margin:0 0 16px; padding:0; list-style:none; font-size:15px; color:var(--fraca);
+  max-width:66ch}
+.resto li{display:inline}
+.resto li::after{content:" · "}
+.resto li:last-child::after{content:""}
+.resto b{font:400 14px/1 var(--mono); font-weight:400}
+
+.duas{display:grid; grid-template-columns:1fr; gap:8px 40px; margin-top:8px}
+.duas ul{margin:0; padding:0; list-style:none}
+.duas li{padding-block:11px; border-bottom:1px solid var(--linha); font-size:16px}
+.duas li:first-child{border-top:1px solid var(--linha)}
+.duas h3{margin-top:20px}
+.recom{margin-top:26px; padding-left:16px; border-left:2px solid var(--marca-viva);
+  font-size:16px; max-width:60ch}
+
+.passos{list-style:none; margin:0 0 8px; padding:0; counter-reset:p}
+.passos li{counter-increment:p; padding-block:14px; border-bottom:1px solid var(--linha);
+  display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:start}
+.passos li:first-child{border-top:1px solid var(--linha)}
+.passos li::before{content:counter(p,decimal-leading-zero);
+  font:400 14px/1.6 var(--mono); color:var(--marca-viva)}
+
+/* ---------- o mapa (mesma codificação do MapaDaProva do app) ---------- */
+.mapa{margin-top:22px}
+.mapa__g{display:grid; grid-template-columns:repeat(6,1fr); gap:4px;
+  grid-auto-rows:4.5rem; grid-auto-flow:dense; margin:0; padding:0; list-style:none}
+.mcel{grid-column:span 3; display:flex; flex-direction:column; overflow:hidden;
+  padding:8px; border:1px solid var(--edge); border-left-width:3px;
+  border-radius:2px; background:var(--bg-p);
+  transition:background var(--dur) var(--ease)}
+.mcel--xl{grid-row:span 2}
+.mcel--sombra{border-style:dashed}
+.mcel__lab{display:flex; flex-direction:column; height:100%; cursor:pointer}
+.mcel:has(:checked){outline:2px solid var(--sinal-tinta); outline-offset:-2px}
+.mcel:has(:focus-visible){outline:2px solid var(--marca-viva); outline-offset:-2px}
+/* A leitura fica FORA da grade, como o componente: dentro da célula não cabe, e
+   balão sobre grade some atrás do dedo no celular — que é onde isto é lido. */
+.leitura{margin-top:12px; padding-top:12px; border-top:1px solid var(--linha);
+  min-height:3.6rem; font-size:15px}
+.leitura__i{display:none; margin:0}
+.leitura__d{margin:0; color:var(--fraca)}
+.mapa:has(input[name="celula"]:checked) .leitura__d{display:none}
+.mapa:has(#c1:checked) .leitura__i[data-c="c1"]{display:block}
+.mapa:has(#c2:checked) .leitura__i[data-c="c2"]{display:block}
+.mapa:has(#c3:checked) .leitura__i[data-c="c3"]{display:block}
+.mapa:has(#c4:checked) .leitura__i[data-c="c4"]{display:block}
+.mapa:has(#c5:checked) .leitura__i[data-c="c5"]{display:block}
+.mapa:has(#c6:checked) .leitura__i[data-c="c6"]{display:block}
+.mapa:has(#c7:checked) .leitura__i[data-c="c7"]{display:block}
+.mapa:has(#c8:checked) .leitura__i[data-c="c8"]{display:block}
+.leitura .serie{display:block; margin-top:3px; font-size:14px; color:var(--fraca)}
+.leitura b{font-weight:600}
+.leitura span{color:var(--fraca)}
+/* O rótulo vai DENTRO de um invólucro, e não direto como item de flex.
+   Item de flex tem o display blocificado: o -webkit-box virava flow-root, o
+   line-clamp ficava inerte e "Rastreamento do câncer de colo do útero" era
+   cortado no meio da terceira linha. O invólucro é o item de flex; o clamp
+   mora no filho, onde ainda vale. */
+.mcel__b{flex:1; min-height:0; overflow:hidden}
+.mcel__t{margin:0; font:600 13px/1.25 var(--serif); color:var(--tinta);
+  overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
+  max-height:2.5em}
+.mcel--xl .mcel__t{-webkit-line-clamp:3; font-size:15px; max-height:3.75em}
+/* Tinta cheia, e não --fraca: sobre a célula mais escura o cinza caía para
+   3,45:1. O componente é explícito — "o número é a única coisa que não pode
+   sumir: ele é o dado, o resto é rótulo". */
+.mcel__n{flex:none; margin-top:6px; font:500 13px/1 var(--mono); color:var(--tinta);
+  font-variant-numeric:tabular-nums}
+/* ---- os três estados, só no eixo VOCÊ ----
+   Sólido = medido · hachura 135° a 3px/6px = estimado · tracejada sem
+   preenchimento = não avaliado. Os valores vêm da legenda do artboard.
+   O filete da área continua sólido mesmo no "não avaliado": a área é conhecida,
+   o que falta é resposta sua. */
+.mapa:has(#mapa-voce:checked) .mcel{background:var(--bg-v)}
+.mapa:has(#mapa-voce:checked) .mcel[data-e="estimado"]{
+  background:repeating-linear-gradient(135deg,var(--bg-v) 0 3px,var(--sup) 3px 6px)}
+.mapa:has(#mapa-voce:checked) .mcel[data-e="nao"]{
+  background:var(--papel); border-color:var(--fraca); border-style:dashed;
+  border-left-style:solid}
+.estados{display:grid; gap:8px; margin:14px 0 0; padding:0; list-style:none}
+.estados li{display:flex; align-items:center; gap:10px; font-size:14px}
+.estados b{font-weight:600}
+.estados span:last-child{color:var(--fraca)}
+.amostra3{width:26px; height:16px; flex:none; border:1px solid var(--linha);
+  border-radius:2px; background:var(--am)}
+.amostra3--est{background:repeating-linear-gradient(135deg,var(--am) 0 3px,transparent 3px 6px)}
+.amostra3--nao{border:1px dashed var(--fraca); background:var(--papel)}
+/* As abas do artboard 9a, como o MapaClientPage as monta: retângulo de 3px,
+   44px de altura, texto em TINTA quando inativa (não na cor da marca), e a
+   ativa preenchida. Pílula aqui seria erro de vocabulário — o handoff é
+   explícito: "pílula é rótulo, botão é retângulo". */
+.abas{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; padding:0; list-style:none}
+.aba{display:inline-flex; align-items:center; min-height:44px; padding:10px 14px;
+  font:500 15px/1 var(--sans); color:var(--tinta); cursor:pointer;
+  border:1px solid var(--linha); border-radius:var(--raio); background:transparent;
+  transition:background var(--dur) var(--ease), color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease)}
+.aba:hover{border-color:var(--fraca)}
+.abas li:has(:checked) .aba{background:var(--marca); color:var(--contra); border-color:var(--marca)}
+.abas li:has(:focus-visible) .aba{outline:2px solid var(--marca-viva); outline-offset:2px}
+.legenda{display:flex; flex-wrap:wrap; gap:10px 22px; margin:16px 0 0; padding:0; list-style:none}
+.legenda li{display:flex; align-items:center; gap:8px; font-size:15px; color:var(--fraca)}
+.amostra{width:22px; height:14px; flex:none; border:1px solid var(--edge); border-left-width:3px}
+.contagem{margin:12px 0 0; font:400 15px/1.5 var(--sans); color:var(--fraca); max-width:62ch}
+.contagem b{font:500 1em/inherit var(--mono); font-weight:500; color:var(--tinta)}
+.so-prova,.so-voce{display:none}
+.so-prova-bloco,.so-voce-bloco{display:none}
+.mapa:has(#mapa-prova:checked) .so-prova-bloco{display:flex}
+.mapa:has(#mapa-voce:checked) .so-voce-bloco{display:grid}
+.chave{margin:0 0 12px; font:400 13px/1.5 var(--mono); color:var(--fraca)}
+.chave .so-prova,.chave .so-voce,.contagem .so-prova,.contagem .so-voce{display:none}
+.mapa:has(#mapa-prova:checked) .chave .so-prova,
+.mapa:has(#mapa-voce:checked) .chave .so-voce,
+.mapa:has(#mapa-prova:checked) .contagem .so-prova,
+.mapa:has(#mapa-voce:checked) .contagem .so-voce{display:block}
+.mapa:has(#mapa-prova:checked) .so-prova{display:inline}
+.mapa:has(#mapa-voce:checked) .so-voce{display:inline}
+
+.obj{margin:0; border-top:1px solid var(--linha)}
+.obj>div{padding-block:16px; border-bottom:1px solid var(--linha)}
+.obj dt{font:600 17px/1.4 var(--sans); margin-bottom:5px}
+.obj dd{margin:0; color:var(--fraca); font-size:16px}
+
+.sec--marca{background:var(--marca); color:var(--contra); border-top:0}
+.sec--marca h2,.sec--marca h3{color:var(--contra)}
+.sec--marca .apoio{color:#DDE8E6}
+.dias{display:flex; flex-wrap:wrap; gap:6px; margin:24px 0 0; padding:0; list-style:none}
+.dias li{flex:none; min-width:60px; padding:10px 8px; text-align:center;
+  border:1px solid rgba(246,246,244,.34); border-radius:var(--raio)}
+.dias b{display:block; font:400 12px/1.4 var(--mono); color:#CFDDDA; font-weight:400}
+.dias span{display:block; font:500 17px/1.3 var(--mono); margin-top:2px}
+.atu{list-style:none; margin:24px 0 0; padding:0; display:grid; gap:0}
+.atu li{padding-block:14px; border-bottom:1px solid rgba(246,246,244,.22)}
+.atu li:first-child{border-top:1px solid rgba(246,246,244,.22)}
+.atu b{display:block; font:600 16px/1.4 var(--sans)}
+.atu span{display:block; margin-top:3px; font-size:15px; color:#DDE8E6}
+.atu em{font-style:normal; color:var(--contra)}
+.atu time{font:400 1em/inherit var(--mono)}
+.atu a{display:inline-block; margin-top:6px; min-height:24px; font:400 14px/1.6 var(--mono);
+  color:#CFDDDA; text-underline-offset:3px}
+.nota{margin:24px 0 0; padding-left:16px; border-left:2px solid rgba(246,246,244,.4);
+  font-size:16px; color:#DDE8E6; max-width:62ch}
+
+.registro{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 10px; margin:0}
+.registro span{font:400 13px/1.5 var(--mono); color:var(--fraca)}
+.registro code{font:400 13px/1.5 var(--mono); color:var(--tinta);
+  padding:2px 6px; background:var(--sup); border-radius:2px; word-break:break-all}
+.agenda{list-style:none; margin:24px 0 0; padding:0}
+.agenda li{display:grid; grid-template-columns:5.5ch 1fr; gap:14px; padding-block:10px;
+  border-bottom:1px solid rgba(246,246,244,.22); font-size:16px}
+.agenda li:first-child{border-top:1px solid rgba(246,246,244,.22)}
+.agenda b{font:500 15px/1.6 var(--mono); font-weight:500; color:#CFDDDA}
+.aviso{margin:28px 0 0; padding-top:24px; border-top:1px solid rgba(246,246,244,.22)}
+.aviso h3{margin:0 0 6px; font:600 18px/1.3 var(--sans)}
+.campo{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 0; max-width:520px}
+.campo input{flex:1 1 220px; min-width:0; font:400 16px/1.4 var(--sans);
+  color:var(--contra); background:transparent; border:0;
+  border-bottom:2px solid rgba(246,246,244,.5); padding:10px 2px; min-height:44px;
+  border-radius:0}
+.campo input::placeholder{color:#9FBAB6}
+.campo input:focus-visible{outline:0; border-bottom-color:var(--contra);
+  box-shadow:0 2px 0 var(--contra)}
+.campo .btn{flex:0 0 auto}
+.partilha{margin:28px 0 0; padding-top:24px; border-top:1px solid rgba(246,246,244,.22)}
+.partilha h3{margin:0 0 6px; font:600 18px/1.3 var(--sans)}
+.citacao{margin:12px 0 0; padding:14px 16px; max-width:60ch;
+  background:rgba(246,246,244,.08); border-left:2px solid rgba(246,246,244,.5);
+  border-radius:0 var(--raio) var(--raio) 0; font-size:16px; color:#DDE8E6}
+.rodape{padding-block:36px; border-top:1px solid var(--linha); font-size:15px; color:var(--fraca)}
+.rodape a{color:var(--marca-viva)}
+.rodape p{margin:0 0 10px}
+.rodape p:last-child{margin:0}
+
+@media (min-width:600px){
+  /* A série entra como quarta coluna a partir daqui; abaixo disso ela ocupa
+     a própria linha, porque nove barras mais o rótulo não cabem em 360px. */
+  .ass{grid-template-columns:2ch 1fr auto auto; gap:10px 16px; align-items:center}
+  .ass__s{grid-row:auto; grid-column:auto; margin-top:0}
+}
+@media (min-width:600px){
+  .busca{display:grid; grid-template-columns:1fr auto; gap:0 14px; align-items:end}
+  .busca label{grid-column:1/-1}
+  .busca .btn{margin-top:0; width:auto}
+  .btn{width:auto}
+}
+/* Os vãos do mapa, iguais aos do componente: no celular tudo ocupa meia largura
+   e só os dois primeiros ganham altura dupla; a partir de 640px a grade abre
+   nos três tamanhos (2x2, 2x1, 1x1) e o fluxo denso fecha os buracos. */
+@media (min-width:640px){
+  .mapa__g{grid-auto-rows:5rem}
+  .mcel--xl{grid-column:span 2}
+  .mcel--g{grid-column:span 2}
+  .mcel--p{grid-column:span 1}
+}
+@media (min-width:760px){
+  :root{--gutter:32px; --bloco:88px}
+  h1{font-size:60px}
+  h2{font-size:34px}
+  .chamada{font-size:21px}
+  .gancho{font-size:30px; max-width:26ch}
+  .heroi{padding-block:64px var(--bloco)}
+  .lin{grid-template-columns:230px 1fr 3ch; gap:16px; align-items:center; padding-block:9px}
+  .lin__t,.lin__n,.lin__q{grid-row:auto; grid-column:auto}
+  .lin__q{margin-top:0}
+  .demo{display:grid; grid-template-columns:1fr 1fr; gap:0 40px; align-items:start}
+  .nove{margin-top:0; border-top:0}
+  .med9:first-child{border-top:1px solid var(--linha)}
+  .duas{grid-template-columns:1fr 1fr}
+  .questao{padding:24px}
+}
+@media (min-width:1040px){ h1{font-size:72px} }
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:1ms !important; animation-duration:1ms !important}
+}
+</style>
+</head>
+<body>
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+<!-- Igual ao CabecalhoPublico.tsx: marca + qualificador à esquerda, "Entrar" à
+     direita, régua embaixo e NENHUMA navegação. O qualificador vem junto porque
+     esta é a primeira aparição da marca para quem chega pelo grupo, e "Fácies"
+     sozinha, num contexto novo, é só a palavra da semiologia. "Entrar" é a única
+     porta de conta do funil, em texto e não em botão cheio, para não disputar a
+     primeira atenção com o herói. Na própria home a marca não é link. -->
+<header class="topo">
+  <div class="cont topo__l">
+    <span class="marca"><span class="marca__n">F<i>á</i>cies</span><small>a cara da sua prova</small></span>
+    <a class="entrar" href="/login">Entrar</a>
+  </div>
+</header>
+
+<main id="conteudo">
+
+  <section class="sec heroi">
+    <div class="cont">
+      <h1>Cada prova tem uma <em class="cara">cara</em>.</h1>
+      <!-- A manchete é fixa e a folha de copy já disse o custo dela: "afirma sem
+           provocar". Então a provocação mora aqui, e por PARALELO, não por
+           definição: "a do paciente / a do ENAMED" faz o salto da metáfora
+           acontecer em vez de explicá-lo, e glosa o termo pelo USO — o que
+           evita a aula de semiologia que o briefing proíbe e que seria
+           condescendente com quem já conhece a palavra.
+           Os três verbos finais são os três blocos da página, nesta ordem:
+           cobra = a grade de áreas · como cobra = as nove medidas ·
+           onde repete = os trinta assuntos. -->
+      <p class="chamada med">A do ENAMED: mais de um terço é clínica médica, e a pegadinha
+        de comando quase não existe — <b>metade</b> do que se esperaria pelos temas que ela
+        cobra. Você não vai achar isso no edital.</p>
+
+      <form class="busca" method="get" action="/prova">
+        <label for="prova">Qual prova você vai fazer?</label>
+        <input id="prova" name="prova" list="provas" value="ENAMED" autocomplete="off"
+          placeholder="ENAMED, USP-SP, UNIFESP…">
+        <datalist id="provas">
+          <option value="ENAMED"></option>
+          <option value="AL - Processo Seletivo Unificado - PSU"></option>
+          <option value="AL - Santa Casa de Misericórdia de Maceió - SCMM"></option>
+          <option value="AM - Comissão Estadual de Residência Médica do Amazonas - CERMAM"></option>
+          <option value="BA - Sistema Único de Saúde - SUS Bahia"></option>
+          <option value="CE - Hospital do Câncer - Instituto do Câncer do Ceará - HC ICC"></option>
+          <option value="CE - Seleção Unificada para Residência Médica do Estado do Ceará - SURCE"></option>
+          <option value="DF - Hospital Oftalmológico de Brasília - HOB"></option>
+          <option value="DF - Hospital Santa Lúcia - HSL"></option>
+          <option value="DF - Hospital Santa Marta - HSM"></option>
+          <option value="DF - Secretaria de Saúde do Distrito Federal - SES DF"></option>
+          <option value="ES - Centro Universitário do Espírito Santo - UNESC"></option>
+          <option value="ES - Faculdade Brasileira - Multivix Vitória"></option>
+          <option value="ES - Hospital Estadual Dr Jayme dos Santos Neves - HEJSN"></option>
+          <option value="ES - Hospital Evangélico de Cachoeira de Itapemirim - HECI"></option>
+          <option value="ES - Hospital Evangélico de Vila Velha - HEVV"></option>
+          <option value="ES - Hospital Santa Rita de Cássia"></option>
+          <option value="ES - Instituto Capixaba de Ensino, Pesquisa e Inovação em Saúde - ICEPI"></option>
+          <option value="ES - Processo Seletivo Unificado - PSU ES"></option>
+          <option value="ES - Universidade Federal do Espírito Santo - UFES (Hospital Universitário Cassiano Antônio de Moraes - HUCAM)"></option>
+          <option value="Exame Nacional de Residência Médica EBSERH (ENARE) e Exame Nacional de Avaliação da Formação Médica (Enamed)"></option>
+          <option value="GO - Fundação Banco de Olhos de Goiás - FUBOG"></option>
+          <option value="GO - Hospital de Olhos Aparecida - HOA"></option>
+          <option value="GO - Hospital e Maternidade Dona Iris - HMDI"></option>
+          <option value="GO - Instituto de Olhos de Goiânia - IOG"></option>
+          <option value="GO - Instituto e Hospital Oftalmológico de Anápolis - IHOA"></option>
+          <option value="GO - Processo Seletivo unificado - PSU GO"></option>
+          <option value="GO - Secretaria de Estado da Saúde de Goiás - SES GO"></option>
+          <option value="GO - Unievangélica - Centro Universitário de Anápolis - UEVA"></option>
+          <option value="GO - Universidade de Rio Verde - UNIRV"></option>
+          <option value="GO - Universidade Federal de Goiás - UFG (Hospital das Clínicas de Goiás - HC)"></option>
+          <option value="Grupo OPTY (HOB, COSC e DayHORC)"></option>
+          <option value="MA - UDI Hospital"></option>
+          <option value="MG - Casa de Caridade de Alfenas NSP Socorro - CCANSPS"></option>
+          <option value="MG - Centro Universitário Atenas - UNIATENAS"></option>
+          <option value="MG - Fundação Educacional Lucas Machado - FELUMA"></option>
+          <option value="MG - Hospital Vila Verde"></option>
+          <option value="MG - Instituto de Previdência dos Servidores do Estado de Minas Gerais - IPSEMG"></option>
+          <option value="MG - Processo Seletivo Unificado - PSU MG"></option>
+          <option value="MG - Santa Casa de Misericórdia de Belo Horizonte - SCMBH"></option>
+          <option value="MS - Santa Casa de Misericórdia de Campo Grande - SCMCG"></option>
+          <option value="MS - Secretaria Municipal de Saúde de Campo Grande - SMSCG"></option>
+          <option value="MT - Universidade Federal do Mato Grosso - UFMT (Hospital Universitário Júlio Müller - HUJM)"></option>
+          <option value="PA - Centro Universitário do Estado do Pará - CESUPA"></option>
+          <option value="PA - Universidade do Estado do Pará - UEPA Belém"></option>
+          <option value="PA - Universidade Federal do Pará - UFPA (Hospital Universitário João Barros Barreto - HUJBB) (Hospital Universitário Bettina Ferro de Souza - HUBFS)"></option>
+          <option value="PB - Faculdade de Medicina Nova Esperança - FAMENE"></option>
+          <option value="PB - Secretaria de Estado da Saúde - SES PB"></option>
+          <option value="PB - Secretaria Municipal de Saúde de João Pessoa - SMS"></option>
+          <option value="PB - Universidade Federal da Paraíba - UFPB (Hospital Universitário Lauro Wanderley - HULW)"></option>
+          <option value="PE - Secretaria Estadual de Saúde do Estado de Pernambuco - SES PE"></option>
+          <option value="PI - Hospital Estadual Dirceu Arcoverde - HEDA"></option>
+          <option value="PI - Universidade Estadual do Piauí - UESPI"></option>
+          <option value="PR - Aliança Saúde - PUC PR"></option>
+          <option value="PR - Associação Médica do Paraná - AMP"></option>
+          <option value="PR - Autarquia Municipal de Saúde de Apucarana - AMS Apucarana"></option>
+          <option value="PR - Hospital Angelina Caron - HAC PR"></option>
+          <option value="PR - Hospital Pequeno Príncipe - HPP"></option>
+          <option value="PR - Hospital San Julian HSJ PR"></option>
+          <option value="PR - Prefeitura Municipal de Foz do Iguaçu - PMFI"></option>
+          <option value="PR - Secretaria Municipal de Foz do Iguaçu - SMS"></option>
+          <option value="PR - Secretaria Municipal de Saúde de Curitiba - SMS"></option>
+          <option value="PR - Universidade Estadual de Londrina - UEL (Hospital Universitário da UEL)"></option>
+          <option value="PR - Universidade Federal do Paraná - UFPR (Complexo Hospital de Clínicas - CHC)"></option>
+          <option value="Processo Seletivo Unificado - PRMMT"></option>
+          <option value="Revalida - Universidade Federal de Mato Grosso - UFMT"></option>
+          <option value="Revalida Nacional - Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (INEP)"></option>
+          <option value="RJ - Faculdade de Medicina de Campos - FMC (Hospital Escola Álvaro Alvim)"></option>
+          <option value="RJ - Faculdade de Medicina de Petrópolis - FMP - UNIFASE"></option>
+          <option value="RJ - Hospital Adventista Silvestre - HAS"></option>
+          <option value="RJ - Hospital Naval Marcílio Dias - HNMD"></option>
+          <option value="RJ - Hospital Unimed Rio"></option>
+          <option value="RJ - Instituto Dor de Pesquisa e Ensino"></option>
+          <option value="RJ - Instituto Fernandes Figueira - IFF"></option>
+          <option value="RJ - Instituto Nacional de Traumatologia e Ortopedia - INTO"></option>
+          <option value="RJ - Secretaria Estadual de Saúde - SES RJ"></option>
+          <option value="RJ - Secretaria Municipal de Administração de Macaé - SEMAD"></option>
+          <option value="RJ - Secretaria Municipal de Administração de Volta Redonda - SMA"></option>
+          <option value="RJ - Secretaria Municipal de Saúde do Rio de Janeiro - SMS RJ"></option>
+          <option value="RJ - UnitedHealth Group - UHG"></option>
+          <option value="RJ - Universidade de Vassouras (Universidade Severino Sombra) (Hospital Universitário Sul Fluminense) (Hospital Universitário de Vassouras)"></option>
+          <option value="RJ - Universidade do Estado do Rio de Janeiro - UERJ (Hospital Universitário Pedro Ernesto - HUPE)"></option>
+          <option value="RJ - Universidade Federal do Rio de Janeiro - UFRJ (Hospital Universitário Clementino Fraga Filho -- HUCFF)"></option>
+          <option value="RN - Universidade do Estado do Rio Grande do Norte - UERN"></option>
+          <option value="RN - Universidade Federal do Rio Grande do Norte - UFRN (Hospital Universitário Onofre Lopes - HUOL)"></option>
+          <option value="RS - Associação Médica do Rio Grande do Sul - AMRIGS"></option>
+          <option value="RS - Hospital São Lucas da PUC - RS"></option>
+          <option value="RS - Universidade Federal de Ciências da Saúde de Porto Alegre - UFCSPA"></option>
+          <option value="RS - Universidade Federal do Rio Grande do Sul - UFRGS (Hospital de Clínicas de Porto Alegre - HCPA)"></option>
+          <option value="SC - Secretaria Municipal de Saúde de Florianópolis - SMS"></option>
+          <option value="SC - Universidade Federal de Santa Catarina - UFSC (Hospital Universitário Professor Polydoro Ernani de São Thiago)"></option>
+          <option value="SE - Hospital de Urgência de Sergipe - HUSE - Hospital João Alves Filho"></option>
+          <option value="SP - Associação da Santa Casa de Misericórdia de Ourinhos - SCO"></option>
+          <option value="SP - Centro Médico de Campinas - CMC"></option>
+          <option value="SP - Centro Universitário de Rio Claro - Claretiano"></option>
+          <option value="SP - Faculdade de Medicina de Jundiaí - FMJ (Hospital Universitário de Jundiaí)"></option>
+          <option value="SP - Faculdade de Medicina de Marília - Famema (Hospital das Clínicas da Famema)"></option>
+          <option value="SP - Faculdade de Medicina de São José do Rio Preto - FAMERP (Hospital de Base de São José do Rio Preto - HB)"></option>
+          <option value="SP - Faculdade de Medicina do ABC"></option>
+          <option value="SP - Faculdade São Leopoldo Mandic"></option>
+          <option value="SP - Hospital Alemão Oswaldo Cruz - HAOC"></option>
+          <option value="SP - Hospital da Aeronáutica de São Paulo - HASP"></option>
+          <option value="SP - Hospital de Reabilitação de Anomalias Craniofaciais - HRAC USP"></option>
+          <option value="SP - Hospital Infantil Sabará - HIS"></option>
+          <option value="SP - Hospital Israelita Albert Einstein - HIAE"></option>
+          <option value="SP - Hospital Militar de Área de São Paulo - HMASP"></option>
+          <option value="SP - Hospital Municipal de São José dos Campos - HM (Hospital Municipal Dr. José de Carvalho Florence)"></option>
+          <option value="SP - Hospital Municipal Dr. Mário Gatti - HMMG"></option>
+          <option value="SP - Hospital Oftalmológico de Sorocaba - HOS"></option>
+          <option value="SP - Hospital Professor Edmundo Vasconcelos - HPEV"></option>
+          <option value="SP - Hospital Regional de Presidente Prudente"></option>
+          <option value="SP - Hospital Santo Amaro - Guarujá"></option>
+          <option value="SP - Hospital São Camilo - HSCSP"></option>
+          <option value="SP - Hospital São Lucas de Ribeirão Preto - HSLRP"></option>
+          <option value="SP - Hospital Sírio-Libanês - HSL"></option>
+          <option value="SP - Hospital Vera Cruz - HVC"></option>
+          <option value="SP - Instituto de Assistência Médica ao Servidor Público Estadual - IAMSPE"></option>
+          <option value="SP - Instituto de Cardiologia do Estado de São Paulo - Dante Pazzanese"></option>
+          <option value="SP - Irmandade da Santa Casa de Misericórdia de São Carlos - ISCMSC"></option>
+          <option value="SP - PUC Sorocaba"></option>
+          <option value="SP - Rede de Saúde Integral e Completo - DASA"></option>
+          <option value="SP - Santa Casa de Misericórdia de Araçatuba - SCMA"></option>
+          <option value="SP - Santa Casa de Misericórdia de Limeira - SCML"></option>
+          <option value="SP - Santa Casa de Misericórdia de Marília - SCMMA"></option>
+          <option value="SP - Santa Casa de Misericórdia de Ribeirão Preto - SCMRP"></option>
+          <option value="SP - Santa Casa de Misericórdia de São José dos Campos - SCMSJC"></option>
+          <option value="SP - Santa Casa de Misericórdia de São Paulo - SCMSP"></option>
+          <option value="SP - Santa Casa de Misericórdia de Votuporanga - SCMV"></option>
+          <option value="SP - Secretaria Municipal da Saúde de São Paulo - SMS"></option>
+          <option value="SP - Secretaria Municipal de Saúde de Piracicaba - SMS"></option>
+          <option value="SP - Sistema Único de Saúde - SUS SP"></option>
+          <option value="SP - Universidade de Ribeirão Preto - UNAERP (Hospital Electro Bonini - HEB)"></option>
+          <option value="SP - Universidade de São Paulo - USP - RP  (Hospital das Clínicas da Faculdade de Medicina de Ribeirão Preto da USP)"></option>
+          <option value="SP - Universidade de São Paulo - USP - SP (Hospital das Clínicas da Faculdade de Medicina da USP - HC)"></option>
+          <option value="SP - Universidade de Taubaté - Unitau (Hospital Universitário de Taubaté)"></option>
+          <option value="SP - Universidade Estadual de Campinas - Unicamp (Faculdade de Ciências Médicas da Unicamp - FCM) (Hospital de Clínicas da Unicamp)"></option>
+          <option value="SP - Universidade Estadual Paulista - UNESP (Faculdade de Ciências Médicas e Biológicas de Botucatu - FCMBB) (Hospital das Clínicas da Faculdade de Medicina de Botucatu)"></option>
+          <option value="SP - Universidade Federal de São Paulo - UNIFESP (Hospital Universitário da UNIFESP)"></option>
+          <option value="TO - Centro Universitário UNIRG"></option>
+        </datalist>
+        <button type="submit" class="btn">Ver a fácies da prova</button>
+      </form>
+      <p class="selo">grátis · sem cadastro · <span class="n">139</span> provas já analisadas</p>
+
+      <!-- Os atalhos existem porque o campo sozinho exige saber o que digitar.
+           As seis são a curadoria de lib/facies.ts, não as de maior volume: quem
+           abre a página está decidindo onde prestar, e a lista tem de parecer com
+           o mercado que ele disputa. -->
+      <ul class="chips">
+        <li class="chips__t">Mais buscadas</li>
+        <li><a class="chip chip--enamed" href="/prova/enamed">ENAMED</a></li>
+        <li><a class="chip" href="/prova/sp-universidade-de-sao-paulo-usp-sp-hospital-das-clinicas-da-faculdade-de-medici">USP-SP</a></li>
+        <li><a class="chip" href="/prova/sp-universidade-estadual-de-campinas-unicamp-faculdade-de-ciencias-medicas-da-un">Unicamp</a></li>
+        <li><a class="chip" href="/prova/sp-universidade-federal-de-sao-paulo-unifesp-hospital-universitario-da-unifesp">UNIFESP</a></li>
+        <li><a class="chip" href="/prova/sp-santa-casa-de-misericordia-de-sao-paulo-scmsp">Santa Casa</a></li>
+        <li><a class="chip" href="/prova/rs-associacao-medica-do-rio-grande-do-sul-amrigs">AMRIGS</a></li>
+        <li><a class="chip" href="/prova/rj-universidade-federal-do-rio-de-janeiro-ufrj-hospital-universitario-clementino">UFRJ</a></li>
+      </ul>
+
+      <hr class="regua">
+
+      <p class="meta">ENAMED · edição medida · n = 100 questões · próxima aplicação 13.09.2026</p>
+      <p class="oculto">Distribuição por grande área, em questões de um total de cem:
+        Clínica Médica, 37; sem especialidade classificada, 13; Pediatria, 11; Ginecologia, 10; Cirurgia, 10; Medicina Preventiva, 10; Obstetrícia, 9.</p>
+
+      <div class="grade">
+        <div class="lin" data-a="cm">
+          <input class="opt" type="radio" name="area" id="a-cm">
+          <label class="lin__t" for="a-cm">Clínica Médica</label>
+          <span class="lin__q" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="lin__n">37</span>
+        </div>
+        <div class="lin" data-a="sem">
+          <input class="opt" type="radio" name="area" id="a-sem">
+          <label class="lin__t" for="a-sem">sem especialidade classificada</label>
+          <span class="lin__q" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="lin__n">13</span>
+        </div>
+        <div class="lin" data-a="ped">
+          <input class="opt" type="radio" name="area" id="a-ped">
+          <label class="lin__t" for="a-ped">Pediatria</label>
+          <span class="lin__q" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="lin__n">11</span>
+        </div>
+        <div class="lin" data-a="gin">
+          <input class="opt" type="radio" name="area" id="a-gin">
+          <label class="lin__t" for="a-gin">Ginecologia</label>
+          <span class="lin__q" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="lin__n">10</span>
+        </div>
+        <div class="lin" data-a="cir">
+          <input class="opt" type="radio" name="area" id="a-cir">
+          <label class="lin__t" for="a-cir">Cirurgia</label>
+          <span class="lin__q" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="lin__n">10</span>
+        </div>
+        <div class="lin" data-a="prev">
+          <input class="opt" type="radio" name="area" id="a-prev">
+          <label class="lin__t" for="a-prev">Medicina Preventiva</label>
+          <span class="lin__q" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="lin__n">10</span>
+        </div>
+        <div class="lin" data-a="obst">
+          <input class="opt" type="radio" name="area" id="a-obst">
+          <label class="lin__t" for="a-obst">Obstetrícia</label>
+          <span class="lin__q" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="lin__n">9</span>
+        </div>
+        <input class="opt" type="radio" name="area" id="a-todas" checked>
+        <label class="todas" for="a-todas">todas as áreas</label>
+      </div>
+
+      <hr class="regua">
+
+      <p class="gancho"><b>Esperado pelos temas desta prova: 7,7%. Medido: 3,8%.</b>
+        <span>Treinar leitura de comando rende na média do país. Nesta prova, é treinar
+        para a prova de outra pessoa.</span></p>
+    </div>
+  </section>
+
+  <section class="sec sec--sup">
+    <div class="cont">
+      <div class="med">
+        <h2>A prova não cobra só o que você sabe</h2>
+        <p>Cobra também do jeito dela — e o jeito é o que se repete. Aquele
+          <span class="n">7,7%</span> esperado não é a média do país: é
+          <strong>ajustado pelos temas</strong> que esta prova cobra, para não confundir o
+          jeito de perguntar com a matéria perguntada.</p>
+        <p>De um ano para o outro o ENAMED varia <span class="n">66 pp</span> no assunto e
+          só <span class="n">16 pp</span> na área: ele reamostra o que pergunta e conserva
+          como pergunta. Quem decora o que caiu persegue a parte que muda. Nós medimos a
+          que fica.</p>
+        <p class="apoio"><strong>Toque numa medida</strong> para ver o que ela enxerga nesta
+          questão.</p>
+      </div>
+
+      <div class="demo">
+        <div class="questao">
+          <p class="rot">exemplo construído para esta página · não é questão de prova</p>
+          <p class="enunciado"><span class="m5">Mulher de 58 anos</span>, com
+<span class="m9">diabetes mellitus tipo 2</span> <span class="m5">há 8 anos</span>, em uso de
+<span class="m5">metformina 2 g/dia</span>, comparece para consulta de rotina. Refere boa
+adesão. <span class="m5">IMC 31 kg/m²</span>. Exames: <span class="m5">HbA1c 8,4%</span>,
+<span class="m5">filtração glomerular 68 mL/min/1,73 m²</span>,
+<span class="m5 m9">albuminúria 180 mg/g</span>. <span class="m3">Nega</span> hipoglicemias.
+<span class="m2 m8">Qual é a conduta mais adequada?</span></p>
+          <ol class="alts">
+            <li class="m6"><b>A</b><span>Associar sulfonilureia.</span></li>
+            <li class="m6"><b>B</b><span>Associar inibidor de SGLT2.</span></li>
+            <li class="m6"><b>C</b><span>Substituir a metformina por insulina NPH noturna.</span></li>
+            <li><b>D</b><span>Manter a conduta e reavaliar em 6 meses.</span></li>
+          </ol>
+          <p class="gab">Gabarito: <strong>B</strong>. Albuminúria com filtração preservada em
+            DM2 põe o inibidor de SGLT2 à frente das outras opções.</p>
+        </div>
+
+        <ul class="nove">
+          <li class="med9" data-m="m1">
+            <input class="opt" type="radio" name="medida" id="m1">
+            <label for="m1">Tamanho do enunciado</label>
+            <b>48 palavras</b>
+            <i>Quantas palavras o caso traz antes do comando.</i>
+          </li>
+          <li class="med9" data-m="m2">
+            <input class="opt" type="radio" name="medida" id="m2">
+            <label for="m2">Pede a alternativa errada?</label>
+            <b>não</b>
+            <i>Se o comando inverte a lógica e pede a incorreta.</i>
+          </li>
+          <li class="med9" data-m="m3">
+            <input class="opt" type="radio" name="medida" id="m3">
+            <label for="m3">Quantidade de negações</label>
+            <b>1</b>
+            <i>Quantos “não”, “sem” e “exceto” aparecem no caminho.</i>
+          </li>
+          <li class="med9" data-m="m4">
+            <input class="opt" type="radio" name="medida" id="m4">
+            <label for="m4">Tem imagem?</label>
+            <b>não</b>
+            <i>Se a resposta depende de foto, traçado ou exame.</i>
+          </li>
+          <li class="med9" data-m="m5">
+            <input class="opt" type="radio" name="medida" id="m5">
+            <label for="m5">Quantos dados clínicos</label>
+            <b>7</b>
+            <i>Quantas informações o caso oferece para decidir.</i>
+          </li>
+          <li class="med9" data-m="m6">
+            <input class="opt" type="radio" name="medida" id="m6">
+            <label for="m6">Alternativas parecidas</label>
+            <b>3 de 4</b>
+            <i>Quantas opções disputam entre si por proximidade.</i>
+          </li>
+          <li class="med9" data-m="m7">
+            <input class="opt" type="radio" name="medida" id="m7">
+            <label for="m7">Formato da resposta</label>
+            <b>direta · 4</b>
+            <i>Alternativa única, combinação de assertivas ou certo e errado.</i>
+          </li>
+          <li class="med9" data-m="m8">
+            <input class="opt" type="radio" name="medida" id="m8">
+            <label for="m8">O que a questão pede</label>
+            <b>conduta · 2.ª linha</b>
+            <i>Diagnóstico, conduta ou rastreio — e em que linha.</i>
+          </li>
+          <li class="med9" data-m="m9">
+            <input class="opt" type="radio" name="medida" id="m9">
+            <label for="m9">O assunto exato</label>
+            <b>DM2 com doença renal</b>
+            <i>O recorte do tema, no nível que muda o que estudar.</i>
+          </li>
+        </ul>
+      </div>
+
+      <table class="oe">
+        <caption>“Assinale a incorreta”, contra o esperado para os temas desta prova</caption>
+        <thead><tr><th scope="col">questões</th>
+          <th scope="col">esperado</th><th scope="col">medido</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Toda a série <span>557 questões, 2021–2026</span></th>
+            <td>7,7%</td><td><b>3,8%</b><span>21 questões</span></td></tr>
+          <tr><th scope="row">Só as edições recentes <span>184 questões</span></th>
+            <td>7,7%</td><td><b>1,1%</b><span>2 questões</span></td></tr>
+        </tbody>
+      </table>
+      <p class="apoio med" style="margin-top:14px">O <strong>esperado não é a média do país</strong>:
+        é o que esta prova teria se perguntasse como o país pergunta <em>sobre os temas que ela
+        cobra</em>. Sem esse ajuste, uma prova com muita preventiva pareceria ter jeito próprio
+        quando só tem assunto próprio. A referência são <span class="n">89.734</span> questões de
+        <span class="n">138</span> bancas, repesadas tema a tema para esta prova.</p>
+      <p class="apoio med" style="margin-top:12px">O esperado sai quebrado porque não é
+        contagem: é a soma, tema a tema, de <em>quantas questões daquele tipo o país faria no
+        lugar desta prova</em>. Some‑se <span class="n">7,7%</span> de um tema com
+        <span class="n">11,8%</span> de outro, cada um com o seu peso aqui, e o total não cai
+        num número inteiro. <span class="n">42,9</span> é o esperado; <span class="n">21</span>
+        é o que a prova fez.</p>
+
+      <dl class="metodo">
+        <dt>Como medimos</dt>
+        <dd><span><span class="n">n = 1.763</span> questões em <span class="n">9</span> aplicações para o que a prova pergunta;
+          <span class="n">557</span> classificadas por formato para o jeito como ela pergunta</span></dd>
+        <dd><span>Questão por questão, por sistema automático de critério fixo</span></dd>
+        <dd><span>Conferido fora de amostra: erro de <span class="n">3,5 pp</span></span></dd>
+        <dd><span>Uma só edição direta; o resto é a base das provas que o ENAMED substituiu</span></dd>
+        <dd><span>Das nove medidas, esta prova só se distingue do esperado em <strong>uma</strong>.
+          A outra que testamos foi o tamanho do enunciado: <span class="n">147</span> questões
+          longas onde a composição dela previa <span class="n">142</span> — dentro da oscilação
+          que a própria prova tem de um ano para o outro. Não publicamos.</span></dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="cont">
+      <div class="med">
+        <h2>Todo mundo diz o que vai cair. Depois.</h2>
+        <p>Nós dissemos antes. Estes <span class="n">30</span> assuntos foram fechados em
+          <span class="n">30.08.2026</span>, com data e código de verificação, e estão aqui
+          inteiros — não atrás de cadastro. Em <span class="n">15.09</span> dá para conferir
+          um por um.</p>
+        <p class="registro"><span>registro sha-256</span>
+          <code>ef4fb66d8b677f2a…2665567766</code></p>
+      </div>
+      <p class="rot">uma barra por aplicação, de 2016 a 2026 · a última, em petróleo, é a edição própria do ENAMED; as cinzas são as provas que ele substituiu</p>
+      <ol class="lista">
+          <li class="ass">
+            <span class="ass__p">1</span>
+            <span class="ass__t">Neoplasias do Sistema Digestivo</span>
+            <span class="ass__s" aria-hidden="true"><i class="c" style="height:3px"></i><i class="c" style="height:3px"></i><i class="c" style="height:6px"></i><i class="c" style="height:9px"></i><i class="c" style="height:24px"></i><i class="c" style="height:9px"></i><i class="c" style="height:6px"></i><i class="c" style="height:9px"></i><i class="sep"></i><i class="d" style="height:6px"></i></span>
+            <span class="ass__v">11,2</span>
+            <span class="oculto">2 na edição própria e 23 nas provas que o ENAMED substituiu, somando 25.</span>
+          </li>
+          <li class="ass">
+            <span class="ass__p">2</span>
+            <span class="ass__t">Planejamento familiar</span>
+            <span class="ass__s" aria-hidden="true"><i class="c" style="height:5px"></i><i class="c" style="height:3px"></i><i class="c" style="height:5px"></i><i class="c" style="height:10px"></i><i class="c" style="height:19px"></i><i class="c" style="height:14px"></i><i class="c" style="height:19px"></i><i class="c" style="height:14px"></i><i class="sep"></i><i class="d" style="height:24px"></i></span>
+            <span class="ass__v">11</span>
+            <span class="oculto">3 na edição própria e 20 nas provas que o ENAMED substituiu, somando 23.</span>
+          </li>
+          <li class="ass">
+            <span class="ass__p">3</span>
+            <span class="ass__t">Dependência Química</span>
+            <span class="ass__s" aria-hidden="true"><i class="c" style="height:8px"></i><i class="c" style="height:4px"></i><i class="c" style="height:4px"></i><i class="c" style="height:4px"></i><i class="c" style="height:12px"></i><i class="c" style="height:4px"></i><i class="c" style="height:24px"></i><i class="c" style="height:24px"></i><i class="sep"></i><i class="d" style="height:12px"></i></span>
+            <span class="ass__v">10,2</span>
+            <span class="oculto">1 na edição própria e 23 nas provas que o ENAMED substituiu, somando 24.</span>
+          </li>
+          <li class="ass">
+            <span class="ass__p">4</span>
+            <span class="ass__t">Diabetes</span>
+            <span class="ass__s" aria-hidden="true"><i class="c" style="height:5px"></i><i class="c" style="height:10px"></i><i class="c" style="height:3px"></i><i class="c" style="height:3px"></i><i class="c" style="height:10px"></i><i class="c" style="height:5px"></i><i class="c" style="height:19px"></i><i class="c" style="height:19px"></i><i class="sep"></i><i class="d" style="height:24px"></i></span>
+            <span class="ass__v">9,4</span>
+            <span class="oculto">3 na edição própria e 16 nas provas que o ENAMED substituiu, somando 19.</span>
+          </li>
+          <li class="ass">
+            <span class="ass__p">5</span>
+            <span class="ass__t">Imunizações/Vacinação</span>
+            <span class="ass__s" aria-hidden="true"><i class="c" style="height:3px"></i><i class="c" style="height:3px"></i><i class="c" style="height:3px"></i><i class="c" style="height:3px"></i><i class="c" style="height:17px"></i><i class="c" style="height:7px"></i><i class="c" style="height:17px"></i><i class="c" style="height:24px"></i><i class="sep"></i><i class="d" style="height:3px"></i></span>
+            <span class="ass__v">9</span>
+            <span class="oculto">1 na edição própria e 20 nas provas que o ENAMED substituiu, somando 21.</span>
+          </li>
+          <li class="ass">
+            <span class="ass__p">6</span>
+            <span class="ass__t">Tireoide</span>
+            <span class="ass__s" aria-hidden="true"><i class="c" style="height:16px"></i><i class="c" style="height:16px"></i><i class="c" style="height:8px"></i><i class="c" style="height:24px"></i><i class="c" style="height:24px"></i><i class="c" style="height:24px"></i><i class="c" style="height:16px"></i><i class="c" style="height:3px"></i><i class="sep"></i><i class="d" style="height:24px"></i></span>
+            <span class="ass__v">8,8</span>
+            <span class="oculto">2 na edição própria e 17 nas provas que o ENAMED substituiu, somando 19.</span>
+          </li>
+          <li class="ass">
+            <span class="ass__p">7</span>
+            <span class="ass__t">Rastreamento do câncer de colo do útero</span>
+            <span class="ass__s" aria-hidden="true"><i class="c" style="height:5px"></i><i class="c" style="height:3px"></i><i class="c" style="height:3px"></i><i class="c" style="height:10px"></i><i class="c" style="height:19px"></i><i class="c" style="height:10px"></i><i class="c" style="height:5px"></i><i class="c" style="height:14px"></i><i class="sep"></i><i class="d" style="height:24px"></i></span>
+            <span class="ass__v">8,4</span>
+            <span class="oculto">2 na edição própria e 16 nas provas que o ENAMED substituiu, somando 18.</span>
+          </li>
+          <li class="ass">
+            <span class="ass__p">8</span>
+            <span class="ass__t">Abdome Agudo Inflamatório</span>
+            <span class="ass__s" aria-hidden="true"><i class="c" style="height:3px"></i><i class="c" style="height:5px"></i><i class="c" style="height:5px"></i><i class="c" style="height:14px"></i><i class="c" style="height:5px"></i><i class="c" style="height:3px"></i><i class="c" style="height:10px"></i><i class="c" style="height:24px"></i><i class="sep"></i><i class="d" style="height:14px"></i></span>
+            <span class="ass__v">8,2</span>
+            <span class="oculto">3 na edição própria e 13 nas provas que o ENAMED substituiu, somando 16.</span>
+          </li>
+          <li class="ass">
+            <span class="ass__p">9</span>
+            <span class="ass__t">Arboviroses</span>
+            <span class="ass__s" aria-hidden="true"><i class="c" style="height:5px"></i><i class="c" style="height:5px"></i><i class="c" style="height:5px"></i><i class="c" style="height:5px"></i><i class="c" style="height:5px"></i><i class="c" style="height:10px"></i><i class="c" style="height:14px"></i><i class="c" style="height:14px"></i><i class="sep"></i><i class="d" style="height:24px"></i></span>
+            <span class="ass__v">7,8</span>
+            <span class="oculto">1 na edição própria e 17 nas provas que o ENAMED substituiu, somando 18.</span>
+          </li>
+          <li class="ass">
+            <span class="ass__p">10</span>
+            <span class="ass__t">Tuberculose (TB)</span>
+            <span class="ass__s" aria-hidden="true"><i class="c" style="height:5px"></i><i class="c" style="height:5px"></i><i class="c" style="height:3px"></i><i class="c" style="height:10px"></i><i class="c" style="height:14px"></i><i class="c" style="height:3px"></i><i class="c" style="height:10px"></i><i class="c" style="height:24px"></i><i class="sep"></i><i class="d" style="height:10px"></i></span>
+            <span class="ass__v">7,6</span>
+            <span class="oculto">2 na edição própria e 14 nas provas que o ENAMED substituiu, somando 16.</span>
+          </li>
+      </ol>
+      <ul class="resto">
+        <li><b>11</b> Atenção Primária à Saúde (APS) no Brasil</li>
+        <li><b>12</b> Avaliação Inicial: Vias aéreas, Ventilação e Choque</li>
+        <li><b>13</b> Hipertensão Arterial Sistêmica (HAS)</li>
+        <li><b>14</b> Arritmias Cardíacas</li>
+        <li><b>15</b> Intoxicações Exógenas</li>
+        <li><b>16</b> Saúde do Idoso (geriatria)</li>
+        <li><b>17</b> Psiquiatria Infantil</li>
+        <li><b>18</b> Transtornos do Humor</li>
+        <li><b>19</b> Vigilância em Saúde</li>
+        <li><b>20</b> Intestinos</li>
+        <li><b>21</b> HIV/Aids</li>
+        <li><b>22</b> Artropatias inflamatórias</li>
+        <li><b>23</b> Ortopedia Geral</li>
+        <li><b>24</b> Testes Diagnósticos</li>
+        <li><b>25</b> Código de Ética Médica (CEM)</li>
+        <li><b>26</b> Infecções congênitas</li>
+        <li><b>27</b> Medidas de saúde coletiva</li>
+        <li><b>28</b> Sangramento uterino anormal</li>
+        <li><b>29</b> Amenorreias</li>
+        <li><b>30</b> Infecções sexualmente transmissíveis</li>
+      </ul>
+      <p class="apoio med">Esta revisão organiza o estudo pelos assuntos que medimos como mais prováveis. Não é garantia de que cairão: o método foi medido contra o acaso e a faixa histórica inclui um caso abaixo dele.</p>
+      <p class="acao"><a class="btn" href="/prova/enamed">Ver a fácies da prova</a></p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="cont">
+      <div class="med">
+        <h2>Cursinho também prevê prova. A diferença é a conta.</h2>
+        <p>Prever é a parte que todo mundo faz. O que ninguém faz é fechar a lista antes,
+          com data e código, e publicar depois quanto errou.</p>
+      </div>
+      <div class="duas">
+        <div>
+          <h3>Uma previsão de cursinho</h3>
+          <ul>
+            <li>Sai quando o cursinho quiser, sem data de fechamento</li>
+            <li>Vale pela autoridade de quem ensina</li>
+            <li>Não volta depois da prova para prestar contas</li>
+            <li>Chega junto com a matrícula</li>
+          </ul>
+        </div>
+        <div>
+          <h3>A Fácies</h3>
+          <ul>
+            <li>Fechou a lista em <span class="n">30.08</span>, com código que você confere</li>
+            <li>Vale pela medição: questão por questão, erro declarado em <span class="n">3,5 pp</span></li>
+            <li>Publica a conta depois: quantos dos <span class="n">30</span> caíram, e quais não</li>
+            <li>Está aberta agora, de graça e sem cadastro</li>
+          </ul>
+        </div>
+      </div>
+      <p class="recom">Também não somos banco de questões: se o que falta é volume, existem
+        bancos gratuitos e bons — use um, e use a Fácies junto. E não vendemos conteúdo
+        teórico. O que medimos serve para decidir onde aplicar o material que você já tem.</p>
+    </div>
+  </section>
+
+  <section class="sec sec--sup">
+    <div class="cont">
+      <div class="med">
+        <h2>O que você ainda não viu</h2>
+        <p>A fácies é da prova e é igual para todo mundo. O mapa é seu: cruza o que a prova
+          cobra com o que você já mostrou saber. Cada célula é um assunto, o tamanho é o quanto
+          a prova cobra aquilo — e a parte que decide o seu estudo é a que ainda está vazia.</p>
+        <ol class="passos">
+          <li><span><strong>A fácies da prova.</strong> É o que você acabou de ler aqui em
+            cima, e vale para qualquer uma das 139.</span></li>
+          <li><span><strong>Um diagnóstico de 20 questões.</strong> Escolhidas pela fácies,
+            não ao acaso.</span></li>
+          <li><span><strong>O mapa, e o treino no que falta.</strong> O tamanho da célula é o
+            quanto a prova cobra; a tinta passa a ser o que falta para você.</span></li>
+        </ol>
+      </div>
+
+      <div class="mapa">
+        <p class="rot">os 8 assuntos que mais voltam ·
+          a aba “A prova e você” é uma demonstração, não os seus dados</p>
+        <ul class="abas">
+          <li><input class="opt" type="radio" name="mapa" id="mapa-prova" checked><label class="aba" for="mapa-prova">A prova</label></li>
+          <li><input class="opt" type="radio" name="mapa" id="mapa-voce"><label class="aba" for="mapa-voce">A prova e você</label></li>
+        </ul>
+        <!-- A CHAVE DE LEITURA, acima da grade e trocando com a aba.
+             "preenchimento é você" é o que o artboard 12b escreve, e é ambíguo:
+             preenchimento pode ser o quanto você domina ou o quanto falta, e as
+             duas leituras pintam a grade ao contrário uma da outra. O app
+             diverge do desenho de propósito e escreve "o que falta", porque
+             legenda ambígua sobre gráfico é pior que legenda que diverge. -->
+        <p class="chave">
+          <span class="so-prova">tamanho é incidência · preenchimento é o quanto a prova cobra</span>
+          <span class="so-voce">tamanho é incidência · preenchimento é o que falta</span>
+        </p>
+        <ul class="mapa__g">
+          <li class="mcel mcel--xl" data-e="medido"
+              style="--bg-p:#9cc4d7; --bg-v:#b1cfdc; border-left-color:#0072B2">
+            <input class="opt" type="radio" name="celula" id="c1">
+            <label class="mcel__lab" for="c1">
+              <span class="mcel__b"><span class="mcel__t">Neoplasias do Sistema Digestivo</span></span>
+              <span class="mcel__n">25<span class="oculto"> questões · Clínica Médica — medido: você acerta 34% em 9 respostas</span></span>
+            </label>
+          </li>
+          <li class="mcel mcel--xl" data-e="medido"
+              style="--bg-p:#e2c9d5; --bg-v:#e9dfe1; border-left-color:#CC79A7">
+            <input class="opt" type="radio" name="celula" id="c2">
+            <label class="mcel__lab" for="c2">
+              <span class="mcel__b"><span class="mcel__t">Planejamento familiar</span></span>
+              <span class="mcel__n">23<span class="oculto"> questões · Ginecologia — medido: você acerta 81% em 12 respostas</span></span>
+            </label>
+          </li>
+          <li class="mcel mcel--g" data-e="medido"
+              style="--bg-p:#bdbfbf; --bg-v:#c6c8c7; border-left-color:#5A6067">
+            <input class="opt" type="radio" name="celula" id="c3">
+            <label class="mcel__lab" for="c3">
+              <span class="mcel__b"><span class="mcel__t">Dependência Química</span></span>
+              <span class="mcel__n">24<span class="oculto"> questões · Outros — medido: você acerta 28% em 7 respostas</span></span>
+            </label>
+          </li>
+          <li class="mcel mcel--g" data-e="medido"
+              style="--bg-p:#abccda; --bg-v:#c9dbe1; border-left-color:#0072B2">
+            <input class="opt" type="radio" name="celula" id="c4">
+            <label class="mcel__lab" for="c4">
+              <span class="mcel__b"><span class="mcel__t">Diabetes</span></span>
+              <span class="mcel__n">19<span class="oculto"> questões · Clínica Médica — medido: você acerta 72% em 6 respostas</span></span>
+            </label>
+          </li>
+          <li class="mcel mcel--g" data-e="estimado"
+              style="--bg-p:#a6d6c6; --bg-v:#beded3; border-left-color:#009E73">
+            <input class="opt" type="radio" name="celula" id="c5">
+            <label class="mcel__lab" for="c5">
+              <span class="mcel__b"><span class="mcel__t">Imunizações/Vacinação</span></span>
+              <span class="mcel__n">21<span class="oculto"> questões · Pediatria — estimado: você acerta 55% em 3 respostas</span></span>
+            </label>
+          </li>
+          <li class="mcel mcel--g" data-e="estimado"
+              style="--bg-p:#abccda; --bg-v:#d4e1e4; border-left-color:#0072B2">
+            <input class="opt" type="radio" name="celula" id="c6">
+            <label class="mcel__lab" for="c6">
+              <span class="mcel__b"><span class="mcel__t">Tireoide</span></span>
+              <span class="mcel__n">19<span class="oculto"> questões · Clínica Médica — estimado: você acerta 90% em 2 respostas</span></span>
+            </label>
+          </li>
+          <li class="mcel mcel--p" data-e="nao"
+              style="--bg-p:#e4cfd8; --bg-v:#eae5e5; border-left-color:#CC79A7">
+            <input class="opt" type="radio" name="celula" id="c7">
+            <label class="mcel__lab" for="c7">
+              <span class="mcel__b"><span class="mcel__t">Rastreamento do câncer de colo do útero</span></span>
+              <span class="mcel__n">18<span class="oculto"> questões · Ginecologia — não avaliado: você nunca respondeu nada aqui</span></span>
+            </label>
+          </li>
+          <li class="mcel mcel--p" data-e="nao"
+              style="--bg-p:#e7cbb0; --bg-v:#ebe2d7; border-left-color:#D55E00">
+            <input class="opt" type="radio" name="celula" id="c8">
+            <label class="mcel__lab" for="c8">
+              <span class="mcel__b"><span class="mcel__t">Abdome Agudo Inflamatório</span></span>
+              <span class="mcel__n">16<span class="oculto"> questões · Cirurgia — não avaliado: você nunca respondeu nada aqui</span></span>
+            </label>
+          </li>
+        </ul>
+        <ul class="legenda so-prova-bloco">
+          <li><span class="amostra" style="border-left-color:#0072B2; background:#c7dae1"></span>clínica médica</li>
+          <li><span class="amostra" style="border-left-color:#D55E00; background:#e9d7c5"></span>cirurgia</li>
+          <li><span class="amostra" style="border-left-color:#009E73; background:#c7e1d7"></span>pediatria</li>
+          <li><span class="amostra" style="border-left-color:#CC79A7; background:#e8dbdf"></span>ginecologia</li>
+          <li><span class="amostra" style="border-left-color:#5A6067; background:#d5d7d5"></span>outros</li>
+        </ul>
+
+        <!-- A legenda dos TRÊS ESTADOS, com o texto do artboard palavra por
+             palavra. Ela substitui a das áreas no eixo VOCÊ: aqui o que decide a
+             leitura é quanta resposta sua sustenta a célula, não de que área ela é. -->
+        <ul class="estados so-voce-bloco">
+          <li><span class="amostra3" style="--am:#c1c3c4"></span>
+            <span><b>Medido</b> <span>· 5 respostas ou mais neste assunto</span></span></li>
+          <li><span class="amostra3 amostra3--est" style="--am:#c1c3c4"></span>
+            <span><b>Estimado</b> <span>· respondeu pouco; o valor vem da área</span></span></li>
+          <li><span class="amostra3 amostra3--nao"></span>
+            <span><b>Não avaliado</b> <span>· nunca respondeu nada aqui</span></span></li>
+        </ul>
+        <div class="leitura" aria-live="polite">
+          <p class="leitura__d">O tamanho de cada bloco é o quanto o assunto cai nesta prova.
+            Toque para ver quantas questões.</p>
+          <p class="leitura__i" data-c="c1"><b>Neoplasias do Sistema Digestivo</b> <span>· clínica médica · 1º assunto mais cobrado · 25 questões</span><span class="serie"> — 2 desta prova · 23 de provas parecidas</span></p>
+          <p class="leitura__i" data-c="c2"><b>Planejamento familiar</b> <span>· ginecologia · 2º assunto mais cobrado · 23 questões</span><span class="serie"> — 3 desta prova · 20 de provas parecidas</span></p>
+          <p class="leitura__i" data-c="c3"><b>Dependência Química</b> <span>· outros · 3º assunto mais cobrado · 24 questões</span><span class="serie"> — 1 desta prova · 23 de provas parecidas</span></p>
+          <p class="leitura__i" data-c="c4"><b>Diabetes</b> <span>· clínica médica · 4º assunto mais cobrado · 19 questões</span><span class="serie"> — 3 desta prova · 16 de provas parecidas</span></p>
+          <p class="leitura__i" data-c="c5"><b>Imunizações/Vacinação</b> <span>· pediatria · 5º assunto mais cobrado · 21 questões</span><span class="serie"> — 1 desta prova · 20 de provas parecidas</span></p>
+          <p class="leitura__i" data-c="c6"><b>Tireoide</b> <span>· clínica médica · 6º assunto mais cobrado · 19 questões</span><span class="serie"> — 2 desta prova · 17 de provas parecidas</span></p>
+          <p class="leitura__i" data-c="c7"><b>Rastreamento do câncer de colo do útero</b> <span>· ginecologia · 7º assunto mais cobrado · 18 questões</span><span class="serie"> — 2 desta prova · 16 de provas parecidas</span></p>
+          <p class="leitura__i" data-c="c8"><b>Abdome Agudo Inflamatório</b> <span>· cirurgia · 8º assunto mais cobrado · 16 questões</span><span class="serie"> — 3 desta prova · 13 de provas parecidas</span></p>
+        </div>
+
+        <!-- A COBERTURA VAI NA TELA, e o componente diz por quê: uma grade em que
+             parte das células está no piso por FALTA DE DADO parece uma grade em
+             que o aluno vai mal naquilo. Dizer quantos assuntos têm resposta é o
+             que separa as duas leituras. -->
+        <p class="contagem">
+          <span class="so-prova">A célula mais escura é a que mais volta. Nenhum dado seu entra
+            aqui — é a mesma leitura para todo mundo.</span>
+          <span class="so-voce"><b>4</b> medidos, <b>2</b> ainda estimados e
+            <b>2</b> nunca respondidos, de <b>8</b>. O que não tem
+            resposta sua aparece VAZIO, e não claro — “ainda não sei” não é “vou mal nisto”.</span>
+        </p>
+      </div>
+
+      <div class="med">
+        <h3>O que é grátis, e o que a assinatura acrescenta</h3>
+        <p>Grátis, para sempre e sem cadastro: a fácies completa, as nove medidas, os trinta
+          assuntos desta página e a nossa conta publicada depois da prova.</p>
+        <p>Com cadastro, de graça e sem cartão: o mapa e o plano por
+          <span class="n">30</span> dias.</p>
+        <p>Depois disso, assinatura. Ela ainda não abriu — quando abrir, o preço estará escrito
+          aqui antes de qualquer cobrança.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="cont med">
+      <h2>Perguntas que você faria</h2>
+      <dl class="obj">
+        <div>
+          <dt>Serve para outra prova além do ENAMED?</dt>
+          <dd>Serve para as <span class="n">139</span> que já têm fácies medida. Cada
+            uma diz na tela quantas questões a sustentam; quando são poucas, preferimos dizer
+            que ainda não sabemos.</dd>
+        </div>
+        <div>
+          <dt>Preciso pagar para ver?</dt>
+          <dd>Não. A fácies e os trinta assuntos são gratuitos e não pedem cadastro. Cadastro dá o mapa e o
+            plano por 30 dias, de graça e sem cartão.</dd>
+        </div>
+        <div>
+          <dt>Quanto tempo por dia?</dt>
+          <dd>A revisão abaixo é de <span class="n">3</span> a <span class="n">5</span>
+            questões por dia. Não há meta de horas, e não prometemos aprovação.</dd>
+        </div>
+        <div>
+          <dt>Quem está por trás?</dt>
+          <dd>Um projeto pequeno e independente — não é braço de cursinho e não recebe de
+            nenhum. Isso decide o que esta página é: sem aprovados para exibir e sem
+            depoimento, o que sobra é medir e mostrar como.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec sec--marca">
+    <div class="cont">
+      <div class="med">
+        <h2>A revisão da última semana</h2>
+        <p class="apoio">Nos últimos dias ninguém aprende matéria nova — decide o que
+          revisar. <span id="conta">Faltam <span class="n">11</span> dias para a prova de
+          <time datetime="2026-09-13" class="n">13.09</time></span>. Os
+          <span class="n">30</span> assuntos mais prováveis distribuídos em
+          <span class="n">7</span> dias, com <span class="n">8</span>
+          atualizações clínicas de fonte primária e <span class="n">3</span> dias
+          livres antes da prova.</p>
+      </div>
+      <ul class="dias">
+        <li><b>dia 1</b><span>5</span></li>
+        <li><b>dia 2</b><span>5</span></li>
+        <li><b>dia 3</b><span>5</span></li>
+        <li><b>dia 4</b><span>4</span></li>
+        <li><b>dia 5</b><span>4</span></li>
+        <li><b>dia 6</b><span>4</span></li>
+        <li><b>dia 7</b><span>3</span></li>
+      </ul>
+      <ul class="atu">
+        <li><b>Hexavalente acelular para imunodeprimidos</b>
+          <span>Portaria SECTICS/MS 70/2025, em vigor desde <time datetime="2025-10-02">02.10.2025</time>.
+          Cai em <em>Imunizações</em> — o assunto que mais subiu na série.</span>
+          <a href="https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025">relatório CONITEC 1034</a></li>
+        <li><b>Teste molecular de HPV no rastreamento do colo do útero</b>
+          <span>Portaria SECTICS/MS 03/2024, em vigor desde <time datetime="2024-03-08">08.03.2024</time>.
+          Cai em <em>Rastreamento do câncer de colo do útero</em>, 7.º da lista.</span>
+          <a href="https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024">relatório CONITEC 878</a></li>
+        <li><b>Vacina dengue tetravalente atenuada</b>
+          <span>Portaria SECTICS/MS 72/2023, em vigor desde <time datetime="2023-12-22">22.12.2023</time>.
+          Cai em <em>Arboviroses</em>, 9.º da lista.</span>
+          <a href="https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023">relatório CONITEC 871</a></li>
+      </ul>
+      <p class="nota">As atualizações clínicas são fatos com data e fonte primária. Elas não
+        entram no score de previsão e não afirmamos que serão cobradas.</p>
+
+      <p class="acao"><a class="btn btn--claro" href="/prova/enamed/revisao-final">Abrir a revisão da última semana</a>
+        <span class="selo">grátis · sem cadastro</span></p>
+
+      <!-- As duas primeiras datas saem do dataset (aplicacao_prevista e
+           cadernos_previstos). A terceira e' um COMPROMISSO nosso, e esta escrita
+           como compromisso: nao ha nada a medir sobre ela ainda. -->
+      <ul class="agenda">
+        <li><b>13.09</b><span>Você faz a prova.</span></li>
+        <li><b>15.09</b><span>O Inep divulga as questões e o gabarito.</span></li>
+        <li><b>depois</b><span>Publicamos a leitura da prova e a conta da aposta: quantos dos 30 caíram, e quais não.</span></li>
+      </ul>
+
+      <div class="aviso med">
+        <h3>Todo mundo promete acertar. Ninguém mostra a conta.</h3>
+        <p class="apoio">A nossa sai assim que os cadernos forem publicados: quantos dos
+          <span class="n">30</span> caíram, e quais não. Deixe o e-mail se quiser recebê-la
+          junto com a leitura da prova.</p>
+        <form class="campo" method="post" action="/api/facies/sinal">
+          <label class="oculto" for="email">Seu e-mail</label>
+          <input id="email" name="email" type="email" placeholder="seu@email.com" autocomplete="email">
+          <button type="submit" class="btn btn--claro">Quero receber</button>
+        </form>
+        <p class="selo">Só escrevemos quando algo muda na sua prova. Uma vez por semana, no máximo.</p>
+      </div>
+
+      <div class="partilha med">
+        <h3>Conhece alguém que presta dia 13?</h3>
+        <p class="apoio">A leitura é gratuita e não pede cadastro — mandar não custa nada a
+          quem recebe.</p>
+        <p class="citacao">Achei um site que mediu o ENAMED questão por questão: mais de um terço da prova é clínica médica, e a pegadinha de comando aparece metade do que se esperaria. É de graça e nem pede cadastro.</p>
+        <p class="acao"><a class="btn btn--claro" href="https://wa.me/?text=Achei%20um%20site%20que%20mediu%20o%20ENAMED%20quest%C3%A3o%20por%20quest%C3%A3o%3A%20mais%20de%20um%20ter%C3%A7o%20da%20prova%20%C3%A9%20cl%C3%ADnica%20m%C3%A9dica%2C%20e%20a%20pegadinha%20de%20comando%20aparece%20metade%20do%20que%20se%20esperaria.%20%C3%89%20de%20gra%C3%A7a%20e%20nem%20pede%20cadastro.%20https%3A%2F%2Ffacies.app">Mandar no WhatsApp</a></p>
+      </div>
+      <p class="nota">Esta revisão organiza o estudo pelos assuntos que medimos como mais prováveis. Não é garantia de que cairão: o método foi medido contra o acaso e a faixa histórica inclui um caso abaixo dele.</p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // "Faltam N dias" é o único número da página que fica errado só pelo tempo
+  // passar — todo o resto é medição com data. A conta sai do <time datetime>
+  // que já está aqui, então a data da prova continua morando num lugar só.
+  //
+  // Sem JS fica o valor gerado: o número aparece, apenas não se atualiza. Isso
+  // é o comportamento correto, não um buraco.
+  (function () {
+    try {
+      var conta = document.getElementById("conta");
+      var t = conta && conta.querySelector("time[datetime]");
+      if (!conta || !t) return;
+      var p = t.getAttribute("datetime").split("-").map(Number);
+      // UTC dos dois lados: com hora local a contagem oscila um dia à meia-noite.
+      var prova = Date.UTC(p[0], p[1] - 1, p[2]);
+      var a = new Date();
+      var d = Math.round((prova - Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) / 86400000);
+      var data = t.outerHTML;
+      // A frase inteira é reescrita em cada caso. Trocar só o número deixava
+      // "A prova é hoje, 0 dias para a prova de 13.09".
+      if (d > 1) conta.innerHTML = "Faltam <span class=\"n\">" + d + "</span> dias para a prova de " + data;
+      else if (d === 1) conta.innerHTML = "Falta <span class=\"n\">1</span> dia para a prova de " + data;
+      else if (d === 0) conta.innerHTML = "A prova é hoje, " + data;
+      else conta.innerHTML = "A prova foi em " + data;
+    } catch (e) { /* fica o valor gerado */ }
+  }());
+</script>
+
+<footer class="rodape">
+  <div class="cont">
+    <p>Fácies — a cara da sua prova. Medições geradas entre <span class="n">30.08</span> e
+      <span class="n">02.09.2026</span>.</p>
+    <p>Não vendemos conteúdo teórico e não prometemos aprovação.</p>
+  </div>
+</footer>
+
+</body>
+</html>
