@@ -157,6 +157,11 @@ export default function CadastroPage() {
       // SEM query aqui: aquela página lê `?token=`, e mandar `?email=` faria ela
       // tentar verificar um token que não existe e pintar erro logo depois de um
       // cadastro que deu certo.
+      // `setBusy(false)` também aqui, e não só no `catch`: a tela de espera
+      // troca o formulário inteiro, então o `busy` preso não aparecia — mas
+      // qualquer caminho futuro que volte ao formulário (um "corrigir e-mail",
+      // por exemplo) encontraria os controles desabilitados sem motivo.
+      setBusy(false);
       setAguardandoVerificacao(true);
     } catch (e) {
       const detalhe = e instanceof Error ? e.message : "";

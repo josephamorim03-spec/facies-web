@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { establishAuthSession } from "@/lib/auth";
 import { me, updateProfile } from "@/lib/api";
 import { resolveAuthenticatedLandingRoute } from "@/lib/initialGoalSetup";
@@ -48,7 +47,6 @@ export type UseGoogleSignInReturn = {
 };
 
 export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }: UseGoogleSignInParams): UseGoogleSignInReturn {
-  const router = useRouter();
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
   const watchdogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [googleError, setGoogleError] = useState("");
@@ -104,7 +102,23 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
           }
 
           const targetRoute = await resolveAuthenticatedLandingRoute("");
-          if (!cancelled) router.replace(targetRoute);
+          // NAVEGAÇÃO DURA, e não `router.replace`.
+          //
+          // A sessão acabou de nascer: `establishAuthSession` gravou o cookie
+          // `HttpOnly` pelo BFF, segundos atrás. `router.replace` faz transição
+          // no CLIENTE e reaproveita o payload que o servidor renderizou ANTES
+          // do cookie existir — o destino chega como se ninguém estivesse
+          // logado, e a tela parece travada. Só um F5 destravava, porque só ele
+          // faz o navegador pedir tudo de novo com o cookie anexado.
+          //
+          // As outras chamadas de `resolveAuthenticatedLandingRoute` no
+          // repositório PODEM usar `router.replace`: elas rodam quando a sessão
+          // já existe há tempo. Esta é a única que atravessa a fronteira
+          // "sem sessão" → "com sessão", e é por isso que só ela precisa disto.
+          //
+          // O custo é um carregamento completo em vez de uma transição — uma
+          // vez por login, em troca de a primeira tela funcionar.
+          if (!cancelled) window.location.assign(targetRoute);
         } catch {
           gsiLog("gsi_me_error", { reason: "network_or_auth" });
           if (!cancelled) setGoogleError("Não foi possível autenticar com Google.");
@@ -265,7 +279,7 @@ export function useGoogleSignIn({ googleClientId, view, rememberDevice = false }
         }, 0);
       }
     }
-  }, [googleClientId, rememberDevice, router, view]);
+  }, [googleClientId, rememberDevice, view]);
 
   return { googleButtonRef, googleError, setGoogleError };
 }

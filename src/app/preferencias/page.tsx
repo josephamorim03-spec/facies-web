@@ -349,21 +349,50 @@ export default function PreferenciasPage() {
                     className="paper-control mt-2 min-h-11 w-full border border-edge bg-surface px-3 text-sm text-ink"
                   />
                 </label>
-                <label className="block">
-                  <span className="text-sm font-semibold text-ink">Trabalho 12h</span>
+              </div>
+
+              {/* O PLANTÃO SAIU DE PAR COM A META SEMANAL.
+                  Os dois ficavam lado a lado, mesmo tamanho, mesma tipografia —
+                  mas "questões por semana" é a meta que governa todo dia, e a
+                  capacidade em dia de plantão é ajuste que se faz uma vez e
+                  quase nunca se revisita. Peso visual igual para frequências
+                  tão diferentes cobra atenção que a segunda não merece.
+
+                  Fica recolhido, e o resumo mostra o valor atual — quem só
+                  quer conferir não precisa abrir. `<details>` e não estado em
+                  React: é o comportamento nativo, funciona sem JavaScript e
+                  não acrescenta re-render a uma tela que já tem muitos.
+
+                  O placeholder era `?`, que não dizia se a pergunta era sobre
+                  quantas questões cabem ou quantas se tolera. Agora a pergunta
+                  está escrita por extenso. */}
+              <details className="group">
+                <summary className="flex cursor-pointer list-none items-center gap-2 py-1 text-xs text-muted transition-colors hover:text-ink">
+                  <span className="transition-transform group-open:rotate-90" aria-hidden="true">›</span>
+                  Capacidade em dia de plantão de 12h
+                  <span className="ml-auto font-mono tabular-nums">
+                    {shift12hInput ? `${shift12hInput} questões` : "não definida"}
+                  </span>
+                </summary>
+                <label className="mt-2 block max-w-xs">
+                  <span className="text-xs leading-5 text-muted">
+                    Em dia de plantão de 12 horas, quantas questões você consegue
+                    fazer sem que o estudo vire fardo? Deixe vazio se preferir que
+                    a gente estime.
+                  </span>
                   <div className="mt-2 flex min-h-11 items-center rounded-control border border-edge bg-surface px-3">
                     <input
                       type="text"
                       inputMode="numeric"
                       value={shift12hInput}
                       onChange={(event) => updateShift12h(event.target.value)}
-                      placeholder="?"
+                      placeholder="estimar"
                       className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none"
                     />
                     <span className="text-xs text-muted">questões</span>
                   </div>
                 </label>
-              </div>
+              </details>
 
               <div>
                 <p className="text-sm font-semibold text-ink">Reagendamento</p>
