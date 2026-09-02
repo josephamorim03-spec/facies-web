@@ -11,6 +11,7 @@ import {
   isAccessLapseSuppressedPath,
 } from "../../accessLapse";
 import { repairMojibake, repairMojibakeDeep } from "../../textEncoding";
+import { mensagemDeErroDeValidacao } from "./validationMessage";
 
 export type APIError = { message: string; status?: number; details?: unknown };
 export type APIRetryPolicy = {
@@ -633,7 +634,9 @@ export async function toAPIError(res: Response): Promise<APIError> {
         ? rawDetail
         : typeof rawDetail?.message === "string"
           ? rawDetail.message
-          : body?.message ?? `Request failed: ${res.status}`,
+          : mensagemDeErroDeValidacao(rawDetail) ??
+            body?.message ??
+            `Request failed: ${res.status}`,
     status: res.status,
     details,
   };

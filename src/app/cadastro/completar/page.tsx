@@ -111,8 +111,15 @@ export default function CompletarCadastroPage() {
       });
       router.replace(await resolveAuthenticatedLandingRoute(""));
     } catch (e) {
-      // A mensagem do backend é específica (menor de idade, ano incoerente com a
-      // situação declarada) e mais útil que um genérico.
+      // A mensagem do backend é específica — "e necessario ter ao menos 18
+      // anos", "medico ja formado: informe o ano em que concluiu" — e agora
+      // CHEGA aqui.
+      //
+      // ⚠️ Não chegava. Este comentário já afirmava que chegava, e era verdade
+      // sobre o backend e mentira sobre a tela: o `detail` de um 422 do Pydantic
+      // é uma LISTA, `toAPIError` só lia string ou objeto com `.message`, e o
+      // aluno via `Request failed: 422` — nesta tela, que é obrigatória para
+      // todo mundo que entra pelo Google. Ver `shared/validationMessage.ts`.
       const detalhe = e instanceof Error ? e.message : "";
       setErro(detalhe || "Não consegui salvar. Confira os campos e tente de novo.");
       setSalvando(false);
