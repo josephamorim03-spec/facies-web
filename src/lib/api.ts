@@ -325,6 +325,7 @@ export {
 export {
   getStudentAgenda,
   getStudentExperience,
+  getStudentEvolution,
   getStudentToday,
   invalidateStudentExperienceCache,
 } from "./api/domains/student-experience";

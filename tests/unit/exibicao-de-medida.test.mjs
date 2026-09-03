@@ -12,7 +12,22 @@ import test from "node:test";
  * quebrá-las não causa erro, causa um número errado numa tela.
  */
 const fonte = readFileSync(new URL("../../src/lib/exibicaoDeMedida.ts", import.meta.url), "utf8");
-const evolucao = readFileSync(new URL("../../src/app/evolucao/page.tsx", import.meta.url), "utf8");
+/**
+ * ⚠️ A EVOLUCAO E' TRES ARQUIVOS AGORA, e o guard le' os tres.
+ *
+ * Ele lia so' `page.tsx`. Quando a tela virou os sete cartoes do artboard `9b`,
+ * a pagina ficou com dez linhas e a logica desceu para `EvolucaoClientPage.tsx`
+ * e `_lib/leitura.ts` -- e a varredura de frases proibidas passou a medir
+ * QUASE NADA, continuando verde. Guard que segue o ARQUIVO, e nao a regra, e' um
+ * guard que a refatoracao desliga sem avisar.
+ */
+const evolucao = [
+  "../../src/app/evolucao/page.tsx",
+  "../../src/app/evolucao/EvolucaoClientPage.tsx",
+  "../../src/app/evolucao/_lib/leitura.ts",
+]
+  .map((caminho) => readFileSync(new URL(caminho, import.meta.url), "utf8"))
+  .join(String.fromCharCode(10));
 
 /**
  * Comentários fora, para as asserções negativas medirem CÓDIGO.
@@ -105,24 +120,29 @@ test("uma grafia so para 'sem base', no app e no funil publico", () => {
   }
 });
 
-test("comparacao exige base nos DOIS lados", () => {
-  // Aqui vivia `questions_seen > 0`: UMA questão elegia a melhor e a pior área,
-  // e a tela anunciava "Melhor área: 100%" sobre um denominador de 1.
-  assert.doesNotMatch(evolucaoCodigo, /questions_seen > 0/);
-  assert.match(evolucao, /comparavel\(classificar\(area\.accuracy, area\.questions_seen\)\)/);
-  // Uma área só não produz "melhor E pior": seria a mesma célula com dois
-  // rótulos opostos, sugerindo uma diferença que ninguém mediu.
-  assert.match(evolucao, /sorted\.length < 2/);
+test("a comparacao entre areas nao existe mais", () => {
+  // Ela vivia em "Melhor área" / "Área a observar", e com UMA questão elegia as
+  // duas: a tela anunciava "Melhor área: 100%" sobre um denominador de 1.
+  //
+  // Os sete cartoes do `9b` nao comparam areas entre si -- comparam o aluno com
+  // o PESO DA PROVA ("onde mais escapa"), que e uma pergunta com base nos dois
+  // lados por construcao. O invariante passa a ser a AUSENCIA.
+  for (const proibido of [/Melhor área/i, /Área a observar/i]) {
+    assert.doesNotMatch(evolucao, proibido);
+  }
 });
 
-test("nenhuma taxa e formatada sem o denominador junto", () => {
-  // `accuracy(x)` com um argumento só é a assinatura antiga — a que não tinha
-  // como saber se "100%" veio de 1 ou de 200 respostas.
-  const chamadas = [...evolucao.matchAll(/\baccuracy\(([^)]*)\)/g)].map((m) => m[1]);
-  assert.ok(chamadas.length > 0, "nenhuma chamada de `accuracy` encontrada");
-  for (const args of chamadas) {
-    assert.match(args, /,/, `\`accuracy(${args})\` foi chamada sem o denominador`);
-  }
+test("nenhum numero sai sem a base que o sustenta", () => {
+  // A regra nao mudou; o formato mudou. Onde havia `accuracy(taxa, n)`, a base
+  // passou a viajar no proprio contrato dos cartoes: a projecao carrega `base`
+  // e a imprime ("N questões respondidas"), e a fila de escape carrega
+  // `respostas` e marca `abaixoDoPiso`. "100%" sobre uma questao continua sendo
+  // o defeito que este teste existe para impedir.
+  assert.match(evolucao, /questões respondidas/);
+  assert.match(evolucao, /abaixoDoPiso/);
+  // E a faixa nunca some: numero de projecao sem intervalo e promessa.
+  assert.match(evolucao, /faixaMin/);
+  assert.match(evolucao, /faixaMax/);
 });
 
 test("projecao de nota, chance de aprovacao e comparacao com colegas nao existem", () => {

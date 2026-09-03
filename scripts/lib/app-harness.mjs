@@ -529,6 +529,41 @@ export async function mockApi(page) {
     if (method === "GET" && path === "/api/cadastro/status") {
       return fulfillJson(route, { cadastro_completo: true, aceites_pendentes: [] });
     }
+    // A leitura DIARIA da evolucao — o mosaico "Seus dias" (`9b`).
+    //
+    // 28 dias porque o servidor so' devolve balde diario ate' 31
+    // (`DAILY_MAX_DAYS`); pedir 6 semanas devolveria baldes SEMANAIS e o mosaico
+    // de dias viraria um mosaico de semanas sem avisar.
+    if (method === "GET" && path === "/api/student/evolution") {
+      const pontos = [];
+      for (let i = 27; i >= 0; i -= 1) {
+        const dia = plusDays(todayISO(), -i);
+        // Padrao de plantonista: estuda a maioria dos dias, some em alguns.
+        const minutos = i % 7 === 3 || i % 11 === 0 ? 0 : i % 5 === 1 ? 14 : 42;
+        pontos.push({
+          bucket: dia,
+          observed_minutes: minutos,
+          sleep_minutes: null,
+          sleep_quality: null,
+          energy: null,
+          on_call_days: i % 7 === 3 ? 1 : 0,
+          covered_days: 1,
+        });
+      }
+      return fulfillJson(route, {
+        contract_version: "student-evolution-v1",
+        window: {
+          range_key: "4w",
+          date_from: plusDays(todayISO(), -27),
+          date_to: todayISO(),
+          granularity: "daily",
+          timezone: "America/Sao_Paulo",
+        },
+        points: pontos,
+        associations: [],
+      });
+    }
+
     // O plano vigente (`9c`). Sem ele a tela do plano mede a si mesma vazia, e
     // o que o guard compara com o desenho passa a ser o estado vazio.
     if (method === "GET" && path === "/api/plan/current") {
