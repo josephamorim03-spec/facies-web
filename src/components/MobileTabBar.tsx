@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FastNavLink } from "@/components/FastNavLink";
 import { ICON_MAP } from "@/components/navIcons";
 import {
@@ -63,6 +63,30 @@ export function MobileTabBar() {
     setHidden(goingDown);
     setAnchor(current);
   });
+
+  /**
+   * O estado de escondida vira DADO, e nao so' animacao.
+   *
+   * A barra sai por `transform`, entao o elemento continua no layout e
+   * `--nav-stack-height` -- que mede quanto a navegacao ocupa NESTA ROTA --
+   * segue valendo o mesmo. Quem flutua por cima do rodape (o `BottomActionBar`)
+   * ficava ancorado a 106px do nada.
+   *
+   * ⚠️ Escreve em `documentElement` de proposito: o consumidor nao e' descendente
+   * desta barra, e subir o estado ate' o `AppShell` so' para descer de novo por
+   * contexto re-renderizaria a arvore inteira a cada scroll.
+   *
+   * ⚠️ A limpeza devolve `1`, e nao remove a propriedade: rota imersiva desmonta
+   * esta barra, e deixar `0` para tras faria a proxima tela calcular com a
+   * navegacao escondida enquanto ela esta' na tela.
+   */
+  useEffect(() => {
+    const raiz = document.documentElement;
+    raiz.style.setProperty("--nav-stack-shown", hidden ? "0" : "1");
+    return () => {
+      raiz.style.setProperty("--nav-stack-shown", "1");
+    };
+  }, [hidden]);
 
   const children = getIntentChildren(pathname);
   const showChildren = hasChildRow(pathname);

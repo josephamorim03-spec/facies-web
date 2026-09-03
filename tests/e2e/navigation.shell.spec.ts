@@ -86,6 +86,41 @@ async function mockShellApi(page: Page) {
         display_name: "E2E User",
         access_status: "active",
         has_completed_initial_goal_setup: true,
+        // ⚠️ SEM ISTO O SHELL NUNCA MONTA.
+        //
+        // `resolveBlockingRoute` le' `cadastro_completo` ANTES de tudo: ausente,
+        // ele e' falso, e o aluno e' mandado para `/cadastro/completar`. A tela
+        // de destino pede endpoints que este mock nao cobre (o fallback e' 501),
+        // entao ela fica em "CARREGANDO" para sempre -- e cada assercao sobre a
+        // barra falhava com "element(s) not found", como se a navegacao tivesse
+        // sumido.
+        //
+        // O portao do cadastro entrou em producao em 02/09; este mock e' de
+        // agosto. Nao e' um campo opcional: e' o primeiro degrau da escada.
+        cadastro_completo: true,
+      });
+    }
+
+    // `/preferencias` carrega o FSRS SEM `.catch`: um 501 aqui derruba o
+    // `Promise.all` inteiro, a tela vira estado de erro e nem a barra de acao
+    // e' montada. Foi o que segurou o teste da barra inferior.
+    if (method === "GET" && path === "/api/fsrs/config") {
+      return json({ parameters: null, desired_retention: 0.9 });
+    }
+
+    if (method === "GET" && path === "/api/onboarding") {
+      return json({
+        contract_version: "student-onboarding-v1",
+        state: "ready",
+        next_step: "ready",
+        completed_steps: ["objectives", "routine", "capacity"],
+        has_selected_objectives: true,
+        objectives_revision: 1,
+        has_routine: true,
+        has_availability: true,
+        weekly_goal_questions: 300,
+        study_availability: { 0: 10, 1: 20, 2: 60, 3: 35, 4: 0, 5: 60, 6: 35 },
+        completed_at: "2026-07-29T12:00:00Z",
       });
     }
 
@@ -357,7 +392,11 @@ test.describe("Navigation shell", () => {
 
   test("keeps long labels inside their container", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/hoje");
+    // ⚠️ A LINHA DE SECOES E' DA AREA ATUAL, e o Hoje nao tem filhos.
+    // O rotulo longo mora em ROTINA, entao e' de dentro dela que ele se mede.
+    // Em `/hoje` o locator resolvia zero elementos e o teste falhava por
+    // ausencia, nao por estouro.
+    await page.goto("/preferencias");
     await navSidebar(page).hover();
 
     // O rotulo mais longo da navegacao e' "O plano ate' a prova", o filho de
@@ -366,7 +405,9 @@ test.describe("Navigation shell", () => {
     // curtos demais para exercitar o limite.
     const longestItem = page
       .getByLabel("Seções desta área")
-      .locator("[data-nav-item-href='/cronograma']");
+      // O filho aponta para `/plano` (a leitura do plano); `/cronograma` virou
+      // o calendario, alcancavel de dentro dela.
+      .locator("[data-nav-item-href='/plano']");
     const longestLabel = longestItem.locator("span").first();
     await expect(longestItem).toBeVisible();
     await expect(longestLabel).toHaveText("O plano até a prova");
@@ -398,7 +439,10 @@ test.describe("Navigation shell", () => {
       await expect(sidebar.locator(`[data-nav-item-href='${href}']`)).toHaveCount(0);
     }
 
-    // E o Cronograma continua a um clique, pela linha de secoes.
+    // E o plano continua a um clique -- mas a linha de secoes so' existe DENTRO
+    // da area que tem filhos. Em `/hoje` ela nao e' desenhada, e afirmar sobre
+    // ela ali seria afirmar sobre nada.
+    await page.goto("/preferencias");
     await expect(
       page.getByLabel("Seções desta área").getByText("O plano até a prova", { exact: true }),
     ).toBeVisible();
@@ -487,6 +531,49 @@ test.describe("Navigation shell mobile tab bar", () => {
     const active = childRow.locator("[aria-current='page']");
     await expect(active).toHaveCount(1);
     await expect(active).toHaveText("O plano até a prova");
+  });
+
+  test("a acao primaria segue a barra de abas quando ela se esconde", async ({ page }) => {
+    // O DEFEITO QUE ESTE TESTE PRENDE, medido em `/preferencias`:
+    // rolando ate o fim, a barra de abas animava para fora (topo 732 -> 855) e a
+    // barra de acao ficava parada em 641-738, deixando 106px de faixa MORTA sob
+    // o botao primario -- no unico lugar da tela que o polegar procura.
+    //
+    // A assercao que existia media `scrollWidth - clientWidth` do documento.
+    // Estouro horizontal nao era o defeito, e por isso ela passava verde com o
+    // botao flutuando.
+    await page.goto("/preferencias");
+
+    const acao = page.locator("[data-bottom-action-bar='true']");
+    await expect(acao).toBeVisible();
+
+    const barra = page.locator("[data-nav-surface='tabbar']");
+    const alturaDaTela = page.viewportSize()?.height ?? 844;
+
+    // Com a barra VISIVEL a acao assenta ACIMA dela, sem cobrir.
+    const topoDaBarra = (await barra.boundingBox())?.y ?? 0;
+    const acaoVisivel = await acao.boundingBox();
+    expect(acaoVisivel).not.toBeNull();
+    expect(acaoVisivel!.y + acaoVisivel!.height).toBeLessThanOrEqual(topoDaBarra + 2);
+
+    // Rola ate o fim: a barra de abas sai de cena.
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForFunction(
+      () =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--nav-stack-shown")
+          .trim() === "0",
+      undefined,
+      { timeout: 10_000 },
+    );
+    // A transicao do `bottom` acompanha a da barra; esperar por ela e' mais
+    // barato que afrouxar a margem da assercao.
+    await page.waitForTimeout(400);
+
+    const acaoEscondida = await acao.boundingBox();
+    expect(acaoEscondida).not.toBeNull();
+    const faixaMorta = alturaDaTela - (acaoEscondida!.y + acaoEscondida!.height);
+    expect(faixaMorta).toBeLessThanOrEqual(8);
   });
 
   test("a barra some no modo imersivo da sessao", async ({ page }) => {
