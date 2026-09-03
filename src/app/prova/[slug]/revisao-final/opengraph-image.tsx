@@ -24,7 +24,7 @@ import { HOST_VISIVEL } from "@/lib/site";
  */
 
 export const alt =
-  "Cartão da Revisão Final: as 30 questões da base da prova, nos 7 assuntos mais prováveis, e o ganho medido sobre o acaso.";
+  "Cartão da Revisão Final: os 7 assuntos mais prováveis da prova, um por dia, e o ganho medido sobre o acaso.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -74,10 +74,18 @@ export default async function Imagem({ params }: { params: Promise<{ slug: strin
       ? `medido · faixa ${dec(h.historico_minimo, 2)}–${dec(h.historico_maximo, 2)}×`
       : undefined;
 
+  // A manchete é o que a página ENTREGA, e ela mudou em 02/09: o ebook deixou
+  // de publicar as 30 questões com gabarito e passou a publicar 7 páginas de
+  // revisão (D13). O cartão continuava anunciando "30 questões da própria base
+  // da prova" — e é ele que circula no WhatsApp, então quem clicasse chegaria
+  // procurando questões numa página que não tem nenhuma.
+  //
+  // As 30 continuam existindo, no app. Elas ficam no cartão como a terceira
+  // coluna, com o destino certo escrito junto.
   const numeros = [
-    { valor: String(total), rotulo: "questões da base real da prova" },
     { valor: String(dias), rotulo: "assuntos mais prováveis, um por dia" },
     { valor: lift, rotulo: "o acaso", nota: faixa },
+    { valor: String(total), rotulo: "questões para resolver no app" },
   ];
 
   return new ImageResponse(
@@ -111,7 +119,8 @@ export default async function Imagem({ params }: { params: Promise<{ slug: strin
         </div>
 
         <div style={{ display: "flex", fontSize: 22, color: FRACA, marginTop: 10 }}>
-          {total} questões da própria base da prova, organizadas em {dias} dias.
+          Como a sua prova cobra cada assunto, onde se erra e o que conferir na
+          véspera.
         </div>
 
         <div style={{ display: "flex", flex: 1, gap: 28, marginTop: 40 }}>

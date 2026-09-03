@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BuscaDeProva } from "@/components/facies/BuscaDeProva";
 import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
-import { GradeDeAreas } from "./GradeDeAreas";
+import { CONT_LANDING } from "@/lib/site";
 import type { DadosDaLanding } from "./dados";
 
 /**
@@ -27,13 +27,19 @@ import type { DadosDaLanding } from "./dados";
  * dois fatos medidos da prova dele e fecha com o porquê do produto.
  */
 export function Heroi({ dados }: { dados: DadosDaLanding }) {
-  const { prova, areas, forma, maiorAreaPassaDeUmTerco } = dados;
+  const { prova, areas, forma, maiorAreaPassaDeUmTerco, provasComFacies } = dados;
   const maior = areas[0];
   const razao = forma.padronizada?.razao ?? null;
 
   return (
     <>
-      <CabecalhoPublico />
+      {/* O cabeçalho é o único bloco que renderiza FORA do contêiner de 1080px.
+          Envolvê-lo no próprio contêiner realinha a wordmark e o "Entrar" com o
+          conteúdo do herói abaixo — sem isto a barra encostava nas bordas da
+          tela, desalinhada do resto da página. */}
+      <div className={CONT_LANDING}>
+        <CabecalhoPublico />
+      </div>
 
       <section className="pb-14 pt-7 sm:pb-24 sm:pt-16">
         <div className="mx-auto w-full max-w-[1080px] px-[var(--gutter)]">
@@ -51,9 +57,9 @@ export function Heroi({ dados }: { dados: DadosDaLanding }) {
           <p className="max-w-[66ch] text-lg sm:text-xl">
             A do {prova.sigla}:{" "}
             {maiorAreaPassaDeUmTerco ? "mais de um terço" : `${maior?.pct}%`} é{" "}
-            {maior?.rotulo.toLowerCase()}, e a pegadinha de comando quase não existe
+            {maior?.rotulo.toLowerCase()}
             {razao !== null && razao > 0.45 && razao < 0.55
-              ? " — metade do que se esperaria pelos temas que ela cobra"
+              ? ". E a pegadinha de comando aparece na metade da frequência esperada para os temas que ela cobra"
               : null}
             . Você não vai achar isso no edital.
           </p>
@@ -61,6 +67,13 @@ export function Heroi({ dados }: { dados: DadosDaLanding }) {
           <div className="mt-5">
             <BuscaDeProva />
           </div>
+
+          {/* O selo devolve a remoção de atrito logo onde a pessoa decide digitar
+              a prova dela — "grátis, sem cadastro" não pode viver só no rodapé. */}
+          <p className="mt-3 text-sm text-muted">
+            grátis · sem cadastro ·{" "}
+            <span className="font-mono tabular-nums">{provasComFacies}</span> provas já analisadas
+          </p>
 
           {/* Os atalhos existem porque o campo sozinho exige saber o que digitar.
               A curadoria vem de `bancasEmDestaque()`, e não do volume: o corte por
@@ -97,18 +110,6 @@ export function Heroi({ dados }: { dados: DadosDaLanding }) {
               )}
             </ul>
           ) : null}
-
-          <hr className="my-[18px] border-0 border-t border-rule" />
-
-          <p className="mb-3 font-mono text-micro text-muted">
-            {prova.sigla} · edição medida · n = {prova.questoes_declaradas} questões ·
-            próxima aplicação{" "}
-            <time dateTime={prova.aplicacao_prevista}>
-              {prova.aplicacao_prevista.split("-").reverse().join(".")}
-            </time>
-          </p>
-
-          <GradeDeAreas linhas={areas} />
         </div>
       </section>
     </>

@@ -127,6 +127,13 @@ export function dadosDaLanding() {
 
     nacional: { total: NACIONAL.total, bancas: TOTAL_BANCAS },
 
+    // Quantas provas têm fácies medida: as bancas do acervo + a prova em
+    // destaque (provas.json), que tem a face profunda e não entra na lista de
+    // bancas. É o "+1" que o herói, o rodapé e as objeções citam — derivado
+    // aqui uma vez para os três não divergirem (o defeito do AREA_HEX paralelo,
+    // já documentado em lib/areaIdentity.ts).
+    provasComFacies: TOTAL_BANCAS + 1,
+
     previsao: previsao
       ? {
           itens: listaPrevista?.lista ?? [],

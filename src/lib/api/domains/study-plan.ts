@@ -1,6 +1,6 @@
 import { api, authHeader } from "../shared/http";
 import type { QuestionBankSession } from "./question-bank";
-import type { Banca } from "@/lib/facies";
+import type { Banca, BancaDoIndice } from "@/lib/facies";
 
 // ---------------------------------------------------------------- objetivos
 
@@ -64,6 +64,13 @@ export type StudentTargetExamItem = {
   institution_key: string | null;
   exam_name: string | null;
   exam_date: string | null;
+  /** Sempre `"estimated"` neste contrato: data declarada pelo aluno não é
+   *  autoridade editorial. Viaja explícito porque "63 dias" e "63 dias, data
+   *  prevista" são frases diferentes, e só a segunda cabe aqui. */
+  date_status: "estimated" | "confirmed";
+  /** Dias até a prova, contados no FUSO DO ALUNO pelo servidor. `null` sem data;
+   *  negativo quando a prova já passou e o aluno não voltou para apagar. */
+  days_remaining: number | null;
 };
 
 export type StudentTargetExam = {
@@ -110,6 +117,22 @@ export async function getFaciesDaBanca(institutionKey: string): Promise<Banca | 
   if (resposta.status === 404) return null;
   if (!resposta.ok) throw new Error(`facies_banca_${resposta.status}`);
   return (await resposta.json()) as Banca;
+}
+
+/**
+ * O indice de bancas para escolher a segunda prova da comparacao.
+ *
+ * Nome e chave das 138, 27,2 KB medidos. Ver `app/api/facies/bancas/route.ts`
+ * para por que ele nao vem junto com a facies: o dataset inteiro tem 1 MB, e a
+ * lista precisa existir ANTES de haver banca escolhida.
+ *
+ * Sem `null` de saida: uma lista vazia seria dataset quebrado, nao um estado da
+ * tela -- diferente da facies de UMA banca, que legitimamente pode nao existir.
+ */
+export async function getIndiceDeBancas(): Promise<BancaDoIndice[]> {
+  const resposta = await fetch("/api/facies/bancas");
+  if (!resposta.ok) throw new Error(`facies_bancas_${resposta.status}`);
+  return (await resposta.json()) as BancaDoIndice[];
 }
 
 export async function getMyTargetExam(token: string): Promise<StudentTargetExam> {

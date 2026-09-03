@@ -9,7 +9,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
-import { getMyObjectivesV2, getStudentToday } from "@/lib/api";
+import { getMyObjectivesV2, getMyTargetExam, getStudentToday } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentAgenda } from "@/features/student-agenda/useStudentAgenda";
@@ -20,7 +20,13 @@ import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
 // tamanho do dia — agora é INFERIDO e exibido como contexto da próxima ação, não
 // como um formulário antes dela. `TodayDimensioning` é uma linha, e a conta por
 // trás dela abre a um toque.
-import { AlvoEContagem, objetivoPrincipal } from "@/components/AlvoEContagem";
+import {
+  AlvoEContagem,
+  alvoDaProvaAlvo,
+  alvoDoObjetivoV2,
+  objetivoPrincipal,
+  provaAlvoPrincipal,
+} from "@/components/AlvoEContagem";
 import { FaixaDaProva } from "./FaixaDaProva";
 import { TodayBackupActions } from "./TodayBackupActions";
 import { TodayDimensioning } from "./TodayDimensioning";
@@ -74,8 +80,29 @@ export function CanonicalTodayDashboard() {
     queryFn: () => getMyObjectivesV2(token),
     enabled: tokenResolved,
     staleTime: 300_000,
+    // A rota é 404 enquanto `ENABLE_STUDENT_OBJECTIVES_V2` estiver desligada, e
+    // ela está desligada em produção. Repetir uma indisponibilidade DE CONFIGURAÇÃO
+    // três vezes por visita só gasta rede: a linha tem outra fonte logo abaixo.
+    retry: false,
   });
-  const alvo = objetivoPrincipal(objetivosQuery.data?.items);
+  // ⚠️ DUAS FONTES, e a segunda é a que existe hoje. A declaração por banca
+  // (`student-target-exam-v1`) é o caminho ligado por padrão — é o que o
+  // `TargetExamSelector` grava e o que `/mapa` e a `FaixaDaProva` já leem. Sem
+  // ela aqui, a primeira linha do Hoje ficava vazia para todo aluno, porque o
+  // contrato v2 depende de edital publicado E de uma flag que ninguém ligou.
+  //
+  // Mesma `queryKey` da `FaixaDaProva`, então as duas dividem uma requisição só.
+  const provaAlvoQuery = useQuery({
+    queryKey: queryKeys.studentTargetExam,
+    queryFn: () => getMyTargetExam(token),
+    enabled: tokenResolved,
+    staleTime: 300_000,
+  });
+  // O v2 tem precedência quando resolve: só ele carrega data de EDITAL, e é a
+  // única origem que pode dizer "63 dias" sem a ressalva de estimativa.
+  const alvo =
+    alvoDoObjetivoV2(objetivoPrincipal(objetivosQuery.data?.items)) ??
+    alvoDaProvaAlvo(provaAlvoPrincipal(provaAlvoQuery.data?.items));
   // The compatibility field still owns the learner-local date until the Today
   // contract itself gains a timezone-aware date. Its item list is never read.
   const localDate = today?.schedule_preview.date ?? "";
@@ -181,7 +208,7 @@ export function CanonicalTodayDashboard() {
           de 35 minutos" e a unica frase que responde a pergunta com que o aluno
           abre o app. */}
       <header>
-        <AlvoEContagem objetivo={alvo} />
+        <AlvoEContagem alvo={alvo} />
         {/* A faixa do `8b`: a cara da prova, em sigla, todo dia. Ela se cala
             sozinha quando nao ha prova declarada ou facies publicada — ver o
             componente. */}
