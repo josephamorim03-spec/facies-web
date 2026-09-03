@@ -41,6 +41,13 @@ module.exports = {
         marcaDisplay: "var(--color-marca-display)",
         accent: "var(--color-accent)",
         accentInk: "var(--color-accent-ink)",
+        // Os dois lavados ja' existiam em `globals.css` sem nome no Tailwind, e
+        // por isso so' eram alcancaveis por CSS solto. A Rotina (`14a`) precisa
+        // do ambar lavado no filete do pos-plantao: e' o MESMO ambar do
+        // plantao, rebaixado, que e' exatamente o que o desenho pede -- "ambar
+        // lavado e' o pos-plantao que vem dele".
+        washSelecao: "var(--wash-selecao)",
+        washAtencao: "var(--wash-atencao)",
         success: "var(--color-success)",
         danger: "var(--color-danger)",
         warning: "var(--color-warning)",

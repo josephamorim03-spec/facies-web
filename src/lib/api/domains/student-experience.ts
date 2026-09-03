@@ -191,6 +191,24 @@ export type StudentToday = {
     schedule_suggestions_count: number;
     evidence_confidence: "low" | "medium" | "high";
   };
+  /**
+   * De onde veio o tamanho do dia — e o que foi preciso supor.
+   *
+   * Ja' viajava no contrato (`TrainerEffortBudgetOut`, visivel no
+   * `schema.d.ts`) e este tipo escrito a mao nao o declarava, entao nenhuma
+   * tela conseguia ler a PROCEDENCIA da taxa sem erro de compilacao. Sem ela,
+   * "cerca de 175 questoes" e' um numero sem fonte: o produto nao sabe dizer
+   * se mediu o aluno ou se supos 2 minutos.
+   *
+   * Sao os quatro campos que as telas usam; o contrato tem mais.
+   */
+  effort_budget?: {
+    usable_minutes: number;
+    question_capacity: number;
+    minutes_per_question: number;
+    /** `observed` = ritmo medido deste aluno; `constant` = fallback. */
+    pace_source: "observed" | "constant";
+  } | null;
   missing_sources: string[];
 };
 
