@@ -21,7 +21,10 @@ import {
   getAPIErrorMessage,
 } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
+import { useQueryClient } from "@tanstack/react-query";
+
 import { getOnboarding, saveOnboardingCapacity } from "@/lib/api/domains/study-plan";
+import { queryKeys } from "@/lib/queryKeys";
 import { getStudentToday } from "@/lib/api/domains/student-experience";
 import {
   filterEffectivePunctualEvents,
@@ -136,6 +139,7 @@ export default function PreferenciasPage() {
     null,
   );
   const [salvandoSemana, setSalvandoSemana] = useState(false);
+  const queryClient = useQueryClient();
   // Procedencia da taxa: a frase muda entre "no seu ritmo" e "supondo N min".
   const [minutosPorQuestao, setMinutosPorQuestao] = useState(2);
   const [ritmoEhDoAluno, setRitmoEhDoAluno] = useState(false);
@@ -176,7 +180,10 @@ export default function PreferenciasPage() {
         setWeeklyGoalInput(String(nextProfile.weekly_goal_questions));
         setShift12hInput(nextProfile.shift_12h_capacity == null ? "" : String(nextProfile.shift_12h_capacity));
         setRetention(fsrs.desired_retention);
-        setDisponibilidade(onboarding?.study_availability ?? {});
+        // `null` quando a leitura falhou; `{}` quando o aluno nunca declarou.
+        // A tela distingue os dois, e colapsa-los mostraria a semana em branco
+        // depois de uma falha de rede.
+        setDisponibilidade(onboarding ? (onboarding.study_availability ?? {}) : null);
         const orcamento = hoje?.effort_budget ?? null;
         if (orcamento?.minutes_per_question) {
           setMinutosPorQuestao(orcamento.minutes_per_question);
@@ -309,6 +316,14 @@ export default function PreferenciasPage() {
       // propria -- que e' exatamente o "o plano se refaz" que a tela promete.
       const estado = await saveOnboardingCapacity(token, proxima, null);
       setDisponibilidade(estado.study_availability ?? proxima);
+      // ⚠️ O SERVIDOR JA' REFEZ O PLANO, e o cliente ainda tem o antigo em
+      // cache. Sem esta invalidacao o aluno salva a semana, vai para o Hoje e ve
+      // o dia montado pela rotina ANTIGA -- o pior momento possivel para o
+      // produto parecer que ignorou o que ele acabou de dizer.
+      await queryClient.invalidateQueries({ queryKey: queryKeys.studentToday });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.studentAgendaAll });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.studyPlanCurrent });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.rotinaDoPlano });
     } catch (cause) {
       setError(
         getErrorMessage(cause, "Não foi possível salvar a sua semana. Tente de novo."),

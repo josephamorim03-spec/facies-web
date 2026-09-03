@@ -28,6 +28,12 @@ export function ContinuarDeOndeParou({
 }: {
   sessao: NonNullable<StudentToday["details"]["active_session"]>;
 }) {
+  // `href` vem do servidor. Ele e' construido como `/banco/sessao/{id}`, mas
+  // esta tela nao tem como saber disso -- e um caminho que deixasse de comecar
+  // com "/" viraria redirecionamento para fora do produto, a partir de um botao
+  // que o aluno confia. Caminho relativo, ou nao ha' botao.
+  if (!sessao.href?.startsWith("/")) return null;
+
   const faltam = Math.max(0, (sessao.total_questions ?? 0) - (sessao.answered_count ?? 0));
   const detalhe = [
     sessao.title,

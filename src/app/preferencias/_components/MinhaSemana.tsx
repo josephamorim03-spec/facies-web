@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import type { CalendarEventOut } from "@/lib/api/domains/calendar";
+import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import {
   excecoesDaSemana,
@@ -135,6 +136,14 @@ export function MinhaSemana({
   const [rascunho, setRascunho] = useState<Record<string, number> | null>(null);
   const [aberta, setAberta] = useState<number | null>(null);
 
+  // ⚠️ `null` E' "NAO CONSEGUI LER", e `{}` e' "voce ainda nao declarou".
+  //
+  // Colapsar os dois fazia a tela dizer "diga quanto da' para estudar" depois de
+  // uma falha de rede -- e o aluno que ja' tinha respondido veria a semana dele
+  // em branco, como se o produto tivesse perdido o que ele declarou. E' a mesma
+  // distincao que o resto desta tela faz entre "nada" e "—".
+  const naoLeu = disponibilidade === null && rascunho === null;
+
   // O `?? {}` criava um objeto NOVO a cada render, entao os `useMemo` abaixo
   // recalculavam sempre e o memo nao memorizava nada.
   const atual = useMemo(
@@ -155,6 +164,15 @@ export function MinhaSemana({
 
   function escolher(indice: number, minutos: number) {
     setRascunho({ ...atual, [String(indice)]: minutos });
+  }
+
+  if (naoLeu) {
+    return (
+      <Alert variant="warning">
+        Não consegui ler a sua semana agora. Ela continua salva — recarregue a página
+        para editá-la.
+      </Alert>
+    );
   }
 
   return (
