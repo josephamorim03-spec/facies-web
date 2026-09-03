@@ -6,8 +6,25 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
-import { AlvoEContagem } from "@/components/AlvoEContagem";
-import { getCurrentPlan, getMyObjectivesV2, getOnboarding } from "@/lib/api/domains/study-plan";
+// ⚠️ O componente deixou de receber o objetivo cru.
+//
+// Producao trocou a prop `objetivo` por `alvo: AlvoDaTela`, um valor JA'
+// resolvido -- porque a contagem de dias depende de qual origem respondeu: so
+// o objetivo v2 carrega data de EDITAL e pode dizer "63 dias" sem a ressalva
+// de estimativa. A precedencia mora nos construtores, e nao em cada tela.
+import {
+  AlvoEContagem,
+  alvoDaProvaAlvo,
+  alvoDoObjetivoV2,
+  objetivoPrincipal,
+  provaAlvoPrincipal,
+} from "@/components/AlvoEContagem";
+import {
+  getCurrentPlan,
+  getMyObjectivesV2,
+  getMyTargetExam,
+  getOnboarding,
+} from "@/lib/api/domains/study-plan";
 import { listEvents } from "@/lib/api/domains/calendar";
 import { getStudentToday } from "@/lib/api/domains/student-experience";
 import { queryKeys } from "@/lib/queryKeys";
@@ -60,6 +77,15 @@ export function PlanoClientPage() {
     staleTime: 300_000,
   });
 
+  // O fallback da contagem: quando o objetivo v2 nao resolve, a prova-alvo
+  // responde -- com a ressalva de estimativa que `alvoDaProvaAlvo` embute.
+  const provaAlvo = useQuery({
+    queryKey: queryKeys.studentTargetExam,
+    queryFn: () => getMyTargetExam(token),
+    enabled: tokenResolved,
+    staleTime: 300_000,
+  });
+
   // As tres consultas do CARTAO DA ROTINA. Todas com `.catch` para `null`: o
   // cartao e' contexto, e um plano que some porque a rotina nao carregou seria
   // perder o principal por causa do acessorio.
@@ -98,6 +124,13 @@ export function PlanoClientPage() {
     );
   }
 
+  // A MESMA precedencia do Hoje: v2 primeiro, prova-alvo como fallback. Duas
+  // telas que contam dias de forma diferente e' como a contagem regressiva
+  // passa a discordar de si mesma.
+  const alvoDaTela =
+    alvoDoObjetivoV2(objetivoPrincipal(objetivos.data?.items)) ??
+    alvoDaProvaAlvo(provaAlvoPrincipal(provaAlvo.data?.items));
+
   const atividades = plano.data.activities ?? [];
   const fases = fasesDoPlano(atividades, hoje, plano.data.horizon_end);
   const sobraram = naoCoube(atividades);
@@ -115,7 +148,7 @@ export function PlanoClientPage() {
   return (
     <div className="space-y-6">
       <header>
-        <AlvoEContagem objetivo={objetivos.data?.items?.[0] ?? null} />
+        <AlvoEContagem alvo={alvoDaTela} />
         <h1 className="mt-2 font-serif font-semibold text-ink">O plano até a prova</h1>
         <p className="mt-1 text-nota text-muted">
           Refeito quando a sua rotina muda, e a cada dia que você abre o app.

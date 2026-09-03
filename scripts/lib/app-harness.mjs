@@ -529,6 +529,39 @@ export async function mockApi(page) {
     if (method === "GET" && path === "/api/cadastro/status") {
       return fulfillJson(route, { cadastro_completo: true, aceites_pendentes: [] });
     }
+    // O INDICE das 138 bancas — a lista da aba "Comparar" (`9a`).
+    //
+    // ⚠️ Sem esta fixture o mapa QUEBRA INTEIRO ao trocar de aba. O fallback do
+    // mock e `{}`, e `getIndiceDeBancas` promete um ARRAY: o componente faz
+    // `(data ?? []).filter(...)` e o `??` nao pega objeto vazio, entao o erro e
+    // `filter is not a function` dentro do render -- o error boundary come a
+    // causa e a tela toda vira "Algo deu errado".
+    if (method === "GET" && path === "/api/facies/bancas") {
+      return fulfillJson(route, [
+        {
+          institution_key: "SP-UNIVERSIDADE-FEDERAL-DE-SAO-PAULO-UNIFESP-HOSPITAL-UNIVERSITARIO-DA-UNIFESP",
+          nome: "UNIFESP",
+          nome_longo: "SP - Universidade Federal de Sao Paulo - UNIFESP",
+          uf: "SP",
+          questoes_total: 1137,
+        },
+        {
+          institution_key: "EXAME-NACIONAL-DE-RESIDENCIA-ENAMED",
+          nome: "ENAMED",
+          nome_longo: "Exame Nacional de Residencia",
+          uf: null,
+          questoes_total: 2483,
+        },
+        {
+          institution_key: "SP-UNIVERSIDADE-DE-SAO-PAULO-USP",
+          nome: "USP",
+          nome_longo: "SP - Universidade de Sao Paulo - USP",
+          uf: "SP",
+          questoes_total: 612,
+        },
+      ]);
+    }
+
     // A leitura DIARIA da evolucao — o mosaico "Seus dias" (`9b`).
     //
     // 28 dias porque o servidor so' devolve balde diario ate' 31

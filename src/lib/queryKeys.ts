@@ -19,6 +19,11 @@ export const queryKeys = {
   // precisa da outra.
   studentTargetExam: ["student", "target-exam"] as const,
   faciesDaBanca: (chave: string) => ["facies", "banca", chave] as const,
+  // O INDICE (nome + chave das 138), nao a leitura de nenhuma delas. Chave
+  // separada de `faciesDaBanca` porque sao volumes de ordem diferente: 27,2 KB
+  // o indice inteiro contra 3,7 KB de mediana por banca (medidos sobre o
+  // dataset das 138), e quem precisa da lista raramente ja tem a banca.
+  indiceDeBancas: ["facies", "bancas"] as const,
   competencyMastery: ["student", "competency-mastery"] as const,
   // O plano vigente. Chave propria e `staleTime` longo: ele muda quando a
   // rotina muda ou quando o Hoje regenera, e nao a cada navegacao.

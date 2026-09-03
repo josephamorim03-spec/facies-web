@@ -8,6 +8,7 @@ import { NoveMedidas } from "./NoveMedidas";
 import { Objecoes } from "./Objecoes";
 import { TrintaAssuntos } from "./TrintaAssuntos";
 import { dadosDaLanding } from "./dados";
+import { DepoisDeEntrar } from "@/components/facies/DepoisDeEntrar";
 import { CONT_LANDING, SITE_NAME, SITE_QUALIFICADOR } from "@/lib/site";
 
 
@@ -131,8 +132,17 @@ export function Pagina() {
         }}
       />
       <TrintaAssuntos dados={dados} />
-      <CursinhoOuFacies dados={dados} />
       <MapaDosAssuntos dados={dados} />
+
+      {/* A sessão de hoje — a cara vira a rotina. A única imagem da página,
+          com dados de exemplo e regerável via `gerar-captura-produto.mjs`. */}
+      <section className="border-t border-rule py-14 sm:py-24">
+        <div className="mx-auto w-full max-w-[1080px] px-[var(--gutter)]">
+          <DepoisDeEntrar />
+        </div>
+      </section>
+
+      <CursinhoOuFacies dados={dados} />
       <Objecoes dados={dados} />
       <Fecho dados={dados} />
 
@@ -144,7 +154,7 @@ export function Pagina() {
       <footer className={`${CONT_LANDING} border-t border-rule py-8 text-sm text-muted`}>
         <p>
           {SITE_NAME} · {SITE_QUALIFICADOR} ·{" "}
-          <span className="font-mono tabular-nums">{dados.nacional.bancas}</span> bancas analisadas
+          <span className="font-mono tabular-nums">{dados.provasComFacies}</span> provas analisadas
         </p>
       </footer>
     </main>

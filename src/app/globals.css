@@ -1199,6 +1199,26 @@ input[type="range"]:focus-visible {
   }
 }
 
+/* A Revisão Final é página pública em tema CLARO.
+   O bloco de impressão acima força as cores do app (que é escuro): numa página
+   clara isso inverte tudo — título claro some no papel branco e os cards viram
+   blocos escuros. Aqui a página reafirma o próprio tema. A custom property é
+   declarada no <main> (elemento mais próximo do conteúdo), então ela vence o
+   valor herdado do `:root` sem tocar nas páginas do app. */
+@media print {
+  .revisao-final-print {
+    --color-paper: #EDEEEA;
+    --color-surface: #F6F6F4;
+    --color-surface-muted: #E3E4DF;
+    --color-edge: #7C817A;
+    --color-rule: #D8DAD4;
+    --color-ink: #16191C;
+    --color-muted: #5A6067;
+    --color-primary: #096F63;
+    --color-primary-ink: #F6F6F4;
+  }
+}
+
 /* Respect users who ask the OS to minimize motion — disable animations/transitions globally. */
 @media (prefers-reduced-motion: reduce) {
   *,

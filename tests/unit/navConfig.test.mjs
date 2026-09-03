@@ -20,14 +20,28 @@ function childOf(pathname, href) {
 }
 
 test("a navegacao e seis destinos, na ordem do desenho", () => {
-  // Eram cinco. A Rota saiu porque a tela dela era uma PERGUNTA — quanto tempo
-  // voce tem, com que energia — e a pergunta morreu: o tamanho do dia agora vem
-  // do calendario e do comportamento observado, e aparece como contexto da
-  // proxima acao no Hoje.
-  // Os flashcards saíram da barra em 2026-08-29 — a feature ficou de molho,
-  // atrás de `NEXT_PUBLIC_FLASHCARDS` (default "0"). A rota `/cards` continua
-  // existindo e redirecionando; o que sumiu foi o caminho até ela.
-  // A ordem e a do desenho, completa: `/mapa` entrou quando a tela entrou.
+  // A Rota saiu porque a tela dela era uma PERGUNTA — quanto tempo voce tem, com
+  // que energia — e a pergunta morreu: o tamanho do dia vem do calendario e do
+  // comportamento observado, e aparece como contexto da proxima acao no Hoje.
+  // Os flashcards sairam da barra em 2026-08-29, atras de `NEXT_PUBLIC_FLASHCARDS`.
+  // `/mapa` entrou quando a tela entrou.
+  //
+  // ⚠️ A CONTA VOLTOU, E ISTO REVERTE UMA DECISAO DE 2026-09-02.
+  //
+  // Ela tinha saido pelo argumento de que ocupava o peso visual de uma tela
+  // diaria para tarefa que se faz poucas vezes por ano — e o argumento valia
+  // para a Conta que existia entao: senha, exportar, encerrar.
+  //
+  // O desenho fecha o turno 14 com SEIS destinos, e a Conta que ele desenha
+  // (`12c`) e outra tela: o estado do acesso, as suas provas, os avisos e, nos
+  // proximos turnos, "Acessibilidade e leitura" (`14c`) e "Como voce resolve"
+  // (`8f`). Deixa de ser a gaveta da senha e passa a ser onde o aluno ajusta o
+  // produto — e ai o peso de destino permanente se justifica.
+  //
+  // A reversao foi decidida com o operador em 2026-09-02, com o argumento
+  // anterior na mesa. Quem quiser voltar aos cinco: o filtro esta em
+  // `INTENTS_VISIVEIS` (`navConfig.ts`), e o avatar no rodape da sidebar ja
+  // levava a `/conta` antes e continua levando.
   assert.deepEqual(
     NAV_ITEMS.map((item) => item.href),
     ["/hoje", "/mapa", "/banco", "/evolucao", "/preferencias", "/conta"],
@@ -35,6 +49,19 @@ test("a navegacao e seis destinos, na ordem do desenho", () => {
   // Uma barra so: no mobile e a barra inferior, no desktop o menu bar. Sem
   // divisorias, porque nao ha mais agrupamento por pergunta.
   assert.equal(NAV_GROUPS_CONFIG.length, 1);
+});
+
+test("a Conta esta na barra E no registro de rotas", () => {
+  // Este teste nasceu guardando o ALCANCE da Conta quando ela saiu da barra:
+  // tirar um item da barra e tirar a rota do registro sao coisas diferentes, e
+  // confundi-las e como `/conta` viraria uma tela sem titulo, sem aba ativa e
+  // sem pre-aquecimento.
+  //
+  // Com ela de volta a barra, a segunda metade continua valendo — e e ela que
+  // pega o erro de alguem mexer no registro achando que so mexe no menu.
+  assert.ok(findItem("/conta"), "/conta precisa estar na barra");
+  assert.equal(getStudentPageTitle("/conta"), "Conta");
+  assert.ok(getStudentRoute("/conta"), "/conta precisa continuar no registro de rotas");
 });
 
 test("nem Kros nem Rota sobrevivem como rotulo de menu", () => {

@@ -84,22 +84,36 @@ test("toda pagina publica declara canonico", () => {
   // bancas passaram a viver em `/prova/<slug-curto>`, na mesma rota das provas,
   // e o endereço antigo é 308 em `next.config.js`. A rota que sobrou declara o
   // canônico das duas famílias.
+  // ⚠️ CADA ROTA APONTA PARA QUEM DECLARA A METADATA DELA, e nem sempre é o
+  // `page.tsx`. A home virou a landing v8, cujo `page.tsx` é fino de propósito
+  // (`web/CLAUDE.md`: *"keep page files thin"*) e delega a
+  // `_landing/Pagina.tsx` via `generateMetadata`. O canônico nunca saiu; quem
+  // mudou de lugar foi o arquivo — e este teste reprovou por afirmar sobre a
+  // LOCALIZAÇÃO do código em vez da propriedade "a rota emite canônico".
   //
-  // ⚠️ A HOME DELEGA, e ler o arquivo da rota afirmava um PROXY.
-  // `app/page.tsx` so' chama `metadataDaLanding()`; o canonico e o Open Graph
-  // vivem em `_landing/Pagina.tsx` desde que a home virou a v8. A propriedade
-  // ("a rota declara canonico") continuava verdadeira e o teste ficou vermelho
-  // na `main` mesmo assim, porque afirmava o LITERAL naquele arquivo. Aqui a
-  // lista aponta para onde a metadata e' composta.
-  for (const rel of [
-    "app/_landing/Pagina.tsx",
-    "app/facies/page.tsx",
-    "app/prova/[slug]/page.tsx",
+  // O mapa é declarado, e não deduzido do import: seguir a delegação por regex
+  // custaria trinta linhas de parser que falham em silêncio no primeiro
+  // `export const metadata` ou re-export indireto. Mover a metadata de novo
+  // custa atualizar uma linha aqui, e a mensagem de erro diz qual.
+  for (const [rota, dono] of [
+    ["/", "app/_landing/Pagina.tsx"],
+    ["/facies", "app/facies/page.tsx"],
+    ["/prova/[slug]", "app/prova/[slug]/page.tsx"],
   ]) {
-    const fonte = ler(rel);
-    assert.match(fonte, /alternates:\s*\{\s*canonical:/, `${rel} sem canônico`);
-    assert.match(fonte, /openGraph:\s*\{/, `${rel} sem Open Graph`);
+    const fonte = ler(dono);
+    assert.match(fonte, /alternates:\s*\{\s*canonical:/, `${rota} sem canônico (${dono})`);
+    assert.match(fonte, /openGraph:\s*\{/, `${rota} sem Open Graph (${dono})`);
   }
+
+  // E a delegação da home tem de continuar existindo. Sem esta linha o mapa
+  // acima abriria um buraco: apagar o `generateMetadata` de `app/page.tsx`
+  // deixaria a rota `/` sem canônico nenhum, e o teste passaria verde porque
+  // `Pagina.tsx` — que ninguém mais chamaria — ainda o declara.
+  assert.match(
+    ler("app/page.tsx"),
+    /export\s+function\s+generateMetadata\s*\([^)]*\)[^{]*\{\s*return\s+metadataDaLanding\(/,
+    "app/page.tsx parou de delegar a metadata a _landing/Pagina.tsx",
+  );
 });
 
 test("o dominio antigo nao volta por nenhuma porta", () => {

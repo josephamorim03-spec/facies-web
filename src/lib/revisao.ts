@@ -44,6 +44,73 @@ export type DiaRevisao = {
   questoes: QuestaoRevisao[];
 };
 
+/**
+ * Uma classe medida do padrão de cobrança, com a contagem que a sustenta.
+ *
+ * `n` e `fracao` viajam juntos de propósito: "62% das questões" sem o `n` deixa
+ * o leitor supor uma base grande, e a base aqui tem entre 16 e 24 questões por
+ * assunto. O número pequeno não é defeito — é o recorte "só a prova real" —, mas
+ * escondê-lo transformaria uma contagem honesta numa estatística inflada.
+ */
+export type ClasseMedida = { classe: string; n: number; fracao: number };
+
+/** O que foi CONTADO sobre um subtema — nunca o que foi escrito sobre ele. */
+export type EvidenciaSubtema = {
+  n_questoes: number;
+  anos: { min: number | null; max: number | null; ultimos_3_anos: number };
+  answer_type: ClasseMedida[];
+  charge_pattern: ClasseMedida[];
+  reasoning_type: ClasseMedida[];
+  trap_pattern: ClasseMedida[];
+  abstencao: Record<string, number>;
+  sustenta_afirmacao: boolean;
+  metodo: string;
+};
+
+export type Armadilha = { erro: string; certo: string };
+
+export type EstruturaEducativa = {
+  tipo: "tabela" | "fluxograma";
+  titulo: string;
+  colunas?: string[];
+  linhas?: string[][];
+  passos?: string[];
+};
+
+export type FonteEducativa = {
+  id: string;
+  orgao: string;
+  titulo: string;
+  ano: number | null;
+  url: string | null;
+};
+
+/**
+ * A página educativa de um dia — o corpo do ebook desde a D13.
+ *
+ * `revisado` é o campo que não pode sumir numa refatoração: ele diz se um humano
+ * aprovou aquele texto. Conteúdo médico gerado e não revisado pode aparecer na
+ * página (para o operador julgar antes de aprovar), mas nunca sem o aviso — e o
+ * aviso é renderizado a partir DESTE campo, não da intenção de quem publicou.
+ */
+export type PaginaEducativa = {
+  subtema: string;
+  area: string | null;
+  especialidade: string | null;
+  revisado: boolean;
+  evidencia: EvidenciaSubtema | null;
+  resumo_30s: string;
+  como_a_prova_cobra: string;
+  eixos_citados: string[];
+  armadilhas: Armadilha[];
+  estrutura: EstruturaEducativa;
+  checklist_vespera: string[];
+  dispositivo_de_memoria?: { tipo: string; frase: string; decodifica: string };
+  fontes: FonteEducativa[];
+  afirmacoes_com_dado: { claim: string; fonte: string }[];
+  exemplo_de_cobranca: { descricao: string; url_banco?: string };
+};
+
 export type FonteAtualizacao = { url: string; papel: string; titulo: string };
 
 export type AtualizacaoRevisao = {
@@ -78,6 +145,9 @@ export type RevisaoFinal = {
     registered_at: string;
   };
   dias: DiaRevisao[];
+  /** Chaveado pelo número do dia como string (`"1"`..`"7"`), como vem do JSON. */
+  conteudo_educativo: Record<string, PaginaEducativa>;
+  cobertura_educativa: { aprovados: number; rascunhos: number; ausentes: number };
   atualizacoes: AtualizacaoRevisao[];
   modelo_prova: {
     questoes_declaradas: number;
@@ -119,6 +189,31 @@ export function revisaoFinal(): RevisaoFinal {
 
 export function diasDaRevisao(revisao: RevisaoFinal): DiaRevisao[] {
   return [...revisao.dias].sort((a, b) => a.dia - b.dia);
+}
+
+/** A página educativa de um dia, ou `undefined` quando o tema não foi gerado
+ *  nem aprovado. O ebook publica seis páginas em vez de sete — nunca uma
+ *  página vazia fingindo que o assunto não tem conteúdo. */
+export function paginaEducativa(
+  revisao: RevisaoFinal,
+  dia: number,
+): PaginaEducativa | undefined {
+  return revisao.conteudo_educativo?.[String(dia)];
+}
+
+/** A classe mais frequente de um eixo medido, ou `null` quando o classificador
+ *  não achou sinal nenhum — caso em que a página não deve afirmar padrão. */
+export function classeModal(
+  evidencia: EvidenciaSubtema | null,
+  eixo: "answer_type" | "charge_pattern" | "reasoning_type" | "trap_pattern",
+): ClasseMedida | null {
+  return evidencia?.[eixo]?.[0] ?? null;
+}
+
+/** `próxima_conduta` → `próxima conduta`. O sublinhado é vocabulário do
+ *  classificador; o leitor do ebook não deve ver identificador de código. */
+export function rotuloDaClasse(classe: string): string {
+  return classe.replace(/_/g, " ");
 }
 
 /** `2026-09-13` → `13/09/2026`. Determinístico: `toLocale*` varia com o locale

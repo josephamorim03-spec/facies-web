@@ -10248,6 +10248,14 @@ export interface components {
             exam_name?: string | null;
             /** Exam Date */
             exam_date?: string | null;
+            /**
+             * Date Status
+             * @default estimated
+             * @enum {string}
+             */
+            date_status: "estimated" | "confirmed";
+            /** Days Remaining */
+            days_remaining?: number | null;
         };
         /** StudentTargetExamOut */
         StudentTargetExamOut: {

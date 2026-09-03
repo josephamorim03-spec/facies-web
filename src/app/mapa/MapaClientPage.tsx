@@ -6,9 +6,16 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Skeleton } from "@/components/Skeleton";
 import { Alert } from "@/components/ui/Alert";
+import { CompararProvas } from "@/components/facies/CompararProvas";
+import { LIMIAR_EM_PONTOS } from "@/components/facies/comparacaoDeProvas";
 import { FaciesReport } from "@/components/facies/FaciesReport";
 import { MapaDaProva } from "@/components/facies/MapaDaProva";
-import { getFaciesDaBanca, getMyCompetencyMastery, getMyTargetExam } from "@/lib/api";
+import {
+  getFaciesDaBanca,
+  getIndiceDeBancas,
+  getMyCompetencyMastery,
+  getMyTargetExam,
+} from "@/lib/api";
 import type { CompetencyMasteryItem } from "@/lib/api/domains/study-plan";
 import type { Banca } from "@/lib/facies";
 import { queryKeys } from "@/lib/queryKeys";
@@ -41,6 +48,173 @@ import { useAuthToken } from "@/lib/useAuthToken";
  * segunda banca. Anunciar as tres com uma pronta seria o defeito que a secao das
  * nove medidas custou a consertar.
  */
+/**
+ * As TRÊS abas do `9a`, e o tipo do estado sai DAQUI.
+ *
+ * O estado era `useState<"prova" | "voce">` com a lista escrita à mão logo
+ * abaixo, no JSX. Acrescentar "Comparar" na lista deixou as duas em desacordo,
+ * e o typecheck cobrou nos dois pontos — `setEixo` recusando o valor novo e
+ * uma comparação declarada impossível.
+ *
+ * Derivando `Eixo` da lista, a lista é a única fonte: uma aba nova entra num
+ * lugar só, e uma aba sem ramo de renderização vira erro de tipo em vez de um
+ * botão que não faz nada.
+ */
+const ABAS = [
+  ["prova", "A prova"],
+  ["voce", "A prova e você"],
+  ["comparar", "Comparar"],
+] as const;
+
+type Eixo = (typeof ABAS)[number][0];
+
+/**
+ * "Comparar" — o artboard `B1` do pacote do Instagram.
+ *
+ * ## A escolha da segunda prova é o componente inteiro
+ *
+ * A primeira prova não se escolhe: é a do aluno, a mesma das outras duas abas.
+ * A segunda precisa de uma lista de 138, e é ela que decide o desenho daqui.
+ *
+ * `<select>` nativo, e não um combobox próprio. O `9a` usa exatamente esse
+ * idioma no seletor de edições ("5 provas ▾"), então o nativo não é preguiça: é
+ * o controle que o desenho já escolheu para esta tela. Ele também chega de
+ * graça com busca por digitação, navegação por teclado, e a roda do celular —
+ * que é onde uma lista de 138 itens de fato dói.
+ *
+ * ⚠️ A LISTA NÃO PODE VIR DO `facies.json`. Ele tem 1 MB e este é um componente
+ * cliente; importá-lo aqui para tirar 138 pares nome/chave mandaria o dataset
+ * inteiro para o navegador. Vem de `/api/facies/bancas`, 27,2 KB medidos,
+ * estático.
+ *
+ * ⚠️ E a própria prova sai da lista. Comparar a UNIFESP com a UNIFESP dá uma
+ * tela de zeros que parece defeito.
+ */
+/**
+ * As chaves das provas que o aluno declarou ALÉM da principal, em ordem de
+ * prioridade. Vem de `items`, que sempre foi um array — a tela é que lia só o
+ * primeiro e jogava o resto fora.
+ */
+function EixoComparar({ minha, outrasDoAluno }: { minha: Banca; outrasDoAluno: string[] }) {
+  // ⚠️ O PADRÃO É A SEGUNDA PROVA DO ALUNO, e isso é regra do desenho, não
+  // conveniência: "Até três provas […] Só a principal monta o dia; as outras
+  // duas entram como comparação no mapa e como filtro no banco"
+  // (`Webapp - telas`, tela de escolha de provas).
+  //
+  // Quem declarou duas provas já disse com quem quer comparar. Abrir a aba num
+  // "Escolha uma prova" vazio faria a pessoa repetir uma escolha que o app já
+  // tem guardada — e o dado para isso estava carregado o tempo todo.
+  const [escolhida, setEscolhida] = useState<string>(outrasDoAluno[0] ?? "");
+
+  const indice = useQuery({
+    queryKey: queryKeys.indiceDeBancas,
+    queryFn: getIndiceDeBancas,
+    // O índice muda quando alguém commita um dataset novo, e o deploy invalida
+    // o cache junto. Uma hora em memória é conservador.
+    staleTime: 60 * 60_000,
+  });
+
+  const outra = useQuery({
+    queryKey: queryKeys.faciesDaBanca(escolhida),
+    queryFn: () => getFaciesDaBanca(escolhida),
+    enabled: escolhida !== "",
+    staleTime: 60 * 60_000,
+  });
+
+  const opcoes = (indice.data ?? []).filter(
+    (banca) => banca.institution_key !== minha.institution_key,
+  );
+
+  // As provas do aluno primeiro, na ordem de prioridade que ele mesmo definiu
+  // no seletor de objetivos. Uma lista de 138 em ordem alfabética esconde no
+  // meio dela exatamente as duas que o desenho manda oferecer.
+  const chavesDoAluno = new Set(outrasDoAluno);
+  const minhasOutras = outrasDoAluno
+    .map((chave) => opcoes.find((banca) => banca.institution_key === chave))
+    .filter((banca): banca is (typeof opcoes)[number] => Boolean(banca));
+  const demais = opcoes.filter((banca) => !chavesDoAluno.has(banca.institution_key));
+
+  const rotuloDe = (banca: (typeof opcoes)[number]) =>
+    `${banca.nome}${banca.uf ? ` · ${banca.uf}` : ""}`;
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <label htmlFor="comparar-com" className="paper-eyebrow">
+          comparar a {minha.nome} com
+        </label>
+        <select
+          id="comparar-com"
+          value={escolhida}
+          onChange={(evento) => setEscolhida(evento.target.value)}
+          disabled={indice.isPending || indice.isError}
+          className="paper-control mt-1.5 block min-h-11 w-full max-w-[42ch] rounded-surface border border-rule bg-surface px-3 py-2 text-base text-ink"
+        >
+          <option value="">
+            {indice.isPending ? "Carregando as provas…" : "Escolha uma prova"}
+          </option>
+          {/* O nome curto é o que o aluno reconhece; o longo desempata os
+              homônimos que `nomeCurto` não resolveu sozinho. */}
+          {minhasOutras.length > 0 ? (
+            <optgroup label="Suas provas">
+              {minhasOutras.map((banca) => (
+                <option key={banca.institution_key} value={banca.institution_key}>
+                  {rotuloDe(banca)}
+                </option>
+              ))}
+            </optgroup>
+          ) : null}
+          <optgroup label={minhasOutras.length > 0 ? "Todas as provas" : "Provas"}>
+            {demais.map((banca) => (
+              <option key={banca.institution_key} value={banca.institution_key}>
+                {rotuloDe(banca)}
+              </option>
+            ))}
+          </optgroup>
+        </select>
+      </div>
+
+      {indice.isError ? (
+        <Alert variant="danger">Não consegui carregar a lista de provas.</Alert>
+      ) : null}
+
+      {escolhida === "" ? (
+        <p className="max-w-[52ch] text-base text-muted">
+          {/* O limiar vem da CONSTANTE, e não escrito por extenso. Esta frase
+              dizia "passam de três pontos" enquanto a legenda de
+              `CompararProvas` interpola `LIMIAR_EM_PONTOS`: a mesma regra em
+              dois lugares, e só um acompanharia uma mudança do desenho. É o
+              defeito que a numeração das seções da home já pagou — número
+              escrito duas vezes é número que diverge. */}
+          Duas provas com o mesmo edital cobram diferente. Escolha uma e as duas
+          faixas aparecem na mesma escala, com as diferenças que passam de{" "}
+          {LIMIAR_EM_PONTOS} pontos percentuais destacadas.
+        </p>
+      ) : null}
+
+      {escolhida !== "" && outra.isPending ? (
+        <Skeleton className="h-64 w-full" aria-label="Comparação carregando" />
+      ) : null}
+
+      {escolhida !== "" && outra.isError ? (
+        <Alert variant="danger">Não consegui carregar a leitura dessa prova.</Alert>
+      ) : null}
+
+      {/* `null` com sucesso é a banca sem fácies publicada, e é diferente de
+          erro: ela está no índice porque existe no acervo, mas não passou do
+          piso de questões recentes. */}
+      {escolhida !== "" && outra.isSuccess && !outra.data ? (
+        <Alert variant="warning">
+          Ainda não há leitura publicada dessa prova — ela não tem questões
+          recentes suficientes para a medida não ser ruído.
+        </Alert>
+      ) : null}
+
+      {outra.data ? <CompararProvas a={minha} b={outra.data} /> : null}
+    </div>
+  );
+}
+
 /**
  * "A prova e você" — o artboard `12b`.
  *
@@ -157,7 +331,7 @@ function EixoVoce({ banca }: { banca: Banca }) {
 
 export function MapaClientPage() {
   const { token, tokenResolved } = useAuthToken();
-  const [eixo, setEixo] = useState<"prova" | "voce">("prova");
+  const [eixo, setEixo] = useState<Eixo>("prova");
 
   const provaAlvo = useQuery({
     queryKey: queryKeys.studentTargetExam,
@@ -168,10 +342,18 @@ export function MapaClientPage() {
   });
 
   // A de maior prioridade, que e a mesma regra de `objetivoPrincipal`.
-  const alvo = [...(provaAlvo.data?.items ?? [])].sort(
+  const porPrioridade = [...(provaAlvo.data?.items ?? [])].sort(
     (a, b) => a.priority - b.priority,
-  )[0];
+  );
+  const alvo = porPrioridade[0];
   const chave = alvo?.institution_key ?? null;
+
+  // As OUTRAS provas declaradas — o desenho manda que elas sejam a comparação
+  // do mapa. `items` sempre veio com todas; era esta linha que faltava.
+  const outrasDoAluno = porPrioridade
+    .slice(1)
+    .map((item) => item.institution_key)
+    .filter((k): k is string => Boolean(k));
 
   const facies = useQuery({
     queryKey: queryKeys.faciesDaBanca(chave ?? ""),
@@ -208,8 +390,12 @@ export function MapaClientPage() {
           quanto pesa cada disciplina. Ele começa quando você diz qual prova vai
           fazer.
         </p>
+        {/* A ÂNCORA importa. A prova alvo é a segunda das seis seções de
+            `/preferencias`, mas a primeira sozinha ocupa ~240 linhas de
+            formulário de rotina — sem `#prova-alvo` este botão entregava o
+            aluno no topo da página, com a decisão que o trouxe fora da tela. */}
         <Link
-          href="/preferencias"
+          href="/preferencias#prova-alvo"
           className="paper-control mt-4 inline-flex min-h-11 items-center rounded-surface border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk"
         >
           Escolher a prova
@@ -261,20 +447,17 @@ export function MapaClientPage() {
       </div>
 
       {/* ── As abas do artboard `9a` ──────────────────────────────────────
-          O desenho nomeia TRES -- "A prova", "A prova e você" e "Comparar" --
-          e desenha DUAS: o `9a` mostra a primeira e o `12b` a segunda.
-          "Comparar" aparece so como botao, em nenhum artboard com conteudo.
+          As TRES que o desenho nomeia. Ele desenha a primeira no `9a` e a
+          segunda no `12b`; a terceira nao esta em artboard nenhum do
+          `Webapp - telas`, e eu tinha concluido dai que o desenho nao a havia
+          decidido.
 
-          Por isso ela nao esta aqui. Inventar o que o desenho nao decidiu foi
-          exatamente o que esta sessao passou o dia corrigindo -- e uma aba que
-          abre em nada e' pior que uma aba ausente. */}
+          Estava errado, e o erro foi de METODO: eu li um arquivo e afirmei
+          sobre o pacote. O `B1` do `Instagram - modelos` e' esta tela, com
+          regra explicita -- duas faixas empilhadas, mesma escala, ambar so'
+          acima de 3 pontos. Ver `CompararProvas.tsx`. */}
       <div className="flex flex-wrap gap-2">
-        {(
-          [
-            ["prova", "A prova"],
-            ["voce", "A prova e você"],
-          ] as const
-        ).map(([chave, rotulo]) => (
+        {ABAS.map(([chave, rotulo]) => (
           <button
             key={chave}
             type="button"
@@ -291,11 +474,11 @@ export function MapaClientPage() {
         ))}
       </div>
 
-      {eixo === "prova" ? (
-        <FaciesReport banca={facies.data} />
-      ) : (
-        <EixoVoce banca={facies.data} />
-      )}
+      {eixo === "prova" ? <FaciesReport banca={facies.data} /> : null}
+      {eixo === "voce" ? <EixoVoce banca={facies.data} /> : null}
+      {eixo === "comparar" ? (
+        <EixoComparar minha={facies.data} outrasDoAluno={outrasDoAluno} />
+      ) : null}
     </div>
   );
 }

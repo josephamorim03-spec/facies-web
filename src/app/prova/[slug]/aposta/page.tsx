@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+
+import { revisaoPorExamKey } from "@/lib/revisao";
 
 import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
 import { Compartilhar } from "@/components/facies/Compartilhar";
@@ -87,6 +90,8 @@ export default async function PaginaDaAposta({ params }: Props) {
   const previsao = prova ? previsaoPorExamKey(prova.exam_key) : undefined;
   const lista = previsao ? listaDaManchete(previsao) : undefined;
   if (!prova || !previsao || !lista) notFound();
+
+  const revisao = revisaoPorExamKey(prova.exam_key);
 
   const v = prova.validacao;
   const medido = v.status === "medido" ? v : null;
@@ -256,6 +261,39 @@ export default async function PaginaDaAposta({ params }: Props) {
           ))}
         </ol>
       </section>
+
+      {/* ── O QUE FAZER COM A LISTA ────────────────────────────────────────
+          A página inteira até aqui responde "o que achamos que cai". Esta seção
+          existe porque a pergunta seguinte é inevitável — e a própria página
+          declara, nos limites, que a lista "não é um resumo para estudar". A
+          revisão é a resposta honesta: não é teoria, são questões da própria
+          base da prova nos assuntos do topo desta lista. */}
+      {revisao ? (
+        <section className="mt-10" aria-labelledby="o-que-fazer">
+          <div className="paper-surface flex flex-wrap items-center justify-between gap-x-6 gap-y-4 p-5 sm:p-6">
+            <div className="min-w-0 max-w-[54ch]">
+              <h2 id="o-que-fazer" className="paper-eyebrow">
+                o que fazer com esta lista
+              </h2>
+              {/* Esta página declara que não é um resumo para estudar; o cartão
+                  responde exatamente essa lacuna. A copy dizia "30 questões com
+                  gabarito" — desde a D13 o ebook é educativo e as questões
+                  ficam no app. */}
+              <p className="mt-2 text-base text-muted">
+                Os {revisao.dias.length} primeiros assuntos desta lista viram{" "}
+                {revisao.dias.length} dias de revisão: como a prova cobra cada um, onde
+                se erra e o que conferir na véspera. Grátis, sem cadastro.
+              </p>
+            </div>
+            <Link
+              href={`/prova/${prova.slug}/revisao-final`}
+              className="paper-control inline-flex min-h-11 items-center rounded-control border border-edge bg-ink px-4 py-2 text-sm font-semibold text-paper transition hover:brightness-95"
+            >
+              Ver a revisão final
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       {/* ── O que vem depois ──────────────────────────────────────────────── */}
       <section className="mt-10" aria-labelledby="depois">

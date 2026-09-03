@@ -663,7 +663,12 @@ export default function PreferenciasPage() {
         </section>
 
         {targetExamCapability?.enabled ? (
-          <section className="py-7">
+          /* `id` e `scroll-mt`: `/mapa` manda quem ainda não declarou prova para
+             cá, e sem âncora ele aterrissava no topo da página — a seção acima
+             desta tem ~240 linhas de formulário de rotina, então a decisão que
+             o trouxe nasce abaixo da dobra. O `scroll-mt` desconta o cabeçalho
+             fixo, que senão cobre o título da seção. */
+          <section id="prova-alvo" className="scroll-mt-24 py-7">
             <SectionTitle
               icon={Goal}
               title="Prova alvo"

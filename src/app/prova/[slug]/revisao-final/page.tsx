@@ -8,11 +8,12 @@ import { provaPorSlug, todasAsProvas } from "@/lib/provas";
 import {
   dataCurta,
   diasDaRevisao,
+  paginaEducativa,
   revisaoPorExamKey,
 } from "@/lib/revisao";
 import { CONT_LANDING } from "@/lib/site";
 import { BotaoImprimirPdf } from "./_components/BotaoImprimirPdf";
-import { QuestaoRevisaoCard } from "./_components/QuestaoRevisaoCard";
+import { PaginaDoDia } from "./_components/PaginaDoDia";
 
 /**
  * A Revisão Final — a última semana antes da prova, em ebook público.
@@ -20,16 +21,28 @@ import { QuestaoRevisaoCard } from "./_components/QuestaoRevisaoCard";
  * ## O que esta página é, e o que ela se recusa a ser
  *
  * É a previsão transformada em ação: os 7 assuntos que medimos como mais
- * prováveis viraram 30 questões da PRÓPRIA base da prova (ENARE + Revalida +
- * ENAMED), organizadas em 7 dias. Não é um resumo teórico — a Fácies não vende
- * teoria — e não é uma promessa: a mesma honestidade da `/aposta` vale aqui, com
- * o lift E a faixa histórica, incluindo o pior caso.
+ * prováveis viraram 7 páginas de revisão de véspera, cada uma ancorada no que a
+ * PRÓPRIA base da prova (ENARE + Revalida + ENAMED) cobra naquele assunto. Não é
+ * uma promessa: a mesma honestidade da `/aposta` vale aqui, com o lift E a faixa
+ * histórica, incluindo o pior caso.
  *
- * ## Por que o gabarito aparece
+ * ## Por que as 30 questões saíram daqui
  *
- * É um documento de revisão, não um auto-teste. As 30 questões são publicadas
- * com gabarito de propósito (D-privacidade da spec). Quem quer resolver sem ver
- * a resposta usa a versão do app.
+ * A versão anterior publicava as 30 questões reais COM gabarito, sem cadastro.
+ * Três problemas de uma vez: queimava as questões para uso como prática inédita,
+ * redistribuía item de banca em massa por WhatsApp, e — o pior — entregava
+ * gabarito sem comentário, que é a forma menos educativa possível de mostrar uma
+ * questão. As questões agora vivem só no app, onde o gabarito aparece depois da
+ * resposta e o desempenho é registrado (D13/D14).
+ *
+ * O que ficou público é o que de fato ensina na véspera: como a banca cobra cada
+ * assunto, onde se erra, uma estrutura por tema e o checklist. Cada página diz
+ * de onde vieram os dados dela.
+ *
+ * ## O conteúdo pode estar em rascunho, e a página diz isso
+ *
+ * `revisado` viaja por dia dentro do dataset. Um tema gerado e não aprovado por
+ * revisão médica aparece com o aviso, ou não aparece — nunca sem o aviso.
  *
  * Estática, como as irmãs: o tráfego é pico de WhatsApp.
  */
@@ -51,9 +64,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!prova || !revisao) return {};
 
   const caminho = `/prova/${slug}/revisao-final`;
-  const total = revisao.estrutura.total_questoes;
   const titulo = `Revisão Final ${prova.sigla}: a última semana`;
-  const descricao = `${total} questões da própria base da prova, nos ${revisao.dias.length} assuntos que medimos como mais prováveis no ${prova.sigla} — organizadas em 7 dias, com gabarito. Grátis, sem cadastro.`;
+  const descricao = `Os ${revisao.dias.length} assuntos que medimos como mais prováveis no ${prova.sigla}, um por dia: como a banca cobra cada um, onde se erra e o que conferir na véspera. Grátis, sem cadastro.`;
 
   return {
     title: titulo,
@@ -70,9 +82,15 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
   if (!prova || !revisao) notFound();
 
   const dias = diasDaRevisao(revisao);
+  const paginas = dias
+    .map((dia) => ({ dia, pagina: paginaEducativa(revisao, dia.dia) }))
+    .filter((par): par is { dia: (typeof dias)[number]; pagina: NonNullable<typeof par.pagina> } =>
+      par.pagina !== undefined,
+    );
   const h = revisao.honestidade;
   const total = revisao.estrutura.total_questoes;
   const livres = revisao.estrutura.dias_livres_ate_prova;
+  const emRascunho = revisao.cobertura_educativa?.rascunhos ?? 0;
   const ganho = (valor: number | null) => (valor === null ? null : dec(valor, 2));
   const faixa =
     h.historico_minimo !== null && h.historico_maximo !== null
@@ -92,15 +110,30 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
           A última semana antes do {prova.sigla}.
         </h1>
         <p className="mt-4 max-w-[60ch] text-lg text-muted">
-          {total} questões da própria base da prova, nos {dias.length} assuntos que
-          medimos como mais prováveis — um por dia, do mais provável ao menos. Os{" "}
-          {livres} dias que sobram até a prova ficam livres.
+          Um assunto por dia, do mais provável ao menos: o que a sua prova cobra
+          nele, onde se erra e o que conferir na véspera. Os {livres} dias que
+          sobram até a prova ficam livres.
         </p>
+        {revisao.aplicacao_prevista ? (
+          <p className="mt-2 font-mono text-sm text-muted">
+            prova em {dataCurta(revisao.aplicacao_prevista)}
+          </p>
+        ) : null}
       </header>
+
+      {emRascunho > 0 ? (
+        <p className="border border-edge bg-surfaceMuted p-4 text-sm text-ink sm:p-5">
+          <span className="paper-eyebrow">pré-visualização</span>{" "}
+          {emRascunho} das {dias.length} páginas ainda{" "}
+          <strong>não passaram por revisão médica</strong>. Elas estão aqui para
+          serem revisadas, não para estudo definitivo — e cada uma repete este
+          aviso no próprio cabeçalho.
+        </p>
+      ) : null}
 
       {/* ── A evidência, com a mesma honestidade da aposta ────────────────── */}
       {h.lift !== null ? (
-        <section className="paper-surface p-5 sm:p-6" aria-labelledby="evidencia">
+        <section className="mt-6 paper-surface p-5 sm:p-6" aria-labelledby="evidencia">
           <h2 id="evidencia" className="paper-eyebrow">
             por que estes assuntos
           </h2>
@@ -129,11 +162,13 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
         <div className="paper-surface flex flex-wrap items-center justify-between gap-x-6 gap-y-4 p-5 sm:p-6">
           <div className="min-w-0 max-w-[52ch]">
             <h2 id="resolver-no-app" className="paper-eyebrow">
-              prefere resolver?
+              e as questões?
             </h2>
             <p className="mt-2 text-base text-muted">
-              As mesmas {total} questões, com correção e registro do seu desempenho
-              — dentro do app, uma por dia.
+              {total} questões da própria base da prova, {revisao.estrutura.carga_por_dia.join("/")}{" "}
+              por dia, dentro do app — com o gabarito só depois da sua resposta e o
+              desempenho registrado. Aqui fora elas apareceriam com gabarito à
+              mostra, que é a forma menos útil de revisar.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -153,46 +188,26 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
         <h2 id="dias" className="paper-eyebrow">
           os {dias.length} dias, na ordem
         </h2>
-        <div className="mt-6 space-y-10">
-          {dias.map((dia) => (
-            <section
-              key={dia.dia}
-              aria-labelledby={`dia-${dia.dia}`}
-              className="print:break-before-page"
-            >
-              <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                <span className="font-mono text-sm text-muted">
-                  dia {dia.dia}
-                </span>
-                <h3
-                  id={`dia-${dia.dia}`}
-                  className="font-serif text-2xl font-semibold tracking-tight text-ink"
-                >
-                  {dia.subtema}
-                </h3>
-                <span className="text-sm text-muted">
-                  {dia.posicao_previsao}º assunto mais provável ·{" "}
-                  {dia.questoes.length} questões
-                </span>
-              </header>
-              <ol className="mt-4 grid gap-px overflow-hidden border border-edge bg-edge">
-                {dia.questoes.map((questao, indice) => (
-                  <li key={questao.question_id}>
-                    <QuestaoRevisaoCard
-                      questao={questao}
-                      numero={indice + 1}
-                    />
-                  </li>
-                ))}
-              </ol>
-            </section>
-          ))}
-        </div>
+        {paginas.length === 0 ? (
+          <p className="mt-4 max-w-[62ch] text-base text-muted">
+            As páginas de revisão ainda não foram publicadas. Enquanto isso, a{" "}
+            <a href={`/prova/${prova.slug}/aposta`} className="text-ink underline underline-offset-4">
+              aposta registrada
+            </a>{" "}
+            já mostra quais assuntos medimos como mais prováveis.
+          </p>
+        ) : (
+          <div className="mt-6 space-y-14">
+            {paginas.map(({ dia, pagina }) => (
+              <PaginaDoDia key={dia.dia} dia={dia} pagina={pagina} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ── As atualizações, como fato e não previsão ─────────────────────── */}
       {revisao.atualizacoes.length > 0 ? (
-        <section className="mt-12" aria-labelledby="atualizacoes">
+        <section className="mt-12 print:break-before-page" aria-labelledby="atualizacoes">
           <h2 id="atualizacoes" className="paper-eyebrow">
             o que mudou e pode ser cobrado
           </h2>
@@ -201,7 +216,7 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
           </p>
           <ul className="mt-5 space-y-4">
             {revisao.atualizacoes.map((item) => (
-              <li key={item.slug} className="paper-surface p-4 sm:p-5">
+              <li key={item.slug} className="paper-surface p-4 sm:p-5 print:break-inside-avoid">
                 <p className="text-base font-medium text-ink">{item.titulo}</p>
                 <p className="mt-1 max-w-[62ch] text-sm text-muted">{item.resumo}</p>
                 <p className="mt-2 text-xs text-muted">
@@ -243,8 +258,13 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
             continua podendo cair.
           </li>
           <li>
-            <span className="text-ink">Não é um resumo teórico.</span> São questões da
-            própria prova com gabarito. A Fácies não vende conteúdo teórico.
+            <span className="text-ink">Não é um curso teórico.</span> É revisão de
+            véspera: como a banca cobra, onde se erra e o que conferir. Não substitui
+            o estudo do assunto, e a Fácies não vende conteúdo teórico.
+          </li>
+          <li>
+            <span className="text-ink">Não é fonte primária.</span> Cada página lista
+            de onde vieram os dados dela; diante de divergência, vale a fonte.
           </li>
         </ul>
       </section>

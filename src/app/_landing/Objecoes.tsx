@@ -15,8 +15,7 @@ import { DIAS_DE_TRIAL, type DadosDaLanding } from "./dados";
  * trinta, que é onde o hash mora.
  */
 export function Objecoes({ dados }: { dados: DadosDaLanding }) {
-  const { nacional, prova } = dados;
-  const provasComFacies = nacional.bancas + 1;
+  const { prova, provasComFacies } = dados;
 
   const objecoes: { p: string; r: React.ReactNode }[] = [
     {

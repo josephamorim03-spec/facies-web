@@ -13,16 +13,19 @@ dela seguem no repositório, intactos: `FunilHome`, `SecaoAposta`,
 
 ## O que a v8 faz de diferente
 
-A v7 argumentava por **objeção**, em seções numeradas. A v8 argumenta por
-**demonstração**, nesta ordem:
+A v7 argumentava por **objeção**, em seções numeradas. A v8 **demonstra a
+jornada**: a cara da prova monta o caminho do aluno — cara → diagnóstico e mapa
+→ sessão de hoje → revisão —, com a âncora e as objeções como apoio. Nesta
+ordem:
 
 | bloco | o trabalho dele |
 | --- | --- |
-| `Heroi` | a cara em cem quadrados, antes de qualquer scroll |
+| `Heroi` | a cara da prova + a busca, antes de qualquer scroll |
 | `NoveMedidas` | o que se mede numa questão, com exemplo |
 | `TrintaAssuntos` | o payload: a lista registrada antes da prova |
+| `MapaDosAssuntos` | o mapa: a cara × o que você já sabe, e o que custa |
+| `DepoisDeEntrar` | a sessão de hoje: 3 passos + captura do /hoje |
 | `CursinhoOuFacies` | a âncora — contra mentoria, não contra banco de questões |
-| `MapaDosAssuntos` | o que ainda não se viu, e o que custa |
 | `Objecoes` | as quatro objeções reais |
 | `Fecho` | a revisão da última semana, o e-mail, o compartilhamento |
 

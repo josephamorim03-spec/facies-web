@@ -20,11 +20,12 @@ import { Pagina, metadataDaLanding } from "./_landing/Pagina";
  * ## O que esta versão troca, e o que ela CARREGA da anterior
  *
  * A v7 argumentava por seções numeradas (`01`…`05`) e por objeção. A v8
- * argumenta por demonstração: a cara da prova em cem quadrados, as nove
- * medidas, os trinta assuntos registrados antes da prova, o mapa, e só então
- * as objeções. Os números não são mais escritos à mão — `_landing/dados.ts`
- * os deriva do dataset, e uma afirmação que perca a fonte vira erro de tipo em
- * vez de texto errado na tela.
+ * demonstra a jornada: a cara da prova ("Cada prova tem uma cara"), a
+ * demonstração (nove medidas, trinta assuntos), o mapa, a sessão de hoje
+ * (`DepoisDeEntrar`), e só então a âncora, as objeções e a revisão. Os números
+ * não são mais escritos à mão — `_landing/dados.ts` os deriva do dataset, e
+ * uma afirmação que perca a fonte vira erro de tipo em vez de texto errado na
+ * tela.
  *
  * Quatro coisas da home anterior foram trazidas de propósito, porque o porte
  * não as tinha e a página as pressupõe:
@@ -39,7 +40,7 @@ import { Pagina, metadataDaLanding } from "./_landing/Pagina";
  *    registrava. Portar sem a cifra teria revertido em silêncio uma decisão de
  *    negócio de três dias antes. Está em `_landing/MapaDosAssuntos.tsx`, com o
  *    porquê inteiro.
- * 4. **O rodapé** com a contagem de bancas.
+ * 4. **O rodapé** com a contagem de provas.
  *
  * A versão anterior está em `git show HEAD~1:krosmed/web/src/app/page.tsx` —
  * e os componentes dela (`FunilHome`, `SecaoAposta`, `SecaoOndeEncaixa`,

@@ -10,15 +10,35 @@ const readinessUrl = "http://127.0.0.1:3000/api/version";
 const port = 3000;
 const readinessTimeoutMs = 120_000;
 const smokeTimeoutMs = 300_000;
-const smokeSpecs = [
+
+/**
+ * O conjunto padrão. Ele depende do backend em `:8000` para várias telas — com
+ * a API fora, o `AppShell` não consegue resolver `cadastro_completo` nem
+ * `access_status`, a escada de bloqueio manda a sessão para
+ * `/cadastro/completar` e a suíte inteira cai junto. Estabilizar isso é epic
+ * própria (`docs/production-readiness.md`, Deferred Hardening).
+ */
+const DEFAULT_SPECS = [
   "navigation.shell.spec.ts",
   "banco.historico.spec.ts",
   "auth.proxy-cookie.spec.ts",
+  "cadastro.funil.spec.ts",
   "cronograma.smoke.spec.ts",
   "caderno.header-toggle.spec.ts",
   "revisao-turbo.smoke.spec.ts",
   "study-import.smoke.spec.ts",
 ];
+
+/**
+ * Specs passadas na linha de comando vencem o padrão.
+ *
+ * Existe para o subconjunto que NÃO depende do backend — guard de borda,
+ * cookies do BFF, CSRF e o funil de cadastro. Ele roda em ~9s e pode ficar
+ * verde de verdade, então serve de gate; o conjunto completo, hoje, não serve.
+ * Ver o script `test:e2e:auth`.
+ */
+const smokeSpecs = process.argv.slice(2).filter(Boolean);
+const specs = smokeSpecs.length > 0 ? smokeSpecs : DEFAULT_SPECS;
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -105,7 +125,7 @@ function runPlaywright() {
   delete playwrightEnv.NO_COLOR;
 
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, [playwrightCli, "test", "--reporter=list", ...smokeSpecs], {
+    const child = spawn(process.execPath, [playwrightCli, "test", "--reporter=list", ...specs], {
       cwd: webRoot,
       env: playwrightEnv,
       stdio: ["ignore", "pipe", "pipe"],

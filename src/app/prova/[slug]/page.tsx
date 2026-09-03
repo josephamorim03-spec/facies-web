@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { revisaoPorExamKey } from "@/lib/revisao";
 import { ProvaReport } from "@/components/facies/ProvaReport";
 import { FaciesReport } from "@/components/facies/FaciesReport";
 import { Compartilhar } from "@/components/facies/Compartilhar";
@@ -113,6 +115,9 @@ export default async function PaginaDaProva({ params }: Props) {
   const banca = prova ? null : bancaPorSlugCurto(slug);
   if (!prova && !banca) notFound();
 
+  // A revisão só existe para prova com aposta congelada + seleção gerada.
+  const revisao = prova ? revisaoPorExamKey(prova.exam_key) : undefined;
+
   // O CONTÊINER É O DA LANDING, e não `max-w-5xl`.
   //
   // O funil público tinha TRÊS larguras: a home em 1080 (`CONT_LANDING`, medida
@@ -143,6 +148,39 @@ export default async function PaginaDaProva({ params }: Props) {
           <ContarVisita chave={prova.exam_key} />
 
           <ProvaReport prova={prova} />
+
+          {/* A REVISÃO FINAL ENTRA AQUI, e não no fim.
+              Quem acabou de ler como a prova cobra está no único momento em que
+              "e agora, o que eu faço com isso?" é a pergunta natural. Depois do
+              Compartilhar a pessoa já saiu da leitura; depois do GateEmail ela já
+              foi convertida em outra coisa. Só aparece quando existe revisão
+              gerada para esta prova — um link para página inexistente seria
+              promessa quebrada. */}
+          {revisao ? (
+            <section className="mt-8" aria-labelledby="revisao-final-cta">
+              <div className="paper-surface flex flex-wrap items-center justify-between gap-x-6 gap-y-4 p-5 sm:p-6">
+                <div className="min-w-0 max-w-[54ch]">
+                  <h2 id="revisao-final-cta" className="paper-eyebrow">
+                    a última semana
+                  </h2>
+                  {/* A promessa acompanha o que a página entrega. Ela dizia
+                      "30 questões com gabarito" até 02/09; desde a D13 o ebook
+                      é educativo e as questões ficam no app. */}
+                  <p className="mt-2 text-base text-muted">
+                    Os {revisao.dias.length} assuntos que medimos como mais prováveis, um
+                    por dia: como a prova cobra cada um, onde se erra e o que conferir na
+                    véspera. Grátis, sem cadastro.
+                  </p>
+                </div>
+                <Link
+                  href={`/prova/${prova.slug}/revisao-final`}
+                  className="paper-control inline-flex min-h-11 items-center rounded-control border border-edge bg-ink px-4 py-2 text-sm font-semibold text-paper transition hover:brightness-95"
+                >
+                  Ver a revisão final
+                </Link>
+              </div>
+            </section>
+          ) : null}
 
           {/* COMPARTILHAR DEPOIS DA LEITURA, e não antes dela.
               Ele morava no cabeçalho, colado no título: a página pedia para a
