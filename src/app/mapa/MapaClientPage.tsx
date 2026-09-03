@@ -9,6 +9,7 @@ import { Alert } from "@/components/ui/Alert";
 import { FaciesReport } from "@/components/facies/FaciesReport";
 import { MapaDaProva } from "@/components/facies/MapaDaProva";
 import { getFaciesDaBanca, getMyCompetencyMastery, getMyTargetExam } from "@/lib/api";
+import type { CompetencyMasteryItem } from "@/lib/api/domains/study-plan";
 import type { Banca } from "@/lib/facies";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
@@ -85,13 +86,22 @@ function EixoVoce({ banca }: { banca: Banca }) {
   }
 
   const itens = proficiencia.data?.items ?? [];
-  // ⚠️ `nao_avaliado` NAO entra no mapa. O posterior encolhido devolve um numero
-  // mesmo sem observacao -- ele fica perto do prior -- e pinta-lo seria afirmar
-  // desempenho onde nao houve resposta. O contrato ja separa os tres estados;
-  // aqui so' o que foi medido ou estimado sobre evidencia real vira tinta.
-  const dominio = new Map<string, { mastery: number; attempts: number }>();
+  // ⚠️ `nao_avaliado` ENTRA no mapa, e nao vira tinta.
+  //
+  // Ele era descartado aqui, com o argumento certo -- o posterior encolhido
+  // devolve um numero mesmo sem observacao, e pinta-lo afirmaria desempenho
+  // onde nao houve resposta. So' que descartar tinha o mesmo efeito: a celula
+  // caia no PISO de tinta, visualmente identica a "voce vai muito bem aqui".
+  //
+  // O `12b` resolve por FORMA: medido e' liso, estimado e' trama, nao avaliado
+  // e' tracejado SEM preenchimento. O componente distingue os tres, entao a
+  // certeza viaja junto em vez de o item sumir.
+  const dominio = new Map<
+    string,
+    { mastery: number; attempts: number; certeza: CompetencyMasteryItem["certeza"] }
+  >();
   for (const item of itens) {
-    if (!item.primary_subtheme || item.certeza === "nao_avaliado") continue;
+    if (!item.primary_subtheme) continue;
     const anterior = dominio.get(item.primary_subtheme);
     // Varias competencias podem morar no mesmo subtema. Fica a de MAIS
     // evidencia: media ponderada esconderia uma medicao boa atras de tres ruins.
@@ -99,12 +109,19 @@ function EixoVoce({ banca }: { banca: Banca }) {
       dominio.set(item.primary_subtheme, {
         mastery: item.mastery,
         attempts: item.attempts,
+        certeza: item.certeza,
       });
     }
   }
 
   const assuntos = banca.mais_cai.linhas;
-  const comDado = assuntos.filter((linha) => dominio.has(linha.rotulo)).length;
+  // "Com dado" agora quer dizer COM RESPOSTA — `nao_avaliado` continua no mapa,
+  // mas não conta como medida.
+  const comDado = assuntos.filter((linha) => {
+    const meu = dominio.get(linha.rotulo);
+    return !!meu && meu.certeza !== "nao_avaliado";
+  }).length;
+  const piso = proficiencia.data?.observation_floor ?? 5;
 
   if (comDado === 0) {
     return (
@@ -122,18 +139,17 @@ function EixoVoce({ banca }: { banca: Banca }) {
 
   return (
     <div className="space-y-3">
-      <p className="paper-eyebrow">
-        tamanho é incidência · preenchimento é o que falta
-      </p>
-      <MapaDaProva linhas={assuntos} dominio={dominio} />
-      {/* ⚠️ Esta nota é OBRIGATÓRIA, e ficou mais necessária depois de a tinta
-          passar a significar lacuna: agora o tom claro tem DOIS sentidos — você
-          domina, ou não há resposta sua. A cor sozinha não separa os dois, e sem
-          esta linha a grade fica ambígua justamente onde ela decide o estudo. */}
+      <p className="paper-eyebrow">tamanho é incidência · preenchimento é você</p>
+      <MapaDaProva linhas={assuntos} dominio={dominio} pisoDeObservacao={piso} />
+      {/* A nota continua, e mudou de trabalho.
+          Antes ela existia para desfazer a ambiguidade do tom claro — que tinha
+          dois sentidos, "você domina" e "não há o que medir". Agora a FORMA
+          separa os dois (tracejado é ausência), e a nota diz o tamanho da
+          amostra, que nenhuma textura carrega. */}
       <p className="text-nota text-muted">
         Quanto mais escuro, mais falta. {comDado} de {assuntos.length} assuntos
-        têm resposta sua; os outros ficam claros por não haver o que medir, e não
-        por você já dominá-los.
+        têm resposta sua; a partir de {piso} respostas o assunto deixa de ser
+        estimado e passa a ser medido.
       </p>
     </div>
   );

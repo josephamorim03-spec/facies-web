@@ -529,6 +529,53 @@ export async function mockApi(page) {
     if (method === "GET" && path === "/api/cadastro/status") {
       return fulfillJson(route, { cadastro_completo: true, aceites_pendentes: [] });
     }
+    // A proficiencia do aluno por competencia — o eixo "A prova e voce" do
+    // mapa (`12b`). Sem ela a tela inteira cai em "Algo deu errado", porque a
+    // consulta e' obrigatoria naquela aba.
+    //
+    // A fixture cobre os TRES estados de proposito: `medido` (>= o piso),
+    // `estimado` (1..piso-1) e `nao_avaliado` (zero respostas). Sao formas
+    // diferentes na grade, e um mock com um estado so' nao provaria nenhuma.
+    if (method === "GET" && path === "/api/student/competency-mastery") {
+      return fulfillJson(route, {
+        contract_version: "competency-mastery-v1",
+        observation_floor: 5,
+        attempts_considered: 31,
+        items: [
+          {
+            objective_id: "obj-diabetes",
+            label: "Diabetes",
+            primary_subtheme: "Diabetes",
+            competency_question_count: 24,
+            attempts: 12,
+            correct: 7,
+            mastery: 0.58,
+            certeza: "medido",
+          },
+          {
+            objective_id: "obj-prenatal",
+            label: "Assistencia pre-natal",
+            primary_subtheme: "Assistencia pre-natal",
+            competency_question_count: 18,
+            attempts: 3,
+            correct: 2,
+            mastery: 0.66,
+            certeza: "estimado",
+          },
+          {
+            objective_id: "obj-arritmias",
+            label: "Arritmias Cardiacas",
+            primary_subtheme: "Arritmias Cardiacas",
+            competency_question_count: 14,
+            attempts: 0,
+            correct: 0,
+            mastery: 0.5,
+            certeza: "nao_avaliado",
+          },
+        ],
+      });
+    }
+
     // A facies da banca-alvo, servida pelo BFF (`app/api/facies/banca/[key]`).
     // E' o que o Mapa desenha; sem ela a tela cai em "Algo deu errado".
     if (method === "GET" && path.startsWith("/api/facies/banca/")) {
