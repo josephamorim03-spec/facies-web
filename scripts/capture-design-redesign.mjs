@@ -167,7 +167,12 @@ async function runViewport(browser, viewport) {
   await visit("/preferencias", "preferencias", async () => {
     // Nao existe heading "Preferências": esse e o titulo da PAGINA, que mora no
     // topo como span. Os <h2> da tela sao os titulos de secao.
-    await page.getByRole("heading", { name: "Rotina" }).first().waitFor({ state: "visible", timeout: 30_000 });
+    //
+    // "Rotina" -> "Minha semana": a secao da semana padrao (artboard `14a`)
+    // passou a abrir a pagina, e a antiga "Rotina" virou "Compromissos e
+    // metas". Esperar pela PRIMEIRA secao e' o que garante que a captura pega a
+    // tela montada, e nao um esqueleto.
+    await page.getByRole("heading", { name: "Minha semana" }).first().waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
   await context.close();
