@@ -49,7 +49,13 @@ export function TodayDimensioning() {
       <details className="group">
         <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm">
           <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="font-semibold tabular-nums text-ink">
+            {/* Mono, e nao sans negrito: minuto e DADO.
+
+                A celula CARGA que ficava logo abaixo saiu junto com a faixa de
+                tres numeros, entao "disponiveis" perdeu o par com quem se
+                confundia. A palavra fica: previsao de capacidade e outra coisa
+                de tempo planejado, e o til diz que e previsao. */}
+            <span className="font-mono tabular-nums text-ink">
               {/* "disponíveis" não é enfeite: a célula CARGA logo abaixo mostra
                   os minutos PLANEJADOS, e sem a palavra os dois números leem
                   como duas medidas da mesma coisa que discordam.
@@ -57,7 +63,7 @@ export function TodayDimensioning() {
                   O til é honesto: previsão de capacidade não é cronômetro. */}
               ≈ {minutos} min disponíveis
             </span>
-            <span className="text-muted">{procedencia(prompt)}</span>
+            <span className="font-mono text-micro text-muted">{procedencia(prompt)}</span>
           </span>
           <span
             className="shrink-0 text-muted transition group-open:rotate-90"

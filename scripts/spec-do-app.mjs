@@ -76,6 +76,33 @@ const TELAS = [
 ];
 
 /**
+ * A FATIA DE MONO POR TELA — o guard que faltava.
+ *
+ * O resto deste script reprova o que o app PINTA e o desenho nunca usa. Ele
+ * nunca olhou para a PROPORCAO, e a identidade mora ali: medido no artboard
+ * `8b`, o desenho poe **20 dos 31 nos de texto em mono (65%)**, e o `/hoje`
+ * estava em **28%** — sans-dominante, com quase o dobro de nos na tela. Os
+ * tokens batiam um a um, e mesmo assim a tela nao lembrava o desenho.
+ *
+ * ⚠️ Estes numeros sao MEDIDA, e nao meta. Cada um foi lido da tela renderizada
+ * a 390px depois de ela ser levada ao desenho; o guard existe para impedir a
+ * REGRESSAO, nao para perseguir um alvo. Tela que sobe, sobe o piso junto.
+ *
+ * A tolerancia de 8 pontos absorve variacao de fixture (um bloco a mais na
+ * agenda muda a conta) sem deixar passar uma inversao de familia.
+ */
+const MONO_MINIMO = {
+  "/hoje": 40,
+  "/evolucao": 60,
+  "/mapa": 28,
+  "/plano": 20,
+  "/banco": 0,
+  "/cronograma": 0,
+  "/preferencias": 0,
+  "/conta": 0,
+};
+
+/**
  * DESVIOS APROVADOS — diferença que é decisão, não defeito.
  *
  * Mesma mecânica do guard da landing: o desvio continua sendo IMPRESSO, com o
@@ -279,6 +306,7 @@ const familiasApp = new Map();
 /** Onde cada divergência apareceu primeiro — sem isto o relatório diz o QUE
  *  está errado e não onde mexer. */
 const origem = new Map();
+const monoPorTela = new Map();
 let telasLidas = 0;
 
 for (const tela of TELAS) {
@@ -326,6 +354,9 @@ for (const tela of TELAS) {
       process.exit(2);
     }
     telasLidas += 1;
+    // A fatia de mono DESTA tela, para o guard de proporcao mais abaixo.
+    const monoDaTela = pintado.filter((item) => /mono/i.test(item.familia)).length;
+    monoPorTela.set(tela, Math.round((monoDaTela / pintado.length) * 100));
     for (const item of pintado) {
       passosApp.set(item.passo, (passosApp.get(item.passo) ?? 0) + 1);
       coresApp.set(item.cor, (coresApp.get(item.cor) ?? 0) + 1);
@@ -342,6 +373,29 @@ for (const tela of TELAS) {
   }
 }
 await navegador.close();
+
+// ── PROPORCAO DE MONO ───────────────────────────────────────────────────────
+const TOLERANCIA = 8;
+const abaixoDoPiso = [];
+console.log("");
+for (const [tela, pct] of monoPorTela) {
+  const piso = MONO_MINIMO[tela];
+  if (piso === undefined || piso === 0) continue;
+  const marca = pct + TOLERANCIA < piso ? "REPROVA" : "ok     ";
+  console.log(`  ${marca} mono ${String(pct).padStart(3)}%  (piso ${piso}%)  ${tela}`);
+  if (pct + TOLERANCIA < piso) abaixoDoPiso.push({ tela, pct, piso });
+}
+if (abaixoDoPiso.length) {
+  console.error(
+    "\nA IDENTIDADE INVERTEU: estas telas passaram a ser sans-dominantes.\n" +
+      "Rotulo, contagem, tempo, sigla de area e meta vao em MONO 400; sans e para\n" +
+      "frase corrida e serifa para manchete e enunciado. E dessa proporcao que vem\n" +
+      "a textura de prontuario do desenho.",
+  );
+  for (const { tela, pct, piso } of abaixoDoPiso) {
+    console.error(`  ${tela}: ${pct}% contra piso de ${piso}%`);
+  }
+}
 
 // ── 3. o diff ────────────────────────────────────────────────────────────────
 const noDesenho = {
@@ -389,7 +443,16 @@ if (reprovas > 0) {
     `${reprovas} valor(es) que o desenho nao contem. Ou o app volta ao passo do ` +
       `desenho, ou o desvio entra em APROVADOS com o motivo escrito.`,
   );
+}
+
+// ⚠️ AS DUAS REPROVACOES SAO INDEPENDENTES, e as duas derrubam o guard.
+// Vocabulario responde "o app pinta algo que o desenho nao tem?"; proporcao
+// responde "o app usa as familias na mesma medida?". Foi por so a primeira
+// existir que nove commits passaram verdes com a identidade invertida.
+if (reprovas > 0 || abaixoDoPiso.length > 0) {
   process.exit(1);
 }
 
-console.log("Sem divergencia: o app so pinta o que o desenho do webapp contem.");
+console.log(
+  "Sem divergencia: o app so pinta o que o desenho do webapp contem, e na mesma medida.",
+);

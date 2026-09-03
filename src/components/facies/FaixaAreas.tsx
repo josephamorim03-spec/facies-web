@@ -207,11 +207,21 @@ export function FaixaAreas({
     return (
       <div className={className}>
         {barra}
-        <p aria-hidden="true" className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-nota text-muted">
+        {/* A LEGENDA INTEIRA E MONO, sigla e numero.
+
+            Antes so o numero era: a sigla saia em sans 13px e a linha lia como
+            frase. No artboard `8b` ela e a fileira de rotulos de dado do topo,
+            em mono 10-11px -- e e dela que vem metade da textura de prontuario
+            daquela tela. Medido: o desenho poe 65% dos nos de texto em mono e o
+            Hoje estava em 28%, com estes doze nos entre os que faltavam. */}
+        <p
+          aria-hidden="true"
+          className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 font-mono text-micro tabular-nums text-muted"
+        >
           {segmentos.map(({ area, ...linha }) => (
             <span key={linha.rotulo} className="whitespace-nowrap">
               {AREA_SHORT_LABELS[area]}{" "}
-              <span className="font-mono tabular-nums text-ink">{linha.pct.toFixed(0)}</span>
+              <span className="text-ink">{linha.pct.toFixed(0)}</span>
             </span>
           ))}
         </p>

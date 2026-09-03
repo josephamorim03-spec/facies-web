@@ -308,6 +308,16 @@ test.describe("Navigation shell", () => {
     // tempo no relogio nao sabe de fonte nenhuma.
     await page.reload();
     await expect(page.locator("[data-nav-surface='sidebar']").first()).toBeVisible();
+    // ⚠️ ESPERA PELO CONTEUDO, e nao por um relogio.
+    //
+    // O `waitForTimeout(500)` sozinho ja capturou o ESQUELETO de carregamento:
+    // a baseline virou quatro retangulos cinza, e um teste de regressao visual
+    // que fotografa o skeleton passa sempre -- ele para de proteger justamente
+    // a geometria que existe para proteger.
+    //
+    // O `<h1>` do Hoje so aparece com os dados na mao, entao ele e a prova de
+    // que a tela montou.
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 15_000 });
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(500);
 

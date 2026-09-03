@@ -1,7 +1,7 @@
 "use client";
 
-import { AreaIcon } from "@/components/AreaIcon";
 import { displayAreaLabel, resolveDisplayArea } from "@/lib/areaDisplay";
+import { AREA_VAR } from "@/lib/areaIdentity";
 import type { StudentTodayAction } from "@/lib/api";
 import { TodayActionCTA } from "./TodayActionCTA";
 
@@ -27,11 +27,21 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
       aria-label="Próxima ação"
       className="paper-surface overflow-hidden"
     >
+      {/* ⚠️ FILETE, E NAO CAIXA DE ICONE.
+          Aqui havia um bloco de 44px de icone que, no celular, virava uma FAIXA
+          CINZENTA de largura inteira: quase um quarto da altura do cartao gasto
+          num simbolo. O artboard `8b` nao tem essa caixa -- a area aparece como
+          um fio de 4px, a mesma regra do mapa ("a cor da area so aparece
+          saturada no filete").
+          O nome da area continua legivel por leitor de tela, que e o que a caixa
+          de fato entregava. */}
       <div className="flex flex-col sm:flex-row sm:items-stretch">
-        <div className="flex shrink-0 items-center justify-center border-b border-edge bg-surfaceMuted px-5 py-4 sm:w-24 sm:border-b-0 sm:border-r sm:py-5">
-          <AreaIcon area={area} size={44} colored />
-          <span className="sr-only">{displayAreaLabel(area)}</span>
-        </div>
+        <div
+          className="h-1 w-full shrink-0 sm:h-auto sm:w-1"
+          style={{ backgroundColor: AREA_VAR[area] }}
+          aria-hidden="true"
+        />
+        <span className="sr-only">{displayAreaLabel(area)}</span>
         <div className="flex min-w-0 flex-1 flex-col gap-5 px-4 py-5 sm:px-6 sm:py-6 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0 space-y-3">
             <div className="paper-eyebrow flex flex-wrap items-center gap-2">
