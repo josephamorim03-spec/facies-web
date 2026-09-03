@@ -11,7 +11,9 @@ import {
   type SessaoAtiva,
 } from "@/lib/api/domains/account";
 import { me as buscarMe } from "@/lib/api/domains/starter";
+import { getProfile, type UserProfile } from "@/lib/api/domains/study-import";
 import { LoadBar } from "@/components/ui/LoadBar";
+import { SecaoAcesso } from "./_components/SecaoAcesso";
 import { SecaoSenha } from "./_components/SecaoSenha";
 
 /**
@@ -40,6 +42,7 @@ export default function ContaPage() {
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
   const [sessoes, setSessoes] = useState<SessaoAtiva[] | null>(null);
+  const [perfil, setPerfil] = useState<UserProfile | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -50,9 +53,19 @@ export default function ContaPage() {
 
   const carregar = useCallback(async () => {
     try {
-      const [eu, lista] = await Promise.all([buscarMe(""), listarSessoes()]);
+      // O perfil entra na MESMA rodada: em serie ele adiaria a tela inteira
+      // por uma consulta que nao decide se ha' tela.
+      const [eu, lista, meuPerfil] = await Promise.all([
+        buscarMe(""),
+        listarSessoes(),
+        // O acesso e' informativo: se so' ele falhar, a Conta continua servindo
+        // sessoes, senha e os direitos de LGPD — que sao o motivo de esta tela
+        // ficar FORA do portao de acesso.
+        getProfile("").catch(() => null),
+      ]);
       setEmail(eu.email ?? null);
       setSessoes(lista.sessions);
+      setPerfil(meuPerfil);
     } catch {
       router.replace("/login");
     } finally {
@@ -119,6 +132,11 @@ export default function ContaPage() {
 
       {erro ? <p className="mt-4 text-sm text-danger">{erro}</p> : null}
       {aviso ? <p className="mt-4 text-sm text-success">{aviso}</p> : null}
+
+      <SecaoAcesso
+        status={perfil?.access_status ?? null}
+        expiraEm={perfil?.access_expires_at}
+      />
 
       {/* ── Segurança ──────────────────────────────────────────────────── */}
       <section className="mt-8 rounded-surface border border-edge bg-surface p-5 sm:p-6">

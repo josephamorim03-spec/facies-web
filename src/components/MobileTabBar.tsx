@@ -3,30 +3,14 @@
 import { usePathname } from "next/navigation";
 import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
 import { useState } from "react";
-import { Calendar as CalendarDays, ChartLine as ChartLine, Compass as Compass, CircleUser as CircleUserRound, House as House, NotepadText as Layers3, Library as LibraryBig } from "lucide-react";
-import type { ComponentType, SVGProps } from "react";
-
 import { FastNavLink } from "@/components/FastNavLink";
+import { ICON_MAP } from "@/components/navIcons";
 import {
   NAV_ITEMS,
   getIntentChildren,
   isNavChildActive,
   isNavItemActive,
-  type StudentNavIcon,
 } from "@/lib/navConfig";
-
-const ICON_MAP: Record<StudentNavIcon, ComponentType<SVGProps<SVGSVGElement>>> = {
-  today: House,
-  bank: LibraryBig,
-  cards: Layers3,
-  // A pessoa saiu da Evolucao e foi para a Conta, que e onde ela significa
-  // alguma coisa (assinatura, provas, dados). Evolucao passa a ser o grafico,
-  // que e o que a tela mostra.
-  profile: ChartLine,
-  map: Compass,
-  routine: CalendarDays,
-  account: CircleUserRound,
-};
 
 /** Distancia acumulada antes de esconder/mostrar. Abaixo disto o scroll de
  *  ajuste fino (o dedo assentando) faria a barra tremer. */
@@ -130,7 +114,7 @@ export function MobileTabBar() {
       >
         {NAV_ITEMS.map((item) => {
           const active = isNavItemActive(pathname, item);
-          const Icon = ICON_MAP[item.icon] ?? LibraryBig;
+          const Icon = ICON_MAP[item.icon];
           return (
             <FastNavLink
               key={item.href}

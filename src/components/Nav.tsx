@@ -12,29 +12,8 @@ import { FastNavLink } from "@/components/FastNavLink";
 import { useSessionNavGuard } from "@/hooks/useSessionNavGuard";
 import { useEdgeSwipeSuppression } from "@/hooks/useEdgeSwipeSuppression";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { Calendar as CalendarDays, TrendingUp as ChartNoAxesCombined, CircleUser as CircleUserRound, House as House, NotepadText as Layers3, Library as LibraryBig, Settings as Settings } from "lucide-react";
-import type { ComponentType, SVGProps } from "react";
 import { deveEsconderChrome } from "@/lib/chromeVisibility";
-
-
-
-const ICON_MAP: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
-  today: House,
-  bank: LibraryBig,
-  cards: Layers3,
-  profile: CircleUserRound,
-  // Chaves que a taxonomia de 5 abas absorveu: `evolution` e `planning`
-  // viraram FILHOS de Perfil e Inicio, nao abas proprias.
-  evolution: ChartNoAxesCombined,
-  planning: CalendarDays,
-  settings: Settings,
-};
-
-/** Um ícone por destino, do mapa acima. */
-function NavIcon({ icon, className }: { icon: string; className?: string }) {
-  const Icon = ICON_MAP[icon] ?? LibraryBig;
-  return <Icon className={className} />;
-}
+import { NavIcon } from "@/components/navIcons";
 
 const NAV_GROUPS = NAV_GROUPS_CONFIG;
 

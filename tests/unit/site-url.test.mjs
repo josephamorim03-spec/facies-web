@@ -84,8 +84,15 @@ test("toda pagina publica declara canonico", () => {
   // bancas passaram a viver em `/prova/<slug-curto>`, na mesma rota das provas,
   // e o endereço antigo é 308 em `next.config.js`. A rota que sobrou declara o
   // canônico das duas famílias.
+  //
+  // ⚠️ A HOME DELEGA, e ler o arquivo da rota afirmava um PROXY.
+  // `app/page.tsx` so' chama `metadataDaLanding()`; o canonico e o Open Graph
+  // vivem em `_landing/Pagina.tsx` desde que a home virou a v8. A propriedade
+  // ("a rota declara canonico") continuava verdadeira e o teste ficou vermelho
+  // na `main` mesmo assim, porque afirmava o LITERAL naquele arquivo. Aqui a
+  // lista aponta para onde a metadata e' composta.
   for (const rel of [
-    "app/page.tsx",
+    "app/_landing/Pagina.tsx",
     "app/facies/page.tsx",
     "app/prova/[slug]/page.tsx",
   ]) {
