@@ -15,6 +15,8 @@ import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentAgenda } from "@/features/student-agenda/useStudentAgenda";
 import { firstName, useProfileDisplayName } from "@/lib/ProfileContext";
 import { AgendaItemRow } from "@/features/student-agenda/AgendaItemRow";
+import { ContinuarDeOndeParou } from "./ContinuarDeOndeParou";
+import { manchetteDoDia } from "../_lib/manchete";
 import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
 // A pergunta de tempo e energia morreu com a aba Rota. O que ela produzia — o
 // tamanho do dia — agora é INFERIDO e exibido como contexto da próxima ação, não
@@ -148,14 +150,31 @@ export function CanonicalTodayDashboard() {
     null,
   ).reduce((soma, item) => soma + (item.expected_questions ?? 0), 0);
   const minutosDoDia = today.today_load.estimated_minutes ?? 0;
-  const tamanhoDoDia = (() => {
-    const q = questoesDoDia > 0 ? `${questoesDoDia} ${questoesDoDia === 1 ? "questão" : "questões"}` : null;
-    const m = minutosDoDia > 0 ? `cerca de ${minutosDoDia} minutos` : null;
-    if (q && m) return `Hoje são ${q}, ${m}`;
-    if (q) return `Hoje são ${q}`;
-    if (m) return `Hoje, ${m}`;
-    return null;
-  })();
+
+  /**
+   * O DIA COMECADO, do artboard `13e`.
+   *
+   * O `8b` desenha o dia intocado e era o unico estado que esta tela tinha. O
+   * `13e` desenha o outro — e e' o que o plantonista mais encontra, porque ele
+   * abre o app varias vezes no mesmo dia.
+   *
+   * A manchete inverte: conta o que FALTA, nao o que ja' foi feito. "Faltam 16
+   * das 24" e' a frase que decide se da' tempo agora; "voce fez 8" e' consolo,
+   * e vai para a linha de apoio.
+   */
+  const respondidasHoje = uniqueAgendaItems(
+    [...(agenda?.overdue ?? []), ...(day?.items ?? [])],
+    null,
+  ).reduce((soma, item) => soma + (item.completed_questions ?? 0), 0);
+  const sessaoAberta = today.details.active_session ?? null;
+  const diaComecado = respondidasHoje > 0 || sessaoAberta !== null;
+
+  const tamanhoDoDia = manchetteDoDia({
+    questoesDoDia,
+    respondidasHoje,
+    minutosDoDia,
+    temSessaoAberta: sessaoAberta !== null,
+  });
 
   const backupActions = today.backup_actions.filter(
     (action) =>
@@ -190,6 +209,15 @@ export function CanonicalTodayDashboard() {
             e line-height no mesmo bloco. Era `text-3xl md:text-4xl` (30 e 36px)
             contra os 25px medidos no artboard `8b`. */}
         <h1 className="mt-2 font-serif font-semibold text-ink">{tamanhoDoDia}</h1>
+        {/* A linha de apoio do `13e`: o que ja' foi feito hoje. Ela so' existe
+            com o dia comecado — no dia intocado nao ha' o que contar, e uma
+            linha "Você fez 0 hoje" seria cobranca disfarcada de informacao. */}
+        {diaComecado && respondidasHoje > 0 ? (
+          <p className="mt-1 text-nota text-muted">
+            Você fez {respondidasHoje}{" "}
+            {respondidasHoje === 1 ? "questão" : "questões"} hoje.
+          </p>
+        ) : null}
       </header>
 
       {partial ? (
@@ -199,6 +227,11 @@ export function CanonicalTodayDashboard() {
             : "Alguns dados estão temporariamente incompletos. As ações exibidas continuam identificadas pela fonte disponível."}
         </Alert>
       ) : null}
+
+      {/* Retomar vem ANTES de propor comecar: o produto nao deve abrir frente
+          nova enquanto ha' uma aberta. A proxima acao continua logo abaixo,
+          porque a sessao pendente pode ser justamente a que o aluno largou. */}
+      {sessaoAberta ? <ContinuarDeOndeParou sessao={sessaoAberta} /> : null}
 
       {isRest ? <TodayEmptyState /> : <TodayPrimaryAction action={today.primary_action} />}
 
