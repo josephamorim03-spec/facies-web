@@ -100,7 +100,14 @@ test("page titles come from the child, not from the parent tab", () => {
   // de "Inicio" — que e exatamente o problema que o programa de design existe
   // para resolver: menu, titulo e URL dizendo a mesma coisa.
   assert.equal(getStudentPageTitle("/hoje"), "Hoje");
-  assert.equal(getStudentPageTitle("/cronograma"), "O plano até a prova");
+  // O filho "O plano ate' a prova" passou a ser `/plano` (artboard `9c`): a
+  // LEITURA do plano — fases, o que nao coube, quanto a rotina comporta.
+  assert.equal(getStudentPageTitle("/plano"), "O plano até a prova");
+  // `/cronograma` deixou de ser destino e virou FERRAMENTA: o calendario onde
+  // se arrasta atividade entre dias, alcancavel por um link dentro do `/plano`.
+  // Como caminho legado da area, ele herda o titulo dela — que e' verdade, e
+  // nao a promessa de ser a tela do plano.
+  assert.equal(getStudentPageTitle("/cronograma"), "Rotina");
   assert.equal(getStudentPageTitle("/banco/historico"), "Histórico");
   assert.equal(getStudentPageTitle("/cards/registros"), "Pesquisar");
   // O titulo vem do filho, e o filho agora se chama como a aba do artboard.

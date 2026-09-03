@@ -90,9 +90,12 @@ const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
     // Os rotulos sao os das duas abas do artboard `14a`.
     { href: "/preferencias", label: "Minha semana", matches: ["/preferencias", "/rotina-e-metas"] },
     {
-      href: "/cronograma",
+      // O `9c` e' a LEITURA do plano (fases, o que nao coube, quanto a rotina
+      // comporta). `/cronograma` continua existindo e continua sendo onde se
+      // arrasta atividade entre dias -- ele vira ferramenta, e nao destino.
+      href: "/plano",
       label: "O plano até a prova",
-      matches: ["/cronograma", "/agenda-operacional", "/desempenho", "/trilha"],
+      matches: ["/plano", "/cronograma", "/agenda-operacional", "/desempenho", "/trilha"],
     },
   ],
   account: [],
@@ -110,7 +113,7 @@ const LEGACY_PATHS: Record<StudentIntent, string[]> = {
   bank: [],
   cards: [],
   profile: ["/estatisticas"],
-  routine: ["/agenda-operacional", "/desempenho", "/trilha", "/rotina-e-metas"],
+  routine: ["/cronograma", "/agenda-operacional", "/desempenho", "/trilha", "/rotina-e-metas"],
   account: [],
 };
 
