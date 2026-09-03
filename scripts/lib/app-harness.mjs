@@ -529,6 +529,109 @@ export async function mockApi(page) {
     if (method === "GET" && path === "/api/cadastro/status") {
       return fulfillJson(route, { cadastro_completo: true, aceites_pendentes: [] });
     }
+    // O plano vigente (`9c`). Sem ele a tela do plano mede a si mesma vazia, e
+    // o que o guard compara com o desenho passa a ser o estado vazio.
+    if (method === "GET" && path === "/api/plan/current") {
+      const dia = (n) => plusDays(todayISO(), n);
+      return fulfillJson(route, {
+        contract_version: "study-plan-v1",
+        plan_id: "plan-design",
+        revision: 3,
+        policy_version: "study-plan-1",
+        evidence_level: "adaptado_por_evidencias",
+        horizon_start: todayISO(),
+        horizon_end: dia(41),
+        generated_at: NOW,
+        objectives: [],
+        explanation: {},
+        activities: [
+          {
+            activity_id: "at-1",
+            scheduled_date: dia(0),
+            slot_order: 0,
+            kind: "topic_practice",
+            title: "Insuficiencia cardiaca",
+            difficulty_class: "padrao",
+            estimated_minutes: 24,
+            estimated_questions: 12,
+            status: "pending",
+            locked: false,
+            session_id: null,
+            review_task_id: null,
+            observed_minutes: null,
+            observed_questions: null,
+            completed_at: null,
+            change_type: "kept",
+            unscheduled_reason: null,
+            recommended_window: null,
+            rationale: {},
+          },
+          {
+            activity_id: "at-2",
+            scheduled_date: dia(9),
+            slot_order: 0,
+            kind: "review",
+            title: "Revisao do que voce errou",
+            difficulty_class: "leve",
+            estimated_minutes: 16,
+            estimated_questions: 8,
+            status: "pending",
+            locked: false,
+            session_id: null,
+            review_task_id: "rt-1",
+            observed_minutes: null,
+            observed_questions: null,
+            completed_at: null,
+            change_type: "added",
+            unscheduled_reason: null,
+            recommended_window: null,
+            rationale: {},
+          },
+          {
+            activity_id: "at-3",
+            scheduled_date: dia(24),
+            slot_order: 0,
+            kind: "review",
+            title: "Revisao final",
+            difficulty_class: "leve",
+            estimated_minutes: 20,
+            estimated_questions: 10,
+            status: "pending",
+            locked: false,
+            session_id: null,
+            review_task_id: "rt-2",
+            observed_minutes: null,
+            observed_questions: null,
+            completed_at: null,
+            change_type: "added",
+            unscheduled_reason: null,
+            recommended_window: null,
+            rationale: {},
+          },
+        ],
+      });
+    }
+
+    // A semana declarada, que o cartao da rotina le no `9c` e a tela
+    // "Minha semana" edita no `14a`.
+    if (method === "GET" && path === "/api/onboarding") {
+      return fulfillJson(route, {
+        contract_version: "student-onboarding-v1",
+        state: "ready",
+        next_step: "ready",
+        completed_steps: ["objectives", "routine", "capacity"],
+        has_selected_objectives: true,
+        objectives_revision: 2,
+        has_routine: true,
+        has_availability: true,
+        weekly_goal_questions: 300,
+        // seg plantao, ter pos-plantao, qua livre, qui ambulatorio, sex nada,
+        // sab e dom livres — a semana do `14a`.
+        study_availability: { 0: 10, 1: 20, 2: 60, 3: 35, 4: 0, 5: 60, 6: 35 },
+        completed_at: NOW,
+      });
+    }
+
     // A proficiencia do aluno por competencia — o eixo "A prova e voce" do
     // mapa (`12b`). Sem ela a tela inteira cai em "Algo deu errado", porque a
     // consulta e' obrigatoria naquela aba.

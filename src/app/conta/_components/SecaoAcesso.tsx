@@ -74,7 +74,12 @@ export function SecaoAcesso({
         <Link href="/termos" className="text-marca underline underline-offset-4">
           Termos de uso
         </Link>
-        <span className="px-2 text-rule">·</span>
+        {/* `text-rule` era a cor da REGUA de 1px usada como tinta: 1,3:1 de
+            contraste, e um valor que o desenho nunca pinta em texto. O ponto e'
+            decorativo, entao sai do leitor de tela e fica em `text-muted`. */}
+        <span aria-hidden="true" className="px-2 text-muted">
+          ·
+        </span>
         <Link href="/privacidade" className="text-marca underline underline-offset-4">
           Política de privacidade
         </Link>

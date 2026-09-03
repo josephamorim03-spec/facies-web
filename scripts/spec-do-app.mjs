@@ -60,7 +60,20 @@ const DESIGN_PADRAO =
  * duas telas de flashcard saíram enquanto `NEXT_PUBLIC_FLASHCARDS` está em 0,
  * porque elas redirecionam para `/hoje` e mediriam a mesma tela duas vezes.
  */
-const TELAS = ["/hoje", "/mapa", "/banco", "/evolucao", "/cronograma", "/preferencias"];
+const TELAS = [
+  "/hoje",
+  "/mapa",
+  "/banco",
+  "/evolucao",
+  "/cronograma",
+  "/preferencias",
+  // A leitura do plano (artboard `9c`). `/cronograma` fica na lista porque
+  // continua servindo o calendario, que e' outra tela e outro vocabulario.
+  "/plano",
+  // A Conta voltou a ser destino da barra e passou a guardar o estado do
+  // acesso (`12c`); fora da lista, ela ficava sem medida nenhuma.
+  "/conta",
+];
 
 /**
  * DESVIOS APROVADOS — diferença que é decisão, não defeito.
