@@ -193,10 +193,35 @@ export default function ContaPage() {
         </a>
       </section>
 
-      {/* ── Excluir ────────────────────────────────────────────────────── */}
-      <section className="mt-6 rounded-surface border border-danger/40 bg-surface p-5 sm:p-6">
-        <h2 className="font-serif text-lg font-semibold text-ink">Excluir a conta</h2>
-        <p className="mt-1 max-w-[62ch] text-sm text-muted">
+      {/* ── Encerrar a conta ───────────────────────────────────────────────
+          DISCRETA, E NAO ESCONDIDA — a distincao e o ponto inteiro desta seção.
+
+          Ela era um cartao com borda de perigo, no mesmo peso visual de "Sessões
+          ativas" e "Seus dados": coisas que o titular usa de vez em quando, ao
+          lado de uma acao IRREVERSIVEL que ele usa no maximo uma vez. Peso igual
+          para consequencias tao diferentes convida ao toque errado, e ainda faz
+          a tela inteira parecer perigosa.
+
+          ⚠️ NAO PODE SUMIR. Este arquivo ja registra o motivo: a LGPD pede MEIO
+          para exercer o direito (art. 18), e "direito que so' se exerce por
+          curl nao e' direito exercivel". Entao ela continua nesta pagina, a UM
+          toque, com o rotulo escrito — o que muda e' que ela parou de disputar
+          atencao com o que se usa todo mes.
+
+          ⚠️ E NAO CONFUNDIR COM CANCELAR ASSINATURA. O artboard `12c` manda o
+          cancelamento ter o MESMO peso de "Baixar as suas respostas", e essa
+          regra continua valendo quando o cancelamento existir: ele e' reversivel
+          e a empresa tem interesse em esconde-lo. Apagar a conta e' o contrario:
+          irreversivel, e o interesse de esconder nao existe.
+
+          `<details>` nativo: sem estado em React, com foco de teclado e
+          expansao por Enter de graca. */}
+      <details className="mt-8 border-t border-rule pt-4">
+        <summary className="paper-control flex min-h-11 cursor-pointer list-none items-center justify-between text-sm text-muted hover:text-ink">
+          <span>Encerrar a conta</span>
+          <span aria-hidden="true" className="transition">›</span>
+        </summary>
+        <p className="mt-3 max-w-[62ch] text-sm text-muted">
           Apaga seu perfil, progresso, anotações e sessões, e bloqueia o acesso. É
           irreversível. O registro de auditoria da exclusão é mantido, porque é ele que
           prova que você pediu.
@@ -241,12 +266,12 @@ export default function ContaPage() {
           <button
             type="button"
             onClick={() => setConfirmandoExclusao(true)}
-            className="paper-control mt-4 inline-flex rounded-control border border-danger/60 bg-surface px-4 py-2 text-sm font-semibold text-danger"
+            className="paper-control mt-4 inline-flex rounded-control border border-edge bg-surface px-4 py-2 text-sm text-danger"
           >
             Excluir a conta
           </button>
         )}
-      </section>
+      </details>
     </main>
   );
 }
