@@ -5,7 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SignupForm } from "@/app/login/_components/SignupForm";
 import { useGoogleSignIn } from "@/app/login/_hooks/useGoogleSignIn";
-import { obterModosDeAuth, signupLocalAccount } from "@/lib/api/domains/auth";
+import {
+  obterModosDeAuth,
+  resendLocalVerification,
+  signupLocalAccount,
+} from "@/lib/api/domains/auth";
 import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
 import { podeEnviarCadastro } from "./podeEnviar";
 
@@ -71,6 +75,10 @@ export default function CadastroPage() {
   const [busy, setBusy] = useState(false);
   const [aguardandoVerificacao, setAguardandoVerificacao] = useState(false);
   const [error, setError] = useState("");
+  // Reenvio do link de verificação, direto da tela de espera. Ver `reenviar()`.
+  const [reenviando, setReenviando] = useState(false);
+  const [reenvioFeito, setReenvioFeito] = useState(false);
+  const [erroReenvio, setErroReenvio] = useState("");
 
   /**
    * Se ESTA instalação aceita criar conta por e-mail e senha.
@@ -174,6 +182,38 @@ export default function CadastroPage() {
     }
   }
 
+  /**
+   * Reenvia o link de verificação sem sair desta tela.
+   *
+   * Antes, "não chegou?" levava a `/auth/verify-email`, onde a pessoa digitava
+   * o MESMO e-mail de novo — pedir a informação que acabamos de receber, no
+   * ponto de maior frustração do funil.
+   *
+   * ⚠️ Mais relevante agora: `send.facies.app` é domínio de envio novo, sem
+   * reputação acumulada. Cair em spam nas primeiras semanas é esperado, e é
+   * exatamente aí que reenviar sem atrito decide se a conta existe ou não.
+   *
+   * Sucesso desabilita o botão em vez de permitir repetir: o servidor limita a
+   * 3 por minuto e 15 por dia (`auth:resend`), e deixar clicar até bater no teto
+   * daria erro em vez de resposta. Quem precisar de outro depois de um recarrega
+   * a página.
+   */
+  async function reenviar() {
+    if (reenviando || reenvioFeito) return;
+    setReenviando(true);
+    setErroReenvio("");
+    try {
+      await resendLocalVerification({ email: email.trim() });
+      setReenvioFeito(true);
+    } catch {
+      // Sem distinguir causa: a resposta do servidor é uniforme de propósito
+      // (não revela se o e-mail existe), então detalhar aqui seria inventar.
+      setErroReenvio("Não deu para reenviar agora. Tente de novo em instantes.");
+    } finally {
+      setReenviando(false);
+    }
+  }
+
   // A conta foi criada e o e-mail saiu. Trocar a tela inteira, em vez de mostrar
   // um aviso acima do formulário, é o que evita a pessoa reenviar o cadastro
   // achando que não funcionou — e um segundo envio devolveria 409.
@@ -192,12 +232,29 @@ export default function CadastroPage() {
               ele para confirmar a conta — o link vale uma vez e expira.
             </p>
             <p className="mt-4 text-sm leading-6 text-muted">
-              Não chegou? Confira o spam. Você também pode pedir outro na{" "}
-              <Link href="/auth/verify-email" className="font-semibold text-primary">
-                página de verificação
-              </Link>
-              .
+              Não chegou? Confira o spam — estamos começando a enviar deste endereço,
+              e alguns provedores demoram a confiar.
             </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => void reenviar()}
+                disabled={reenviando || reenvioFeito}
+                className="paper-control rounded-control border border-edge bg-surfaceMuted px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
+              >
+                {reenviando ? "Enviando…" : "Reenviar o link"}
+              </button>
+              {reenvioFeito ? (
+                <span role="status" className="text-sm text-ink">
+                  Reenviado. Confira a caixa de entrada e o spam.
+                </span>
+              ) : null}
+              {erroReenvio ? (
+                <span role="alert" className="text-sm text-danger">
+                  {erroReenvio}
+                </span>
+              ) : null}
+            </div>
             <p className="mt-8 text-xs leading-5 text-muted">
               Enquanto isso, a leitura da sua prova continua liberada e não depende de
               conta.{" "}
