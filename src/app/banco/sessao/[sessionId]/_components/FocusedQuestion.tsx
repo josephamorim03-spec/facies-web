@@ -23,7 +23,21 @@ import { ESTILO_DO_DESLIZE, useDeslizeLateral } from "@/hooks/useDeslizeLateral"
 import FontScaleControl from "./FontScaleControl";
 import { SessionExitButton } from "./SessionExitButton";
 import { useQuestionFontScale } from "./useQuestionFontScale";
-import { buildTextHighlightAnchor, resolveHighlightRanges } from "./questionTextHighlights";
+import { buildTextHighlightAnchor } from "./questionTextHighlights";
+import {
+  IconFlag,
+  IconGrid,
+  IconMaximize,
+  IconMinus,
+  IconSettings,
+  IconStar,
+} from "./iconesDaSessao";
+import {
+  closestHighlightTarget,
+  getSelectionStartInTarget,
+  highlightsForTarget,
+  renderHighlightedText,
+} from "./grifos";
 
 export type QuestionPresentationMode = "learning" | "exam";
 export type QuestionFlowKind = "training" | "simulation";
@@ -221,69 +235,6 @@ function readPreferences(defaultPresentationMode: QuestionPresentationMode): Req
   }
 }
 
-function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <rect x="3.5" y="3.5" width="5" height="5"/>
-      <rect x="11.5" y="3.5" width="5" height="5"/>
-      <rect x="3.5" y="11.5" width="5" height="5"/>
-      <rect x="11.5" y="11.5" width="5" height="5"/>
-    </svg>
-  );
-}
-
-function IconMinus({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <path d="M4 10h12" />
-    </svg>
-  );
-}
-
-function IconMaximize({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <path d="M7 3H3v4" />
-      <path d="M13 3h4v4" />
-      <path d="M7 17H3v-4" />
-      <path d="M13 17h4v-4" />
-    </svg>
-  );
-}
-
-function IconSettings({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <rect x="8" y="8" width="4" height="4" />
-      <path d="M10 2.5v2" />
-      <path d="M10 15.5v2" />
-      <path d="m4.7 4.7 1.4 1.4" />
-      <path d="m13.9 13.9 1.4 1.4" />
-      <path d="M2.5 10h2" />
-      <path d="M15.5 10h2" />
-      <path d="m4.7 15.3 1.4-1.4" />
-      <path d="m13.9 6.1 1.4-1.4" />
-    </svg>
-  );
-}
-
-function IconFlag({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <path d="M5 17V4" />
-      <path d="M5 4h8l-1 3 1 3H5" />
-    </svg>
-  );
-}
-
-function IconStar({ filled, className = "h-4 w-4" }: { filled: boolean; className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <path d="m10 2.8 2.1 4.2 4.6.7-3.3 3.2.8 4.6-4.2-2.2-4.2 2.2.8-4.6-3.3-3.2 4.6-.7L10 2.8Z" />
-    </svg>
-  );
-}
-
 function setFullscreen(enabled: boolean) {
   if (typeof document === "undefined") return;
   if (enabled && !document.fullscreenElement) {
@@ -306,73 +257,6 @@ function difficultyLabel(value: number | null | undefined): string | null {
   if (value < 0.55) return "Média";
   if (value < 0.75) return "Difícil";
   return "Muito difícil";
-}
-
-function highlightsForTarget(
-  item: QuestionBankSessionItem,
-  target: QuestionTextHighlightTarget,
-  option: QuestionBankOption | null = null,
-): QuestionTextHighlight[] {
-  return (item.text_highlights ?? []).filter((highlight) =>
-    highlight.target === target && (target === "stem" || highlight.option === option)
-  );
-}
-
-function highlightClass(kind: QuestionTextHighlightKind) {
-  return kind === "pegadinha"
-    ? "border-b border-warning/60 bg-[var(--wash-atencao)] px-0.5"
-    : "border-b border-ink/40 bg-surfaceMuted px-0.5";
-}
-
-function renderHighlightedText(
-  text: string,
-  highlights: QuestionTextHighlight[],
-  onHighlightClick?: (highlight: QuestionTextHighlight, element: HTMLElement) => void,
-) {
-  const ranges = resolveHighlightRanges(text, highlights);
-  if (ranges.length === 0) return text;
-  const parts: ReactNode[] = [];
-  let cursor = 0;
-  ranges.forEach((range) => {
-    if (range.start > cursor) parts.push(text.slice(cursor, range.start));
-    parts.push(
-      <mark
-        key={range.highlight.highlight_id}
-        className={cx("cursor-pointer text-inherit", highlightClass(range.highlight.kind))}
-        title={range.highlight.kind === "pegadinha" ? "Pegadinha" : "Ponto-chave"}
-        role="button"
-        tabIndex={0}
-        onClick={(event) => onHighlightClick?.(range.highlight, event.currentTarget)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            onHighlightClick?.(range.highlight, event.currentTarget);
-          }
-        }}
-      >
-        {text.slice(range.start, range.end)}
-      </mark>,
-    );
-    cursor = range.end;
-  });
-  if (cursor < text.length) parts.push(text.slice(cursor));
-  return parts;
-}
-
-function closestHighlightTarget(node: Node | null): HTMLElement | null {
-  if (!node) return null;
-  const element = node.nodeType === Node.ELEMENT_NODE ? (node as HTMLElement) : node.parentElement;
-  return element?.closest<HTMLElement>("[data-highlight-target]") ?? null;
-}
-
-function getSelectionStartInTarget(range: Range, targetEl: HTMLElement, selectedText: string): number | undefined {
-  if (!targetEl.contains(range.startContainer) || !targetEl.contains(range.endContainer)) return undefined;
-  const preRange = range.cloneRange();
-  preRange.selectNodeContents(targetEl);
-  preRange.setEnd(range.startContainer, range.startOffset);
-  const rawSelectedText = range.toString();
-  const trimOffset = Math.max(0, rawSelectedText.indexOf(selectedText));
-  return preRange.toString().length + trimOffset;
 }
 
 const REFLECTION_LABELS: Record<QuestionPostAnswerReflection, string> = {

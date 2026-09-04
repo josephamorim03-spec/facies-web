@@ -43,6 +43,7 @@ import QuestionList from "./_components/QuestionList";
 import CreateSessionPanel from "./_components/CreateSessionPanel";
 import { BancoDeQuestoesSkeleton } from "./_components/BancoDeQuestoesSkeleton";
 import { filterTopicsLocally } from "./_components/topicTree";
+import { IconBookOpen, IconChevronRight, IconTrophy } from "./_components/iconesDoBanco";
 import {
   QUESTION_BANK_LIMIT_CAP,
   clampQuestionLimit,
@@ -72,37 +73,6 @@ function splitBootstrapTopics(topics: QuestionBankTopic[]) {
     taxonomy: topics.filter((topic) => TAXONOMY_NODE_TYPES.has(topic.node_type ?? "")),
     micros: topics.filter((topic) => topic.node_type === "microcompetency"),
   };
-}
-
-function IconBookOpen({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H7a3 3 0 0 0-3 3V5.5Z" />
-      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20" />
-      <path d="M8 7h8" />
-      <path d="M8 11h7" />
-    </svg>
-  );
-}
-
-function IconTrophy({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <path d="M8 21h8" />
-      <path d="M12 17v4" />
-      <path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" />
-      <path d="M5 5H3v2a4 4 0 0 0 4 4" />
-      <path d="M19 5h2v2a4 4 0 0 1-4 4" />
-    </svg>
-  );
-}
-
-function IconChevronRight({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <path d="m7 4 6 6-6 6" />
-    </svg>
-  );
 }
 
 type SessionIntentCardProps = {
@@ -1067,16 +1037,10 @@ function BancoDeQuestoesContent() {
       <div className={`space-y-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
         <section className="space-y-4" aria-label="Montador de sessão">
           {activeFilters.length > 0 && (
-            /* ⚠️ A LINHA GANHA ROTULO, e deixa de flutuar a direita.
-
-               Ela abria a tela com um chip solto no canto -- "Acesso Direto"
-               alinhado a direita, sobre uma regua, sem nada que dissesse o que
-               aquilo era. Lido de cima para baixo, o primeiro elemento da tela
-               era um rotulo sem pergunta.
-
-               O rotulo em mono ancora a linha a esquerda e diz o que os chips
-               sao. Os chips continuam a direita, entao a geometria de toque nao
-               muda -- muda so' o que a linha AFIRMA. */
+            /* A linha ganha rotulo e deixa de flutuar a direita: ela abria a
+               tela com um chip solto no canto, sem nada que dissesse o que
+               aquilo era. Os chips ficam onde estavam -- muda o que a linha
+               AFIRMA, nao a geometria de toque. */
             <div className="flex w-full flex-wrap items-center justify-between gap-3 border-b border-edge pb-4">
               <p className="paper-eyebrow">filtros ativos</p>
               <div className="relative shrink-0">
