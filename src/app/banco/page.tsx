@@ -408,10 +408,6 @@ function BancoDeQuestoesContent() {
     () => filterTopicsLocally(taxonomyTopics, { area, search: searchDraft, preserveSearchAncestors: true }),
     [area, searchDraft, taxonomyTopics],
   );
-  const filteredMicroTopics = useMemo(
-    () => filterTopicsLocally(microTopics, { area, search: searchDraft, preserveSearchAncestors: false }),
-    [area, searchDraft, microTopics],
-  );
   const topicSuggestions = useMemo(
     () =>
       filterTopicsLocally(taxonomyTopics, { area, search: searchDraft, preserveSearchAncestors: false })
@@ -626,19 +622,23 @@ function BancoDeQuestoesContent() {
         include_empty: false,
         limit: 1000,
       };
-      const [taxonomy, micros] = await Promise.all([
-        browseQuestionBankTopics(token, {
-          ...common,
-          node_types: ["specialty", "theme", "subtheme"],
-        }, { signal: controller.signal }),
-        browseQuestionBankTopics(token, {
-          ...common,
-          node_types: ["microcompetency"],
-        }, { signal: controller.signal }),
-      ]);
+      // SÓ a taxonomia: as micros não são desenhadas na árvore. `microTopics`
+      // alimenta apenas `resolveEntryTopic`, que roda UMA vez logo após o
+      // bootstrap (gated em `calendarContextResolved`) — quando um filtro muda,
+      // ele já rodou, e a lista rebuscada não alimentava nada.
+      // E custava caro: medido em produção em 04/09/2026, a consulta de micros
+      // levava 4,2s contra 1,1s da taxonomia, acima do `statement_timeout` de
+      // 4s, e devolvia 503 TODA VEZ (o EXPLAIN mostra um `Nested Loop Left
+      // Join` varrendo 10.091 nós para cada uma das 20.283 linhas do cache).
+      // Era o "às vezes dá erro" ao escolher uma banca. Consertar a consulta
+      // seria otimizar dado que ninguém lê; se voltarem a ser precisas aqui, o
+      // caminho é resolver o nó por id.
+      const taxonomy = await browseQuestionBankTopics(token, {
+        ...common,
+        node_types: ["specialty", "theme", "subtheme"],
+      }, { signal: controller.signal });
       if (controller.signal.aborted) return;
       setTaxonomyTopics(taxonomy);
-      setMicroTopics(micros);
     } catch (err) {
       if (controller.signal.aborted || isAbortError(err)) return;
       setTaxonomyTopics([]);
@@ -1168,8 +1168,15 @@ function BancoDeQuestoesContent() {
               onPreviewQuestions={() => void previewQuestions()}
               onStartSession={() => void startSession()}
               onRetry={() => {
-                if (availability) void startSession();
-                else void refreshAvailability();
+                // TENTA DE NOVO — nunca cria sessão. Chamava `startSession()`
+                // sempre que havia disponibilidade carregada, e era o caso
+                // comum: o aluno via "não foi possível carregar as questões",
+                // clicava, e ganhava uma sessão de 10 questões que não pediu.
+                // Botão de recuperação de erro não pode ter efeito colateral
+                // irreversível.
+                setError(null);
+                if (topicsError || !bootstrapReady) void loadBootstrap();
+                void refreshAvailability();
               }}
             />
           </section>
