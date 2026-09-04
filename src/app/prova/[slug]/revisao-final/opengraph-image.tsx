@@ -67,7 +67,7 @@ export default async function Imagem({ params }: { params: Promise<{ slug: strin
 
   const h = revisao.honestidade;
   const total = revisao.estrutura.total_questoes;
-  const dias = revisao.dias.length;
+  const temas = revisao.estrutura.total_temas;
   const lift = h.lift !== null ? `${dec(h.lift, 1)}×` : "—";
   const faixa =
     h.historico_minimo !== null && h.historico_maximo !== null
@@ -83,7 +83,7 @@ export default async function Imagem({ params }: { params: Promise<{ slug: strin
   // As 30 continuam existindo, no app. Elas ficam no cartão como a terceira
   // coluna, com o destino certo escrito junto.
   const numeros = [
-    { valor: String(dias), rotulo: "assuntos mais prováveis, um por dia" },
+    { valor: String(temas), rotulo: "assuntos mais prováveis, seis por dia" },
     { valor: lift, rotulo: "o acaso", nota: faixa },
     { valor: String(total), rotulo: "questões para resolver no app" },
   ];

@@ -148,7 +148,8 @@ export function dadosDaLanding() {
     revisao: revisao
       ? {
           questoes: revisao.estrutura.total_questoes,
-          dias: revisao.estrutura.carga_por_dia.length,
+          dias: revisao.estrutura.dias,
+          temas: revisao.estrutura.total_temas,
           diasLivres: revisao.estrutura.dias_livres_ate_prova,
           notaPrevisao: revisao.honestidade.nota_previsao,
           notaAtualizacoes: revisao.honestidade.nota_atualizacoes,
