@@ -1,0 +1,100 @@
+{
+  "alvos": 14,
+  "cobertura_media_pct": 32.4,
+  "cobertura_minima_pct": 25.0,
+  "confianca_pct": 90,
+  "curva": [
+    {
+      "cobertura_media_pct": 10.6,
+      "cobertura_minima_pct": 7.0,
+      "lift": 2.69,
+      "n": 10
+    },
+    {
+      "cobertura_media_pct": 15.5,
+      "cobertura_minima_pct": 10.2,
+      "lift": 2.63,
+      "n": 15
+    },
+    {
+      "cobertura_media_pct": 18.5,
+      "cobertura_minima_pct": 13.9,
+      "lift": 2.36,
+      "n": 20
+    },
+    {
+      "cobertura_media_pct": 22.8,
+      "cobertura_minima_pct": 16.3,
+      "lift": 2.35,
+      "n": 25
+    },
+    {
+      "cobertura_media_pct": 26.1,
+      "cobertura_minima_pct": 19.4,
+      "lift": 2.23,
+      "n": 30
+    },
+    {
+      "cobertura_media_pct": 30.4,
+      "cobertura_minima_pct": 22.0,
+      "lift": 2.06,
+      "n": 38
+    },
+    {
+      "cobertura_media_pct": 31.4,
+      "cobertura_minima_pct": 25.0,
+      "lift": 2.02,
+      "n": 40
+    },
+    {
+      "cobertura_media_pct": 32.4,
+      "cobertura_minima_pct": 25.0,
+      "lift": 1.98,
+      "n": 42
+    },
+    {
+      "cobertura_media_pct": 34.0,
+      "cobertura_minima_pct": 27.8,
+      "lift": 1.89,
+      "n": 46
+    },
+    {
+      "cobertura_media_pct": 35.9,
+      "cobertura_minima_pct": 28.0,
+      "lift": 1.84,
+      "n": 50
+    },
+    {
+      "cobertura_media_pct": 40.8,
+      "cobertura_minima_pct": 32.9,
+      "lift": 1.74,
+      "n": 60
+    },
+    {
+      "cobertura_media_pct": 48.7,
+      "cobertura_minima_pct": 39.0,
+      "lift": 1.54,
+      "n": 80
+    },
+    {
+      "cobertura_media_pct": 56.8,
+      "cobertura_minima_pct": 45.6,
+      "lift": 1.45,
+      "n": 100
+    },
+    {
+      "cobertura_media_pct": 62.4,
+      "cobertura_minima_pct": 51.1,
+      "lift": 1.32,
+      "n": 120
+    }
+  ],
+  "grao": "subtheme",
+  "lift": 1.98,
+  "previsao_sha256": "dae585e7b89ad75e0620011215868925e22d508733ea6beccd6c27a85fd75838",
+  "series": [
+    "ENARE",
+    "REVALIDA"
+  ],
+  "top_n": 42
+}

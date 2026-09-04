@@ -69,6 +69,34 @@ export function AssuntosPrevistos({ dados }: { dados: DadosDaLanding }) {
             fechados em <span className="font-mono tabular-nums">{previsao.registradoEm}</span>, com
             data e código de verificação, e estão aqui inteiros — não atrás de cadastro.
           </p>
+          {/* O que a lista COBRE. Sem isto, a página mostra assuntos e o leitor
+              não tem como saber o que esperar deles.
+
+              ⚠️ DUAS AFIRMAÇÕES, e publicar só a média prometeria demais: a média
+              é o ano típico, e o piso é o que se sustenta em 90% das edições. A
+              página diz as duas, nessa ordem — a segunda é a que vale como
+              promessa. O bloco some quando `cobertura` é null (o artefato
+              descreve outra lista), porque silêncio é honesto e número errado
+              não. */}
+          {previsao.cobertura ? (
+            <p className="mb-4">
+              Eles cobrem{" "}
+              <span className="font-mono tabular-nums">
+                {previsao.cobertura.mediaPct}%
+              </span>{" "}
+              da prova num ano típico — e pelo menos{" "}
+              <span className="font-mono tabular-nums">
+                {previsao.cobertura.minimaPct}%
+              </span>{" "}
+              em {previsao.cobertura.confiancaPct} de cada 100 edições. É{" "}
+              <span className="font-mono tabular-nums">
+                {previsao.cobertura.lift.toLocaleString("pt-BR")}×
+              </span>{" "}
+              o que uma lista do mesmo tamanho tirada ao acaso cobriria, medido em{" "}
+              <span className="font-mono tabular-nums">{previsao.cobertura.alvos}</span>{" "}
+              provas anteriores.
+            </p>
+          ) : null}
           {/* O hash é o artefato que torna a aposta falsificável. Dizer que existe
               e não mostrá-lo é pedir fé. */}
           <p className="m-0 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
