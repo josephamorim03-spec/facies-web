@@ -6,6 +6,7 @@ import {
 } from "@/lib/areaIdentity";
 import type { PaginaEducativa, TemaRevisao } from "@/lib/revisao";
 import { MedidaDaCobranca } from "./MedidaDaCobranca";
+import { ancoraDoAssunto, PassoAPasso, type EloDeAssunto } from "./NavegacaoDaRevisao";
 
 /**
  * Um dia do ebook: uma página de revisão de véspera sobre um assunto.
@@ -33,12 +34,33 @@ import { MedidaDaCobranca } from "./MedidaDaCobranca";
  * como publicar conteúdo médico não revisado sem o aviso, porque o aviso lê o
  * mesmo campo que a inclusão leu.
  */
+/**
+ * O rótulo diz o que a figura É.
+ *
+ * Um corte de tomografia, uma tabela de resultados e um gráfico epidemiológico
+ * exigem leituras diferentes; chamar os três de "imagem" faz o leitor procurar
+ * achado radiológico numa tabela de exames. Foi a correção que o operador pediu
+ * ao ver a primeira versão do bloco.
+ */
+const ROTULO_DA_IMAGEM: Record<NonNullable<PaginaEducativa["imagem_leitura"]>["tipo"], string> = {
+  achado_de_imagem: "o exame de imagem que a banca mostrou",
+  quadro_laboratorial: "o quadro laboratorial que a banca entregou",
+  grafico_epidemiologico: "o gráfico que a banca pediu para interpretar",
+  ilustracao_clinica: "a foto clínica que a banca mostrou",
+};
+
 export function PaginaDoDia({
   tema,
   pagina,
+  anterior,
+  proximo,
+  totalDeAssuntos,
 }: {
   tema: TemaRevisao;
   pagina: PaginaEducativa;
+  anterior: EloDeAssunto | null;
+  proximo: EloDeAssunto | null;
+  totalDeAssuntos: number;
 }) {
   const area = ((pagina.area ?? "OU") as DisplayArea) satisfies DisplayArea;
   // Extraído porque `{pagina.dia}` dentro do JSX faz o guard de copy ler
@@ -50,8 +72,8 @@ export function PaginaDoDia({
 
   return (
     <section
-      aria-labelledby={`tema-${tema.posicao_previsao}`}
-      className="print:break-before-page"
+      aria-labelledby={ancoraDoAssunto(tema.posicao_previsao)}
+      className="scroll-mt-4 print:break-before-page"
     >
       {/* ── cabeceira do dia ─────────────────────────────────────────────── */}
       <header className={`border-l-4 pl-4 ${AREA_BORDER_CLASS[area]}`}>
@@ -78,7 +100,7 @@ export function PaginaDoDia({
           )}
         </div>
         <h3
-          id={`tema-${tema.posicao_previsao}`}
+          id={ancoraDoAssunto(tema.posicao_previsao)}
           className="mt-1 font-serif text-2xl font-semibold tracking-tight text-ink sm:text-3xl"
         >
           {pagina.subtema}
@@ -228,21 +250,54 @@ export function PaginaDoDia({
           {pagina.exemplo_de_cobranca.descricao}
         </p>
         {pagina.exemplo_de_cobranca.url_banco ? (
-          <p className="mt-2 text-sm text-muted">
-            As {tema.questoes.length} questões reais deste assunto estão no banco:{" "}
-            {/* A URL é impressa por extenso de propósito. No papel um link não
-                clica, e um QR num material médico distribuído por WhatsApp
-                ensina justamente a escanear código de origem desconhecida —
-                enquanto o endereço escrito mostra para onde vai. */}
+          <div className="mt-3">
+            {/* ⚠️ O link antes era `/banco?subtheme=<slug>`, impresso por
+                extenso. `subtheme` não é lido por ninguém — o banco lê
+                `knowledge_node_id`, `theme` e `area` — e o guard de links
+                internos confere ROTA, não parâmetro, então a query inventada
+                passou. O leitor clicava, o banco abria, e não havia assunto
+                nenhum selecionado.
+
+                A URL também deixou de ser impressa: `/banco` fica atrás de
+                login, e um endereço escrito por extenso promete uma página
+                pública que não existe. O botão diz para onde vai. */}
             <a
               href={pagina.exemplo_de_cobranca.url_banco}
-              className="text-ink underline underline-offset-4"
+              className="paper-control inline-flex min-h-11 items-center rounded-control border border-edge bg-ink px-4 py-2 text-sm font-semibold text-paper transition hover:brightness-95"
             >
-              facies.app{pagina.exemplo_de_cobranca.url_banco}
+              Resolver as {tema.questoes.length} questões deste assunto
             </a>
-          </p>
+            <p className="mt-2 text-xs text-muted">
+              Abre no app, com o gabarito só depois da sua resposta. Pede entrar.
+            </p>
+          </div>
         ) : null}
       </div>
+
+      {/* ── a figura da prova, com o que ela decide ───────────────────────── */}
+      {pagina.imagem?.url && pagina.imagem_leitura?.leitura ? (
+        <figure className="mt-6 print:break-inside-avoid">
+          <figcaption className="paper-eyebrow">
+            {ROTULO_DA_IMAGEM[pagina.imagem_leitura.tipo]}
+          </figcaption>
+          {/* `img` cru e nao `next/image`: a origem e' o bucket publico do banco,
+              e passar 19 figuras pelo otimizador cobraria transformacao por
+              imagem sem ganho — elas ja vem dimensionadas do extrator. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={pagina.imagem.url}
+            alt={`Figura de uma questão de ${[pagina.imagem.prova, pagina.imagem.ano].filter(Boolean).join(" · ")}`}
+            loading="lazy"
+            className="mt-2 max-w-full rounded-control border border-rule bg-paper"
+          />
+          <div className="mt-3 border-l-2 border-rule pl-4">
+            <p className="paper-eyebrow">como ler</p>
+            <p className="mt-1 max-w-[62ch] text-base/[1.6] text-ink">
+              {pagina.imagem_leitura.leitura}
+            </p>
+          </div>
+        </figure>
+      ) : null}
 
       {/* ── as fontes: o que torna a página conferível ────────────────────── */}
       {pagina.fontes.length > 0 ? (
@@ -271,6 +326,13 @@ export function PaginaDoDia({
           </ul>
         </div>
       ) : null}
+
+      <PassoAPasso
+        anterior={anterior}
+        proximo={proximo}
+        posicao={tema.posicao_previsao}
+        totalDeAssuntos={totalDeAssuntos}
+      />
     </section>
   );
 }

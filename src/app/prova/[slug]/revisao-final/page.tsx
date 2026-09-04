@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
 import { Compartilhar } from "@/components/facies/Compartilhar";
+import type { DisplayArea } from "@/lib/areaIdentity";
 import { dec } from "@/lib/decimal";
 import { provaPorSlug, todasAsProvas } from "@/lib/provas";
 import {
@@ -13,6 +14,7 @@ import {
 } from "@/lib/revisao";
 import { CONT_LANDING } from "@/lib/site";
 import { BotaoImprimirPdf } from "./_components/BotaoImprimirPdf";
+import { IndiceDaRevisao } from "./_components/NavegacaoDaRevisao";
 import { PaginaDoDia } from "./_components/PaginaDoDia";
 
 /**
@@ -86,6 +88,16 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
     temas: temasDoDia(revisao, dia),
   }));
   const totalPaginas = dias.reduce((soma, d) => soma + d.temas.length, 0);
+  // A lista achatada existe para o passo a passo do rodapé: o vizinho de um
+  // assunto pode estar em OUTRO dia, e derivá-lo dentro do laço do dia daria
+  // "próximo" nulo seis vezes por dia — a navegação pararia em cada fronteira.
+  const emOrdem = dias.flatMap(({ temas }) =>
+    temas.map(({ tema, pagina }) => ({
+      posicao: tema.posicao_previsao,
+      subtema: tema.subtema,
+      area: (pagina.area ?? "OU") as DisplayArea,
+    })),
+  );
   const h = revisao.honestidade;
   const total = revisao.estrutura.total_questoes;
   const livres = revisao.estrutura.dias_livres_ate_prova;
@@ -185,7 +197,7 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
 
       {/* ── Os 7 dias ─────────────────────────────────────────────────────── */}
       <section className="mt-10" aria-labelledby="dias">
-        <h2 id="dias" className="paper-eyebrow">
+        <h2 id="dias" className="scroll-mt-4 paper-eyebrow">
           os {dias.length} dias e os {totalPaginas} assuntos, na ordem
         </h2>
         {totalPaginas === 0 ? (
@@ -197,7 +209,9 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
             já mostra quais assuntos medimos como mais prováveis.
           </p>
         ) : (
-          <div className="mt-6 space-y-16">
+          <>
+            <IndiceDaRevisao dias={dias} />
+            <div className="mt-10 space-y-16">
             {dias.map(({ dia, temas }) => (
               <div key={dia.dia}>
                 <p className="paper-eyebrow border-b-2 border-edge pb-2">
@@ -205,13 +219,26 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
                   {temas.reduce((n, t) => n + t.tema.questoes.length, 0)} questões
                 </p>
                 <div className="space-y-14">
-                  {temas.map(({ tema, pagina }) => (
-                    <PaginaDoDia key={tema.subtema} tema={tema} pagina={pagina} />
-                  ))}
+                  {temas.map(({ tema, pagina }) => {
+                    const indice = emOrdem.findIndex(
+                      (x) => x.posicao === tema.posicao_previsao,
+                    );
+                    return (
+                      <PaginaDoDia
+                        key={tema.subtema}
+                        tema={tema}
+                        pagina={pagina}
+                        anterior={emOrdem[indice - 1] ?? null}
+                        proximo={emOrdem[indice + 1] ?? null}
+                        totalDeAssuntos={emOrdem.length}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          </>
         )}
       </section>
 

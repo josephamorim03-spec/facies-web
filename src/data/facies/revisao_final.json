@@ -587,7 +587,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O formato mais frequente descreve a evolução da dor no tempo, acrescenta um achado de exame físico e pergunta a conduta imediata; as alternativas erradas oferecem exames complementares plausíveis que só adiariam a decisão.",
-        "url_banco": "/banco?subtheme=abdome-agudo-inflamatorio"
+        "url_banco": "/banco?theme=Abdome%20Agudo%20Inflamat%C3%B3rio"
       },
       "fontes": [],
       "imagem": {
@@ -745,7 +745,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta traz parada de eliminação com distensão e vômitos, esconde uma cirurgia prévia na história e pergunta a conduta; a alternativa errada opera todo mundo, ou insiste no conservador diante de sinal de estrangulamento.",
-        "url_banco": "/banco?subtheme=abdome-agudo-obstrutivo"
+        "url_banco": "/banco?theme=Abdome%20Agudo%20Obstrutivo"
       },
       "fontes": [],
       "imagem": {
@@ -894,7 +894,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A questão entrega a paciente e alguns resultados e pergunta a etapa seguinte da investigação; a resposta é sempre um passo do algoritmo, e o distrator é o exame que resolveria a etapa errada.",
-        "url_banco": "/banco?subtheme=amenorreias"
+        "url_banco": "/banco?theme=Amenorreias"
       },
       "fontes": [],
       "imagem": null,
@@ -1071,7 +1071,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta descreve um quadro febril agudo com um sintoma que se destaca dos demais e pede a hipótese, ou acrescenta um achado novo no terceiro dia e pergunta a conduta; o distrator explora justamente a melhora da febre como se fosse melhora do quadro.",
-        "url_banco": "/banco?subtheme=arboviroses"
+        "url_banco": "/banco?theme=Arboviroses"
       },
       "fontes": [],
       "imagem": {
@@ -1225,7 +1225,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O caso traz um ritmo alterado com sinais vitais explícitos e oferece drogas nas alternativas; a chave está nos sinais vitais, e o distrator é a droga clássica daquela arritmia oferecida a um paciente que já não tem tempo para ela.",
-        "url_banco": "/banco?subtheme=arritmias-cardiacas"
+        "url_banco": "/banco?theme=Arritmias%20Card%C3%ADacas"
       },
       "fontes": [],
       "imagem": {
@@ -1383,7 +1383,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O caso descreve dor articular com número de articulações, simetria e tempo de rigidez explícitos, e pede a hipótese; a alternativa errada costuma usar um exame laboratorial isolado para confirmar ou descartar.",
-        "url_banco": "/banco?subtheme=artropatias-inflamatorias"
+        "url_banco": "/banco?theme=Artropatias%20inflamat%C3%B3rias"
       },
       "fontes": [],
       "imagem": {
@@ -1546,7 +1546,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta descreve a frequência de sintomas e o uso da medicação de resgate e pergunta a classificação ou o passo seguinte; a alternativa errada interpreta o uso frequente de resgate como doença leve.",
-        "url_banco": "/banco?subtheme=asma"
+        "url_banco": "/banco?theme=Asma"
       },
       "fontes": [],
       "imagem": null,
@@ -1688,7 +1688,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta descreve uma consulta com um resultado alterado e pergunta a conduta ou a classificação de risco; a alternativa errada transforma o achado isolado em alto risco, ou trata o sinal de alerta como queixa fisiológica da gestação.",
-        "url_banco": "/banco?subtheme=assistencia-pre-natal"
+        "url_banco": "/banco?theme=Assist%C3%AAncia%20pr%C3%A9-natal"
       },
       "fontes": [],
       "imagem": {
@@ -1849,7 +1849,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta descreve uma situação de organização do cuidado — retorno frequente, demanda que não cabe na agenda, conflito entre urgência e programada — e pergunta a conduta da equipe; a alternativa errada costuma ser a que transfere o problema para outro nível.",
-        "url_banco": "/banco?subtheme=atencao-primaria-a-saude-aps-no-brasil"
+        "url_banco": "/banco?theme=Aten%C3%A7%C3%A3o%20Prim%C3%A1ria%20%C3%A0%20Sa%C3%BAde%20%28APS%29%20no%20Brasil"
       },
       "fontes": [],
       "imagem": null,
@@ -2005,7 +2005,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O caso traz dor torácica com um eletrocardiograma descrito e pergunta a conduta imediata; a alternativa errada espera o resultado do marcador para decidir, ou libera o paciente pelo traçado inicial normal.",
-        "url_banco": "/banco?subtheme=aterosclerose-e-doenca-arterial-coronariana"
+        "url_banco": "/banco?theme=Aterosclerose%20e%20Doen%C3%A7a%20Arterial%20Coronariana"
       },
       "fontes": [],
       "imagem": {
@@ -2149,7 +2149,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O enunciado apresenta um paciente com vários achados simultâneos e pergunta qual conduta vem primeiro; as alternativas erradas são todas corretas em algum momento do atendimento, e o que as torna erradas é a posição na sequência.",
-        "url_banco": "/banco?subtheme=avaliacao-inicial-vias-aereas-ventilacao-e-choque"
+        "url_banco": "/banco?theme=Avalia%C3%A7%C3%A3o%20Inicial%3A%20Vias%20a%C3%A9reas%2C%20Ventila%C3%A7%C3%A3o%20e%20Choque"
       },
       "fontes": [],
       "imagem": {
@@ -2311,7 +2311,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta constrói um conflito entre o que alguém pede e o que o paciente quer, e pergunta a conduta; as alternativas erradas são as socialmente confortáveis, e a certa é a que mantém o paciente como titular da decisão.",
-        "url_banco": "/banco?subtheme=codigo-de-etica-medica-cem"
+        "url_banco": "/banco?theme=C%C3%B3digo%20de%20%C3%89tica%20M%C3%A9dica%20%28CEM%29"
       },
       "fontes": [],
       "imagem": null,
@@ -2477,7 +2477,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta descreve uma pessoa em uso problemático de uma substância, com detalhes que indicam gravidade ou motivação, e pergunta qual é a conduta ou o plano terapêutico mais adequado naquele ponto do cuidado.",
-        "url_banco": "/banco?subtheme=dependencia-quimica"
+        "url_banco": "/banco?theme=Depend%C3%AAncia%20Qu%C3%ADmica"
       },
       "fontes": [
         {
@@ -2700,7 +2700,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "Um formato traz resultados laboratoriais e pergunta quem preenche critério diagnóstico; outro traz alguém já em tratamento, com uma comorbidade cardiovascular ou renal declarada, e pergunta qual droga acrescentar.",
-        "url_banco": "/banco?subtheme=diabetes"
+        "url_banco": "/banco?theme=Diabetes"
       },
       "fontes": [
         {
@@ -2904,7 +2904,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O enunciado traz uma gestante com sorologia positiva e uma dúvida sobre conduta ou via de parto; a alternativa errada generaliza a cesariana, ou considera tratada a sífilis em que só a gestante recebeu o esquema.",
-        "url_banco": "/banco?subtheme=doencas-infecciosas-na-gestacao-hiv-sifilis-hepatites-herpes"
+        "url_banco": "/banco?theme=Doen%C3%A7as%20infecciosas%20na%20gesta%C3%A7%C3%A3o%20%E2%80%93%20HIV%2C%20s%C3%ADfilis%2C%20hepatites%2C%20herpes"
       },
       "fontes": [],
       "imagem": null,
@@ -3032,7 +3032,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O enunciado oferece uma razão plausível para adiar — um exame pendente, um paciente assintomático, um resultado que ainda não chegou — e pergunta a conduta; a resposta certa é a que não adia.",
-        "url_banco": "/banco?subtheme=hiv-aids"
+        "url_banco": "/banco?theme=HIV/Aids"
       },
       "fontes": [],
       "imagem": null,
@@ -3194,7 +3194,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta entrega uma medida alta acompanhada de um sintoma ambíguo — cefaleia, tontura, mal-estar — e pergunta a conduta; a resposta depende de reconhecer se aquele sintoma representa lesão de órgão em curso ou apenas acompanha o susto do paciente.",
-        "url_banco": "/banco?subtheme=hipertensao-arterial-sistemica-has"
+        "url_banco": "/banco?theme=Hipertens%C3%A3o%20Arterial%20Sist%C3%AAmica%20%28HAS%29"
       },
       "fontes": [],
       "imagem": null,
@@ -3347,7 +3347,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta traz alguém que chega ao serviço para atualizar a situação vacinal e planta uma condição que muda a regra; as alternativas oferecem condutas de vacinação, e a correta é a que respeita a contraindicação ou a regra de aproveitamento de doses.",
-        "url_banco": "/banco?subtheme=imunizacoes-vacinacao"
+        "url_banco": "/banco?theme=Imuniza%C3%A7%C3%B5es/Vacina%C3%A7%C3%A3o"
       },
       "fontes": [
         {
@@ -3550,7 +3550,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O caso descreve um recém-nascido com achados inespecíficos e uma história materna deliberadamente incompleta, e pergunta a conduta; a resposta depende de julgar se o tratamento materno foi adequado, o que inclui a parceria.",
-        "url_banco": "/banco?subtheme=infeccoes-congenitas"
+        "url_banco": "/banco?theme=Infec%C3%A7%C3%B5es%20cong%C3%AAnitas"
       },
       "fontes": [],
       "imagem": {
@@ -3728,7 +3728,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O caso descreve um quadro respiratório alto com duração e características explícitas e pergunta se entra antibiótico; a alternativa errada usa um critério isolado — cor da secreção ou tempo — como se bastasse.",
-        "url_banco": "/banco?subtheme=infeccoes-das-vias-aereas-superiores"
+        "url_banco": "/banco?theme=Infec%C3%A7%C3%B5es%20das%20Vias%20A%C3%A9reas%20Superiores"
       },
       "fontes": [],
       "imagem": null,
@@ -3877,7 +3877,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta traz uma síndrome e pergunta o tratamento; a alternativa errada trata apenas o agente mais provável, ou trata só o paciente e deixa a parceria fora da conduta.",
-        "url_banco": "/banco?subtheme=infeccoes-sexualmente-transmissiveis"
+        "url_banco": "/banco?theme=Infec%C3%A7%C3%B5es%20sexualmente%20transmiss%C3%ADveis"
       },
       "fontes": [],
       "imagem": null,
@@ -4037,7 +4037,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta monta um quadro intestinal com um detalhe discordante no meio da história e pede a hipótese; o distrator confortável é o diagnóstico funcional, oferecido a um caso que traz sinal de alarme.",
-        "url_banco": "/banco?subtheme=intestinos"
+        "url_banco": "/banco?theme=Intestinos"
       },
       "fontes": [],
       "imagem": null,
@@ -4192,7 +4192,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta descreve o conjunto de achados sem nomear o agente e pergunta a hipótese ou o antídoto; a alternativa errada mais comum é pedir dosagem sérica, que existe mas chega tarde demais para a decisão.",
-        "url_banco": "/banco?subtheme=intoxicacoes-exogenas"
+        "url_banco": "/banco?theme=Intoxica%C3%A7%C3%B5es%20Ex%C3%B3genas"
       },
       "fontes": [],
       "imagem": {
@@ -4346,7 +4346,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O enunciado descreve uma situação de serviço ou entrega um conjunto de dados e pergunta qual medida responde àquilo; a alternativa errada oferece a medida mais conhecida em vez da que tem o denominador certo.",
-        "url_banco": "/banco?subtheme=medidas-de-saude-coletiva"
+        "url_banco": "/banco?theme=Medidas%20de%20sa%C3%BAde%20coletiva"
       },
       "fontes": [],
       "imagem": {
@@ -4546,7 +4546,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O formato mais frequente monta a vinheta com um punhado de achados que só fecham numa hipótese e pergunta qual é a principal suspeita, ou qual exame deve ser pedido primeiro; as alternativas erradas costumam ser exames plausíveis para outra hipótese do mesmo aparelho.",
-        "url_banco": "/banco?subtheme=neoplasias-do-sistema-digestivo"
+        "url_banco": "/banco?theme=Neoplasias%20do%20Sistema%20Digestivo"
       },
       "fontes": [
         {
@@ -4701,7 +4701,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta traz um trauma de membro com um achado discreto no exame neurovascular e pergunta a conduta; a alternativa errada imobiliza e libera, tratando o achado como parte esperada do trauma.",
-        "url_banco": "/banco?subtheme=ortopedia-geral"
+        "url_banco": "/banco?theme=Ortopedia%20Geral"
       },
       "fontes": [],
       "imagem": null,
@@ -4893,7 +4893,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta apresenta uma mulher que quer iniciar contracepção e planta uma condição clínica no meio da história; as alternativas listam métodos, e a correta é a que respeita o critério de elegibilidade daquela condição.",
-        "url_banco": "/banco?subtheme=planejamento-familiar"
+        "url_banco": "/banco?theme=Planejamento%20familiar"
       },
       "fontes": [
         {
@@ -5049,7 +5049,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta apresenta um paciente que não adere, não retorna ou reincide e pede a interpretação ou a conduta; a alternativa errada explica o adoecimento pela escolha individual e propõe mais orientação.",
-        "url_banco": "/banco?subtheme=processo-saude-doenca"
+        "url_banco": "/banco?theme=Processo%20sa%C3%BAde-doen%C3%A7a"
       },
       "fontes": [],
       "imagem": {
@@ -5208,7 +5208,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A queixa chega pela escola ou pela família e a pergunta é diagnóstica ou de conduta; a alternativa errada mais frequente é iniciar medicação a partir do relato de um único ambiente.",
-        "url_banco": "/banco?subtheme=psiquiatria-infantil"
+        "url_banco": "/banco?theme=Psiquiatria%20Infantil"
       },
       "fontes": [],
       "imagem": null,
@@ -5394,7 +5394,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta apresenta uma pessoa assintomática que retorna com o resultado do exame preventivo e transcreve o laudo; as alternativas oferecem intervalos de repetição e encaminhamentos, e a correta é a prevista no protocolo para aquele resultado naquela idade.",
-        "url_banco": "/banco?subtheme=rastreamento-do-cancer-de-colo-do-utero"
+        "url_banco": "/banco?theme=Rastreamento%20do%20c%C3%A2ncer%20de%20colo%20do%20%C3%BAtero"
       },
       "fontes": [
         {
@@ -5558,7 +5558,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta traz sangramento no início da gestação com achados de exame e pergunta a conduta; a alternativa errada indica esvaziamento antes de confirmar a inviabilidade, ou ignora a instabilidade hemodinâmica.",
-        "url_banco": "/banco?subtheme=sangramento-primeira-metade"
+        "url_banco": "/banco?theme=Sangramento%20primeira%20metade"
       },
       "fontes": [],
       "imagem": null,
@@ -5696,7 +5696,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta descreve alteração do padrão menstrual e pergunta o próximo passo; a bifurcação está entre tratar e investigar a cavidade, e o que decide é a idade somada aos fatores de risco.",
-        "url_banco": "/banco?subtheme=sangramento-uterino-anormal"
+        "url_banco": "/banco?theme=Sangramento%20uterino%20anormal"
       },
       "fontes": [],
       "imagem": {
@@ -5878,7 +5878,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O caso descreve um idoso com uma queixa aparentemente simples e uma lista de medicamentos que parece cenário, mas é a pista; a pergunta é de conduta, e a alternativa certa costuma retirar algo em vez de acrescentar.",
-        "url_banco": "/banco?subtheme=saude-do-idoso-geriatria"
+        "url_banco": "/banco?theme=Sa%C3%BAde%20do%20Idoso%20%28geriatria%29"
       },
       "fontes": [],
       "imagem": null,
@@ -6034,7 +6034,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O caso apresenta pressão alta na gestação com alguns achados e pergunta a conduta; as alternativas erradas concentram-se em normalizar a pressão e adiar a decisão sobre o parto, que é a decisão que importa.",
-        "url_banco": "/banco?subtheme=sindromes-hipertensivas-da-gestacao"
+        "url_banco": "/banco?theme=S%C3%ADndromes%20Hipertensivas%20da%20Gesta%C3%A7%C3%A3o"
       },
       "fontes": [],
       "imagem": null,
@@ -6180,7 +6180,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O enunciado apresenta um cenário clínico e um resultado, e pergunta o que ele significa ou qual exame escolher; a alternativa errada aplica a um paciente de consultório o valor preditivo medido numa população com outra prevalência.",
-        "url_banco": "/banco?subtheme=testes-diagnosticos"
+        "url_banco": "/banco?theme=Testes%20Diagn%C3%B3sticos"
       },
       "fontes": [],
       "imagem": {
@@ -6342,7 +6342,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "Um formato apresenta sintomas inespecíficos com um detalhe somático que denuncia a glândula e pede a hipótese; outro apresenta um nódulo achado no exame físico e pede o exame que deve vir primeiro na investigação.",
-        "url_banco": "/banco?subtheme=tireoide"
+        "url_banco": "/banco?theme=Tireoide"
       },
       "fontes": [
         {
@@ -6480,7 +6480,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O caso descreve sintomas depressivos com um detalhe da história plantado de propósito — um período de energia aumentada, um exame alterado, um medicamento em uso — e pergunta a conduta; esse detalhe é o que muda a resposta inteira.",
-        "url_banco": "/banco?subtheme=transtornos-do-humor"
+        "url_banco": "/banco?theme=Transtornos%20do%20Humor"
       },
       "fontes": [],
       "imagem": null,
@@ -6621,7 +6621,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O enunciado dá um traumatizado com sinais vitais explícitos e oferece exames nas alternativas; o distrator é sempre o exame mais completo, oferecido a quem não tem tempo de fazê-lo.",
-        "url_banco": "/banco?subtheme=trauma-abdominal-e-pelvico"
+        "url_banco": "/banco?theme=Trauma%20Abdominal%20e%20P%C3%A9lvico"
       },
       "fontes": [],
       "imagem": {
@@ -6764,7 +6764,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "O caso descreve um traumatismo com alteração de consciência e sinais vitais alterados, e pergunta a próxima conduta; a alternativa errada corre para a imagem ou para a medida específica da lesão antes de corrigir oxigenação e pressão.",
-        "url_banco": "/banco?subtheme=traumatismo-craniencefalico"
+        "url_banco": "/banco?theme=Traumatismo%20Craniencef%C3%A1lico"
       },
       "fontes": [],
       "imagem": {
@@ -6914,7 +6914,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "Ou a vinheta traz o sintomático respiratório e pergunta o exame inicial, ou traz o familiar de um caso confirmado e pergunta o que fazer com ele; a alternativa errada mais comum troca a ordem entre afastar doença ativa e tratar a infecção latente.",
-        "url_banco": "/banco?subtheme=tuberculose-tb"
+        "url_banco": "/banco?theme=Tuberculose%20%28TB%29"
       },
       "fontes": [],
       "imagem": null,
@@ -7054,7 +7054,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta traz um caso suspeito na unidade e pergunta a conduta de saúde coletiva; as alternativas erradas propõem esperar — o exame, a confirmação, um segundo caso — e é justamente a espera que a norma não admite.",
-        "url_banco": "/banco?subtheme=vigilancia-em-saude"
+        "url_banco": "/banco?theme=Vigil%C3%A2ncia%20em%20Sa%C3%BAde"
       },
       "fontes": [],
       "imagem": null,
@@ -7204,7 +7204,7 @@
       },
       "exemplo_de_cobranca": {
         "descricao": "A vinheta descreve o corrimento com aspecto, odor e sintoma associado e pede a hipótese ou o tratamento; o distrator explora o sintoma mais chamativo isolado, em geral o prurido.",
-        "url_banco": "/banco?subtheme=vulvovaginites"
+        "url_banco": "/banco?theme=Vulvovaginites"
       },
       "fontes": [],
       "imagem": null,
@@ -14981,7 +14981,7 @@
     "method_version": "facies_prediction.v1",
     "registered_at": "2026-08-30 02:49:14.757037+00"
   },
-  "gerado_em": "2026-09-04T18:02:05.969676+00:00",
+  "gerado_em": "2026-09-04T20:11:17.059595+00:00",
   "honestidade": {
     "acerto_pct": 35.0,
     "historico_maximo": 2.8,
