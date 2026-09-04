@@ -750,18 +750,45 @@ export async function mockApi(page) {
     // A facies da banca-alvo, servida pelo BFF (`app/api/facies/banca/[key]`).
     // E' o que o Mapa desenha; sem ela a tela cai em "Algo deu errado".
     if (method === "GET" && path.startsWith("/api/facies/banca/")) {
+      const chave = decodeURIComponent(path.split("/").pop());
+      // ⚠️ O MOCK RESPONDE PELA CHAVE, e nao com uma banca fixa.
+      //
+      // Ele devolvia a UNIFESP para qualquer chave, e a aba Comparar acabava
+      // exibindo "UNIFESP" contra "UNIFESP", com todas as diferencas em zero.
+      // A tela passava, o guard passava, e nenhum dos dois exercia a
+      // comparacao -- que e a unica coisa que aquela aba faz.
+      const outra = chave.includes("ENAMED") || chave.includes("ENARE");
       return fulfillJson(route, {
-        institution_key: decodeURIComponent(path.split("/").pop()),
+        institution_key: chave,
         // `slug` NAO e' decorativo: `nomeCurto()` faz `banca.slug.startsWith(...)`
         // para achar os nomes fixos (ENARE, Revalida). Sem ele o render estoura
         // em TypeError e a tela cai no error boundary — "Algo deu errado", sem
         // nada no console, porque o boundary engole.
-        slug: "sp-universidade-federal-de-sao-paulo-unifesp-hospital-universitario-da-unifesp",
-        nome: "SP - Universidade Federal de Sao Paulo - UNIFESP",
-        uf: "SP",
+        slug: outra
+          ? "exame-nacional-de-residencia-enamed"
+          : "sp-universidade-federal-de-sao-paulo-unifesp-hospital-universitario-da-unifesp",
+        nome: outra
+          ? "Exame Nacional de Residencia (ENAMED)"
+          : "SP - Universidade Federal de Sao Paulo - UNIFESP",
+        uf: outra ? null : "SP",
         total: 1137,
         questoes_total: 1137,
         questoes_recentes: 604,
+        // ⚠️ `forma_recente` E OBRIGATORIO no tipo `Banca`, e a aba Comparar
+        // le `forma_recente.vinheta_pct` sem guarda: sem ele o mapa inteiro
+        // caia em "Algo deu errado" ao escolher a segunda prova, com o error
+        // boundary comendo a causa. O dataset real tem o bloco nas 138 bancas
+        // (medido), entao a falha era so do mock -- e um mock incompleto que
+        // derruba a tela e' pior que mock nenhum, porque parece defeito do app.
+        forma_recente: {
+          anos: [2024, 2025, 2026],
+          base: 604,
+          base_com_tema: 588,
+          formato_pct: outra ? 4.1 : 1.2,
+          formato_pct_com_tema: outra ? 4.1 : 1.2,
+          vinheta_pct: outra ? 51.4 : 21.6,
+          vinheta_pct_com_tema: outra ? 52.0 : 22.1,
+        },
         questoes_anuladas: 0,
         primeiro_ano: 2016,
         ultimo_ano: 2026,

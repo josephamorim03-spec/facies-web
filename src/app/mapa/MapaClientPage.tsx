@@ -17,7 +17,7 @@ import {
   getMyTargetExam,
 } from "@/lib/api";
 import type { CompetencyMasteryItem } from "@/lib/api/domains/study-plan";
-import type { Banca } from "@/lib/facies";
+import { nomeCurto, type Banca } from "@/lib/facies";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
 
@@ -141,7 +141,7 @@ function EixoComparar({ minha, outrasDoAluno }: { minha: Banca; outrasDoAluno: s
     <div className="space-y-5">
       <div>
         <label htmlFor="comparar-com" className="paper-eyebrow">
-          comparar a {minha.nome} com
+          comparar a {nomeCurto(minha)} com
         </label>
         <select
           id="comparar-com"
@@ -434,7 +434,15 @@ export function MapaClientPage() {
     <div className="space-y-4">
       <div>
         <h1 className="font-serif font-semibold text-ink">
-          A cara da {facies.data.nome}
+          {/* ⚠️ NOME CURTO, e nao o institucional por extenso.
+
+              O desenho escreve "A cara da UNIFESP" (`9a`). Com `banca.nome`
+              a manchete saia "A cara da SP - Universidade Federal de São
+              Paulo - UNIFESP (Hospital Universitário da UNIFESP)" -- QUATRO
+              linhas a 390px, empurrando as abas e o mapa para fora da
+              primeira tela. `nomeCurto` ja resolve homonimo com a UF e e o
+              mesmo nome dos chips da landing. */}
+          A cara da {nomeCurto(facies.data)}
         </h1>
         {/* A janela e o denominador da leitura, e o handoff pede que numero
             nunca apareca sem ele. */}

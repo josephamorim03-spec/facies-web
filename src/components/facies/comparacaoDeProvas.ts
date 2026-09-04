@@ -189,7 +189,22 @@ const FORMAS: { chave: string; de: (b: Banca) => number; nome: string }[] = [
  * outro desenho (interseção explícita, e o aviso de cobertura), e esse desenho
  * não existe em nenhum artboard que este repositório tenha.
  */
-export function calcularDeltas(a: Banca, b: Banca): Delta[] {
+/**
+ * ⚠️ `nomeDeB` entra por PARAMETRO, e nao por import.
+ *
+ * A frase precisa nomear a segunda prova, e o nome que cabe na tela e o
+ * curto (`nomeCurto`) -- o institucional por extenso ocupa tres linhas e se
+ * repete uma vez por diferenca, ate cinco vezes na mesma tela.
+ *
+ * Importar `nomeCurto` aqui puxaria `lib/facies.ts` e, com ele, o
+ * `facies.json` de 1 MB para dentro do runner de teste -- exatamente o que o
+ * `import type` do topo deste arquivo existe para evitar. Quem tem o nome
+ * pronto e' o componente, que ja importa o helper.
+ *
+ * Sem o parametro, cai em `b.nome`: nenhum chamador existente muda.
+ */
+export function calcularDeltas(a: Banca, b: Banca, nomeDeB?: string): Delta[] {
+  const nomeB = nomeDeB ?? b.nome;
   const pesosA = pesosDeArea(a);
   const pesosB = pesosDeArea(b);
   const deltas: Delta[] = [];
@@ -206,7 +221,7 @@ export function calcularDeltas(a: Banca, b: Banca): Delta[] {
     deltas.push({
       chave: `area-${area}`,
       valor: diferenca,
-      frase: `${AREA_LANDING_LABELS[area]} na ${b.nome}, em pontos percentuais`,
+      frase: `${AREA_LANDING_LABELS[area]} na ${nomeB}, em pontos percentuais`,
     });
   }
 
@@ -216,7 +231,7 @@ export function calcularDeltas(a: Banca, b: Banca): Delta[] {
     deltas.push({
       chave: `forma-${forma.chave}`,
       valor: diferenca,
-      frase: `${forma.nome} na ${b.nome}, em pontos percentuais`,
+      frase: `${forma.nome} na ${nomeB}, em pontos percentuais`,
     });
   }
 
