@@ -1098,19 +1098,13 @@ export default function FocusedQuestion({
                      nao ha acao pedagogica a destacar, este canto fica vazio de
                      proposito -- o avancar ja esta na faixa do polegar. */
               null}
+              {/* ⚠️ GUARDAR SAIU DAQUI, e foi para o rodape.
+                  Ele so existia dentro deste cartao: invisivel no simulado, e
+                  invisivel no treino ate o gabarito aparecer. Ou seja, existia
+                  em toda parte MENOS na hora em que se decide guardar uma
+                  questao -- ao ler. O atalho `F` sempre funcionou em qualquer
+                  estado, e era a unica forma de chegar la. */}
               <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={toggleFavorite}
-                  aria-pressed={localFavorite}
-                  className={cx(
-                    "inline-flex items-center gap-1.5 border border-edge px-3 py-2 text-xs font-semibold hover:text-ink",
-                    localFavorite ? "text-ink" : "text-muted",
-                  )}
-                >
-                  <IconStar filled={localFavorite} className="h-3.5 w-3.5" />
-                  {localFavorite ? "Favorita" : "Favoritar"}
-                </button>
                 {hasPostAnswerReflection && hasDistractorDiagnosis && primaryPostAnswerAction !== "trap" && (
                   <button
                     type="button"
@@ -1298,18 +1292,49 @@ export default function FocusedQuestion({
               focusActive ? "max-w-6xl" : useWideReadingLayout ? "max-w-5xl" : "max-w-4xl",
             )}
           >
-            <button
-              type="button"
-              onClick={onToggleDoubtful}
-              aria-pressed={item.doubtful}
-              className={cx(
-                "inline-flex items-center gap-1.5 border px-4 py-2 text-sm font-semibold transition-colors",
-                item.doubtful ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:text-ink",
-              )}
-            >
-              <IconFlag className="h-3.5 w-3.5" />
-              {item.doubtful ? "Marcada" : "Marcar"}
-            </button>
+            {/* MARCAR e GUARDAR sao coisas diferentes, e ficam juntas porque
+                as duas respondem à pergunta "o que faço com esta questão agora".
+
+                ⚠️ Comentário JSX conta como copy para o `check-portuguese-ui-copy`:
+                ele extrai literais entre aspas de QUALQUER linha, e não só as de
+                código. Frase entre aspas aqui dentro tem de vir acentuada.
+
+                Marcar e' duvida DESTA sessao: ela reaparece na aba "Marcadas"
+                do pos-prova e morre ali. Guardar atravessa sessoes -- e o
+                `bookmarked` em `student_question_state`, e a razao de existir
+                uma lista de guardadas.
+
+                Rotulo escondido abaixo de `sm`: em 390px os dois textos por
+                extenso empurravam o grupo de navegacao para uma segunda linha.
+                O `aria-label` carrega o nome para quem nao ve o icone. */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onToggleDoubtful}
+                aria-pressed={item.doubtful}
+                aria-label={item.doubtful ? "Desmarcar questão" : "Marcar questão"}
+                className={cx(
+                  "inline-flex min-h-11 items-center gap-1.5 border px-3 py-2 text-sm font-semibold transition-colors sm:px-4",
+                  item.doubtful ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:text-ink",
+                )}
+              >
+                <IconFlag className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{item.doubtful ? "Marcada" : "Marcar"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={toggleFavorite}
+                aria-pressed={localFavorite}
+                aria-label={localFavorite ? "Tirar das guardadas" : "Guardar questão"}
+                className={cx(
+                  "inline-flex min-h-11 items-center gap-1.5 border px-3 py-2 text-sm font-semibold transition-colors sm:px-4",
+                  localFavorite ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:text-ink",
+                )}
+              >
+                <IconStar filled={localFavorite} className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{localFavorite ? "Guardada" : "Guardar"}</span>
+              </button>
+            </div>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -1534,7 +1559,7 @@ export default function FocusedQuestion({
                   <span>A-E / 1-5</span><span>Responder</span>
                   <span>Enter</span><span>Revelar ou avancar</span>
                   <span>Setas</span><span>Navegar</span>
-                  <span>F</span><span>Favoritar</span>
+                  <span>F</span><span>Guardar</span>
                   <span>M</span><span>Grifar ou marcar</span>
                   <span>F11</span><span>Modo foco</span>
                 </div>

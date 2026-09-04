@@ -77,6 +77,10 @@ const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
   map: [],
   bank: [
     { href: "/banco", label: "Montar sessão", matches: ["/banco"] },
+    // A lista de guardadas mora sob o Banco, e nao na barra: o desenho fixa
+    // SEIS destinos e o setimo nao caberia em 390px. E guardadas e' uma forma
+    // de olhar o Banco, nao um lugar diferente dele.
+    { href: "/banco/guardadas", label: "Guardadas", matches: ["/banco/guardadas"] },
     { href: "/banco/historico", label: "Histórico", matches: ["/banco/historico"] },
   ],
   cards: [

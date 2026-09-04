@@ -83,7 +83,11 @@ test("each tab owns its children", () => {
   );
   assert.deepEqual(
     getIntentChildren("/banco").map((child) => child.href),
-    ["/banco", "/banco/historico"],
+    // "Guardadas" entrou entre montar e historico: e a leitura da colecao do
+    // aluno, e vive sob o Banco porque a barra tem SEIS destinos e o setimo nao
+    // caberia em 390px. A ordem e a do uso: montar (todo dia), guardadas
+    // (quando lembra), historico (raro).
+    ["/banco", "/banco/guardadas", "/banco/historico"],
   );
   assert.deepEqual(
     getIntentChildren("/cards").map((child) => child.href),

@@ -64,6 +64,9 @@ const TELAS = [
   "/hoje",
   "/mapa",
   "/banco",
+  // A colecao do aluno (`bookmarked`). Fora da lista, a tela nova nasceria
+  // sem medida nenhuma -- que foi como o Banco chegou a 16% de mono.
+  "/banco/guardadas",
   "/evolucao",
   "/cronograma",
   "/preferencias",
@@ -96,7 +99,10 @@ const MONO_MINIMO = {
   "/evolucao": 60,
   "/mapa": 28,
   "/plano": 20,
-  "/banco": 0,
+  // 16% antes desta branch. O resumo da sessao, a disponibilidade e a linha de
+  // tema passaram a mono; os chips de filtro (12/500) sao o que ainda falta.
+  "/banco": 28,
+  "/banco/guardadas": 41,
   "/cronograma": 0,
   "/preferencias": 0,
   "/conta": 0,

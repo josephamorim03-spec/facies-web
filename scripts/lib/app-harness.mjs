@@ -1068,6 +1068,57 @@ export async function mockApi(page) {
         },
       ]);
     }
+    // ⚠️ TRES areas de proposito, e nao uma.
+    //
+    // `/banco/guardadas` so mostra os chips de area quando ha mais de uma —
+    // um fixture de area unica exercitaria a tela sem a barra de filtro, que e
+    // metade do que ela faz. E as `attempt_stats` variam para o chip de acerto
+    // aparecer nos tres estados que ele tem.
+    if (method === "GET" && path === "/api/question-bank/bookmarks") {
+      const guardada = (id, area, no, stem, acertos, tentativas) => ({
+        id,
+        stem,
+        alternatives: { A: "Primeira conduta", B: "Segunda conduta", C: "Terceira conduta" },
+        answer: null,
+        difficulty_estimate: 0.6,
+        content_grade: "reviewed",
+        image_refs: [],
+        table_refs: [],
+        knowledge_nodes: [
+          qbankTopic({ knowledge_node_id: `${id}-no`, node_name: no, node_path: [area, no] }),
+        ],
+        attempt_stats: { attempt_count: tentativas, correct_count: acertos },
+        bookmarked: true,
+        source: { institution: "USP", board_code: "USP-SP", year: 2025 },
+        metadata: { state_code: "SP" },
+      });
+      return fulfillJson(route, [
+        guardada(
+          "q-guardada-1",
+          "Clínica Médica",
+          "Sepse",
+          "Homem de 62 anos, taquicárdico e hipotenso após 48h de tosse produtiva. Qual a primeira medida?",
+          1,
+          4,
+        ),
+        guardada(
+          "q-guardada-2",
+          "Clínica Médica",
+          "Síndrome coronariana aguda",
+          "Dor torácica há 2h com supradesnivelamento de ST em parede inferior. Qual a conduta?",
+          3,
+          4,
+        ),
+        guardada(
+          "q-guardada-3",
+          "Ginecologia e Obstetricia",
+          "Hipertensão na gestação",
+          "Gestante com PA 170/110, cefaleia e proteinúria. Qual a conduta?",
+          0,
+          2,
+        ),
+      ]);
+    }
     if (method === "GET" && path === "/api/question-bank/sessions") {
       return fulfillJson(route, [
         {

@@ -167,6 +167,15 @@ async function runViewport(browser, viewport) {
     await page.getByText("SP").first().waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
+  // A colecao do aluno. Entra na captura porque `axe` e `assertNoOverflow` so
+  // rodam por aqui — tela que fica de fora nasce sem gate de acessibilidade e
+  // sem gate de estouro horizontal, e ninguem percebe.
+  await visit("/banco/guardadas", "banco-guardadas", async () => {
+    await page
+      .getByRole("heading", { name: "As suas guardadas" })
+      .waitFor({ state: "visible", timeout: 30_000 });
+  }, !viewport.mobile);
+
   await visit("/preferencias", "preferencias", async () => {
     // Nao existe heading "Preferências": esse e o titulo da PAGINA, que mora no
     // topo como span. Os <h2> da tela sao os titulos de secao.

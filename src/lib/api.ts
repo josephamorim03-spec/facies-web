@@ -159,6 +159,11 @@ export {
   browseQuestionBankTopics,
   browseQuestionBankQuestions,
   setQuestionBankBookmark,
+  // ⚠️ FALTAVA AQUI, e essa e' metade do motivo de nunca ter sido chamado.
+  // `setQuestionBankBookmark` (gravar) estava reexportado; `listQuestionBankBookmarks`
+  // (ler de volta) nao. Guardar funcionava, ver o que foi guardado nao tinha
+  // sequer um caminho de import pela porta que o resto do app usa.
+  listQuestionBankBookmarks,
   createQuestionTextHighlight,
   deleteQuestionTextHighlight,
   getQuestionBankBootstrap,

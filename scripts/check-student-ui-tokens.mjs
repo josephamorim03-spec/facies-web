@@ -26,6 +26,7 @@ const PAPER_SURFACES = [
   "src/components/Nav.tsx",
   "src/components/MobileTabBar.tsx",
   "src/components/navIcons.tsx",
+  "src/app/banco/guardadas/page.tsx",
   "src/app/banco/historico/page.tsx",
   "src/app/preferencias/_components/ContaSection.tsx",
   "src/components/charts/studyChartTooltip.ts",
