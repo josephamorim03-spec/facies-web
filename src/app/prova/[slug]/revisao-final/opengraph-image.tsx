@@ -24,7 +24,7 @@ import { HOST_VISIVEL } from "@/lib/site";
  */
 
 export const alt =
-  "Cartão da Revisão Final: os 7 assuntos mais prováveis da prova, um por dia, e o ganho medido sobre o acaso.";
+  "Cartão da Revisão Final: os 42 assuntos mais prováveis da prova, seis por dia, e o ganho medido sobre o acaso.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
