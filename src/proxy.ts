@@ -1,45 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// `/facies` e as paginas por banca sao publicas de proposito: elas servem
-// agregado estatico (formato do item, contagem por assunto, media nacional) e
-// nao tocam dado de aluno, sessao nem questao individual. Sao o funil -- exigir
-// login antes delas seria o gate ANTES do valor, que e o erro que o
-// posicionamento inteiro evita.
-// A barra final NAO e decorativa: sem ela, "/prova" casa "/provas", que e rota
-// autenticada. Mesma armadilha que o comentario de PUBLIC_EXACT descreve, um
-// nivel abaixo. Quem for adicionar prefixo aqui: termine em "/" e adicione o
-// caminho exato ao lado, senao "/facies" (sem filho) deixa de abrir.
-const PUBLIC_PREFIXES = ["/login", "/auth/", "/api/", "/_next/", "/__nextjs", "/facies/", "/prova/"];
+import { rotaEhPublica } from "@/lib/rotasPublicas";
 
-// `/` e EXATO, nunca prefixo. Todo caminho comeca com "/", entao "/" dentro de
-// PUBLIC_PREFIXES abriria o app inteiro sem que a linha parecesse errada.
-//
-// `/termos` e `/privacidade` sao publicas porque o BACKEND ja as declara assim:
-// `app/api/routers/legal.py` monta `/legal/{kind}` fora do portao de acesso
-// citando o Decreto 7.962 art. 3, que exige o contrato disponivel ANTES da
-// contratacao. Sem estas duas linhas o frontend contradizia o backend, e o link
-// "Termos de Uso" levava a pessoa deslogada para a tela de login -- exatamente
-// quem o decreto quer que consiga ler.
-//
-// EXATO, nao prefixo: nao ha rota filha sob nenhuma das duas, e prefixo aqui so
-// abriria espaco para uma futura `/termos/algo-privado` nascer publica sem que
-// ninguem percebesse.
-const PUBLIC_EXACT = new Set(["/", "/facies", "/auth", "/enamed", "/termos", "/privacidade"]);
-
-const PUBLIC_FILE_REGEX = /\.[^/]+$/;
-
+/**
+ * Guard de borda: quem não tem sessão só enxerga o funil público.
+ *
+ * A lista de rotas públicas — e o raciocínio de cada linha dela — vive em
+ * `@/lib/rotasPublicas`, separada daqui para poder ser exercitada sem subir
+ * Next. Ver `tests/unit/proxy-public-routes.test.mjs`: é fronteira de segurança
+ * numa direção e de funil na outra, e as duas já custaram caro.
+ */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (PUBLIC_FILE_REGEX.test(pathname)) {
-    return NextResponse.next();
-  }
-
-  if (PUBLIC_EXACT.has(pathname)) {
-    return NextResponse.next();
-  }
-
-  if (PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+  if (rotaEhPublica(pathname)) {
     return NextResponse.next();
   }
 

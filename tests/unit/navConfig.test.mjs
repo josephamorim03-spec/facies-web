@@ -19,7 +19,7 @@ function childOf(pathname, href) {
   return getIntentChildren(pathname).find((child) => child.href === href) ?? null;
 }
 
-test("a navegacao e seis destinos, na ordem do desenho", () => {
+test("a navegacao e cinco destinos, na ordem do desenho", () => {
   // Eram cinco. A Rota saiu porque a tela dela era uma PERGUNTA — quanto tempo
   // voce tem, com que energia — e a pergunta morreu: o tamanho do dia agora vem
   // do calendario e do comportamento observado, e aparece como contexto da
@@ -27,14 +27,27 @@ test("a navegacao e seis destinos, na ordem do desenho", () => {
   // Os flashcards saíram da barra em 2026-08-29 — a feature ficou de molho,
   // atrás de `NEXT_PUBLIC_FLASHCARDS` (default "0"). A rota `/cards` continua
   // existindo e redirecionando; o que sumiu foi o caminho até ela.
-  // A ordem e a do desenho, completa: `/mapa` entrou quando a tela entrou.
+  // A Conta saiu em 2026-09-02, pelo mesmo argumento: ela ocupava o peso visual
+  // de uma tela diaria para tarefa que se faz poucas vezes por ano. A porta
+  // virou o proprio nome no rodape da barra (`Nav.tsx`) — ver o teste abaixo,
+  // que guarda o ALCANCE dela.
+  // A ordem e a do desenho: `/mapa` entrou quando a tela entrou.
   assert.deepEqual(
     NAV_ITEMS.map((item) => item.href),
-    ["/hoje", "/mapa", "/banco", "/evolucao", "/preferencias", "/conta"],
+    ["/hoje", "/mapa", "/banco", "/evolucao", "/preferencias"],
   );
   // Uma barra so: no mobile e a barra inferior, no desktop o menu bar. Sem
   // divisorias, porque nao ha mais agrupamento por pergunta.
   assert.equal(NAV_GROUPS_CONFIG.length, 1);
+});
+
+test("a Conta sai da BARRA sem sair do alcance", () => {
+  // Tirar um item da barra e tirar a rota do registro sao coisas diferentes, e
+  // confundi-las e como `/conta` viraria uma tela sem titulo, sem aba ativa e
+  // sem pre-aquecimento — alcancavel so por quem digitasse a URL.
+  assert.equal(findItem("/conta"), null);
+  assert.equal(getStudentPageTitle("/conta"), "Conta");
+  assert.ok(getStudentRoute("/conta"), "/conta precisa continuar no registro de rotas");
 });
 
 test("nem Kros nem Rota sobrevivem como rotulo de menu", () => {
@@ -42,7 +55,7 @@ test("nem Kros nem Rota sobrevivem como rotulo de menu", () => {
   // a propria aba. Os dois enderecos continuam 308 para o Hoje, entao ninguem
   // que os tenha salvos cai em 404 — mas nenhum dos dois volta ao menu.
   const labels = NAV_ITEMS.map((item) => item.shortLabel);
-  assert.deepEqual(labels, ["Hoje", "Mapa", "Banco", "Evolução", "Rotina", "Conta"]);
+  assert.deepEqual(labels, ["Hoje", "Mapa", "Banco", "Evolução", "Rotina"]);
   assert.equal(findItem("/kros"), null);
   assert.equal(findItem("/rota"), null);
 });

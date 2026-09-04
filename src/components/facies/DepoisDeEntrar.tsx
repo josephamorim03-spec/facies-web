@@ -50,7 +50,7 @@ const PASSOS = [
 
 export function DepoisDeEntrar() {
   return (
-    <section className="mt-12" aria-labelledby="depois-de-entrar">
+    <section aria-labelledby="depois-de-entrar">
       <span className="paper-eyebrow">Depois de entrar</span>
       <h2
         id="depois-de-entrar"

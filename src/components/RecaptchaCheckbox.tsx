@@ -85,7 +85,12 @@ export default function RecaptchaCheckbox({
     }
 
     const script = document.createElement("script");
-    script.src = "https://www.google.com/recaptcha/api.jsórender=explicit";
+    // ⚠️ O `?` desta URL já foi um `ó` ("api.jsórender=explicit"), corrompido por
+    // round-trip de encoding. O script nunca carregava, `window.grecaptcha` nunca
+    // existia, o widget nunca renderizava e `captchaToken` ficava vazio para
+    // sempre — com `canSubmit` falso, o cadastro por e-mail era impossível e
+    // NENHUM erro aparecia na tela. Não editar este arquivo com Set-Content.
+    script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
     script.async = true;
     script.defer = true;
     script.dataset.krosmedRecaptcha = "true";

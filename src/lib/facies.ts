@@ -43,6 +43,27 @@ export type FormatoLinha = {
 
 export type AlternativaLinha = { n: number; qtd: number; pct: number };
 
+/**
+ * Uma banca no ÍNDICE — o suficiente para escolhê-la, nada da leitura dela.
+ *
+ * Mora aqui, e não no arquivo da rota que o produz, por uma razão de peso
+ * literal: quem consome este tipo é um componente cliente, e `import type` de
+ * um módulo de rota depende de o bundler apagar a importação por completo. Se
+ * ele não apagar, entra junto o `facies.json` de **1 MB** que a rota importa.
+ *
+ * Ao lado de `Banca` o risco não existe — é o mesmo `import type` que
+ * `study-plan.ts` já faz deste arquivo, provado em produção. Não vale apostar
+ * um megabyte de bundle na semântica de apagamento de outro módulo.
+ */
+export type BancaDoIndice = {
+  institution_key: string;
+  /** Nome curto, o mesmo dos chips da landing (`nomeCurto`). */
+  nome: string;
+  nome_longo: string;
+  uf: string | null;
+  questoes_total: number;
+};
+
 export type Banca = {
   slug: string;
   institution_key: string;
@@ -68,6 +89,29 @@ export type Banca = {
     cobertura: number;
     base: number;
     linhas: { rotulo: string; n: number; pct: number }[];
+  };
+  /** A forma das edições RECENTES — a janela curta, não o acervo inteiro.
+   *
+   *  O gerador emite este bloco desde sempre e nada no front o lia; a aba
+   *  "Comparar" é o primeiro consumidor, e foi por isso que o tipo não o tinha.
+   *
+   *  Obrigatório, e isso foi MEDIDO antes de virar tipo: presente nas 138
+   *  bancas do dataset, `vinheta_pct` inclusive. Declará-lo opcional obrigaria
+   *  todo leitor a um `?? 0` que nunca dispara — e um fallback que nunca roda é
+   *  um fallback que ninguém testa.
+   *
+   *  ⚠️ `vinheta_pct` é a proporção de questões com VINHETA LONGA, e não uma
+   *  contagem de palavras. O artboard `B1` pede "palavras por enunciado", que o
+   *  gerador não produz em lugar nenhum; usar este campo com aquele nome daria
+   *  a um número um nome que ele não tem. */
+  forma_recente: {
+    anos: number[];
+    base: number;
+    base_com_tema: number;
+    formato_pct: Record<string, number>;
+    formato_pct_com_tema: Record<string, number>;
+    vinheta_pct: number;
+    vinheta_pct_com_tema: number;
   };
   /** Quantas das `questoes_total` são anuladas.
    *

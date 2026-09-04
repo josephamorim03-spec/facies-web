@@ -394,6 +394,7 @@ export {
   searchObjectiveCatalogV2,
   getMyTargetExam,
   getFaciesDaBanca,
+  getIndiceDeBancas,
   getMyCompetencyMastery,
 } from "./api/domains/study-plan";
 export type {

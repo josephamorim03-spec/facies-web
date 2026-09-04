@@ -303,8 +303,21 @@ function navItem(intent: StudentIntent): NavItemConfig {
  */
 const FLASHCARDS_LIGADOS = process.env.NEXT_PUBLIC_FLASHCARDS === "1";
 
+/**
+ * `account` SAI da barra, e continua alcançável pelo avatar.
+ *
+ * Ela ocupava o mesmo peso visual de Hoje, Banco e Rotina — telas que o aluno
+ * abre todo dia — para algo que se usa poucas vezes por ano: trocar senha,
+ * exportar dados, encerrar a conta. Item de navegação permanente para tarefa
+ * rara é ruído permanente.
+ *
+ * A porta passou a ser o próprio nome no rodapé da barra (`Nav.tsx`), que é
+ * onde as pessoas já procuram conta em qualquer produto. Some da lista, não do
+ * alcance — e a ROTA continua aqui em `INTENT_ORDER`, então `/conta` segue
+ * resolvendo, ativa e com rótulo, exatamente como `cards` faz desde que saiu.
+ */
 const INTENTS_VISIVEIS: StudentIntent[] = INTENT_ORDER.filter(
-  (intent) => intent !== "cards" || FLASHCARDS_LIGADOS,
+  (intent) => intent !== "account" && (intent !== "cards" || FLASHCARDS_LIGADOS),
 );
 
 export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [

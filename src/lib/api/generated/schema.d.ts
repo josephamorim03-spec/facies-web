@@ -609,6 +609,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/account/senha": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Definir Senha
+         * @description A ponte de saida do Google.
+         *
+         *     ## O buraco que isto fecha
+         *
+         *     Producao roda `AUTH_MODE` google-only, entao TODA conta existente nasceu pelo
+         *     Google e nao tem senha. Ligar o modo dual serviria so' a quem chegasse
+         *     depois: quem ja' esta' dentro continuaria preso ao provedor.
+         *
+         *     E nao havia rota de saida. `forgot-password` parece ser ela, mas nao e' --
+         *     ele so' age quando existe linha em `local_accounts`, e conta Google nao tem
+         *     nenhuma. A resposta uniforme (`sent=True`) esconde isso de proposito, para
+         *     nao virar oraculo de "este e-mail esta' cadastrado". O efeito colateral e'
+         *     que a pessoa pede recuperacao, recebe "enviamos", e nunca chega e-mail.
+         *
+         *     Aqui a sessao viva E' a prova de identidade, entao a primeira senha nao
+         *     precisa de e-mail nenhum -- o que remove a dependencia de entrega de e-mail
+         *     justamente do caminho que existe para tirar a dependencia do Google.
+         *
+         *     ## Por que fora do portao de acesso
+         *
+         *     Montado no router `/account`, que serve sem `require_active_access`. Poder
+         *     entrar na propria conta nao e' recurso pago: cobrar assinatura por isso
+         *     prenderia ao Google exatamente quem deixou de pagar.
+         *
+         *     ## As duas exigencias
+         *
+         *     Conta SEM senha: a sessao basta. Nao ha o que sobrescrever, e pedir "a senha
+         *     atual" seria pedir algo que nao existe.
+         *
+         *     Conta COM senha: exige a atual. Sem isso um access token roubado trocaria a
+         *     senha e tomaria a conta em definitivo -- de sequestro temporario (<=1h, ate' o
+         *     token expirar) para permanente.
+         *
+         *     Quem decide qual caso e' o SERVIDOR, olhando `local_accounts`. Se o cliente
+         *     decidisse, bastaria omitir `senha_atual`.
+         */
+        post: operations["definir_senha_account_senha_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/stats": {
         parameters: {
             query?: never;
@@ -4725,6 +4779,36 @@ export interface components {
             attempts_considered: number;
             /** Items */
             items: components["schemas"]["CompetencyMasteryItemOut"][];
+        };
+        /**
+         * DefinirSenhaIn
+         * @description Definir a PRIMEIRA senha, ou trocar a que existe.
+         *
+         *     `senha_atual` e' opcional porque as duas operacoes sao a mesma porta com
+         *     exigencias diferentes:
+         *
+         *     - conta que nasceu pelo Google NAO tem senha, e a sessao viva ja' e' a prova
+         *       de identidade -- pedir "a senha atual" seria pedir algo que nao existe;
+         *     - conta que ja' tem senha exige a atual, senao um token roubado trocaria a
+         *       senha e tomaria a conta em definitivo.
+         *
+         *     Quem decide qual caso e' o servidor, olhando `local_accounts` -- nunca o
+         *     cliente, que poderia simplesmente omitir o campo.
+         */
+        DefinirSenhaIn: {
+            /** Senha Nova */
+            senha_nova: string;
+            /** Senha Atual */
+            senha_atual?: string | null;
+        };
+        /** DefinirSenhaOut */
+        DefinirSenhaOut: {
+            /** Senha Criada */
+            senha_criada: boolean;
+            /** Email */
+            email: string;
+            /** Sessoes Encerradas */
+            sessoes_encerradas: number;
         };
         /**
          * DescadastroIn
@@ -10164,6 +10248,14 @@ export interface components {
             exam_name?: string | null;
             /** Exam Date */
             exam_date?: string | null;
+            /**
+             * Date Status
+             * @default estimated
+             * @enum {string}
+             */
+            date_status: "estimated" | "confirmed";
+            /** Days Remaining */
+            days_remaining?: number | null;
         };
         /** StudentTargetExamOut */
         StudentTargetExamOut: {
@@ -12535,6 +12627,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RevokeSessionsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    definir_senha_account_senha_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DefinirSenhaIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DefinirSenhaOut"];
                 };
             };
             /** @description Validation Error */

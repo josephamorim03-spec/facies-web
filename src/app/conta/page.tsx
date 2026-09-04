@@ -12,6 +12,7 @@ import {
 } from "@/lib/api/domains/account";
 import { me as buscarMe } from "@/lib/api/domains/starter";
 import { LoadBar } from "@/components/ui/LoadBar";
+import { SecaoSenha } from "./_components/SecaoSenha";
 
 /**
  * A conta do titular: sessões e direitos de LGPD.
@@ -154,6 +155,8 @@ export default function ContaPage() {
           Inclui esta. Use se suspeitar que alguém entrou na sua conta.
         </p>
       </section>
+
+      <SecaoSenha />
 
       {/* ── Seus dados ─────────────────────────────────────────────────── */}
       <section className="mt-6 rounded-surface border border-edge bg-surface p-5 sm:p-6">

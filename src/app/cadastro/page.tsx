@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SignupForm } from "@/app/login/_components/SignupForm";
 import { useGoogleSignIn } from "@/app/login/_hooks/useGoogleSignIn";
-import { signupLocalAccount } from "@/lib/api/domains/auth";
+import { obterModosDeAuth, signupLocalAccount } from "@/lib/api/domains/auth";
 import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
+import { podeEnviarCadastro } from "./podeEnviar";
 
 /**
  * A via de e-mail do cadastro.
@@ -28,6 +29,23 @@ import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
  * ⚠️ O `terms_version` do payload é vestígio do caminho antigo. Quem resolve a
  * versão é o SERVIDOR, contra o que está publicado — ver
  * `legal_document_service.registrar_aceite_do_vigente`.
+ *
+ * ## Quem decide se o formulário de e-mail aparece: o SERVIDOR
+ *
+ * A tela pergunta `GET /auth/modes` e só renderiza o bloco de e-mail quando
+ * `local_auth` é verdadeiro. Em produção o alvo é google-only
+ * (`docs/production-readiness.md`; `runtime_checks._security_checks` reprova o
+ * boot com qualquer outro `AUTH_MODE`), e nesse modo o router de auth local nem
+ * é registrado em `main.py` — `POST /auth/signup` responde **404**.
+ *
+ * Antes disto o formulário era incondicional, e o botão "Criar a minha conta" da
+ * landing apontava para cá: o funil inteiro terminava num formulário que o
+ * servidor não atende. O botão do Google, que é o caminho real de produção,
+ * ficava abaixo dele.
+ *
+ * A mesma resposta já governa o link "Criar conta" em `/login`. Um flag
+ * `NEXT_PUBLIC_*` seria um segundo lugar para o mesmo fato, e os dois divergem
+ * no primeiro deploy em que alguém lembra de um e esquece do outro.
  *
  * ## Pré-requisito de configuração
  *
@@ -54,6 +72,31 @@ export default function CadastroPage() {
   const [aguardandoVerificacao, setAguardandoVerificacao] = useState(false);
   const [error, setError] = useState("");
 
+  /**
+   * Se ESTA instalação aceita criar conta por e-mail e senha.
+   *
+   * ⚠️ Começa FALSO, e o padrão é o mesmo de `/login`: mostrar um caminho que
+   * talvez não exista é pior que esconder um que existe. Em produção o alvo é
+   * google-only — `runtime_checks._security_checks` reprova o boot com qualquer
+   * `AUTH_MODE` diferente de `google` —, e nesse modo `POST /auth/signup` nem é
+   * registrado: responde 404. Esta tela é o destino do botão "Criar a minha
+   * conta" da landing, então renderizar o formulário sem perguntar era mandar o
+   * funil inteiro para um formulário que o servidor não atende.
+   *
+   * `obterModosDeAuth` nunca lança: falha de rede cai no mesmo `false`.
+   */
+  const [viaEmailDisponivel, setViaEmailDisponivel] = useState(false);
+
+  useEffect(() => {
+    let vivo = true;
+    obterModosDeAuth().then((modos) => {
+      if (vivo && modos) setViaEmailDisponivel(modos.local_auth);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
   const { googleButtonRef, googleError } = useGoogleSignIn({
     googleClientId,
     view: "signup",
@@ -66,21 +109,29 @@ export default function CadastroPage() {
   const passwordsMismatch =
     confirmPassword.length > 0 && password !== confirmPassword;
 
-  const canSubmit = useMemo(() => {
-    if (busy || !recaptchaSiteKey) return false;
-    if (!email.trim() || !password || !confirmPassword) return false;
-    if (password !== confirmPassword) return false;
-    if (!termsAccepted || !captchaToken) return false;
-    return true;
-  }, [
-    busy,
-    recaptchaSiteKey,
-    email,
-    password,
-    confirmPassword,
-    termsAccepted,
-    captchaToken,
-  ]);
+  const canSubmit = useMemo(
+    () =>
+      podeEnviarCadastro({
+        viaEmailDisponivel,
+        recaptchaSiteKey,
+        busy,
+        email,
+        password,
+        confirmPassword,
+        termsAccepted,
+        captchaToken,
+      }),
+    [
+      viaEmailDisponivel,
+      recaptchaSiteKey,
+      busy,
+      email,
+      password,
+      confirmPassword,
+      termsAccepted,
+      captchaToken,
+    ],
+  );
 
   async function handleSignup() {
     if (!canSubmit) return;
@@ -106,6 +157,11 @@ export default function CadastroPage() {
       // SEM query aqui: aquela página lê `?token=`, e mandar `?email=` faria ela
       // tentar verificar um token que não existe e pintar erro logo depois de um
       // cadastro que deu certo.
+      // `setBusy(false)` também aqui, e não só no `catch`: a tela de espera
+      // troca o formulário inteiro, então o `busy` preso não aparecia — mas
+      // qualquer caminho futuro que volte ao formulário (um "corrigir e-mail",
+      // por exemplo) encontraria os controles desabilitados sem motivo.
+      setBusy(false);
       setAguardandoVerificacao(true);
     } catch (e) {
       const detalhe = e instanceof Error ? e.message : "";
@@ -197,6 +253,7 @@ export default function CadastroPage() {
             googleClientId={googleClientId}
             googleButtonRef={googleButtonRef}
             googleError={googleError}
+            viaEmailDisponivel={viaEmailDisponivel}
             installState={installState}
             onSignup={handleSignup}
             onSwitchView={() => router.push("/login")}

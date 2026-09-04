@@ -179,6 +179,1362 @@
     "sem_comentario": 30,
     "total": 30
   },
+  "cobertura_educativa": {
+    "aprovados": 0,
+    "ausentes": 0,
+    "rascunhos": 7
+  },
+  "conteudo_educativo": {
+    "1": {
+      "afirmacoes_com_dado": [],
+      "area": "CM",
+      "armadilhas": [
+        {
+          "certo": "Marcador serve para seguimento e prognóstico depois do diagnóstico; quem fecha diagnóstico é imagem ou endoscopia com histologia.",
+          "erro": "Pedir marcador tumoral para investigar suspeita de neoplasia digestiva."
+        },
+        {
+          "certo": "Perda de peso, anemia, disfagia, vômitos persistentes ou massa palpável são sinais de alarme e indicam endoscopia digestiva alta.",
+          "erro": "Tratar dispepsia com perda ponderal como funcional e repetir inibidor de bomba de prótons."
+        },
+        {
+          "certo": "Nesse grupo a anemia ferropriva é perda digestiva até prova em contrário e obriga a investigar o tubo digestivo.",
+          "erro": "Repor ferro e encerrar o caso na anemia ferropriva de homem ou de mulher na pós-menopausa."
+        },
+        {
+          "certo": "Emagrecimento, colúria, prurido e vesícula palpável apontam obstrução maligna distal, e o exame de escolha é a tomografia de abdome.",
+          "erro": "Ler icterícia com dor abdominal como coledocolitíase sem olhar o resto da vinheta."
+        },
+        {
+          "certo": "A conduta começa por estratificar risco e sintomas; história familiar e síndromes hereditárias mudam idade de início e intervalo.",
+          "erro": "Oferecer colonoscopia a quem pede o exame sem checar risco, sintomas e história familiar."
+        }
+      ],
+      "checklist_vespera": [
+        "Sei nomear a síndrome de obstrução biliar maligna pela combinação de achados, e não pelo laboratório isolado.",
+        "Sei quais achados transformam dispepsia em indicação de endoscopia.",
+        "Sei em quem a anemia ferropriva obriga investigação do tubo digestivo.",
+        "Sei qual exame confirma cada uma das hipóteses da tabela acima."
+      ],
+      "como_a_prova_cobra": "Das 22 questões da base real, o eixo da resposta é diagnóstico em 10 e o raciocínio pedido é reconhecimento em 8 — a vinheta traz o quadro montado e a alternativa correta é a hipótese, não a conduta oncológica. Quando pede conduta, pede o primeiro exame, não o esquema quimioterápico.",
+      "dispositivo_de_memoria": {
+        "decodifica": "É o sinal de Courvoisier: a vesícula distende quando a obstrução do colédoco é lenta e distal, o que aponta tumor periampular; cálculo costuma cursar com vesícula fibrosada e dor em cólica.",
+        "frase": "Vesícula palpável com icterícia indolor é obstrução maligna até prova em contrário",
+        "tipo": "regra_pratica"
+      },
+      "eixos_citados": [
+        "diagnóstico_provável",
+        "reconhecimento"
+      ],
+      "especialidade": "Clínica Médica",
+      "estrutura": {
+        "colunas": [
+          "Pista que a banca planta",
+          "Hipótese",
+          "Primeiro exame"
+        ],
+        "linhas": [
+          [
+            "Icterícia progressiva, colúria e prurido com emagrecimento e vesícula palpável",
+            "Tumor periampular ou de cabeça de pâncreas",
+            "Tomografia de abdome com contraste"
+          ],
+          [
+            "Disfagia que começa em sólidos e chega a líquidos, com tabagismo e etilismo",
+            "Câncer de esôfago",
+            "Endoscopia digestiva alta com biópsia"
+          ],
+          [
+            "Dispepsia refratária com perda ponderal em adulto de meia-idade",
+            "Neoplasia gástrica",
+            "Endoscopia digestiva alta com biópsia"
+          ],
+          [
+            "Anemia ferropriva em homem ou em mulher na pós-menopausa",
+            "Neoplasia colorretal",
+            "Colonoscopia"
+          ],
+          [
+            "Hipoglicemia sintomática que alivia com glicose",
+            "Tumor neuroendócrino pancreático",
+            "Dosagens durante jejum supervisionado e imagem"
+          ]
+        ],
+        "tipo": "tabela",
+        "titulo": "A pista da vinheta, a hipótese e o primeiro exame"
+      },
+      "evidencia": {
+        "abstencao": {
+          "answer_type": 0.1364,
+          "charge_pattern": 0.1818,
+          "reasoning_type": 0.1818,
+          "trap_pattern": 1.0
+        },
+        "anos": {
+          "max": 2026,
+          "min": 2016,
+          "por_ano": {
+            "2016": 1,
+            "2017": 1,
+            "2020": 2,
+            "2021": 3,
+            "2022": 8,
+            "2023": 2,
+            "2024": 2,
+            "2025": 2,
+            "2026": 1
+          },
+          "ultimos_3_anos": 5
+        },
+        "answer_type": [
+          {
+            "classe": "diagnóstico",
+            "fracao": 0.4545,
+            "n": 10
+          },
+          {
+            "classe": "tratamento",
+            "fracao": 0.2727,
+            "n": 6
+          },
+          {
+            "classe": "prevenção",
+            "fracao": 0.0455,
+            "n": 1
+          },
+          {
+            "classe": "exame",
+            "fracao": 0.0455,
+            "n": 1
+          },
+          {
+            "classe": "conduta_inicial",
+            "fracao": 0.0455,
+            "n": 1
+          }
+        ],
+        "charge_pattern": [
+          {
+            "classe": "diagnóstico_provável",
+            "fracao": 0.4545,
+            "n": 10
+          },
+          {
+            "classe": "próxima_conduta",
+            "fracao": 0.2727,
+            "n": 6
+          },
+          {
+            "classe": "exame_inicial",
+            "fracao": 0.0455,
+            "n": 1
+          },
+          {
+            "classe": "alternativa_incorreta",
+            "fracao": 0.0455,
+            "n": 1
+          }
+        ],
+        "confianca_media": 0.7636,
+        "metodo": "question_bank.charge_heuristics.classify_charge_profile",
+        "n_questoes": 22,
+        "reasoning_type": [
+          {
+            "classe": "reconhecimento",
+            "fracao": 0.3636,
+            "n": 8
+          },
+          {
+            "classe": "aplicação",
+            "fracao": 0.2273,
+            "n": 5
+          },
+          {
+            "classe": "diferenciação",
+            "fracao": 0.1364,
+            "n": 3
+          },
+          {
+            "classe": "priorização",
+            "fracao": 0.0909,
+            "n": 2
+          }
+        ],
+        "sustenta_afirmacao": true,
+        "trap_pattern": []
+      },
+      "exemplo_de_cobranca": {
+        "descricao": "O formato mais frequente monta a vinheta com um punhado de achados que só fecham numa hipótese e pergunta qual é a principal suspeita, ou qual exame deve ser pedido primeiro; as alternativas erradas costumam ser exames plausíveis para outra hipótese do mesmo aparelho.",
+        "url_banco": "/banco?subtheme=neoplasias-do-sistema-digestivo"
+      },
+      "fontes": [
+        {
+          "ano": 2025,
+          "id": "conitec-944",
+          "orgao": "CONITEC / Ministério da Saúde",
+          "titulo": "PCDT Adenocarcinoma de Cólon e Reto — Portaria SAES/SCTIE/MS 25/2025",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        }
+      ],
+      "resumo_30s": "Neste assunto a prova quase nunca pede tratamento oncológico: ela descreve uma síndrome clínica e espera que você nomeie o tumor provável e peça o exame que fecha o diagnóstico.",
+      "revisado": false,
+      "subtema": "Neoplasias do Sistema Digestivo"
+    },
+    "2": {
+      "afirmacoes_com_dado": [
+        {
+          "claim": "amamentando com menos de 6 semanas de pós-parto o combinado é categoria 4",
+          "fonte": "oms-cme"
+        },
+        {
+          "claim": "dispositivo intrauterino inserido até 48 horas do parto ou após 4 semanas",
+          "fonte": "oms-cme"
+        },
+        {
+          "claim": "fumante a partir de 35 anos: combinado em categoria 3 ou 4 conforme a carga tabágica",
+          "fonte": "oms-cme"
+        }
+      ],
+      "area": "GO",
+      "armadilhas": [
+        {
+          "certo": "Enxaqueca com aura contraindica estrogênio em qualquer idade pelo risco de acidente vascular cerebral isquêmico.",
+          "erro": "Prescrever combinado oral para mulher com enxaqueca com aura por ela ser jovem e saudável no resto."
+        },
+        {
+          "certo": "É o antifosfolípide positivo que joga o combinado para a categoria proibitiva; sem ele a avaliação é outra.",
+          "erro": "Tratar lúpus como contraindicação genérica sem olhar o anticorpo antifosfolípide."
+        },
+        {
+          "certo": "A inserção é segura no pós-parto imediato ou depois de quatro semanas; a janela intermediária é que deve ser evitada.",
+          "erro": "Adiar o dispositivo intrauterino para depois da quarentena em toda puérpera."
+        },
+        {
+          "certo": "A lei vigente reduziu a idade mínima, dispensou a autorização do cônjuge e passou a permitir o procedimento durante o parto.",
+          "erro": "Exigir consentimento do cônjuge ou aplicar a idade antiga para laqueadura."
+        },
+        {
+          "certo": "A amenorreia lactacional tem condições estritas e prazo curto; a consulta pós-parto deve ofertar método de longa duração.",
+          "erro": "Considerar amamentação exclusiva como proteção contraceptiva suficiente e não ofertar método."
+        }
+      ],
+      "checklist_vespera": [
+        "Sei de cor as condições que tornam o estrogênio proibido, não apenas indesejável.",
+        "Sei as duas janelas de inserção do dispositivo intrauterino no pós-parto.",
+        "Sei o que a lei atual mudou nos requisitos da esterilização cirúrgica.",
+        "Sei escolher um método seguro quando o combinado cai, sem deixar a paciente sem cobertura."
+      ],
+      "como_a_prova_cobra": "São 22 questões na base real, mas o classificador não reconhece comando em boa parte delas — sinal fraco para afirmar um padrão único. O que se enxerga com clareza é o raciocínio: aplicação de critério em 6 questões, e o critério aplicado é quase sempre elegibilidade médica diante de uma condição clínica.",
+      "dispositivo_de_memoria": {
+        "decodifica": "As três são categoria 4 para o combinado hormonal; a saída é progestagênio isolado ou dispositivo intrauterino, que não carregam o risco trombótico do estrogênio.",
+        "frase": "Aura, antifosfolípide ou trombose: fora o estrogênio",
+        "tipo": "regra_pratica"
+      },
+      "eixos_citados": [
+        "aplicação",
+        "contraindicação"
+      ],
+      "especialidade": "Ginecologia",
+      "estrutura": {
+        "colunas": [
+          "Condição plantada na vinheta",
+          "Combinado com estrogênio",
+          "Alternativa segura"
+        ],
+        "linhas": [
+          [
+            "Enxaqueca com aura",
+            "Categoria 4 — não usar",
+            "Progestagênio isolado, dispositivo de cobre ou de levonorgestrel"
+          ],
+          [
+            "Lúpus com anticorpo antifosfolípide positivo",
+            "Categoria 4 — não usar",
+            "Progestagênio isolado ou dispositivo de cobre"
+          ],
+          [
+            "Trombose venosa atual ou prévia",
+            "Categoria 4 — não usar",
+            "Progestagênio isolado ou dispositivo de cobre"
+          ],
+          [
+            "Amamentando com menos de 6 semanas de pós-parto",
+            "Categoria 4 — não usar",
+            "Progestagênio isolado; dispositivo até 48 horas ou após 4 semanas"
+          ],
+          [
+            "Fumante a partir de 35 anos",
+            "Categoria 3 ou 4 conforme a carga tabágica",
+            "Progestagênio isolado ou dispositivo intrauterino"
+          ]
+        ],
+        "tipo": "tabela",
+        "titulo": "A condição da vinheta e o que ela proíbe"
+      },
+      "evidencia": {
+        "abstencao": {
+          "answer_type": 0.5909,
+          "charge_pattern": 0.6364,
+          "reasoning_type": 0.5,
+          "trap_pattern": 1.0
+        },
+        "anos": {
+          "max": 2026,
+          "min": 2016,
+          "por_ano": {
+            "2016": 1,
+            "2020": 1,
+            "2021": 2,
+            "2022": 4,
+            "2023": 3,
+            "2024": 4,
+            "2025": 3,
+            "2026": 4
+          },
+          "ultimos_3_anos": 11
+        },
+        "answer_type": [
+          {
+            "classe": "tratamento",
+            "fracao": 0.1364,
+            "n": 3
+          },
+          {
+            "classe": "exame",
+            "fracao": 0.0909,
+            "n": 2
+          },
+          {
+            "classe": "contraindicação",
+            "fracao": 0.0909,
+            "n": 2
+          },
+          {
+            "classe": "fisiopatologia",
+            "fracao": 0.0455,
+            "n": 1
+          },
+          {
+            "classe": "diagnóstico",
+            "fracao": 0.0455,
+            "n": 1
+          }
+        ],
+        "charge_pattern": [
+          {
+            "classe": "próxima_conduta",
+            "fracao": 0.1364,
+            "n": 3
+          },
+          {
+            "classe": "exame_inicial",
+            "fracao": 0.0909,
+            "n": 2
+          },
+          {
+            "classe": "conduta_contraindicada",
+            "fracao": 0.0909,
+            "n": 2
+          },
+          {
+            "classe": "diagnóstico_provável",
+            "fracao": 0.0455,
+            "n": 1
+          }
+        ],
+        "confianca_media": 0.3909,
+        "metodo": "question_bank.charge_heuristics.classify_charge_profile",
+        "n_questoes": 22,
+        "reasoning_type": [
+          {
+            "classe": "aplicação",
+            "fracao": 0.2727,
+            "n": 6
+          },
+          {
+            "classe": "memorização",
+            "fracao": 0.2273,
+            "n": 5
+          }
+        ],
+        "sustenta_afirmacao": true,
+        "trap_pattern": []
+      },
+      "exemplo_de_cobranca": {
+        "descricao": "A vinheta apresenta uma mulher que quer iniciar contracepção e planta uma condição clínica no meio da história; as alternativas listam métodos, e a correta é a que respeita o critério de elegibilidade daquela condição.",
+        "url_banco": "/banco?subtheme=planejamento-familiar"
+      },
+      "fontes": [
+        {
+          "ano": 2015,
+          "id": "oms-cme",
+          "orgao": "Organização Mundial da Saúde",
+          "titulo": "Medical eligibility criteria for contraceptive use, 5ª edição",
+          "url": null
+        },
+        {
+          "ano": 2022,
+          "id": "lei-14443",
+          "orgao": "Brasil",
+          "titulo": "Lei 14.443/2022, que altera a Lei 9.263/1996 (planejamento familiar)",
+          "url": null
+        },
+        {
+          "ano": 2022,
+          "id": "conitec-724",
+          "orgao": "CONITEC / Ministério da Saúde",
+          "titulo": "Contraceptivos injetáveis mensais — Portaria SCTIE/MS 40/2022",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2022"
+        }
+      ],
+      "resumo_30s": "Quase toda questão deste assunto é a mesma pergunta disfarçada: dada a comorbidade que a vinheta plantou, qual método contraceptivo é seguro e qual está proibido.",
+      "revisado": false,
+      "subtema": "Planejamento familiar"
+    },
+    "3": {
+      "afirmacoes_com_dado": [],
+      "area": "OU",
+      "armadilhas": [
+        {
+          "certo": "A abordagem inicial cabe na atenção primária; o encaminhamento é para gravidade, comorbidade psiquiátrica ou falha do plano feito.",
+          "erro": "Encaminhar ao serviço especializado como primeira e única conduta."
+        },
+        {
+          "certo": "A intervenção breve e a abordagem motivacional são para todos, inclusive para quem ainda não quer parar.",
+          "erro": "Oferecer tratamento apenas a quem já decidiu parar."
+        },
+        {
+          "certo": "A retirada é gradual e pactuada; a suspensão abrupta provoca abstinência e pode causar convulsão.",
+          "erro": "Suspender de uma vez o benzodiazepínico de uso prolongado."
+        },
+        {
+          "certo": "A tiamina vem antes ou junto, porque a glicose isolada em depletado pode precipitar encefalopatia de Wernicke.",
+          "erro": "Infundir glicose no etilista com rebaixamento antes de repor tiamina."
+        },
+        {
+          "certo": "Consciência e atenção flutuantes dias após a última dose apontam abstinência complicada, que é urgência com manejo próprio.",
+          "erro": "Chamar de intoxicação qualquer confusão mental em quem bebe."
+        }
+      ],
+      "checklist_vespera": [
+        "Sei o que fazer com quem ainda não quer parar de usar.",
+        "Sei diferenciar intoxicação de abstinência pela linha do tempo da vinheta.",
+        "Sei a ordem certa entre tiamina e glicose, e por quê.",
+        "Sei conduzir a retirada de benzodiazepínico sem suspender de uma vez."
+      ],
+      "como_a_prova_cobra": "É o assunto com o padrão mais nítido do top-7: das 24 questões da base real, 14 pedem a próxima conduta e 10 exigem aplicação de protocolo. Diagnóstico aparece em 4. Na prática, a alternativa correta é uma conduta de atenção primária, não um encaminhamento genérico.",
+      "dispositivo_de_memoria": {
+        "decodifica": "A glicose consome tiamina para ser metabolizada; oferecê-la a quem já está depletado pode desencadear encefalopatia de Wernicke, que é evitável e não é reversível por completo.",
+        "frase": "No etilista, tiamina antes da glicose",
+        "tipo": "regra_pratica"
+      },
+      "eixos_citados": [
+        "próxima_conduta",
+        "aplicação"
+      ],
+      "especialidade": "Outros",
+      "estrutura": {
+        "colunas": [
+          "Cenário da vinheta",
+          "O que a questão pede",
+          "Conduta esperada"
+        ],
+        "linhas": [
+          [
+            "Tabagismo com falhas anteriores e dependência alta",
+            "Plano terapêutico",
+            "Abordagem cognitivo-comportamental somada a farmacoterapia"
+          ],
+          [
+            "Uso de álcool com prejuízo no trabalho e lacunas de memória",
+            "Avaliação antes do rótulo",
+            "Instrumento de rastreio estruturado e intervenção breve"
+          ],
+          [
+            "Confusão flutuante e desorientação em internação de etilista",
+            "Conduta imediata",
+            "Reposição de tiamina, sedação criteriosa e monitorização"
+          ],
+          [
+            "Uso prolongado de benzodiazepínico com tolerância e queixa de memória",
+            "Conduta ambulatorial",
+            "Desmame gradual pactuado, com alternativa não farmacológica para o sono"
+          ],
+          [
+            "Rebaixamento de consciência com pupilas puntiformes e depressão respiratória",
+            "Conduta imediata",
+            "Suporte ventilatório e antagonista opioide"
+          ]
+        ],
+        "tipo": "tabela",
+        "titulo": "O cenário, o que a banca quer e a conduta"
+      },
+      "evidencia": {
+        "abstencao": {
+          "answer_type": 0.25,
+          "charge_pattern": 0.25,
+          "reasoning_type": 0.25,
+          "trap_pattern": 1.0
+        },
+        "anos": {
+          "max": 2026,
+          "min": 2016,
+          "por_ano": {
+            "2016": 2,
+            "2017": 1,
+            "2020": 1,
+            "2021": 1,
+            "2022": 3,
+            "2023": 1,
+            "2024": 6,
+            "2025": 6,
+            "2026": 3
+          },
+          "ultimos_3_anos": 15
+        },
+        "answer_type": [
+          {
+            "classe": "tratamento",
+            "fracao": 0.4583,
+            "n": 11
+          },
+          {
+            "classe": "diagnóstico",
+            "fracao": 0.1667,
+            "n": 4
+          },
+          {
+            "classe": "conduta_inicial",
+            "fracao": 0.125,
+            "n": 3
+          }
+        ],
+        "charge_pattern": [
+          {
+            "classe": "próxima_conduta",
+            "fracao": 0.5833,
+            "n": 14
+          },
+          {
+            "classe": "diagnóstico_provável",
+            "fracao": 0.1667,
+            "n": 4
+          }
+        ],
+        "confianca_media": 0.675,
+        "metodo": "question_bank.charge_heuristics.classify_charge_profile",
+        "n_questoes": 24,
+        "reasoning_type": [
+          {
+            "classe": "aplicação",
+            "fracao": 0.4167,
+            "n": 10
+          },
+          {
+            "classe": "reconhecimento",
+            "fracao": 0.2083,
+            "n": 5
+          },
+          {
+            "classe": "priorização",
+            "fracao": 0.125,
+            "n": 3
+          }
+        ],
+        "sustenta_afirmacao": true,
+        "trap_pattern": []
+      },
+      "exemplo_de_cobranca": {
+        "descricao": "A vinheta descreve uma pessoa em uso problemático de uma substância, com detalhes que indicam gravidade ou motivação, e pergunta qual é a conduta ou o plano terapêutico mais adequado naquele ponto do cuidado.",
+        "url_banco": "/banco?subtheme=dependencia-quimica"
+      },
+      "fontes": [
+        {
+          "ano": null,
+          "id": "ms-tabagismo",
+          "orgao": "INCA / Ministério da Saúde",
+          "titulo": "Protocolo clínico e diretrizes terapêuticas do tabagismo",
+          "url": null
+        },
+        {
+          "ano": null,
+          "id": "ms-alcool",
+          "orgao": "Ministério da Saúde",
+          "titulo": "Cadernos de Atenção Básica — saúde mental e uso de álcool e outras drogas na atenção primária",
+          "url": null
+        }
+      ],
+      "resumo_30s": "Aqui a banca raramente pergunta o diagnóstico: ela descreve alguém que já está em uso problemático de uma substância e quer o próximo passo do cuidado.",
+      "revisado": false,
+      "subtema": "Dependência Química"
+    },
+    "4": {
+      "afirmacoes_com_dado": [
+        {
+          "claim": "glicemia de jejum maior ou igual a 126 mg/dL",
+          "fonte": "sbd"
+        },
+        {
+          "claim": "glicemia 2 horas após sobrecarga com 75 g de glicose maior ou igual a 200 mg/dL",
+          "fonte": "sbd"
+        },
+        {
+          "claim": "hemoglobina glicada maior ou igual a 6,5%",
+          "fonte": "sbd"
+        },
+        {
+          "claim": "glicemia casual com sintomas maior ou igual a 200 mg/dL dispensa confirmação",
+          "fonte": "sbd"
+        },
+        {
+          "claim": "jejum a partir de 126 mg/dL, sobrecarga ou casual a partir de 200 mg/dL, glicada a partir de 6,5%",
+          "fonte": "sbd"
+        }
+      ],
+      "area": "CM",
+      "armadilhas": [
+        {
+          "certo": "Sem sintomas de hiperglicemia, o diagnóstico exige dois exames alterados, que podem ser dois testes diferentes na mesma coleta.",
+          "erro": "Fechar diagnóstico com um único exame alterado em pessoa assintomática."
+        },
+        {
+          "certo": "Doença cardiovascular, insuficiência cardíaca ou doença renal crônica escolhem a segunda droga pelo benefício de desfecho, não pela potência sobre a glicemia.",
+          "erro": "Escalar o tratamento por número, ignorando doença cardiovascular ou renal estabelecida."
+        },
+        {
+          "certo": "O que define é a tríade de hiperglicemia, acidose metabólica e cetose; sem acidose e sem cetose, o quadro é outro.",
+          "erro": "Chamar de cetoacidose todo descompensado com glicemia muito alta."
+        },
+        {
+          "certo": "Reposição volêmica vem primeiro e a insulina só entra com potássio conhecido e acima do limite de segurança.",
+          "erro": "Iniciar insulina pela via subcutânea na emergência hiperglicêmica antes de corrigir volume e potássio."
+        },
+        {
+          "certo": "A estratificação combina sensibilidade protetora, deformidade e história de úlcera ou amputação, e é ela que define o intervalo de reavaliação.",
+          "erro": "Classificar o pé em risco pela presença de úlcera apenas."
+        }
+      ],
+      "checklist_vespera": [
+        "Sei os quatro pontos de corte e sei em qual deles a confirmação é dispensada.",
+        "Sei qual comorbidade muda a escolha da segunda droga, e para qual classe.",
+        "Sei a ordem das medidas na emergência hiperglicêmica.",
+        "Sei o que compõe a estratificação de risco do pé."
+      ],
+      "como_a_prova_cobra": "As 17 questões da base real se distribuem quase igualmente entre pedir o exame inicial, a hipótese diagnóstica e a próxima conduta, com aplicação de protocolo em 7 delas. É também o único assunto do top-7 em que o classificador encontrou armadilha estrutural nomeada — contraindicação de metformina, em 2 das 17, o que é sinal fraco e vale como aviso, não como padrão.",
+      "dispositivo_de_memoria": {
+        "decodifica": "Jejum a partir de 126 mg/dL, sobrecarga ou casual a partir de 200 mg/dL, glicada a partir de 6,5%; a repetição é obrigatória, exceto quando há sintomas clássicos com glicemia casual elevada.",
+        "frase": "126, 200 e 6,5 — e só o sintoma dispensa a segunda dosagem",
+        "tipo": "regra_pratica"
+      },
+      "eixos_citados": [
+        "exame_inicial",
+        "diagnóstico_provável",
+        "aplicação",
+        "metformina_contraindicação"
+      ],
+      "especialidade": "Clínica Médica",
+      "estrutura": {
+        "colunas": [
+          "Exame",
+          "Ponto de corte",
+          "Precisa de confirmação?"
+        ],
+        "linhas": [
+          [
+            "Glicemia de jejum",
+            "maior ou igual a 126 mg/dL",
+            "Sim, se a pessoa é assintomática"
+          ],
+          [
+            "Glicemia 2 horas após sobrecarga com 75 g de glicose",
+            "maior ou igual a 200 mg/dL",
+            "Sim, se a pessoa é assintomática"
+          ],
+          [
+            "Hemoglobina glicada",
+            "maior ou igual a 6,5%",
+            "Sim, se a pessoa é assintomática"
+          ],
+          [
+            "Glicemia casual com sintomas clássicos",
+            "maior ou igual a 200 mg/dL",
+            "Não"
+          ]
+        ],
+        "tipo": "tabela",
+        "titulo": "Os quatro critérios diagnósticos, e quando confirmar"
+      },
+      "evidencia": {
+        "abstencao": {
+          "answer_type": 0.0588,
+          "charge_pattern": 0.1176,
+          "reasoning_type": 0.0588,
+          "trap_pattern": 0.8824
+        },
+        "anos": {
+          "max": 2026,
+          "min": 2016,
+          "por_ano": {
+            "2016": 1,
+            "2017": 2,
+            "2022": 2,
+            "2023": 1,
+            "2024": 4,
+            "2025": 3,
+            "2026": 4
+          },
+          "ultimos_3_anos": 11
+        },
+        "answer_type": [
+          {
+            "classe": "exame",
+            "fracao": 0.2941,
+            "n": 5
+          },
+          {
+            "classe": "diagnóstico",
+            "fracao": 0.2941,
+            "n": 5
+          },
+          {
+            "classe": "tratamento",
+            "fracao": 0.2353,
+            "n": 4
+          },
+          {
+            "classe": "fisiopatologia",
+            "fracao": 0.0588,
+            "n": 1
+          },
+          {
+            "classe": "conduta_inicial",
+            "fracao": 0.0588,
+            "n": 1
+          }
+        ],
+        "charge_pattern": [
+          {
+            "classe": "exame_inicial",
+            "fracao": 0.2941,
+            "n": 5
+          },
+          {
+            "classe": "diagnóstico_provável",
+            "fracao": 0.2941,
+            "n": 5
+          },
+          {
+            "classe": "próxima_conduta",
+            "fracao": 0.2941,
+            "n": 5
+          }
+        ],
+        "confianca_media": 0.8353,
+        "metodo": "question_bank.charge_heuristics.classify_charge_profile",
+        "n_questoes": 17,
+        "reasoning_type": [
+          {
+            "classe": "aplicação",
+            "fracao": 0.4118,
+            "n": 7
+          },
+          {
+            "classe": "reconhecimento",
+            "fracao": 0.2353,
+            "n": 4
+          },
+          {
+            "classe": "priorização",
+            "fracao": 0.2353,
+            "n": 4
+          },
+          {
+            "classe": "memorização",
+            "fracao": 0.0588,
+            "n": 1
+          }
+        ],
+        "sustenta_afirmacao": true,
+        "trap_pattern": [
+          {
+            "classe": "metformina_contraindicação",
+            "fracao": 0.1176,
+            "n": 2
+          }
+        ]
+      },
+      "exemplo_de_cobranca": {
+        "descricao": "Um formato traz resultados laboratoriais e pergunta quem preenche critério diagnóstico; outro traz alguém já em tratamento, com uma comorbidade cardiovascular ou renal declarada, e pergunta qual droga acrescentar.",
+        "url_banco": "/banco?subtheme=diabetes"
+      },
+      "fontes": [
+        {
+          "ano": null,
+          "id": "sbd",
+          "orgao": "Sociedade Brasileira de Diabetes",
+          "titulo": "Diretriz da Sociedade Brasileira de Diabetes — diagnóstico e classificação",
+          "url": null
+        },
+        {
+          "ano": 2024,
+          "id": "conitec-882",
+          "orgao": "CONITEC / Ministério da Saúde",
+          "titulo": "PCDT Diabete Melito tipo 2 — Portaria SECTICS/MS 07/2024",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        },
+        {
+          "ano": 2023,
+          "id": "conitec-802",
+          "orgao": "CONITEC / Ministério da Saúde",
+          "titulo": "Dapagliflozina para diabete melito tipo 2 — Portaria SECTICS/MS 09/2023",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        },
+        {
+          "ano": 2024,
+          "id": "conitec-948",
+          "orgao": "CONITEC / Ministério da Saúde",
+          "titulo": "Insulinas análogas de ação prolongada para DM2 — Portaria SECTICS/MS 59/2024",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "resumo_30s": "Este assunto se divide em duas metades: fechar diagnóstico com o critério certo, e decidir o próximo passo diante de um exame que voltou fora da meta ou de uma emergência hiperglicêmica.",
+      "revisado": false,
+      "subtema": "Diabetes"
+    },
+    "5": {
+      "afirmacoes_com_dado": [
+        {
+          "claim": "prednisona a partir de 2 mg/kg/dia por 14 dias ou mais é a dose de referência para adiar vacina viva",
+          "fonte": "pni"
+        }
+      ],
+      "area": "PD",
+      "armadilhas": [
+        {
+          "certo": "Dose registrada é dose válida: completa-se o esquema a partir do que já foi feito, e cartão perdido se reconstitui antes de revacinar tudo.",
+          "erro": "Recomeçar o esquema vacinal quando há atraso de anos ou cartão perdido."
+        },
+        {
+          "certo": "Só imunossupressão significativa contraindica vacina viva; corticoide tópico, nasal ou inalatório não contraindica nada.",
+          "erro": "Contraindicar vacina por doença crônica controlada ou corticoide tópico e inalatório."
+        },
+        {
+          "certo": "Doença leve não é motivo para adiar; adiar é o que gera oportunidade perdida.",
+          "erro": "Adiar vacinação por infecção respiratória leve sem febre."
+        },
+        {
+          "certo": "Nesses dois grupos a vacina viva é contraindicada, e a proteção se faz por bloqueio dos contactantes e por vacinas não vivas.",
+          "erro": "Aplicar vacina de vírus vivo atenuado em gestante ou em imunossuprimido grave."
+        }
+      ],
+      "checklist_vespera": [
+        "Sei listar quais vacinas do calendário são de vírus vivo atenuado.",
+        "Sei o que conta como imunossupressão para efeito de contraindicação.",
+        "Sei o que fazer diante de cartão perdido ou esquema atrasado.",
+        "Sei quem foge do esquema de rotina do HPV e por quê."
+      ],
+      "como_a_prova_cobra": "Em 18 questões da base real, o eixo da resposta é prevenção em 12, sem nenhuma abstenção do classificador. É o assunto mais homogêneo do top-7: a vinheta planta uma condição — idade, imunossupressão, gestação, esquema incompleto — e a alternativa correta aplica a regra do calendário àquela condição.",
+      "dispositivo_de_memoria": {
+        "decodifica": "As vivas do calendário são BCG, rotavírus, febre amarela, tríplice viral, tetraviral, varicela e dengue; nesses dois grupos protege-se por vacinas não vivas e por bloqueio dos contactantes.",
+        "frase": "Gestante e imunossuprimido grave: nada de vírus vivo atenuado",
+        "tipo": "regra_pratica"
+      },
+      "eixos_citados": [
+        "prevenção",
+        "aplicação"
+      ],
+      "especialidade": "Pediatria",
+      "estrutura": {
+        "colunas": [
+          "Condição plantada",
+          "Regra",
+          "Detalhe que a banca cobra"
+        ],
+        "linhas": [
+          [
+            "Gestação ou imunossupressão grave",
+            "Vacina de vírus vivo atenuado contraindicada",
+            "As vivas do calendário incluem BCG, rotavírus, febre amarela, tríplice viral, tetraviral, varicela e dengue"
+          ],
+          [
+            "Uso de corticoide sistêmico em dose imunossupressora",
+            "Adiar vacina viva",
+            "Prednisona a partir de 2 mg/kg/dia por 14 dias ou mais é a dose de referência"
+          ],
+          [
+            "Adolescente com esquema incompleto",
+            "Completar, nunca recomeçar",
+            "Aproveitar o contato para dupla adulto, hepatite B, tríplice viral e febre amarela"
+          ],
+          [
+            "Vacinação contra HPV na faixa preconizada",
+            "Dose única para o público-alvo de rotina",
+            "Imunossuprimidos e vítimas de violência sexual mantêm esquema com mais doses e faixa etária ampliada"
+          ]
+        ],
+        "tipo": "tabela",
+        "titulo": "A condição da vinheta e a regra que ela aciona"
+      },
+      "evidencia": {
+        "abstencao": {
+          "answer_type": 0.0,
+          "charge_pattern": 0.6667,
+          "reasoning_type": 0.5,
+          "trap_pattern": 1.0
+        },
+        "anos": {
+          "max": 2026,
+          "min": 2020,
+          "por_ano": {
+            "2020": 1,
+            "2022": 4,
+            "2023": 2,
+            "2024": 5,
+            "2025": 5,
+            "2026": 1
+          },
+          "ultimos_3_anos": 11
+        },
+        "answer_type": [
+          {
+            "classe": "prevenção",
+            "fracao": 0.6667,
+            "n": 12
+          },
+          {
+            "classe": "tratamento",
+            "fracao": 0.2778,
+            "n": 5
+          },
+          {
+            "classe": "exame",
+            "fracao": 0.0556,
+            "n": 1
+          }
+        ],
+        "charge_pattern": [
+          {
+            "classe": "próxima_conduta",
+            "fracao": 0.2778,
+            "n": 5
+          },
+          {
+            "classe": "exame_inicial",
+            "fracao": 0.0556,
+            "n": 1
+          }
+        ],
+        "confianca_media": 0.7,
+        "metodo": "question_bank.charge_heuristics.classify_charge_profile",
+        "n_questoes": 18,
+        "reasoning_type": [
+          {
+            "classe": "aplicação",
+            "fracao": 0.2778,
+            "n": 5
+          },
+          {
+            "classe": "memorização",
+            "fracao": 0.2222,
+            "n": 4
+          }
+        ],
+        "sustenta_afirmacao": true,
+        "trap_pattern": []
+      },
+      "exemplo_de_cobranca": {
+        "descricao": "A vinheta traz alguém que chega ao serviço para atualizar a situação vacinal e planta uma condição que muda a regra; as alternativas oferecem condutas de vacinação, e a correta é a que respeita a contraindicação ou a regra de aproveitamento de doses.",
+        "url_banco": "/banco?subtheme=imunizacoes-vacinacao"
+      },
+      "fontes": [
+        {
+          "ano": null,
+          "id": "pni",
+          "orgao": "Ministério da Saúde / Programa Nacional de Imunizações",
+          "titulo": "Calendário Nacional de Vacinação e Manual dos Centros de Referência para Imunobiológicos Especiais",
+          "url": null
+        },
+        {
+          "ano": 2024,
+          "id": "ms-hpv-dose-unica",
+          "orgao": "Ministério da Saúde",
+          "titulo": "Nota informativa sobre o esquema de dose única da vacina HPV",
+          "url": null
+        },
+        {
+          "ano": 2025,
+          "id": "conitec-1034",
+          "orgao": "CONITEC / Ministério da Saúde",
+          "titulo": "Vacina hexavalente acelular para crianças imunodeprimidas — Portaria SECTICS/MS 70/2025",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2025"
+        },
+        {
+          "ano": 2023,
+          "id": "conitec-871",
+          "orgao": "CONITEC / Ministério da Saúde",
+          "titulo": "Vacina dengue tetravalente atenuada — Portaria SECTICS/MS 72/2023",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2023"
+        }
+      ],
+      "resumo_30s": "A pergunta é sempre sobre prevenção aplicada a um caso concreto: pode vacinar esta pessoa, agora, com esta vacina — e, se não pode, o que fazer no lugar.",
+      "revisado": false,
+      "subtema": "Imunizações/Vacinação"
+    },
+    "6": {
+      "afirmacoes_com_dado": [],
+      "area": "CM",
+      "armadilhas": [
+        {
+          "certo": "Hipotireoidismo imita depressão, e a triagem custa um exame; o achado somático associado é a pista.",
+          "erro": "Fechar transtorno depressivo em quadro com ganho de peso, pele seca, constipação e alteração menstrual sem dosar a função tireoidiana."
+        },
+        {
+          "certo": "O primeiro exame é a dosagem de hormônio estimulante da tireoide, porque é ela que decide se o caminho é cintilografia ou ultrassonografia.",
+          "erro": "Pedir ultrassonografia como primeiro exame de nódulo tireoidiano palpável."
+        },
+        {
+          "certo": "Dor cervical após quadro viral, com febre e provas inflamatórias altas, aponta tireoidite subaguda, cujo tratamento é sintomático e não antitireoidiano.",
+          "erro": "Atribuir toda tireotoxicose a doença de Graves."
+        },
+        {
+          "certo": "É hipocalcemia por hipoparatireoidismo até prova em contrário, e a conduta é dosar cálcio e repor.",
+          "erro": "Explicar formigamento e espasmo no pós-operatório de tireoidectomia como ansiedade."
+        },
+        {
+          "certo": "A necessidade aumenta já no primeiro trimestre, e a dose é ajustada com monitorização mais frequente.",
+          "erro": "Manter a mesma dose de levotiroxina ao longo da gestação."
+        }
+      ],
+      "checklist_vespera": [
+        "Sei qual é o primeiro exame do nódulo, e por que ele vem antes da imagem.",
+        "Sei diferenciar tireotoxicose de Graves de tireoidite subaguda pela história.",
+        "Sei reconhecer as duas complicações clássicas do pós-operatório de tireoidectomia.",
+        "Sei o que muda no manejo do hipotireoidismo durante a gestação."
+      ],
+      "como_a_prova_cobra": "Nas 19 questões da base real predominam hipótese diagnóstica e exame inicial, com aplicação de protocolo em 7. A distribuição é mais espalhada que nos outros dias, então vale menos decorar um padrão e mais dominar a sequência de investigação, que serve a todos os formatos.",
+      "dispositivo_de_memoria": {
+        "decodifica": "O valor do hormônio estimulante bifurca a investigação: suprimido leva à cintilografia, normal ou elevado leva à ultrassonografia com estratificação de risco e eventual punção.",
+        "frase": "Nódulo de tireoide começa no hormônio estimulante, não na ultrassonografia",
+        "tipo": "regra_pratica"
+      },
+      "eixos_citados": [
+        "diagnóstico_provável",
+        "exame_inicial",
+        "aplicação"
+      ],
+      "especialidade": "Clínica Médica",
+      "estrutura": {
+        "colunas": [],
+        "linhas": [],
+        "passos": [
+          "Dosar o hormônio estimulante da tireoide — este é o primeiro exame, antes de qualquer imagem",
+          "Se estiver suprimido, seguir para cintilografia: nódulo hipercaptante raramente é maligno",
+          "Se estiver normal ou elevado, seguir para ultrassonografia com classificação de risco",
+          "Indicar punção aspirativa por agulha fina conforme o risco ultrassonográfico e o tamanho",
+          "Ler o resultado da punção pela classificação citológica padronizada, que define seguimento, repetição ou cirurgia"
+        ],
+        "tipo": "fluxograma",
+        "titulo": "Nódulo tireoidiano palpável, passo a passo"
+      },
+      "evidencia": {
+        "abstencao": {
+          "answer_type": 0.3684,
+          "charge_pattern": 0.3684,
+          "reasoning_type": 0.2632,
+          "trap_pattern": 1.0
+        },
+        "anos": {
+          "max": 2026,
+          "min": 2016,
+          "por_ano": {
+            "2016": 2,
+            "2017": 2,
+            "2020": 1,
+            "2021": 3,
+            "2022": 3,
+            "2023": 3,
+            "2024": 2,
+            "2026": 3
+          },
+          "ultimos_3_anos": 5
+        },
+        "answer_type": [
+          {
+            "classe": "diagnóstico",
+            "fracao": 0.2632,
+            "n": 5
+          },
+          {
+            "classe": "exame",
+            "fracao": 0.2105,
+            "n": 4
+          },
+          {
+            "classe": "tratamento",
+            "fracao": 0.1579,
+            "n": 3
+          }
+        ],
+        "charge_pattern": [
+          {
+            "classe": "diagnóstico_provável",
+            "fracao": 0.2632,
+            "n": 5
+          },
+          {
+            "classe": "exame_inicial",
+            "fracao": 0.2105,
+            "n": 4
+          },
+          {
+            "classe": "próxima_conduta",
+            "fracao": 0.1579,
+            "n": 3
+          }
+        ],
+        "confianca_media": 0.6105,
+        "metodo": "question_bank.charge_heuristics.classify_charge_profile",
+        "n_questoes": 19,
+        "reasoning_type": [
+          {
+            "classe": "aplicação",
+            "fracao": 0.3684,
+            "n": 7
+          },
+          {
+            "classe": "reconhecimento",
+            "fracao": 0.2105,
+            "n": 4
+          },
+          {
+            "classe": "priorização",
+            "fracao": 0.1053,
+            "n": 2
+          },
+          {
+            "classe": "diferenciação",
+            "fracao": 0.0526,
+            "n": 1
+          }
+        ],
+        "sustenta_afirmacao": true,
+        "trap_pattern": []
+      },
+      "exemplo_de_cobranca": {
+        "descricao": "Um formato apresenta sintomas inespecíficos com um detalhe somático que denuncia a glândula e pede a hipótese; outro apresenta um nódulo achado no exame físico e pede o exame que deve vir primeiro na investigação.",
+        "url_banco": "/banco?subtheme=tireoide"
+      },
+      "fontes": [
+        {
+          "ano": null,
+          "id": "sbem-nodulo",
+          "orgao": "Sociedade Brasileira de Endocrinologia e Metabologia",
+          "titulo": "Diretrizes para nódulo tireoidiano e câncer diferenciado de tireoide",
+          "url": null
+        }
+      ],
+      "resumo_30s": "A banca costuma esconder a tireoide dentro de outro quadro — depressão, pós-operatório, gestação, nódulo achado por acaso — e pergunta a hipótese ou o exame que a confirma.",
+      "revisado": false,
+      "subtema": "Tireoide"
+    },
+    "7": {
+      "afirmacoes_com_dado": [
+        {
+          "claim": "atipia escamosa de significado indeterminado abaixo de 25 anos: repetir a citologia em 3 anos",
+          "fonte": "inca-colo"
+        },
+        {
+          "claim": "atipia escamosa de significado indeterminado de 25 a 29 anos: repetir a citologia em 12 meses",
+          "fonte": "inca-colo"
+        },
+        {
+          "claim": "atipia escamosa de significado indeterminado a partir de 30 anos: repetir a citologia em 6 meses",
+          "fonte": "inca-colo"
+        },
+        {
+          "claim": "lesão intraepitelial de baixo grau a partir de 25 anos: repetir a citologia em 6 meses",
+          "fonte": "inca-colo"
+        }
+      ],
+      "area": "GO",
+      "armadilhas": [
+        {
+          "certo": "A atipia escamosa de significado indeterminado sem suspeita de alto grau é repetição de citologia, com intervalo que varia pela idade.",
+          "erro": "Encaminhar toda atipia de significado indeterminado para colposcopia."
+        },
+        {
+          "certo": "A que não afasta alto grau vai direto para colposcopia; é a diferença de uma letra e de toda a conduta.",
+          "erro": "Ler ASC-H como se fosse ASC-US por causa da sigla parecida."
+        },
+        {
+          "certo": "Abaixo da idade de início do rastreamento a conduta é expectante e o intervalo é maior; entre os extremos da faixa, o intervalo muda com a idade.",
+          "erro": "Aplicar o mesmo intervalo de repetição para todas as faixas etárias."
+        },
+        {
+          "certo": "Quem tem colo do útero entra no rastreamento; a atrofia induzida por testosterona pode exigir preparo, não exclusão.",
+          "erro": "Deixar de rastrear homens trans e pessoas com colo do útero."
+        },
+        {
+          "certo": "A vacina não cobre todos os tipos oncogênicos, e quem foi vacinada mantém o mesmo calendário de rastreamento.",
+          "erro": "Considerar a vacinação contra HPV como dispensa do rastreamento."
+        }
+      ],
+      "checklist_vespera": [
+        "Sei de cor a tabela acima, incluindo qual linha muda com a idade.",
+        "Sei o que separa a sigla que vai à colposcopia da que volta para repetição.",
+        "Sei quem entra no rastreamento além das mulheres cisgênero.",
+        "Sei que a vacinação não altera o calendário de rastreamento."
+      ],
+      "como_a_prova_cobra": "É o padrão mais concentrado do top-7: das 16 questões da base real, 10 pedem a próxima conduta e 13 exigem aplicação direta de protocolo. A vinheta traz o resultado do exame citopatológico e a alternativa correta é o encaminhamento ou o intervalo de repetição previsto para aquele laudo.",
+      "dispositivo_de_memoria": {
+        "decodifica": "ASC-H e HSIL têm H e vão direto à colposcopia; ASC-US e LSIL, sem H, são repetição de citologia no intervalo que a idade define. A exceção a decorar é a atipia glandular, que não tem H e também vai à colposcopia.",
+        "frase": "Sigla com H vai para a colposcopia",
+        "tipo": "regra_pratica"
+      },
+      "eixos_citados": [
+        "próxima_conduta",
+        "aplicação"
+      ],
+      "especialidade": "Ginecologia",
+      "estrutura": {
+        "colunas": [
+          "Resultado da citologia",
+          "Conduta",
+          "Alternativa que parece certa e não é"
+        ],
+        "linhas": [
+          [
+            "Atipia escamosa de significado indeterminado, abaixo de 25 anos",
+            "Repetir a citologia em 3 anos",
+            "Investigar como se fosse adulta"
+          ],
+          [
+            "Atipia escamosa de significado indeterminado, de 25 a 29 anos",
+            "Repetir a citologia em 12 meses",
+            "Encaminhar direto à colposcopia"
+          ],
+          [
+            "Atipia escamosa de significado indeterminado, a partir de 30 anos",
+            "Repetir a citologia em 6 meses",
+            "Usar o mesmo intervalo de todas as idades"
+          ],
+          [
+            "Lesão intraepitelial de baixo grau, a partir de 25 anos",
+            "Repetir a citologia em 6 meses",
+            "Colposcopia imediata"
+          ],
+          [
+            "Atipia que não afasta alto grau, lesão de alto grau, atipia glandular ou suspeita de invasão",
+            "Colposcopia",
+            "Repetir a citologia e reavaliar depois"
+          ]
+        ],
+        "tipo": "tabela",
+        "titulo": "O laudo, a conduta e o erro que a banca planta"
+      },
+      "evidencia": {
+        "abstencao": {
+          "answer_type": 0.0625,
+          "charge_pattern": 0.125,
+          "reasoning_type": 0.125,
+          "trap_pattern": 1.0
+        },
+        "anos": {
+          "max": 2026,
+          "min": 2016,
+          "por_ano": {
+            "2016": 1,
+            "2021": 1,
+            "2022": 3,
+            "2023": 2,
+            "2024": 1,
+            "2025": 3,
+            "2026": 5
+          },
+          "ultimos_3_anos": 9
+        },
+        "answer_type": [
+          {
+            "classe": "tratamento",
+            "fracao": 0.625,
+            "n": 10
+          },
+          {
+            "classe": "exame",
+            "fracao": 0.1875,
+            "n": 3
+          },
+          {
+            "classe": "prevenção",
+            "fracao": 0.0625,
+            "n": 1
+          },
+          {
+            "classe": "contraindicação",
+            "fracao": 0.0625,
+            "n": 1
+          }
+        ],
+        "charge_pattern": [
+          {
+            "classe": "próxima_conduta",
+            "fracao": 0.625,
+            "n": 10
+          },
+          {
+            "classe": "exame_inicial",
+            "fracao": 0.1875,
+            "n": 3
+          },
+          {
+            "classe": "alternativa_incorreta",
+            "fracao": 0.0625,
+            "n": 1
+          }
+        ],
+        "confianca_media": 0.825,
+        "metodo": "question_bank.charge_heuristics.classify_charge_profile",
+        "n_questoes": 16,
+        "reasoning_type": [
+          {
+            "classe": "aplicação",
+            "fracao": 0.8125,
+            "n": 13
+          },
+          {
+            "classe": "diferenciação",
+            "fracao": 0.0625,
+            "n": 1
+          }
+        ],
+        "sustenta_afirmacao": true,
+        "trap_pattern": []
+      },
+      "exemplo_de_cobranca": {
+        "descricao": "A vinheta apresenta uma pessoa assintomática que retorna com o resultado do exame preventivo e transcreve o laudo; as alternativas oferecem intervalos de repetição e encaminhamentos, e a correta é a prevista no protocolo para aquele resultado naquela idade.",
+        "url_banco": "/banco?subtheme=rastreamento-do-cancer-de-colo-do-utero"
+      },
+      "fontes": [
+        {
+          "ano": 2016,
+          "id": "inca-colo",
+          "orgao": "INCA / Ministério da Saúde",
+          "titulo": "Diretrizes brasileiras para o rastreamento do câncer do colo do útero, 2ª edição revista e ampliada",
+          "url": null
+        },
+        {
+          "ano": 2024,
+          "id": "conitec-878",
+          "orgao": "CONITEC / Ministério da Saúde",
+          "titulo": "Testagem molecular para detecção de HPV no rastreamento do câncer do colo do útero — Portaria SECTICS/MS 03/2024",
+          "url": "https://www.gov.br/conitec/pt-br/assuntos/avaliacao-de-tecnologias-em-saude/recomendacoes-da-conitec/2024"
+        }
+      ],
+      "resumo_30s": "Este é o dia mais previsível da semana: a vinheta entrega um laudo citológico e pergunta a conduta, e a resposta sai de uma tabela pequena que dá para memorizar inteira.",
+      "revisado": false,
+      "subtema": "Rastreamento do câncer de colo do útero"
+    }
+  },
   "dias": [
     {
       "dia": 1,
@@ -195,7 +1551,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Mulher de 72 anos foi atendida em hospital de médio porte. Relatava emagrecimento e dor abdominal com irradiação para região dorsal há 3 meses; há 1 mês a urina ficou mais escura, começou a apresentar prurido cutâneo intenso e icterícia em escleras. Ao exame físico, encontrava-se ictérica +++/4+, emagrecida; exame do abdome com fígado palpável abaixo da borda costal direita, assim como uma massa bem definida, de consistência cística, não dolorosa em hipocôndrio direito.\n\nNesse caso, o mais adequado é solicitar",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "B",
           "padrao_cobranca": null,
           "question_id": "aaa3e5a6-067d-4442-81c5-f63f9b164f1d"
@@ -211,7 +1567,7 @@
           "ano": 2025,
           "comentario": null,
           "enunciado": "Homem de 61 anos procura uma unidade básica de saúde (UBS) de uma cidade grande desejando receber um pedido para colonoscopia, pois ouviu que é um exame preventivo necessário após os 50 anos de idade para detecção de câncer do intestino. Questionado pela médica da UBS, o paciente relata que não apresenta sintomas gastrointestinais, anemia, perda de peso ou histórico familiar de câncer de intestino.\nConsiderando-se que neste município existe ampla disponibilidade de recursos diagnósticos, e levando em conta as políticas públicas do Ministério da Saúde para rastreamento, que conduta inicial a médica deverá adotar nesse caso?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "C",
           "padrao_cobranca": null,
           "question_id": "a2a2112b-fafc-4385-9098-1c558b078ba0"
@@ -227,7 +1583,7 @@
           "ano": 2025,
           "comentario": null,
           "enunciado": "Homem de 60 anos é encaminhado ao ambulatório da atenção secundária devido à queimação em região epigástrica há 6 meses. Já realizou 2 ciclos de 30 dias de inibidor de bomba de próton, com melhora parcial e temporária da queixa. Apresenta perda de peso involuntária aproximada de 20% nos últimos 6 meses. Nega vômitos ou hematêmese. Exame físico sem alterações relevantes.\n\nQuais são, respectivamente, a principal hipótese diagnóstica e a conduta adequada para o caso?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "C",
           "padrao_cobranca": null,
           "question_id": "c2d66937-50c3-47eb-b712-d8ba61c80958"
@@ -244,7 +1600,7 @@
           "ano": 2024,
           "comentario": null,
           "enunciado": "Assinale a alternativa que apresenta alguns dos principais genes mutados que contribuem para o surgimento do câncer colorretal hereditário e um dos fatores que pode contribuir para a prevenção do câncer colorretal esporádico.",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "D",
           "padrao_cobranca": null,
           "question_id": "7098cc22-dbd9-4582-be27-890c8ac82e5b"
@@ -261,7 +1617,7 @@
           "ano": 2024,
           "comentario": null,
           "enunciado": "Um senhor de 62 anos, portador de HAS e tabagista, comparece à UBS para trazer os resultados de seus exames de rotina. Ele faz uso de losartana 50 mg BID e anlodipino 5 mg MID e apresenta bom controle de pressão arterial. A seguir estão os resultados dos exames desse paciente:\n\nHemoglobina: 14,3 mg/dl / Leucócitos: 7200/mm3 / Plaquetas: 230.000/mm3 / Potássio: 5,6 mEq/L / Sódio: 143 mEq/L / Ácido Úrico: 4,3 mg/dl / Glicose: 93 mg/dl / HbA1c – 5,4% / Creatinina: 0,8 mg/dl.\n\nSangue oculto nas fezes (imunohistoquímica): positivo / Colesterol total: 122 / Col. HDL: 46 / Col. LDL: 68 / Relação albumina-creatinina: 3,2 mg/g.\n\nDiante desse quadro, qual é a conduta mais adequada?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "D",
           "padrao_cobranca": null,
           "question_id": "95246f3c-b627-4a39-88c5-a8db60129e95"
@@ -285,7 +1641,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Paciente de 29 anos, nuligesta, ciclos menstruais com intervalos de 20 a 65 dias, duração de 4 a 10 dias, intensidade moderada. Apresenta índice de massa corporal de 41,5 kg/m² e se submeterá à cirurgia bariátrica em alguns meses. Necessita de orientação para contracepção.\n\nCom base nessas informações, assinale a alternativa correta.",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "A",
           "padrao_cobranca": null,
           "question_id": "46d6165d-4794-41ab-bb1a-7ee5cb0036c7"
@@ -301,7 +1657,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Adolescente de 16 anos, com útero didelfo, 15 dias após parto vaginal sem intercorrências, procura Unidade Básica de Saúde desejando iniciar um método contraceptivo eficaz. Nega doenças crônicas e uso de medicamentos. Encontra-se em amamentação exclusiva.\n\nDentre os métodos contraceptivos disponíveis pelo SUS, qual deve ser indicado?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "B",
           "padrao_cobranca": null,
           "question_id": "4f2653f8-9c8b-40d2-be20-94ce8bf07289"
@@ -317,7 +1673,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Uma adolescente de 15 anos comparece em consulta ginecológica com a finalidade de iniciar contracepção. Na história patológica pregressa, refere episódios de enxaqueca com aura. Nos antecedentes familiares, relata que a avó materna teve diagnóstico de câncer de mama, sua mãe é hipertensa e sua irmã tem diabetes.\n\nO uso do contraceptivo combinado está contraindicado para essa paciente devido ao risco de",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "C",
           "padrao_cobranca": null,
           "question_id": "55bb1054-6b85-4e16-bc9c-a636ad5726d4"
@@ -333,7 +1689,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Mulher, 36 anos, casada, nulípara, comparece à consulta em Unidade Básica de Saúde para iniciar uso de método contraceptivo. Apresenta hipertensão arterial sistêmica e lúpus eritematoso sistêmico com anticorpo antifosfolípide positivo. Relata ciclos menstruais regulares e última menstruação há 1 semana. Ao exame: IMC 32 kg/m²; PA 170 x 100 mmHg; FC 88 bpm; FR 20 irpm e erupção em \"asa de borboleta\" em região malar.\n\nDiante desse caso clínico, além do uso de preservativos, qual é o método contraceptivo mais indicado?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "D",
           "padrao_cobranca": null,
           "question_id": "c50cb358-225b-4f73-b1c4-f0590fb763d0"
@@ -349,7 +1705,7 @@
           "ano": 2025,
           "comentario": null,
           "enunciado": "Nulípara de 30 anos, com diagnóstico de lúpus eritematoso sistêmico e história recente de trombose venosa, apresenta ciclos menstruais prolongados de 8 a 10 dias, com intenso sangramento e cólicas fortes, busca orientação sobre métodos contraceptivos.\n\nConsiderando os critérios de elegibilidade para uso de anticoncepção e o quadro clínico, qual é a melhor opção de contracepção?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "B",
           "padrao_cobranca": null,
           "question_id": "18d605e4-e0c4-40cb-8dae-cbf3ced3891e"
@@ -373,7 +1729,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Mulher, 32 anos, foi internada em enfermaria de cirurgia para realização de toracotomia eletiva. No 3º dia pós-operatório, foi encontrada com alteração do nível de consciência e diversas cartelas de morfina vazias em sua bolsa. Além do rebaixamento do nível de consciência (escala de coma de Glasgow 8), a paciente apresentava pele fria e pegajosa; miose bilateral puntiforme; PA 100 x 60 mmHg; FC 56 bpm; FR 8 irpm; SatO₂ 86% em ar ambiente e temperatura axilar 36 °C.\n\nQual medicação é indicada para reversão do quadro?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "D",
           "padrao_cobranca": null,
           "question_id": "31621c8c-32f3-4b3f-a503-6c6782ae8926"
@@ -389,7 +1745,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Mulher tabagista, 38 anos, procura Unidade Básica de Saúde após recente falecimento do pai por adenocarcinoma de pulmão. Afirma que gostaria de ajuda para parar de fumar, pois falhou nas 5 vezes em que havia tentado por conta própria nos últimos anos. Relata tabagismo de 20 cigarros por dia desde os 18 anos de idade e que, nas tentativas de cessação, fez uso de \"chicletes de nicotina\", sem orientação médica. Nega uso de álcool, outras substâncias psicoativas ou medicamentos. Não apresenta queixas depressivas, ansiosas ou psicóticas.\n\nAlém de encaminhar para o grupo de cessação de tabagismo, qual é o medicamento indicado como primeira linha de tratamento, segundo protocolos do Ministério da Saúde?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "C",
           "padrao_cobranca": null,
           "question_id": "6784e026-03b4-4e66-835d-5a28a6773c4b"
@@ -405,7 +1761,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Homem de 45 anos procura Unidade Básica de Saúde (UBS) do seu bairro, por não conseguir controlar a frequência e a quantidade do uso de bebida alcoólica. Por conta disso, está faltando ao trabalho e não consegue se lembrar do que acontece quando bebe. O médico da UBS investigará os pontos mais importantes que podem indicar o padrão de dependência a substâncias psicoativas de acordo com o Manual Diagnóstico Estatístico de Saúde Mental (DSM-5).\n\nO médico deve investigar sobre",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "C",
           "padrao_cobranca": null,
           "question_id": "8767701b-0a29-462e-91a8-e4c59f04bc08"
@@ -421,7 +1777,7 @@
           "ano": 2025,
           "comentario": null,
           "enunciado": "Um casal consulta com o médico de família e comunidade devido à preocupação da esposa com marido, que tem demonstrado compulsividade relacionada ao consumo de pornografia. Isso tem gerado discussões constantes entre eles, pois o homem é motorista por aplicativo e está deixando de trabalhar devido a este padrão de comportamento — o que tem impactado na situação financeira da família, que já é difícil. Ele relata que a prática começou como distração e alívio do estresse, mas admite que tem dificuldades para controlar esses comportamentos e reconhece as consequências que isso tem g erado para seu contexto familiar. Durante a consulta, o médico identifica sinais de baixa autoestima e de ansiedade nesse paciente.\nDiante desse relato, qual é o grau de motivação do paciente para a mudança de comportamento?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "B",
           "padrao_cobranca": null,
           "question_id": "1729e584-365e-4ae9-95dc-fee39b797601"
@@ -437,7 +1793,7 @@
           "ano": 2025,
           "comentario": null,
           "enunciado": "Mulher de 58 anos procura Unidade Básica de Saúde (UBS) para renovar receita de diazepam 10 mg. Refere que faz uso da medicação há 25 anos e que não consegue adormecer sem ele. Inclusive, queixa-se de que a medicação vem perdendo eficácia e que sua memória está muito ruim.\n\nNesse caso, a conduta mais adequada é",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "B",
           "padrao_cobranca": null,
           "question_id": "296a87b4-be54-4481-a526-4234a95b492d"
@@ -461,7 +1817,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Menina de 11 anos foi trazida à Unidade de Pronto Atendimento (UPA) com quadro de queda do estado geral, náuseas e dor abdominal, desidratação e hálito cetônico. Exames realizados: glicemia de 410 mg/dL; gasometria venosa de pH 7,15 e bicarbonato de 13 mEq/L; exame de urina indica cetonúria.\n\nAlém da fluidoterapia, o próximo passo é",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "A",
           "padrao_cobranca": null,
           "question_id": "397fd6f2-1fdb-4cb2-b5c8-9b8b196601bf"
@@ -477,7 +1833,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Homem de 55 anos, com diagnóstico de *diabetes mellitus*, foi em consulta de rotina em Unidade Básica de Saúde (UBS) levando exames laboratoriais solicitados pelo médico na consulta anterior. Faz uso de metformina 850 mg, 3 vezes ao dia, e glicazida 30 mg, 1 vez ao dia, há mais de 6 meses. Os exames laboratoriais atuais apresentam hemoglobina glicada de 9,5% e creatinina sérica de 0,8 mg/dL.\n\nQual das condutas é a mais adequada para o seguimento desse caso?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "C",
           "padrao_cobranca": null,
           "question_id": "89ef9356-a4e9-4b79-901f-4f4dc72d7cde"
@@ -493,7 +1849,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Médica de uma Unidade Básica de Saúde atende um homem de 63 anos, 70 kg, IMC 25 kg/m², sedentário, motorista aposentado por invalidez após ter a visão comprometida por diabetes e hipertensão, diagnosticados há mais de 20 anos. O paciente faz uso de metformina e dapaglifozina em doses otimizadas. Faz autoaplicação de insulina NPH 56 UI ao acordar e 34 UI antes de dormir. Ao exame físico, são observados nódulos endurecidos ao redor da cicatriz umbilical, edema discreto em membros inferiores, sem outros achados. Exames laboratoriais recentes demonstram hemoglobina glicada de 8,2% (VR: 4,7 a 5,7%) e função renal preservada. O monitoramento da glicemia capilar apresenta valores em jejum entre 140 mg/dL a 160 mg/dL e pós-prandiais entre 180 mg/dL a 240 mg/dL, sem episódios de hipoglicemia.\n\nQual é o plano terapêutico condizente com o papel dessa médica no trabalho em equipe multiprofissional?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "B",
           "padrao_cobranca": null,
           "question_id": "ae9bc0fd-51d3-4bc5-95bf-4bfc4ff7095c"
@@ -509,7 +1865,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Menina, 7 anos, previamente saudável, é trazida pelos pais à Unidade de Pronto Atendimento de um hospital secundário devido à fadiga intensa há 3 dias, com piora progressiva. Nas últimas 24 horas, tornou-se muito sonolenta, com respiração rápida e profunda, descrita pelos pais como \"barulhenta\" e \"ofegante\". Apresenta também dor abdominal difusa, náuseas e vômitos repetidos. Os pais negam tosse, febre e diarreia, mas relatam que a criança perdeu peso nas últimas semanas, apesar do aumento de apetite. Relatam aumento da ingesta de água e diurese abundante. Ao exame físico, a criança encontra-se sonolenta; despertando com comandos verbais dos pais (Glasgow 13); mucosas secas; olhos encovados; FR 36 irpm, FC 138 bpm, PA 92 x 60 mmHg, SatO₂ 98% em ar ambiente; temperatura axilar 36,3 °C e enchimento capilar 2 segundos.\n\nConsiderando-se o caso, qual é a conduta terapêutica indicada?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "B",
           "padrao_cobranca": null,
           "question_id": "d4b886f2-59ae-4d89-b7c2-54210ad2a5ea"
@@ -533,7 +1889,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Adolescente de 12 anos, sexo feminino, é levada à Unidade Básica de Saúde (UBS) para verificar se suas vacinas estão atualizadas. Até os 8 anos, todas as vacinas preconizadas pelo Ministério da Saúde para o biênio 2024-2025 foram feitas, sendo que tomou 1 dose da vacina contra febre amarela aos 9 meses.\n\nNesse momento, deve receber as vacinas",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "C",
           "padrao_cobranca": null,
           "question_id": "096121e3-028a-4d4a-857c-042fd39660f5"
@@ -549,7 +1905,7 @@
           "ano": 2025,
           "comentario": null,
           "enunciado": "Durante uma roda de conversa em uma sala de espera com mães que aguardavam a consulta de seus filhos com um médico de família e comunidade, uma enfermeira da equipe de saúde da família propôs a discussão do tema da hesitação vacinal. Durante o diálogo, uma das participantes afirmou que “a culpa de tudo isso é da Internet”. Considerando essa situação, assinale a alternativa correta, acerca dos argumentos a serem utilizados pela enfermeira nessa conversa com a comunidade.",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "A",
           "padrao_cobranca": null,
           "question_id": "0303224f-87de-4b0c-8e28-0987d1f01be7"
@@ -566,7 +1922,7 @@
           "ano": 2025,
           "comentario": null,
           "enunciado": "Os pais de um escolar em tratamento de rinite alérgica com corticoide nasal procuraram o posto de saúde para aplicação da vacina HPV (papilomavírus humano).\nEm vista do quadro apresentado, o agente do posto de saúde deverá:",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "C",
           "padrao_cobranca": null,
           "question_id": "2b94cdd2-070b-4747-8975-173cffee3d1c"
@@ -583,7 +1939,7 @@
           "ano": 2025,
           "comentario": null,
           "enunciado": "Um adolescente saudável de 16 anos comparece à clínica da família para atualizar sua situação vacinal. Alega que só recebeu vacinas no primeiro ano de vida, mas, 2 meses antes, fez uma dose de vacina para difteria e tétano (dT), para se matricular em um curso. Em sua caderneta da criança, há registro das seguintes vacinas: duas doses da vacina contra hepatite B (HB); duas doses da vacina contra difteria, tétano e pertússis (DTP); uma dose da vacina contra febre amarela (VFA); uma dose da vacina contra sarampo, caxumba e rubéola (tríplice viral).\n\nA atualização deverá ser feita com:",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "C",
           "padrao_cobranca": null,
           "question_id": "a6d88776-2391-4c33-8aaa-a8c3b1842bc1"
@@ -607,7 +1963,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Mulher de 42 anos buscou Unidade Básica de Saúde com queixas de humor deprimido, anedonia, fadiga intensa, dificuldade de concentração e ganho de peso, associados a ressecamento da pele, constipação intestinal e irregularidade menstrual, por 2 meses. Foi diagnosticada com transtorno depressivo maior e começou tratamento com antidepressivo adequado, porém sem resposta clínica significativa após 12 semanas. Em consulta de retorno, relata manutenção dos sintomas, nega uso de outros medicamentos ou de drogas. Apresenta, ao exame, PA 110 x 80 mmHg; FC 64 bpm; FR 16 irpm; temperatura axilar de 37 °C e glicemia capilar de 98 mg/dL.\n\nNesse contexto, quais exames laboratoriais devem ser solicitados para o principal diagnóstico diferencial do caso?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "B",
           "padrao_cobranca": null,
           "question_id": "46778fa8-6bd2-4589-b793-767a6d529e79"
@@ -623,7 +1979,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Paciente de 47 anos, sexo feminino, atendida no ambulatório de cirurgia geral. A paciente havia sido submetida à cirurgia de tireoidectomia total há 60 dias, devido à um carcinoma folicular de tireoide, o qual estava restrito à glândula. No pós-operatório imediato, a paciente apresentou rouquidão, que não melhorou durante o acompanhamento ambulatorial nesses 60 dias.\n\nCom base no quadro clínico apresentado, qual foi o nervo lesionado durante a cirurgia?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "A",
           "padrao_cobranca": null,
           "question_id": "87605514-6b27-40e5-a871-9ee955f9e478"
@@ -639,7 +1995,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Mulher de 45 anos é internada em hospital de média complexidade com queixas de febre (em torno de 38 °C), mialgia, mal-estar e dor na região cervical anterior, irradiada para a mandíbula e orelhas. Há 2 semanas, iniciou quadro sugestivo de infecção viral respiratória alta, com evolução clínica lenta desde então, passando a sentir palpitações e tremores nos últimos 3 dias. Procurou atendimento na unidade de saúde. Ao exame físico, a paciente se encontra febril, com taquicardia desproporcional à temperatura corporal e tremores finos nas extremidades. À palpação da tireoide: glândula dolorosa, firme e levemente aumentada de tamanho, assimétrica, não nodular. As dosagens da velocidade de hemossedimentação e proteína C reativa se mostraram elevadas.\n\nConsiderando a principal hipótese diagnóstica para o caso, quais exames complementares a sustentariam e qual o tratamento indicado, respectivamente?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "A",
           "padrao_cobranca": null,
           "question_id": "b81ec0c1-924a-4e71-8540-a7e104f25860"
@@ -655,7 +2011,7 @@
           "ano": 2024,
           "comentario": null,
           "enunciado": "Uma paciente com 24 anos procura atendimento médico com relato de sudorese excessiva, palpitações, irritação ocular, nervosismo, fadiga e perda de peso apesar do aumento do apetite, com achado de edema ocular e aumento difuso da tireoide ao exame físico. O médico levanta a suspeita de Doença de Graves.\n\nDurante a propedêutica laboratorial, são resultados compatíveis com a hipótese diagnóstica apresentada",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "D",
           "padrao_cobranca": null,
           "question_id": "2c1d559e-8144-4844-9b54-20f5251f9a82"
@@ -679,7 +2035,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Mulher, 39 anos, assintomática, comparece à Unidade Básica de Saúde para consulta de rotina. O histórico da paciente registra dois exames citopatológicos anteriores consecutivos, realizados há 3 e 4 anos, respectivamente, com resultados normais. Ela questiona sobre a necessidade de realizar o exame preventivo (papanicolau).\n\nConsiderando o novo protocolo de rastreamento de câncer de colo uterino do Ministério da Saúde, qual é a indicação adequada para essa paciente?",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "A",
           "padrao_cobranca": null,
           "question_id": "27c8a6b8-6038-4b34-a2b9-5b2597eb1a3e"
@@ -695,7 +2051,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Mulher, 42 anos, G3P3, comparece à consulta ginecológica para apresentar resultado de citologia cervical coletada há 1 mês, assim descrita:\n\n- Adequabilidade da amostra: satisfatória\n\n- Epitélios representados na amostra: células escamosas, glandulares e metaplásicas.\n\n- Microbiologia: mista, constituída por cocos e bacilos.\n\n- Diagnóstico descritivo: células glandulares atípicas de significado indeterminado (AGC).\n\nSem queixas no momento. Na última citologia cervical coletada há 3 anos, não havia alterações.\n\nCom base no resultado de citologia cervical dessa paciente, a conduta adequada é",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "Revalida INEP",
           "gabarito": "C",
           "padrao_cobranca": null,
           "question_id": "77eed3ff-9bd0-4155-bcf8-66acd14ae2fe"
@@ -711,7 +2067,7 @@
           "ano": 2026,
           "comentario": null,
           "enunciado": "Uma mulher de 30 anos recebeu a citologia oncótica com laudo de “atipias celulares escamosas de significado indeterminado, onde não se pode afastar alto grau (ASC-H)”. Ela nega antecedente de tabagismo e não se lembra de ter tido infecção sexualmente transmissível.\n\nNesse caso, a conduta adequada deve ser a realização de",
-          "fonte": "estrategia-med-2016-2026-residencia-ad-revalida",
+          "fonte": "ENARE / ENAMED",
           "gabarito": "B",
           "padrao_cobranca": null,
           "question_id": "9c97485c-6bc1-4193-ad89-cd4c2ebc86a7"
@@ -742,7 +2098,7 @@
     "method_version": "facies_prediction.v1",
     "registered_at": "2026-08-30 02:49:14.757037+00"
   },
-  "gerado_em": "2026-09-01T15:40:00.586049+00:00",
+  "gerado_em": "2026-09-02T22:40:21.433055+00:00",
   "honestidade": {
     "acerto_pct": 35.0,
     "historico_maximo": 2.8,

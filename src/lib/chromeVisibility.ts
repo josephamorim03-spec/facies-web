@@ -18,7 +18,7 @@ import { isStudyImportImmersivePath } from "@/lib/studyImportRuntime";
  *
  * As quatro razões para esconder, e elas são diferentes entre si:
  *
- * 1. **Público** (`/`, `/facies/*`, `/prova/*`) — quem lê ainda não é aluno.
+ * 1. **Público** (`/`, `/facies/*`, `/prova/*`, `/cadastro`, `/termos`, `/privacidade`, `/enamed`) — quem lê ainda não é aluno.
  * 2. **Antes da sessão** (`/login`, `/auth/*`, `/ativar`) — não há para onde
  *    navegar.
  * 3. **Imersivo** (`/banco/sessao/*`, importação de estudo) — a tela tem a
@@ -37,6 +37,10 @@ export function deveEsconderChrome(pathname: string): boolean {
     pathname.startsWith("/auth") ||
     pathname.startsWith("/facies") ||
     pathname.startsWith("/prova") ||
+    pathname.startsWith("/cadastro") ||
+    pathname.startsWith("/termos") ||
+    pathname.startsWith("/privacidade") ||
+    pathname.startsWith("/enamed") ||
     pathname === ACTIVATE_ROUTE ||
     pathname.startsWith("/banco/sessao") ||
     isStudyImportImmersivePath(pathname)

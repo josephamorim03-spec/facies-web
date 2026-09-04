@@ -213,9 +213,20 @@ export function SidebarNav({
 
         {/* User info + Logout + Theme */}
         <div className="border-t border-edge shrink-0">
+          {/* O AVATAR É A PORTA DA CONTA, e ela saiu da lista principal.
+              `Conta` ficava lado a lado com Hoje, Banco e Rotina — mesmo peso
+              visual que as telas de estudo, competindo com elas todo dia por
+              algo que se abre poucas vezes por ano (trocar senha, exportar
+              dados, encerrar).
+
+              Aqui ela some da barra sem sumir do produto: quem procura conta
+              procura o próprio nome, e é nele que se clica. É a convenção que
+              já existe fora daqui, então não precisa ser ensinada. */}
           {(displayName || photoUrl) && (
-            <div
-              className={`flex items-center border-b border-edge ${visible ? "gap-2.5 px-4 py-3" : "justify-center py-3"}`}
+            <Link
+              href="/conta"
+              aria-label="Sua conta"
+              className={`flex items-center border-b border-edge transition-colors hover:bg-surfaceMuted ${visible ? "gap-2.5 px-4 py-3" : "justify-center py-3"}`}
             >
               <UserAvatar photoUrl={photoUrl} displayName={displayName} size={visible ? "md" : "sm"} />
               {visible && (
@@ -226,7 +237,7 @@ export function SidebarNav({
                   )}
                 </div>
               )}
-            </div>
+            </Link>
           )}
           <div className={`flex items-center ${visible ? "justify-between px-3" : "justify-center"} py-2.5`}>
             {visible ? (

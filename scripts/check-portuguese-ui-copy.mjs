@@ -17,6 +17,20 @@ const roots = [
   // vigiava so `web/src`, e por isso "Continuar sessao" chegou a tela — o
   // acento faltava do lado de fora do seu alcance.
   path.join(cwd, "..", "app", "services"),
+  // ⚠️ ARQUIVO, e nao a pasta `app/api/schemas` inteira.
+  //
+  // As mensagens de validacao da IDENTIDADE do titular sao renderizadas cruas em
+  // `/cadastro/completar` — tela obrigatoria para todo mundo que entra pelo
+  // Google. Elas ficaram invisiveis atras de um `Request failed: 422` (ver
+  // `shared/validationMessage.ts`); quando passaram a aparecer, apareceram sem
+  // acento: "e necessario ter ao menos 18 anos".
+  //
+  // A pasta inteira NAO entra: medido, ela acusa mais 7 casos que sao comentario
+  // e prosa interna ("nao expira", "nao ha area"). Como a cadeia do `npm run
+  // lint` e `&&`, isso derrubaria o eslint do repositorio por texto que nenhum
+  // aluno ve. Outro schema com copy de tela entra aqui pelo mesmo criterio: uma
+  // linha, com o motivo.
+  path.join(cwd, "..", "app", "api", "schemas", "cadastro.py"),
 ];
 
 // Módulos cujas strings são PADRÃO DE CASAMENTO, não copy: marcador lido de PDF
