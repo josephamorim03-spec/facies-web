@@ -28,7 +28,7 @@ import dados from "@/data/facies/previsao.json";
  *
  * ⚠️ O `headline_grain` está DENTRO do hash de propósito. Congelar a lista sem
  * congelar o grão deixaria a escolha do número para depois de ver o resultado —
- * no grão `theme` a mesma lista de 30 cobre metade da taxonomia (30 de 64) e o
+ * no grão `theme` a mesma lista cobre metade da taxonomia (42 de 65) e o
  * lift infla sozinho. A regra de decisão é registrada junto com a previsão.
  */
 
@@ -44,9 +44,13 @@ export type ItemPrevisto = {
 export type ListaPorGrao = {
   grao: string;
   universo: number;
-  /** Quantos por cento uma lista de 30 tirada ao acaso cobriria. */
+  /** Quantos por cento uma lista do MESMO tamanho, tirada ao acaso, cobriria.
+   *  Ele sobe com `top_n`: uma lista maior cobre mais por ser maior, e sem o
+   *  piso ao lado o lift de uma lista grande pareceria bom só por tamanho. */
   piso_pct: number;
-  /** Empates na fronteira do corte: > 0 significa que o 30º lugar foi sorteio. */
+  /** Empates na fronteira do corte: > 0 significa que o ÚLTIMO lugar foi
+   *  sorteio entre iguais. Medido ao escolher o tamanho: 40 dava 2 empates e
+   *  42 dá 0 — foi isso que decidiu o corte publicado. */
   empates_na_fronteira: number;
   fontes: Record<string, { questoes: number; unidades: number }>;
   lista: ItemPrevisto[];

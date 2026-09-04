@@ -22,7 +22,7 @@ ordem:
 | --- | --- |
 | `Heroi` | a cara da prova + a busca, antes de qualquer scroll |
 | `NoveMedidas` | o que se mede numa questão, com exemplo |
-| `TrintaAssuntos` | o payload: a lista registrada antes da prova |
+| `AssuntosPrevistos` | o payload: a lista registrada antes da prova |
 | `MapaDosAssuntos` | o mapa: a cara × o que você já sabe, e o que custa |
 | `DepoisDeEntrar` | a sessão de hoje: 3 passos + captura do /hoje |
 | `CursinhoOuFacies` | a âncora — contra mentoria, não contra banco de questões |

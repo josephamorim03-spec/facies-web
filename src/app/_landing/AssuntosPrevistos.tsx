@@ -34,11 +34,17 @@ function Serie({ valores, correlatos }: { valores: number[]; correlatos: number 
   );
 }
 
-/** Quantos assuntos trazem o valor. Os outros vinte entram só como rótulo — a
- *  lista inteira é a carga, mas trinta linhas com número viram tabela. */
+/** Quantos assuntos trazem o valor. Os demais entram só como rótulo — a lista
+ *  inteira é a carga, mas dezenas de linhas com número viram tabela.
+ *
+ *  ⚠️ O TAMANHO DA LISTA NÃO MORA AQUI. Ele vem de `base_composition.top_n` do
+ *  artefato registrado, e a página apenas renderiza o que recebe. Fixar 30 (ou
+ *  42) neste arquivo faria a tela discordar do registro no dia seguinte a uma
+ *  troca de método — que é a classe de afirmação falsa que o hash existe para
+ *  impedir. */
 const COM_VALOR = 10;
 
-export function TrintaAssuntos({ dados }: { dados: DadosDaLanding }) {
+export function AssuntosPrevistos({ dados }: { dados: DadosDaLanding }) {
   const { previsao, serie } = dados;
   if (!previsao || previsao.itens.length === 0) return null;
 
