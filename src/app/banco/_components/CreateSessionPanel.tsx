@@ -76,9 +76,20 @@ function SummaryRow({
           // continua legivel, e legivel e' o que faz o aluno acreditar nele.
           <div className="paper-skeleton mt-1 h-5 w-24" aria-label="Recalculando" />
         ) : (
-          <p className="mt-0.5 text-base font-semibold leading-tight text-ink">{value}</p>
+          // Mono, e nao sans negrito: "24", "48 min", "30 no filtro" sao
+          // DADO, e a mono e a textura de dado deste sistema. Medido, o
+          // Banco era a tela com MENOS mono do app (16%), contra os 65% que o
+          // desenho poe no `8b` -- e e essa proporcao que faz o produto ler
+          // como prontuario em vez de formulario.
+          <p className="mt-0.5 font-mono text-base tabular-nums leading-tight text-ink">
+            {value}
+          </p>
         )}
-        {detail && !stale && <p className="mt-0.5 truncate text-xs text-muted">{detail}</p>}
+        {detail && !stale && (
+          <p className="mt-0.5 truncate font-mono text-micro tabular-nums text-muted">
+            {detail}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -141,7 +152,9 @@ export default function CreateSessionPanel({
               <LoadBar label="Recalculando a prévia" className="w-40" />
             </div>
           ) : (
-            <p className="mt-1 text-sm text-muted" aria-live="polite">{availabilityText(availability)}</p>
+            <p className="mt-1 font-mono text-nota tabular-nums text-muted" aria-live="polite">
+              {availabilityText(availability)}
+            </p>
           )}
         </div>
         <Button type="button" variant="secondary" size="xs" onClick={onRefreshAvailability} disabled={loadingPreview || busy}>

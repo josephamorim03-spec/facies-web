@@ -1059,7 +1059,18 @@ function BancoDeQuestoesContent() {
       <div className={`space-y-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
         <section className="space-y-4" aria-label="Montador de sessão">
           {activeFilters.length > 0 && (
-            <div className="flex w-full flex-wrap items-center justify-end gap-3 border-b border-edge pb-4">
+            /* ⚠️ A LINHA GANHA ROTULO, e deixa de flutuar a direita.
+
+               Ela abria a tela com um chip solto no canto -- "Acesso Direto"
+               alinhado a direita, sobre uma regua, sem nada que dissesse o que
+               aquilo era. Lido de cima para baixo, o primeiro elemento da tela
+               era um rotulo sem pergunta.
+
+               O rotulo em mono ancora a linha a esquerda e diz o que os chips
+               sao. Os chips continuam a direita, entao a geometria de toque nao
+               muda -- muda so' o que a linha AFIRMA. */
+            <div className="flex w-full flex-wrap items-center justify-between gap-3 border-b border-edge pb-4">
+              <p className="paper-eyebrow">filtros ativos</p>
               <div className="relative shrink-0">
                 <button
                   type="button"
