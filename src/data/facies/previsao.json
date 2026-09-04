@@ -16,224 +16,296 @@
     "direta": {
       "questoes": 100
     },
-    "top_n": 30
+    "top_n": 42
   },
-  "content_sha256": "ef4fb66d8b677f2ae59559e560810e1a732b611b9f9f1c0adbbf2c2665567766",
+  "content_sha256": "dae585e7b89ad75e0620011215868925e22d508733ea6beccd6c27a85fd75838",
   "exam_key": "ENAMED",
   "exam_label": "Exame Nacional de Avaliacao da Formacao Medica (ENAMED)",
   "headline_grain": "subtheme",
   "headline_metric": "lift",
-  "id": "9f6eb4ae-9a34-414f-94e0-0ed365b0f881",
-  "method_version": "facies_prediction.v1",
+  "id": "dd9ebacf-c04d-4039-9ad7-43987000666a",
+  "method_version": "facies_prediction.v2.1",
   "predictions": {
     "subtheme": {
       "empates_na_fronteira": 0,
       "fontes": {
         "ENARE 1a fase": {
           "questoes": 500,
-          "unidades": 187
+          "unidades": 222
         },
         "Revalida / INEP": {
           "questoes": 1163,
-          "unidades": 250
+          "unidades": 278
         }
       },
       "grao": "subtheme",
       "lista": [
         {
-          "diretas": 2,
-          "posicao": 1,
-          "rotulo": "Neoplasias do Sistema Digestivo",
-          "score": 11.2
-        },
-        {
           "diretas": 3,
-          "posicao": 2,
-          "rotulo": "Planejamento familiar",
-          "score": 11.0
+          "posicao": 1,
+          "rotulo": "Abdome Agudo Inflamatório",
+          "score": 12.6
         },
         {
-          "diretas": 1,
+          "diretas": 2,
+          "posicao": 2,
+          "rotulo": "Neoplasias do Sistema Digestivo",
+          "score": 12.0
+        },
+        {
+          "diretas": 2,
           "posicao": 3,
-          "rotulo": "Dependência Química",
-          "score": 10.2
+          "rotulo": "Tireoide",
+          "score": 11.2
         },
         {
           "diretas": 3,
           "posicao": 4,
           "rotulo": "Diabetes",
-          "score": 9.4
+          "score": 11.0
+        },
+        {
+          "diretas": 3,
+          "posicao": 5,
+          "rotulo": "Planejamento familiar",
+          "score": 11.0
         },
         {
           "diretas": 1,
-          "posicao": 5,
+          "posicao": 6,
+          "rotulo": "Atenção Primária à Saúde (APS) no Brasil",
+          "score": 10.6
+        },
+        {
+          "diretas": 1,
+          "posicao": 7,
+          "rotulo": "Dependência Química",
+          "score": 10.2
+        },
+        {
+          "diretas": 1,
+          "posicao": 8,
           "rotulo": "Imunizações/Vacinação",
+          "score": 9.4
+        },
+        {
+          "diretas": 0,
+          "posicao": 9,
+          "rotulo": "Código de Ética Médica (CEM)",
+          "score": 9.2
+        },
+        {
+          "diretas": 1,
+          "posicao": 10,
+          "rotulo": "Avaliação Inicial: Vias aéreas, Ventilação e Choque",
           "score": 9.0
         },
         {
           "diretas": 2,
-          "posicao": 6,
-          "rotulo": "Tireoide",
-          "score": 8.8
-        },
-        {
-          "diretas": 2,
-          "posicao": 7,
+          "posicao": 11,
           "rotulo": "Rastreamento do câncer de colo do útero",
           "score": 8.4
         },
         {
-          "diretas": 3,
-          "posicao": 8,
-          "rotulo": "Abdome Agudo Inflamatório",
-          "score": 8.2
-        },
-        {
-          "diretas": 1,
-          "posicao": 9,
-          "rotulo": "Arboviroses",
-          "score": 7.8
-        },
-        {
           "diretas": 2,
-          "posicao": 10,
-          "rotulo": "Tuberculose (TB)",
-          "score": 7.6
-        },
-        {
-          "diretas": 1,
-          "posicao": 11,
-          "rotulo": "Atenção Primária à Saúde (APS) no Brasil",
-          "score": 7.4
-        },
-        {
-          "diretas": 1,
           "posicao": 12,
-          "rotulo": "Avaliação Inicial: Vias aéreas, Ventilação e Choque",
-          "score": 7.4
+          "rotulo": "Saúde do Idoso (geriatria)",
+          "score": 8.4
         },
         {
           "diretas": 1,
           "posicao": 13,
-          "rotulo": "Hipertensão Arterial Sistêmica (HAS)",
-          "score": 7.4
+          "rotulo": "Arboviroses",
+          "score": 8.2
         },
         {
           "diretas": 0,
           "posicao": 14,
           "rotulo": "Arritmias Cardíacas",
-          "score": 7.2
+          "score": 8.0
         },
         {
-          "diretas": 2,
+          "diretas": 1,
           "posicao": 15,
-          "rotulo": "Intoxicações Exógenas",
-          "score": 7.2
+          "rotulo": "Hipertensão Arterial Sistêmica (HAS)",
+          "score": 7.8
         },
         {
           "diretas": 2,
           "posicao": 16,
-          "rotulo": "Saúde do Idoso (geriatria)",
-          "score": 7.2
+          "rotulo": "Tuberculose (TB)",
+          "score": 7.6
         },
         {
           "diretas": 2,
           "posicao": 17,
-          "rotulo": "Psiquiatria Infantil",
-          "score": 6.8
+          "rotulo": "Vigilância em Saúde",
+          "score": 7.6
         },
         {
-          "diretas": 2,
+          "diretas": 1,
           "posicao": 18,
-          "rotulo": "Transtornos do Humor",
-          "score": 6.4
+          "rotulo": "Assistência pré-natal",
+          "score": 7.4
         },
         {
           "diretas": 2,
           "posicao": 19,
-          "rotulo": "Vigilância em Saúde",
-          "score": 6.4
+          "rotulo": "Intoxicações Exógenas",
+          "score": 7.2
         },
         {
           "diretas": 1,
           "posicao": 20,
-          "rotulo": "Intestinos",
-          "score": 5.8
+          "rotulo": "Doenças infecciosas na gestação – HIV, sífilis, hepatites, herpes",
+          "score": 7.0
         },
         {
           "diretas": 2,
           "posicao": 21,
-          "rotulo": "HIV/Aids",
-          "score": 5.6
+          "rotulo": "Psiquiatria Infantil",
+          "score": 6.8
         },
         {
-          "diretas": 2,
+          "diretas": 1,
           "posicao": 22,
-          "rotulo": "Artropatias inflamatórias",
-          "score": 5.2
+          "rotulo": "Intestinos",
+          "score": 6.6
         },
         {
           "diretas": 1,
           "posicao": 23,
+          "rotulo": "Síndromes Hipertensivas da Gestação",
+          "score": 6.6
+        },
+        {
+          "diretas": 2,
+          "posicao": 24,
+          "rotulo": "Artropatias inflamatórias",
+          "score": 6.4
+        },
+        {
+          "diretas": 2,
+          "posicao": 25,
+          "rotulo": "Transtornos do Humor",
+          "score": 6.4
+        },
+        {
+          "diretas": 1,
+          "posicao": 26,
+          "rotulo": "Vulvovaginites",
+          "score": 6.2
+        },
+        {
+          "diretas": 0,
+          "posicao": 27,
+          "rotulo": "Infecções congênitas",
+          "score": 6.0
+        },
+        {
+          "diretas": 2,
+          "posicao": 28,
+          "rotulo": "HIV/Aids",
+          "score": 5.6
+        },
+        {
+          "diretas": 0,
+          "posicao": 29,
+          "rotulo": "Sangramento primeira metade",
+          "score": 5.6
+        },
+        {
+          "diretas": 1,
+          "posicao": 30,
+          "rotulo": "Amenorreias",
+          "score": 5.4
+        },
+        {
+          "diretas": 1,
+          "posicao": 31,
+          "rotulo": "Aterosclerose e Doença Arterial Coronariana",
+          "score": 5.4
+        },
+        {
+          "diretas": 0,
+          "posicao": 32,
+          "rotulo": "Abdome Agudo Obstrutivo",
+          "score": 5.2
+        },
+        {
+          "diretas": 0,
+          "posicao": 33,
+          "rotulo": "Medidas de saúde coletiva",
+          "score": 5.2
+        },
+        {
+          "diretas": 2,
+          "posicao": 34,
+          "rotulo": "Traumatismo Craniencefálico",
+          "score": 5.2
+        },
+        {
+          "diretas": 1,
+          "posicao": 35,
+          "rotulo": "Asma",
+          "score": 5.0
+        },
+        {
+          "diretas": 1,
+          "posicao": 36,
+          "rotulo": "Infecções sexualmente transmissíveis",
+          "score": 5.0
+        },
+        {
+          "diretas": 1,
+          "posicao": 37,
           "rotulo": "Ortopedia Geral",
           "score": 5.0
         },
         {
           "diretas": 1,
-          "posicao": 24,
+          "posicao": 38,
           "rotulo": "Testes Diagnósticos",
           "score": 5.0
         },
         {
           "diretas": 0,
-          "posicao": 25,
-          "rotulo": "Código de Ética Médica (CEM)",
+          "posicao": 39,
+          "rotulo": "Infecções das Vias Aéreas Superiores",
           "score": 4.8
         },
         {
           "diretas": 0,
-          "posicao": 26,
-          "rotulo": "Infecções congênitas",
+          "posicao": 40,
+          "rotulo": "Processo saúde-doença",
           "score": 4.8
         },
         {
           "diretas": 0,
-          "posicao": 27,
-          "rotulo": "Medidas de saúde coletiva",
+          "posicao": 41,
+          "rotulo": "Trauma Abdominal e Pélvico",
           "score": 4.8
         },
         {
           "diretas": 0,
-          "posicao": 28,
+          "posicao": 42,
           "rotulo": "Sangramento uterino anormal",
           "score": 4.8
-        },
-        {
-          "diretas": 1,
-          "posicao": 29,
-          "rotulo": "Amenorreias",
-          "score": 4.6
-        },
-        {
-          "diretas": 1,
-          "posicao": 30,
-          "rotulo": "Infecções sexualmente transmissíveis",
-          "score": 4.6
         }
       ],
-      "piso_pct": 10.17,
-      "universo": 295
+      "piso_pct": 12.84,
+      "universo": 327
     },
     "theme": {
-      "empates_na_fronteira": 0,
+      "empates_na_fronteira": 1,
       "fontes": {
         "ENARE 1a fase": {
           "questoes": 500,
-          "unidades": 55
+          "unidades": 57
         },
         "Revalida / INEP": {
           "questoes": 1163,
-          "unidades": 59
+          "unidades": 60
         }
       },
       "grao": "theme",
@@ -417,12 +489,84 @@
           "posicao": 30,
           "rotulo": "Medicina fetal",
           "score": 7.6
+        },
+        {
+          "diretas": 0,
+          "posicao": 31,
+          "rotulo": "Otorrinolaringologia",
+          "score": 6.8
+        },
+        {
+          "diretas": 1,
+          "posicao": 32,
+          "rotulo": "Pneumologia Pediátrica",
+          "score": 6.6
+        },
+        {
+          "diretas": 1,
+          "posicao": 33,
+          "rotulo": "Parto",
+          "score": 6.2
+        },
+        {
+          "diretas": 0,
+          "posicao": 34,
+          "rotulo": "Gastrologia Pediátrica",
+          "score": 5.2
+        },
+        {
+          "diretas": 1,
+          "posicao": 35,
+          "rotulo": "Oftalmologia",
+          "score": 5.0
+        },
+        {
+          "diretas": 1,
+          "posicao": 36,
+          "rotulo": "Pré-natal",
+          "score": 5.0
+        },
+        {
+          "diretas": 2,
+          "posicao": 37,
+          "rotulo": "Emergências Pediátricas",
+          "score": 4.8
+        },
+        {
+          "diretas": 1,
+          "posicao": 38,
+          "rotulo": "Reumatologia Pediátrica",
+          "score": 4.6
+        },
+        {
+          "diretas": 0,
+          "posicao": 39,
+          "rotulo": "Infectologia Pediátrica",
+          "score": 4.4
+        },
+        {
+          "diretas": 0,
+          "posicao": 40,
+          "rotulo": "Urologia",
+          "score": 3.6
+        },
+        {
+          "diretas": 0,
+          "posicao": 41,
+          "rotulo": "Avaliação Pré-Operatória",
+          "score": 3.2
+        },
+        {
+          "diretas": 1,
+          "posicao": 42,
+          "rotulo": "Proctologia",
+          "score": 3.0
         }
       ],
-      "piso_pct": 46.88,
-      "universo": 64
+      "piso_pct": 64.62,
+      "universo": 65
     }
   },
-  "registered_at": "2026-08-30 02:49:14.757037+00",
+  "registered_at": "2026-09-04 03:32:13.068953+00",
   "taxonomy_signature": "3bb0d7046a3e482edd7c84d2a2e61299a49809a789451c8fb3975c0026a7cd47"
 }

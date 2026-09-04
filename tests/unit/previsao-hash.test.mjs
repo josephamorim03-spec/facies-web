@@ -109,7 +109,12 @@ test("o sha256 publicado recalcula a partir do conteúdo publicado", () => {
 
 test("a previsão traz os campos que a página publica", () => {
   assert.equal(PREVISAO.exam_key, "ENAMED");
-  assert.equal(PREVISAO.method_version, "facies_prediction.v1");
+  // ⚠️ FIXAR A VERSAO E' DELIBERADO: publicar um metodo novo tem de exigir uma
+  // edicao consciente aqui, senao trocar o artefato troca em silencio a regra
+  // de pontuacao que a pagina afirma ter congelado. `v2.1` = lista de 42, o
+  // corte limpo mais proximo de 40 (40 tinha 2 empates na fronteira, ou seja,
+  // o 40o lugar era sorteio entre tres).
+  assert.equal(PREVISAO.method_version, "facies_prediction.v2.1");
   assert.equal(PREVISAO.content_sha256.length, 64);
   assert.ok(listaDaManchete(), "grão da manchete ausente em predictions");
   assert.equal(listaDaManchete().lista.length, PREVISAO.base_composition.top_n);
