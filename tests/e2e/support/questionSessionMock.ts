@@ -220,6 +220,20 @@ export async function mockQuestionSession(
         display_name: "E2E",
         access_status: "active",
         has_completed_initial_goal_setup: true,
+        // ⚠️ SEM ISTO, A SESSAO INTEIRA REDIRECIONA.
+        //
+        // `resolveBlockingRoute` (`lib/initialGoalSetup.ts:87`) le
+        // `cadastro_completo` e, sem ele, manda todo mundo para
+        // `/cadastro/completar` -- o `AppShell` faz isso ANTES de a tela do
+        // runner existir. Os seis testes de `sessao.runner-mobile.spec.ts`
+        // estavam vermelhos por causa disto, medindo uma tela de cadastro
+        // enquanto os nomes deles falavam da barra do runner.
+        //
+        // E' o mesmo defeito que ja tinha deixado `navigation.shell.spec.ts`
+        // parado em "CARREGANDO": mock de perfil que responde 200 mas omite o
+        // campo do GATE nao falha -- ele desvia, e o desvio parece a tela certa
+        // demorando a carregar.
+        cadastro_completo: true,
         timezone: "America/Sao_Paulo",
       }),
     }),

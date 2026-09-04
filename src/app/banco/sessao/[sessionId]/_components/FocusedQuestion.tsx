@@ -17,6 +17,9 @@ import type {
 import { formatClock } from "@/lib/formatDuration";
 import { formatSourceLabel } from "@/lib/formatSource";
 import { QuestionImageRefs } from "@/app/banco/_components/QuestionImageRefs";
+import { Sheet } from "@/components/ui/Sheet";
+import { useEdgeSwipeSuppression } from "@/hooks/useEdgeSwipeSuppression";
+import { ESTILO_DO_DESLIZE, useDeslizeLateral } from "@/hooks/useDeslizeLateral";
 import FontScaleControl from "./FontScaleControl";
 import { SessionExitButton } from "./SessionExitButton";
 import { useQuestionFontScale } from "./useQuestionFontScale";
@@ -65,6 +68,15 @@ type Preferences = {
   timerVisible?: boolean;
   sourceVisible?: boolean;
   autoReveal?: boolean;
+  /**
+   * O interruptor do deslizar, do artboard `8f`.
+   *
+   * LIGADO por padrao, e desligavel — que e exatamente como o desenho o
+   * descreve (`Webapp - telas.dc.html:2170`). Ligado por padrao porque o gesto
+   * e a coisa que o utilizador ja sabe fazer; desligavel porque quem lê com uma
+   * mao na maca esbarra nele sem querer.
+   */
+  swipeEnabled?: boolean;
 };
 
 type HighlightSelection = {
@@ -178,6 +190,7 @@ function readPreferences(defaultPresentationMode: QuestionPresentationMode): Req
       timerVisible: timerPadrao(defaultPresentationMode),
       sourceVisible: false,
       autoReveal: false,
+      swipeEnabled: true,
     };
   }
   try {
@@ -192,6 +205,10 @@ function readPreferences(defaultPresentationMode: QuestionPresentationMode): Req
         typeof parsed.timerVisible === "boolean" ? parsed.timerVisible : timerPadrao(mode),
       sourceVisible: typeof parsed.sourceVisible === "boolean" ? parsed.sourceVisible : false,
       autoReveal: parsed.autoReveal === true,
+      // `=== false`, e nao `!== true`: quem nunca escolheu tem de cair no
+      // padrao LIGADO. Colapsar "nunca escolhi" com "escolhi nao" desligaria o
+      // gesto para todo aluno que ja tem preferencias gravadas.
+      swipeEnabled: parsed.swipeEnabled !== false,
     };
   } catch {
     return {
@@ -199,6 +216,7 @@ function readPreferences(defaultPresentationMode: QuestionPresentationMode): Req
       timerVisible: timerPadrao(defaultPresentationMode),
       sourceVisible: false,
       autoReveal: false,
+      swipeEnabled: true,
     };
   }
 }
@@ -443,6 +461,33 @@ export default function FocusedQuestion({
   const presentationMode = isTrainingFlow ? prefs.presentationMode : "exam";
   const canShowLearning = presentationMode === "learning" && canUseLearningFeedback;
   const canReveal = canShowLearning && !finalized && Boolean(item.selected_option) && !revealed;
+
+  /**
+   * Deslizar entre questoes — o atalho POR CIMA dos botoes.
+   *
+   * `aoAvancar`/`aoVoltar` sao as MESMAS funcoes que `Proxima` e `←` chamam.
+   * Nao ha um caminho do dedo: ha um atalho para o caminho que ja existia. E a
+   * regra do desenho (`Webapp - telas.dc.html:2181`) e a da WCAG 2.5.1 ao mesmo
+   * tempo.
+   */
+  const [deslize, gestoDeDeslize] = useDeslizeLateral({
+    ativo: prefs.swipeEnabled,
+    podeAvancar: canNext,
+    podeVoltar: canPrev,
+    aoAvancar: onNext,
+    aoVoltar: onPrev,
+  });
+
+  /**
+   * ⚠️ A SUPRESSAO DE BORDA E MONTADA AQUI, e nao herdada.
+   *
+   * `Nav.tsx:70` monta `useEdgeSwipeSuppression(!hideCompletely)` — e a sessao
+   * ESCONDE o chrome, entao ali ela fica desligada. Sem ela, o swipe de borda do
+   * iOS/Android navega o historico no meio do gesto e o aluno perde a sessao: o
+   * defeito exato que o hook existe para impedir, na unica tela que mais tinha a
+   * perder com ele.
+   */
+  useEdgeSwipeSuppression(prefs.swipeEnabled);
   const showFeedback = canShowLearning && revealed && item.correct_answer;
   const canAnswer = !finalized && !revealed && !item.answer_committed && (!item.answered || canChangeAnswer);
   const canEliminate = !finalized;
@@ -480,20 +525,19 @@ export default function FocusedQuestion({
   const useWideReadingLayout = flowKind === "simulation" || presentationMode === "exam";
   const showStemMeta = prefs.sourceVisible;
 
-  const closeSettings = useCallback(() => {
-    setSettingsOpen(false);
-    window.setTimeout(() => lastOverlayTriggerRef.current?.focus(), 0);
-  }, []);
-
-  const closeWhy = useCallback(() => {
-    setWhyOpen(false);
-    window.setTimeout(() => lastOverlayTriggerRef.current?.focus(), 0);
-  }, []);
-
-  const openWhy = useCallback((trigger?: HTMLElement | null) => {
-    lastOverlayTriggerRef.current = trigger ?? null;
-    setWhyOpen(true);
-  }, []);
+  // ⚠️ O FOCO SAIU DAQUI, e nao foi perdido.
+  //
+  // As duas folhas guardavam o gatilho a mao (`lastOverlayTriggerRef`) e
+  // devolviam o foco ao fechar. `Sheet` passou a fazer isso sozinho, e a
+  // capturar o `document.activeElement` no momento de abrir -- o que dispensa
+  // cada chamador lembrar-se de passar o botao. Manter as duas mecanicas faria
+  // o foco ser reposto duas vezes pelo mesmo motivo.
+  //
+  // `lastOverlayTriggerRef` CONTINUA vivo: a barra de grifo ainda depende dele,
+  // e ela nao e uma folha.
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
+  const closeWhy = useCallback(() => setWhyOpen(false), []);
+  const openWhy = useCallback(() => setWhyOpen(true), []);
 
   const toggleFocusMode = useCallback((next = !focusMode) => {
     setFocusMode(next);
@@ -616,16 +660,9 @@ export default function FocusedQuestion({
           closeHighlightToolbar();
           return;
         }
-        if (settingsOpen) {
-          event.preventDefault();
-          closeSettings();
-          return;
-        }
-        if (whyOpen) {
-          event.preventDefault();
-          closeWhy();
-          return;
-        }
+        // O `Esc` das duas folhas mora em `Sheet`, que e quem sabe se o foco
+        // esta dentro delas. A barra de grifo acima FICA: ela nao e modal, nao
+        // prende o foco, e por isso precisa do atalho da janela.
       }
       if (event.key === "F11") {
         event.preventDefault();
@@ -826,10 +863,7 @@ export default function FocusedQuestion({
             </button>
             <button
               type="button"
-              onClick={(event) => {
-                lastOverlayTriggerRef.current = event.currentTarget;
-                setSettingsOpen((open) => !open);
-              }}
+              onClick={() => setSettingsOpen((open) => !open)}
               className="border border-edge p-2 text-muted hover:text-ink"
               title="Preferências"
               aria-label="Preferências"
@@ -841,7 +875,23 @@ export default function FocusedQuestion({
         </div>
       </header>
 
-      <main
+      {/* ⚠️ DIV, E NAO MAIN.
+
+          Este elemento era um segundo marco `main` DENTRO do `main` que o
+          AppShell monta (`AppShell.tsx:375`) -- e o HTML admite um so por
+          documento. Para leitor de tela, dois marcos `main` aninhados desfazem
+          o atalho de "ir para o conteudo": deixa de haver UM conteudo
+          principal.
+
+          O axe da sessao passava verde porque `landmark-one-main` e regra de
+          BOA PRATICA, e o gate roda so as tags de WCAG. Quem apanhou foi o
+          seletor do e2e do deslize, que resolveu para dois elementos.
+
+          ⚠️ Sinal de menor e maior NAO entra em comentario JSX: o
+          `check-portuguese-ui-copy` le tudo entre eles como texto de tela, e
+          acusou este proprio paragrafo. */}
+      <div
+        data-allow-horizontal-swipe="true"
         className={cx(
           "mx-auto w-full flex-1 px-4 md:px-6",
           focusActive
@@ -850,6 +900,20 @@ export default function FocusedQuestion({
               ? "max-w-5xl py-4 md:py-5"
               : "max-w-4xl py-5 md:py-7",
         )}
+        style={{
+          ...ESTILO_DO_DESLIZE,
+          // ⚠️ O TRANSFORM SO EXISTE DURANTE O ARRASTO, de proposito.
+          //
+          // Elemento com `transform` vira bloco de contencao para descendente
+          // `position: fixed` — e a imagem ampliada da questao vive aqui dentro.
+          // Um transform permanente, mesmo de 0px, a prenderia a este `main` em
+          // vez do viewport. Durante o arrasto nao ha imagem aberta.
+          transform: deslize.deslocamento
+            ? `translate3d(${deslize.deslocamento}px, 0, 0)`
+            : undefined,
+          transition: deslize.arrastando ? "none" : "transform var(--motion-fast) var(--ease-paper)",
+        }}
+        {...gestoDeDeslize}
         onMouseUp={() => {
           window.setTimeout(captureTextSelection, 0);
         }}
@@ -1023,24 +1087,17 @@ export default function FocusedQuestion({
               ) : primaryPostAnswerAction === "trap" ? (
                 <button
                   type="button"
-                  onClick={(event) => openWhy(event.currentTarget)}
+                  onClick={() => openWhy()}
                   className="border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   Rever armadilha
                 </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={canNext ? onNext : onFinalize}
-                  disabled={busy || (!canNext && finalized)}
-                  className={cx(
-                    "border px-4 py-2 text-sm font-semibold disabled:opacity-50",
-                    hasPostAnswerReflection ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:text-ink",
-                  )}
-                >
-                  {canNext ? "Próxima questão" : finalizeLabel ?? "Finalizar"}
-                </button>
-              )}
+              ) : /* ⚠️ AVANCAR SAIU DAQUI, e foi para o rodape.
+                     Ver o comentario do `<footer>`: o botao que muda de lugar
+                     custa mais do que qualquer coisa que ele ganhe aqui. Quando
+                     nao ha acao pedagogica a destacar, este canto fica vazio de
+                     proposito -- o avancar ja esta na faixa do polegar. */
+              null}
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -1057,7 +1114,7 @@ export default function FocusedQuestion({
                 {hasPostAnswerReflection && hasDistractorDiagnosis && primaryPostAnswerAction !== "trap" && (
                   <button
                     type="button"
-                    onClick={(event) => openWhy(event.currentTarget)}
+                    onClick={() => openWhy()}
                     className={cx(
                       "border px-3 py-2 text-xs font-semibold hover:text-ink",
                       emphasizeTrap ? "border-ink bg-paper text-ink" : "border-edge text-muted",
@@ -1067,7 +1124,7 @@ export default function FocusedQuestion({
                   </button>
                 )}
                 {hasPostAnswerReflection && !hasDistractorDiagnosis && (
-                  <button type="button" onClick={(event) => openWhy(event.currentTarget)} className="border border-edge px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
+                  <button type="button" onClick={() => openWhy()} className="border border-edge px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
                     Por que esta?
                   </button>
                 )}
@@ -1215,10 +1272,26 @@ export default function FocusedQuestion({
             </div>
           </section>
         )}
-      </main>
+      </div>
 
-      {!canUsePostAnswerActions && (
-        <footer className={cx("sticky bottom-0 z-10 bg-paper px-4", focusActive ? "border-t border-transparent py-2" : "border-t border-edge py-3")}>
+      {/* ⚠️ O RODAPE NAO SOME MAIS QUANDO A CORRECAO ABRE.
+          Ele estava atras de `!canUsePostAnswerActions`: no fluxo de treino,
+          revelar o gabarito APAGAVA a barra inteira, e o avancar reaparecia
+          dentro do cartao de correcao -- onde ainda podia perder a primazia
+          para "Salvar regra" ou "Rever armadilha", conforme a reflexao marcada.
+
+          Tres consequencias, todas medidas na tela: o botao de avancar mudava
+          de posicao a cada questao respondida; "Marcar" e "Anterior" sumiam
+          justamente na hora em que o aluno decide se marca a questao; e a acao
+          primaria saia da faixa de baixo, que o desenho reserva para ela
+          (`Webapp - telas.dc.html:1720`: "a acao primaria da tela fica sempre na
+          faixa de baixo, alcancavel com o polegar").
+
+          Memoria motora e o ativo que este trabalho inteiro tenta explorar --
+          e ela e exatamente o que um botao que se muda destroi. O cartao de
+          correcao fica com a acao PEDAGOGICA; o rodape, com a de ANDAR. Elas
+          deixaram de competir porque deixaram de morar juntas. */}
+      <footer className={cx("sticky bottom-0 z-10 bg-paper px-4", focusActive ? "border-t border-transparent py-2" : "border-t border-edge py-3")}>
           <div
             className={cx(
               "mx-auto flex flex-wrap items-center justify-between gap-3",
@@ -1285,8 +1358,7 @@ export default function FocusedQuestion({
               {finalizeLabel ?? "Finalizar"}
             </button>
           </div>
-        </footer>
-      )}
+      </footer>
 
       {highlightSelection && (
         <>
@@ -1348,20 +1420,13 @@ export default function FocusedQuestion({
         </>
       )}
 
-      {settingsOpen && (
-        <>
-          <div className="fixed inset-0 z-30 bg-ink/20" onClick={closeSettings} aria-hidden="true" />
-          <aside className="fixed bottom-0 right-0 z-40 max-h-[86svh] w-full overflow-y-auto border-t border-edge bg-paper p-4 shadow-overlay md:bottom-0 md:top-0 md:max-h-none md:max-w-md md:border-l md:border-t-0">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="paper-eyebrow">Preferências</p>
-                <h2 className="mt-1 font-serif text-xl font-semibold text-ink">Resolver sem ruido</h2>
-              </div>
-              <button type="button" onClick={closeSettings} className="border border-edge px-2 py-1 text-xs text-muted hover:text-ink">
-                Fechar
-              </button>
-            </div>
-            <div className="mt-4 space-y-3 text-sm">
+      <Sheet
+        open={settingsOpen}
+        onClose={closeSettings}
+        eyebrow="Preferências"
+        title="Resolver sem ruido"
+      >
+            <div className="space-y-3 text-sm">
               {isTrainingFlow && (
                 <div className="rounded-control border border-edge bg-surface p-3">
                   <p className="paper-eyebrow mb-2">Modo visual</p>
@@ -1434,6 +1499,23 @@ export default function FocusedQuestion({
                   canDecrease={fontScale.canDecrease}
                 />
               </div>
+              {/* O interruptor do `8f`. Ele vem ANTES do Timer porque e o unico
+                  daqui que muda como a tela responde ao dedo — os outros mudam o
+                  que ela mostra. */}
+              <label className="flex items-center justify-between gap-3 rounded-control border border-edge bg-surface px-3 py-2">
+                <span>
+                  Deslizar entre questões
+                  <span className="mt-0.5 block text-xs text-muted">
+                    Os botões continuam funcionando.
+                  </span>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={prefs.swipeEnabled}
+                  onChange={(e) => updatePrefs({ swipeEnabled: e.target.checked })}
+                  className="h-4 w-4 accent-ink"
+                />
+              </label>
               <label className="flex items-center justify-between gap-3 rounded-control border border-edge bg-surface px-3 py-2">
                 <span>Timer</span>
                 <input type="checkbox" checked={prefs.timerVisible} onChange={(e) => updatePrefs({ timerVisible: e.target.checked })} className="h-4 w-4 accent-ink" />
@@ -1465,6 +1547,7 @@ export default function FocusedQuestion({
                     timerVisible: timerPadrao(defaultPresentationMode),
                     sourceVisible: false,
                     autoReveal: false,
+                    swipeEnabled: true,
                   })
                 }
                 className="w-full rounded-control border border-edge bg-surface px-3 py-2 text-left text-muted hover:text-ink"
@@ -1472,24 +1555,10 @@ export default function FocusedQuestion({
                 Restaurar padrão
               </button>
             </div>
-          </aside>
-        </>
-      )}
+      </Sheet>
 
-      {whyOpen && (
-        <>
-          <div className="fixed inset-0 z-30 bg-ink/20" onClick={closeWhy} aria-hidden="true" />
-          <aside className="fixed bottom-0 right-0 top-auto z-40 max-h-[85svh] w-full overflow-y-auto border-t border-edge bg-paper p-4 shadow-overlay md:bottom-0 md:top-0 md:max-h-none md:max-w-md md:border-l md:border-t-0">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="paper-eyebrow">Contexto</p>
-                <h2 className="mt-1 font-serif text-xl font-semibold text-ink">Por que esta questão?</h2>
-              </div>
-              <button type="button" onClick={closeWhy} className="border border-edge px-2 py-1 text-xs text-muted hover:text-ink">
-                Fechar
-              </button>
-            </div>
-            <div className="mt-4 space-y-3 text-sm">
+      <Sheet open={whyOpen} onClose={closeWhy} eyebrow="Contexto" title="Por que esta questão?">
+            <div className="space-y-3 text-sm">
               {primaryNode?.node_name && (
                 <div className="rounded-control border border-edge bg-surface p-3">
                   <p className="paper-eyebrow">Tema</p>
@@ -1542,9 +1611,7 @@ export default function FocusedQuestion({
                 </button>
               )}
             </div>
-          </aside>
-        </>
-      )}
+      </Sheet>
     </div>
   );
 }

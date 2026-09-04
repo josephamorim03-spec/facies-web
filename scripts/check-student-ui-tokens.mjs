@@ -6,6 +6,7 @@ const PAPER_SURFACES = [
   "src/components/ui/Button.tsx",
   "src/components/ui/Dialog.tsx",
   "src/components/ui/Drawer.tsx",
+  "src/components/ui/Sheet.tsx",
   "src/components/ui/EmptyState.tsx",
   "src/components/ui/IconButton.tsx",
   "src/components/ui/OutcomeCard.tsx",

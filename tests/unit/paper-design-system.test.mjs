@@ -120,3 +120,34 @@ test("carregamento tem UMA linguagem: barra continua e campo vazio silencioso", 
   //    carona num componente novo.
   assert.doesNotMatch(css, /chrome-cursor/);
 });
+
+test("a curva da folha nao pode divergir do token que ela diz espelhar", () => {
+  // `Sheet.tsx` anima com `motion`, e `motion` nao le variavel CSS: a curva
+  // tem de existir como array de numeros no JavaScript. Isso cria DUAS fontes
+  // para a mesma decisao, e a que ninguem revisita e sempre a do JavaScript --
+  // a folha continuaria a animar com a curva antiga depois de o token mudar, e
+  // ninguem repararia porque as duas sao plausiveis.
+  //
+  // Ler `Sheet.tsx` como TEXTO, e nao importar: o runner roda com
+  // `--experimental-strip-types` e nao transforma JSX.
+  const sheet = readFileSync(new URL("../../src/components/ui/Sheet.tsx", import.meta.url), "utf8");
+
+  const doJs = sheet.match(/EASE_COZY = \[([^\]]+)\]/)?.[1];
+  assert.ok(doJs, "Sheet.tsx precisa exportar EASE_COZY como array literal");
+  const numerosDoJs = doJs.split(",").map((parte) => Number.parseFloat(parte.trim()));
+
+  const doCss = css.match(/--ease-cozy:\s*cubic-bezier\(([^)]+)\)/)?.[1];
+  assert.ok(doCss, "globals.css precisa declarar --ease-cozy como cubic-bezier");
+  const numerosDoCss = doCss.split(",").map((parte) => Number.parseFloat(parte.trim()));
+
+  assert.deepEqual(
+    numerosDoJs,
+    numerosDoCss,
+    "EASE_COZY em Sheet.tsx divergiu de --ease-cozy em globals.css",
+  );
+
+  // E a duracao NAO pode estar escrita como numero: ela e lida do token em
+  // tempo de execucao (`segundosDoToken`), que e o unico jeito de o par nao
+  // precisar de vigilancia.
+  assert.match(sheet, /segundosDoToken\("--motion-base"/);
+});
