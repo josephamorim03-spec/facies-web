@@ -8,7 +8,7 @@ import { provaPorSlug, todasAsProvas } from "@/lib/provas";
 import {
   dataCurta,
   diasDaRevisao,
-  paginaEducativa,
+  temasDoDia,
   revisaoPorExamKey,
 } from "@/lib/revisao";
 import { CONT_LANDING } from "@/lib/site";
@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const caminho = `/prova/${slug}/revisao-final`;
   const titulo = `Revisão Final ${prova.sigla}: a última semana`;
-  const descricao = `Os ${revisao.dias.length} assuntos que medimos como mais prováveis no ${prova.sigla}, um por dia: como a banca cobra cada um, onde se erra e o que conferir na véspera. Grátis, sem cadastro.`;
+  const descricao = `Os ${revisao.estrutura.total_temas} assuntos que medimos como mais prováveis no ${prova.sigla}, seis por dia em ${revisao.estrutura.dias} dias: como a banca cobra cada um, onde se erra e o que conferir na véspera. Grátis, sem cadastro.`;
 
   return {
     title: titulo,
@@ -81,12 +81,11 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
   const revisao = prova ? revisaoPorExamKey(prova.exam_key) : undefined;
   if (!prova || !revisao) notFound();
 
-  const dias = diasDaRevisao(revisao);
-  const paginas = dias
-    .map((dia) => ({ dia, pagina: paginaEducativa(revisao, dia.dia) }))
-    .filter((par): par is { dia: (typeof dias)[number]; pagina: NonNullable<typeof par.pagina> } =>
-      par.pagina !== undefined,
-    );
+  const dias = diasDaRevisao(revisao).map((dia) => ({
+    dia,
+    temas: temasDoDia(revisao, dia),
+  }));
+  const totalPaginas = dias.reduce((soma, d) => soma + d.temas.length, 0);
   const h = revisao.honestidade;
   const total = revisao.estrutura.total_questoes;
   const livres = revisao.estrutura.dias_livres_ate_prova;
@@ -124,7 +123,7 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
       {emRascunho > 0 ? (
         <p className="border border-edge bg-surfaceMuted p-4 text-sm text-ink sm:p-5">
           <span className="paper-eyebrow">pré-visualização</span>{" "}
-          {emRascunho} das {dias.length} páginas ainda{" "}
+          {emRascunho} das {totalPaginas} páginas ainda{" "}
           <strong>não passaram por revisão médica</strong>. Elas estão aqui para
           serem revisadas, não para estudo definitivo — e cada uma repete este
           aviso no próprio cabeçalho.
@@ -165,8 +164,9 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
               e as questões?
             </h2>
             <p className="mt-2 text-base text-muted">
-              {total} questões da própria base da prova, {revisao.estrutura.carga_por_dia.join("/")}{" "}
-              por dia, dentro do app — com o gabarito só depois da sua resposta e o
+              {total} questões da própria base da prova,{" "}
+              {revisao.estrutura.questoes_por_tema} de cada assunto e{" "}
+              {revisao.estrutura.temas_por_dia * revisao.estrutura.questoes_por_tema} por dia, dentro do app — com o gabarito só depois da sua resposta e o
               desempenho registrado. Aqui fora elas apareceriam com gabarito à
               mostra, que é a forma menos útil de revisar.
             </p>
@@ -186,9 +186,9 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
       {/* ── Os 7 dias ─────────────────────────────────────────────────────── */}
       <section className="mt-10" aria-labelledby="dias">
         <h2 id="dias" className="paper-eyebrow">
-          os {dias.length} dias, na ordem
+          os {dias.length} dias e os {totalPaginas} assuntos, na ordem
         </h2>
-        {paginas.length === 0 ? (
+        {totalPaginas === 0 ? (
           <p className="mt-4 max-w-[62ch] text-base text-muted">
             As páginas de revisão ainda não foram publicadas. Enquanto isso, a{" "}
             <a href={`/prova/${prova.slug}/aposta`} className="text-ink underline underline-offset-4">
@@ -197,9 +197,19 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
             já mostra quais assuntos medimos como mais prováveis.
           </p>
         ) : (
-          <div className="mt-6 space-y-14">
-            {paginas.map(({ dia, pagina }) => (
-              <PaginaDoDia key={dia.dia} dia={dia} pagina={pagina} />
+          <div className="mt-6 space-y-16">
+            {dias.map(({ dia, temas }) => (
+              <div key={dia.dia}>
+                <p className="paper-eyebrow border-b-2 border-edge pb-2">
+                  dia {dia.dia} de {dias.length} · {temas.length} assuntos ·{" "}
+                  {temas.reduce((n, t) => n + t.tema.questoes.length, 0)} questões
+                </p>
+                <div className="space-y-14">
+                  {temas.map(({ tema, pagina }) => (
+                    <PaginaDoDia key={tema.subtema} tema={tema} pagina={pagina} />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}

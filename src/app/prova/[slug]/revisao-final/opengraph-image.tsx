@@ -24,7 +24,7 @@ import { HOST_VISIVEL } from "@/lib/site";
  */
 
 export const alt =
-  "Cartão da Revisão Final: os 7 assuntos mais prováveis da prova, um por dia, e o ganho medido sobre o acaso.";
+  "Cartão da Revisão Final: os 42 assuntos mais prováveis da prova, seis por dia, e o ganho medido sobre o acaso.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -67,7 +67,7 @@ export default async function Imagem({ params }: { params: Promise<{ slug: strin
 
   const h = revisao.honestidade;
   const total = revisao.estrutura.total_questoes;
-  const dias = revisao.dias.length;
+  const temas = revisao.estrutura.total_temas;
   const lift = h.lift !== null ? `${dec(h.lift, 1)}×` : "—";
   const faixa =
     h.historico_minimo !== null && h.historico_maximo !== null
@@ -83,7 +83,7 @@ export default async function Imagem({ params }: { params: Promise<{ slug: strin
   // As 30 continuam existindo, no app. Elas ficam no cartão como a terceira
   // coluna, com o destino certo escrito junto.
   const numeros = [
-    { valor: String(dias), rotulo: "assuntos mais prováveis, um por dia" },
+    { valor: String(temas), rotulo: "assuntos mais prováveis, seis por dia" },
     { valor: lift, rotulo: "o acaso", nota: faixa },
     { valor: String(total), rotulo: "questões para resolver no app" },
   ];

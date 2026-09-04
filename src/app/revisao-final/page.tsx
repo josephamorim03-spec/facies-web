@@ -45,23 +45,40 @@ export default function PaginaRevisaoFinalApp() {
         </h1>
         <p className="max-w-[62ch] text-base text-muted">
           {revisao.estrutura.total_questoes} questões da própria base da prova, nos{" "}
-          {dias.length} assuntos mais prováveis — um por dia. Prova em{" "}
-          {dataCurta(revisao.aplicacao_prevista)}.
+          {revisao.estrutura.total_temas} assuntos mais prováveis —{" "}
+          {revisao.estrutura.temas_por_dia} por dia,{" "}
+          {revisao.estrutura.questoes_por_tema} questões de cada, todas gratuitas.
+          Prova em {dataCurta(revisao.aplicacao_prevista)}.
         </p>
         <p className="max-w-[62ch] text-sm text-muted">
           {honestidade.nota_previsao}
         </p>
       </header>
 
-      <ol className="space-y-3">
+      {/* Um lançador POR ASSUNTO, e não por dia.
+          O dia deixou de ser um assunto: ele agrupa seis, cada um com as suas
+          seis questões. Um lançador por dia teria de escolher qual dos seis
+          abrir — ou juntar 36 questões numa sessão só, que é uma sessão que
+          ninguém termina na véspera. */}
+      <ol className="space-y-6">
         {dias.map((dia) => (
-          <li key={dia.dia}>
-            <RevisaoDiaLauncher
-              dia={dia.dia}
-              subtema={dia.subtema}
-              posicao={dia.posicao_previsao}
-              questaoIds={dia.questoes.map((q) => q.question_id)}
-            />
+          <li key={dia.dia} className="space-y-3">
+            <p className="paper-eyebrow border-b border-edge pb-1.5">
+              dia {dia.dia} · {dia.temas.length} assuntos ·{" "}
+              {dia.temas.reduce((n, t) => n + t.questoes.length, 0)} questões
+            </p>
+            <ol className="space-y-3">
+              {dia.temas.map((tema) => (
+                <li key={tema.subtema}>
+                  <RevisaoDiaLauncher
+                    dia={dia.dia}
+                    subtema={tema.subtema}
+                    posicao={tema.posicao_previsao}
+                    questaoIds={tema.questoes.map((q) => q.question_id)}
+                  />
+                </li>
+              ))}
+            </ol>
           </li>
         ))}
       </ol>

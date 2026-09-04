@@ -791,6 +791,14 @@ function BancoDeQuestoesContent() {
     } catch (err) {
       if (controller.signal.aborted || isAbortError(err)) return;
       // Keep the last good options on a transient facet error.
+      //
+      // O silencio na TELA e' de proposito -- contagem velha e melhor que a
+      // barra piscando. O silencio no CONSOLE nao era: `/facets` devolveu 503
+      // por 11 dias (uma CTE sem a coluna que o proprio predicado lia) e este
+      // catch engoliu tudo. Para o aluno "o filtro nao faz nada" e para o
+      // desenvolvedor nao havia rastro nenhum. Uma linha aqui e' a diferenca
+      // entre um bug de 11 dias e um F12.
+      console.warn("[banco] faceta indisponivel; mantendo as opcoes anteriores", err);
     } finally {
       if (facetsAbortRef.current === controller) facetsAbortRef.current = null;
       if (facetsInFlightRef.current?.key === requestKey) facetsInFlightRef.current = null;

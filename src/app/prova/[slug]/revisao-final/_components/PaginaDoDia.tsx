@@ -4,7 +4,7 @@ import {
   AREA_FULL_LABELS,
   type DisplayArea,
 } from "@/lib/areaIdentity";
-import type { DiaRevisao, PaginaEducativa } from "@/lib/revisao";
+import type { PaginaEducativa, TemaRevisao } from "@/lib/revisao";
 import { MedidaDaCobranca } from "./MedidaDaCobranca";
 
 /**
@@ -34,34 +34,51 @@ import { MedidaDaCobranca } from "./MedidaDaCobranca";
  * mesmo campo que a inclusão leu.
  */
 export function PaginaDoDia({
-  dia,
+  tema,
   pagina,
 }: {
-  dia: DiaRevisao;
+  tema: TemaRevisao;
   pagina: PaginaEducativa;
 }) {
   const area = ((pagina.area ?? "OU") as DisplayArea) satisfies DisplayArea;
+  // Extraído porque `{pagina.dia}` dentro do JSX faz o guard de copy ler
+  // "pagina" como a palavra portuguesa sem acento. O identificador não é copy,
+  // mas o detector não tem como saber — e um guard que erra para o lado de
+  // avisar é melhor que um que deixa "pagina" chegar à tela.
+  const numeroDoDia = pagina.dia;
   const estrutura = pagina.estrutura;
 
   return (
     <section
-      aria-labelledby={`dia-${dia.dia}`}
+      aria-labelledby={`tema-${tema.posicao_previsao}`}
       className="print:break-before-page"
     >
       {/* ── cabeceira do dia ─────────────────────────────────────────────── */}
       <header className={`border-l-4 pl-4 ${AREA_BORDER_CLASS[area]}`}>
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="font-mono text-sm text-muted">dia {dia.dia}</span>
+          <span className="font-mono text-sm text-muted">dia {numeroDoDia}</span>
           <span className="flex items-center gap-1.5 text-xs text-muted">
             <span aria-hidden className={`h-2 w-2 rounded-full ${AREA_BG_CLASS[area]}`} />
             {AREA_FULL_LABELS[area]}
           </span>
           <span className="text-xs text-muted">
-            {dia.posicao_previsao}º assunto mais provável
+            {tema.posicao_previsao}º assunto mais provável
           </span>
+          <span className="font-mono text-xs text-muted">
+            {tema.questoes.length} questões
+          </span>
+          {/* O carimbo é a ÚNICA diferença entre os 42, e ele é informação, não
+              hierarquia: a aposta publicada com data e hash congelou 30
+              posições, e sem dizer isso os doze últimos se passariam por
+              prometidos. */}
+          {tema.na_aposta_registrada ? null : (
+            <span className="paper-eyebrow rounded-control border border-rule px-1.5 py-0.5">
+              fora da aposta
+            </span>
+          )}
         </div>
         <h3
-          id={`dia-${dia.dia}`}
+          id={`tema-${tema.posicao_previsao}`}
           className="mt-1 font-serif text-2xl font-semibold tracking-tight text-ink sm:text-3xl"
         >
           {pagina.subtema}
@@ -212,7 +229,7 @@ export function PaginaDoDia({
         </p>
         {pagina.exemplo_de_cobranca.url_banco ? (
           <p className="mt-2 text-sm text-muted">
-            As {dia.questoes.length} questões reais deste dia estão no banco:{" "}
+            As {tema.questoes.length} questões reais deste assunto estão no banco:{" "}
             {/* A URL é impressa por extenso de propósito. No papel um link não
                 clica, e um QR num material médico distribuído por WhatsApp
                 ensina justamente a escanear código de origem desconhecida —

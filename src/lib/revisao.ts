@@ -36,12 +36,34 @@ export type QuestaoRevisao = {
   padrao_cobranca: Record<string, unknown> | null;
 };
 
-export type DiaRevisao = {
-  dia: number;
+/**
+ * Um assunto do dia, com as questões que ele oferece.
+ *
+ * ⚠️ Isto era `DiaRevisao`, com `subtema` e `questoes` direto no dia — porque a
+ * estrutura antiga tinha UM assunto por dia. Com seis por dia, o dia virou
+ * contêiner e o assunto virou esta entidade. A separação importa além do
+ * formato do JSON: enquanto o dia carregava as questões, existiam dois tipos de
+ * assunto (o que tinha questões e o que não tinha), e essa assimetria vazava
+ * para o layout.
+ */
+export type TemaRevisao = {
   subtema: string;
   posicao_previsao: number;
   score_previsao: number | null;
+  /**
+   * `false` quando o assunto está abaixo do corte da previsão registrada.
+   *
+   * A aposta publicada com data e hash congela 30 posições. Da 31 em diante o
+   * ranking existe e o método é o mesmo, mas ninguém prometeu — e a página tem
+   * de dizer isso, senão os 42 se passariam por 42 apostas registradas.
+   */
+  na_aposta_registrada: boolean;
   questoes: QuestaoRevisao[];
+};
+
+export type DiaRevisao = {
+  dia: number;
+  temas: TemaRevisao[];
 };
 
 /**
@@ -93,11 +115,45 @@ export type FonteEducativa = {
  * página (para o operador julgar antes de aprovar), mas nunca sem o aviso — e o
  * aviso é renderizado a partir DESTE campo, não da intenção de quem publicou.
  */
+/** A figura REAL de uma questão da base, com a procedência da prova que a
+ *  aplicou. Medido em 04/09: 19 dos 42 assuntos têm alguma, então o bloco é
+ *  opcional — a página não pode ficar com buraco onde o estoque não existe. */
+export type ImagemDaBase = {
+  url: string;
+  prova: string | null;
+  ano: number | null;
+  contexto: string | null;
+};
+
+/**
+ * O que a figura DECIDE na questão.
+ *
+ * O `tipo` não é rótulo decorativo: um corte de tomografia, uma tabela de
+ * resultados e um gráfico epidemiológico exigem leituras diferentes, e chamar
+ * os três de "imagem" faz o leitor procurar achado radiológico numa tabela de
+ * exames. Sem `leitura` a figura não é publicada — imagem sem interpretação
+ * devolve ao aluno exatamente o problema que ele já tem.
+ */
+export type LeituraDaImagem = {
+  tipo:
+    | "achado_de_imagem"
+    | "quadro_laboratorial"
+    | "grafico_epidemiologico"
+    | "ilustracao_clinica";
+  leitura: string;
+};
+
 export type PaginaEducativa = {
   subtema: string;
+  /** O dia a que este assunto pertence, carimbado na montagem do dataset. */
+  dia: number;
+  posicao_previsao: number | null;
+  na_aposta_registrada: boolean;
   area: string | null;
   especialidade: string | null;
   revisado: boolean;
+  imagem?: ImagemDaBase | null;
+  imagem_leitura?: LeituraDaImagem;
   evidencia: EvidenciaSubtema | null;
   resumo_30s: string;
   como_a_prova_cobra: string;
@@ -135,7 +191,10 @@ export type RevisaoFinal = {
   aplicacao_prevista: string | null;
   estrutura: {
     grao: string;
-    carga_por_dia: number[];
+    dias: number;
+    temas_por_dia: number;
+    questoes_por_tema: number;
+    total_temas: number;
     total_questoes: number;
     dias_livres_ate_prova: number;
   };
@@ -145,8 +204,16 @@ export type RevisaoFinal = {
     registered_at: string;
   };
   dias: DiaRevisao[];
-  /** Chaveado pelo número do dia como string (`"1"`..`"7"`), como vem do JSON. */
-  conteudo_educativo: Record<string, PaginaEducativa>;
+  /**
+   * Chaveado pelo SUBTEMA.
+   *
+   * ⚠️ Era `conteudo_educativo`, chaveado pelo número do dia, mais uma segunda
+   * coleção para os assuntos que não eram o âncora do dia. Duas coleções para o
+   * mesmo tipo de coisa produziram dois caminhos de render, e dois caminhos
+   * divergem: a marcação de destaque chegou a um deles e não ao outro. Uma
+   * coleção só é o que torna "os 42 iguais" verificável.
+   */
+  conteudo: Record<string, PaginaEducativa>;
   cobertura_educativa: { aprovados: number; rascunhos: number; ausentes: number };
   atualizacoes: AtualizacaoRevisao[];
   modelo_prova: {
@@ -191,14 +258,34 @@ export function diasDaRevisao(revisao: RevisaoFinal): DiaRevisao[] {
   return [...revisao.dias].sort((a, b) => a.dia - b.dia);
 }
 
-/** A página educativa de um dia, ou `undefined` quando o tema não foi gerado
- *  nem aprovado. O ebook publica seis páginas em vez de sete — nunca uma
- *  página vazia fingindo que o assunto não tem conteúdo. */
+/** A página educativa de um assunto, ou `undefined` quando ele não foi gerado
+ *  nem aprovado. O ebook publica uma página a menos — nunca uma página vazia
+ *  fingindo que o assunto não tem conteúdo. */
 export function paginaEducativa(
   revisao: RevisaoFinal,
-  dia: number,
+  subtema: string,
 ): PaginaEducativa | undefined {
-  return revisao.conteudo_educativo?.[String(dia)];
+  return revisao.conteudo?.[subtema];
+}
+
+/**
+ * Os assuntos de um dia que têm página, na ordem da previsão.
+ *
+ * Devolve o par tema+página junto porque as duas metades vêm de fontes
+ * diferentes — as questões do banco, o texto do artefato educativo — e
+ * separá-las na renderização é o que permitiu, antes, um assunto aparecer com
+ * questões e sem texto.
+ */
+export function temasDoDia(
+  revisao: RevisaoFinal,
+  dia: DiaRevisao,
+): { tema: TemaRevisao; pagina: PaginaEducativa }[] {
+  return dia.temas
+    .map((tema) => ({ tema, pagina: paginaEducativa(revisao, tema.subtema) }))
+    .filter(
+      (par): par is { tema: TemaRevisao; pagina: PaginaEducativa } =>
+        par.pagina !== undefined,
+    );
 }
 
 /** A classe mais frequente de um eixo medido, ou `null` quando o classificador
