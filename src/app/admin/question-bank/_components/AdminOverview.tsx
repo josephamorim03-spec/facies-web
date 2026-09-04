@@ -79,8 +79,8 @@ export default function AdminOverview({
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="paper-eyebrow">Banco de Questões</p>
-            <h1 className="mt-1 text-3xl font-semibold text-ink">Operacao KrosBank</h1>
-            <p className="mt-2 text-sm text-ink">Ingestao, fila tecnica e curadoria editorial.</p>
+            <h1 className="mt-1 text-3xl font-semibold text-ink">Operação fbank</h1>
+            <p className="mt-2 text-sm text-ink">Ingestão, fila técnica e curadoria editorial.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {lastRefreshedLabel ? <span className="text-xs text-muted">{lastRefreshedLabel}</span> : null}
