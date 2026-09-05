@@ -13,7 +13,6 @@
 export const SPECS_DE_GATE = [
   "auth.proxy-cookie.spec.ts",
   "cadastro.funil.spec.ts",
-  "banco.historico.spec.ts",
   "study-import.smoke.spec.ts",
 ];
 
@@ -33,10 +32,17 @@ export const SPECS_DE_GATE = [
  *     Conserto: gerar o baseline num runner Linux e commitá-lo. Regerar no
  *     Windows só produz o `-win32` de novo.
  *
- * `banco.historico` saiu desta lista em 2026-09-05: ele tinha 3 falhas e ficou
- * verde depois do conserto de fuso, sem ninguém tocar nele.
+ * 🚨 `banco.historico` VOLTOU para esta lista no MESMO dia, e o erro foi meu:
+ * promovi ao gate por UMA execução em que ele passou (05/09 de manhã). Na
+ * execução seguinte falhou 2 vezes, e na véspera falhara 3. Ele é
+ * INTERMITENTE, não verde — e uma corrida só não distingue as duas coisas.
+ *
+ * Classificar por amostra de tamanho 1 é o mesmo defeito de medir uma regra
+ * numa população e aplicá-la noutra. Promover ao gate exige verde em execuções
+ * SEGUIDAS, em horários diferentes.
  */
 export const SPECS_ADIADOS = {
+  "banco.historico.spec.ts": "intermitente: 3 falhas em 04/09, 0 na manhã de 05/09, 2 na tarde",
   "caderno.header-toggle.spec.ts": "precisa do backend em :8000 (9 falhas)",
   "cronograma.smoke.spec.ts": "precisa do backend em :8000 (6 falhas)",
   "revisao-turbo.smoke.spec.ts": "precisa do backend em :8000 (4 falhas)",
