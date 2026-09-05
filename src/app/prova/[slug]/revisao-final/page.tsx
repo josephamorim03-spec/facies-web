@@ -7,6 +7,7 @@ import type { DisplayArea } from "@/lib/areaIdentity";
 import { dec } from "@/lib/decimal";
 import { provaPorSlug, todasAsProvas } from "@/lib/provas";
 import {
+  atualizacoesDoAssunto,
   dataCurta,
   diasDaRevisao,
   temasDoDia,
@@ -228,6 +229,7 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
                         key={tema.subtema}
                         tema={tema}
                         pagina={pagina}
+                        atualizacoes={atualizacoesDoAssunto(revisao, tema.subtema)}
                         anterior={emOrdem[indice - 1] ?? null}
                         proximo={emOrdem[indice + 1] ?? null}
                         totalDeAssuntos={emOrdem.length}
