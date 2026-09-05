@@ -84,6 +84,7 @@ async function mockShellApi(page: Page) {
         shift_12h_capacity: 40,
         shift_24h_capacity: 20,
         display_name: "E2E User",
+        intended_specialty: "Oftalmologia",
         access_status: "active",
         has_completed_initial_goal_setup: true,
         // ⚠️ SEM ISTO O SHELL NUNCA MONTA.
@@ -616,6 +617,42 @@ test.describe("Navigation shell mobile tab bar", () => {
     // Alvo de toque do sistema: 48px minimo.
     expect(caixa!.height).toBeGreaterThanOrEqual(44);
     expect(caixa!.x + caixa!.width).toBeLessThanOrEqual(391);
+  });
+
+  test("a especialidade se declara com o aviso do edital a vista", async ({ page }) => {
+    // ⚠️ O CAMPO EXISTIA E ESTAVA ORFAO. `user_profiles.intended_specialty` e'
+    // gravavel desde o cadastro e `salvarPerfilDeclarado` esta escrito no
+    // front — mas nenhuma tela chamava, e o contrato nem devolvia o valor de
+    // volta. Escrever sem ler e' a forma mais silenciosa de um campo morrer.
+    //
+    // O que este teste prende sao as duas metades: a lista e' a do CFM inteira
+    // (nao a do acervo), e o AVISO aparece no momento da escolha, nao depois.
+    let gravado: string | null = null;
+    await page.route("**/api/cadastro/perfil", async (route) => {
+      const corpo = route.request().postDataJSON() as { intended_specialty?: string };
+      gravado = corpo.intended_specialty ?? null;
+      await route.fulfill({ status: 204, body: "" });
+    });
+
+    await page.goto("/voce");
+    const entrada = page.getByRole("button", { name: /A especialidade que você quer/ });
+    await expect(entrada).toBeVisible();
+    await entrada.click();
+
+    const folha = page.getByRole("dialog", { name: "A especialidade que você quer" });
+    await expect(folha).toBeVisible();
+
+    // O aviso vem ANTES da lista. Sem ele o produto estaria a deixar o medico
+    // montar um plano inteiro para uma vaga que a instituicao pode nao abrir.
+    await expect(folha.getByText(/Confira o edital/)).toBeVisible();
+    await expect(folha.getByText(/a Fácies não verifica vagas/)).toBeVisible();
+
+    // As 55 do CFM, e nao as que a Facies tem questao.
+    await expect(folha.getByText("55 de 55", { exact: true })).toBeVisible();
+    await expect(folha.getByRole("button", { name: "Homeopatia", exact: true })).toBeVisible();
+
+    await folha.getByRole("button", { name: "Cardiologia", exact: true }).click();
+    await expect.poll(() => gravado).toBe("Cardiologia");
   });
 
   test("a barra some no modo imersivo da sessao", async ({ page }) => {

@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { UserAvatar } from "@/components/UserAvatar";
+import { SuaEspecialidade } from "./_components/SuaEspecialidade";
 import { LoadBar } from "@/components/ui/LoadBar";
 import {
   AlvoEContagem,
@@ -158,6 +159,12 @@ export default function VocePage() {
           {/* O objetivo se cala sozinho sem prova declarada — a entrada abaixo
               e' o caminho para declara-la. */}
           <AlvoEContagem alvo={alvo} className="mt-0.5" />
+          {/* A especialidade fica no cabecalho, junto da prova: as duas
+              respondem à mesma pergunta — o que você está a tentar — e
+              separa-las faria o perfil dizer metade dela. */}
+          {perfil.data?.intended_specialty ? (
+            <p className="paper-eyebrow mt-0.5">{perfil.data.intended_specialty}</p>
+          ) : null}
         </div>
       </header>
 
@@ -173,6 +180,10 @@ export default function VocePage() {
       </section>
 
       <nav aria-label="Suas configurações">
+        <Entrada href="/preferencias#prova-alvo" nota="Onde você quer entrar">
+          A sua prova
+        </Entrada>
+        <SuaEspecialidade atual={perfil.data?.intended_specialty ?? null} />
         <Entrada href="/preferencias" nota="Quanto dá para estudar em cada tipo de dia">
           Minha semana
         </Entrada>

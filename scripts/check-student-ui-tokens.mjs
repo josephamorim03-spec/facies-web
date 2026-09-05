@@ -27,6 +27,7 @@ const PAPER_SURFACES = [
   "src/components/MobileTabBar.tsx",
   "src/components/UserAvatar.tsx",
   "src/app/voce/page.tsx",
+  "src/app/voce/_components/SuaEspecialidade.tsx",
   "src/components/navIcons.tsx",
   "src/app/banco/guardadas/page.tsx",
   "src/app/banco/_components/iconesDoBanco.tsx",
