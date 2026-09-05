@@ -9,7 +9,28 @@ const webRoot = path.resolve(__dirname, "..");
 const readinessUrl = "http://127.0.0.1:3000/api/version";
 const port = 3000;
 const readinessTimeoutMs = 120_000;
-const smokeTimeoutMs = 300_000;
+/**
+ * O teto que matava o Playwright ANTES do resumo.
+ *
+ * ⚠️ ISTO NÃO DEIXA O JOB VERDE, e não é para isso que ele sobe. O conjunto
+ * padrão depende do backend em `:8000` (ver o comentário de `DEFAULT_SPECS`), e
+ * sem ele a escada de bloqueio manda a sessão para `/cadastro/completar` e
+ * várias specs caem juntas. Estabilizar isso é epic própria.
+ *
+ * O que este número corrige é outra coisa: em 300s o processo era **morto no
+ * meio**, sem linha de resumo. Sem resumo não há contagem, e sem contagem o
+ * veredito recusa opinar — o job saía INDETERMINADO, que é o pior dos estados,
+ * porque não diz nem quantas passaram nem quantas falharam. Medido em
+ * 2026-09-04: 5min01s contra teto de 5min00s, um segundo.
+ *
+ * E ficou pior em 2026-09-05: `navigation.shell.spec.ts` está no conjunto e
+ * ganhou quatro testes (320px, ausência da barra empilhada, a especialidade, o
+ * plantão). Um teto que já falhava por um segundo passou a falhar por mais.
+ *
+ * Com 600s o resumo sai, a contagem aparece, e o vermelho passa a ser LEGÍVEL —
+ * que é a condição para alguém consertá-lo.
+ */
+const smokeTimeoutMs = 600_000;
 
 /**
  * O conjunto padrão. Ele depende do backend em `:8000` para várias telas — com
