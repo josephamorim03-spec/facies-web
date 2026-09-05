@@ -3,7 +3,7 @@
 import { useContext, useEffect, useRef, useState, type CSSProperties } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import Nav, { SidebarNav } from "@/components/Nav";
+import Nav, { DesktopTopBar, SidebarNav } from "@/components/Nav";
 import { MobileTabBar, hasChildRow } from "@/components/MobileTabBar";
 import { CommandBar } from "@/components/CommandBar";
 import { IntentSubNav } from "@/components/student/IntentSubNav";
@@ -215,7 +215,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const contentFreeHeight = hideNavigationChrome
     ? "100svh"
     : isDesktopNavigation
-      ? "calc(100svh - max(1.5rem, env(safe-area-inset-top, 0px)) - 2rem)"
+      ? "calc(100svh - 3.5rem - max(1.5rem, env(safe-area-inset-top, 0px)) - 2rem)"
       : showMobileTopBar
         ? "calc(100svh - env(safe-area-inset-top, 0px) - 5rem - var(--nav-stack-height))"
         : "calc(100svh - max(1.5rem, env(safe-area-inset-top, 0px)) - 1.25rem - var(--nav-stack-height))";
@@ -227,7 +227,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const mainClassName = hideNavigationChrome
     ? "tela-app min-h-screen"
     : isDesktopNavigation
-      ? "tela-app max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8"
+      ? "tela-app max-w-lg md:max-w-5xl lg:max-w-6xl mx-auto px-4 md:px-6 pt-[calc(3.5rem+max(1.5rem,env(safe-area-inset-top,0px)))] pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] md:pb-8"
       : showMobileTopBar
         ? `tela-app max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] ${mobileBottomPad}`
         : `tela-app max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] ${mobileBottomPad}`;
@@ -357,13 +357,14 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   return (
     <>
       <PwaRegister />
-      <SidebarNav isDesktopNavigation={isDesktopNavigation} displayName={userDisplayName} photoUrl={userPhotoUrl} />
+      <DesktopTopBar isDesktopNavigation={isDesktopNavigation} displayName={userDisplayName} photoUrl={userPhotoUrl} />
+      <SidebarNav isDesktopNavigation={isDesktopNavigation} />
       {showMobileTopBar && <MobileTopBar pathname={pathname} />}
       {/* O token vive aqui e nao no fragmento: cobre o `<main>` e, com ele, todo
           `BottomActionBar` que as paginas montam dentro. A barra de abas nao le
           o token — ela DEFINE a altura que ele descreve. */}
       <div
-        className={hideNavigationChrome || !isDesktopNavigation ? "" : "ml-14"}
+        className={hideNavigationChrome || !isDesktopNavigation ? "" : "ml-56"}
         style={
           {
             "--nav-stack-height": navStackHeight,

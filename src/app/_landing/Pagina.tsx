@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 
+import { CentralDeEscolhas } from "./CentralDeEscolhas";
 import { CursinhoOuFacies } from "./CursinhoOuFacies";
 import { Fecho } from "./Fecho";
 import { Heroi } from "./Heroi";
 import { MapaDosAssuntos } from "./MapaDosAssuntos";
 import { NoveMedidas } from "./NoveMedidas";
 import { Objecoes } from "./Objecoes";
+import { OQueVoceRecebe } from "./OQueVoceRecebe";
 import { TrintaAssuntos } from "./TrintaAssuntos";
 import { dadosDaLanding } from "./dados";
 import { DepoisDeEntrar } from "@/components/facies/DepoisDeEntrar";
@@ -124,6 +126,7 @@ export function Pagina() {
           ficavam no DOM sem efeito na folha. Foram removidas na promocao. */
     <main className="paper-page pb-0">
       <Heroi dados={dados} />
+      <CentralDeEscolhas dados={dados} />
       <NoveMedidas
         contexto={{
           pctEsperado: dados.forma.assinatura?.pct_esperado ?? null,
@@ -142,6 +145,7 @@ export function Pagina() {
         </div>
       </section>
 
+      <OQueVoceRecebe />
       <CursinhoOuFacies dados={dados} />
       <Objecoes dados={dados} />
       <Fecho dados={dados} />
