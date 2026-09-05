@@ -4,6 +4,8 @@ import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { SPECS_ADIADOS, SPECS_DE_GATE } from "./lib/e2e-specs.mjs";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(__dirname, "..");
 const readinessUrl = "http://127.0.0.1:3000/api/version";
@@ -12,33 +14,30 @@ const readinessTimeoutMs = 120_000;
 const smokeTimeoutMs = 300_000;
 
 /**
- * O conjunto padrão. Ele depende do backend em `:8000` para várias telas — com
- * a API fora, o `AppShell` não consegue resolver `cadastro_completo` nem
- * `access_status`, a escada de bloqueio manda a sessão para
- * `/cadastro/completar` e a suíte inteira cai junto. Estabilizar isso é epic
- * própria (`docs/production-readiness.md`, Deferred Hardening).
+ * Specs passadas na linha de comando vencem tudo; `--completo` roda os dois
+ * conjuntos, para quem estiver de fato consertando os adiados.
  */
-const DEFAULT_SPECS = [
-  "navigation.shell.spec.ts",
-  "banco.historico.spec.ts",
-  "auth.proxy-cookie.spec.ts",
-  "cadastro.funil.spec.ts",
-  "cronograma.smoke.spec.ts",
-  "caderno.header-toggle.spec.ts",
-  "revisao-turbo.smoke.spec.ts",
-  "study-import.smoke.spec.ts",
-];
+const argv = process.argv.slice(2).filter(Boolean);
+const rodarCompleto = argv.includes("--completo");
+const smokeSpecs = argv.filter((a) => !a.startsWith("--"));
+const specs =
+  smokeSpecs.length > 0
+    ? smokeSpecs
+    : rodarCompleto
+      ? [...SPECS_DE_GATE, ...Object.keys(SPECS_ADIADOS)]
+      : SPECS_DE_GATE;
 
-/**
- * Specs passadas na linha de comando vencem o padrão.
- *
- * Existe para o subconjunto que NÃO depende do backend — guard de borda,
- * cookies do BFF, CSRF e o funil de cadastro. Ele roda em ~9s e pode ficar
- * verde de verdade, então serve de gate; o conjunto completo, hoje, não serve.
- * Ver o script `test:e2e:auth`.
- */
-const smokeSpecs = process.argv.slice(2).filter(Boolean);
-const specs = smokeSpecs.length > 0 ? smokeSpecs : DEFAULT_SPECS;
+if (smokeSpecs.length === 0 && !rodarCompleto) {
+  // Dizer o que NÃO está sendo medido é o que impede este recorte de virar uma
+  // cobertura fantasma: um gate menor que se esquece de anunciar o que deixou
+  // de fora vira, com o tempo, "o e2e passa".
+  const adiados = Object.entries(SPECS_ADIADOS)
+    .map(([spec, motivo]) => `  - ${spec}: ${motivo}`)
+    .join("\n");
+  process.stdout.write(
+    `gate e2e: ${SPECS_DE_GATE.length} specs. Fora do gate (rode com --completo):\n${adiados}\n\n`,
+  );
+}
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
