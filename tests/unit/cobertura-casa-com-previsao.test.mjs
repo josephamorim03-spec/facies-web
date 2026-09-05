@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
+import { dec } from "../../src/lib/decimal.ts";
+
 /**
  * A cobertura publicada tem de descrever a lista publicada.
  *
@@ -93,4 +95,51 @@ test("a curva é monotônica: mais itens cobrem mais, e o lift cai", () => {
 test("a medição declara em quantos alvos ela se apoia", () => {
   assert.ok(COBERTURA.alvos > 0, "sem n, o número não é verificável");
   assert.ok(Array.isArray(COBERTURA.series) && COBERTURA.series.length > 0);
+});
+
+/**
+ * A frase da cobertura é a afirmação central da landing, e ela publica TRÊS
+ * números na mesma linha.
+ *
+ * 🚨 Ela nasceu misturando as duas convenções: `lift` passava por
+ * `toLocaleString("pt-BR")` e virava `1,98`, enquanto os percentuais saíam crus
+ * do JS e viravam `32.4` e `25`. Ponto decimal e vírgula decimal na mesma frase,
+ * numa página em português — exatamente o defeito que `lib/decimal.ts` foi
+ * criado para matar, reintroduzido ao lado do helper que existia para evitá-lo.
+ *
+ * Não é purismo: este produto vende rigor de medição, e um número na convenção
+ * errada, na frase que carrega a medição, contradiz o que ela afirma. E o `25`
+ * sem casa decimal faz um valor medido parecer arredondado a olho.
+ *
+ * O teste fixa a PROPRIEDADE (uma casa, vírgula) sobre o valor do artefato, não
+ * uma string literal — assim ele sobrevive à próxima remedição.
+ */
+test("os números da cobertura saem na convenção pt-BR", () => {
+  // ⚠️ Usa o `dec` DE VERDADE, não uma cópia da regra escrita aqui. A primeira
+  // versão deste teste definia a própria função de formatação e passaria mesmo
+  // com o componente publicando `32.4` — teria fixado um PROXY em vez da
+  // propriedade, que é como um guard fica verde sem guardar nada.
+  for (const valor of [COBERTURA.cobertura_media_pct, COBERTURA.cobertura_minima_pct]) {
+    const saida = dec(valor);
+    assert.match(saida, /^\d+,\d$/, `${valor} deveria sair como "N,N" e saiu "${saida}"`);
+  }
+  assert.match(dec(COBERTURA.lift, 2), /^\d+,\d\d$/, "o lift publica duas casas");
+});
+
+/**
+ * E o componente tem de USAR o `dec`. O teste acima prova que a função está
+ * certa; este prova que a frase passa por ela — sem o segundo, reverter para
+ * `{previsao.cobertura.mediaPct}%` deixaria a suíte verde e a página errada.
+ */
+test("a frase da landing roteia os três números pelo `dec`", () => {
+  const fonte = readFileSync(new URL("src/app/_landing/AssuntosPrevistos.tsx", raiz), "utf8");
+  for (const campo of ["mediaPct", "minimaPct", "lift"]) {
+    assert.ok(
+      fonte.includes(`dec(previsao.cobertura.${campo}`),
+      `cobertura.${campo} não passa por dec() — volta a sair na convenção do JS`,
+    );
+  }
+  for (const cru of ["{previsao.cobertura.mediaPct}%", "{previsao.cobertura.minimaPct}%"]) {
+    assert.ok(!fonte.includes(cru), `ainda há percentual cru na frase: ${cru}`);
+  }
 });
