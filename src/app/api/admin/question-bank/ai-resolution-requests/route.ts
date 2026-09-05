@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cabecalhosDeProcedencia } from "@/lib/server/procedencia";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     `${apiTarget()}/question-bank/admin/ai-resolution-requests${request.nextUrl.search}`,
     {
       method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, ...cabecalhosDeProcedencia(request) },
       cache: "no-store",
     },
   ).catch(() => null);

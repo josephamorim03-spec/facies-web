@@ -1178,6 +1178,7 @@ input[type="range"]:focus-visible {
 
   /* Remove margem lateral da sidebar no desktop */
   .ml-52 { margin-left: 0 !important; }
+  .ml-56 { margin-left: 0 !important; }
 
   /* Conteúdo ocupa a largura total da página (remove max-w-lg e px do main) */
   main {

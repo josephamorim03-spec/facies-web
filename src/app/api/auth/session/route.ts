@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { cabecalhosDeProcedencia } from "@/lib/server/procedencia";
 import {
   ACCESS_COOKIE_MAX_AGE_SECONDS,
   isSecureRequest,
@@ -136,6 +137,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     headers: {
       "Content-Type": "application/json",
       "X-Request-Id": requestId,
+      ...cabecalhosDeProcedencia(request),
     },
     body: JSON.stringify({ access_token: accessToken, remember_device: rememberDevice }),
     cache: "no-store",

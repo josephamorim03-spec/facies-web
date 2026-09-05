@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { readAdminEmails } from "../_adminEmails";
 import { isAllowedQuestionBankAdminPath } from "./_questionBankAdminPaths";
+import { cabecalhosDeProcedencia } from "@/lib/server/procedencia";
 
 const SESSION_COOKIE_NAME = "krosmed_session";
 const INTERNAL_CSRF_HEADER = "x-krosmed-csrf";
@@ -181,6 +182,7 @@ async function authorizeAdmin(request: NextRequest, requestId: string): Promise<
     headers: {
       Authorization: `Bearer ${sessionToken}`,
       "X-Request-Id": requestId,
+      ...cabecalhosDeProcedencia(request),
     },
     cache: "no-store",
   }).catch(() => null);

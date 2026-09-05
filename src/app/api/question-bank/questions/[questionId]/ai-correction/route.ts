@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cabecalhosDeProcedencia } from "@/lib/server/procedencia";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,6 +59,7 @@ export async function POST(
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+        ...cabecalhosDeProcedencia(request),
       },
       body: JSON.stringify({
         ...(incomingBody && typeof incomingBody === "object" ? incomingBody : {}),

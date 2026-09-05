@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cabecalhosDeProcedencia } from "@/lib/server/procedencia";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ async function proxy(
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     Accept: "application/json",
+    ...cabecalhosDeProcedencia(request),
   };
   const idempotencyKey = request.headers.get("idempotency-key");
   if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;

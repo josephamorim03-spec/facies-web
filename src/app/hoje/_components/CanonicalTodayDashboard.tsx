@@ -22,13 +22,13 @@ import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
 // tamanho do dia — agora é INFERIDO e exibido como contexto da próxima ação, não
 // como um formulário antes dela. `TodayDimensioning` é uma linha, e a conta por
 // trás dela abre a um toque.
+import { AlvoEContagem } from "@/components/AlvoEContagem";
 import {
-  AlvoEContagem,
   alvoDaProvaAlvo,
   alvoDoObjetivoV2,
   objetivoPrincipal,
   provaAlvoPrincipal,
-} from "@/components/AlvoEContagem";
+} from "@/components/alvoDaTela";
 import { FaixaDaProva } from "./FaixaDaProva";
 import { TodayBackupActions } from "./TodayBackupActions";
 import { TodayDimensioning } from "./TodayDimensioning";
