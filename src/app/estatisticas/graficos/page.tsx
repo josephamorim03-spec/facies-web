@@ -1,29 +1,35 @@
 "use client";
 
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { GraficosSection } from "./GraficosSection";
 
 export default function GraficosPage() {
   return (
     <div className="max-w-2xl mx-auto px-3 space-y-4">
+      {/* ⚠️ O VOLTAR APONTAVA PARA A DIREITA E IA PARA UM REDIRECT.
+          O chevron desenha "<" -- e estava na celula da DIREITA, contra a
+          direcao que ele proprio indica. E o destino era `/dados-e-relatorios`,
+          que `next.config.js` devolve com 308 para `/evolucao`: um salto a
+          mais para chegar ao mesmo sitio, e um href que o navegador nunca
+          consegue renderizar (a regra que `navConfig` ja fixa para `matches`).
+
+          Agora ele fica a esquerda e vai direto para a Evolucao, que e' de onde
+          o aluno chega aqui. */}
       <div className="grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2">
         <div className="flex justify-start">
-          <span className="block h-7 w-7" aria-hidden="true" />
+          <Link
+            href="/evolucao"
+            className="-ml-1 flex min-h-11 items-center p-1 text-muted hover:text-ink"
+            aria-label="Voltar para a Evolução"
+          >
+            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+          </Link>
         </div>
         <div className="flex justify-center">
           <h1 className="paper-eyebrow leading-none text-ink">GRÁFICOS</h1>
         </div>
-        <div className="flex justify-end">
-          <Link
-            href="/dados-e-relatorios"
-            className="p-1 -mr-1 flex items-center justify-end text-muted hover:text-ink shrink-0"
-            aria-label="Voltar"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className="w-5 h-5" aria-hidden="true">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </Link>
-        </div>
+        <span aria-hidden="true" />
       </div>
 
       <GraficosSection />

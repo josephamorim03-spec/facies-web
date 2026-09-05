@@ -353,6 +353,35 @@ export function EvolucaoClientPage() {
           </Alert>
         </div>
       ) : null}
+
+      {/* ⚠️ OS GRÁFICOS EXISTEM, E ESTAVAM INALCANÇÁVEIS.
+          `/estatisticas/graficos` tem sete componentes vivos (acerto no tempo,
+          acerto por área, volume, comparativo, análise de cards) e continuou
+          servindo depois que esta tela virou os sete cartões-pergunta do
+          artboard `9b`. Só que o único link para lá era de dentro do
+          `/estatisticas/relatorio` — que também não tem porta. Na prática o
+          aluno não os encontrava, e o operador confirmou isso.
+
+          A porta fica AQUI, no fim, e não numa aba: os cartões respondem as
+          perguntas que o médico faz, e o gráfico é o segundo olhar de quem
+          quer ver a série inteira. Pôr os dois no mesmo nível traria de volta
+          o painel que o `9b` desfez. */}
+      <div className="md:col-span-2">
+        <Link
+          href="/estatisticas/graficos"
+          className="paper-control flex min-h-12 items-center justify-between gap-3 border-t border-rule pt-4 text-sm text-ink hover:text-primary"
+        >
+          <span className="min-w-0">
+            Ver as séries no tempo
+            <span className="mt-0.5 block text-nota text-muted">
+              Acerto por semana, por área, volume e comparativo
+            </span>
+          </span>
+          <span aria-hidden="true" className="shrink-0 text-muted">
+            ›
+          </span>
+        </Link>
+      </div>
     </div>
   );
 }

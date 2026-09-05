@@ -23,8 +23,6 @@ type Profile = {
   weekly_goal_questions: number;
   timezone: string;
   reschedule_mode: "suggest" | "auto" | "never" | string;
-  shift_12h_capacity: number | null;
-  shift_24h_capacity: number | null;
   display_name: string | null;
   photo_url: string | null;
   has_completed_initial_goal_setup: boolean;
@@ -67,8 +65,6 @@ async function mockRoutinePlanApi(page: Page) {
     weekly_goal_questions: 300,
     timezone: "America/Sao_Paulo",
     reschedule_mode: "suggest",
-    shift_12h_capacity: 40,
-    shift_24h_capacity: 20,
     display_name: "E2E User",
     photo_url: null,
     access_status: "active",

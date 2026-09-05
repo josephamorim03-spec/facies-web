@@ -337,12 +337,11 @@ export async function saveOnboardingObjectivesV2(
 export async function saveOnboardingRoutine(
   token: string,
   days: RoutineDayInput[],
-  options?: { shift_12h_capacity?: number | null; shift_24h_capacity?: number | null },
 ): Promise<OnboardingState> {
   return api<OnboardingState>("/api/onboarding/routine", {
     method: "PUT",
     headers: { ...authHeader(token), "Content-Type": "application/json" },
-    body: JSON.stringify({ days, ...(options ?? {}) }),
+    body: JSON.stringify({ days }),
   });
 }
 

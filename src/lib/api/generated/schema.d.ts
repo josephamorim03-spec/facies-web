@@ -6095,10 +6095,6 @@ export interface components {
         OnboardingRoutineIn: {
             /** Days */
             days?: components["schemas"]["RoutineDayIn"][];
-            /** Shift 12H Capacity */
-            shift_12h_capacity?: number | null;
-            /** Shift 24H Capacity */
-            shift_24h_capacity?: number | null;
         };
         /** OnboardingStateOut */
         OnboardingStateOut: {
@@ -6688,14 +6684,12 @@ export interface components {
             timezone: string;
             /** Reschedule Mode */
             reschedule_mode: string;
-            /** Shift 12H Capacity */
-            shift_12h_capacity?: number | null;
-            /** Shift 24H Capacity */
-            shift_24h_capacity?: number | null;
             /** Display Name */
             display_name?: string | null;
             /** Photo Url */
             photo_url?: string | null;
+            /** Intended Specialty */
+            intended_specialty?: string | null;
             /**
              * Priority Boards
              * @default []
@@ -6762,10 +6756,6 @@ export interface components {
             timezone?: string | null;
             /** Reschedule Mode */
             reschedule_mode?: string | null;
-            /** Shift 12H Capacity */
-            shift_12h_capacity?: number | null;
-            /** Shift 24H Capacity */
-            shift_24h_capacity?: number | null;
             /** Display Name */
             display_name?: string | null;
             /** Priority Boards */

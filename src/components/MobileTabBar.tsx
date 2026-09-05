@@ -6,26 +6,27 @@ import { useEffect, useState } from "react";
 import { FastNavLink } from "@/components/FastNavLink";
 import { ICON_MAP } from "@/components/navIcons";
 import { UserAvatar } from "@/components/UserAvatar";
-import {
-  NAV_ITEMS,
-  getIntentChildren,
-  isNavChildActive,
-  isNavItemActive,
-} from "@/lib/navConfig";
+import { NAV_ITEMS, isNavItemActive } from "@/lib/navConfig";
 
 /** Distancia acumulada antes de esconder/mostrar. Abaixo disto o scroll de
  *  ajuste fino (o dedo assentando) faria a barra tremer. */
 const SCROLL_THRESHOLD_PX = 56;
 
 /**
- * A linha de filhos aparece? O `AppShell` precisa da MESMA resposta para
- * reservar a altura certa no `<main>` — com ela visivel a barra tem ~106px, sem
- * ela ~62px, e reservar so 62px fazia a linha cobrir o fim do conteudo.
+ * ⚠️ `hasChildRow` SAIU, e com ela a linha de secoes do rodape.
+ *
+ * A barra inferior desenhava uma SEGUNDA fileira logo acima das abas, com as
+ * secoes da area atual. O operador apontou o que ela custava: duas faixas de
+ * chrome empilhadas no rodape, ~106px de tela, e uma delas com rotulos longos
+ * ("O plano até a prova") truncados no meio.
+ *
+ * As secoes nao sumiram -- mudaram para o TOPO do conteudo, onde o `/mapa` ja
+ * as punha ("A prova · A prova e você · Comparar") e onde o operador nao
+ * reclamou delas. E' o mesmo componente nas duas larguras (`IntentSubNav`), com
+ * as mesmas classes do primitivo de abas, entao a linguagem passou a ser uma so.
+ *
+ * Consequencia boa: `--nav-stack-height` deixou de ter dois valores possiveis.
  */
-export function hasChildRow(pathname: string): boolean {
-  const children = getIntentChildren(pathname);
-  return children.length >= 2 && children.some((item) => isNavChildActive(pathname, item));
-}
 
 /**
  * Barra inferior de cinco abas — substitui o menu hamburguer no mobile.
@@ -95,9 +96,6 @@ export function MobileTabBar({
     };
   }, [hidden]);
 
-  const children = getIntentChildren(pathname);
-  const showChildren = hasChildRow(pathname);
-
   return (
     <div
       className="fixed inset-x-0 bottom-0 z-40 md:hidden"
@@ -106,40 +104,6 @@ export function MobileTabBar({
         transition: reduceMotion ? "none" : "transform var(--motion-base) var(--ease-paper)",
       }}
     >
-      {showChildren && (
-        <nav
-          aria-label="Seções desta área"
-          className="flex items-center gap-1 border-t border-edge bg-paper px-3 pb-1 pt-1"
-        >
-          {children.map((item) => {
-            const active = isNavChildActive(pathname, item);
-            return (
-              <FastNavLink
-                key={item.href}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                // Superficie propria: distingue o filho da aba-pai em qualquer
-                // seletor, sem depender de aninhamento no DOM.
-                data-nav-surface="subrow-item"
-                data-nav-item-href={item.href}
-                data-nav-active={active ? "true" : "false"}
-                className={[
-                  // Mesma razao do `min-w-0` das abas: a linha de filhos tem
-                  // ate quatro itens e "O plano até a prova" e' o rotulo mais
-                  // longo da navegacao inteira.
-                  "flex min-h-10 min-w-0 flex-1 items-center justify-center truncate border px-3 text-xs font-medium",
-                  active
-                    ? "border-primary bg-primary text-primaryInk"
-                    : "border-edge bg-surface text-muted",
-                ].join(" ")}
-              >
-                {item.label}
-              </FastNavLink>
-            );
-          })}
-        </nav>
-      )}
-
       <nav
         aria-label="Navegação principal"
         data-nav-surface="tabbar"

@@ -81,8 +81,6 @@ async function mockShellApi(page: Page) {
         weekly_goal_questions: 300,
         timezone: "America/Sao_Paulo",
         reschedule_mode: "suggest",
-        shift_12h_capacity: 40,
-        shift_24h_capacity: 20,
         display_name: "E2E User",
         intended_specialty: "Oftalmologia",
         access_status: "active",
@@ -480,7 +478,8 @@ test.describe("Navigation shell", () => {
 
 // Era "Navigation shell mobile drawer". O drawer e o hamburguer foram
 // aposentados: no mobile a navegacao agora e a barra inferior de cinco abas
-// (`data-nav-surface='tabbar'`), com a linha de filhos logo acima dela.
+// (`data-nav-surface='tabbar'`) -- e SO ela no rodape. A linha de filhos subiu
+// para o topo do conteudo, que e onde as redes sociais a poem.
 test.describe("Navigation shell mobile tab bar", () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
@@ -567,7 +566,16 @@ test.describe("Navigation shell mobile tab bar", () => {
     await expect(tabbar.locator("[data-nav-item-href='/kros']")).toHaveCount(0);
   });
 
-  test("a linha de filhos aparece acima da barra e marca a secao atual", async ({ page }) => {
+  test("a linha de filhos vive no TOPO, e marca a secao atual", async ({ page }) => {
+    // ⚠️ ELA MUDOU DE PONTA, e o teste guarda a ponta nova.
+    //
+    // A linha ficava colada por cima da barra de abas: duas faixas de chrome
+    // empilhadas no rodape, ~110px comidos, e o fim do conteudo escondido
+    // atras delas. O operador apontou que nenhuma rede social faz isso.
+    //
+    // Agora e a mesma `IntentSubNav` nas duas larguras, no topo do conteudo.
+    // Nao basta afirmar que ela existe -- ela existia antes tambem; o que
+    // este teste prende e a POSICAO.
     await page.goto("/cronograma");
     const childRow = page.getByLabel("Seções desta área");
     await expect(childRow).toBeVisible();
@@ -576,6 +584,16 @@ test.describe("Navigation shell mobile tab bar", () => {
     const active = childRow.locator("[aria-current='page']");
     await expect(active).toHaveCount(1);
     await expect(active).toHaveText("O plano até a prova");
+
+    const linha = await childRow.boundingBox();
+    const barra = await page.locator("[data-nav-surface='tabbar']").boundingBox();
+    expect(linha).not.toBeNull();
+    expect(barra).not.toBeNull();
+    if (!linha || !barra) return;
+    // No terco de cima da tela, e nao encostada na barra: e a diferenca entre
+    // "esta no topo" e "esta em qualquer lugar acima do rodape".
+    expect(linha.y).toBeLessThan(844 / 3);
+    expect(linha.y + linha.height).toBeLessThan(barra.y - 100);
   });
 
   test("nao ha segunda barra empilhada sobre a barra de abas", async ({ page }) => {
@@ -675,7 +693,7 @@ test.describe("Navigation shell mobile tab bar", () => {
     });
 
     await page.goto("/preferencias");
-    await page.getByRole("button", { name: "Adicionar plantão ou exceção" }).click();
+    await page.getByRole("button", { name: "Plantão numa data específica" }).click();
 
     const folha = page.getByRole("dialog", { name: "Adicionar plantão" });
     await expect(folha).toBeVisible();
@@ -700,6 +718,72 @@ test.describe("Navigation shell mobile tab bar", () => {
     expect(criados[0].event_type).toBe("event");
     expect(criados[0].duration_hours).toBe(24);
     expect(String(criados[0].label)).toContain("Plantão 24h");
+  });
+
+  test("o plantao semanal mora na linha do dia, junto da disponibilidade", async ({ page }) => {
+    // ⚠️ AS DUAS PERGUNTAS SAO SOBRE O MESMO DIA.
+    //
+    // "Terca e plantao de 24h" e "na terca da para estudar 10 minutos" sao a
+    // mesma frase dita em duas metades. Elas viviam separadas -- a segunda na
+    // linha, a primeira atras de um botao que abria uma folha -- e completar o
+    // pensamento obrigava a atravessar a tela. O operador apontou o obvio.
+    //
+    // O que este teste prende e' a VIZINHANCA: os dois grupos dentro da mesma
+    // linha aberta. Afirmar so' que o evento foi criado deixaria passar uma
+    // regressao que devolvesse os chips para outra seccao.
+    const criados: Array<Record<string, unknown>> = [];
+    await page.route("**/api/events", async (route) => {
+      if (route.request().method() !== "POST") return route.fallback();
+      const corpo = route.request().postDataJSON() as Record<string, unknown>;
+      criados.push(corpo);
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({ event_id: `ev-${criados.length}`, ...corpo }),
+      });
+    });
+
+    await page.goto("/preferencias");
+    await page.getByRole("button", { name: /^seg/ }).click();
+
+    await expect(page.getByText("dá para estudar neste dia?")).toBeVisible();
+    await expect(page.getByText("trabalha neste dia?")).toBeVisible();
+
+    await page.getByRole("button", { name: "24h", exact: true }).click();
+
+    await expect.poll(() => criados.length).toBe(1);
+    // Semanal, e nao pontual: e' isso que separa "toda segunda" de "nesta
+    // segunda". E o rotulo deriva da duracao -- sem campo de nome, como o
+    // artboard `14b` exige.
+    expect(criados[0].event_type).toBe("routine");
+    expect(criados[0].weekday).toBe(0);
+    expect(criados[0].duration_hours).toBe(24);
+    expect(String(criados[0].label)).toContain("Plantão 24h");
+  });
+
+  test("a semana grava sozinha: nao ha botao de salvar", async ({ page }) => {
+    // O perfil ja gravava sozinho e os chips de plantao tambem. O botao
+    // "Salvar a rotina" era o unico ponto da tela que ainda pedia confirmacao
+    // -- tres modelos de gravacao na mesma tela, dois deles dentro da mesma
+    // linha aberta. Escolher E' guardar, como nas Definicoes do iPhone.
+    let gravou = 0;
+    await page.route("**/api/onboarding/capacity", async (route) => {
+      if (route.request().method() !== "PUT") return route.fallback();
+      gravou += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ step: "ready", study_availability: { "0": 45 } }),
+      });
+    });
+
+    await page.goto("/preferencias");
+    await page.getByRole("button", { name: /^seg/ }).click();
+    await page.getByRole("button", { name: "45 min", exact: true }).click();
+
+    await expect(page.getByRole("button", { name: "Salvar a rotina" })).toHaveCount(0);
+    await expect.poll(() => gravou, { timeout: 5000 }).toBe(1);
+    await expect(page.getByText("guardado", { exact: true })).toBeVisible();
   });
 
   test("a barra some no modo imersivo da sessao", async ({ page }) => {

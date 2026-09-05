@@ -39,6 +39,7 @@ import { Button } from "@/components/ui/Button";
 import { ObjectiveSelector } from "@/components/objectives/ObjectiveSelector";
 import { TargetExamSelector } from "@/components/objectives/TargetExamSelector";
 import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
+import { PreferenceToggle, SectionTitle } from "@/app/preferencias/_components/PecasDaTela";
 import {
   displayEventLabel,
   DURATIONS,
@@ -50,13 +51,6 @@ import {
   WEEKDAYS,
 } from "@/app/desempenho/_lib/perfilShared";
 
-type ToggleProps = {
-  checked: boolean;
-  label: string;
-  description: string;
-  onChange: (checked: boolean) => void;
-};
-
 function todayISO(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -67,56 +61,6 @@ function parsePositiveInt(value: string): number | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
-function PreferenceToggle({
-  checked,
-  label,
-  description,
-  onChange,
-}: ToggleProps) {
-  return (
-    <label className="flex cursor-pointer items-start justify-between gap-5 border-b border-edge py-4 last:border-b-0">
-      <span className="min-w-0">
-        <span className="block text-sm font-semibold text-ink">{label}</span>
-        <span className="mt-1 block max-w-2xl text-xs leading-5 text-muted">
-          {description}
-        </span>
-      </span>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-        className="peer sr-only"
-      />
-      <span
-        aria-hidden="true"
-        className="relative mt-0.5 h-6 w-11 shrink-0 bg-edge transition-colors peer-checked:bg-primary peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
-      >
-        <span className="absolute left-1 top-1 h-4 w-4 bg-paper transition-transform peer-checked:translate-x-5" />
-      </span>
-    </label>
-  );
-}
-
-function SectionTitle({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: typeof Bell;
-  title: string;
-  description: string;
-}) {
-  return (
-    <header className="grid gap-2 border-b border-edge pb-4 sm:grid-cols-[1.5rem_minmax(0,1fr)]">
-      <Icon className="mt-0.5 h-5 w-5 text-primary" aria-hidden="true" />
-      <div>
-        <h2 className="text-base font-semibold text-ink">{title}</h2>
-        <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">{description}</p>
-      </div>
-    </header>
-  );
-}
-
 export default function PreferenciasPage() {
   const token = getAuthToken();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -124,7 +68,6 @@ export default function PreferenciasPage() {
   const [targetExamCapability, setTargetExamCapability] = useState<CapabilityStatus | null>(null);
   const [events, setEvents] = useState<CalendarEventOut[]>([]);
   const [weeklyGoalInput, setWeeklyGoalInput] = useState("200");
-  const [shift12hInput, setShift12hInput] = useState("");
   const [eventCadence, setEventCadence] = useState<"routine" | "event">("routine");
   const [eventWeekday, setEventWeekday] = useState(0);
   const [eventDate, setEventDate] = useState("");
@@ -133,6 +76,10 @@ export default function PreferenciasPage() {
   const [eventDuration, setEventDuration] = useState(8);
   const [eventError, setEventError] = useState<string | null>(null);
   const [eventSaving, setEventSaving] = useState(false);
+  // Separado de `eventSaving`: os dois gravam evento, mas so este desabilita
+  // os atalhos da linha da semana. Partilhar a bandeira faria abrir a folha
+  // congelar as sete linhas atras dela.
+  const [marcandoPlantao, setMarcandoPlantao] = useState(false);
   const [retention, setRetention] = useState(0.9);
   // A semana padrao vem de `study_availability` (weekday -> minutos), que ate'
   // agora so' era escrito pelo questionario inicial e nunca mais relido.
@@ -196,7 +143,6 @@ export default function PreferenciasPage() {
           capabilityList.find((item) => item.key === "target_exam_v1") ?? null,
         );
         setWeeklyGoalInput(String(nextProfile.weekly_goal_questions));
-        setShift12hInput(nextProfile.shift_12h_capacity == null ? "" : String(nextProfile.shift_12h_capacity));
         setRetention(fsrs.desired_retention);
         // `null` quando a leitura falhou; `{}` quando o aluno nunca declarou.
         // A tela distingue os dois, e colapsa-los mostraria a semana em branco
@@ -262,12 +208,6 @@ export default function PreferenciasPage() {
     patchLocal({ weekly_goal_questions: parsed });
   }
 
-  function updateShift12h(rawValue: string) {
-    const digitsOnly = rawValue.replace(/\D/g, "");
-    setShift12hInput(digitsOnly);
-    patchLocal({ shift_12h_capacity: digitsOnly ? Number.parseInt(digitsOnly, 10) : null });
-  }
-
   async function addEvent() {
   // ⚠️ SEM GUARD DE `token`: ele e' SEMPRE "" por desenho.
   //
@@ -321,6 +261,60 @@ export default function PreferenciasPage() {
     }
   }
 
+  /**
+   * O compromisso SEMANAL de um dia, criado ou removido da própria linha.
+   *
+   * ⚠️ SUBSTITUI em vez de somar. O aluno toca "24h" numa terça que já tinha
+   * "12h": o certo é a terça passar a ter 24h, não 36h. Então todo evento
+   * recorrente daquele dia sai antes de o novo entrar — e sai por remoção
+   * SUAVE (`scope: "future"`), que é o que preserva o histórico do que já
+   * aconteceu naquelas terças.
+   *
+   * `horas: 0` é "não trabalho neste dia": remove e não cria nada.
+   */
+  async function marcarPlantaoSemanal(diaDaSemana: number, horas: number) {
+    if (marcandoPlantao) return;
+    setMarcandoPlantao(true);
+    setEventError(null);
+    try {
+      const doDia = events.filter(
+        (evento) => evento.event_type === "routine" && evento.weekday === diaDaSemana,
+      );
+      for (const evento of doDia) {
+        await deleteEvent(token, evento.event_id, {
+          scope: "future",
+          effective_from: currentTodayISO,
+        });
+      }
+      if (horas > 0) {
+        // O rótulo deriva da duração: 10h é o limiar que `lib/rotina.ts` usa
+        // para chamar o dia de plantão.
+        const rotulo = horas >= 10 ? `Plantão ${horas}h` : `Trabalho ${horas}h`;
+        await createEvent(token, {
+          label: encodeEventLabel(rotulo, "work"),
+          event_type: "routine",
+          weekday: diaDaSemana,
+          event_date: null,
+          duration_hours: horas,
+        });
+      }
+      setEvents(await listEvents(token));
+      // ⚠️ MESMA ARMADILHA de `salvarSemana`, e ela vale mais aqui: marcar a
+      // terca como plantao de 24h muda o dia de hoje. Sem invalidar, o aluno
+      // declara a escala, vai para o Hoje e ve o plano montado pela rotina
+      // ANTIGA -- o pior momento possivel para o produto parecer que ignorou
+      // o que ele acabou de dizer.
+      await queryClient.invalidateQueries({ queryKey: queryKeys.studentToday });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.studentAgendaAll });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.studyPlanCurrent });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.rotinaDoPlano });
+    } catch (cause) {
+      setEventError(getErrorMessage(cause, "Não foi possível mudar este dia."));
+    } finally {
+      setMarcandoPlantao(false);
+    }
+  }
+
   async function removeEvent(id: string) {
     setEventError(null);
     try {
@@ -331,7 +325,14 @@ export default function PreferenciasPage() {
     }
   }
 
-  async function salvarSemana(proxima: Record<string, number>) {
+  /**
+   * Grava a semana e diz se conseguiu.
+   *
+   * ⚠️ O `boolean` nao e enfeite. A tela passou a gravar sozinha, e um
+   * indicador que diz "guardado" sem saber o que aconteceu e pior que
+   * indicador nenhum: ele afirma. Quem mostra o estado precisa da resposta.
+   */
+  async function salvarSemana(proxima: Record<string, number>): Promise<boolean> {
     setSalvandoSemana(true);
     setError(null);
     try {
@@ -348,10 +349,12 @@ export default function PreferenciasPage() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.studentAgendaAll });
       await queryClient.invalidateQueries({ queryKey: queryKeys.studyPlanCurrent });
       await queryClient.invalidateQueries({ queryKey: queryKeys.rotinaDoPlano });
+      return true;
     } catch (cause) {
       setError(
         getErrorMessage(cause, "Não foi possível salvar a sua semana. Tente de novo."),
       );
+      return false;
     } finally {
       setSalvandoSemana(false);
     }
@@ -369,7 +372,6 @@ export default function PreferenciasPage() {
   const assinaturaDoQueSeGrava = profile
     ? JSON.stringify([
         profile.weekly_goal_questions,
-        profile.shift_12h_capacity,
         profile.reschedule_mode,
         profile.weekly_goal_notifications_enabled,
         profile.calendar_change_alerts_enabled,
@@ -425,7 +427,6 @@ export default function PreferenciasPage() {
     try {
       const next = await updateProfile(token, {
         weekly_goal_questions: profile.weekly_goal_questions,
-        shift_12h_capacity: profile.shift_12h_capacity,
         reschedule_mode: profile.reschedule_mode,
         weekly_goal_notifications_enabled:
           profile.weekly_goal_notifications_enabled,
@@ -494,6 +495,10 @@ export default function PreferenciasPage() {
               diasAteAProva={diasAteAProva}
               salvando={salvandoSemana}
               onSalvar={salvarSemana}
+              onMarcarPlantao={(diaDaSemana, horas) => {
+                void marcarPlantaoSemanal(diaDaSemana, horas);
+              }}
+              marcandoPlantao={marcandoPlantao}
               // ⚠️ ABRE UMA FOLHA, e nao ROLA para outra secao.
               //
               // Isto chamava `scrollIntoView` ate o painel generico "Adicionar
@@ -542,49 +547,21 @@ export default function PreferenciasPage() {
                 </label>
               </div>
 
-              {/* O PLANTÃO SAIU DE PAR COM A META SEMANAL.
-                  Os dois ficavam lado a lado, mesmo tamanho, mesma tipografia —
-                  mas "questões por semana" é a meta que governa todo dia, e a
-                  capacidade em dia de plantão é ajuste que se faz uma vez e
-                  quase nunca se revisita. Peso visual igual para frequências
-                  tão diferentes cobra atenção que a segunda não merece.
+              {/* ⚠️ "QUANTAS QUESTÕES EM 12H DE PLANTÃO?" SAIU, a pedido do
+                  operador — e ela era a última pergunta do produto que exigia
+                  do médico um número que ele não tem.
 
-                  Fica recolhido, e o resumo mostra o valor atual — quem só
-                  quer conferir não precisa abrir. `<details>` e não estado em
-                  React: é o comportamento nativo, funciona sem JavaScript e
-                  não acrescenta re-render a uma tela que já tem muitos.
+                  Ninguém sabe de cor quantas questões faz num plantão. A
+                  resposta honesta é uma estimativa, e o produto já tem uma
+                  melhor: a Minha semana pergunta MINUTOS por tipo de dia (que a
+                  pessoa sabe), e `effort_budget` converte com o ritmo OBSERVADO
+                  dela (`pace_source: "observed"`) em vez de com um palpite.
+                  Duas fontes para o mesmo número, e a que sobrou é medida.
 
-                  O placeholder era `?`, que não dizia se a pergunta era sobre
-                  quantas questões cabem ou quantas se tolera. Agora a pergunta
-                  está escrita por extenso. */}
-              <details className="group">
-                <summary className="flex cursor-pointer list-none items-center gap-2 py-1 text-xs text-muted transition-colors hover:text-ink">
-                  <span className="transition-transform group-open:rotate-90" aria-hidden="true">›</span>
-                  Capacidade em dia de plantão de 12h
-                  <span className="ml-auto font-mono tabular-nums">
-                    {shift12hInput ? `${shift12hInput} questões` : "não definida"}
-                  </span>
-                </summary>
-                <label className="mt-2 block max-w-xs">
-                  <span className="text-xs leading-5 text-muted">
-                    Em dia de plantão de 12 horas, quantas questões você consegue
-                    fazer sem que o estudo vire fardo? Deixe vazio se preferir que
-                    a gente estime.
-                  </span>
-                  <div className="mt-2 flex min-h-11 items-center rounded-control border border-edge bg-surface px-3">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={shift12hInput}
-                      onChange={(event) => updateShift12h(event.target.value)}
-                      placeholder="estimar"
-                      className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none"
-                    />
-                    <span className="text-xs text-muted">questões</span>
-                  </div>
-                </label>
-              </details>
-
+                  ⚠️ O motor JÁ DEGRADA sozinho:
+                  `AdaptiveService._shift_capacity_questions_for_day` devolve
+                  `None` quando a capacidade não existe, e os chamadores caem no
+                  caminho geral. Não foi preciso mudar uma linha lá. */}
               <div>
                 <p className="text-sm font-semibold text-ink">Reagendamento</p>
                 <div className="mt-2 flex flex-wrap gap-2">

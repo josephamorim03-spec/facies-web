@@ -343,8 +343,6 @@ async function mockDesignApi(page: Page) {
         weekly_goal_questions: 240,
         timezone: "America/Sao_Paulo",
         reschedule_mode: "suggest",
-        shift_12h_capacity: 40,
-        shift_24h_capacity: 20,
         display_name: "Jose",
         access_status: "active",
         has_completed_initial_goal_setup: true,

@@ -846,8 +846,6 @@ export async function mockApi(page) {
         weekly_goal_questions: 240,
         timezone: "America/Sao_Paulo",
         reschedule_mode: "suggest",
-        shift_12h_capacity: 40,
-        shift_24h_capacity: 20,
         display_name: "Jose",
         // A tela /voce mostra a especialidade declarada; sem ela no fixture, a
         // captura exercitaria so o estado vazio.

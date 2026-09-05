@@ -4,7 +4,7 @@ import { useContext, useEffect, useRef, useState, type CSSProperties } from "rea
 import { usePathname, useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import Nav, { SidebarNav } from "@/components/Nav";
-import { MobileTabBar, hasChildRow } from "@/components/MobileTabBar";
+import { MobileTabBar } from "@/components/MobileTabBar";
 import { CommandBar } from "@/components/CommandBar";
 import { IntentSubNav } from "@/components/student/IntentSubNav";
 import { NAV_ITEMS } from "@/lib/navConfig";
@@ -218,11 +218,13 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   //
   // 3.875rem = `min-h-[3.875rem]` da fileira de abas; 2.75rem = a linha de
   // filhos (`min-h-10` + `pb-1`).
+  // ⚠️ UM VALOR SO'. Ate aqui a barra tinha duas alturas possiveis, porque ela
+  // desenhava uma segunda fileira com as secoes da area. Essa fileira mudou para
+  // o topo do conteudo (`IntentSubNav`), e com ela foi embora a unica razao de
+  // este calculo ter um `if`.
   const navStackHeight = !showMobileTabBar
     ? "0px"
-    : hasChildRow(pathname)
-      ? "calc(3.875rem + 2.75rem + env(safe-area-inset-bottom, 0px))"
-      : "calc(3.875rem + env(safe-area-inset-bottom, 0px))";
+    : "calc(3.875rem + env(safe-area-inset-bottom, 0px))";
   const mobileBottomPad = !showMobileTabBar
     ? "pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)]"
     : "pb-[calc(var(--nav-stack-height)+1.25rem)]";
@@ -397,9 +399,12 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         <AvisoFimDeAcesso expiraEm={acessoExpiraEm} />
         <main className={mainClassName}>
           <Nav />
-          {/* A linha de filhos so aparece no desktop: no mobile ela mora colada
-              na barra inferior, onde o polegar alcanca. */}
-          {!hideNavigationChrome && isDesktopNavigation && <IntentSubNav />}
+          {/* ⚠️ AS SECOES SAO IGUAIS NAS DUAS LARGURAS, e no TOPO.
+              Elas moravam coladas na barra inferior no celular -- duas faixas
+              de chrome empilhadas, ~106px, com "O plano até a prova" truncado.
+              No topo elas usam o mesmo primitivo de abas que o `/mapa` ja usa,
+              e o rotulo cabe inteiro porque a linha rola. */}
+          {!hideNavigationChrome && <IntentSubNav />}
           {/* O nome ja foi buscado aqui para a sidebar; o provider so o torna
               alcancavel pelas paginas, sem uma segunda ida a rede. */}
           <ProfileDisplayNameProvider displayName={userDisplayName}>

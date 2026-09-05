@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { CalendarEventOut } from "@/lib/api/domains/calendar";
 import { Alert } from "@/components/ui/Alert";
@@ -49,16 +49,26 @@ const FILETE: Record<TipoDeDia, string> = {
 /** Os atalhos do `14b`, com "Nada" primeiro e sem penalidade. */
 const ATALHOS_DE_MINUTOS = [0, 10, 20, 35, 45, 60] as const;
 
+/** As durações que fazem um dia ser de trabalho. 0 = não trabalha. */
+const HORAS_DE_TRABALHO = [0, 6, 12, 24] as const;
+
+/** Espera antes de gravar sozinho, para juntar rajada de toques. */
+const ATRASO_MS = 700;
+
 function Linha({
   linha,
   aberta,
   onAbrir,
   onEscolher,
+  onMarcarPlantao,
+  marcandoPlantao,
 }: {
   linha: LinhaDaSemana;
   aberta: boolean;
   onAbrir: () => void;
   onEscolher: (minutos: number) => void;
+  onMarcarPlantao: (horas: number) => void;
+  marcandoPlantao: boolean;
 }) {
   return (
     <li className="border-b border-rule last:border-b-0">
@@ -103,6 +113,54 @@ function Linha({
               );
             })}
           </div>
+
+          {/* ⚠️ O PLANTÃO MORA AQUI, na mesma abertura da disponibilidade.
+
+              Ele vivia atrás de um botão que abria uma folha — e o operador
+              apontou o óbvio: as duas coisas são sobre o MESMO dia. "Terça é
+              plantão de 24h" e "na terça dá para estudar 10 minutos" são a
+              mesma frase dita em duas metades, e separá-las obrigava a
+              atravessar a tela para completar o pensamento.
+
+              A folha continua a existir, e passou a servir só o que ela faz
+              melhor: plantão numa DATA específica e a escala 24×72. O que se
+              repete toda semana — o caso comum — resolve-se na linha.
+
+              ⚠️ Sem nome. O artboard 14b é literal: "nada de nome do hospital,
+              o plano não muda com o lugar". O rótulo deriva das horas. */}
+          <p className="paper-eyebrow mb-2 mt-4">trabalha neste dia?</p>
+          <div className="flex flex-wrap gap-2">
+            {HORAS_DE_TRABALHO.map((horas) => {
+              const escolhido =
+                horas === 0
+                  ? linha.horasBloqueadas === 0
+                  : Math.round(linha.horasBloqueadas) === horas;
+              return (
+                <button
+                  key={horas}
+                  type="button"
+                  aria-pressed={escolhido}
+                  disabled={marcandoPlantao}
+                  onClick={() => onMarcarPlantao(horas)}
+                  className={`min-h-11 rounded-control border px-3 text-sm disabled:opacity-50 ${
+                    escolhido
+                      ? "border-primary bg-primary text-primaryInk"
+                      : "border-edge bg-surface text-ink"
+                  }`}
+                >
+                  {horas === 0 ? "Não" : `${horas}h`}
+                </button>
+              );
+            })}
+          </div>
+          {/* Quem já tinha um compromisso de outra duração (8h, por exemplo)
+              não pode vê-lo sumir dos atalhos como se não existisse. */}
+          {linha.horasBloqueadas > 0
+          && !HORAS_DE_TRABALHO.some((h) => h === Math.round(linha.horasBloqueadas)) ? (
+            <p className="mt-2 font-mono text-micro tabular-nums text-muted">
+              hoje: {linha.horasBloqueadas}h
+            </p>
+          ) : null}
         </div>
       ) : null}
     </li>
@@ -118,6 +176,8 @@ export function MinhaSemana({
   diasAteAProva,
   salvando,
   onSalvar,
+  onMarcarPlantao,
+  marcandoPlantao,
   onAdicionar,
   onRemoverExcecao,
 }: {
@@ -129,7 +189,11 @@ export function MinhaSemana({
   ritmoEhDoAluno: boolean;
   diasAteAProva: number | null;
   salvando: boolean;
-  onSalvar: (disponibilidade: Record<string, number>) => void;
+  /** Devolve se gravou. A linha de estado nao pode AFIRMAR sem saber. */
+  onSalvar: (disponibilidade: Record<string, number>) => Promise<boolean>;
+  /** Cria ou remove o compromisso semanal daquele dia. `horas: 0` remove. */
+  onMarcarPlantao: (diaDaSemana: number, horas: number) => void;
+  marcandoPlantao: boolean;
   onAdicionar: () => void;
   onRemoverExcecao: (evento: CalendarEventOut) => void;
 }) {
@@ -160,10 +224,35 @@ export function MinhaSemana({
   );
   const excecoes = useMemo(() => excecoesDaSemana(eventos, hojeISO), [eventos, hojeISO]);
 
-  const sujo = rascunho !== null;
+  // ⚠️ A SEMANA GRAVA SOZINHA, e o botao "Salvar a rotina" deixou de existir.
+  //
+  // Ele era o ultimo lugar da tela onde o aluno tinha de confirmar: o perfil ja
+  // gravava sozinho, e os atalhos de plantao (abaixo) tambem. Tres modelos de
+  // gravacao na MESMA tela -- dois deles dentro da mesma linha aberta -- e o
+  // tipo de incoerencia que faz a pessoa tocar num chip e ficar sem saber se
+  // valeu. E como as Definicoes do iPhone: escolher E' guardar.
+  //
+  // O atraso junta rajada: quem ajusta os sete dias seguidos manda UMA
+  // requisicao, e nao sete -- cada uma delas invalida quatro caches e refaz o
+  // plano no servidor.
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [estado, setEstado] = useState<"parado" | "guardado" | "falhou">("parado");
+
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
 
   function escolher(indice: number, minutos: number) {
-    setRascunho({ ...atual, [String(indice)]: minutos });
+    const proxima = { ...atual, [String(indice)]: minutos };
+    // ⚠️ O rascunho NAO e' limpo depois de gravar. Limpa-lo devolveria a tela
+    // ao `disponibilidade` antigo ate a resposta chegar -- os chips piscariam
+    // de volta ao valor anterior no meio da gravacao.
+    setRascunho(proxima);
+    setEstado("parado");
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      void onSalvar(proxima).then((ok) => setEstado(ok ? "guardado" : "falhou"));
+    }, ATRASO_MS);
   }
 
   if (naoLeu) {
@@ -190,6 +279,8 @@ export function MinhaSemana({
             aberta={aberta === linha.indice}
             onAbrir={() => setAberta(aberta === linha.indice ? null : linha.indice)}
             onEscolher={(minutos) => escolher(linha.indice, minutos)}
+            onMarcarPlantao={(horas) => onMarcarPlantao(linha.indice, horas)}
+            marcandoPlantao={marcandoPlantao}
           />
         ))}
       </ul>
@@ -243,22 +334,25 @@ export function MinhaSemana({
         )}
       </p>
 
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        {/* O rotulo mudou junto com o escopo. O que se repete toda semana
+            resolve-se na linha acima; esta folha ficou com o que ela faz
+            melhor -- uma DATA especifica e a escala 24x72. */}
         <Button variant="secondary" onClick={onAdicionar}>
-          Adicionar plantão ou exceção
+          Plantão numa data específica
         </Button>
-        {sujo ? (
-          <Button
-            onClick={() => {
-              onSalvar(atual);
-              setRascunho(null);
-              setAberta(null);
-            }}
-            disabled={salvando}
-          >
-            {salvando ? "Salvando" : "Salvar a rotina"}
-          </Button>
-        ) : null}
+        {/* Discreto de proposito: quem grava sozinho nao pede aplauso. O
+            `aria-live` e' o que faz a confirmacao existir para quem usa leitor
+            de tela, onde a mudanca de cor de um texto nao existe. */}
+        <p className="font-mono text-micro text-muted" aria-live="polite">
+          {salvando
+            ? "guardando"
+            : estado === "guardado"
+              ? "guardado"
+              : estado === "falhou"
+                ? "não deu para guardar"
+                : ""}
+        </p>
       </div>
     </section>
   );

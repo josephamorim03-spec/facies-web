@@ -144,8 +144,6 @@ export async function mockTurboApi(page: Page): Promise<TurboSessionState> {
         weekly_goal_questions: 300,
         timezone: "America/Sao_Paulo",
         reschedule_mode: "suggest",
-        shift_12h_capacity: 40,
-        shift_24h_capacity: 20,
         display_name: "E2E User",
         access_status: "active",
         has_completed_initial_goal_setup: true,

@@ -206,8 +206,16 @@ export type UserProfile = {
   weekly_goal_questions: number;
   timezone: string;
   reschedule_mode: "suggest" | "auto" | "never" | string;
-  shift_12h_capacity: number | null;
-  shift_24h_capacity: number | null;
+  /**
+   * `shift_12h_capacity` e `shift_24h_capacity` SAIRAM do contrato em
+   * 2026-09-05. A pergunta era "em plantao de 12h, quantas questoes voce
+   * consegue fazer?" -- a ultima do produto que exigia do medico um numero
+   * que ele nao tem. A Minha semana pergunta MINUTOS por tipo de dia, que a
+   * pessoa sabe, e o `effort_budget` converte com o ritmo OBSERVADO dela.
+   *
+   * A coluna ficou no banco e o motor ainda a le para quem ja respondeu; o
+   * que saiu foi a porta. Ninguem escreve nem le valor novo por aqui.
+   */
   display_name: string | null;
   photo_url: string | null;
   /**
@@ -260,8 +268,6 @@ export async function updateProfile(
   payload: {
     weekly_goal_questions?: number;
     timezone?: string;
-    shift_12h_capacity?: number | null;
-    shift_24h_capacity?: number | null;
     display_name?: string;
     reschedule_mode?: string;
     priority_boards?: string[];
