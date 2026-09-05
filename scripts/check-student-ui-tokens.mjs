@@ -22,6 +22,8 @@ const PAPER_SURFACES = [
   "src/components/facies/ContagemGigante.tsx",
   "src/components/facies/QuestaoAnotada.tsx",
   "src/components/facies/RotuloSecao.tsx",
+  "src/components/facies/MapaDaProva.tsx",
+  "src/app/mapa/_components/FolhaDoAssunto.tsx",
   "src/components/AppShell.tsx",
   "src/components/Nav.tsx",
   "src/components/MobileTabBar.tsx",

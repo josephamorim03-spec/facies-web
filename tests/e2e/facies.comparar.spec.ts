@@ -94,17 +94,134 @@ async function mockMapaApi(page: Page) {
     }
 
     if (path === "/api/student/competency-mastery") {
+      // ⚠️ COM ITENS, e nao vazio. A aba "A prova e você" tem um estado de
+      // saida quando NENHUM assunto tem resposta ("Você ainda não respondeu os
+      // assuntos desta prova") -- com a lista vazia, todo teste sobre a grade
+      // mediria a tela de estado vazio.
       return json({
         contract_version: "competency-mastery-v1",
-        observation_floor: 20,
-        attempts_considered: 0,
-        items: [],
+        observation_floor: 5,
+        attempts_considered: 42,
+        items: [
+          {
+            objective_id: "obj-1",
+            label: "Neoplasias do Sistema Digestivo",
+            primary_subtheme: "Neoplasias do Sistema Digestivo",
+            competency_question_count: 30,
+            attempts: 12,
+            correct: 6,
+            mastery: 0.5,
+            uncertainty: 0.1,
+            certeza: "medido",
+          },
+        ],
       });
+    }
+
+    // O no da taxonomia que a folha do assunto resolve antes de oferecer a
+    // pratica. Sem ele a folha diz "nao ha questoes deste assunto", que e' o
+    // outro caminho -- legitimo, e coberto pelo teste do assunto sem acervo.
+    if (path === "/api/question-bank/topics") {
+      const busca = new URL(route.request().url()).searchParams.get("search") ?? "";
+      if (!busca.toLowerCase().includes("neoplasias")) return json([]);
+      return json([
+        {
+          knowledge_node_id: "no-neoplasias",
+          parent_knowledge_node_id: null,
+          node_code: "QB-CM-NEO-DIGESTIVO",
+          node_name: "Neoplasias do Sistema Digestivo",
+          node_type: "subtheme",
+          node_path: ["Clínica Médica", "Neoplasias do Sistema Digestivo"],
+          path_label: "CM > Neoplasias do Sistema Digestivo",
+          depth: 2,
+          question_count: 37,
+          primary_question_count: 30,
+          board_count: 5,
+        },
+      ]);
     }
 
     return json({});
   });
 }
+
+test.describe("Explorar o mapa (/mapa)", () => {
+  test.beforeEach(async ({ context, page }) => {
+    await addHttpOnlySession(context);
+    await mockMapaApi(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/mapa");
+    await page.getByRole("button", { name: "A prova e você" }).click();
+    await expect(page.getByText("tamanho é incidência · preenchimento é você")).toBeVisible();
+  });
+
+  test("a area filtra o mosaico, e a contagem do chip bate com o que fica", async ({ page }) => {
+    // ⚠️ A CONTAGEM DO CHIP E' DOS ASSUNTOS MOSTRADOS, e nao do acervo.
+    //
+    // Os dois numeros existem e sao diferentes: a grade conta a janela recente
+    // que a facies publica, o acervo conta o que da' para praticar. Este teste
+    // prende o primeiro -- se o chip passar a contar o acervo, ele dira "37"
+    // ao lado de uma area que tem uma celula na tela.
+    const celulas = page.locator("ul.grid > li");
+    const antes = await celulas.count();
+    expect(antes).toBeGreaterThan(1);
+
+    const chip = page.getByRole("button", { name: /^Clínica Médica/ });
+    await expect(chip).toBeVisible();
+    const quantos = Number((await chip.innerText()).match(/(\d+)\s*$/)?.[1] ?? "0");
+    expect(quantos).toBeGreaterThan(0);
+
+    await chip.click();
+    await expect(celulas).toHaveCount(quantos);
+
+    // "Tudo" devolve a grade inteira -- filtrar nao pode ser um caminho sem volta.
+    await page.getByRole("button", { name: "Tudo", exact: true }).click();
+    await expect(celulas).toHaveCount(antes);
+  });
+
+  test("tocar num assunto abre a folha, e ela pratica com o no exato", async ({ page }) => {
+    // O mapa deixava de ser leitura aqui: antes, tocar numa celula abria uma
+    // linha de texto e parava. A decisao que o mapa provoca ("entao vou estudar
+    // neoplasias") tinha de ser refeita a mao no Banco, com filtro.
+    let payload: Record<string, unknown> | null = null;
+    await page.route("**/api/question-bank/sessions", async (route) => {
+      if (route.request().method() !== "POST") return route.fallback();
+      payload = route.request().postDataJSON() as Record<string, unknown>;
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({ session_id: "sessao-do-mapa", items: [] }),
+      });
+    });
+
+    await page.getByRole("button", { name: /^Neoplasias do Sistema Digestivo/ }).click();
+    const folha = page.getByRole("dialog", { name: "Neoplasias do Sistema Digestivo" });
+    await expect(folha).toBeVisible();
+
+    // ⚠️ O DENOMINADOR E' DITO. "no acervo desta banca", nunca "da prova":
+    // confundir os dois ja custou 12.103 questoes a este componente.
+    await expect(folha.getByText(/no acervo de/)).toBeVisible();
+
+    await folha.getByRole("button", { name: /^Praticar/ }).click();
+    await expect.poll(() => payload).not.toBeNull();
+    // Nó exato, e nao busca textual: e' o que separa "questoes de sepse" de
+    // "questoes que mencionam sepse".
+    expect(payload!.knowledge_node_ids).toEqual(["no-neoplasias"]);
+    await expect(page).toHaveURL(/\/banco\/sessao\/sessao-do-mapa$/);
+  });
+
+  test("assunto sem acervo diz isso, em vez de oferecer uma sessao vazia", async ({ page }) => {
+    // O outro caminho, e ele importa: o assunto aparece no mapa porque a PROVA
+    // o cobrou. O acervo pode nao o ter alcancado ainda, e um botao ali abriria
+    // uma sessao de zero questoes.
+    const outra = page.locator("ul.grid > li button").filter({ hasNotText: "Neoplasias" }).first();
+    await outra.click();
+    const folha = page.getByRole("dialog");
+    await expect(folha).toBeVisible();
+    await expect(folha.getByText(/Não há questões deste assunto no acervo/)).toBeVisible();
+    await expect(folha.getByRole("button", { name: /^Praticar/ })).toHaveCount(0);
+  });
+});
 
 test.describe("Comparar duas provas (/mapa)", () => {
   test.beforeEach(async ({ context, page }) => {
