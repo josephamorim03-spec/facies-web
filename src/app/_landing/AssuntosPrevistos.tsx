@@ -1,4 +1,5 @@
 import type { DadosDaLanding } from "./dados";
+import { dec } from "@/lib/decimal";
 
 /**
  * A série por assunto — uma barra por aplicação.
@@ -82,15 +83,15 @@ export function AssuntosPrevistos({ dados }: { dados: DadosDaLanding }) {
             <p className="mb-4">
               Eles cobrem{" "}
               <span className="font-mono tabular-nums">
-                {previsao.cobertura.mediaPct}%
+                {dec(previsao.cobertura.mediaPct)}%
               </span>{" "}
               da prova num ano típico — e pelo menos{" "}
               <span className="font-mono tabular-nums">
-                {previsao.cobertura.minimaPct}%
+                {dec(previsao.cobertura.minimaPct)}%
               </span>{" "}
               em {previsao.cobertura.confiancaPct} de cada 100 edições. É{" "}
               <span className="font-mono tabular-nums">
-                {previsao.cobertura.lift.toLocaleString("pt-BR")}×
+                {dec(previsao.cobertura.lift, 2)}×
               </span>{" "}
               o que uma lista do mesmo tamanho tirada ao acaso cobriria, medido em{" "}
               <span className="font-mono tabular-nums">{previsao.cobertura.alvos}</span>{" "}
