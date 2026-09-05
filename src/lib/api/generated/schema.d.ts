@@ -7677,6 +7677,8 @@ export interface components {
             year: number;
             /** Exam Number */
             exam_number: string;
+            /** Access Type */
+            access_type?: string | null;
             /** Access Group */
             access_group: string;
             /** Declared Count */
