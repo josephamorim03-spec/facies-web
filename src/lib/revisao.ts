@@ -288,6 +288,58 @@ export function temasDoDia(
     );
 }
 
+/**
+ * As atualizações ligadas a UM assunto, da mais recente para a mais antiga.
+ *
+ * ## Por que isto existe, se a página já lista tudo no rodapé
+ *
+ * O painel do rodapé responde "o que mudou na medicina"; quem está revisando
+ * Diabetes na véspera não vai lê-lo, e se ler não sabe qual das dezenove linhas
+ * é da página que tem na frente. O mesmo fato, ao lado do assunto, é a diferença
+ * entre um apêndice e um aviso.
+ *
+ * ⚠️ ISTO NÃO É PREVISÃO, E A PÁGINA TEM DE DIZER ISSO. O termo de pressão por
+ * atualização clínica foi medido contra 14 alvos fora de amostra e REPROVADO:
+ * ganho de 0,2 a 0,4% onde o critério exigia 5%, com os subtemas tocados caindo
+ * nas posições 39 a 281. Ele não entra no score, e a nota que acompanha o painel
+ * (`honestidade.nota_atualizacoes`) vale igual aqui.
+ *
+ * A ordenação é por vigência decrescente porque o que mudou por último é o que o
+ * candidato tem menos chance de já ter estudado. `vigencia` é ISO `YYYY-MM-DD`,
+ * então a comparação lexicográfica é a cronológica.
+ */
+export function atualizacoesDoAssunto(
+  revisao: RevisaoFinal,
+  subtema: string,
+): AtualizacaoRevisao[] {
+  return revisao.atualizacoes
+    .filter((item) => item.subtemas.includes(subtema))
+    .sort((a, b) => b.vigencia.localeCompare(a.vigencia));
+}
+
+/**
+ * As atualizações que NÃO têm assunto na revisão — as únicas que o painel do
+ * rodapé ainda precisa listar.
+ *
+ * ## Por que o rodapé encolheu
+ *
+ * Enquanto as atualizações só existiam no fim da página, listá-las todas ali era
+ * a única forma de publicá-las. Com `atualizacoesDoAssunto` colocando cada uma
+ * ao lado do seu assunto, repetir a lista inteira no rodapé passou a ser
+ * duplicação pura: medido em 04/09, **19 de 19** já apareciam acima, com título,
+ * resumo, vigência e fonte iguais. Uma página que diz a mesma coisa duas vezes
+ * ensina o leitor a pular a segunda — e a segunda é onde mora a ressalva.
+ *
+ * Órfã não é defeito: é atualização de um assunto que não entrou nos 42. Ela
+ * continua sendo fato publicável, e o rodapé é a casa dela.
+ */
+export function atualizacoesOrfas(revisao: RevisaoFinal): AtualizacaoRevisao[] {
+  const assuntos = new Set(revisao.dias.flatMap((dia) => dia.temas.map((t) => t.subtema)));
+  return revisao.atualizacoes.filter(
+    (item) => !item.subtemas.some((subtema) => assuntos.has(subtema)),
+  );
+}
+
 /** A classe mais frequente de um eixo medido, ou `null` quando o classificador
  *  não achou sinal nenhum — caso em que a página não deve afirmar padrão. */
 export function classeModal(

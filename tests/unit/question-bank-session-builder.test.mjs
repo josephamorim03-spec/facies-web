@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   clampQuestionLimit,
   getActiveFilters,
+  motivoParaNaoComecar,
   parseQuestionBankEntryContext,
   questionBankCtaLabel,
   resolveEntryTopic,
@@ -92,4 +93,69 @@ test("tipo de estudo e correcao sao eixos independentes no rotulo", () => {
   assert.ok(porTopico.endsWith("corrige tudo ao terminar"));
   assert.ok(prova.endsWith("corrige tudo ao terminar"));
   assert.notEqual(porTopico, prova);
+});
+
+// ─── motivoParaNaoComecar ────────────────────────────────────────────────────
+//
+// Dois dos quatro motivos de `canStartConfigured` nao tinham explicacao: o CTA
+// ficava desabilitado e MUDO. O pior era a prova — sem instituicao e ano nao ha
+// o que contar, e era o "modo prova nao inicia de forma clara" relatado.
+
+const baseEstado = {
+  studyKind: "topic",
+  fullExamReady: false,
+  fullExamName: "",
+  fullExamYear: 2025,
+  loadingPreview: false,
+  availableCount: 10,
+  totalCount: 10,
+  answerStatus: "all",
+  activeFilterCount: 0,
+};
+
+test("pode comecar: sem motivo, sem texto inventado", () => {
+  assert.equal(motivoParaNaoComecar(baseEstado), null);
+});
+
+test("carregando nao inventa motivo", () => {
+  assert.equal(
+    motivoParaNaoComecar({ ...baseEstado, loadingPreview: true, availableCount: 0 }),
+    null,
+  );
+});
+
+test("prova sem instituicao diz o que falta", () => {
+  const motivo = motivoParaNaoComecar({ ...baseEstado, studyKind: "full_exam" });
+  assert.match(motivo, /instituição/i);
+});
+
+test("prova com instituicao e sem ano cobra o ano", () => {
+  const motivo = motivoParaNaoComecar({
+    ...baseEstado, studyKind: "full_exam", fullExamName: "USP-SP", fullExamYear: "",
+  });
+  assert.match(motivo, /ano/i);
+});
+
+test("prova vazia NAO manda remover filtro -- o filtro e' a prova", () => {
+  const motivo = motivoParaNaoComecar({
+    ...baseEstado, studyKind: "full_exam", fullExamReady: true,
+    fullExamName: "USP-SP", fullExamYear: 2023, availableCount: 0, totalCount: 0,
+  });
+  assert.match(motivo, /USP-SP/);
+  assert.doesNotMatch(motivo, /remova um filtro/i);
+});
+
+test("treino vazio COM filtro manda remover filtro", () => {
+  const motivo = motivoParaNaoComecar({
+    ...baseEstado, availableCount: 0, totalCount: 0, activeFilterCount: 2,
+  });
+  assert.match(motivo, /remova um filtro/i);
+});
+
+test("tudo respondido explica o historico, nao o filtro", () => {
+  const motivo = motivoParaNaoComecar({
+    ...baseEstado, availableCount: 0, totalCount: 40, answerStatus: "unanswered",
+  });
+  assert.match(motivo, /40/);
+  assert.match(motivo, /histórico/i);
 });

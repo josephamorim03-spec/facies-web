@@ -144,3 +144,61 @@ export function questionBankCtaLabel(limit: number, correctionMode: CorrectionMo
   if (studyKind === "full_exam") return `Começar prova · ${limit} questões · ${correction}`;
   return `Começar ${limit} questões · ${correction}`;
 }
+
+/**
+ * Por que o botao de comecar esta morto — e o que fazer a respeito.
+ *
+ * Mora AQUI, e nao no JSX, pela mesma razao que `motivoDoTopico`: e' uma
+ * decisao com varios ramos, e regra presa dentro de componente so' se testa por
+ * regex no texto-fonte, o que prova que a linha existe e nao que ela decide
+ * certo.
+ *
+ * Dois dos quatro motivos de `canStartConfigured` nao tinham explicacao
+ * nenhuma. O pior era a prova: sem instituicao e ano preenchidos nao ha o que
+ * contar, entao o CTA ficava desabilitado e MUDO — o "modo prova nao inicia de
+ * forma clara" que o operador relatou.
+ *
+ * `null` significa "pode comecar, ou ainda estamos carregando": quem chama nao
+ * deve inventar texto no lugar do silencio.
+ */
+export type MotivoParaNaoComecar = {
+  studyKind: string;
+  fullExamReady: boolean;
+  fullExamName: string;
+  fullExamYear: string | number;
+  loadingPreview: boolean;
+  availableCount: number | null;
+  totalCount: number | null;
+  answerStatus: string;
+  activeFilterCount: number;
+};
+
+export function motivoParaNaoComecar(estado: MotivoParaNaoComecar): string | null {
+  const {
+    studyKind, fullExamReady, fullExamName, fullExamYear,
+    loadingPreview, availableCount, totalCount, answerStatus, activeFilterCount,
+  } = estado;
+
+  // A prova vem ANTES da disponibilidade: sem os campos nao ha o que contar.
+  if (studyKind === "full_exam" && !fullExamReady) {
+    return fullExamName.trim().length === 0
+      ? "Informe a instituição da prova para continuar."
+      : "Informe o ano da prova para continuar.";
+  }
+  if (loadingPreview || availableCount === null || availableCount > 0) return null;
+
+  if (totalCount === 0) {
+    // Em prova, "remova um filtro" e' conselho errado: o filtro E' a prova, e
+    // zero quase sempre significa que o nome digitado nao casou com o acervo.
+    if (studyKind === "full_exam") {
+      return `Nenhuma questão encontrada para "${fullExamName.trim()}" em ${fullExamYear}. Confira o nome da instituição e o ano.`;
+    }
+    return activeFilterCount > 0
+      ? "Nenhuma questão combina com os filtros atuais. Remova um filtro para ampliar a busca."
+      : "Nenhuma questão disponível no banco para esta configuração.";
+  }
+  if (answerStatus === "unanswered") {
+    return `Você já respondeu todas as ${totalCount} questões deste filtro. Troque o histórico para "todas" ou "só erros".`;
+  }
+  return `As ${totalCount} questões do filtro não se encaixam neste histórico. Ajuste o histórico da sessão.`;
+}

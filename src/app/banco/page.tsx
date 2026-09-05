@@ -48,6 +48,7 @@ import {
   clampQuestionLimit,
   CORRECTION_MODE_SHORT_LABEL,
   getActiveFilters,
+  motivoParaNaoComecar,
   parseQuestionBankEntryContext,
   questionBankCtaLabel,
   resolveEntryTopic,
@@ -1016,18 +1017,14 @@ function BancoDeQuestoesContent() {
   // Zero questoes tem causas diferentes e acoes diferentes. Sem dizer qual, a
   // tela so mostra "Max. 0" e um botao morto — foi o que fez o filtro parecer
   // quebrado.
-  const emptyReason = (() => {
-    if (loadingPreview || !availability || availability.available_count > 0) return null;
-    if (availability.total_count === 0) {
-      return activeFilters.length > 0
-        ? "Nenhuma questão combina com os filtros atuais. Remova um filtro para ampliar a busca."
-        : "Nenhuma questão disponível no banco para esta configuração.";
-    }
-    if (answerStatus === "unanswered") {
-      return `Você já respondeu todas as ${availability.total_count} questões deste filtro. Troque o histórico para "todas" ou "só erros".`;
-    }
-    return `As ${availability.total_count} questões do filtro não se encaixam neste histórico. Ajuste o histórico da sessão.`;
-  })();
+  // A decisao mora em `motivoParaNaoComecar`, fora do JSX: varios ramos, e
+  // regra presa em componente so' se testa por regex no texto-fonte.
+  const emptyReason = motivoParaNaoComecar({
+    studyKind, fullExamReady, fullExamName, fullExamYear, loadingPreview,
+    answerStatus, activeFilterCount: activeFilters.length,
+    availableCount: availability ? availability.available_count : null,
+    totalCount: availability ? availability.total_count : null,
+  });
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -1195,10 +1192,16 @@ function BancoDeQuestoesContent() {
 
             A correcao nao foi mover a acao para outro lugar: foi parar de
             duplica-la. `CreateSessionPanel` tirou o `hidden md:flex` do proprio
-            botao, e o erro continua sendo mostrado la dentro, ao lado do resumo
-            que ele explica. Duas consequencias que valem: a tela ganhou ~110px
-            de altura util, e o rotulo longo ("Começar 20 questões · com
-            gabarito") deixou de precisar caber numa faixa de largura fixa. */}
+            botao, e a tela ganhou ~110px de altura util.
+
+            ⚠️ CONFLITO DE MERGE RESOLVIDO A FAVOR DA REMOCAO, e o ganho do
+            outro lado NAO se perdeu. `0f88da9a` ("o botao de comecar diz o que
+            falta, em vez de morrer calado") tinha acabado de por `emptyReason`
+            no `status` desta barra, justamente para o aluno de celular ver o
+            motivo. Ele continua a ve-lo: `emptyReason` ja era renderizado
+            dentro do `CreateSessionPanel` (`:207`), e o painel deixou de se
+            esconder no mobile -- entao a explicacao passou a aparecer ao lado
+            do resumo que ela explica, que e' onde ela pertence. */}
       </div>
       <ConfirmDialog
         open={feedbackDefaultPromptOpen}

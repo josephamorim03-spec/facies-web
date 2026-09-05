@@ -81,7 +81,6 @@ type Preferences = {
   presentationMode?: QuestionPresentationMode;
   timerVisible?: boolean;
   sourceVisible?: boolean;
-  autoReveal?: boolean;
   /**
    * O interruptor do deslizar, do artboard `8f`.
    *
@@ -203,7 +202,6 @@ function readPreferences(defaultPresentationMode: QuestionPresentationMode): Req
       presentationMode: defaultPresentationMode,
       timerVisible: timerPadrao(defaultPresentationMode),
       sourceVisible: false,
-      autoReveal: false,
       swipeEnabled: true,
     };
   }
@@ -218,7 +216,6 @@ function readPreferences(defaultPresentationMode: QuestionPresentationMode): Req
       timerVisible:
         typeof parsed.timerVisible === "boolean" ? parsed.timerVisible : timerPadrao(mode),
       sourceVisible: typeof parsed.sourceVisible === "boolean" ? parsed.sourceVisible : false,
-      autoReveal: parsed.autoReveal === true,
       // `=== false`, e nao `!== true`: quem nunca escolheu tem de cair no
       // padrao LIGADO. Colapsar "nunca escolhi" com "escolhi nao" desligaria o
       // gesto para todo aluno que ja tem preferencias gravadas.
@@ -229,7 +226,6 @@ function readPreferences(defaultPresentationMode: QuestionPresentationMode): Req
       presentationMode: defaultPresentationMode,
       timerVisible: timerPadrao(defaultPresentationMode),
       sourceVisible: false,
-      autoReveal: false,
       swipeEnabled: true,
     };
   }
@@ -610,9 +606,18 @@ export default function FocusedQuestion({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [busy, canAnswer, canNext, canPrev, canReveal, captureTextSelection, closeHighlightToolbar, closeSettings, closeWhy, focusActive, highlightSelection, item.alternatives, onAnswer, onNext, onPrev, onReveal, onToggleDoubtful, overlayOpen, settingsOpen, toggleFavorite, toggleFocusMode, whyOpen]);
 
-  useEffect(() => {
-    if (prefs.autoReveal && canReveal) onReveal();
-  }, [canReveal, onReveal, prefs.autoReveal]);
+  // NAO ha mais revelacao automatica -- a remocao e' o conserto.
+  //
+  // Era `if (prefs.autoReveal && canReveal) onReveal()`, e `canReveal` fica
+  // verdadeiro no instante em que a alternativa e' TOCADA: o backend colapsa
+  // `draft_selected_option` em `selected_option` na montagem do item. Um toque
+  // disparava `revealAnswer`, que COMPROMETE (`commit: true`) e revela -- e
+  // `canAnswer` exige `!revealed && !item.answer_committed`, entao nao havia
+  // volta. Como a sessao pontua ao finalizar, um toque acidental entrava no
+  // modelo do aluno como erro que ele nunca escolheu cometer.
+  //
+  // O rotulo dizia "Revelar ao responder" e o codigo revelava ao SELECIONAR.
+  // O passo ja' existe -- o botao "Responder"; o atalho so' o pulava.
 
   function updatePrefs(next: Partial<Required<Preferences>>) {
     setPrefs((current) => ({ ...current, ...next }));
@@ -1433,10 +1438,6 @@ export default function FocusedQuestion({
                 <span>Fonte da questão</span>
                 <input type="checkbox" checked={prefs.sourceVisible} onChange={(e) => updatePrefs({ sourceVisible: e.target.checked })} className="h-4 w-4 accent-ink" />
               </label>
-              <label className="flex items-center justify-between gap-3 rounded-control border border-edge bg-surface px-3 py-2">
-                <span>Revelar ao responder</span>
-                <input type="checkbox" checked={prefs.autoReveal} onChange={(e) => updatePrefs({ autoReveal: e.target.checked })} className="h-4 w-4 accent-ink" />
-              </label>
               <div className="rounded-control border border-edge bg-surface p-3">
                 <p className="paper-eyebrow mb-2">Atalhos</p>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted">
@@ -1455,8 +1456,7 @@ export default function FocusedQuestion({
                     presentationMode: defaultPresentationMode,
                     timerVisible: timerPadrao(defaultPresentationMode),
                     sourceVisible: false,
-                    autoReveal: false,
-                    swipeEnabled: true,
+                                  swipeEnabled: true,
                   })
                 }
                 className="w-full rounded-control border border-edge bg-surface px-3 py-2 text-left text-muted hover:text-ink"
