@@ -61,3 +61,35 @@ export function SectionTitle({
     </header>
   );
 }
+
+/**
+ * O índice da tela — as gavetas à vista, antes do primeiro rolar.
+ *
+ * ⚠️ ESTA PÁGINA TEM SETE SEÇÕES e chama-se "Minha semana" no menu. Quem entra
+ * por ali não tem como saber que a prova-alvo, os alertas e os Cards moram na
+ * mesma página, abaixo de ~500px de formulário de rotina — e por isso o resto
+ * do produto passou a apontar para cá com âncora (`#prova-alvo`), o que é o
+ * sintoma, não a cura: uma âncora conserta UM caminho e deixa os outros seis.
+ *
+ * O índice é a cura barata: as sete existem, têm nome, e chegam a um toque. É
+ * o mesmo recurso que as Definições do sistema usam quando a lista cresce.
+ */
+export function IndiceDaTela({
+  secoes,
+}: {
+  secoes: { id: string; rotulo: string }[];
+}) {
+  return (
+    <nav aria-label="Seções desta página" className="flex flex-wrap gap-2 py-4">
+      {secoes.map((secao) => (
+        <a
+          key={secao.id}
+          href={`#${secao.id}`}
+          className="paper-control inline-flex min-h-9 items-center rounded-control border border-edge bg-surface px-3 text-nota text-muted transition-colors hover:text-ink"
+        >
+          {secao.rotulo}
+        </a>
+      ))}
+    </nav>
+  );
+}

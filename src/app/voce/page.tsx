@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
+import { SeletorDeTema } from "@/components/SeletorDeTema";
 import { UserAvatar } from "@/components/UserAvatar";
 import { SuaEspecialidade } from "./_components/SuaEspecialidade";
 import { LoadBar } from "@/components/ui/LoadBar";
@@ -89,6 +90,27 @@ function Entrada({
         ›
       </span>
     </Link>
+  );
+}
+
+/**
+ * ⚠️ AS SETE ENTRADAS ERAM UMA LISTA SÓ, e o operador chamou isso de "gaveta".
+ *
+ * Estavam no mesmo nível: o objetivo da vida ("a sua prova"), uma preferência
+ * de aparelho, uma lista de questões guardadas e a senha. Sete linhas iguais
+ * não dizem onde procurar — quem quer o modo escuro lê as sete.
+ *
+ * Agora são quatro gavetas com nome, na ordem em que se pensa nelas: o que
+ * você quer, o que você já fez, como é a sua semana, e o aplicativo. É a mesma
+ * divisão que o perfil de qualquer rede social faz — conteúdo seu primeiro,
+ * ajuste do app por último.
+ */
+function Grupo({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h2 className="paper-eyebrow mb-1">{titulo}</h2>
+      {children}
+    </section>
   );
 }
 
@@ -179,27 +201,48 @@ export default function VocePage() {
         <Registro valor={String(diasComEstudo)} rotulo="dias com estudo" />
       </section>
 
-      <nav aria-label="Suas configurações">
-        <Entrada href="/preferencias#prova-alvo" nota="Onde você quer entrar">
-          A sua prova
-        </Entrada>
-        <SuaEspecialidade atual={perfil.data?.intended_specialty ?? null} />
-        <Entrada href="/preferencias" nota="Quanto dá para estudar em cada tipo de dia">
-          Minha semana
-        </Entrada>
-        <Entrada href="/plano" nota="O que vem pela frente, e o que não coube">
-          O plano até a prova
-        </Entrada>
-        <Entrada href="/cronograma" nota="Para quem quer ver o mês inteiro">
-          Calendário
-        </Entrada>
-        <Entrada href="/banco/guardadas" nota="As questões que você guardou">
-          Guardadas
-        </Entrada>
-        <Entrada href="/conta" nota="Acesso, senha, seus dados">
-          Conta e privacidade
-        </Entrada>
-      </nav>
+      <div className="space-y-6">
+        <Grupo titulo="o que você quer">
+          {/* ⚠️ "A sua prova" e "Minha semana" apontavam AMBAS para
+              `/preferencias`, uma delas com âncora. Duas entradas para a mesma
+              tela, com nomes que não se parecem, é como um menu ensina o
+              caminho errado. Continuam separadas porque respondem a perguntas
+              diferentes, mas agora estão em gavetas diferentes — e a âncora
+              leva à secção certa. */}
+          <Entrada href="/preferencias#prova-alvo" nota="Onde você quer entrar">
+            A sua prova
+          </Entrada>
+          <SuaEspecialidade atual={perfil.data?.intended_specialty ?? null} />
+        </Grupo>
+
+        <Grupo titulo="o seu estudo">
+          <Entrada href="/banco/guardadas" nota="As questões que você guardou">
+            Guardadas
+          </Entrada>
+          <Entrada href="/banco/historico" nota="As sessões que você já fechou">
+            Histórico
+          </Entrada>
+        </Grupo>
+
+        <Grupo titulo="a sua rotina">
+          <Entrada href="/preferencias" nota="Quanto dá para estudar em cada tipo de dia">
+            Minha semana
+          </Entrada>
+          <Entrada href="/plano" nota="O que vem pela frente, e o que não coube">
+            O plano até a prova
+          </Entrada>
+          <Entrada href="/cronograma" nota="Para quem quer ver o mês inteiro">
+            Calendário
+          </Entrada>
+        </Grupo>
+
+        <Grupo titulo="o aplicativo">
+          <SeletorDeTema />
+          <Entrada href="/conta" nota="Acesso, senha, seus dados">
+            Conta e privacidade
+          </Entrada>
+        </Grupo>
+      </div>
     </div>
   );
 }

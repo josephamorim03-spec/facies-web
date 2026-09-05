@@ -1,27 +1,38 @@
 "use client";
 
-import { THEME_KEY } from "@/lib/storage-keys";
+import { Monitor, Moon, Sun } from "lucide-react";
 
+import { useTema } from "@/hooks/useTema";
+import { aplicarTema, CICLO, ROTULO, type Tema } from "@/lib/tema";
+
+const ICONE: Record<Tema, typeof Sun> = {
+  claro: Sun,
+  escuro: Moon,
+  sistema: Monitor,
+};
+
+/**
+ * O botão de ícone da barra lateral. CICLA pelos três, não alterna dois.
+ *
+ * ⚠️ Ele alternava `claro ⇄ escuro` e, ao fazê-lo, gravava a chave — o que
+ * tornava "seguir o sistema" um estado sem porta de volta. E o ícone era um
+ * desenho fixo, igual nos dois estados: não dizia em qual você estava.
+ *
+ * A escolha por extenso vive em `/voce` (`SeletorDeTema`), que é onde o
+ * operador vai procurá-la. Este aqui é o atalho de quem já sabe.
+ */
 export function ThemeToggle({ className = "" }: { className?: string }) {
-  const toggle = () => {
-    try {
-      const isDark = document.documentElement.classList.toggle("dark");
-      localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
-    } catch {}
-  };
+  const tema = useTema();
+
+  const Icone = ICONE[tema];
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={() => aplicarTema(CICLO[tema])}
       className={`text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${className}`}
-      aria-label="Alternar tema claro/escuro"
-      title="Alternar tema"
+      aria-label={`Tema: ${ROTULO[tema]}. Trocar para ${ROTULO[CICLO[tema]]}`}
     >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className="w-4 h-4">
-        <rect x="8" y="8" width="8" height="8" />
-        <path d="M11 2h2v3h-2zM11 19h2v3h-2zM2 11h3v2H2zM19 11h3v2h-3z" fill="currentColor" stroke="none" />
-        <path d="M4 4h3v3H4zM17 4h3v3h-3zM4 17h3v3H4zM17 17h3v3h-3z" fill="currentColor" stroke="none" />
-      </svg>
+      <Icone className="h-4 w-4" aria-hidden="true" />
     </button>
   );
 }

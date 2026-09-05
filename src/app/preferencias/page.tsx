@@ -39,7 +39,7 @@ import { Button } from "@/components/ui/Button";
 import { ObjectiveSelector } from "@/components/objectives/ObjectiveSelector";
 import { TargetExamSelector } from "@/components/objectives/TargetExamSelector";
 import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
-import { PreferenceToggle, SectionTitle } from "@/app/preferencias/_components/PecasDaTela";
+import { IndiceDaTela, PreferenceToggle, SectionTitle } from "@/app/preferencias/_components/PecasDaTela";
 import {
   displayEventLabel,
   DURATIONS,
@@ -469,6 +469,17 @@ export default function PreferenciasPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
+      <IndiceDaTela
+        secoes={[
+          { id: "minha-semana", rotulo: "Minha semana" },
+          { id: "compromissos", rotulo: "Compromissos e metas" },
+          { id: "prova-alvo", rotulo: "Prova alvo" },
+          { id: "objetivo", rotulo: "Objetivo" },
+          { id: "alertas", rotulo: "Alertas" },
+          { id: "correcao", rotulo: "Correção" },
+          { id: "cards", rotulo: "Cards" },
+        ]}
+      />
       <div className="divide-y divide-edge">
         {/* ── Minha semana (artboard `14a`) ──────────────────────────────
             Entra ANTES de tudo porque e' a unica coisa nesta pagina que o
@@ -476,7 +487,7 @@ export default function PreferenciasPage() {
             so' era escrito no questionario inicial e nunca mais relido: o
             aluno respondia "quanto tempo por dia" uma vez, na vida, sem porta
             de volta. */}
-        <section className="py-7">
+        <section id="minha-semana" className="scroll-mt-24 py-7">
           <SectionTitle
             icon={CalendarClock}
             title="Minha semana"
@@ -525,7 +536,7 @@ export default function PreferenciasPage() {
           />
         </section>
 
-        <section className="py-7">
+        <section id="compromissos" className="scroll-mt-24 py-7">
           <SectionTitle
             icon={Repeat}
             title="Compromissos e metas"
@@ -760,7 +771,7 @@ export default function PreferenciasPage() {
             Antes disso, renderizar a seção mostrava um aviso de indisponibilidade
             sobre o qual o aluno não pode agir — ruído, não informação. */}
         {objectivesCapability?.enabled ? (
-          <section className="py-7">
+          <section id="objetivo" className="scroll-mt-24 py-7">
             <SectionTitle
               icon={Target}
               title="Objetivo de residência"
@@ -776,7 +787,7 @@ export default function PreferenciasPage() {
           </section>
         ) : null}
 
-        <section className="py-7">
+        <section id="alertas" className="scroll-mt-24 py-7">
           <SectionTitle
             icon={Bell}
             title="Alertas"
@@ -802,7 +813,7 @@ export default function PreferenciasPage() {
           </div>
         </section>
 
-        <section className="py-7">
+        <section id="correcao" className="scroll-mt-24 py-7">
           <SectionTitle
             icon={CalendarClock}
             title="Recomendações e correção"
@@ -894,7 +905,7 @@ export default function PreferenciasPage() {
           </fieldset>
         </section>
 
-        <section className="py-7">
+        <section id="cards" className="scroll-mt-24 py-7">
           <SectionTitle
             icon={Layers3}
             title="Cards"

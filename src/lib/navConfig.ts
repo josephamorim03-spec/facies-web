@@ -151,10 +151,19 @@ const LEGACY_PATHS: Record<StudentIntent, string[]> = {
   you: ["/cronograma", "/agenda-operacional", "/desempenho", "/trilha", "/rotina-e-metas"],
 };
 
-// A ordem e a do desenho: hoje · mapa · banco · evolucao · rotina · conta.
+// ⚠️ O MAPA MUDOU PARA O CENTRO, a pedido do operador (2026-09-05).
 //
-// `mapa` (artboard `9a`) JA' ENTROU: `/mapa` existe e mostra a facies da
-// banca-alvo. A ponte que eu tinha dado como incerta e' direta --
+// A ordem visivel passou a ser **hoje · banco · mapa · evolucao · voce**, com o
+// mapa no terceiro de cinco. Nao e simetria: em toda rede social que este
+// publico usa todo dia, o centro da barra e o polegar em repouso -- e' onde
+// Instagram e TikTok poem a acao que a casa quer que voce faca. O mapa deixou
+// de ser leitura e passou a ser a porta de entrada para praticar, entao ele
+// ganhou esse lugar.
+//
+// A ordem anterior (hoje · mapa · banco) vinha do desenho, que listava as
+// telas na ordem em que foram desenhadas, e nao na ordem em que se usam.
+//
+// `mapa` (artboard `9a`) mostra a facies da banca-alvo. A ponte e' direta --
 // `StudentTargetExamItem.institution_key` e `Banca.institution_key` sao o mesmo
 // vocabulario, validado no onboarding.
 //
@@ -162,8 +171,8 @@ const LEGACY_PATHS: Record<StudentIntent, string[]> = {
 // barra e `INTENTS_VISIVEIS`, mais abaixo.
 const INTENT_ORDER: StudentIntent[] = [
   "today",
-  "map",
   "bank",
+  "map",
   "cards",
   "profile",
   "you",

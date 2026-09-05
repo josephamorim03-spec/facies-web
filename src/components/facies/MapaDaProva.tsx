@@ -268,7 +268,14 @@ export function MapaDaProva({
           torna o chip informativo antes de ser tocado: ele ja diz quanto a
           area pesa nos assuntos mostrados. */}
       {areas.size > 1 ? (
-        <div className="mb-3 flex flex-wrap gap-2">
+        /* ⚠️ UMA FILEIRA QUE ROLA, e nao tres que quebram.
+           Com sete areas a 390px o `flex-wrap` empilhava tres fileiras de
+           chips — ~120px de filtro acima de um mapa que e' a razao da tela.
+           A fileira horizontal e' o idioma que este publico usa todo dia
+           (Instagram, YouTube, Spotify) e custa uma linha.
+           `snap` para o chip nao parar cortado; `px` negativo para a fileira
+           sangrar ate a borda, senao a ultima parece o fim da lista. */
+        <div className="-mx-4 mb-3 flex snap-x gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0">
           <button
             type="button"
             aria-pressed={areaAberta === null}
@@ -276,7 +283,7 @@ export function MapaDaProva({
               setAreaAberta(null);
               escolher(null);
             }}
-            className={`paper-control min-h-9 rounded-control border px-3 text-nota transition-colors ${
+            className={`paper-control min-h-9 shrink-0 snap-start rounded-control border px-3 text-nota transition-colors ${
               areaAberta === null
                 ? "border-ink bg-ink text-paper"
                 : "border-edge bg-surface text-muted hover:text-ink"
@@ -297,7 +304,7 @@ export function MapaDaProva({
                     setAreaAberta(escolhida ? null : codigo);
                     escolher(null);
                   }}
-                  className="paper-control flex min-h-9 items-center gap-2 rounded-control border border-edge bg-surface px-3 text-nota text-ink transition-colors"
+                  className="paper-control flex min-h-9 shrink-0 snap-start items-center gap-2 whitespace-nowrap rounded-control border border-edge bg-surface px-3 text-nota text-ink transition-colors"
                   style={
                     escolhida
                       ? {

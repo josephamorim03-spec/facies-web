@@ -47,12 +47,26 @@ export function FolhaDoAssunto({
   institutionKey,
   nomeDaBanca,
   meu,
+  naProva,
   onFechar,
 }: {
   assunto: string | null;
   institutionKey: string;
   nomeDaBanca: string;
   meu: { mastery: number; attempts: number; certeza: string } | null;
+  /**
+   * A leitura do MOSAICO, para a folha não a esconder.
+   *
+   * ⚠️ A folha cobria a linha de leitura que o `MapaDaProva` escreve abaixo da
+   * grade: tocar na célula abria a folha POR CIMA do texto que dizia o posto e
+   * a contagem. Quem quisesse os dois tinha de fechar e reabrir. Agora a folha
+   * traz a leitura consigo, e a linha de baixo continua lá para quando ela
+   * fechar.
+   *
+   * `exibivel: false` é o piso do dataset — menos de `PISO_N_CELULA` questões,
+   * poucas para publicar o número.
+   */
+  naProva: { posicao: number; n: number; exibivel: boolean } | null;
   onFechar: () => void;
 }) {
   const { token, tokenResolved } = useAuthToken();
@@ -114,28 +128,29 @@ export function FolhaDoAssunto({
       eyebrow="assunto da prova"
       title={assunto ?? ""}
     >
-      {meu ? (
+      {/* A LEITURA DA GRADE PRIMEIRO: é a razão de a célula ter sido tocada. */}
+      {naProva ? (
         <p className="font-mono text-nota tabular-nums text-muted">
-          você acerta {Math.round(meu.mastery * 100)}% em {meu.attempts}{" "}
-          {meu.attempts === 1 ? "resposta" : "respostas"} · {meu.certeza}
+          {naProva.posicao}º assunto mais cobrado ·{" "}
+          {naProva.exibivel
+            ? `${naProva.n} ${naProva.n === 1 ? "questão" : "questões"} nesta prova`
+            : "poucas questões para mostrar o número"}
         </p>
-      ) : (
-        <p className="text-nota text-muted">Você ainda não respondeu isto.</p>
-      )}
+      ) : null}
 
-      <div className="mt-4 border-t border-rule pt-4">
+      {/* ⚠️ A AÇÃO SUBIU, e ficou acima da dobra do celular.
+          Ela era a última coisa da folha, depois da linha da prova e da linha
+          da sua proficiência — e numa folha de fundo, no telefone, isso quer
+          dizer "atrás do teclado do polegar". O operador disse que acionar o
+          banco pelo mapa estava ruim; a ordem era metade disso. O que informa a
+          decisão fica em cima do botão; o que a comenta, embaixo. */}
+      <div className="mt-4">
         {no.isPending ? (
           <p className="text-sm text-muted">Procurando questões…</p>
         ) : encontrado && quantas > 0 ? (
           <>
-            {/* ⚠️ "no acervo desta banca", e nao "da prova". Sao denominadores
-                diferentes: a grade conta a janela recente publicada na facies,
-                isto conta o que existe para praticar. */}
-            <p className="font-mono text-nota tabular-nums text-muted">
-              {quantas} {quantas === 1 ? "questão" : "questões"} no acervo de {nomeDaBanca}
-            </p>
             {erro ? (
-              <p className="mt-2 text-nota text-danger" role="alert">
+              <p className="mb-2 text-nota text-danger" role="alert">
                 {erro}
               </p>
             ) : null}
@@ -143,10 +158,18 @@ export function FolhaDoAssunto({
               type="button"
               onClick={() => void praticar()}
               disabled={criando}
-              className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition-colors hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)] disabled:opacity-50"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition-colors hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)] disabled:opacity-50"
             >
               {criando ? "Montando…" : `Praticar ${quantas} ${quantas === 1 ? "questão" : "questões"}`}
             </button>
+            {/* ⚠️ "no acervo desta banca", e nao "da prova". Sao denominadores
+                diferentes: a grade conta a janela recente publicada na facies,
+                isto conta o que existe para praticar. A frase fica DEBAIXO do
+                botão porque ela explica o número que está nele. */}
+            <p className="mt-2 text-nota text-muted">
+              {quantas} {quantas === 1 ? "questão" : "questões"} no acervo de{" "}
+              {nomeDaBanca} — a contagem acima é a da prova.
+            </p>
           </>
         ) : (
           // Sem nó ou sem questão: dizer, e não oferecer um botão que abriria
@@ -155,6 +178,17 @@ export function FolhaDoAssunto({
             Não há questões deste assunto no acervo desta banca — ele aparece no mapa porque a
             prova o cobrou, e o acervo ainda não o alcançou.
           </p>
+        )}
+      </div>
+
+      <div className="mt-4 border-t border-rule pt-4">
+        {meu ? (
+          <p className="font-mono text-nota tabular-nums text-muted">
+            você acerta {Math.round(meu.mastery * 100)}% em {meu.attempts}{" "}
+            {meu.attempts === 1 ? "resposta" : "respostas"} · {meu.certeza}
+          </p>
+        ) : (
+          <p className="text-nota text-muted">Você ainda não respondeu isto.</p>
         )}
       </div>
     </Sheet>

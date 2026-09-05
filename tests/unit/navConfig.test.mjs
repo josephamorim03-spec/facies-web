@@ -40,10 +40,17 @@ test("a navegacao e cinco destinos, na ordem do desenho", () => {
   //
   // Rotina e Conta viraram FILHOS de "Você", nao sumiram. Para voltar aos seis:
   // `INTENTS_VISIVEIS` em `navConfig.ts`.
+  // ⚠️ O MAPA ESTA NO MEIO, e a posicao e parte do contrato.
+  //
+  // O operador pediu (2026-09-05) que ele ficasse no centro dos cinco: e onde
+  // o polegar descansa, e e o lugar que Instagram e TikTok reservam a acao que
+  // a casa quer que voce faca. Um teste que so contasse cinco destinos deixaria
+  // a ordem escorregar de volta sem ninguem notar.
   assert.deepEqual(
     NAV_ITEMS.map((item) => item.href),
-    ["/hoje", "/mapa", "/banco", "/evolucao", "/voce"],
+    ["/hoje", "/banco", "/mapa", "/evolucao", "/voce"],
   );
+  assert.equal(NAV_ITEMS[2].href, "/mapa", "o mapa e o terceiro de cinco");
   // Uma barra so: no mobile e a barra inferior, no desktop o menu bar. Sem
   // divisorias, porque nao ha mais agrupamento por pergunta.
   assert.equal(NAV_GROUPS_CONFIG.length, 1);
@@ -70,7 +77,7 @@ test("nem Kros nem Rota sobrevivem como rotulo de menu", () => {
   // a propria aba. Os dois enderecos continuam 308 para o Hoje, entao ninguem
   // que os tenha salvos cai em 404 — mas nenhum dos dois volta ao menu.
   const labels = NAV_ITEMS.map((item) => item.shortLabel);
-  assert.deepEqual(labels, ["Hoje", "Mapa", "Banco", "Evolução", "Você"]);
+  assert.deepEqual(labels, ["Hoje", "Banco", "Mapa", "Evolução", "Você"]);
   assert.equal(findItem("/kros"), null);
   assert.equal(findItem("/rota"), null);
 });

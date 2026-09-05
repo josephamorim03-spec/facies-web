@@ -162,8 +162,16 @@ test.describe("Explorar o mapa (/mapa)", () => {
     await mockMapaApi(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/mapa");
-    await page.getByRole("button", { name: "A prova e você" }).click();
-    await expect(page.getByText("tamanho é incidência · preenchimento é você")).toBeVisible();
+    // ⚠️ SEM CLIQUE. O mosaico era a SEGUNDA aba ("A prova e você") e a tela
+    // abria num laudo; agora ele e a aba "Mapa", que e a que abre. A leitura
+    // "você" virou um interruptor DENTRO da grade, e nao outra aba.
+    await expect(
+      page.getByText("tamanho é incidência · preenchimento é o quanto cai"),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Você", exact: true }).click();
+    await expect(
+      page.getByText("tamanho é incidência · preenchimento é o que falta"),
+    ).toBeVisible();
   });
 
   test("a area filtra o mosaico, e a contagem do chip bate com o que fica", async ({ page }) => {

@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/Skeleton";
 import { Alert } from "@/components/ui/Alert";
 import { CompararProvas } from "@/components/facies/CompararProvas";
+import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
 import { LIMIAR_EM_PONTOS } from "@/components/facies/comparacaoDeProvas";
 import { FaciesReport } from "@/components/facies/FaciesReport";
 import { MapaDaProva } from "@/components/facies/MapaDaProva";
@@ -62,8 +63,8 @@ import { useAuthToken } from "@/lib/useAuthToken";
  * botão que não faz nada.
  */
 const ABAS = [
-  ["prova", "A prova"],
-  ["voce", "A prova e você"],
+  ["mapa", "Mapa"],
+  ["leitura", "Leitura"],
   ["comparar", "Comparar"],
 ] as const;
 
@@ -243,7 +244,11 @@ function EixoComparar({ minha, outrasDoAluno }: { minha: Banca; outrasDoAluno: s
  * parece uma grade onde o aluno vai mal em metade da prova. Dizer "34 dos 15
  * assuntos têm resposta sua" é o que separa as duas leituras.
  */
-function EixoVoce({ banca }: { banca: Banca }) {
+/** O que a tinta da grade mostra. Sobe até `MapaClientPage` para caber na
+ *  mesma linha das abas — ver o comentário no cabeçalho da tela. */
+export type TintaDoMapa = "prova" | "voce";
+
+function EixoMapa({ banca, tinta }: { banca: Banca; tinta: TintaDoMapa }) {
   const { token, tokenResolved } = useAuthToken();
   /**
    * O assunto aberto na grade.
@@ -254,6 +259,7 @@ function EixoVoce({ banca }: { banca: Banca }) {
    */
   const [assuntoAberto, setAssuntoAberto] = useState<string | null>(null);
 
+
   const proficiencia = useQuery({
     queryKey: queryKeys.competencyMastery,
     queryFn: () => getMyCompetencyMastery(token),
@@ -261,24 +267,16 @@ function EixoVoce({ banca }: { banca: Banca }) {
     staleTime: 60_000,
   });
 
-  if (proficiencia.isPending) {
-    return <Skeleton className="h-64 w-full" aria-label="Proficiência carregando" />;
-  }
-  if (proficiencia.isError) {
-    return <Alert variant="danger">Não consegui ler a sua proficiência agora.</Alert>;
-  }
-
   const itens = proficiencia.data?.items ?? [];
   // ⚠️ `nao_avaliado` ENTRA no mapa, e nao vira tinta.
   //
-  // Ele era descartado aqui, com o argumento certo -- o posterior encolhido
-  // devolve um numero mesmo sem observacao, e pinta-lo afirmaria desempenho
-  // onde nao houve resposta. So' que descartar tinha o mesmo efeito: a celula
-  // caia no PISO de tinta, visualmente identica a "voce vai muito bem aqui".
+  // Ele era descartado, com o argumento certo -- o posterior encolhido devolve
+  // um numero mesmo sem observacao, e pinta-lo afirmaria desempenho onde nao
+  // houve resposta. So' que descartar tinha o mesmo efeito: a celula caia no
+  // PISO de tinta, visualmente identica a "voce vai muito bem aqui".
   //
   // O `12b` resolve por FORMA: medido e' liso, estimado e' trama, nao avaliado
-  // e' tracejado SEM preenchimento. O componente distingue os tres, entao a
-  // certeza viaja junto em vez de o item sumir.
+  // e' tracejado SEM preenchimento.
   const dominio = new Map<
     string,
     { mastery: number; attempts: number; certeza: CompetencyMasteryItem["certeza"] }
@@ -298,34 +296,45 @@ function EixoVoce({ banca }: { banca: Banca }) {
   }
 
   const assuntos = banca.mais_cai.linhas;
-  // "Com dado" agora quer dizer COM RESPOSTA — `nao_avaliado` continua no mapa,
-  // mas não conta como medida.
+  // "Com dado" quer dizer COM RESPOSTA — `nao_avaliado` continua no mapa, mas
+  // não conta como medida.
   const comDado = assuntos.filter((linha) => {
     const meu = dominio.get(linha.rotulo);
     return !!meu && meu.certeza !== "nao_avaliado";
   }).length;
   const piso = proficiencia.data?.observation_floor ?? 5;
 
-  if (comDado === 0) {
-    return (
-      <div className="rounded-surface border border-edge bg-surface p-6">
-        <h2 className="font-serif font-semibold text-ink">
-          Você ainda não respondeu os assuntos desta prova
-        </h2>
-        <p className="mt-2 max-w-[52ch] text-base text-muted">
-          Este mapa acende conforme você responde. Cada sessão pinta os assuntos
-          que ela tocou, e é aí que dá para ver onde a sua prova e você discordam.
-        </p>
-      </div>
-    );
-  }
+  // A MESMA ordem que o `MapaDaProva` usa quando `preOrdenado` e' falso. Ela
+  // e' repetida aqui de proposito e nao exportada: o dia em que o mapa mudar de
+  // criterio, esta linha fica errada em silencio. O par certo seria o mapa
+  // devolver o posto junto com o rotulo em `onSelecionar` -- fica anotado.
+  const porIncidencia = [...assuntos].sort((a, b) => b.n - a.n);
+  const indiceAberto = assuntoAberto
+    ? porIncidencia.findIndex((linha) => linha.rotulo === assuntoAberto)
+    : -1;
+  const naProva =
+    indiceAberto >= 0
+      ? {
+          posicao: indiceAberto + 1,
+          n: porIncidencia[indiceAberto].n,
+          exibivel: porIncidencia[indiceAberto].exibivel,
+        }
+      : null;
+
+  const podeVoce = comDado > 0;
+  const mostrandoVoce = tinta === "voce" && podeVoce;
 
   return (
     <div className="space-y-3">
-      <p className="paper-eyebrow">tamanho é incidência · preenchimento é você</p>
+      {/* ⚠️ A GRADE NAO ESPERA MAIS PELA PROFICIENCIA.
+          Esta secao inteira ficava atras de um `Skeleton` enquanto
+          `/student/competency-mastery` respondia, e de um cartao "voce ainda
+          nao respondeu" quando nao havia dado -- ou seja, o MAPA da prova, que
+          nao depende do aluno para nada, ficava escondido por causa de um dado
+          sobre o aluno. Agora ele pinta primeiro e a sua camada chega por cima. */}
       <MapaDaProva
         linhas={assuntos}
-        dominio={dominio}
+        dominio={mostrandoVoce ? dominio : null}
         pisoDeObservacao={piso}
         onSelecionar={setAssuntoAberto}
       />
@@ -334,25 +343,51 @@ function EixoVoce({ banca }: { banca: Banca }) {
         institutionKey={banca.institution_key}
         nomeDaBanca={nomeCurto(banca)}
         meu={assuntoAberto ? dominio.get(assuntoAberto) ?? null : null}
+        naProva={naProva}
         onFechar={() => setAssuntoAberto(null)}
       />
-      {/* A nota continua, e mudou de trabalho.
-          Antes ela existia para desfazer a ambiguidade do tom claro — que tinha
-          dois sentidos, "você domina" e "não há o que medir". Agora a FORMA
-          separa os dois (tracejado é ausência), e a nota diz o tamanho da
-          amostra, que nenhuma textura carrega. */}
-      <p className="text-nota text-muted">
-        Quanto mais escuro, mais falta. {comDado} de {assuntos.length} assuntos
-        têm resposta sua; a partir de {piso} respostas o assunto deixa de ser
-        estimado e passa a ser medido.
-      </p>
+
+      {/* A nota diz o tamanho da amostra, que nenhuma textura carrega — e, na
+          leitura "você", explica por que a grade pode estar quase toda vazia. */}
+      {tinta === "voce" ? (
+        proficiencia.isPending ? (
+          <p className="text-nota text-muted">Lendo as suas respostas…</p>
+        ) : podeVoce ? (
+          <p className="text-nota text-muted">
+            Quanto mais escuro, mais falta. {comDado} de {assuntos.length} assuntos
+            têm resposta sua; a partir de {piso} respostas o assunto deixa de ser
+            estimado e passa a ser medido.
+          </p>
+        ) : (
+          <p className="text-nota text-muted">
+            Este mapa acende conforme você responde: cada sessão pinta os assuntos
+            que ela tocou. Por enquanto o preenchimento continua mostrando o
+            quanto a prova cobra.
+          </p>
+        )
+      ) : (
+        <p className="text-nota text-muted">
+          Quanto mais escuro, mais a prova cobra. Toque num assunto para praticá-lo.
+        </p>
+      )}
     </div>
   );
 }
 
 export function MapaClientPage() {
   const { token, tokenResolved } = useAuthToken();
-  const [eixo, setEixo] = useState<Eixo>("prova");
+  const [eixo, setEixo] = useState<Eixo>("mapa");
+  /**
+   * ⚠️ O INTERRUPTOR DA TINTA MORA AQUI, e não dentro do mapa.
+   *
+   * Ele ocupava uma FILEIRA inteira logo acima da grade, e a 390px cada fileira
+   * de chrome custa ~44px de mosaico. Subindo, ele divide a linha com as abas —
+   * que estavam com metade da largura vazia — e a grade sobe junto.
+   *
+   * O padrão é "prova" porque ela não depende de consulta nenhuma: a grade
+   * pinta no primeiro frame. "Você" espera a proficiência, e diz que espera.
+   */
+  const [tinta, setTinta] = useState<TintaDoMapa>("prova");
 
   const provaAlvo = useQuery({
     queryKey: queryKeys.studentTargetExam,
@@ -475,7 +510,22 @@ export function MapaClientPage() {
         </p>
       </div>
 
-      {/* ── As abas do artboard `9a` ──────────────────────────────────────
+      {/* ⚠️ A ORDEM MUDOU, e o mosaico passou a ser o que abre.
+
+          A tela chamava-se Mapa e abria num LAUDO: "A prova" era a primeira
+          aba e servia o `FaciesReport`, prosa e barras. O mosaico — a coisa que
+          dá nome à tela — era a SEGUNDA aba, e só aparecia depois de um toque.
+          O operador disse que a navegação estava ruim; isto é metade do porquê.
+
+          Agora: **Mapa** abre com o mosaico, **Leitura** guarda o laudo que era
+          a primeira, e **Comparar** fica onde estava. Três abas continuam a ser
+          as três do `9a`; o que mudou foi qual delas é a casa.
+
+          A antiga "A prova e você" não virou aba: virou um interruptor DENTRO
+          do mapa, que é o que o `12b` sempre pediu — "toque troca a leitura",
+          na mesma grade, e não duas grades em abas diferentes.
+
+          ── As abas do artboard `9a` ──────────────────────────────────────
           As TRES que o desenho nomeia. Ele desenha a primeira no `9a` e a
           segunda no `12b`; a terceira nao esta em artboard nenhum do
           `Webapp - telas`, e eu tinha concluido dai que o desenho nao a havia
@@ -485,7 +535,7 @@ export function MapaClientPage() {
           sobre o pacote. O `B1` do `Instagram - modelos` e' esta tela, com
           regra explicita -- duas faixas empilhadas, mesma escala, ambar so'
           acima de 3 pontos. Ver `CompararProvas.tsx`. */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {ABAS.map(([chave, rotulo]) => (
           <button
             key={chave}
@@ -501,10 +551,26 @@ export function MapaClientPage() {
             {rotulo}
           </button>
         ))}
+        {eixo === "mapa" ? (
+          <div className="ml-auto flex items-center gap-2">
+            <span className="paper-eyebrow hidden sm:inline">preenchimento</span>
+            <SegmentedToggle
+              value={tinta}
+              onChange={setTinta}
+              options={[
+                { value: "prova", label: "A prova" },
+                { value: "voce", label: "Você" },
+              ]}
+              ariaLabel="O que o preenchimento da grade mostra"
+            />
+          </div>
+        ) : null}
       </div>
 
-      {eixo === "prova" ? <FaciesReport banca={facies.data} /> : null}
-      {eixo === "voce" ? <EixoVoce banca={facies.data} /> : null}
+      {eixo === "mapa" ? (
+        <EixoMapa banca={facies.data} tinta={tinta} />
+      ) : null}
+      {eixo === "leitura" ? <FaciesReport banca={facies.data} /> : null}
       {eixo === "comparar" ? (
         <EixoComparar minha={facies.data} outrasDoAluno={outrasDoAluno} />
       ) : null}
