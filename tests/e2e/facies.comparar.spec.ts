@@ -26,15 +26,26 @@ import { forceDesktopNavigation } from "./support/desktopNav";
  * — e o par abaixo foi escolhido rodando `calcularDeltas` sobre o dataset de
  * verdade, então a asserção vale sobre o número que o aluno veria.
  *
- * ⚠️ Se o dataset mudar, o `+3,4` pode virar outro valor e esta spec falha. É o
- * comportamento desejado: ela existe para vigiar o formato do número no limiar,
- * e um dataset novo pede uma conferida no par, não um `toContain` frouxo.
+ * ⚠️ Se o dataset mudar, o número no limiar vira outro valor e esta spec falha.
+ * É o comportamento desejado: ela existe para vigiar o FORMATO do número no
+ * limiar, e um dataset novo pede uma conferida no par, não um `toContain`
+ * frouxo.
+ *
+ * ⚠️ **E o dataset MUDOU, em 2026-09-05.** O par antigo era SES PE × USP-SP,
+ * escolhido por render `+3,4` em cirurgia. Nos dados de hoje ele não rende
+ * delta de ÁREA nenhum acima do limiar — o maior é 2,8 — e a tela passou a
+ * mostrar só as diferenças de FORMA (`+37`, `−9`), que são inteiras e não
+ * exercitam a decimal.
+ *
+ * O par novo foi escolhido rodando `calcularDeltas` sobre as 138 bancas: dos
+ * 39 pares que rendem delta de área positivo com decimal entre 3 e 5, a FAMENE
+ * dá `+3,1` em cirurgia geral — o valor mais colado no limiar que existe, que
+ * é justamente onde o formato importa.
  */
 
-/** A prova do aluno: SES PE. Contra a USP-SP ela rende `+3,4` em cirurgia. */
+/** A prova do aluno: SES PE. Contra a FAMENE ela rende `+3,1` em cirurgia geral. */
 const MINHA_KEY = "PE-SECRETARIA-ESTADUAL-DE-SAUDE-DO-ESTADO-DE-PERNAMBUCO-SES-PE";
-const OUTRA_KEY =
-  "SP-UNIVERSIDADE-DE-SAO-PAULO-USP-SP-HOSPITAL-DAS-CLINICAS-DA-FACULDADE-DE-MEDICINA-DA-USP-HC";
+const OUTRA_KEY = "PB-FACULDADE-DE-MEDICINA-NOVA-ESPERANCA-FAMENE";
 
 async function mockMapaApi(page: Page) {
   await page.route("**/api/**", async (route) => {
@@ -244,8 +255,8 @@ test.describe("Comparar duas provas (/mapa)", () => {
 
     const textos = (await numeros.allTextContents()).map((t) => t.trim());
 
-    // O par foi escolhido por render este valor: 3,4 pontos de cirurgia.
-    expect(textos).toContain("+3,4");
+    // O par foi escolhido por render este valor: 3,1 pontos de cirurgia geral.
+    expect(textos).toContain("+3,1");
 
     // A REGRA: nada na tela pode ser lido como o limiar. A legenda logo abaixo
     // promete "só aparece o que passa de 3 pontos percentuais", e um "+3" ali
@@ -306,8 +317,8 @@ test.describe("Comparar duas provas (/mapa)", () => {
             },
             {
               priority: 2,
-              label: "USP",
-              board_code: "USP-SP",
+              label: "FAMENE",
+              board_code: "FAMENE",
               institution_key: OUTRA_KEY,
               exam_name: null,
               exam_date: null,
@@ -326,7 +337,7 @@ test.describe("Comparar duas provas (/mapa)", () => {
 
     const numeros = page.locator("ul li span.text-warning");
     await expect(numeros.first()).toBeVisible({ timeout: 15_000 });
-    expect((await numeros.allTextContents()).map((t) => t.trim())).toContain("+3,4");
+    expect((await numeros.allTextContents()).map((t) => t.trim())).toContain("+3,1");
 
     // E a prova do aluno não fica perdida no meio das 138.
     await expect(seletor.locator('optgroup[label="Suas provas"] option')).toHaveCount(1);
