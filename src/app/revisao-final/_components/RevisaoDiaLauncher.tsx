@@ -50,10 +50,9 @@ export function RevisaoDiaLauncher({
   const [estado, setEstado] = useState<Estado>("pronto");
 
   async function resolver() {
-    if (!token) {
-      router.push("/login");
-      return;
-    }
+    // ⚠️ ISTO MANDAVA TODO MUNDO PARA O LOGIN.
+    // `token` e' sempre "" (`lib/auth.ts:29`), entao o botao da Semana Final
+    // nunca abria a sessao: ele redirecionava quem ja estava autenticado.
     setEstado("criando");
     try {
       const created = await createQuestionBankSession(token, payloadDoDia(questaoIds));

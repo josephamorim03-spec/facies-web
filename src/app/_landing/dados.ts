@@ -36,6 +36,7 @@ import {
   listaDaManchete,
   previsaoPorExamKey,
 } from "@/lib/previsao";
+import { coberturaDaListaPublicada } from "@/lib/cobertura";
 
 /** O prefixo do slug da família ENARE/ENAMED, como `lib/facies.ts` já o escreve. */
 const PREFIXO_FAMILIA = "exame-nacional-de-residencia-medica-ebserh";
@@ -95,6 +96,10 @@ export function dadosDaLanding() {
   const revisao = revisaoPorExamKey(prova.exam_key);
   const previsao = previsaoPorExamKey(prova.exam_key);
   const listaPrevista = previsao ? listaDaManchete(previsao) : undefined;
+  // ⚠️ `coberturaDaListaPublicada` devolve null quando o artefato de cobertura
+  // descreve OUTRA lista (sha ou tamanho diferentes). O bloco some em vez de
+  // anunciar a cobertura de uma lista que não está na tela.
+  const cobertura = coberturaDaListaPublicada(prova.exam_key);
 
   return {
     prova,
@@ -139,6 +144,15 @@ export function dadosDaLanding() {
           itens: listaPrevista?.lista ?? [],
           hash: hashCurto(previsao.content_sha256),
           registradoEm: dataDoRegistro(previsao.registered_at),
+          cobertura: cobertura
+            ? {
+                mediaPct: cobertura.cobertura_media_pct,
+                minimaPct: cobertura.cobertura_minima_pct,
+                confiancaPct: cobertura.confianca_pct,
+                lift: cobertura.lift,
+                alvos: cobertura.alvos,
+              }
+            : null,
         }
       : null,
     // A revisao da ultima semana e as atualizacoes clinicas. Elas NAO entram no

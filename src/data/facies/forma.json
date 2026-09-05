@@ -1435,6 +1435,13 @@
           "media_questoes": 16.0
         },
         {
+          "area": "Cirurgia",
+          "desvio_pct": 2.2,
+          "desvio_questoes": 1.1,
+          "media_pct": 15.0,
+          "media_questoes": 7.5
+        },
+        {
           "area": "Medicina Preventiva",
           "desvio_pct": 5.2,
           "desvio_questoes": 2.6,
@@ -1445,13 +1452,6 @@
           "area": "Pediatria",
           "desvio_pct": 5.4,
           "desvio_questoes": 2.7,
-          "media_pct": 15.0,
-          "media_questoes": 7.5
-        },
-        {
-          "area": "Cirurgia",
-          "desvio_pct": 2.2,
-          "desvio_questoes": 1.1,
           "media_pct": 15.0,
           "media_questoes": 7.5
         },
@@ -1910,16 +1910,16 @@
           "media_questoes": 17.8
         },
         {
-          "area": "Ginecologia",
-          "desvio_pct": 4.6,
-          "desvio_questoes": 4.6,
+          "area": "Cirurgia",
+          "desvio_pct": 2.3,
+          "desvio_questoes": 2.3,
           "media_pct": 13.0,
           "media_questoes": 13.0
         },
         {
-          "area": "Cirurgia",
-          "desvio_pct": 2.3,
-          "desvio_questoes": 2.3,
+          "area": "Ginecologia",
+          "desvio_pct": 4.6,
+          "desvio_questoes": 4.6,
           "media_pct": 13.0,
           "media_questoes": 13.0
         },
@@ -2725,16 +2725,16 @@
           "media_questoes": 4.4
         },
         {
-          "area": "Pediatria",
-          "desvio_pct": 5.1,
-          "desvio_questoes": 2.6,
+          "area": "Obstetrícia",
+          "desvio_pct": 5.7,
+          "desvio_questoes": 2.9,
           "media_pct": 8.4,
           "media_questoes": 4.2
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 5.7,
-          "desvio_questoes": 2.9,
+          "area": "Pediatria",
+          "desvio_pct": 5.1,
+          "desvio_questoes": 2.6,
           "media_pct": 8.4,
           "media_questoes": 4.2
         }
@@ -3223,16 +3223,16 @@
           "media_questoes": 33.8
         },
         {
-          "area": "Medicina Preventiva",
-          "desvio_pct": 2.4,
-          "desvio_questoes": 2.4,
+          "area": "Cirurgia",
+          "desvio_pct": 4.0,
+          "desvio_questoes": 4.0,
           "media_pct": 15.8,
           "media_questoes": 15.8
         },
         {
-          "area": "Cirurgia",
-          "desvio_pct": 4.0,
-          "desvio_questoes": 4.0,
+          "area": "Medicina Preventiva",
+          "desvio_pct": 2.4,
+          "desvio_questoes": 2.4,
           "media_pct": 15.8,
           "media_questoes": 15.8
         },
@@ -4085,16 +4085,16 @@
           "media_questoes": 9.0
         },
         {
-          "area": "Pediatria",
-          "desvio_pct": 4.7,
-          "desvio_questoes": 2.4,
+          "area": "Cirurgia",
+          "desvio_pct": 1.9,
+          "desvio_questoes": 0.9,
           "media_pct": 14.7,
           "media_questoes": 7.3
         },
         {
-          "area": "Cirurgia",
-          "desvio_pct": 1.9,
-          "desvio_questoes": 0.9,
+          "area": "Pediatria",
+          "desvio_pct": 4.7,
+          "desvio_questoes": 2.4,
           "media_pct": 14.7,
           "media_questoes": 7.3
         },
@@ -6707,16 +6707,16 @@
           "media_questoes": 13.8
         },
         {
-          "area": "Ginecologia",
-          "desvio_pct": 3.4,
-          "desvio_questoes": 3.4,
+          "area": "Cirurgia",
+          "desvio_pct": 3.9,
+          "desvio_questoes": 3.9,
           "media_pct": 11.5,
           "media_questoes": 11.5
         },
         {
-          "area": "Cirurgia",
-          "desvio_pct": 3.9,
-          "desvio_questoes": 3.9,
+          "area": "Ginecologia",
+          "desvio_pct": 3.4,
+          "desvio_questoes": 3.4,
           "media_pct": 11.5,
           "media_questoes": 11.5
         },
@@ -9721,16 +9721,16 @@
           "media_questoes": 12.7
         },
         {
-          "area": "Pediatria",
-          "desvio_pct": 3.9,
-          "desvio_questoes": 3.9,
+          "area": "Obstetrícia",
+          "desvio_pct": 1.7,
+          "desvio_questoes": 1.7,
           "media_pct": 10.7,
           "media_questoes": 10.7
         },
         {
-          "area": "Obstetrícia",
-          "desvio_pct": 1.7,
-          "desvio_questoes": 1.7,
+          "area": "Pediatria",
+          "desvio_pct": 3.9,
+          "desvio_questoes": 3.9,
           "media_pct": 10.7,
           "media_questoes": 10.7
         },
@@ -10731,16 +10731,16 @@
           "media_questoes": 6.4
         },
         {
-          "area": "Medicina Preventiva",
-          "desvio_pct": 8.6,
-          "desvio_questoes": 4.3,
+          "area": "Cirurgia",
+          "desvio_pct": 7.3,
+          "desvio_questoes": 3.7,
           "media_pct": 12.4,
           "media_questoes": 6.2
         },
         {
-          "area": "Cirurgia",
-          "desvio_pct": 7.3,
-          "desvio_questoes": 3.7,
+          "area": "Medicina Preventiva",
+          "desvio_pct": 8.6,
+          "desvio_questoes": 4.3,
           "media_pct": 12.4,
           "media_questoes": 6.2
         },
@@ -12649,14 +12649,14 @@
           "media_questoes": 3.5
         },
         {
-          "area": "Outros",
+          "area": "Medicina Preventiva",
           "desvio_pct": 2.8,
           "desvio_questoes": 1.4,
           "media_pct": 4.0,
           "media_questoes": 2.0
         },
         {
-          "area": "Medicina Preventiva",
+          "area": "Outros",
           "desvio_pct": 2.8,
           "desvio_questoes": 1.4,
           "media_pct": 4.0,
@@ -12871,7 +12871,7 @@
       "questoes": 301
     }
   ],
-  "gerado_em": "2026-09-02T16:36:03.462615+00:00",
+  "gerado_em": "2026-09-02T16:39:36.351734+00:00",
   "metodo": {
     "artefatos": [
       "artifacts/raio-x/backtest-calibracao-20260831.json",

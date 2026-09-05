@@ -329,3 +329,103 @@ test("nenhum identificador interno de ingestão vaza no artefato público", () =
     );
   }
 });
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * "O que mudou desde a última prova" — o bloco por assunto.
+ *
+ * O painel do rodapé já listava as dezenove atualizações, e ninguém as ligava ao
+ * assunto que estava lendo. `atualizacoesDoAssunto` faz a ligação por
+ * `subtemas`, e ela é frágil de um jeito silencioso: o campo guarda o RÓTULO do
+ * subtema por extenso, então basta a taxonomia renomear "Tuberculose (TB)" para
+ * a ligação virar zero — sem erro, sem página quebrada, só um bloco que some.
+ *
+ * ⚠️ Estes testes leem o ARTEFATO, não a função. `lib/revisao.ts` importa
+ * `@/data/...` e o runner de `node --test` não resolve o alias — a mesma razão
+ * pela qual `previsao-hash.test.mjs` lê o JSON. O que se fixa aqui é o dado de
+ * que a função depende.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+const TEMAS = new Set(REVISAO.dias.flatMap((dia) => dia.temas.map((t) => t.subtema)));
+
+test("toda atualização publicada pertence a um assunto da revisão", () => {
+  for (const item of REVISAO.atualizacoes) {
+    const casa = (item.subtemas ?? []).filter((s) => TEMAS.has(s));
+    assert.ok(
+      casa.length > 0,
+      `"${item.titulo}" não casa com nenhum dos ${TEMAS.size} assuntos — ` +
+        "ela aparece só no rodapé, longe do assunto a que se refere",
+    );
+  }
+});
+
+/**
+ * Sem isto, uma renomeação na taxonomia zeraria a ligação e o bloco viraria
+ * código morto — verde, publicado e invisível.
+ */
+test("a ligação por subtema não está vazia", () => {
+  const comAtualizacao = new Set(
+    REVISAO.atualizacoes.flatMap((item) =>
+      (item.subtemas ?? []).filter((s) => TEMAS.has(s)),
+    ),
+  );
+  assert.ok(
+    comAtualizacao.size > 0,
+    "nenhum dos assuntos tem atualização ligada — o bloco nunca renderiza",
+  );
+});
+
+/**
+ * `vigencia` é ordenada por comparação de strings, e isso só funciona em
+ * `YYYY-MM-DD`. Um formato brasileiro entraria sem erro e ordenaria por dia.
+ */
+test("a vigência é ISO, que é o que torna a ordenação cronológica", () => {
+  for (const item of REVISAO.atualizacoes) {
+    assert.match(item.vigencia, /^\d{4}-\d{2}-\d{2}$/, `vigência não-ISO: ${item.vigencia}`);
+  }
+});
+
+/**
+ * O bloco publica um link "fonte primária". Um item sem fonte renderizaria a
+ * afirmação sem o documento que a sustenta, que é exatamente o que o painel
+ * existe para não fazer.
+ */
+test("toda atualização tem fonte primária com URL", () => {
+  for (const item of REVISAO.atualizacoes) {
+    assert.ok(item.fontes?.length > 0, `"${item.titulo}" sem fonte`);
+    for (const fonte of item.fontes) {
+      assert.match(fonte.url, /^https?:\/\//, `"${item.titulo}": fonte sem URL válida`);
+    }
+  }
+});
+
+/**
+ * O rodapé só existe para as ÓRFÃS.
+ *
+ * Enquanto as atualizações viviam só no fim da página, listá-las todas ali era a
+ * única forma de publicá-las. Com cada uma ao lado do seu assunto, repetir a
+ * lista inteira virou duplicação pura — 19 de 19, com título, resumo, vigência e
+ * fonte iguais. Uma página que diz a mesma coisa duas vezes ensina a pular a
+ * segunda, e a segunda é onde mora a ressalva.
+ *
+ * Este teste fixa a conta que decide o que o rodapé mostra. Se ela inverter, ou
+ * a página duplica tudo de novo, ou some com uma atualização que não tem outra
+ * casa.
+ */
+test("a soma fecha: toda atualização ou tem assunto, ou é órfã", () => {
+  const comAssunto = REVISAO.atualizacoes.filter((item) =>
+    (item.subtemas ?? []).some((s) => TEMAS.has(s)),
+  );
+  const orfas = REVISAO.atualizacoes.filter(
+    (item) => !(item.subtemas ?? []).some((s) => TEMAS.has(s)),
+  );
+  assert.equal(
+    comAssunto.length + orfas.length,
+    REVISAO.atualizacoes.length,
+    "há atualização que não é nem uma coisa nem outra",
+  );
+  assert.equal(
+    orfas.length,
+    0,
+    "hoje nenhuma é órfã — se isto mudar, o rodapé volta a ter lista e é de propósito",
+  );
+});

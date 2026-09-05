@@ -1,4 +1,5 @@
 import type { DadosDaLanding } from "./dados";
+import { dec } from "@/lib/decimal";
 
 /**
  * A série por assunto — uma barra por aplicação.
@@ -34,11 +35,17 @@ function Serie({ valores, correlatos }: { valores: number[]; correlatos: number 
   );
 }
 
-/** Quantos assuntos trazem o valor. Os outros vinte entram só como rótulo — a
- *  lista inteira é a carga, mas trinta linhas com número viram tabela. */
+/** Quantos assuntos trazem o valor. Os demais entram só como rótulo — a lista
+ *  inteira é a carga, mas dezenas de linhas com número viram tabela.
+ *
+ *  ⚠️ O TAMANHO DA LISTA NÃO MORA AQUI. Ele vem de `base_composition.top_n` do
+ *  artefato registrado, e a página apenas renderiza o que recebe. Fixar 30 (ou
+ *  42) neste arquivo faria a tela discordar do registro no dia seguinte a uma
+ *  troca de método — que é a classe de afirmação falsa que o hash existe para
+ *  impedir. */
 const COM_VALOR = 10;
 
-export function TrintaAssuntos({ dados }: { dados: DadosDaLanding }) {
+export function AssuntosPrevistos({ dados }: { dados: DadosDaLanding }) {
   const { previsao, serie } = dados;
   if (!previsao || previsao.itens.length === 0) return null;
 
@@ -63,6 +70,34 @@ export function TrintaAssuntos({ dados }: { dados: DadosDaLanding }) {
             fechados em <span className="font-mono tabular-nums">{previsao.registradoEm}</span>, com
             data e código de verificação, e estão aqui inteiros — não atrás de cadastro.
           </p>
+          {/* O que a lista COBRE. Sem isto, a página mostra assuntos e o leitor
+              não tem como saber o que esperar deles.
+
+              ⚠️ DUAS AFIRMAÇÕES, e publicar só a média prometeria demais: a média
+              é o ano típico, e o piso é o que se sustenta em 90% das edições. A
+              página diz as duas, nessa ordem — a segunda é a que vale como
+              promessa. O bloco some quando `cobertura` é null (o artefato
+              descreve outra lista), porque silêncio é honesto e número errado
+              não. */}
+          {previsao.cobertura ? (
+            <p className="mb-4">
+              Eles cobrem{" "}
+              <span className="font-mono tabular-nums">
+                {dec(previsao.cobertura.mediaPct)}%
+              </span>{" "}
+              da prova num ano típico — e pelo menos{" "}
+              <span className="font-mono tabular-nums">
+                {dec(previsao.cobertura.minimaPct)}%
+              </span>{" "}
+              em {previsao.cobertura.confiancaPct} de cada 100 edições. É{" "}
+              <span className="font-mono tabular-nums">
+                {dec(previsao.cobertura.lift, 2)}×
+              </span>{" "}
+              o que uma lista do mesmo tamanho tirada ao acaso cobriria, medido em{" "}
+              <span className="font-mono tabular-nums">{previsao.cobertura.alvos}</span>{" "}
+              provas anteriores.
+            </p>
+          ) : null}
           {/* O hash é o artefato que torna a aposta falsificável. Dizer que existe
               e não mostrá-lo é pedir fé. */}
           <p className="m-0 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">

@@ -210,6 +210,15 @@ export type UserProfile = {
   shift_24h_capacity: number | null;
   display_name: string | null;
   photo_url: string | null;
+  /**
+   * A especialidade que o médico pretende cursar, como ele a declarou.
+   *
+   * Grava por `POST /api/cadastro/perfil` (`salvarPerfilDeclarado`), e NAO por
+   * `updateProfile`: uma segunda porta para o mesmo dado e' o comeco de duas
+   * respostas diferentes. E' declaracao, nao verificacao -- a Facies nao sabe
+   * se a instituicao abre vaga nessa especialidade.
+   */
+  intended_specialty: string | null;
   priority_boards: string[];
   weekly_goal_notifications_enabled: boolean;
   calendar_change_alerts_enabled: boolean;

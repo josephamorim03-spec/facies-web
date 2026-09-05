@@ -210,8 +210,15 @@ export default function CreateSessionPanel({
         </p>
       )}
 
-      {/* Acao primaria mora junto do resumo sobre o qual ela age. No mobile a
-          BottomActionBar assume (ver banco/page.tsx). */}
+      {/* ⚠️ A ACAO PRIMARIA APARECE NO CELULAR TAMBEM, e ela ja morava aqui.
+          Este botao existia com `hidden md:flex` porque uma `BottomActionBar`
+          o duplicava no mobile -- uma faixa fixa colada por cima da barra de
+          abas, empilhando duas linhas de chrome no rodape.
+
+          O operador apontou o que nenhuma rede social faz. E a correcao nao foi
+          mover a acao: foi parar de duplicar. Ela sempre esteve no lugar certo
+          -- junto do resumo sobre o qual age, com o numero que ela executa a
+          uma linha de distancia. O que estava errado era esconde-la. */}
       <div className="mt-4 space-y-2">
         <Button
           type="button"
@@ -219,7 +226,7 @@ export default function CreateSessionPanel({
           size="md"
           onClick={onStartSession}
           disabled={busy || !canStart}
-          className="hidden w-full md:flex"
+          className="w-full"
         >
           {busy ? "Preparando..." : startLabel}
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className="h-4 w-4" aria-hidden="true">

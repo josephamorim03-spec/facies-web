@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PISO_N_CELULA } from "@/lib/facies";
-import { resolveDisplayArea } from "@/lib/areaDisplay";
+import { resolveDisplayArea, type DisplayArea } from "@/lib/areaDisplay";
 import { AREA_FULL_LABELS, AREA_VAR } from "@/lib/areaIdentity";
 
 /**
@@ -146,6 +146,7 @@ export function MapaDaProva({
   limite,
   preOrdenado = false,
   pisoDeObservacao = 5,
+  onSelecionar,
   dominio = null,
 }: {
   linhas: LinhaDoMapa[];
@@ -203,20 +204,126 @@ export function MapaDaProva({
       certeza?: "medido" | "estimado" | "nao_avaliado";
     }
   > | null;
+  /**
+   * Avisa quem monta o mapa qual assunto esta aberto — para ele oferecer uma
+   * acao sobre o assunto (praticar, por exemplo).
+   *
+   * ⚠️ OPCIONAL, E FUNCAO. Este componente e' `"use client"` e alguns dos seus
+   * pais sao SERVER components (`FaciesReport`, `ProvaReport`): funcao nao
+   * atravessa essa fronteira. Eles simplesmente nao passam esta prop, e o mapa
+   * continua sendo leitura pura la'. Quem passa e' `MapaClientPage`, que e'
+   * cliente.
+   */
+  onSelecionar?: (rotulo: string | null) => void;
 }) {
   const [aberta, setAberta] = useState<string | null>(null);
+  /**
+   * A EXPLORACAO POR AREA.
+   *
+   * O mosaico mostrava os 15 assuntos mais cobrados de uma vez, e o unico gesto
+   * era abrir a leitura de um deles. Explorar por area faz duas coisas que a
+   * lista chapada nao faz: mostra que a area TEM peso (quantos dos 15 sao dela)
+   * e deixa o medico responder "e dentro de cirurgia, o que cai?" sem ler a
+   * grade inteira procurando o filete laranja.
+   *
+   * ⚠️ O FILTRO USA A MESMA FONTE do resto do mapa -- `linha.area`, que vem do
+   * `facies.json`. Nao ha segunda consulta, e por isso nao ha segundo
+   * denominador: o "8" ao lado de Cirurgia sao 8 DESTES 15, e nao 8 do acervo.
+   * Misturar as duas contagens ja custou 12.103 questoes a este componente --
+   * ver o comentario da fonte unica, no topo.
+   */
+  const [areaAberta, setAreaAberta] = useState<string | null>(null);
 
   const todas = preOrdenado ? linhas : [...linhas].sort((a, b) => b.n - a.n);
-  const ordenadas = limite ? todas.slice(0, limite) : todas;
-  const escondidas = todas.length - ordenadas.length;
-  if (ordenadas.length === 0) return null;
+  const noLimite = limite ? todas.slice(0, limite) : todas;
+
+  /** Quantos dos assuntos exibidos pertencem a cada area, na ordem do peso. */
+  const areas = new Map<string, number>();
+  for (const linha of noLimite) {
+    if (!linha.area) continue;
+    const codigo = resolveDisplayArea(null, linha.area);
+    areas.set(codigo, (areas.get(codigo) ?? 0) + 1);
+  }
+
+  const ordenadas = areaAberta
+    ? noLimite.filter((linha) => linha.area && resolveDisplayArea(null, linha.area) === areaAberta)
+    : noLimite;
+  const escondidas = todas.length - noLimite.length;
+  if (noLimite.length === 0) return null;
 
   const maior = ordenadas[0].n || 1;
   const escolhida = ordenadas.find((l) => l.rotulo === aberta) ?? null;
   const posicao = escolhida ? ordenadas.indexOf(escolhida) + 1 : 0;
 
+  function escolher(rotulo: string | null) {
+    setAberta(rotulo);
+    onSelecionar?.(rotulo);
+  }
+
   return (
     <div>
+      {/* A NAVEGACAO POR AREA.
+          So aparece com mais de uma area na grade -- com uma so, o filtro nao
+          filtra nada e seria chrome puro. A contagem ao lado do nome e' o que
+          torna o chip informativo antes de ser tocado: ele ja diz quanto a
+          area pesa nos assuntos mostrados. */}
+      {areas.size > 1 ? (
+        <div className="mb-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            aria-pressed={areaAberta === null}
+            onClick={() => {
+              setAreaAberta(null);
+              escolher(null);
+            }}
+            className={`paper-control min-h-9 rounded-control border px-3 text-nota transition-colors ${
+              areaAberta === null
+                ? "border-ink bg-ink text-paper"
+                : "border-edge bg-surface text-muted hover:text-ink"
+            }`}
+          >
+            Tudo
+          </button>
+          {[...areas.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .map(([codigo, quantos]) => {
+              const escolhida = areaAberta === codigo;
+              return (
+                <button
+                  key={codigo}
+                  type="button"
+                  aria-pressed={escolhida}
+                  onClick={() => {
+                    setAreaAberta(escolhida ? null : codigo);
+                    escolher(null);
+                  }}
+                  className="paper-control flex min-h-9 items-center gap-2 rounded-control border border-edge bg-surface px-3 text-nota text-ink transition-colors"
+                  style={
+                    escolhida
+                      ? {
+                          // A area escolhida acende NA PROPRIA COR dela — a
+                          // mesma do filete das celulas que vao ficar. E' o que
+                          // amarra o chip a grade sem uma seta ou um rotulo
+                          // dizendo "filtrando por".
+                          background: `color-mix(in srgb, ${AREA_VAR[codigo as DisplayArea]} 18%, var(--color-surface))`,
+                          borderColor: AREA_VAR[codigo as DisplayArea],
+                        }
+                      : undefined
+                  }
+                >
+                  <span
+                    aria-hidden="true"
+                    className="h-3 w-[3px] shrink-0"
+                    style={{ background: AREA_VAR[codigo as DisplayArea] }}
+                  />
+                  {AREA_FULL_LABELS[codigo as DisplayArea] ?? codigo}
+                  <span className="font-mono tabular-nums text-muted">{quantos}</span>
+                </button>
+              );
+            })}
+        </div>
+      ) : null}
+
       {/* `auto-rows` fixo e `dense`: sem altura de linha fixa as células grandes
           esticariam o grid inteiro, e sem `dense` os buracos deixados pelas
           células de 2×2 não seriam preenchidos pelas pequenas. */}
@@ -276,11 +383,33 @@ export function MapaDaProva({
           const grande = indice < 6;
 
           return (
-            <li key={linha.rotulo} className={tamanho(indice)}>
+            <li
+              key={`${areaAberta ?? "tudo"}-${linha.rotulo}`}
+              className={tamanho(indice)}
+              /* A ENTRADA ESCALONADA, e a razao dela e' a do handoff: "os nove
+                 valores trocam de leitura com 26ms de atraso por linha, para o
+                 olho ver que a mudanca e' a mesma nas nove". Aqui ela mostra
+                 que as celulas que ficaram sao um SUBCONJUNTO das que estavam,
+                 na mesma ordem de peso — sem isso, filtrar por area parece
+                 trocar de tela.
+
+                 `key` inclui a area aberta de proposito: sem isso o React
+                 reusa o `<li>` e a animacao nao reinicia.
+
+                 Estilo em linha, e nao classe `animate-*`: o invariante de
+                 arquitetura reprova qualquer `animate-` que nao seja de
+                 carregamento, e com razao — o keyframe aqui e' o mesmo
+                 `surgir-na-lista` que a lista de sessoes ja usa. O bloco global
+                 de `prefers-reduced-motion` zera duracao E atraso. */
+              style={{
+                animation: "surgir-na-lista 320ms var(--ease-cozy) both",
+                animationDelay: `${Math.min(indice, 12) * 26}ms`,
+              }}
+            >
               <button
                 type="button"
                 aria-expanded={estaAberta}
-                onClick={() => setAberta(estaAberta ? null : linha.rotulo)}
+                onClick={() => escolher(estaAberta ? null : linha.rotulo)}
                 /* `aria-label` e nao `title`. O handoff nomeia este caso: "a
                    leitura do mapa fica FORA da grade; balao sobre grade some
                    atras do dedo no celular". O rotulo acessivel entrega a area

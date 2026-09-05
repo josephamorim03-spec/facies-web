@@ -176,6 +176,28 @@ async function runViewport(browser, viewport) {
       .waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
+  // ⚠️ O MAPA NUNCA ESTEVE AQUI, e por isso nunca teve gate de acessibilidade
+  // nem de estouro horizontal — a unica tela do produto com uma GRADE, que e' a
+  // forma mais facil de estourar a largura no celular.
+  //
+  // Captura a aba "A prova e você": e' a que tem a proficiencia do aluno, os
+  // tres estados de certeza e a navegacao por area. A aba "A prova" e' o
+  // relatorio da banca, ja coberto pela pagina publica.
+  await visit("/mapa", "mapa", async () => {
+    await page.getByRole("button", { name: "A prova e você" }).click();
+    await page
+      .getByText("tamanho é incidência · preenchimento é você")
+      .waitFor({ state: "visible", timeout: 30_000 });
+  }, !viewport.mobile);
+
+  // O quinto destino. Entra na captura pela mesma razao das outras: `axe` e
+  // `assertNoOverflow` so rodam por aqui.
+  await visit("/voce", "voce", async () => {
+    await page
+      .getByRole("navigation", { name: "Suas configurações" })
+      .waitFor({ state: "visible", timeout: 30_000 });
+  }, !viewport.mobile);
+
   await visit("/preferencias", "preferencias", async () => {
     // Nao existe heading "Preferências": esse e o titulo da PAGINA, que mora no
     // topo como span. Os <h2> da tela sao os titulos de secao.

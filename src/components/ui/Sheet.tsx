@@ -152,7 +152,7 @@ export function Sheet({ open, onClose, title, eyebrow, children, className }: Sh
       {open ? (
         <>
           <motion.div
-            className="fixed inset-0 z-30 bg-ink/20"
+            className="fixed inset-0 z-40 bg-ink/20"
             onClick={onClose}
             aria-hidden="true"
             initial={{ opacity: 0 }}
@@ -172,7 +172,20 @@ export function Sheet({ open, onClose, title, eyebrow, children, className }: Sh
             exit={{ opacity: 0, ...desloca }}
             transition={{ duration: duracao, ease: EASE_COZY }}
             className={[
-              "fixed bottom-0 right-0 z-40 max-h-[86svh] w-full overflow-y-auto",
+              // ⚠️ z-50, ACIMA DA BARRA DE ABAS.
+              //
+              // O painel era z-40 e a `MobileTabBar` tambem e' z-40 -- mesma
+              // camada, e a barra vem DEPOIS no DOM, entao ela ganhava. O
+              // resultado nao era visual: o botao primario da folha ficava
+              // debaixo da barra e NAO RECEBIA O TOQUE. Apanhado pelo e2e do
+              // mapa, que reportou "<path d=M12 6v14> from <div class=fixed
+              // inset-x-0 bottom-0 z-40> intercepts pointer events".
+              //
+              // Uma folha modal tem de cobrir a navegacao: enquanto ela esta
+              // aberta, a navegacao nao e' a tarefa. O backdrop sobe junto,
+              // senao ele ficaria ABAIXO da barra e o toque fora da folha
+              // acertaria uma aba em vez de fechar.
+              "fixed bottom-0 right-0 z-50 max-h-[86svh] w-full overflow-y-auto",
               "border-t border-edge bg-paper p-4 shadow-overlay outline-none",
               "md:bottom-0 md:top-0 md:max-h-none md:max-w-md md:border-l md:border-t-0",
               className ?? "",

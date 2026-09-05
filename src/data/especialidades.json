@@ -1,0 +1,228 @@
+{
+  "fonte": "Resolução CFM nº 2.380/2024, Anexo, item A",
+  "fonte_url": "https://sistemas.cfm.org.br/normas/arquivos/resolucoes/BR/2024/2380_2024.pdf",
+  "publicada_em": "2024-06-24",
+  "total": 55,
+  "especialidades": [
+    {
+      "codigo": "acupuntura",
+      "nome": "Acupuntura"
+    },
+    {
+      "codigo": "alergia-e-imunologia",
+      "nome": "Alergia e imunologia"
+    },
+    {
+      "codigo": "anestesiologia",
+      "nome": "Anestesiologia"
+    },
+    {
+      "codigo": "angiologia",
+      "nome": "Angiologia"
+    },
+    {
+      "codigo": "cardiologia",
+      "nome": "Cardiologia"
+    },
+    {
+      "codigo": "cirurgia-cardiovascular",
+      "nome": "Cirurgia cardiovascular"
+    },
+    {
+      "codigo": "cirurgia-da-mao",
+      "nome": "Cirurgia da mão"
+    },
+    {
+      "codigo": "cirurgia-de-cabeca-e-pescoco",
+      "nome": "Cirurgia de cabeça e pescoço"
+    },
+    {
+      "codigo": "cirurgia-do-aparelho-digestivo",
+      "nome": "Cirurgia do aparelho digestivo"
+    },
+    {
+      "codigo": "cirurgia-geral",
+      "nome": "Cirurgia geral"
+    },
+    {
+      "codigo": "cirurgia-oncologica",
+      "nome": "Cirurgia oncológica"
+    },
+    {
+      "codigo": "cirurgia-pediatrica",
+      "nome": "Cirurgia pediátrica"
+    },
+    {
+      "codigo": "cirurgia-plastica",
+      "nome": "Cirurgia plástica"
+    },
+    {
+      "codigo": "cirurgia-toracica",
+      "nome": "Cirurgia torácica"
+    },
+    {
+      "codigo": "cirurgia-vascular",
+      "nome": "Cirurgia vascular"
+    },
+    {
+      "codigo": "clinica-medica",
+      "nome": "Clínica médica"
+    },
+    {
+      "codigo": "coloproctologia",
+      "nome": "Coloproctologia"
+    },
+    {
+      "codigo": "dermatologia",
+      "nome": "Dermatologia"
+    },
+    {
+      "codigo": "endocrinologia-e-metabologia",
+      "nome": "Endocrinologia e metabologia"
+    },
+    {
+      "codigo": "endoscopia",
+      "nome": "Endoscopia"
+    },
+    {
+      "codigo": "gastroenterologia",
+      "nome": "Gastroenterologia"
+    },
+    {
+      "codigo": "genetica-medica",
+      "nome": "Genética médica"
+    },
+    {
+      "codigo": "geriatria",
+      "nome": "Geriatria"
+    },
+    {
+      "codigo": "ginecologia-e-obstetricia",
+      "nome": "Ginecologia e obstetrícia"
+    },
+    {
+      "codigo": "hematologia-e-hemoterapia",
+      "nome": "Hematologia e hemoterapia"
+    },
+    {
+      "codigo": "homeopatia",
+      "nome": "Homeopatia"
+    },
+    {
+      "codigo": "infectologia",
+      "nome": "Infectologia"
+    },
+    {
+      "codigo": "mastologia",
+      "nome": "Mastologia"
+    },
+    {
+      "codigo": "medicina-de-emergencia",
+      "nome": "Medicina de emergência"
+    },
+    {
+      "codigo": "medicina-de-familia-e-comunidade",
+      "nome": "Medicina de família e comunidade"
+    },
+    {
+      "codigo": "medicina-do-trabalho",
+      "nome": "Medicina do trabalho"
+    },
+    {
+      "codigo": "medicina-do-trafego",
+      "nome": "Medicina do tráfego"
+    },
+    {
+      "codigo": "medicina-esportiva",
+      "nome": "Medicina esportiva"
+    },
+    {
+      "codigo": "medicina-fisica-e-reabilitacao",
+      "nome": "Medicina física e reabilitação"
+    },
+    {
+      "codigo": "medicina-intensiva",
+      "nome": "Medicina intensiva"
+    },
+    {
+      "codigo": "medicina-legal-e-pericia-medica",
+      "nome": "Medicina legal e perícia médica"
+    },
+    {
+      "codigo": "medicina-nuclear",
+      "nome": "Medicina nuclear"
+    },
+    {
+      "codigo": "medicina-preventiva-e-social",
+      "nome": "Medicina preventiva e social"
+    },
+    {
+      "codigo": "nefrologia",
+      "nome": "Nefrologia"
+    },
+    {
+      "codigo": "neurocirurgia",
+      "nome": "Neurocirurgia"
+    },
+    {
+      "codigo": "neurologia",
+      "nome": "Neurologia"
+    },
+    {
+      "codigo": "nutrologia",
+      "nome": "Nutrologia"
+    },
+    {
+      "codigo": "oftalmologia",
+      "nome": "Oftalmologia"
+    },
+    {
+      "codigo": "oncologia-clinica",
+      "nome": "Oncologia clínica"
+    },
+    {
+      "codigo": "ortopedia-e-traumatologia",
+      "nome": "Ortopedia e traumatologia"
+    },
+    {
+      "codigo": "otorrinolaringologia",
+      "nome": "Otorrinolaringologia"
+    },
+    {
+      "codigo": "patologia",
+      "nome": "Patologia"
+    },
+    {
+      "codigo": "patologia-clinica-medicina-laboratorial",
+      "nome": "Patologia clínica/medicina laboratorial"
+    },
+    {
+      "codigo": "pediatria",
+      "nome": "Pediatria"
+    },
+    {
+      "codigo": "pneumologia",
+      "nome": "Pneumologia"
+    },
+    {
+      "codigo": "psiquiatria",
+      "nome": "Psiquiatria"
+    },
+    {
+      "codigo": "radiologia-e-diagnostico-por-imagem",
+      "nome": "Radiologia e diagnóstico por imagem"
+    },
+    {
+      "codigo": "radioterapia",
+      "nome": "Radioterapia"
+    },
+    {
+      "codigo": "reumatologia",
+      "nome": "Reumatologia"
+    },
+    {
+      "codigo": "urologia",
+      "nome": "Urologia"
+    }
+  ]
+}

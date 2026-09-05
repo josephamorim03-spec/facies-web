@@ -7,6 +7,8 @@ import type { DisplayArea } from "@/lib/areaIdentity";
 import { dec } from "@/lib/decimal";
 import { provaPorSlug, todasAsProvas } from "@/lib/provas";
 import {
+  atualizacoesDoAssunto,
+  atualizacoesOrfas,
   dataCurta,
   diasDaRevisao,
   temasDoDia,
@@ -102,6 +104,9 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
   const total = revisao.estrutura.total_questoes;
   const livres = revisao.estrutura.dias_livres_ate_prova;
   const emRascunho = revisao.cobertura_educativa?.rascunhos ?? 0;
+  // O rodapé lista SO' o que nao tem assunto na revisao. Ver `atualizacoesOrfas`:
+  // com todas ligadas, repetir a lista inteira aqui era duplicacao de 19 em 19.
+  const orfas = atualizacoesOrfas(revisao);
   const ganho = (valor: number | null) => (valor === null ? null : dec(valor, 2));
   const faixa =
     h.historico_minimo !== null && h.historico_maximo !== null
@@ -228,6 +233,7 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
                         key={tema.subtema}
                         tema={tema}
                         pagina={pagina}
+                        atualizacoes={atualizacoesDoAssunto(revisao, tema.subtema)}
                         anterior={emOrdem[indice - 1] ?? null}
                         proximo={emOrdem[indice + 1] ?? null}
                         totalDeAssuntos={emOrdem.length}
@@ -251,8 +257,18 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
           <p className="mt-3 max-w-[62ch] text-base text-muted">
             {h.nota_atualizacoes}
           </p>
+          {orfas.length === 0 ? (
+            /* ⚠️ Sem esta linha o leitor que procura "o que mudou" acha uma
+               seção com uma ressalva e nenhum item, e conclui que não há
+               atualização — quando há dezenove, cada uma ao lado do seu
+               assunto. A seção some seria pior: some junto a ressalva. */
+            <p className="mt-3 max-w-[62ch] text-base text-muted">
+              As {revisao.atualizacoes.length} mudanças aparecem junto do assunto a
+              que se referem, ao longo dos {dias.length} dias.
+            </p>
+          ) : (
           <ul className="mt-5 space-y-4">
-            {revisao.atualizacoes.map((item) => (
+            {orfas.map((item) => (
               <li key={item.slug} className="paper-surface p-4 sm:p-5 print:break-inside-avoid">
                 <p className="text-base font-medium text-ink">{item.titulo}</p>
                 <p className="mt-1 max-w-[62ch] text-sm text-muted">{item.resumo}</p>
@@ -276,6 +292,7 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
               </li>
             ))}
           </ul>
+          )}
         </section>
       ) : null}
 

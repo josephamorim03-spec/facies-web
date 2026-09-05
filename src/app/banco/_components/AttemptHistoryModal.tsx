@@ -33,7 +33,8 @@ export default function AttemptHistoryModal({ questionId, onClose }: AttemptHist
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) return;
+    // Sem guard de `token`: ele e' sempre "" (`lib/auth.ts:29`). Com o guard,
+    // este efeito nunca corria e o historico abria permanentemente vazio.
     let active = true;
     getQuestionAttemptHistory(token, questionId)
       .then((data) => {

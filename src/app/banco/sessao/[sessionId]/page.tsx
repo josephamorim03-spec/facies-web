@@ -44,7 +44,6 @@ import {
 } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { invalidateLearningQueries } from "@/lib/queryKeys";
-import { Alert } from "@/components/ui/Alert";
 import { SaidaDaSessao } from "./_components/SaidaDaSessao";
 import FixacaoRound from "./_components/FixacaoRound";
 import QuickNoteModal from "./_components/QuickNoteModal";
@@ -52,6 +51,7 @@ import FocusedQuestion from "./_components/FocusedQuestion";
 import ExamMap from "./_components/ExamMap";
 import PostExamReview from "./_components/PostExamReview";
 import { ConfidenceReviewStep } from "./_components/ConfidenceReviewStep";
+import { SessionErrorToast } from "./_components/SessionErrorToast";
 import AttemptHistoryModal from "../../_components/AttemptHistoryModal";
 import LearningPackagePanel from "./_components/LearningPackagePanel";
 
@@ -1042,16 +1042,23 @@ export default function SessionPage() {
   }
 
   // Non-blocking, dismissible error toast (replaces the old fixed red top banner).
-  const errorToast = error ? (
-    <div
-      className="fixed inset-x-0 bottom-4 z-50 mx-auto w-full max-w-md px-4"
-      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-    >
-      <Alert variant="danger" onDismiss={() => setError(null)} className="">
-        {error}
-      </Alert>
-    </div>
-  ) : null;
+  const errorToast = <SessionErrorToast error={error} onDismiss={() => setError(null)} />;
+
+  // ANTES dos ramos, e nao dentro de um: `finalize()` abre esta etapa em toda
+  // sessao `post_session`, e viver num ramo so deixava o botao morto nos outros.
+  // Porque e como: `web/tests/unit/etapa-de-confianca-alcancavel.test.mjs`.
+  if (confidenceStepOpen) {
+    return (
+      <>
+        {errorToast}
+        <ConfidenceReviewStep
+          sessionId={session.session_id}
+          session={session}
+          onProceed={() => void proceedReveal()}
+        />
+      </>
+    );
+  }
 
   // Items worth re-testing at the end of a training session: missed or hesitated.
   const fixacaoItems = session.items.filter((i) => i.answered && (i.is_correct === false || i.doubtful));
@@ -1224,13 +1231,6 @@ export default function SessionPage() {
   return (
     <>
       {errorToast}
-      {confidenceStepOpen && (
-        <ConfidenceReviewStep
-          sessionId={session.session_id}
-          session={session}
-          onProceed={() => void proceedReveal()}
-        />
-      )}
       <FocusedQuestion
         item={currentItem}
         displayPosition={currentPosition}

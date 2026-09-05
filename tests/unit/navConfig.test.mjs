@@ -19,49 +19,50 @@ function childOf(pathname, href) {
   return getIntentChildren(pathname).find((child) => child.href === href) ?? null;
 }
 
-test("a navegacao e seis destinos, na ordem do desenho", () => {
+test("a navegacao e cinco destinos, na ordem do desenho", () => {
   // A Rota saiu porque a tela dela era uma PERGUNTA — quanto tempo voce tem, com
   // que energia — e a pergunta morreu: o tamanho do dia vem do calendario e do
   // comportamento observado, e aparece como contexto da proxima acao no Hoje.
   // Os flashcards sairam da barra em 2026-08-29, atras de `NEXT_PUBLIC_FLASHCARDS`.
   // `/mapa` entrou quando a tela entrou.
   //
-  // ⚠️ A CONTA VOLTOU, E ISTO REVERTE UMA DECISAO DE 2026-09-02.
+  // ⚠️ SAO CINCO, E ISTO REVERTE OS SEIS DE 2026-09-02.
   //
-  // Ela tinha saido pelo argumento de que ocupava o peso visual de uma tela
-  // diaria para tarefa que se faz poucas vezes por ano — e o argumento valia
-  // para a Conta que existia entao: senha, exportar, encerrar.
+  // A Conta tinha voltado a barra porque o desenho fecha o turno 14 com seis
+  // destinos e a `12c` deixou de ser a gaveta da senha. O argumento continua
+  // valido para o CONTEUDO da Conta; o que mudou foi onde ela mora.
   //
-  // O desenho fecha o turno 14 com SEIS destinos, e a Conta que ele desenha
-  // (`12c`) e outra tela: o estado do acesso, as suas provas, os avisos e, nos
-  // proximos turnos, "Acessibilidade e leitura" (`14c`) e "Como voce resolve"
-  // (`8f`). Deixa de ser a gaveta da senha e passa a ser onde o aluno ajusta o
-  // produto — e ai o peso de destino permanente se justifica.
+  // Tres motivos, na ordem em que pesam (o longo esta em `navConfig.ts`):
+  // 1. a 320px seis abas estouravam ~40px, e o e2e so' media a 390;
+  // 2. quatro destinos de conteudo + um de pessoa e' a gramatica que este
+  //    publico usa todo dia;
+  // 3. o operador pediu que rotina e calendario nao tivessem peso permanente.
   //
-  // A reversao foi decidida com o operador em 2026-09-02, com o argumento
-  // anterior na mesa. Quem quiser voltar aos cinco: o filtro esta em
-  // `INTENTS_VISIVEIS` (`navConfig.ts`), e o avatar no rodape da sidebar ja
-  // levava a `/conta` antes e continua levando.
+  // Rotina e Conta viraram FILHOS de "Você", nao sumiram. Para voltar aos seis:
+  // `INTENTS_VISIVEIS` em `navConfig.ts`.
   assert.deepEqual(
     NAV_ITEMS.map((item) => item.href),
-    ["/hoje", "/mapa", "/banco", "/evolucao", "/preferencias", "/conta"],
+    ["/hoje", "/mapa", "/banco", "/evolucao", "/voce"],
   );
   // Uma barra so: no mobile e a barra inferior, no desktop o menu bar. Sem
   // divisorias, porque nao ha mais agrupamento por pergunta.
   assert.equal(NAV_GROUPS_CONFIG.length, 1);
 });
 
-test("a Conta esta na barra E no registro de rotas", () => {
-  // Este teste nasceu guardando o ALCANCE da Conta quando ela saiu da barra:
-  // tirar um item da barra e tirar a rota do registro sao coisas diferentes, e
-  // confundi-las e como `/conta` viraria uma tela sem titulo, sem aba ativa e
-  // sem pre-aquecimento.
-  //
-  // Com ela de volta a barra, a segunda metade continua valendo — e e ela que
-  // pega o erro de alguem mexer no registro achando que so mexe no menu.
-  assert.ok(findItem("/conta"), "/conta precisa estar na barra");
+test("Conta e Rotina saem da BARRA sem sair do alcance", () => {
+  // O par que este teste guarda: tirar um item da barra e tirar a rota do
+  // registro sao coisas diferentes. Confundi-las e como `/conta` viraria uma
+  // tela sem titulo, sem aba ativa e sem pre-aquecimento — e e' o erro que
+  // alguem comete ao mexer no registro achando que so mexe no menu.
+  assert.equal(findItem("/conta"), null, "/conta nao e mais destino da barra");
+  assert.equal(findItem("/preferencias"), null, "/preferencias nao e mais destino da barra");
+
+  // Continuam com titulo, com rota e com aba acesa.
   assert.equal(getStudentPageTitle("/conta"), "Conta");
+  assert.equal(getStudentPageTitle("/preferencias"), "Minha semana");
   assert.ok(getStudentRoute("/conta"), "/conta precisa continuar no registro de rotas");
+  assert.equal(isNavItemActive("/conta", findItem("/voce")), true);
+  assert.equal(isNavItemActive("/preferencias", findItem("/voce")), true);
 });
 
 test("nem Kros nem Rota sobrevivem como rotulo de menu", () => {
@@ -69,7 +70,7 @@ test("nem Kros nem Rota sobrevivem como rotulo de menu", () => {
   // a propria aba. Os dois enderecos continuam 308 para o Hoje, entao ninguem
   // que os tenha salvos cai em 404 — mas nenhum dos dois volta ao menu.
   const labels = NAV_ITEMS.map((item) => item.shortLabel);
-  assert.deepEqual(labels, ["Hoje", "Mapa", "Banco", "Evolução", "Rotina", "Conta"]);
+  assert.deepEqual(labels, ["Hoje", "Mapa", "Banco", "Evolução", "Você"]);
   assert.equal(findItem("/kros"), null);
   assert.equal(findItem("/rota"), null);
 });
@@ -95,23 +96,34 @@ test("each tab owns its children", () => {
   );
   assert.deepEqual(
     getIntentChildren("/evolucao").map((child) => child.href),
-    // A Evolucao tambem ficou sem filhos: `/preferencias` foi para Rotina e
+    // A Evolucao tambem ficou sem filhos: `/preferencias` foi para Você e
     // `/estatisticas` e caminho legado dela mesma.
     [],
+  );
+  assert.deepEqual(
+    getIntentChildren("/voce").map((child) => child.href),
+    // O que era Rotina (duas abas do `14a`) e Conta virou a linha de filhos de
+    // "Você". A ordem e' a do uso, e a Conta fica por ultimo porque se toca
+    // poucas vezes por ano.
+    //
+    // ⚠️ `/voce` NAO esta na lista, de proposito: a aba nao e' filha de si
+    // mesma, senao `hasChildRow` desenharia a linha de secoes na propria tela
+    // -- chrome permanente repetindo o menu que a pagina ja e'.
+    ["/preferencias", "/plano", "/conta"],
   );
   // `/rota` nao e mais destino nenhum: sem intencao, sem filhos.
   assert.deepEqual(getIntentChildren("/rota"), []);
 });
 
 test("a child route lights its parent tab", () => {
-  assert.equal(isNavItemActive("/cronograma", findItem("/preferencias")), true);
+  assert.equal(isNavItemActive("/cronograma", findItem("/voce")), true);
   assert.equal(isNavItemActive("/banco/historico", findItem("/banco")), true);
   // A linha de `/cards/registros` saiu com a aba: `findItem("/cards")` devolve
   // `null` agora, e o teste passaria a afirmar sobre um item que nao existe.
   // Volta junto com a feature, quando `NEXT_PUBLIC_FLASHCARDS` voltar a "1".
   // `/preferencias` mudou de aba junto com o Cronograma: as duas sao "Minha
-  // rotina" no artboard `14a`.
-  assert.equal(isNavItemActive("/preferencias", findItem("/preferencias")), true);
+  // rotina" no artboard `14a`, e a Rotina inteira passou a viver em "Você".
+  assert.equal(isNavItemActive("/preferencias", findItem("/voce")), true);
   assert.equal(isNavItemActive("/banco/sessao/abc", findItem("/banco")), true);
 });
 
@@ -131,14 +143,20 @@ test("page titles come from the child, not from the parent tab", () => {
   // de "Inicio" — que e exatamente o problema que o programa de design existe
   // para resolver: menu, titulo e URL dizendo a mesma coisa.
   assert.equal(getStudentPageTitle("/hoje"), "Hoje");
+  // ⚠️ ABA COM FILHOS TAMBEM PRECISA DE TITULO PROPRIO. `/voce` tem tres filhos
+  // e nenhum deles e' ela mesma, entao ela nascia fora do registro e a barra de
+  // topo do celular abria em branco.
+  assert.equal(getStudentPageTitle("/voce"), "Você");
+  // E o empate continua indo para o FILHO onde os dois existem.
+  assert.equal(getStudentPageTitle("/banco"), "Montar sessão");
   // O filho "O plano ate' a prova" passou a ser `/plano` (artboard `9c`): a
   // LEITURA do plano — fases, o que nao coube, quanto a rotina comporta.
   assert.equal(getStudentPageTitle("/plano"), "O plano até a prova");
   // `/cronograma` deixou de ser destino e virou FERRAMENTA: o calendario onde
-  // se arrasta atividade entre dias, alcancavel por um link dentro do `/plano`.
-  // Como caminho legado da area, ele herda o titulo dela — que e' verdade, e
-  // nao a promessa de ser a tela do plano.
-  assert.equal(getStudentPageTitle("/cronograma"), "Rotina");
+  // se arrasta atividade entre dias, alcancavel por um link dentro do `/plano`
+  // e da tela `/voce`. Como caminho legado da area, ele herda o titulo dela —
+  // que e' verdade, e nao a promessa de ser a tela do plano.
+  assert.equal(getStudentPageTitle("/cronograma"), "Você");
   assert.equal(getStudentPageTitle("/banco/historico"), "Histórico");
   assert.equal(getStudentPageTitle("/cards/registros"), "Pesquisar");
   // O titulo vem do filho, e o filho agora se chama como a aba do artboard.
@@ -148,9 +166,9 @@ test("page titles come from the child, not from the parent tab", () => {
 test("renderable legacy routes keep activating their canonical destination", () => {
   assert.equal(isNavItemActive("/today", findItem("/hoje")), true);
   assert.equal(isNavItemActive("/semana", findItem("/hoje")), true);
-  assert.equal(isNavItemActive("/desempenho", findItem("/preferencias")), true);
+  assert.equal(isNavItemActive("/desempenho", findItem("/voce")), true);
   assert.equal(isNavItemActive("/estatisticas/relatorio", findItem("/evolucao")), true);
-  assert.equal(isNavItemActive("/rotina-e-metas", findItem("/preferencias")), true);
+  assert.equal(isNavItemActive("/rotina-e-metas", findItem("/voce")), true);
 });
 
 test("unreachable 308 aliases are deliberately absent from the nav registry", () => {

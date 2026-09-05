@@ -4,7 +4,12 @@ import {
   AREA_FULL_LABELS,
   type DisplayArea,
 } from "@/lib/areaIdentity";
-import type { PaginaEducativa, TemaRevisao } from "@/lib/revisao";
+import {
+  type AtualizacaoRevisao,
+  dataCurta,
+  type PaginaEducativa,
+  type TemaRevisao,
+} from "@/lib/revisao";
 import { MedidaDaCobranca } from "./MedidaDaCobranca";
 import { ancoraDoAssunto, PassoAPasso, type EloDeAssunto } from "./NavegacaoDaRevisao";
 
@@ -52,12 +57,15 @@ const ROTULO_DA_IMAGEM: Record<NonNullable<PaginaEducativa["imagem_leitura"]>["t
 export function PaginaDoDia({
   tema,
   pagina,
+  atualizacoes,
   anterior,
   proximo,
   totalDeAssuntos,
 }: {
   tema: TemaRevisao;
   pagina: PaginaEducativa;
+  /** O que mudou neste assunto. Vazio na maioria — ver o bloco abaixo. */
+  atualizacoes: AtualizacaoRevisao[];
   anterior: EloDeAssunto | null;
   proximo: EloDeAssunto | null;
   totalDeAssuntos: number;
@@ -242,6 +250,49 @@ export function PaginaDoDia({
           ))}
         </ul>
       </div>
+
+      {/* ── o que mudou desde a última prova ─────────────────────────────── */}
+      {/* 🚨 FATO DATADO, NÃO PREVISÃO. O termo de pressão por atualização
+          clínica foi medido contra 14 alvos fora de amostra e reprovado (ganho
+          de 0,2 a 0,4% onde o critério exigia 5%), então ele NÃO entra no score
+          — e esta seção não pode sugerir que entra. Daí a linha final, que
+          repete aqui a mesma ressalva do painel do rodapé.
+
+          O bloco só aparece quando há item: 11 dos 42 assuntos têm algum, e uma
+          seção vazia com "nenhuma atualização" em 31 páginas ensinaria o leitor
+          a pular a seção justamente nas onze em que ela importa. */}
+      {atualizacoes.length > 0 ? (
+        <div className="mt-6 print:break-inside-avoid">
+          <h4 className="paper-eyebrow">o que mudou desde a última prova</h4>
+          <ul className="mt-3 space-y-3">
+            {atualizacoes.map((item) => (
+              <li key={item.slug} className="border-l-2 border-rule pl-4">
+                <p className="text-base/[1.55] text-ink">{item.titulo}</p>
+                <p className="mt-1 max-w-[62ch] text-sm/[1.5] text-muted">{item.resumo}</p>
+                <p className="mt-1 text-xs text-muted">
+                  vigência {dataCurta(item.vigencia)}
+                  {item.fontes.length > 0 ? (
+                    <>
+                      {" · "}
+                      <a
+                        href={item.fontes[0].url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2"
+                      >
+                        fonte primária
+                      </a>
+                    </>
+                  ) : null}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 max-w-[62ch] text-xs/[1.5] text-muted">
+            Mudança com data e fonte primária. Não medimos que ela será cobrada.
+          </p>
+        </div>
+      ) : null}
 
       {/* ── a ponte para as questões reais ────────────────────────────────── */}
       <div className="mt-6 border-t border-rule pt-4">

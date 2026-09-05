@@ -8,7 +8,7 @@ import { MapaDosAssuntos } from "./MapaDosAssuntos";
 import { NoveMedidas } from "./NoveMedidas";
 import { Objecoes } from "./Objecoes";
 import { OQueVoceRecebe } from "./OQueVoceRecebe";
-import { TrintaAssuntos } from "./TrintaAssuntos";
+import { AssuntosPrevistos } from "./AssuntosPrevistos";
 import { dadosDaLanding } from "./dados";
 import { DepoisDeEntrar } from "@/components/facies/DepoisDeEntrar";
 import { CONT_LANDING, SITE_NAME, SITE_QUALIFICADOR } from "@/lib/site";
@@ -134,7 +134,7 @@ export function Pagina() {
           baseFormato: dados.forma.base.n,
         }}
       />
-      <TrintaAssuntos dados={dados} />
+      <AssuntosPrevistos dados={dados} />
       <MapaDosAssuntos dados={dados} />
 
       {/* A sessão de hoje — a cara vira a rotina. A única imagem da página,
