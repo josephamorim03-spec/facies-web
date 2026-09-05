@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ContaSection } from "./_components/ContaSection";
 import { MinhaSemana } from "./_components/MinhaSemana";
+import { FolhaDePlantao } from "./_components/FolhaDePlantao";
 import { Bell, Calendar as CalendarClock, CalendarDays as CalendarPlus, Check, Goal, NotepadText as Layers3, Repeat, Target, Trash2 as Trash2 } from "lucide-react";
 
 import {
@@ -12,6 +13,7 @@ import {
   getCapabilities,
   getFsrsConfig,
   getProfile,
+  getMyTargetExam,
   listEvents,
   putFsrsConfig,
   updateProfile,
@@ -144,6 +146,19 @@ export default function PreferenciasPage() {
   const [ritmoEhDoAluno, setRitmoEhDoAluno] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [folhaDePlantaoAberta, setFolhaDePlantaoAberta] = useState(false);
+  /**
+   * Dias ate a prova declarada.
+   *
+   * Chegava a `MinhaSemana` como `null` FIXO, entao a frase "Faltam N dias ate
+   * a sua prova" nunca podia aparecer -- e a folha do plantao nao tinha
+   * horizonte para expandir a escala 24x72. `days_remaining` ja viaja em
+   * `StudentTargetExamItemOut`; faltava alguem le-lo.
+   *
+   * `null` continua sendo resposta legitima: sem prova declarada nao ha
+   * contagem, e a folha cai num horizonte de oito semanas dizendo isso.
+   */
+  const [diasAteAProva, setDiasAteAProva] = useState<number | null>(null);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -157,8 +172,12 @@ export default function PreferenciasPage() {
       // salva. Falhar aqui nao pode fechar a tela de preferencias inteira.
       getOnboarding(token).catch(() => null),
       getStudentToday(token).catch(() => null),
+      getMyTargetExam(token).catch(() => null),
     ])
-      .then(([nextProfile, nextEvents, fsrs, capabilities, onboarding, hoje]) => {
+      .then(([nextProfile, nextEvents, fsrs, capabilities, onboarding, hoje, provaAlvo]) => {
+        // A primeira prova declarada e' a principal — a mesma precedencia que o
+        // Hoje e o Plano usam.
+        setDiasAteAProva(provaAlvo?.items?.[0]?.days_remaining ?? null);
         setProfile(nextProfile);
         setEvents(nextEvents);
         // `.catch` no fetch protege REJEICAO, nao resposta com outra forma.
@@ -250,7 +269,15 @@ export default function PreferenciasPage() {
   }
 
   async function addEvent() {
-    if (!token || eventSaving) return;
+  // ⚠️ SEM GUARD DE `token`: ele e' SEMPRE "" por desenho.
+  //
+  // `getAuthToken()` (`lib/auth.ts:29`) retorna string vazia de proposito -- a
+  // sessao vive num cookie httpOnly que o BFF le e converte em
+  // `Authorization`. O token nunca chega ao JavaScript, e nunca vai chegar.
+  //
+  // Um `if (!token) return` aqui e' portanto SEMPRE verdadeiro: a funcao
+  // inteira nunca corria.
+    if (eventSaving) return;
     const label = eventLabel.trim();
     setEventError(null);
     if (!label) {
@@ -295,7 +322,6 @@ export default function PreferenciasPage() {
   }
 
   async function removeEvent(id: string) {
-    if (!token) return;
     setEventError(null);
     try {
       await deleteEvent(token, id, { scope: "future", effective_from: currentTodayISO });
@@ -306,7 +332,6 @@ export default function PreferenciasPage() {
   }
 
   async function salvarSemana(proxima: Record<string, number>) {
-    if (!token) return;
     setSalvandoSemana(true);
     setError(null);
     try {
@@ -374,7 +399,7 @@ export default function PreferenciasPage() {
    * cada tecla mandaria "2", "24", "240" ao servidor.
    */
   useEffect(() => {
-    if (!token || !profile || !assinaturaDoQueSeGrava) return;
+    if (!profile || !assinaturaDoQueSeGrava) return;
     // A primeira passagem so' registra o que veio do servidor: ela nao e' uma
     // mudanca do aluno.
     if (ultimaGravada.current === null) {
@@ -393,7 +418,7 @@ export default function PreferenciasPage() {
   }, [assinaturaDoQueSeGrava, token, profile !== null]);
 
   async function save() {
-    if (!token || !profile || saving) return;
+    if (!profile || saving) return;
     setSaving(true);
     setSaved(false);
     setError(null);
@@ -463,19 +488,36 @@ export default function PreferenciasPage() {
               hojeISO={currentTodayISO}
               minutosPorQuestao={minutosPorQuestao}
               ritmoEhDoAluno={ritmoEhDoAluno}
-              diasAteAProva={null}
+              // Era `null` fixo: a frase "Faltam N dias até a sua prova" nunca
+              // podia aparecer, e a folha do plantão não tinha horizonte para
+              // expandir a escala. `days_remaining` vem da prova-alvo declarada.
+              diasAteAProva={diasAteAProva}
               salvando={salvandoSemana}
               onSalvar={salvarSemana}
-              onAdicionar={() => {
-                document
-                  .getElementById("adicionar-compromisso")
-                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
+              // ⚠️ ABRE UMA FOLHA, e nao ROLA para outra secao.
+              //
+              // Isto chamava `scrollIntoView` ate o painel generico "Adicionar
+              // compromisso", ~150 linhas abaixo: o medico tocava em "adicionar
+              // plantao" e a tela deslizava para outro assunto, com um campo de
+              // nome obrigatorio que o artboard `14b` proibe em letra.
+              onAdicionar={() => setFolhaDePlantaoAberta(true)}
               onRemoverExcecao={(evento) => {
                 void removeEvent(evento.event_id);
               }}
             />
           </div>
+          {/* A folha e' DONA da propria gravacao: ela cria o evento, expande a
+              escala e devolve a lista nova. A pagina so' diz se ela esta aberta
+              -- estado de formulario que vive na tela que o contem e' como uma
+              pagina de mil linhas nasce. */}
+          <FolhaDePlantao
+            aberta={folhaDePlantaoAberta}
+            token={token}
+            hojeISO={currentTodayISO}
+            diasAteAProva={diasAteAProva}
+            onFechar={() => setFolhaDePlantaoAberta(false)}
+            onCriado={setEvents}
+          />
         </section>
 
         <section className="py-7">

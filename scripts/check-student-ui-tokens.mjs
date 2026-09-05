@@ -55,6 +55,7 @@ const PAPER_SURFACES = [
   "src/app/conta/_components/SecaoAcesso.tsx",
   "src/app/plano/PlanoClientPage.tsx",
   "src/app/preferencias/_components/MinhaSemana.tsx",
+  "src/app/preferencias/_components/FolhaDePlantao.tsx",
   "src/app/hoje/_components/ContinuarDeOndeParou.tsx",
   "src/app/admin/acessos/page.tsx",
   "src/app/admin/audit/page.tsx",

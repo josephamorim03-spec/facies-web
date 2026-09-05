@@ -655,6 +655,53 @@ test.describe("Navigation shell mobile tab bar", () => {
     await expect.poll(() => gravado).toBe("Cardiologia");
   });
 
+  test("adicionar plantao abre uma folha, e a escala vira eventos de verdade", async ({ page }) => {
+    // ⚠️ O BOTAO SO' ROLAVA. `onAdicionar` chamava `scrollIntoView` ate um
+    // painel generico ~150 linhas abaixo, na secao seguinte, com um campo de
+    // NOME OBRIGATORIO -- e o artboard `14b` diz em letra "nada de nome do
+    // hospital: todo campo que nao muda nada e' trabalho cobrado do medico a
+    // toa". O medico tocava em "adicionar plantao" e a tela deslizava para
+    // outro assunto.
+    const criados: Array<Record<string, unknown>> = [];
+    await page.route("**/api/events", async (route) => {
+      if (route.request().method() !== "POST") return route.fallback();
+      const corpo = route.request().postDataJSON() as Record<string, unknown>;
+      criados.push(corpo);
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({ event_id: `ev-${criados.length}`, ...corpo }),
+      });
+    });
+
+    await page.goto("/preferencias");
+    await page.getByRole("button", { name: "Adicionar plantão ou exceção" }).click();
+
+    const folha = page.getByRole("dialog", { name: "Adicionar plantão" });
+    await expect(folha).toBeVisible();
+
+    // Nenhum campo de NOME: o rotulo se deriva da duracao.
+    // ⚠️ `getByRole("textbox")` nao serve aqui: o `<input type="date">` do
+    // campo "quando" tambem resolve como textbox na arvore de acessibilidade.
+    // O que o artboard proibe e' o campo de TEXTO LIVRE ("Ex. Plantao/UBS"),
+    // que o painel antigo tinha e ainda tornava obrigatorio.
+    await expect(folha.locator('input[type="text"]')).toHaveCount(0);
+
+    // A escala 24x72 e' um preset, e o alcance e' dito ANTES de guardar.
+    await folha.getByRole("radio", { name: /Escala 24 × 72/ }).check();
+    await expect(folha.getByText("Isto muda", { exact: false })).toBeVisible();
+    await expect(folha.getByText(/Nada do que você já respondeu se perde/)).toBeVisible();
+
+    await folha.getByRole("button", { name: "Guardar", exact: true }).click();
+
+    // A escala nao existe no contrato: ela vira N eventos pontuais. O que este
+    // teste prende e' que sao MUITOS e que o rotulo saiu da duracao.
+    await expect.poll(() => criados.length).toBeGreaterThan(1);
+    expect(criados[0].event_type).toBe("event");
+    expect(criados[0].duration_hours).toBe(24);
+    expect(String(criados[0].label)).toContain("Plantão 24h");
+  });
+
   test("a barra some no modo imersivo da sessao", async ({ page }) => {
     // `/banco/sessao/*` e imersivo: sem barra de topo e sem barra de abas, para
     // a leitura do enunciado ficar com a tela inteira.
