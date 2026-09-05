@@ -49,6 +49,7 @@ import {
   clampQuestionLimit,
   CORRECTION_MODE_SHORT_LABEL,
   getActiveFilters,
+  motivoParaNaoComecar,
   parseQuestionBankEntryContext,
   questionBankCtaLabel,
   resolveEntryTopic,
@@ -1017,18 +1018,14 @@ function BancoDeQuestoesContent() {
   // Zero questoes tem causas diferentes e acoes diferentes. Sem dizer qual, a
   // tela so mostra "Max. 0" e um botao morto — foi o que fez o filtro parecer
   // quebrado.
-  const emptyReason = (() => {
-    if (loadingPreview || !availability || availability.available_count > 0) return null;
-    if (availability.total_count === 0) {
-      return activeFilters.length > 0
-        ? "Nenhuma questão combina com os filtros atuais. Remova um filtro para ampliar a busca."
-        : "Nenhuma questão disponível no banco para esta configuração.";
-    }
-    if (answerStatus === "unanswered") {
-      return `Você já respondeu todas as ${availability.total_count} questões deste filtro. Troque o histórico para "todas" ou "só erros".`;
-    }
-    return `As ${availability.total_count} questões do filtro não se encaixam neste histórico. Ajuste o histórico da sessão.`;
-  })();
+  // A decisao mora em `motivoParaNaoComecar`, fora do JSX: varios ramos, e
+  // regra presa em componente so' se testa por regex no texto-fonte.
+  const emptyReason = motivoParaNaoComecar({
+    studyKind, fullExamReady, fullExamName, fullExamYear, loadingPreview,
+    answerStatus, activeFilterCount: activeFilters.length,
+    availableCount: availability ? availability.available_count : null,
+    totalCount: availability ? availability.total_count : null,
+  });
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -1193,7 +1190,13 @@ function BancoDeQuestoesContent() {
         {!quantityEditing && (
           <BottomActionBar
             className="md:hidden"
-            status={error ? <span className="text-danger" role="alert">{error}</span> : null}
+            /* O motivo tambem no mobile: aqui so' o erro aparecia, e e' onde
+               o aluno de celular passa a maior parte do tempo. */
+            status={error
+              ? <span className="text-danger" role="alert">{error}</span>
+              : emptyReason
+                ? <span className="text-muted" aria-live="polite">{emptyReason}</span>
+                : null}
           >
             <Button
               type="button"
