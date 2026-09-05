@@ -397,3 +397,35 @@ test("toda atualização tem fonte primária com URL", () => {
     }
   }
 });
+
+/**
+ * O rodapé só existe para as ÓRFÃS.
+ *
+ * Enquanto as atualizações viviam só no fim da página, listá-las todas ali era a
+ * única forma de publicá-las. Com cada uma ao lado do seu assunto, repetir a
+ * lista inteira virou duplicação pura — 19 de 19, com título, resumo, vigência e
+ * fonte iguais. Uma página que diz a mesma coisa duas vezes ensina a pular a
+ * segunda, e a segunda é onde mora a ressalva.
+ *
+ * Este teste fixa a conta que decide o que o rodapé mostra. Se ela inverter, ou
+ * a página duplica tudo de novo, ou some com uma atualização que não tem outra
+ * casa.
+ */
+test("a soma fecha: toda atualização ou tem assunto, ou é órfã", () => {
+  const comAssunto = REVISAO.atualizacoes.filter((item) =>
+    (item.subtemas ?? []).some((s) => TEMAS.has(s)),
+  );
+  const orfas = REVISAO.atualizacoes.filter(
+    (item) => !(item.subtemas ?? []).some((s) => TEMAS.has(s)),
+  );
+  assert.equal(
+    comAssunto.length + orfas.length,
+    REVISAO.atualizacoes.length,
+    "há atualização que não é nem uma coisa nem outra",
+  );
+  assert.equal(
+    orfas.length,
+    0,
+    "hoje nenhuma é órfã — se isto mudar, o rodapé volta a ter lista e é de propósito",
+  );
+});

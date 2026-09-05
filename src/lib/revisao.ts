@@ -317,6 +317,29 @@ export function atualizacoesDoAssunto(
     .sort((a, b) => b.vigencia.localeCompare(a.vigencia));
 }
 
+/**
+ * As atualizações que NÃO têm assunto na revisão — as únicas que o painel do
+ * rodapé ainda precisa listar.
+ *
+ * ## Por que o rodapé encolheu
+ *
+ * Enquanto as atualizações só existiam no fim da página, listá-las todas ali era
+ * a única forma de publicá-las. Com `atualizacoesDoAssunto` colocando cada uma
+ * ao lado do seu assunto, repetir a lista inteira no rodapé passou a ser
+ * duplicação pura: medido em 04/09, **19 de 19** já apareciam acima, com título,
+ * resumo, vigência e fonte iguais. Uma página que diz a mesma coisa duas vezes
+ * ensina o leitor a pular a segunda — e a segunda é onde mora a ressalva.
+ *
+ * Órfã não é defeito: é atualização de um assunto que não entrou nos 42. Ela
+ * continua sendo fato publicável, e o rodapé é a casa dela.
+ */
+export function atualizacoesOrfas(revisao: RevisaoFinal): AtualizacaoRevisao[] {
+  const assuntos = new Set(revisao.dias.flatMap((dia) => dia.temas.map((t) => t.subtema)));
+  return revisao.atualizacoes.filter(
+    (item) => !item.subtemas.some((subtema) => assuntos.has(subtema)),
+  );
+}
+
 /** A classe mais frequente de um eixo medido, ou `null` quando o classificador
  *  não achou sinal nenhum — caso em que a página não deve afirmar padrão. */
 export function classeModal(
