@@ -34,7 +34,6 @@ import { useAuthToken } from "@/lib/useAuthToken";
 import { invalidateLearningQueries } from "@/lib/queryKeys";
 import { useToast } from "@/lib/useToast";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { BottomActionBar, BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
 import { Button } from "@/components/ui/Button";
 import FiltersBar from "./_components/FiltersBar";
 import type { TipoDeSessao } from "./_components/FiltersBar";
@@ -1031,7 +1030,7 @@ function BancoDeQuestoesContent() {
     <div className="min-h-screen bg-paper text-ink">
       {/* Sem max-w proprio: o AppShell ja limita o conteudo em `lg:max-w-6xl`.
           O `max-w-7xl` que estava aqui nunca chegava a valer. */}
-      <div className={`space-y-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
+      <div className="space-y-5">
         <section className="space-y-4" aria-label="Montador de sessão">
           {activeFilters.length > 0 && (
             /* A linha ganha rotulo e deixa de flutuar a direita: ela abria a
@@ -1184,35 +1183,25 @@ function BancoDeQuestoesContent() {
           />
         </section>
 
-        {/* Somente no mobile: no desktop a acao primaria vive no painel Resumo,
-            junto do numero que ela executa. Como card estatico no fim da pagina
-            ela ficava orfa e empurrada para a direita. */}
-        {!quantityEditing && (
-          <BottomActionBar
-            className="md:hidden"
-            /* O motivo tambem no mobile: aqui so' o erro aparecia, e e' onde
-               o aluno de celular passa a maior parte do tempo. */
-            status={error
-              ? <span className="text-danger" role="alert">{error}</span>
-              : emptyReason
-                ? <span className="text-muted" aria-live="polite">{emptyReason}</span>
-                : null}
-          >
-            <Button
-              type="button"
-              variant="primary"
-              size="md"
-              onClick={() => void startSession()}
-              disabled={!canStartConfigured}
-              className="w-full"
-            >
-              {busy ? "Preparando..." : configuredStartLabel}
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className="h-4 w-4" aria-hidden="true">
-                <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
-              </svg>
-            </Button>
-          </BottomActionBar>
-        )}
+        {/* ⚠️ A `BottomActionBar` SAIU DAQUI.
+
+            Ela duplicava, SO' NO CELULAR, o botao que o painel Resumo ja monta
+            -- e o fazia numa faixa fixa por cima da barra de abas, empilhando
+            duas linhas de chrome no rodape. Nenhuma rede social faz isso, e o
+            operador apontou.
+
+            A correcao nao foi mover a acao para outro lugar: foi parar de
+            duplica-la. `CreateSessionPanel` tirou o `hidden md:flex` do proprio
+            botao, e a tela ganhou ~110px de altura util.
+
+            ⚠️ CONFLITO DE MERGE RESOLVIDO A FAVOR DA REMOCAO, e o ganho do
+            outro lado NAO se perdeu. `0f88da9a` ("o botao de comecar diz o que
+            falta, em vez de morrer calado") tinha acabado de por `emptyReason`
+            no `status` desta barra, justamente para o aluno de celular ver o
+            motivo. Ele continua a ve-lo: `emptyReason` ja era renderizado
+            dentro do `CreateSessionPanel` (`:207`), e o painel deixou de se
+            esconder no mobile -- entao a explicacao passou a aparecer ao lado
+            do resumo que ela explica, que e' onde ela pertence. */}
       </div>
       <ConfirmDialog
         open={feedbackDefaultPromptOpen}

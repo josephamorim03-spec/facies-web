@@ -94,10 +94,10 @@ export default function QuickNoteModal({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!token) {
-      setError("Faca login para salvar a nota.");
-      return;
-    }
+    // ⚠️ ISTO DIZIA "Faca login para salvar a nota" A TODA GENTE.
+    // `token` e' sempre "" (`lib/auth.ts:29`, por desenho: a sessao vai por
+    // cookie httpOnly). O modal de "Salvar regra"/"Criar card" recusava a nota
+    // de quem estava logado ha' horas.
     const trimmedInsight = insight.trim();
     const trimmedBody = body.trim();
     if (trimmedInsight.length < 6 || !trimmedBody) return;

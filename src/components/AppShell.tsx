@@ -11,7 +11,9 @@ import { NAV_ITEMS } from "@/lib/navConfig";
 import PwaRegister from "@/components/PwaRegister";
 import { ToastProvider } from "@/lib/useToast";
 import { Toast } from "@/components/Toast";
+import { useQuery } from "@tanstack/react-query";
 import { getAuthToken } from "@/lib/auth";
+import { queryKeys } from "@/lib/queryKeys";
 import { api } from "@/lib/api/shared/http";
 import { getProfile } from "@/lib/api";
 import { getBlockedRedirectSessionKey } from "@/lib/storage-keys";
@@ -173,8 +175,29 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const hideNavigationChrome = deveEsconderChrome(pathname);
   const isDesktopNavigation = useDesktopNavigationMode();
   const blockedNavigationPathRef = useRef<string | null>(null);
-  const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
-  const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
+  /**
+   * ⚠️ O PERFIL DEIXOU DE VIR DO GUARD DE ROTA, e isto conserta um defeito.
+   *
+   * Nome e foto eram efeito colateral do efeito que decide se o aluno pode
+   * ficar nesta rota -- e esse efeito RETORNA CEDO em `/conta`, `/cadastro`,
+   * onboarding e ativacao (ver a lista abaixo, com os motivos). Consequencia
+   * medida: em `/conta` a foto era sempre `null`. Com a aba "Você" mostrando o
+   * avatar, o aluno veria a inicial exatamente na tela que fala dele.
+   *
+   * A consulta roda em toda rota autenticada, o cache do React Query garante
+   * uma requisicao so', e o guard passou a ler dela em vez de disparar a sua.
+   */
+  const perfilAlcancavel =
+    pathname !== "/" && !pathname.startsWith("/login") && !pathname.startsWith("/auth");
+  const perfilQuery = useQuery({
+    queryKey: queryKeys.perfil,
+    queryFn: () => getProfile(getAuthToken()),
+    enabled: perfilAlcancavel,
+    staleTime: 300_000,
+    retry: false,
+  });
+  const userDisplayName = perfilQuery.data?.display_name ?? null;
+  const userPhotoUrl = perfilQuery.data?.photo_url ?? null;
   const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
   // Vem do MESMO `getProfile` que ja carrega nome e foto -- nenhuma chamada
   // nova no caminho quente por causa de um aviso que fica escondido 23 dias
@@ -308,8 +331,8 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     getProfile(token)
       .then(async (profile) => {
         if (!active) return;
-        if (profile.display_name) setUserDisplayName(profile.display_name);
-        if (profile.photo_url) setUserPhotoUrl(profile.photo_url);
+        // Nome e foto vem de `perfilQuery`, acima -- este efeito nao alcanca
+        // `/conta` e nao pode ser a fonte deles.
         setAcessoExpiraEm(profile.access_expires_at ?? null);
 
         // A escada de bloqueio tem UMA definicao, em `initialGoalSetup`. Aqui
@@ -384,7 +407,9 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
           </ProfileDisplayNameProvider>
         </main>
       </div>
-      {showMobileTabBar && <MobileTabBar />}
+      {/* O perfil desce por PROP, e nao por contexto: `ProfileDisplayNameProvider`
+          vive dentro do `<main>` e esta barra e' irma dele. */}
+      {showMobileTabBar && <MobileTabBar displayName={userDisplayName} photoUrl={userPhotoUrl} />}
       {/* Acelerador de teclado, e só. Fica fora das telas sem chrome (login,
           sessão imersiva) pela mesma razão que o menu fica: lá o aluno tem uma
           tarefa só, e navegar para outro lugar não é ela. */}

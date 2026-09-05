@@ -5,6 +5,7 @@ import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
 import { useEffect, useState } from "react";
 import { FastNavLink } from "@/components/FastNavLink";
 import { ICON_MAP } from "@/components/navIcons";
+import { UserAvatar } from "@/components/UserAvatar";
 import {
   NAV_ITEMS,
   getIntentChildren,
@@ -37,7 +38,13 @@ export function hasChildRow(pathname: string): boolean {
  * quem pediu menos movimento ao sistema fica com a barra sempre visivel, porque
  * uma barra que aparece e some E movimento.
  */
-export function MobileTabBar() {
+export function MobileTabBar({
+  displayName,
+  photoUrl,
+}: {
+  displayName?: string | null;
+  photoUrl?: string | null;
+} = {}) {
   const pathname = usePathname() ?? "";
   const { scrollY } = useScroll();
   const reduceMotion = useReducedMotion();
@@ -117,7 +124,10 @@ export function MobileTabBar() {
                 data-nav-item-href={item.href}
                 data-nav-active={active ? "true" : "false"}
                 className={[
-                  "flex min-h-10 flex-1 items-center justify-center border px-3 text-xs font-medium",
+                  // Mesma razao do `min-w-0` das abas: a linha de filhos tem
+                  // ate quatro itens e "O plano até a prova" e' o rotulo mais
+                  // longo da navegacao inteira.
+                  "flex min-h-10 min-w-0 flex-1 items-center justify-center truncate border px-3 text-xs font-medium",
                   active
                     ? "border-primary bg-primary text-primaryInk"
                     : "border-edge bg-surface text-muted",
@@ -139,6 +149,14 @@ export function MobileTabBar() {
         {NAV_ITEMS.map((item) => {
           const active = isNavItemActive(pathname, item);
           const Icon = ICON_MAP[item.icon];
+          // ⚠️ A ABA "VOCÊ" MOSTRA A PESSOA, e nao um simbolo de pessoa.
+          //
+          // E' a unica convencao de rede social que este produto copia ao pe da
+          // letra, e ela vale a pena: o rosto e' o marcador mais rapido de
+          // "isto sou eu" numa fileira de icones iguais. Cai no `CircleUser` do
+          // `ICON_MAP` so' quando nao ha foto NEM nome -- com nome, a inicial
+          // ja e' identidade.
+          const mostraOAluno = item.icon === "you" && Boolean(photoUrl || displayName);
           return (
             <FastNavLink
               key={item.href}
@@ -155,11 +173,23 @@ export function MobileTabBar() {
               data-nav-active={active ? "true" : "false"}
               className={[
                 // 62px + safe-area: o piso de 44px de alvo com folga para o rotulo.
-                "flex min-h-[3.875rem] flex-1 flex-col items-center justify-center gap-1 border-t-2",
+                //
+                // ⚠️ `min-w-0` NAO E' ENFEITE. Sem ele, `flex-1` herda
+                // `min-width: auto` = a largura de min-content do rotulo, que e'
+                // indivisivel. Medido: a 320px com seis abas, "EVOLUÇÃO" em mono
+                // de 11px pedia ~60px contra 53px disponiveis, e a barra INTEIRA
+                // estourava ~40px na horizontal. O e2e so' media a 390px, entao
+                // o caso nunca apareceu. A barra tem cinco abas agora, mas a
+                // causa era esta -- e ela voltaria com qualquer rotulo longo.
+                "flex min-h-[3.875rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 border-t-2",
                 active ? "border-t-primary text-primary" : "border-t-transparent text-muted",
               ].join(" ")}
             >
-              <Icon className="h-5 w-5" aria-hidden="true" />
+              {mostraOAluno ? (
+                <UserAvatar photoUrl={photoUrl} displayName={displayName} size="tab" />
+              ) : (
+                <Icon className="h-5 w-5" aria-hidden="true" />
+              )}
               {/* ⚠️ 11px, e o DESENHO PEDE 10 — desvio aprovado em 2026-08-30.
 
                   O piso de 11px (`text-micro`) e do sistema e existe por
@@ -203,7 +233,7 @@ export function MobileTabBar() {
                   que o link define acima — a barra ficaria sem indicar onde
                   voce esta. A cor continua vindo do estado, no elemento pai;
                   o token entra so pela forma. */}
-              <span className="paper-eyebrow leading-tight text-current">
+              <span className="paper-eyebrow max-w-full truncate leading-tight text-current">
                 {item.shortLabel}
               </span>
             </FastNavLink>

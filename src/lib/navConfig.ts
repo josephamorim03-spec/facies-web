@@ -3,8 +3,7 @@ export type StudentIntent =
   | "bank"
   | "cards"
   | "profile"
-  | "routine"
-  | "account"
+  | "you"
   | "map";
 
 export type StudentNavIcon = StudentIntent;
@@ -56,11 +55,32 @@ const INTENTS: Record<
   // "voce e seus dados" que o rotulo antigo cobria virou duas abas — `rotina`
   // (a sua semana) e `conta` (assinatura e provas).
   profile: { path: "/evolucao", label: "Evolução", icon: "profile" },
-  // `14a` "Minha rotina": a semana padrao com os plantoes, e o plano ate a
-  // prova. Sao as duas abas de dentro do artboard, e viram os dois filhos.
-  routine: { path: "/preferencias", label: "Rotina", icon: "routine" },
-  // `12c` "Conta e assinatura".
-  account: { path: "/conta", label: "Conta", icon: "account" },
+  // ⚠️ VOCE ABSORVE ROTINA E CONTA, e a barra volta a CINCO destinos.
+  //
+  // Isto reverte a decisao de 2026-09-02 ("seis, com Conta") e o mapa de
+  // destinos do desenho (`Webapp - telas.dc.html:278`). O motivo nao e' gosto:
+  //
+  // 1. MEDIDA. O item da barra e' `flex-1` e o rotulo e' mono de 11px com
+  //    tracking. A 320px, seis abas dao 53px cada, e "EVOLUÇÃO" pede ~60px de
+  //    largura minima -- a barra estourava ~40px na horizontal. O e2e media so'
+  //    a 390px, entao o caso nunca apareceu. Com cinco sao 64px, a mesma folga
+  //    que os seis tinham a 390.
+  //
+  // 2. A GRAMATICA QUE O ALUNO JA' SABE. Instagram, YouTube e Duolingo poem
+  //    quatro destinos de CONTEUDO e um de PESSOA. Rotina e Conta nao sao
+  //    conteudo: sao ajuste, e ajuste vive dentro do perfil em toda rede social
+  //    que este publico usa todo dia.
+  //
+  // 3. O PEDIDO EXPLICITO do operador (2026-09-04): a rotina e o calendario
+  //    "nao devem brilhar" -- a semana padrao se declara uma vez e o calendario
+  //    serve a quem quer previsibilidade. Peso de destino permanente para
+  //    tarefa rara e' o oposto disso.
+  //
+  // Nada perdeu alcance: `/preferencias`, `/cronograma`, `/plano` e `/conta`
+  // continuam rotas, continuam no registro, continuam acendendo esta aba, e
+  // ganham entrada nomeada em `/voce`. Para voltar aos seis, o filtro e'
+  // `INTENTS_VISIVEIS`, abaixo.
+  you: { path: "/voce", label: "Você", icon: "you" },
 };
 
 //: Filhos de cada aba. Sao eles que dao titulo a pagina: com o Cronograma
@@ -90,8 +110,19 @@ const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
   // Sem filhos: `/preferencias` saiu para `routine`, e `/estatisticas` e
   // caminho legado da propria Evolucao (fica em LEGACY_PATHS).
   profile: [],
-  routine: [
-    // Os rotulos sao os das duas abas do artboard `14a`.
+  you: [
+    // ⚠️ `/voce` NAO E' FILHO DE SI MESMO, e isso e' o que apaga a linha de
+    // secoes na propria tela.
+    //
+    // `hasChildRow` so' desenha a linha quando ha >= 2 filhos E um deles esta
+    // ativo. Com `/voce` na lista, abrir a aba acendia um filho e a linha
+    // aparecia -- quatro botoes de chrome permanente logo acima da barra, com
+    // "O plano até a prova" truncado no meio, para repetir o menu que a PAGINA
+    // ja e'. Era o oposto do pedido: a rotina e o calendario nao devem brilhar.
+    //
+    // Sem ele, `/voce` abre limpa e a linha so' aparece DENTRO das telas de
+    // ajuste, onde ela serve para andar entre irmas.
+    // Os rotulos das duas abas do artboard `14a`.
     { href: "/preferencias", label: "Minha semana", matches: ["/preferencias", "/rotina-e-metas"] },
     {
       // O `9c` e' a LEITURA do plano (fases, o que nao coube, quanto a rotina
@@ -101,8 +132,8 @@ const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
       label: "O plano até a prova",
       matches: ["/plano", "/cronograma", "/agenda-operacional", "/desempenho", "/trilha"],
     },
+    { href: "/conta", label: "Conta", matches: ["/conta"] },
   ],
-  account: [],
 };
 
 //: Caminhos legados que o navegador ainda RENDERIZA e que precisam acender a
@@ -117,8 +148,7 @@ const LEGACY_PATHS: Record<StudentIntent, string[]> = {
   bank: [],
   cards: [],
   profile: ["/estatisticas"],
-  routine: ["/cronograma", "/agenda-operacional", "/desempenho", "/trilha", "/rotina-e-metas"],
-  account: [],
+  you: ["/cronograma", "/agenda-operacional", "/desempenho", "/trilha", "/rotina-e-metas"],
 };
 
 // A ordem e a do desenho: hoje · mapa · banco · evolucao · rotina · conta.
@@ -136,8 +166,7 @@ const INTENT_ORDER: StudentIntent[] = [
   "bank",
   "cards",
   "profile",
-  "routine",
-  "account",
+  "you",
 ];
 
 function normalizePathname(pathname: string): string {
@@ -177,10 +206,21 @@ export const STUDENT_ROUTES: StudentRouteConfig[] = [
   ...INTENT_ORDER.flatMap((intent) =>
     CHILDREN[intent].map((child) => route(child.href, child.label, intent)),
   ),
-  // Abas sem filho carregam o proprio rotulo.
-  ...INTENT_ORDER.filter((intent) => CHILDREN[intent].length === 0).map((intent) =>
-    route(INTENTS[intent].path, INTENTS[intent].label, intent),
-  ),
+  // ⚠️ TODA aba registra o proprio caminho, TENHA OU NAO filhos.
+  //
+  // A condicao era `CHILDREN[intent].length === 0`, e ela funcionava enquanto o
+  // caminho da aba fosse tambem o de um filho: `/banco` e o filho "Montar
+  // sessão" apontam para o mesmo lugar, e o titulo vinha do filho.
+  //
+  // "Você" quebrou a coincidencia. Ela tem tres filhos e nenhum deles e' ela
+  // mesma -- de proposito, para a linha de secoes nao aparecer na propria tela.
+  // Resultado: `/voce` ficou fora do registro, sem titulo, e a barra de topo do
+  // celular abriu em branco.
+  //
+  // Vem DEPOIS dos filhos: `getStudentRoute` ordena por comprimento e fica com
+  // o primeiro empate, entao o filho continua ganhando onde os dois existem, e
+  // `/banco` segue titulado "Montar sessão".
+  ...INTENT_ORDER.map((intent) => route(INTENTS[intent].path, INTENTS[intent].label, intent)),
   ...INTENT_ORDER.flatMap((intent) =>
     LEGACY_PATHS[intent].map((path) => route(path, INTENTS[intent].label, intent)),
   ),
@@ -311,18 +351,14 @@ function navItem(intent: StudentIntent): NavItemConfig {
 const FLASHCARDS_LIGADOS = process.env.NEXT_PUBLIC_FLASHCARDS === "1";
 
 /**
- * `account` VOLTA para a barra: sao SEIS destinos, iguais no celular e no
- * desktop.
+ * CINCO destinos: hoje · mapa · banco · evolucao · voce.
  *
- * Ela tinha saido por ser tarefa rara (trocar senha, exportar, encerrar) num
- * lugar de peso permanente. O desenho decide o contrario, e o motivo esta' no
- * que a Conta passa a guardar: o estado do acesso, as suas provas, os avisos e
- * -- proximo turno -- "Acessibilidade e leitura" e "Como voce resolve". Deixou
- * de ser a gaveta de senha para ser onde o aluno ajusta o produto.
+ * Quatro de conteudo e um de pessoa -- ver o comentario de `you` em `INTENTS`
+ * para os tres motivos (a medida a 320px, a gramatica das redes, o pedido de
+ * nao dar peso permanente a ajuste raro).
  *
- * O avatar no rodape da sidebar CONTINUA levando a `/conta`: duas portas para o
- * mesmo lugar nao competem, e a de cima e' a que existe no celular, onde a
- * sidebar nao e' montada.
+ * O avatar no rodape da sidebar continua levando ao mesmo lugar; agora ele e'
+ * a MESMA porta que a aba, e nao uma segunda.
  */
 const INTENTS_VISIVEIS: StudentIntent[] = INTENT_ORDER.filter(
   (intent) => intent !== "cards" || FLASHCARDS_LIGADOS,

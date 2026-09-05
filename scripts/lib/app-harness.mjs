@@ -849,6 +849,9 @@ export async function mockApi(page) {
         shift_12h_capacity: 40,
         shift_24h_capacity: 20,
         display_name: "Jose",
+        // A tela /voce mostra a especialidade declarada; sem ela no fixture, a
+        // captura exercitaria so o estado vazio.
+        intended_specialty: "Oftalmologia",
         access_status: "active",
         has_completed_initial_goal_setup: true,
         // ⚠️ SEM ESTE CAMPO O APP INTEIRO FICA EM "CARREGANDO".

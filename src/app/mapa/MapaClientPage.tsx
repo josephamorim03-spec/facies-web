@@ -10,6 +10,7 @@ import { CompararProvas } from "@/components/facies/CompararProvas";
 import { LIMIAR_EM_PONTOS } from "@/components/facies/comparacaoDeProvas";
 import { FaciesReport } from "@/components/facies/FaciesReport";
 import { MapaDaProva } from "@/components/facies/MapaDaProva";
+import { FolhaDoAssunto } from "./_components/FolhaDoAssunto";
 import {
   getFaciesDaBanca,
   getIndiceDeBancas,
@@ -244,6 +245,14 @@ function EixoComparar({ minha, outrasDoAluno }: { minha: Banca; outrasDoAluno: s
  */
 function EixoVoce({ banca }: { banca: Banca }) {
   const { token, tokenResolved } = useAuthToken();
+  /**
+   * O assunto aberto na grade.
+   *
+   * Ele mora AQUI, e nao no `MapaDaProva`, porque a acao que ele destrava
+   * (montar a sessao) e' de cliente: cria sessao, invalida consultas e navega.
+   * O mapa continua sendo leitura, e apenas AVISA qual celula foi aberta.
+   */
+  const [assuntoAberto, setAssuntoAberto] = useState<string | null>(null);
 
   const proficiencia = useQuery({
     queryKey: queryKeys.competencyMastery,
@@ -314,7 +323,19 @@ function EixoVoce({ banca }: { banca: Banca }) {
   return (
     <div className="space-y-3">
       <p className="paper-eyebrow">tamanho é incidência · preenchimento é você</p>
-      <MapaDaProva linhas={assuntos} dominio={dominio} pisoDeObservacao={piso} />
+      <MapaDaProva
+        linhas={assuntos}
+        dominio={dominio}
+        pisoDeObservacao={piso}
+        onSelecionar={setAssuntoAberto}
+      />
+      <FolhaDoAssunto
+        assunto={assuntoAberto}
+        institutionKey={banca.institution_key}
+        nomeDaBanca={nomeCurto(banca)}
+        meu={assuntoAberto ? dominio.get(assuntoAberto) ?? null : null}
+        onFechar={() => setAssuntoAberto(null)}
+      />
       {/* A nota continua, e mudou de trabalho.
           Antes ela existia para desfazer a ambiguidade do tom claro — que tinha
           dois sentidos, "você domina" e "não há o que medir". Agora a FORMA
