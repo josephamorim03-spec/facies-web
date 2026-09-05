@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Calendar as CalendarDays,
   ChartLine as ChartLine,
   CircleUser as CircleUserRound,
   Compass as Compass,
@@ -38,8 +37,14 @@ export const ICON_MAP: Record<StudentNavIcon, ComponentType<SVGProps<SVGSVGEleme
   // que e o que a tela mostra.
   profile: ChartLine,
   map: Compass,
-  routine: CalendarDays,
-  account: CircleUserRound,
+  // ⚠️ FALLBACK, e nao o icone final da aba.
+  //
+  // `you` mostra a FOTO do aluno quando ela existe -- e a convencao que toda
+  // rede social ensinou, e a unica aba cujo icone e' uma pessoa concreta em vez
+  // de um simbolo. `MobileTabBar` e `SidebarNav` trocam este componente pelo
+  // `UserAvatar`; este mapa responde quando nao ha foto nem nome, e para quem
+  // le `NavIcon` fora da barra.
+  you: CircleUserRound,
 };
 
 export function NavIcon({

@@ -358,14 +358,14 @@ test.describe("Navigation shell", () => {
   // ausente nao ha' item para acender, e o caso mediria zero.
   const desktopCases = [
     { path: "/hoje", activeHref: "/hoje" },
-    { path: "/calendario", activeHref: "/preferencias", landsOn: "/cronograma" },
+    { path: "/calendario", activeHref: "/voce", landsOn: "/cronograma" },
     { path: "/revisoes", activeHref: "/banco", landsOn: "/banco/historico" }, // o historico saiu de Evolucao
     { path: "/dados-e-relatorios/graficos", activeHref: "/evolucao" }, // 308 -> /evolucao
     { path: "/estatisticas/relatorio", activeHref: "/evolucao" }, // rota real, intent profile
     { path: "/banco/historico", activeHref: "/banco" }, // filho novo do Banco
     // `/desempenho` encadeia DOIS saltos: `redirect("/cronograma")` no servidor
     // e o Cronograma agora e' filho de Rotina.
-    { path: "/desempenho", activeHref: "/preferencias", landsOn: "/cronograma" },
+    { path: "/desempenho", activeHref: "/voce", landsOn: "/cronograma" },
   ];
 
   for (const { path, activeHref, landsOn } of desktopCases) {
@@ -403,16 +403,16 @@ test.describe("Navigation shell", () => {
   test("keeps long labels inside their container", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     // ⚠️ A LINHA DE SECOES E' DA AREA ATUAL, e o Hoje nao tem filhos.
-    // O rotulo longo mora em ROTINA, entao e' de dentro dela que ele se mede.
-    // Em `/hoje` o locator resolvia zero elementos e o teste falhava por
-    // ausencia, nao por estouro.
+    // O rotulo longo mora em VOCÊ (era Rotina, que virou filha dela), entao e'
+    // de dentro dela que ele se mede. Em `/hoje` o locator resolvia zero
+    // elementos e o teste falhava por ausencia, nao por estouro.
     await page.goto("/preferencias");
     await navSidebar(page).hover();
 
-    // O rotulo mais longo da navegacao e' "O plano ate' a prova", o filho de
-    // Rotina que leva ao Cronograma. Ele mora na linha de secoes -- onde os seis
-    // destinos ("Hoje", "Mapa", "Banco", "Evolucao", "Rotina", "Conta") sao
-    // curtos demais para exercitar o limite.
+    // O rotulo mais longo da navegacao e' "O plano ate' a prova", filho de
+    // "Você". Ele mora na linha de secoes -- onde os cinco destinos ("Hoje",
+    // "Mapa", "Banco", "Evolucao", "Você") sao curtos demais para exercitar o
+    // limite.
     const longestItem = page
       .getByLabel("Seções desta área")
       // O filho aponta para `/plano` (a leitura do plano); `/cronograma` virou
@@ -431,21 +431,23 @@ test.describe("Navigation shell", () => {
     expect(labelBox.x + labelBox.width).toBeLessThanOrEqual(itemBox.x + itemBox.width + 1);
   });
 
-  test("a sidebar expoe os seis destinos, e o Cronograma vive na linha de filhos", async ({ page }) => {
+  test("a sidebar expoe os cinco destinos, e a Rotina vive na linha de filhos", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/hoje");
 
     const sidebar = navSidebar(page);
     await expect(sidebar).toBeVisible();
 
-    // Seis destinos, os do fim do turno 14 do desenho: "hoje · mapa · banco ·
-    // evolucao · rotina · conta", iguais no celular e no desktop.
-    for (const href of ["/hoje", "/mapa", "/banco", "/evolucao", "/preferencias", "/conta"]) {
+    // Cinco destinos: quatro de conteudo e um de pessoa. Iguais no celular e
+    // no desktop.
+    for (const href of ["/hoje", "/mapa", "/banco", "/evolucao", "/voce"]) {
       await expect(sidebar.locator(`[data-nav-item-href='${href}']`)).toHaveCount(1);
     }
+    // `/preferencias` e `/conta` viraram FILHOS de "Você" — continuam
+    // alcancaveis, e deixaram de ocupar peso de destino permanente.
     // `/cards` esta' fora enquanto a chave dos flashcards estiver desligada; os
     // outros tres sao 308 e nunca foram destino.
-    for (const href of ["/cronograma", "/cards", "/kros", "/caderno", "/rota"]) {
+    for (const href of ["/preferencias", "/conta", "/cronograma", "/cards", "/kros", "/caderno", "/rota"]) {
       await expect(sidebar.locator(`[data-nav-item-href='${href}']`)).toHaveCount(0);
     }
 
@@ -506,18 +508,50 @@ test.describe("Navigation shell mobile tab bar", () => {
     await expect(activeItems).toHaveAttribute("aria-current", "page");
   });
 
-  test("mostra os seis destinos sem estouro horizontal", async ({ page }) => {
+  test("mostra os cinco destinos sem estouro horizontal", async ({ page }) => {
     await page.goto("/hoje");
 
-    // Seis a 390px sao 65px por aba. O estouro horizontal e' o risco real desta
-    // barra, e e' o que a ultima assercao mede.
+    // Cinco a 390px sao 78px por aba. O estouro horizontal e' o risco real
+    // desta barra, e e' o que a ultima assercao mede.
     const tabs = page.locator("[data-nav-surface='tabbar'] [data-nav-item-href]");
-    await expect(tabs).toHaveCount(6);
-    for (const label of ["Hoje", "Mapa", "Banco", "Evolução", "Rotina", "Conta"]) {
+    await expect(tabs).toHaveCount(5);
+    for (const label of ["Hoje", "Mapa", "Banco", "Evolução", "Você"]) {
       await expect(tabs.getByText(label, { exact: true })).toBeVisible();
     }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
+  });
+
+  test("a 320px a barra continua sem estourar", async ({ page }) => {
+    // ⚠️ O CASO QUE NUNCA FOI MEDIDO, e que estava QUEBRADO.
+    //
+    // Todo teste desta barra rodava a 390px. A 320px — iPhone SE de 1a geracao,
+    // e a largura minima que o produto declara suportar — seis abas davam 53px
+    // cada, e o item era `flex-1` SEM `min-w-0`: `min-width` caia no automatico,
+    // que e' a largura de min-content do rotulo. "EVOLUÇÃO" em mono de 11px com
+    // tracking pede ~60px indivisiveis, e a barra INTEIRA empurrava o documento
+    // ~40px para o lado.
+    //
+    // Duas coisas consertam, e as duas entraram: cinco abas em vez de seis, e
+    // `min-w-0 truncate` no item. Este teste prende a segunda — ela e' a que
+    // sobrevive a um rotulo longo no futuro.
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto("/hoje");
+
+    const tabs = page.locator("[data-nav-surface='tabbar'] [data-nav-item-href]");
+    await expect(tabs).toHaveCount(5);
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+
+    // E a barra continua ocupando a largura da tela, sem uma aba sair de cena.
+    const primeira = await tabs.first().boundingBox();
+    const ultima = await tabs.last().boundingBox();
+    expect(primeira).not.toBeNull();
+    expect(ultima).not.toBeNull();
+    expect(ultima!.x + ultima!.width).toBeLessThanOrEqual(321);
   });
 
   test("nem Kros nem Rota sobrevivem como rotulo de menu", async ({ page }) => {
@@ -543,47 +577,45 @@ test.describe("Navigation shell mobile tab bar", () => {
     await expect(active).toHaveText("O plano até a prova");
   });
 
-  test("a acao primaria segue a barra de abas quando ela se esconde", async ({ page }) => {
-    // O DEFEITO QUE ESTE TESTE PRENDE, medido em `/preferencias`:
-    // rolando ate o fim, a barra de abas animava para fora (topo 732 -> 855) e a
-    // barra de acao ficava parada em 641-738, deixando 106px de faixa MORTA sob
-    // o botao primario -- no unico lugar da tela que o polegar procura.
+  test("nao ha segunda barra empilhada sobre a barra de abas", async ({ page }) => {
+    // ⚠️ ESTE TESTE MUDOU DE LADO, e o motivo importa.
     //
-    // A assercao que existia media `scrollWidth - clientWidth` do documento.
-    // Estouro horizontal nao era o defeito, e por isso ela passava verde com o
-    // botao flutuando.
-    await page.goto("/preferencias");
+    // Ele prendia um defeito real: a `BottomActionBar` ficava ancorada em
+    // `bottom: var(--nav-stack-height)` — um token estatico — enquanto a barra
+    // de abas se escondia por scroll. Rolando ate o fim de `/preferencias`
+    // sobravam 106px de faixa MORTA sob o botao primario. O conserto (fazer a
+    // acao seguir a barra) foi entregue, e este teste o guardava.
+    //
+    // Depois o operador olhou a tela pronta e apontou o problema um nivel
+    // acima: NENHUMA rede social empilha duas barras no rodape do celular. As
+    // duas juntas comiam ~110px e escondiam o fim do conteudo atras de chrome.
+    //
+    // Entao a acao saiu das duas telas que a tinham: `/preferencias` grava
+    // sozinha (o botao "Salvar" deixou de existir) e `/banco` mostra o botao
+    // que o painel Resumo ja montava, inline, junto do numero que ele executa.
+    //
+    // O que este teste guarda agora e' a AUSENCIA — e ela e' mais facil de
+    // regredir que a presenca: basta alguem montar uma `BottomActionBar` numa
+    // tela nova sem saber por que ela sumiu destas duas.
+    for (const rota of ["/preferencias", "/banco"]) {
+      await page.goto(rota);
+      await expect(page.locator("[data-nav-surface='tabbar']")).toBeVisible();
+      await expect(page.locator("[data-bottom-action-bar='true']")).toHaveCount(0);
+    }
+  });
 
-    const acao = page.locator("[data-bottom-action-bar='true']");
-    await expect(acao).toBeVisible();
+  test("a acao primaria do banco vive na pagina, e o dedo alcanca", async ({ page }) => {
+    // A contrapartida da ausencia: tirar a barra nao pode ter tirado a acao.
+    // Ela existe, e' a unica primaria da tela, e cabe na largura do celular.
+    await page.goto("/banco");
+    const comecar = page.getByRole("button", { name: /^Começar/ });
+    await expect(comecar).toBeVisible();
 
-    const barra = page.locator("[data-nav-surface='tabbar']");
-    const alturaDaTela = page.viewportSize()?.height ?? 844;
-
-    // Com a barra VISIVEL a acao assenta ACIMA dela, sem cobrir.
-    const topoDaBarra = (await barra.boundingBox())?.y ?? 0;
-    const acaoVisivel = await acao.boundingBox();
-    expect(acaoVisivel).not.toBeNull();
-    expect(acaoVisivel!.y + acaoVisivel!.height).toBeLessThanOrEqual(topoDaBarra + 2);
-
-    // Rola ate o fim: a barra de abas sai de cena.
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForFunction(
-      () =>
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--nav-stack-shown")
-          .trim() === "0",
-      undefined,
-      { timeout: 10_000 },
-    );
-    // A transicao do `bottom` acompanha a da barra; esperar por ela e' mais
-    // barato que afrouxar a margem da assercao.
-    await page.waitForTimeout(400);
-
-    const acaoEscondida = await acao.boundingBox();
-    expect(acaoEscondida).not.toBeNull();
-    const faixaMorta = alturaDaTela - (acaoEscondida!.y + acaoEscondida!.height);
-    expect(faixaMorta).toBeLessThanOrEqual(8);
+    const caixa = await comecar.boundingBox();
+    expect(caixa).not.toBeNull();
+    // Alvo de toque do sistema: 48px minimo.
+    expect(caixa!.height).toBeGreaterThanOrEqual(44);
+    expect(caixa!.x + caixa!.width).toBeLessThanOrEqual(391);
   });
 
   test("a barra some no modo imersivo da sessao", async ({ page }) => {

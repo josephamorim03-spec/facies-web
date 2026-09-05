@@ -176,6 +176,14 @@ async function runViewport(browser, viewport) {
       .waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
+  // O quinto destino. Entra na captura pela mesma razao das outras: `axe` e
+  // `assertNoOverflow` so rodam por aqui.
+  await visit("/voce", "voce", async () => {
+    await page
+      .getByRole("navigation", { name: "Suas configurações" })
+      .waitFor({ state: "visible", timeout: 30_000 });
+  }, !viewport.mobile);
+
   await visit("/preferencias", "preferencias", async () => {
     // Nao existe heading "Preferências": esse e o titulo da PAGINA, que mora no
     // topo como span. Os <h2> da tela sao os titulos de secao.

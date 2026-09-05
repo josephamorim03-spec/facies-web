@@ -1,4 +1,6 @@
 export const queryKeys = {
+  /** O perfil do titular: nome, foto e estado do acesso. */
+  perfil: ["profile"] as const,
   studentToday: ["student", "today"] as const,
   studentAgendaAll: ["student", "agenda"] as const,
   studentAgenda: (dateFrom: string, dateTo: string) =>

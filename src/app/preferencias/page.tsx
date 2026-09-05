@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ContaSection } from "./_components/ContaSection";
 import { MinhaSemana } from "./_components/MinhaSemana";
-import { Bell, Calendar as CalendarClock, CalendarDays as CalendarPlus, Check, Goal, NotepadText as Layers3, Repeat, Save, Target, Trash2 as Trash2 } from "lucide-react";
+import { Bell, Calendar as CalendarClock, CalendarDays as CalendarPlus, Check, Goal, NotepadText as Layers3, Repeat, Target, Trash2 as Trash2 } from "lucide-react";
 
 import {
   createEvent,
@@ -33,7 +33,6 @@ import {
   getEffectiveRoutineHoursForWeekday,
 } from "@/lib/calendarEventVisibility";
 import { getErrorMessage } from "@/lib/error-utils";
-import { BottomActionBar, BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
 import { Button } from "@/components/ui/Button";
 import { ObjectiveSelector } from "@/components/objectives/ObjectiveSelector";
 import { TargetExamSelector } from "@/components/objectives/TargetExamSelector";
@@ -333,6 +332,66 @@ export default function PreferenciasPage() {
     }
   }
 
+  /**
+   * A ASSINATURA DO QUE SE GRAVA.
+   *
+   * Sem ela o `useEffect` abaixo entraria em laco: `save()` termina com
+   * `setProfile(next)` — a resposta do servidor —, e um efeito que observa
+   * `profile` dispararia de novo com o proprio resultado. Comparar a assinatura
+   * do que FOI gravado com a do que esta na tela corta o ciclo sem depender de
+   * igualdade referencial, que `updateProfile` nunca preserva.
+   */
+  const assinaturaDoQueSeGrava = profile
+    ? JSON.stringify([
+        profile.weekly_goal_questions,
+        profile.shift_12h_capacity,
+        profile.reschedule_mode,
+        profile.weekly_goal_notifications_enabled,
+        profile.calendar_change_alerts_enabled,
+        profile.calendar_recommendations_enabled,
+        profile.default_feedback_timing,
+        profile.default_feedback_reveal_policy,
+        retention,
+      ])
+    : null;
+  const ultimaGravada = useRef<string | null>(null);
+
+  /**
+   * ⚠️ A TELA GRAVA SOZINHA, e o botao "Salvar" saiu.
+   *
+   * Ele vivia numa `BottomActionBar` — uma faixa fixa colada por cima da barra
+   * de abas. O operador apontou o que nenhuma rede social faz: empilhar duas
+   * barras no rodape do celular, comendo ~110px da tela e escondendo o fim do
+   * conteudo atras de duas linhas de chrome.
+   *
+   * A saida nao e' mudar o botao de lugar: e' nao precisar dele. Ajuste de
+   * preferencia nao tem "rascunho" — nao ha estado intermediario que valha
+   * confirmar, e as Definicoes de qualquer telemovel gravam ao toque ha uma
+   * decada. O que o aluno precisa saber e' que gravou, e isso e' uma linha de
+   * texto, nao um botao.
+   *
+   * 700ms porque o unico campo que se digita aqui e' a meta semanal: gravar a
+   * cada tecla mandaria "2", "24", "240" ao servidor.
+   */
+  useEffect(() => {
+    if (!token || !profile || !assinaturaDoQueSeGrava) return;
+    // A primeira passagem so' registra o que veio do servidor: ela nao e' uma
+    // mudanca do aluno.
+    if (ultimaGravada.current === null) {
+      ultimaGravada.current = assinaturaDoQueSeGrava;
+      return;
+    }
+    if (ultimaGravada.current === assinaturaDoQueSeGrava) return;
+    const marca = window.setTimeout(() => {
+      ultimaGravada.current = assinaturaDoQueSeGrava;
+      void save();
+    }, 700);
+    return () => window.clearTimeout(marca);
+    // `save` e' recriada a cada render e nao entra na lista de proposito: quem
+    // decide gravar e' a mudanca da ASSINATURA, nao a identidade da funcao.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assinaturaDoQueSeGrava, token, profile !== null]);
+
   async function save() {
     if (!token || !profile || saving) return;
     setSaving(true);
@@ -383,7 +442,7 @@ export default function PreferenciasPage() {
   }
 
   return (
-    <div className={`mx-auto max-w-4xl ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
+    <div className="mx-auto max-w-4xl">
       <div className="divide-y divide-edge">
         {/* ── Minha semana (artboard `14a`) ──────────────────────────────
             Entra ANTES de tudo porque e' a unica coisa nesta pagina que o
@@ -846,39 +905,34 @@ export default function PreferenciasPage() {
         </section>
       </div>
 
-      <BottomActionBar
-        maxWidthClassName="max-w-4xl"
-        className="mt-4"
-        status={
-          <>
-          {error ? (
-            <span className="text-danger" role="alert">
-              {error}
-            </span>
-          ) : saved ? (
-            <span className="inline-flex items-center gap-2 text-success">
-              <Check className="h-4 w-4" aria-hidden="true" />
-              Preferências salvas
-            </span>
-          ) : (
-            <span className="text-muted">Revise os ajustes antes de salvar.</span>
-          )}
-          </>
-        }
+      {/* O estado do que a tela grava sozinha.
+
+          `aria-live="polite"` e nao `role="status"` com foco: quem usa leitor
+          de tela precisa saber que gravou, e nao ser interrompido no meio de um
+          controle para ouvi-lo. Erro e' a excecao — ele vai em `role="alert"`,
+          porque ai a interrupcao e' o ponto.
+
+          A linha nao desaparece depois de gravar: "guardado" que some deixa a
+          pessoa sem saber se viu ou imaginou. */}
+      <p
+        className="mt-6 min-h-6 font-mono text-nota tabular-nums text-muted"
+        aria-live="polite"
       >
-        <Button
-          type="button"
-          variant="primary"
-          size="md"
-          onClick={save}
-          disabled={saving}
-          loading={saving}
-          leftIcon={<Save className="h-4 w-4" aria-hidden="true" />}
-          className="w-full sm:w-auto"
-        >
-          {saving ? "Salvando..." : "Salvar"}
-        </Button>
-      </BottomActionBar>
+        {error ? (
+          <span className="text-danger" role="alert">
+            {error}
+          </span>
+        ) : saving ? (
+          "guardando…"
+        ) : saved ? (
+          <span className="inline-flex items-center gap-1.5 text-success">
+            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+            guardado
+          </span>
+        ) : (
+          "as mudanças guardam sozinhas"
+        )}
+      </p>
 
       <ContaSection />
     </div>

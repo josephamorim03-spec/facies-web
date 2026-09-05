@@ -9,6 +9,7 @@ import { NAV_GROUPS_CONFIG, isNavItemActive } from "@/lib/navConfig";
 import { FaciesMark, FaciesWordmark } from "@/components/FaciesWordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FastNavLink } from "@/components/FastNavLink";
+import { UserAvatar } from "@/components/UserAvatar";
 import { useSessionNavGuard } from "@/hooks/useSessionNavGuard";
 import { useEdgeSwipeSuppression } from "@/hooks/useEdgeSwipeSuppression";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -25,24 +26,9 @@ function resolveNavHref(href: string): string {
   return href;
 }
 
-// --- User Avatar ---------------------------------------------------------------
-
-function UserAvatar({ photoUrl, displayName, size = "sm" }: { photoUrl?: string | null; displayName?: string | null; size?: "sm" | "md" }) {
-  const dim = size === "md" ? "w-9 h-9 text-sm" : "w-7 h-7 text-xs";
-  const initial = (displayName ?? "?").trim()[0]?.toUpperCase() ?? "?";
-  if (photoUrl) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={photoUrl} alt={displayName ?? "Usuário"} referrerPolicy="no-referrer"
-        className={`${dim} object-cover shrink-0 border border-edge`} />
-    );
-  }
-  return (
-    <span className={`${dim} bg-primary flex items-center justify-center font-semibold text-primaryInk shrink-0`}>
-      {initial}
-    </span>
-  );
-}
+// O avatar mudou para `components/UserAvatar.tsx`: com a aba "Você" no
+// celular ele passou a ter dois consumidores, e componente local com dois donos
+// e' o primeiro passo para duas copias que divergem.
 
 // --- Main Nav (drawer + hamburger) -------------------------------------------
 
@@ -200,11 +186,20 @@ export function SidebarNav({
 
               Aqui ela some da barra sem sumir do produto: quem procura conta
               procura o próprio nome, e é nele que se clica. É a convenção que
-              já existe fora daqui, então não precisa ser ensinada. */}
+              já existe fora daqui, então não precisa ser ensinada.
+
+              ⚠️ E O DESTINO MUDOU PARA `/voce`, com a barra de cinco.
+
+              Enquanto a Conta era o quinto item da rail, este avatar apontava
+              para o MESMO lugar que ele -- duas portas para um destino so, que
+              nao competem. Com "Você" no lugar dela, apontar aqui para
+              `/conta` criaria dois avatares identicos levando a telas
+              diferentes, na mesma tela. A Conta continua a um toque, agora de
+              dentro do `/voce`. */}
           {(displayName || photoUrl) && (
             <Link
-              href="/conta"
-              aria-label="Sua conta"
+              href="/voce"
+              aria-label="Você"
               className={`flex items-center border-b border-edge transition-colors hover:bg-surfaceMuted ${visible ? "gap-2.5 px-4 py-3" : "justify-center py-3"}`}
             >
               <UserAvatar photoUrl={photoUrl} displayName={displayName} size={visible ? "md" : "sm"} />

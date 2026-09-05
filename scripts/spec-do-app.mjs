@@ -76,6 +76,9 @@ const TELAS = [
   // A Conta voltou a ser destino da barra e passou a guardar o estado do
   // acesso (`12c`); fora da lista, ela ficava sem medida nenhuma.
   "/conta",
+  // O quinto destino. Fora da lista, a tela que a barra inteira aponta
+  // nasceria sem medida nenhuma.
+  "/voce",
 ];
 
 /**
@@ -101,11 +104,15 @@ const MONO_MINIMO = {
   "/plano": 20,
   // 16% antes desta branch. O resumo da sessao, a disponibilidade e a linha de
   // tema passaram a mono; os chips de filtro (12/500) sao o que ainda falta.
-  "/banco": 28,
+  // 28 -> 27 ao tirar a barra de acao: o rotulo dela ("Começar 20 questões ·
+  // com gabarito") era mono e contava. O botao nao sumiu -- ele deixou de ser
+  // DUPLICADO, e a copia que ficou vive no painel Resumo.
+  "/banco": 27,
   "/banco/guardadas": 41,
   "/cronograma": 0,
   "/preferencias": 0,
   "/conta": 0,
+  "/voce": 0,
 };
 
 /**
