@@ -3,16 +3,20 @@ import { notFound } from "next/navigation";
 
 import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
 import { Compartilhar } from "@/components/facies/Compartilhar";
+import type { DisplayArea } from "@/lib/areaIdentity";
 import { dec } from "@/lib/decimal";
 import { provaPorSlug, todasAsProvas } from "@/lib/provas";
 import {
+  atualizacoesDoAssunto,
+  atualizacoesOrfas,
   dataCurta,
   diasDaRevisao,
-  paginaEducativa,
+  temasDoDia,
   revisaoPorExamKey,
 } from "@/lib/revisao";
 import { CONT_LANDING } from "@/lib/site";
 import { BotaoImprimirPdf } from "./_components/BotaoImprimirPdf";
+import { IndiceDaRevisao } from "./_components/NavegacaoDaRevisao";
 import { PaginaDoDia } from "./_components/PaginaDoDia";
 
 /**
@@ -65,7 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const caminho = `/prova/${slug}/revisao-final`;
   const titulo = `Revisão Final ${prova.sigla}: a última semana`;
-  const descricao = `Os ${revisao.dias.length} assuntos que medimos como mais prováveis no ${prova.sigla}, um por dia: como a banca cobra cada um, onde se erra e o que conferir na véspera. Grátis, sem cadastro.`;
+  const descricao = `Os ${revisao.estrutura.total_temas} assuntos que medimos como mais prováveis no ${prova.sigla}, seis por dia em ${revisao.estrutura.dias} dias: como a banca cobra cada um, onde se erra e o que conferir na véspera. Grátis, sem cadastro.`;
 
   return {
     title: titulo,
@@ -81,16 +85,28 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
   const revisao = prova ? revisaoPorExamKey(prova.exam_key) : undefined;
   if (!prova || !revisao) notFound();
 
-  const dias = diasDaRevisao(revisao);
-  const paginas = dias
-    .map((dia) => ({ dia, pagina: paginaEducativa(revisao, dia.dia) }))
-    .filter((par): par is { dia: (typeof dias)[number]; pagina: NonNullable<typeof par.pagina> } =>
-      par.pagina !== undefined,
-    );
+  const dias = diasDaRevisao(revisao).map((dia) => ({
+    dia,
+    temas: temasDoDia(revisao, dia),
+  }));
+  const totalPaginas = dias.reduce((soma, d) => soma + d.temas.length, 0);
+  // A lista achatada existe para o passo a passo do rodapé: o vizinho de um
+  // assunto pode estar em OUTRO dia, e derivá-lo dentro do laço do dia daria
+  // "próximo" nulo seis vezes por dia — a navegação pararia em cada fronteira.
+  const emOrdem = dias.flatMap(({ temas }) =>
+    temas.map(({ tema, pagina }) => ({
+      posicao: tema.posicao_previsao,
+      subtema: tema.subtema,
+      area: (pagina.area ?? "OU") as DisplayArea,
+    })),
+  );
   const h = revisao.honestidade;
   const total = revisao.estrutura.total_questoes;
   const livres = revisao.estrutura.dias_livres_ate_prova;
   const emRascunho = revisao.cobertura_educativa?.rascunhos ?? 0;
+  // O rodapé lista SO' o que nao tem assunto na revisao. Ver `atualizacoesOrfas`:
+  // com todas ligadas, repetir a lista inteira aqui era duplicacao de 19 em 19.
+  const orfas = atualizacoesOrfas(revisao);
   const ganho = (valor: number | null) => (valor === null ? null : dec(valor, 2));
   const faixa =
     h.historico_minimo !== null && h.historico_maximo !== null
@@ -124,7 +140,7 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
       {emRascunho > 0 ? (
         <p className="border border-edge bg-surfaceMuted p-4 text-sm text-ink sm:p-5">
           <span className="paper-eyebrow">pré-visualização</span>{" "}
-          {emRascunho} das {dias.length} páginas ainda{" "}
+          {emRascunho} das {totalPaginas} páginas ainda{" "}
           <strong>não passaram por revisão médica</strong>. Elas estão aqui para
           serem revisadas, não para estudo definitivo — e cada uma repete este
           aviso no próprio cabeçalho.
@@ -165,8 +181,9 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
               e as questões?
             </h2>
             <p className="mt-2 text-base text-muted">
-              {total} questões da própria base da prova, {revisao.estrutura.carga_por_dia.join("/")}{" "}
-              por dia, dentro do app — com o gabarito só depois da sua resposta e o
+              {total} questões da própria base da prova,{" "}
+              {revisao.estrutura.questoes_por_tema} de cada assunto e{" "}
+              {revisao.estrutura.temas_por_dia * revisao.estrutura.questoes_por_tema} por dia, dentro do app — com o gabarito só depois da sua resposta e o
               desempenho registrado. Aqui fora elas apareceriam com gabarito à
               mostra, que é a forma menos útil de revisar.
             </p>
@@ -185,10 +202,10 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
 
       {/* ── Os 7 dias ─────────────────────────────────────────────────────── */}
       <section className="mt-10" aria-labelledby="dias">
-        <h2 id="dias" className="paper-eyebrow">
-          os {dias.length} dias, na ordem
+        <h2 id="dias" className="scroll-mt-4 paper-eyebrow">
+          os {dias.length} dias e os {totalPaginas} assuntos, na ordem
         </h2>
-        {paginas.length === 0 ? (
+        {totalPaginas === 0 ? (
           <p className="mt-4 max-w-[62ch] text-base text-muted">
             As páginas de revisão ainda não foram publicadas. Enquanto isso, a{" "}
             <a href={`/prova/${prova.slug}/aposta`} className="text-ink underline underline-offset-4">
@@ -197,11 +214,37 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
             já mostra quais assuntos medimos como mais prováveis.
           </p>
         ) : (
-          <div className="mt-6 space-y-14">
-            {paginas.map(({ dia, pagina }) => (
-              <PaginaDoDia key={dia.dia} dia={dia} pagina={pagina} />
+          <>
+            <IndiceDaRevisao dias={dias} />
+            <div className="mt-10 space-y-16">
+            {dias.map(({ dia, temas }) => (
+              <div key={dia.dia}>
+                <p className="paper-eyebrow border-b-2 border-edge pb-2">
+                  dia {dia.dia} de {dias.length} · {temas.length} assuntos ·{" "}
+                  {temas.reduce((n, t) => n + t.tema.questoes.length, 0)} questões
+                </p>
+                <div className="space-y-14">
+                  {temas.map(({ tema, pagina }) => {
+                    const indice = emOrdem.findIndex(
+                      (x) => x.posicao === tema.posicao_previsao,
+                    );
+                    return (
+                      <PaginaDoDia
+                        key={tema.subtema}
+                        tema={tema}
+                        pagina={pagina}
+                        atualizacoes={atualizacoesDoAssunto(revisao, tema.subtema)}
+                        anterior={emOrdem[indice - 1] ?? null}
+                        proximo={emOrdem[indice + 1] ?? null}
+                        totalDeAssuntos={emOrdem.length}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             ))}
-          </div>
+            </div>
+          </>
         )}
       </section>
 
@@ -214,8 +257,18 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
           <p className="mt-3 max-w-[62ch] text-base text-muted">
             {h.nota_atualizacoes}
           </p>
+          {orfas.length === 0 ? (
+            /* ⚠️ Sem esta linha o leitor que procura "o que mudou" acha uma
+               seção com uma ressalva e nenhum item, e conclui que não há
+               atualização — quando há dezenove, cada uma ao lado do seu
+               assunto. A seção some seria pior: some junto a ressalva. */
+            <p className="mt-3 max-w-[62ch] text-base text-muted">
+              As {revisao.atualizacoes.length} mudanças aparecem junto do assunto a
+              que se referem, ao longo dos {dias.length} dias.
+            </p>
+          ) : (
           <ul className="mt-5 space-y-4">
-            {revisao.atualizacoes.map((item) => (
+            {orfas.map((item) => (
               <li key={item.slug} className="paper-surface p-4 sm:p-5 print:break-inside-avoid">
                 <p className="text-base font-medium text-ink">{item.titulo}</p>
                 <p className="mt-1 max-w-[62ch] text-sm text-muted">{item.resumo}</p>
@@ -239,6 +292,7 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
               </li>
             ))}
           </ul>
+          )}
         </section>
       ) : null}
 

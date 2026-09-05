@@ -145,6 +145,7 @@ export function MapaDaProva({
   linhas,
   limite,
   preOrdenado = false,
+  pisoDeObservacao = 5,
   dominio = null,
 }: {
   linhas: LinhaDoMapa[];
@@ -161,6 +162,15 @@ export function MapaDaProva({
    * série composta acrescenta, e a nota de rodapé do painel viraria mentira.
    */
   preOrdenado?: boolean;
+  /**
+   * Quantas respostas separam `estimado` de `medido`.
+   *
+   * Vem do contrato (`CompetencyMasteryOut.observation_floor`) e não de um
+   * literal aqui: foi escrevendo o piso da PROVA em três lugares que ele
+   * acabou divergindo. O default existe só para quem monta o mapa sem o eixo
+   * do aluno, onde ele não é lido.
+   */
+  pisoDeObservacao?: number;
   /**
    * O seu domínio por subtema — o eixo "A prova e você" do artboard `12b`.
    *
@@ -179,7 +189,20 @@ export function MapaDaProva({
    * seria transformar "não sei" em "você é ruim nisto", que é a mentira mais
    * cara que um mapa de estudo pode contar.
    */
-  dominio?: Map<string, { mastery: number; attempts: number }> | null;
+  dominio?: Map<
+    string,
+    {
+      mastery: number;
+      attempts: number;
+      /**
+       * Os TRÊS estados da certeza do aluno (`competency-mastery-v1`).
+       *
+       * Opcional para não quebrar quem já passa o mapa sem ele: ausente, a
+       * célula com dado pinta como `medido`, que é o comportamento anterior.
+       */
+      certeza?: "medido" | "estimado" | "nao_avaliado";
+    }
+  > | null;
 }) {
   const [aberta, setAberta] = useState<string | null>(null);
 
@@ -220,6 +243,35 @@ export function MapaDaProva({
           const meu = dominio ? dominio.get(linha.rotulo) : undefined;
           const fracao = dominio ? (meu ? 1 - meu.mastery : 0) : linha.n / maior;
           const intensidade = TINTA_MIN + fracao * (TINTA_MAX - TINTA_MIN);
+
+          // ── OS TRÊS ESTADOS DO EIXO "VOCÊ" ────────────────────────────
+          //
+          // O `12b` os separa por FORMA, não por cor: medido é preenchimento
+          // liso, estimado é trama a 135°, e não avaliado é tracejado sem
+          // preenchimento. A cor continua reservada à grande área.
+          //
+          // O componente pintava os dois primeiros igual e a página descartava
+          // o terceiro — então "respondi 2 questões e vou bem" e "nunca abri
+          // este assunto" chegavam à tela com o mesmo tom, e o aluno decidia o
+          // que estudar com base numa diferença que a grade não mostrava.
+          const estadoDoAluno = dominio
+            ? !meu || meu.certeza === "nao_avaliado"
+              ? "nao_avaliado"
+              : meu.certeza === "estimado"
+                ? "estimado"
+                : "medido"
+            : null;
+
+          const preenchimento = `color-mix(in srgb, ${cor} ${intensidade}%, var(--color-surface))`;
+          // A trama usa a MESMA tinta do liso, alternada com a superfície: o
+          // estimado tem de ler como "o mesmo valor, com menos certeza", e não
+          // como outro valor.
+          const fundo =
+            estadoDoAluno === "nao_avaliado"
+              ? "var(--color-surface)"
+              : estadoDoAluno === "estimado"
+                ? `repeating-linear-gradient(135deg, ${preenchimento} 0 3px, var(--color-surface) 3px 6px)`
+                : preenchimento;
           const estaAberta = linha.rotulo === aberta;
           const grande = indice < 6;
 
@@ -240,11 +292,13 @@ export function MapaDaProva({
                 aria-label={[
                   linha.rotulo,
                   area ? AREA_FULL_LABELS[area] : null,
-                  dominio
-                    ? meu
-                      ? `você acerta ${Math.round(meu.mastery * 100)}% em ${meu.attempts} respostas`
-                      : "você ainda não respondeu isto"
-                    : null,
+                  // A forma (liso, trama, tracejado) nao se ouve: quem usa
+                  // leitor de tela recebe o estado por extenso.
+                  estadoDoAluno === "nao_avaliado"
+                    ? "não avaliado — você ainda não respondeu isto"
+                    : estadoDoAluno
+                      ? `${estadoDoAluno} — você acerta ${Math.round((meu?.mastery ?? 0) * 100)}% em ${meu?.attempts ?? 0} respostas`
+                      : null,
                 ]
                   .filter(Boolean)
                   .join(" — ")}
@@ -253,16 +307,30 @@ export function MapaDaProva({
                   // protótipo usa para "ainda não avaliado". Aqui significa
                   // "não temos base para publicar o número", que é a mesma
                   // honestidade pelo outro lado.
-                  linha.exibivel ? "border-edge" : "border-dashed border-edge"
+                  // Dois eixos, dois tracejados, e eles NAO se encontram: no
+                  // eixo da prova ele diz "menos de 5 questoes desta banca"; no
+                  // eixo "voce", "nunca respondeu". Cada aba mostra um so'.
+                  estadoDoAluno === "nao_avaliado" || !linha.exibivel
+                    ? "border-dashed border-edge"
+                    : "border-edge"
                 } ${estaAberta ? "outline outline-2 -outline-offset-2 outline-accent" : ""}`}
                 style={{
-                  background: `color-mix(in srgb, ${cor} ${intensidade}%, var(--color-surface))`,
+                  background: fundo,
                   // O filete cheio na borda esquerda é o unico lugar onde a cor
                   // da area aparece SATURADA: como limite grafico o piso e 3:1,
                   // que a paleta entrega com folga. No preenchimento ela fica
                   // lavada, porque ali por cima vai texto.
                   borderLeftColor: cor,
                   borderLeftWidth: "3px",
+                  // ⚠️ O FILETE NUNCA TRACEJA.
+                  //
+                  // `border-dashed` vale para a caixa inteira, e isso partia
+                  // tambem a unica linha onde a cor da area aparece saturada —
+                  // a identidade da area virava pontilhado justo nas celulas
+                  // sem dado, que sao as que o aluno mais precisa localizar.
+                  // O tracejado diz "sem medida"; a cor diz "de que area e'".
+                  // Sao informacoes diferentes e nao podem degradar juntas.
+                  borderLeftStyle: "solid",
                 }}
               >
                 {/* ⚠️ SEM `block` AQUI, e a razão é a mesma armadilha de sempre.
@@ -298,6 +366,42 @@ export function MapaDaProva({
           );
         })}
       </ul>
+
+      {/* A legenda dos três estados, e só no eixo "você".
+          O `12b` a desenha logo abaixo da grade: sem ela, trama e tracejado são
+          duas texturas que o aluno tem de adivinhar. O piso vem do contrato
+          (`observation_floor`), não de um número escrito aqui. */}
+      {dominio ? (
+        <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-nota text-muted">
+          <li className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-3 w-6 shrink-0 rounded-control border border-edge"
+              style={{
+                background: `color-mix(in srgb, var(--color-primary) ${TINTA_MAX}%, var(--color-surface))`,
+              }}
+            />
+            medido
+          </li>
+          <li className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-3 w-6 shrink-0 rounded-control border border-edge"
+              style={{
+                background: `repeating-linear-gradient(135deg, color-mix(in srgb, var(--color-primary) ${TINTA_MAX}%, var(--color-surface)) 0 3px, var(--color-surface) 3px 6px)`,
+              }}
+            />
+            estimado · 1 a {pisoDeObservacao - 1}
+          </li>
+          <li className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-3 w-6 shrink-0 rounded-control border border-dashed border-edge bg-surface"
+            />
+            não avaliado
+          </li>
+        </ul>
+      ) : null}
 
       {/* A leitura fica FORA do mapa, como o `.mapa-read` do protótipo: dentro
           da célula não caberia, e balão sobre grade some atrás do dedo no

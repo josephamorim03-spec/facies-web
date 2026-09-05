@@ -12,11 +12,21 @@ function accuracyChipClass(ratio: number): string {
 type QuestionListProps = {
   questions: QuestionBankQuestion[];
   selectedTopicSummary: string;
+  /**
+   * O cabecalho e parametrizado porque esta lista serve DUAS perguntas
+   * diferentes: no `/banco` ela e a previa do que o filtro encontrou, e em
+   * `/banco/guardadas` ela e a colecao do aluno. Duplicar o componente para
+   * mudar duas linhas de texto e como as quatro copias da folha nasceram.
+   */
+  eyebrow?: string;
+  title?: string;
 };
 
 export default function QuestionList({
   questions,
   selectedTopicSummary,
+  eyebrow = "Prévia",
+  title = "Questões encontradas",
 }: QuestionListProps) {
   if (questions.length === 0) return null;
 
@@ -24,8 +34,8 @@ export default function QuestionList({
     <section className="km-card p-4 md:p-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="paper-eyebrow">Prévia</p>
-          <h2 className="mt-1 font-serif text-2xl font-semibold">Questões encontradas</h2>
+          <p className="paper-eyebrow">{eyebrow}</p>
+          <h2 className="mt-1 font-serif text-2xl font-semibold">{title}</h2>
           <p className="mt-1 text-sm text-muted">{selectedTopicSummary}</p>
         </div>
       </div>
@@ -40,7 +50,12 @@ export default function QuestionList({
                 <p className="text-xs text-muted">{formatSourceLabel(question.source)}</p>
                 {stats && ratio !== null && (
                   <span
-                    className={`border px-2 py-0.5 text-micro font-semibold ${accuracyChipClass(ratio)}`}
+                    // Mono 400, e nao sans 600: "1/4 · 25%" e DADO. Em 11/600 o
+                    // par tamanho/peso nao existe em nenhum dos 22 artboards, e
+                    // o negrito num numero pequeno so o faz gritar sem o tornar
+                    // mais legivel — a mono tabular alinha as colunas, que e o
+                    // que se quer de uma contagem repetida linha a linha.
+                    className={`border px-2 py-0.5 font-mono text-micro tabular-nums ${accuracyChipClass(ratio)}`}
                   >
                     Você: {stats.correct_count}/{stats.attempt_count} · {Math.round(ratio * 100)}%
                   </span>

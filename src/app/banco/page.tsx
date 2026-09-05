@@ -43,11 +43,13 @@ import QuestionList from "./_components/QuestionList";
 import CreateSessionPanel from "./_components/CreateSessionPanel";
 import { BancoDeQuestoesSkeleton } from "./_components/BancoDeQuestoesSkeleton";
 import { filterTopicsLocally } from "./_components/topicTree";
+import { IconBookOpen, IconChevronRight, IconTrophy } from "./_components/iconesDoBanco";
 import {
   QUESTION_BANK_LIMIT_CAP,
   clampQuestionLimit,
   CORRECTION_MODE_SHORT_LABEL,
   getActiveFilters,
+  motivoParaNaoComecar,
   parseQuestionBankEntryContext,
   questionBankCtaLabel,
   resolveEntryTopic,
@@ -72,37 +74,6 @@ function splitBootstrapTopics(topics: QuestionBankTopic[]) {
     taxonomy: topics.filter((topic) => TAXONOMY_NODE_TYPES.has(topic.node_type ?? "")),
     micros: topics.filter((topic) => topic.node_type === "microcompetency"),
   };
-}
-
-function IconBookOpen({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H7a3 3 0 0 0-3 3V5.5Z" />
-      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20" />
-      <path d="M8 7h8" />
-      <path d="M8 11h7" />
-    </svg>
-  );
-}
-
-function IconTrophy({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <path d="M8 21h8" />
-      <path d="M12 17v4" />
-      <path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" />
-      <path d="M5 5H3v2a4 4 0 0 0 4 4" />
-      <path d="M19 5h2v2a4 4 0 0 1-4 4" />
-    </svg>
-  );
-}
-
-function IconChevronRight({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={className} aria-hidden="true">
-      <path d="m7 4 6 6-6 6" />
-    </svg>
-  );
 }
 
 type SessionIntentCardProps = {
@@ -438,10 +409,6 @@ function BancoDeQuestoesContent() {
     () => filterTopicsLocally(taxonomyTopics, { area, search: searchDraft, preserveSearchAncestors: true }),
     [area, searchDraft, taxonomyTopics],
   );
-  const filteredMicroTopics = useMemo(
-    () => filterTopicsLocally(microTopics, { area, search: searchDraft, preserveSearchAncestors: false }),
-    [area, searchDraft, microTopics],
-  );
   const topicSuggestions = useMemo(
     () =>
       filterTopicsLocally(taxonomyTopics, { area, search: searchDraft, preserveSearchAncestors: false })
@@ -656,19 +623,23 @@ function BancoDeQuestoesContent() {
         include_empty: false,
         limit: 1000,
       };
-      const [taxonomy, micros] = await Promise.all([
-        browseQuestionBankTopics(token, {
-          ...common,
-          node_types: ["specialty", "theme", "subtheme"],
-        }, { signal: controller.signal }),
-        browseQuestionBankTopics(token, {
-          ...common,
-          node_types: ["microcompetency"],
-        }, { signal: controller.signal }),
-      ]);
+      // SÓ a taxonomia: as micros não são desenhadas na árvore. `microTopics`
+      // alimenta apenas `resolveEntryTopic`, que roda UMA vez logo após o
+      // bootstrap (gated em `calendarContextResolved`) — quando um filtro muda,
+      // ele já rodou, e a lista rebuscada não alimentava nada.
+      // E custava caro: medido em produção em 04/09/2026, a consulta de micros
+      // levava 4,2s contra 1,1s da taxonomia, acima do `statement_timeout` de
+      // 4s, e devolvia 503 TODA VEZ (o EXPLAIN mostra um `Nested Loop Left
+      // Join` varrendo 10.091 nós para cada uma das 20.283 linhas do cache).
+      // Era o "às vezes dá erro" ao escolher uma banca. Consertar a consulta
+      // seria otimizar dado que ninguém lê; se voltarem a ser precisas aqui, o
+      // caminho é resolver o nó por id.
+      const taxonomy = await browseQuestionBankTopics(token, {
+        ...common,
+        node_types: ["specialty", "theme", "subtheme"],
+      }, { signal: controller.signal });
       if (controller.signal.aborted) return;
       setTaxonomyTopics(taxonomy);
-      setMicroTopics(micros);
     } catch (err) {
       if (controller.signal.aborted || isAbortError(err)) return;
       setTaxonomyTopics([]);
@@ -1047,18 +1018,14 @@ function BancoDeQuestoesContent() {
   // Zero questoes tem causas diferentes e acoes diferentes. Sem dizer qual, a
   // tela so mostra "Max. 0" e um botao morto — foi o que fez o filtro parecer
   // quebrado.
-  const emptyReason = (() => {
-    if (loadingPreview || !availability || availability.available_count > 0) return null;
-    if (availability.total_count === 0) {
-      return activeFilters.length > 0
-        ? "Nenhuma questão combina com os filtros atuais. Remova um filtro para ampliar a busca."
-        : "Nenhuma questão disponível no banco para esta configuração.";
-    }
-    if (answerStatus === "unanswered") {
-      return `Você já respondeu todas as ${availability.total_count} questões deste filtro. Troque o histórico para "todas" ou "só erros".`;
-    }
-    return `As ${availability.total_count} questões do filtro não se encaixam neste histórico. Ajuste o histórico da sessão.`;
-  })();
+  // A decisao mora em `motivoParaNaoComecar`, fora do JSX: varios ramos, e
+  // regra presa em componente so' se testa por regex no texto-fonte.
+  const emptyReason = motivoParaNaoComecar({
+    studyKind, fullExamReady, fullExamName, fullExamYear, loadingPreview,
+    answerStatus, activeFilterCount: activeFilters.length,
+    availableCount: availability ? availability.available_count : null,
+    totalCount: availability ? availability.total_count : null,
+  });
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -1067,7 +1034,12 @@ function BancoDeQuestoesContent() {
       <div className={`space-y-5 ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
         <section className="space-y-4" aria-label="Montador de sessão">
           {activeFilters.length > 0 && (
-            <div className="flex w-full flex-wrap items-center justify-end gap-3 border-b border-edge pb-4">
+            /* A linha ganha rotulo e deixa de flutuar a direita: ela abria a
+               tela com um chip solto no canto, sem nada que dissesse o que
+               aquilo era. Os chips ficam onde estavam -- muda o que a linha
+               AFIRMA, nao a geometria de toque. */
+            <div className="flex w-full flex-wrap items-center justify-between gap-3 border-b border-edge pb-4">
+              <p className="paper-eyebrow">filtros ativos</p>
               <div className="relative shrink-0">
                 <button
                   type="button"
@@ -1193,8 +1165,15 @@ function BancoDeQuestoesContent() {
               onPreviewQuestions={() => void previewQuestions()}
               onStartSession={() => void startSession()}
               onRetry={() => {
-                if (availability) void startSession();
-                else void refreshAvailability();
+                // TENTA DE NOVO — nunca cria sessão. Chamava `startSession()`
+                // sempre que havia disponibilidade carregada, e era o caso
+                // comum: o aluno via "não foi possível carregar as questões",
+                // clicava, e ganhava uma sessão de 10 questões que não pediu.
+                // Botão de recuperação de erro não pode ter efeito colateral
+                // irreversível.
+                setError(null);
+                if (topicsError || !bootstrapReady) void loadBootstrap();
+                void refreshAvailability();
               }}
             />
           </section>
@@ -1211,7 +1190,13 @@ function BancoDeQuestoesContent() {
         {!quantityEditing && (
           <BottomActionBar
             className="md:hidden"
-            status={error ? <span className="text-danger" role="alert">{error}</span> : null}
+            /* O motivo tambem no mobile: aqui so' o erro aparecia, e e' onde
+               o aluno de celular passa a maior parte do tempo. */
+            status={error
+              ? <span className="text-danger" role="alert">{error}</span>
+              : emptyReason
+                ? <span className="text-muted" aria-live="polite">{emptyReason}</span>
+                : null}
           >
             <Button
               type="button"

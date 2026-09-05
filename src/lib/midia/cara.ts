@@ -156,6 +156,7 @@ export function dadosDaRevisao(revisao: RevisaoFinal, sigla: string, slug: strin
   const h = revisao.honestidade;
   const total = revisao.estrutura.total_questoes;
   const dias = revisao.dias.length;
+  const temas = revisao.estrutura.total_temas;
   const lift = h.lift !== null ? `${dec(h.lift, 1)}×` : "—";
   const faixa =
     h.historico_minimo !== null && h.historico_maximo !== null
@@ -163,10 +164,10 @@ export function dadosDaRevisao(revisao: RevisaoFinal, sigla: string, slug: strin
       : undefined;
   return {
     titulo: encurtar(`A última semana antes do ${sigla}`, 60),
-    legenda: `${total} questões da própria base da prova, organizadas em ${dias} dias.`,
+    legenda: `${total} questões da própria base da prova, em ${temas} assuntos e ${dias} dias.`,
     numeros: [
       { valor: String(total), rotulo: "questões da base real da prova" },
-      { valor: String(dias), rotulo: "assuntos mais prováveis, um por dia" },
+      { valor: String(temas), rotulo: "assuntos mais prováveis, seis por dia" },
       { valor: lift, rotulo: "o acaso", nota: faixa },
     ],
     caminho: `/prova/${slug}/revisao-final`,

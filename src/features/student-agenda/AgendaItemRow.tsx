@@ -60,9 +60,15 @@ export function AgendaItemRow({ item }: { item: StudentAgendaItem }) {
         ) : (
           <p className="truncate text-sm font-semibold text-ink">{item.title}</p>
         )}
-        <p className="mt-0.5 truncate text-xs text-muted">
+        {/* A linha de meta e MONO, e nao sans.
+            Area, quantidade e tempo sao DADO -- e a mono e a textura de dado
+            deste sistema, a mesma dos rotulos e dos numeros. Medido contra o
+            artboard `8b`: o desenho poe 20 dos 31 nos de texto em mono
+            (65%) e o Hoje estava em 28%, o que fazia a tela ler como um app
+            sans qualquer em vez do prontuario que o resto do produto e. */}
+        <p className="mt-0.5 truncate font-mono text-micro tabular-nums text-muted">
           {area ? `${displayAreaLabel(area)} · ` : ""}
-          {item.expected_questions > 0 ? `${item.expected_questions} questões · ` : ""}
+          {item.expected_questions > 0 ? `${item.expected_questions} q · ` : ""}
           {item.estimated_minutes > 0 ? `${item.estimated_minutes} min` : "Agenda"}
         </p>
         {/* O PORQUE, que existia e nunca aparecia.

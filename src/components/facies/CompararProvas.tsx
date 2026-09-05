@@ -1,4 +1,4 @@
-import type { Banca } from "@/lib/facies";
+import { nomeCurto, type Banca } from "@/lib/facies";
 
 import { FaixaAreas } from "./FaixaAreas";
 import {
@@ -52,7 +52,7 @@ function StatDaProva({ banca }: { banca: Banca }) {
 }
 
 export function CompararProvas({ a, b }: { a: Banca; b: Banca }) {
-  const deltas = calcularDeltas(a, b);
+  const deltas = calcularDeltas(a, b, nomeCurto(b));
 
   return (
     <div className="space-y-6">
@@ -60,7 +60,9 @@ export function CompararProvas({ a, b }: { a: Banca; b: Banca }) {
         {[a, b].map((banca, indice) => (
           <div key={banca.institution_key}>
             <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-              <h3 className="font-mono font-medium text-ink">{banca.nome}</h3>
+              {/* Nome curto: o institucional por extenso ocupa tres linhas
+                  e repete-se em cada diferenca listada abaixo. */}
+              <h3 className="font-mono font-medium text-ink">{nomeCurto(banca)}</h3>
               <StatDaProva banca={banca} />
             </div>
             {/* `rotulo` liga a faixa ao leitor de tela com os nomes por extenso
@@ -73,7 +75,7 @@ export function CompararProvas({ a, b }: { a: Banca; b: Banca }) {
             <FaixaAreas
               linhas={banca.areas.linhas}
               altura="leitura"
-              rotulo={`Composição da ${banca.nome}`}
+              rotulo={`Composição da ${nomeCurto(banca)}`}
               legenda={indice === 1}
             />
           </div>
@@ -86,7 +88,7 @@ export function CompararProvas({ a, b }: { a: Banca; b: Banca }) {
            branco aqui leria como falha de carregamento. */
         <p className="max-w-[52ch] text-base text-muted">
           Nenhuma diferença passa de {LIMIAR_EM_PONTOS} pontos percentuais.
-          Nessas medidas, {a.nome} e {b.nome} cobram parecido.
+          Nessas medidas, {nomeCurto(a)} e {nomeCurto(b)} cobram parecido.
         </p>
       ) : (
         <div>

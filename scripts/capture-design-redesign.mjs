@@ -141,18 +141,21 @@ async function runViewport(browser, viewport) {
   }, !viewport.mobile);
 
   await visit("/evolucao", "evolucao", async () => {
-    // Terceira versao desta assercao, e as duas anteriores erraram do mesmo
+    // Quarta versao desta assercao, e as tres anteriores erraram do mesmo
     // jeito: prenderam um elemento que a pagina nao tem.
     //
-    // Era `heading "Analise sua trajetória"`, string que nunca existiu. Virou a
-    // aba "Gráficos" — que existia quando /evolucao tinha tres abas, e sumiu
-    // quando a tela virou leitura unica.
+    // Era `heading "Analise sua trajetória"`, string que nunca existiu. Virou
+    // a aba "Gráficos", que sumiu quando a tela virou leitura unica. Virou
+    // `#evolution-charts-title` mais uma `svg.recharts-surface` -- e OS DOIS
+    // sumiram quando a Evolucao virou os sete cartoes-pergunta do artboard
+    // `9b`: nao ha mais secao de graficos, nem recharts.
     //
-    // `#evolution-charts-title` e o cabecalho da secao de graficos: ele nasce
-    // com a pagina, tem id proprio (ninguem o renomeia sem querer) e some se a
-    // secao sumir — que e exatamente a falha que esta captura deve pegar.
-    await page.locator("#evolution-charts-title").waitFor({ state: "visible", timeout: 30_000 });
-    await page.locator("svg.recharts-surface").first().waitFor({ state: "visible", timeout: 30_000 });
+    // Agora a espera e pela PRIMEIRA pergunta ("Se a prova fosse hoje"), que e
+    // o cartao de cima e o unico que nunca sai da tela -- os outros seis
+    // dependem de dado que pode faltar. Se ele nao aparece, a tela nao montou.
+    await page
+      .getByRole("heading", { name: "Se a prova fosse hoje" })
+      .waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
   await visit("/banco", "banco", async () => {
@@ -164,10 +167,24 @@ async function runViewport(browser, viewport) {
     await page.getByText("SP").first().waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
+  // A colecao do aluno. Entra na captura porque `axe` e `assertNoOverflow` so
+  // rodam por aqui — tela que fica de fora nasce sem gate de acessibilidade e
+  // sem gate de estouro horizontal, e ninguem percebe.
+  await visit("/banco/guardadas", "banco-guardadas", async () => {
+    await page
+      .getByRole("heading", { name: "As suas guardadas" })
+      .waitFor({ state: "visible", timeout: 30_000 });
+  }, !viewport.mobile);
+
   await visit("/preferencias", "preferencias", async () => {
     // Nao existe heading "Preferências": esse e o titulo da PAGINA, que mora no
     // topo como span. Os <h2> da tela sao os titulos de secao.
-    await page.getByRole("heading", { name: "Rotina" }).first().waitFor({ state: "visible", timeout: 30_000 });
+    //
+    // "Rotina" -> "Minha semana": a secao da semana padrao (artboard `14a`)
+    // passou a abrir a pagina, e a antiga "Rotina" virou "Compromissos e
+    // metas". Esperar pela PRIMEIRA secao e' o que garante que a captura pega a
+    // tela montada, e nao um esqueleto.
+    await page.getByRole("heading", { name: "Minha semana" }).first().waitFor({ state: "visible", timeout: 30_000 });
   }, !viewport.mobile);
 
   await context.close();

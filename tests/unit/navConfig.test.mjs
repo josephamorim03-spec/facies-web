@@ -19,33 +19,47 @@ function childOf(pathname, href) {
   return getIntentChildren(pathname).find((child) => child.href === href) ?? null;
 }
 
-test("a navegacao e cinco destinos, na ordem do desenho", () => {
-  // Eram cinco. A Rota saiu porque a tela dela era uma PERGUNTA — quanto tempo
-  // voce tem, com que energia — e a pergunta morreu: o tamanho do dia agora vem
-  // do calendario e do comportamento observado, e aparece como contexto da
-  // proxima acao no Hoje.
-  // Os flashcards saíram da barra em 2026-08-29 — a feature ficou de molho,
-  // atrás de `NEXT_PUBLIC_FLASHCARDS` (default "0"). A rota `/cards` continua
-  // existindo e redirecionando; o que sumiu foi o caminho até ela.
-  // A Conta saiu em 2026-09-02, pelo mesmo argumento: ela ocupava o peso visual
-  // de uma tela diaria para tarefa que se faz poucas vezes por ano. A porta
-  // virou o proprio nome no rodape da barra (`Nav.tsx`) — ver o teste abaixo,
-  // que guarda o ALCANCE dela.
-  // A ordem e a do desenho: `/mapa` entrou quando a tela entrou.
+test("a navegacao e seis destinos, na ordem do desenho", () => {
+  // A Rota saiu porque a tela dela era uma PERGUNTA — quanto tempo voce tem, com
+  // que energia — e a pergunta morreu: o tamanho do dia vem do calendario e do
+  // comportamento observado, e aparece como contexto da proxima acao no Hoje.
+  // Os flashcards sairam da barra em 2026-08-29, atras de `NEXT_PUBLIC_FLASHCARDS`.
+  // `/mapa` entrou quando a tela entrou.
+  //
+  // ⚠️ A CONTA VOLTOU, E ISTO REVERTE UMA DECISAO DE 2026-09-02.
+  //
+  // Ela tinha saido pelo argumento de que ocupava o peso visual de uma tela
+  // diaria para tarefa que se faz poucas vezes por ano — e o argumento valia
+  // para a Conta que existia entao: senha, exportar, encerrar.
+  //
+  // O desenho fecha o turno 14 com SEIS destinos, e a Conta que ele desenha
+  // (`12c`) e outra tela: o estado do acesso, as suas provas, os avisos e, nos
+  // proximos turnos, "Acessibilidade e leitura" (`14c`) e "Como voce resolve"
+  // (`8f`). Deixa de ser a gaveta da senha e passa a ser onde o aluno ajusta o
+  // produto — e ai o peso de destino permanente se justifica.
+  //
+  // A reversao foi decidida com o operador em 2026-09-02, com o argumento
+  // anterior na mesa. Quem quiser voltar aos cinco: o filtro esta em
+  // `INTENTS_VISIVEIS` (`navConfig.ts`), e o avatar no rodape da sidebar ja
+  // levava a `/conta` antes e continua levando.
   assert.deepEqual(
     NAV_ITEMS.map((item) => item.href),
-    ["/hoje", "/mapa", "/banco", "/evolucao", "/preferencias"],
+    ["/hoje", "/mapa", "/banco", "/evolucao", "/preferencias", "/conta"],
   );
   // Uma barra so: no mobile e a barra inferior, no desktop o menu bar. Sem
   // divisorias, porque nao ha mais agrupamento por pergunta.
   assert.equal(NAV_GROUPS_CONFIG.length, 1);
 });
 
-test("a Conta sai da BARRA sem sair do alcance", () => {
-  // Tirar um item da barra e tirar a rota do registro sao coisas diferentes, e
+test("a Conta esta na barra E no registro de rotas", () => {
+  // Este teste nasceu guardando o ALCANCE da Conta quando ela saiu da barra:
+  // tirar um item da barra e tirar a rota do registro sao coisas diferentes, e
   // confundi-las e como `/conta` viraria uma tela sem titulo, sem aba ativa e
-  // sem pre-aquecimento — alcancavel so por quem digitasse a URL.
-  assert.equal(findItem("/conta"), null);
+  // sem pre-aquecimento.
+  //
+  // Com ela de volta a barra, a segunda metade continua valendo — e e ela que
+  // pega o erro de alguem mexer no registro achando que so mexe no menu.
+  assert.ok(findItem("/conta"), "/conta precisa estar na barra");
   assert.equal(getStudentPageTitle("/conta"), "Conta");
   assert.ok(getStudentRoute("/conta"), "/conta precisa continuar no registro de rotas");
 });
@@ -55,7 +69,7 @@ test("nem Kros nem Rota sobrevivem como rotulo de menu", () => {
   // a propria aba. Os dois enderecos continuam 308 para o Hoje, entao ninguem
   // que os tenha salvos cai em 404 — mas nenhum dos dois volta ao menu.
   const labels = NAV_ITEMS.map((item) => item.shortLabel);
-  assert.deepEqual(labels, ["Hoje", "Mapa", "Banco", "Evolução", "Rotina"]);
+  assert.deepEqual(labels, ["Hoje", "Mapa", "Banco", "Evolução", "Rotina", "Conta"]);
   assert.equal(findItem("/kros"), null);
   assert.equal(findItem("/rota"), null);
 });
@@ -69,7 +83,11 @@ test("each tab owns its children", () => {
   );
   assert.deepEqual(
     getIntentChildren("/banco").map((child) => child.href),
-    ["/banco", "/banco/historico"],
+    // "Guardadas" entrou entre montar e historico: e a leitura da colecao do
+    // aluno, e vive sob o Banco porque a barra tem SEIS destinos e o setimo nao
+    // caberia em 390px. A ordem e a do uso: montar (todo dia), guardadas
+    // (quando lembra), historico (raro).
+    ["/banco", "/banco/guardadas", "/banco/historico"],
   );
   assert.deepEqual(
     getIntentChildren("/cards").map((child) => child.href),
@@ -113,7 +131,14 @@ test("page titles come from the child, not from the parent tab", () => {
   // de "Inicio" — que e exatamente o problema que o programa de design existe
   // para resolver: menu, titulo e URL dizendo a mesma coisa.
   assert.equal(getStudentPageTitle("/hoje"), "Hoje");
-  assert.equal(getStudentPageTitle("/cronograma"), "O plano até a prova");
+  // O filho "O plano ate' a prova" passou a ser `/plano` (artboard `9c`): a
+  // LEITURA do plano — fases, o que nao coube, quanto a rotina comporta.
+  assert.equal(getStudentPageTitle("/plano"), "O plano até a prova");
+  // `/cronograma` deixou de ser destino e virou FERRAMENTA: o calendario onde
+  // se arrasta atividade entre dias, alcancavel por um link dentro do `/plano`.
+  // Como caminho legado da area, ele herda o titulo dela — que e' verdade, e
+  // nao a promessa de ser a tela do plano.
+  assert.equal(getStudentPageTitle("/cronograma"), "Rotina");
   assert.equal(getStudentPageTitle("/banco/historico"), "Histórico");
   assert.equal(getStudentPageTitle("/cards/registros"), "Pesquisar");
   // O titulo vem do filho, e o filho agora se chama como a aba do artboard.

@@ -25,6 +25,12 @@ export const queryKeys = {
   // dataset das 138), e quem precisa da lista raramente ja tem a banca.
   indiceDeBancas: ["facies", "bancas"] as const,
   competencyMastery: ["student", "competency-mastery"] as const,
+  // O plano vigente. Chave propria e `staleTime` longo: ele muda quando a
+  // rotina muda ou quando o Hoje regenera, e nao a cada navegacao.
+  studyPlanCurrent: ["study-plan", "current"] as const,
+  // O trio que sustenta o cartao "a sua rotina" do `9c`. Uma chave so' porque as
+  // tres viajam juntas e sozinhas nao dizem nada.
+  rotinaDoPlano: ["study-plan", "rotina"] as const,
   // Log de auditoria: pagina e filtro entram na CHAVE, e nao numa dependencia
   // de `useCallback`. Com isso o react-query refaz a busca sozinho quando um
   // dos dois muda, e devolve do cache quando o operador volta para a pagina

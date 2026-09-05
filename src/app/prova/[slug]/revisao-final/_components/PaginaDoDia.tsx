@@ -4,8 +4,14 @@ import {
   AREA_FULL_LABELS,
   type DisplayArea,
 } from "@/lib/areaIdentity";
-import type { DiaRevisao, PaginaEducativa } from "@/lib/revisao";
+import {
+  type AtualizacaoRevisao,
+  dataCurta,
+  type PaginaEducativa,
+  type TemaRevisao,
+} from "@/lib/revisao";
 import { MedidaDaCobranca } from "./MedidaDaCobranca";
+import { ancoraDoAssunto, PassoAPasso, type EloDeAssunto } from "./NavegacaoDaRevisao";
 
 /**
  * Um dia do ebook: uma página de revisão de véspera sobre um assunto.
@@ -33,35 +39,76 @@ import { MedidaDaCobranca } from "./MedidaDaCobranca";
  * como publicar conteúdo médico não revisado sem o aviso, porque o aviso lê o
  * mesmo campo que a inclusão leu.
  */
+/**
+ * O rótulo diz o que a figura É.
+ *
+ * Um corte de tomografia, uma tabela de resultados e um gráfico epidemiológico
+ * exigem leituras diferentes; chamar os três de "imagem" faz o leitor procurar
+ * achado radiológico numa tabela de exames. Foi a correção que o operador pediu
+ * ao ver a primeira versão do bloco.
+ */
+const ROTULO_DA_IMAGEM: Record<NonNullable<PaginaEducativa["imagem_leitura"]>["tipo"], string> = {
+  achado_de_imagem: "o exame de imagem que a banca mostrou",
+  quadro_laboratorial: "o quadro laboratorial que a banca entregou",
+  grafico_epidemiologico: "o gráfico que a banca pediu para interpretar",
+  ilustracao_clinica: "a foto clínica que a banca mostrou",
+};
+
 export function PaginaDoDia({
-  dia,
+  tema,
   pagina,
+  atualizacoes,
+  anterior,
+  proximo,
+  totalDeAssuntos,
 }: {
-  dia: DiaRevisao;
+  tema: TemaRevisao;
   pagina: PaginaEducativa;
+  /** O que mudou neste assunto. Vazio na maioria — ver o bloco abaixo. */
+  atualizacoes: AtualizacaoRevisao[];
+  anterior: EloDeAssunto | null;
+  proximo: EloDeAssunto | null;
+  totalDeAssuntos: number;
 }) {
   const area = ((pagina.area ?? "OU") as DisplayArea) satisfies DisplayArea;
+  // Extraído porque `{pagina.dia}` dentro do JSX faz o guard de copy ler
+  // "pagina" como a palavra portuguesa sem acento. O identificador não é copy,
+  // mas o detector não tem como saber — e um guard que erra para o lado de
+  // avisar é melhor que um que deixa "pagina" chegar à tela.
+  const numeroDoDia = pagina.dia;
   const estrutura = pagina.estrutura;
 
   return (
     <section
-      aria-labelledby={`dia-${dia.dia}`}
-      className="print:break-before-page"
+      aria-labelledby={ancoraDoAssunto(tema.posicao_previsao)}
+      className="scroll-mt-4 print:break-before-page"
     >
       {/* ── cabeceira do dia ─────────────────────────────────────────────── */}
       <header className={`border-l-4 pl-4 ${AREA_BORDER_CLASS[area]}`}>
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="font-mono text-sm text-muted">dia {dia.dia}</span>
+          <span className="font-mono text-sm text-muted">dia {numeroDoDia}</span>
           <span className="flex items-center gap-1.5 text-xs text-muted">
             <span aria-hidden className={`h-2 w-2 rounded-full ${AREA_BG_CLASS[area]}`} />
             {AREA_FULL_LABELS[area]}
           </span>
           <span className="text-xs text-muted">
-            {dia.posicao_previsao}º assunto mais provável
+            {tema.posicao_previsao}º assunto mais provável
           </span>
+          <span className="font-mono text-xs text-muted">
+            {tema.questoes.length} questões
+          </span>
+          {/* O carimbo é a ÚNICA diferença entre os 42, e ele é informação, não
+              hierarquia: a aposta publicada com data e hash congelou 30
+              posições, e sem dizer isso os doze últimos se passariam por
+              prometidos. */}
+          {tema.na_aposta_registrada ? null : (
+            <span className="paper-eyebrow rounded-control border border-rule px-1.5 py-0.5">
+              fora da aposta
+            </span>
+          )}
         </div>
         <h3
-          id={`dia-${dia.dia}`}
+          id={ancoraDoAssunto(tema.posicao_previsao)}
           className="mt-1 font-serif text-2xl font-semibold tracking-tight text-ink sm:text-3xl"
         >
           {pagina.subtema}
@@ -204,6 +251,49 @@ export function PaginaDoDia({
         </ul>
       </div>
 
+      {/* ── o que mudou desde a última prova ─────────────────────────────── */}
+      {/* 🚨 FATO DATADO, NÃO PREVISÃO. O termo de pressão por atualização
+          clínica foi medido contra 14 alvos fora de amostra e reprovado (ganho
+          de 0,2 a 0,4% onde o critério exigia 5%), então ele NÃO entra no score
+          — e esta seção não pode sugerir que entra. Daí a linha final, que
+          repete aqui a mesma ressalva do painel do rodapé.
+
+          O bloco só aparece quando há item: 11 dos 42 assuntos têm algum, e uma
+          seção vazia com "nenhuma atualização" em 31 páginas ensinaria o leitor
+          a pular a seção justamente nas onze em que ela importa. */}
+      {atualizacoes.length > 0 ? (
+        <div className="mt-6 print:break-inside-avoid">
+          <h4 className="paper-eyebrow">o que mudou desde a última prova</h4>
+          <ul className="mt-3 space-y-3">
+            {atualizacoes.map((item) => (
+              <li key={item.slug} className="border-l-2 border-rule pl-4">
+                <p className="text-base/[1.55] text-ink">{item.titulo}</p>
+                <p className="mt-1 max-w-[62ch] text-sm/[1.5] text-muted">{item.resumo}</p>
+                <p className="mt-1 text-xs text-muted">
+                  vigência {dataCurta(item.vigencia)}
+                  {item.fontes.length > 0 ? (
+                    <>
+                      {" · "}
+                      <a
+                        href={item.fontes[0].url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2"
+                      >
+                        fonte primária
+                      </a>
+                    </>
+                  ) : null}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 max-w-[62ch] text-xs/[1.5] text-muted">
+            Mudança com data e fonte primária. Não medimos que ela será cobrada.
+          </p>
+        </div>
+      ) : null}
+
       {/* ── a ponte para as questões reais ────────────────────────────────── */}
       <div className="mt-6 border-t border-rule pt-4">
         <p className="paper-eyebrow">como já cobrou</p>
@@ -211,21 +301,54 @@ export function PaginaDoDia({
           {pagina.exemplo_de_cobranca.descricao}
         </p>
         {pagina.exemplo_de_cobranca.url_banco ? (
-          <p className="mt-2 text-sm text-muted">
-            As {dia.questoes.length} questões reais deste dia estão no banco:{" "}
-            {/* A URL é impressa por extenso de propósito. No papel um link não
-                clica, e um QR num material médico distribuído por WhatsApp
-                ensina justamente a escanear código de origem desconhecida —
-                enquanto o endereço escrito mostra para onde vai. */}
+          <div className="mt-3">
+            {/* ⚠️ O link antes era `/banco?subtheme=<slug>`, impresso por
+                extenso. `subtheme` não é lido por ninguém — o banco lê
+                `knowledge_node_id`, `theme` e `area` — e o guard de links
+                internos confere ROTA, não parâmetro, então a query inventada
+                passou. O leitor clicava, o banco abria, e não havia assunto
+                nenhum selecionado.
+
+                A URL também deixou de ser impressa: `/banco` fica atrás de
+                login, e um endereço escrito por extenso promete uma página
+                pública que não existe. O botão diz para onde vai. */}
             <a
               href={pagina.exemplo_de_cobranca.url_banco}
-              className="text-ink underline underline-offset-4"
+              className="paper-control inline-flex min-h-11 items-center rounded-control border border-edge bg-ink px-4 py-2 text-sm font-semibold text-paper transition hover:brightness-95"
             >
-              facies.app{pagina.exemplo_de_cobranca.url_banco}
+              Resolver as {tema.questoes.length} questões deste assunto
             </a>
-          </p>
+            <p className="mt-2 text-xs text-muted">
+              Abre no app, com o gabarito só depois da sua resposta. Pede entrar.
+            </p>
+          </div>
         ) : null}
       </div>
+
+      {/* ── a figura da prova, com o que ela decide ───────────────────────── */}
+      {pagina.imagem?.url && pagina.imagem_leitura?.leitura ? (
+        <figure className="mt-6 print:break-inside-avoid">
+          <figcaption className="paper-eyebrow">
+            {ROTULO_DA_IMAGEM[pagina.imagem_leitura.tipo]}
+          </figcaption>
+          {/* `img` cru e nao `next/image`: a origem e' o bucket publico do banco,
+              e passar 19 figuras pelo otimizador cobraria transformacao por
+              imagem sem ganho — elas ja vem dimensionadas do extrator. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={pagina.imagem.url}
+            alt={`Figura de uma questão de ${[pagina.imagem.prova, pagina.imagem.ano].filter(Boolean).join(" · ")}`}
+            loading="lazy"
+            className="mt-2 max-w-full rounded-control border border-rule bg-paper"
+          />
+          <div className="mt-3 border-l-2 border-rule pl-4">
+            <p className="paper-eyebrow">como ler</p>
+            <p className="mt-1 max-w-[62ch] text-base/[1.6] text-ink">
+              {pagina.imagem_leitura.leitura}
+            </p>
+          </div>
+        </figure>
+      ) : null}
 
       {/* ── as fontes: o que torna a página conferível ────────────────────── */}
       {pagina.fontes.length > 0 ? (
@@ -254,6 +377,13 @@ export function PaginaDoDia({
           </ul>
         </div>
       ) : null}
+
+      <PassoAPasso
+        anterior={anterior}
+        proximo={proximo}
+        posicao={tema.posicao_previsao}
+        totalDeAssuntos={totalDeAssuntos}
+      />
     </section>
   );
 }

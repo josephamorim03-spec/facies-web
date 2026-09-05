@@ -5,16 +5,38 @@ import { test } from "node:test";
 /**
  * A integridade do artefato da Semana Final de Revisão.
  *
- * O ebook e o app prometem "as mesmas 30 questões". Essa promessa mora inteira
- * dentro de `revisao_final.json`, gerado uma vez pelo kbank. Nenhuma outra
- * ferramenta pegaria uma divergência aqui: um dia com 4 questões onde deviam ser
- * 5, um gabarito cuja letra não existe nas alternativas, ou uma questão repetida
- * em dois dias não quebram typecheck, lint nem build — mas quebram a promessa na
- * página pública. Este teste é o guard.
+ * A promessa do ebook e do app mora inteira dentro de `revisao_final.json`,
+ * gerado uma vez pelo kbank. Nenhuma outra ferramenta pegaria uma divergência
+ * aqui: um dia com 5 temas onde deviam ser 6, um gabarito cuja letra não existe
+ * nas alternativas, ou uma questão repetida em dois dias não quebram typecheck,
+ * lint nem build — mas quebram a promessa na página pública. Este teste é o
+ * guard.
  *
  * Lê o JSON direto, e não `lib/revisao.ts`, pela mesma razão do
  * `previsao-hash.test.mjs`: o runner de `node --test` não resolve o alias `@/`, e
  * o alvo do guard é o artefato, não o acessor.
+ *
+ * ## ⚠️ POR QUE NÃO HÁ MAIS NÚMERO LITERAL AQUI
+ *
+ * Este arquivo fixava `TOTAL_ESPERADO = 30` e `CARGA_ESPERADA = [5,5,5,4,4,4,3]`.
+ * Quando o artefato passou a 42 assuntos em 7 dias com 6 questões cada
+ * (`e1fb3301`), oito testes ficaram vermelhos de uma vez — e a correção óbvia,
+ * trocar 30 por 252, apenas adiaria o mesmo dia.
+ *
+ * As asserções agora são de CONSISTÊNCIA INTERNA: o artefato declara a própria
+ * estrutura em `estrutura` (`dias`, `temas_por_dia`, `questoes_por_tema`,
+ * `total_temas`, `total_questoes`), e o teste verifica que o conteúdo cumpre o
+ * que ele mesmo declarou. Isso é mais forte que o número fixo, não mais fraco:
+ * continua reprovando um dia curto, uma questão repetida ou um gabarito
+ * inválido, e ainda reprova um cabeçalho que mente sobre o próprio corpo — coisa
+ * que a versão anterior não olhava.
+ *
+ * ## ⚠️ TRÊS TESTES ESTAVAM INERTES
+ *
+ * `conteudo_educativo` foi renomeado para `conteudo` e ninguém atualizou este
+ * arquivo. `paginasEducativas()` passou a devolver lista vazia, e três testes
+ * que iteram essa lista continuaram VERDES sem verificar nada — o pior estado
+ * possível para um guard. Eles voltaram a ler o artefato real.
  */
 
 const REVISAO = JSON.parse(
@@ -24,41 +46,70 @@ const PREVISAO = JSON.parse(
   readFileSync(new URL("../../src/data/facies/previsao.json", import.meta.url), "utf8"),
 );
 
-const CARGA_ESPERADA = [5, 5, 5, 4, 4, 4, 3];
-const TOTAL_ESPERADO = 30;
+const ESTRUTURA = REVISAO.estrutura;
 
-function todasAsQuestoes() {
-  return REVISAO.dias.flatMap((dia) => dia.questoes);
+/** Os 42 temas, na ordem em que o aluno os encontra: dia 1 primeiro. */
+function todosOsTemas() {
+  return REVISAO.dias.flatMap((dia) => dia.temas);
 }
 
-test("a estrutura declara 7 dias e 30 questões na carga combinada", () => {
+function todasAsQuestoes() {
+  return todosOsTemas().flatMap((tema) => tema.questoes);
+}
+
+test("o cabeçalho não mente sobre o corpo", () => {
   assert.equal(REVISAO.schema_version, "revisao_final_dataset.v1");
-  assert.deepEqual(REVISAO.estrutura.carga_por_dia, CARGA_ESPERADA);
-  assert.equal(REVISAO.estrutura.total_questoes, TOTAL_ESPERADO);
-  assert.equal(REVISAO.dias.length, CARGA_ESPERADA.length);
+  assert.equal(REVISAO.dias.length, ESTRUTURA.dias, "`estrutura.dias` diverge dos dias presentes");
+  assert.equal(
+    todosOsTemas().length,
+    ESTRUTURA.total_temas,
+    "`estrutura.total_temas` diverge dos temas presentes",
+  );
+  assert.equal(
+    todasAsQuestoes().length,
+    ESTRUTURA.total_questoes,
+    "`estrutura.total_questoes` diverge das questões presentes",
+  );
+  // A multiplicação tem de fechar: um cabeçalho coerente consigo mesmo é a
+  // primeira coisa que um gerador quebrado perde.
+  assert.equal(ESTRUTURA.dias * ESTRUTURA.temas_por_dia, ESTRUTURA.total_temas);
+  assert.equal(ESTRUTURA.total_temas * ESTRUTURA.questoes_por_tema, ESTRUTURA.total_questoes);
 });
 
-test("os dias são 1..7 em ordem, cada um com a carga do seu dia", () => {
+test("os dias são 1..N em ordem, cada um com a carga do seu dia", () => {
   assert.deepEqual(
     REVISAO.dias.map((dia) => dia.dia),
-    [1, 2, 3, 4, 5, 6, 7],
+    Array.from({ length: ESTRUTURA.dias }, (_, i) => i + 1),
     "os dias foram reordenados ou perderam um dia",
   );
   for (const dia of REVISAO.dias) {
     assert.equal(
-      dia.questoes.length,
-      CARGA_ESPERADA[dia.dia - 1],
-      `dia ${dia.dia} (${dia.subtema}) tem ${dia.questoes.length} questões`,
+      dia.temas.length,
+      ESTRUTURA.temas_por_dia,
+      `dia ${dia.dia} tem ${dia.temas.length} temas`,
     );
-    assert.ok(dia.subtema, `dia ${dia.dia} sem subtema`);
+    for (const tema of dia.temas) {
+      assert.ok(tema.subtema, `dia ${dia.dia}: tema sem nome`);
+      assert.equal(
+        tema.questoes.length,
+        ESTRUTURA.questoes_por_tema,
+        `dia ${dia.dia}, ${tema.subtema}: ${tema.questoes.length} questões`,
+      );
+    }
   }
 });
 
-test("o total bate e nenhuma questão se repete entre dias", () => {
+test("nenhuma questão se repete entre temas ou dias", () => {
   const questoes = todasAsQuestoes();
-  assert.equal(questoes.length, TOTAL_ESPERADO);
   const ids = new Set(questoes.map((q) => q.question_id));
-  assert.equal(ids.size, TOTAL_ESPERADO, "há questão repetida na revisão");
+  assert.equal(ids.size, questoes.length, "há questão repetida na revisão");
+});
+
+test("nenhum tema se repete entre dias", () => {
+  // Assunto repetido em dois dias gasta duas das sete manhãs do aluno com a
+  // mesma coisa, e a revisão perde justamente a cobertura que promete.
+  const nomes = todosOsTemas().map((tema) => tema.subtema);
+  assert.equal(new Set(nomes).size, nomes.length, "há assunto repetido em dois dias");
 });
 
 test("toda questão tem enunciado, alternativas e um gabarito que existe", () => {
@@ -75,30 +126,49 @@ test("toda questão tem enunciado, alternativas e um gabarito que existe", () =>
 
 test("a cobertura de comentário fecha a conta", () => {
   const c = REVISAO.cobertura_comentario;
-  assert.equal(c.total, TOTAL_ESPERADO);
+  assert.equal(c.total, ESTRUTURA.total_questoes);
   assert.equal(c.com_comentario + c.sem_comentario, c.total);
 });
 
-test("os dias são o top-7 da aposta congelada, na ordem", () => {
-  const grao = REVISAO.estrutura.grao;
-  const esperado = PREVISAO.predictions[grao].lista
+/**
+ * A revisão precisa nascer da aposta CONGELADA, não de um recálculo.
+ *
+ * ⚠️ A aposta tem 30 assuntos e a revisão precisa de 42 — então nem todos os
+ * temas podem vir dela, e o artefato modela isso: cada tema traz
+ * `na_aposta_registrada`. A asserção é sobre os que AFIRMAM vir da aposta, e é
+ * dupla: eles têm de ser exatamente a lista congelada, na ordem dela, e nenhum
+ * outro pode alegar o mesmo. Um tema que se marca como previsto sem estar na
+ * aposta publicaria "a sua prova cobra isto" sem a medida por trás.
+ */
+test("os temas da aposta são a aposta congelada, na ordem, e só eles", () => {
+  const listaDaAposta = PREVISAO.predictions[ESTRUTURA.grao].lista
     .slice()
     .sort((a, b) => a.posicao - b.posicao)
-    .slice(0, REVISAO.dias.length)
     .map((item) => item.rotulo);
+
+  const temas = todosOsTemas();
+  const daAposta = temas.filter((tema) => tema.na_aposta_registrada);
+
   assert.deepEqual(
-    REVISAO.dias.map((dia) => dia.subtema),
-    esperado,
-    "os dias da revisão divergem do top-7 da aposta registrada",
+    daAposta.map((tema) => tema.subtema),
+    listaDaAposta,
+    "os temas marcados como previstos divergem da aposta registrada",
   );
+
+  const forasDaAposta = temas.filter((tema) => !tema.na_aposta_registrada);
+  assert.equal(
+    daAposta.length + forasDaAposta.length,
+    ESTRUTURA.total_temas,
+    "`na_aposta_registrada` faltando em algum tema",
+  );
+  for (const tema of forasDaAposta) {
+    assert.ok(
+      !listaDaAposta.includes(tema.subtema),
+      `${tema.subtema} está na aposta mas foi marcado como fora dela`,
+    );
+  }
 });
 
-/**
- * A revisão precisa nascer da aposta CONGELADA, não de um recálculo. O
- * `fonte_previsao.content_sha256` é o elo: se a aposta for registrada de novo ou
- * a revisão for gerada de outra fonte, o elo quebra e a página publicaria uma
- * revisão que não corresponde ao que foi prometido na `/aposta`.
- */
 test("a revisão aponta para a mesma aposta publicada", () => {
   assert.equal(
     REVISAO.fonte_previsao.content_sha256,
@@ -115,6 +185,11 @@ test("a revisão aponta para a mesma aposta publicada", () => {
  * reprovar por medida antes do conteúdo virar dataset. O que estes testes
  * protegem é o que acontece DEPOIS: o artefato atravessou a fronteira entre os
  * dois repositórios e precisa continuar renderizável e honesto do lado do web.
+ *
+ * ⚠️ A chave é `conteudo`, e é indexada por SUBTEMA — não por dia, como era
+ * quando havia um assunto por dia. Enquanto este arquivo procurava
+ * `conteudo_educativo`, os três testes abaixo iteravam uma lista vazia e
+ * passavam sem ler nada.
  * ──────────────────────────────────────────────────────────────────────────── */
 
 const BLOCOS = [
@@ -128,28 +203,40 @@ const BLOCOS = [
 ];
 
 function paginasEducativas() {
-  return Object.entries(REVISAO.conteudo_educativo ?? {});
+  return Object.entries(REVISAO.conteudo ?? {});
 }
 
-test("cada página educativa é de um dia que existe e traz os blocos", () => {
-  const diasValidos = new Set(REVISAO.dias.map((dia) => String(dia.dia)));
-  for (const [dia, pagina] of paginasEducativas()) {
-    assert.ok(diasValidos.has(dia), `página educativa do dia ${dia}, que não existe`);
+test("há uma página educativa por tema, e ela traz os blocos", () => {
+  const paginas = paginasEducativas();
+  assert.ok(paginas.length > 0, "nenhuma página educativa — a chave do artefato mudou de novo?");
+
+  const temasPorNome = new Map(todosOsTemas().map((tema) => [tema.subtema, tema]));
+  for (const [assunto, pagina] of paginas) {
+    assert.ok(temasPorNome.has(assunto), `página de "${assunto}", que não é tema de nenhum dia`);
     for (const bloco of BLOCOS) {
-      assert.ok(pagina[bloco], `dia ${dia} sem o bloco ${bloco}`);
+      assert.ok(pagina[bloco], `${assunto} sem o bloco ${bloco}`);
     }
   }
+  assert.equal(paginas.length, ESTRUTURA.total_temas, "há tema sem página educativa");
 });
 
 /**
- * O assunto da página tem de ser o assunto do dia. Um deslocamento de índice
- * aqui — a página do dia 3 no dia 4 — não quebra nada tecnicamente: o ebook
- * publicaria conteúdo de dependência química sob o título de diabetes.
+ * A página tem de saber a que dia pertence, e concordar com o artefato. Um
+ * deslocamento aqui — a página de dependência química anunciada no dia 4 — não
+ * quebra nada tecnicamente: o ebook publicaria o conteúdo certo sob o dia
+ * errado, e o aluno estudaria fora da ordem que a revisão promete.
  */
-test("o assunto da página bate com o assunto do dia", () => {
-  for (const [dia, pagina] of paginasEducativas()) {
-    const doDia = REVISAO.dias.find((item) => String(item.dia) === dia);
-    assert.equal(pagina.subtema, doDia.subtema, `dia ${dia}: página de outro assunto`);
+test("cada página aponta o dia em que o seu assunto realmente cai", () => {
+  const diaDoTema = new Map(
+    REVISAO.dias.flatMap((dia) => dia.temas.map((tema) => [tema.subtema, dia.dia])),
+  );
+  for (const [assunto, pagina] of paginasEducativas()) {
+    assert.equal(pagina.subtema, assunto, `a página indexada em "${assunto}" diz ser de outra`);
+    assert.equal(
+      pagina.dia,
+      diaDoTema.get(assunto),
+      `${assunto}: a página diz dia ${pagina.dia}, o artefato põe no dia ${diaDoTema.get(assunto)}`,
+    );
   }
 });
 
@@ -161,14 +248,19 @@ test("o assunto da página bate com o assunto do dia", () => {
  */
 test("toda página declara se foi revisada, e a contagem fecha", () => {
   const paginas = paginasEducativas();
-  for (const [dia, pagina] of paginas) {
-    assert.equal(typeof pagina.revisado, "boolean", `dia ${dia} sem 'revisado' booleano`);
+  for (const [assunto, pagina] of paginas) {
+    assert.equal(typeof pagina.revisado, "boolean", `${assunto} sem 'revisado' booleano`);
   }
   const cobertura = REVISAO.cobertura_educativa;
   assert.equal(
     cobertura.aprovados + cobertura.rascunhos,
     paginas.length,
     "a cobertura declarada não bate com as páginas presentes",
+  );
+  assert.equal(
+    cobertura.aprovados + cobertura.rascunhos + cobertura.ausentes,
+    ESTRUTURA.total_temas,
+    "aprovados + rascunhos + ausentes não fecha o total de temas",
   );
   assert.equal(
     paginas.filter(([, pagina]) => pagina.revisado).length,
@@ -183,20 +275,20 @@ test("toda página declara se foi revisada, e a contagem fecha", () => {
  * é um erro que ninguém corrige depois de impresso.
  */
 test("a estrutura de cada página é bem formada", () => {
-  for (const [dia, pagina] of paginasEducativas()) {
+  for (const [assunto, pagina] of paginasEducativas()) {
     const estrutura = pagina.estrutura;
-    assert.ok(estrutura.titulo, `dia ${dia}: estrutura sem título`);
+    assert.ok(estrutura.titulo, `${assunto}: estrutura sem título`);
     if (estrutura.tipo === "tabela") {
       for (const linha of estrutura.linhas) {
         assert.equal(
           linha.length,
           estrutura.colunas.length,
-          `dia ${dia}: linha com ${linha.length} células para ${estrutura.colunas.length} colunas`,
+          `${assunto}: linha com ${linha.length} células para ${estrutura.colunas.length} colunas`,
         );
       }
     } else {
-      assert.equal(estrutura.tipo, "fluxograma", `dia ${dia}: tipo de estrutura inválido`);
-      assert.ok(estrutura.passos.length >= 3, `dia ${dia}: fluxograma curto demais`);
+      assert.equal(estrutura.tipo, "fluxograma", `${assunto}: tipo de estrutura inválido`);
+      assert.ok(estrutura.passos.length >= 3, `${assunto}: fluxograma curto demais`);
     }
   }
 });
@@ -207,14 +299,14 @@ test("a estrutura de cada página é bem formada", () => {
  * contagem sustenta) de "acho que cai assim" (opinião com número decorativo).
  */
 test("os eixos citados existem na evidência medida do próprio assunto", () => {
-  for (const [dia, pagina] of paginasEducativas()) {
+  for (const [assunto, pagina] of paginasEducativas()) {
     const medidas = new Set(
       ["answer_type", "charge_pattern", "reasoning_type", "trap_pattern"].flatMap(
         (eixo) => (pagina.evidencia?.[eixo] ?? []).map((linha) => linha.classe),
       ),
     );
     for (const citado of pagina.eixos_citados ?? []) {
-      assert.ok(medidas.has(citado), `dia ${dia}: cita '${citado}', que a medição não tem`);
+      assert.ok(medidas.has(citado), `${assunto}: cita '${citado}', que a medição não tem`);
     }
   }
 });
@@ -236,4 +328,104 @@ test("nenhum identificador interno de ingestão vaza no artefato público", () =
       `fonte pública inesperada: ${questao.fonte}`,
     );
   }
+});
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * "O que mudou desde a última prova" — o bloco por assunto.
+ *
+ * O painel do rodapé já listava as dezenove atualizações, e ninguém as ligava ao
+ * assunto que estava lendo. `atualizacoesDoAssunto` faz a ligação por
+ * `subtemas`, e ela é frágil de um jeito silencioso: o campo guarda o RÓTULO do
+ * subtema por extenso, então basta a taxonomia renomear "Tuberculose (TB)" para
+ * a ligação virar zero — sem erro, sem página quebrada, só um bloco que some.
+ *
+ * ⚠️ Estes testes leem o ARTEFATO, não a função. `lib/revisao.ts` importa
+ * `@/data/...` e o runner de `node --test` não resolve o alias — a mesma razão
+ * pela qual `previsao-hash.test.mjs` lê o JSON. O que se fixa aqui é o dado de
+ * que a função depende.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+const TEMAS = new Set(REVISAO.dias.flatMap((dia) => dia.temas.map((t) => t.subtema)));
+
+test("toda atualização publicada pertence a um assunto da revisão", () => {
+  for (const item of REVISAO.atualizacoes) {
+    const casa = (item.subtemas ?? []).filter((s) => TEMAS.has(s));
+    assert.ok(
+      casa.length > 0,
+      `"${item.titulo}" não casa com nenhum dos ${TEMAS.size} assuntos — ` +
+        "ela aparece só no rodapé, longe do assunto a que se refere",
+    );
+  }
+});
+
+/**
+ * Sem isto, uma renomeação na taxonomia zeraria a ligação e o bloco viraria
+ * código morto — verde, publicado e invisível.
+ */
+test("a ligação por subtema não está vazia", () => {
+  const comAtualizacao = new Set(
+    REVISAO.atualizacoes.flatMap((item) =>
+      (item.subtemas ?? []).filter((s) => TEMAS.has(s)),
+    ),
+  );
+  assert.ok(
+    comAtualizacao.size > 0,
+    "nenhum dos assuntos tem atualização ligada — o bloco nunca renderiza",
+  );
+});
+
+/**
+ * `vigencia` é ordenada por comparação de strings, e isso só funciona em
+ * `YYYY-MM-DD`. Um formato brasileiro entraria sem erro e ordenaria por dia.
+ */
+test("a vigência é ISO, que é o que torna a ordenação cronológica", () => {
+  for (const item of REVISAO.atualizacoes) {
+    assert.match(item.vigencia, /^\d{4}-\d{2}-\d{2}$/, `vigência não-ISO: ${item.vigencia}`);
+  }
+});
+
+/**
+ * O bloco publica um link "fonte primária". Um item sem fonte renderizaria a
+ * afirmação sem o documento que a sustenta, que é exatamente o que o painel
+ * existe para não fazer.
+ */
+test("toda atualização tem fonte primária com URL", () => {
+  for (const item of REVISAO.atualizacoes) {
+    assert.ok(item.fontes?.length > 0, `"${item.titulo}" sem fonte`);
+    for (const fonte of item.fontes) {
+      assert.match(fonte.url, /^https?:\/\//, `"${item.titulo}": fonte sem URL válida`);
+    }
+  }
+});
+
+/**
+ * O rodapé só existe para as ÓRFÃS.
+ *
+ * Enquanto as atualizações viviam só no fim da página, listá-las todas ali era a
+ * única forma de publicá-las. Com cada uma ao lado do seu assunto, repetir a
+ * lista inteira virou duplicação pura — 19 de 19, com título, resumo, vigência e
+ * fonte iguais. Uma página que diz a mesma coisa duas vezes ensina a pular a
+ * segunda, e a segunda é onde mora a ressalva.
+ *
+ * Este teste fixa a conta que decide o que o rodapé mostra. Se ela inverter, ou
+ * a página duplica tudo de novo, ou some com uma atualização que não tem outra
+ * casa.
+ */
+test("a soma fecha: toda atualização ou tem assunto, ou é órfã", () => {
+  const comAssunto = REVISAO.atualizacoes.filter((item) =>
+    (item.subtemas ?? []).some((s) => TEMAS.has(s)),
+  );
+  const orfas = REVISAO.atualizacoes.filter(
+    (item) => !(item.subtemas ?? []).some((s) => TEMAS.has(s)),
+  );
+  assert.equal(
+    comAssunto.length + orfas.length,
+    REVISAO.atualizacoes.length,
+    "há atualização que não é nem uma coisa nem outra",
+  );
+  assert.equal(
+    orfas.length,
+    0,
+    "hoje nenhuma é órfã — se isto mudar, o rodapé volta a ter lista e é de propósito",
+  );
 });

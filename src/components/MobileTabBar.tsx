@@ -2,31 +2,15 @@
 
 import { usePathname } from "next/navigation";
 import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
-import { useState } from "react";
-import { Calendar as CalendarDays, ChartLine as ChartLine, Compass as Compass, CircleUser as CircleUserRound, House as House, NotepadText as Layers3, Library as LibraryBig } from "lucide-react";
-import type { ComponentType, SVGProps } from "react";
-
+import { useEffect, useState } from "react";
 import { FastNavLink } from "@/components/FastNavLink";
+import { ICON_MAP } from "@/components/navIcons";
 import {
   NAV_ITEMS,
   getIntentChildren,
   isNavChildActive,
   isNavItemActive,
-  type StudentNavIcon,
 } from "@/lib/navConfig";
-
-const ICON_MAP: Record<StudentNavIcon, ComponentType<SVGProps<SVGSVGElement>>> = {
-  today: House,
-  bank: LibraryBig,
-  cards: Layers3,
-  // A pessoa saiu da Evolucao e foi para a Conta, que e onde ela significa
-  // alguma coisa (assinatura, provas, dados). Evolucao passa a ser o grafico,
-  // que e o que a tela mostra.
-  profile: ChartLine,
-  map: Compass,
-  routine: CalendarDays,
-  account: CircleUserRound,
-};
 
 /** Distancia acumulada antes de esconder/mostrar. Abaixo disto o scroll de
  *  ajuste fino (o dedo assentando) faria a barra tremer. */
@@ -80,6 +64,30 @@ export function MobileTabBar() {
     setAnchor(current);
   });
 
+  /**
+   * O estado de escondida vira DADO, e nao so' animacao.
+   *
+   * A barra sai por `transform`, entao o elemento continua no layout e
+   * `--nav-stack-height` -- que mede quanto a navegacao ocupa NESTA ROTA --
+   * segue valendo o mesmo. Quem flutua por cima do rodape (o `BottomActionBar`)
+   * ficava ancorado a 106px do nada.
+   *
+   * ⚠️ Escreve em `documentElement` de proposito: o consumidor nao e' descendente
+   * desta barra, e subir o estado ate' o `AppShell` so' para descer de novo por
+   * contexto re-renderizaria a arvore inteira a cada scroll.
+   *
+   * ⚠️ A limpeza devolve `1`, e nao remove a propriedade: rota imersiva desmonta
+   * esta barra, e deixar `0` para tras faria a proxima tela calcular com a
+   * navegacao escondida enquanto ela esta' na tela.
+   */
+  useEffect(() => {
+    const raiz = document.documentElement;
+    raiz.style.setProperty("--nav-stack-shown", hidden ? "0" : "1");
+    return () => {
+      raiz.style.setProperty("--nav-stack-shown", "1");
+    };
+  }, [hidden]);
+
   const children = getIntentChildren(pathname);
   const showChildren = hasChildRow(pathname);
 
@@ -130,7 +138,7 @@ export function MobileTabBar() {
       >
         {NAV_ITEMS.map((item) => {
           const active = isNavItemActive(pathname, item);
-          const Icon = ICON_MAP[item.icon] ?? LibraryBig;
+          const Icon = ICON_MAP[item.icon];
           return (
             <FastNavLink
               key={item.href}

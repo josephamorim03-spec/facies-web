@@ -78,20 +78,27 @@ test("Cronograma abre na semana e preserva o calendario mensal como modo secunda
 // `<StudentSurfaceInsight>` e `<DesempenhoTab>` nao existem em `/evolucao`, que
 // organiza o conteudo em abas em vez de secoes empilhadas. Afirmar ordem entre
 // componentes ausentes passaria por vacuidade, que e' pior que nao afirmar.
-test("Acompanhar renderiza graficos uma vez e nao duplica CTA dominante", () => {
-  const source = read("src/app/evolucao/page.tsx");
-  const graphUses = source.match(/<GraficosSection[\s/>]/g) ?? [];
+test("Evolucao nao concorre com a acao do dia", () => {
+  // Era "renderiza graficos uma vez": a tela tinha uma `<GraficosSection />` e o
+  // contrato garantia que ela nao aparecesse duas vezes nem dividisse espaco com
+  // um CTA. Os graficos SAIRAM -- a Evolucao virou os sete cartoes-pergunta do
+  // artboard `9b`, e nenhum deles e um grafico de painel.
+  //
+  // O que o contrato protegia continua valendo, e e a parte que sobrevive: esta
+  // tela e de CONSULTA. Quem decide o que fazer agora e o Hoje, e duas telas
+  // disputando a acao dominante foi o defeito que este teste nasceu para pegar.
+  const source =
+    read("src/app/evolucao/page.tsx") + read("src/app/evolucao/EvolucaoClientPage.tsx");
 
-  assert.equal(graphUses.length, 1, "a tela deve renderizar a secao de graficos uma unica vez");
   assert.equal(
     source.includes("<StudentPrimaryAction"),
     false,
-    "Acompanhar nao deve renderizar CTA primario concorrendo com os graficos",
+    "Evolucao nao deve renderizar CTA primario concorrendo com a leitura",
   );
   assert.equal(
     source.includes("<TrainerContextStrip"),
     false,
-    "Acompanhar nao deve duplicar a acao do dia",
+    "Evolucao nao deve duplicar a acao do dia",
   );
 });
 

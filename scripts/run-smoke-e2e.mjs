@@ -135,7 +135,28 @@ function runPlaywright() {
     let settled = false;
     let output = "";
     let settleTimer;
+
+    // Contagem incremental do que o reporter `list` já imprimiu.
+    //
+    // Existe porque o `hardTimer` abaixo mata o Playwright ANTES do resumo
+    // quando o teto estoura, e aí quem lê a saída não encontra linha de
+    // contagem nenhuma. O veredito então diz INDETERMINADO — corretamente, mas
+    // sem nada para diagnosticar. Aconteceu em 2026-09-04: 43 falhas e 16
+    // sucessos visíveis no log, e o resumo do run dizia `0 passed · 0 failed`.
+    //
+    // `output` é truncado em 12 KB (o buffer só serve para detectar o resumo),
+    // então contar nele daria número errado. Estes contadores são incrementados
+    // por chunk e não dependem do buffer.
+    const vistos = { passed: 0, failed: 0 };
+
     const hardTimer = setTimeout(() => {
+      // Emite o que foi observado antes de derrubar o processo. Sem isto o
+      // timeout entrega silêncio, e silêncio vira INDETERMINADO sem pista.
+      process.stdout.write(
+        `\n${vistos.passed} passed, ${vistos.failed} failed ` +
+          `(parcial: o teto de ${Math.round(smokeTimeoutMs / 1000)}s encerrou a ` +
+          `execução antes do resumo do Playwright)\n`,
+      );
       finish(1);
     }, smokeTimeoutMs);
 
@@ -143,6 +164,13 @@ function runPlaywright() {
       const text = chunk.toString();
       output = `${output}${text}`.slice(-12_000);
       stream.write(text);
+
+      // O reporter `list` marca cada teste com ✓ (ok) ou ✘ (falha) no início da
+      // linha. Contamos por chunk, não no `output`, que é truncado.
+      for (const linha of text.split("\n")) {
+        if (/^\s*✓/.test(linha)) vistos.passed += 1;
+        else if (/^\s*✘/.test(linha)) vistos.failed += 1;
+      }
 
       const normalizedOutput = output.replace(/\x1b\[[0-9;]*m/g, "");
       const hasFailureSummary = /\b\d+\s+(failed|timed out|did not run)\b/.test(normalizedOutput);

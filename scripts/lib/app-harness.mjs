@@ -529,21 +529,266 @@ export async function mockApi(page) {
     if (method === "GET" && path === "/api/cadastro/status") {
       return fulfillJson(route, { cadastro_completo: true, aceites_pendentes: [] });
     }
+    // O INDICE das 138 bancas — a lista da aba "Comparar" (`9a`).
+    //
+    // ⚠️ Sem esta fixture o mapa QUEBRA INTEIRO ao trocar de aba. O fallback do
+    // mock e `{}`, e `getIndiceDeBancas` promete um ARRAY: o componente faz
+    // `(data ?? []).filter(...)` e o `??` nao pega objeto vazio, entao o erro e
+    // `filter is not a function` dentro do render -- o error boundary come a
+    // causa e a tela toda vira "Algo deu errado".
+    if (method === "GET" && path === "/api/facies/bancas") {
+      return fulfillJson(route, [
+        {
+          institution_key: "SP-UNIVERSIDADE-FEDERAL-DE-SAO-PAULO-UNIFESP-HOSPITAL-UNIVERSITARIO-DA-UNIFESP",
+          nome: "UNIFESP",
+          nome_longo: "SP - Universidade Federal de Sao Paulo - UNIFESP",
+          uf: "SP",
+          questoes_total: 1137,
+        },
+        {
+          institution_key: "EXAME-NACIONAL-DE-RESIDENCIA-ENAMED",
+          nome: "ENAMED",
+          nome_longo: "Exame Nacional de Residencia",
+          uf: null,
+          questoes_total: 2483,
+        },
+        {
+          institution_key: "SP-UNIVERSIDADE-DE-SAO-PAULO-USP",
+          nome: "USP",
+          nome_longo: "SP - Universidade de Sao Paulo - USP",
+          uf: "SP",
+          questoes_total: 612,
+        },
+      ]);
+    }
+
+    // A leitura DIARIA da evolucao — o mosaico "Seus dias" (`9b`).
+    //
+    // 28 dias porque o servidor so' devolve balde diario ate' 31
+    // (`DAILY_MAX_DAYS`); pedir 6 semanas devolveria baldes SEMANAIS e o mosaico
+    // de dias viraria um mosaico de semanas sem avisar.
+    if (method === "GET" && path === "/api/student/evolution") {
+      const pontos = [];
+      for (let i = 27; i >= 0; i -= 1) {
+        const dia = plusDays(todayISO(), -i);
+        // Padrao de plantonista: estuda a maioria dos dias, some em alguns.
+        const minutos = i % 7 === 3 || i % 11 === 0 ? 0 : i % 5 === 1 ? 14 : 42;
+        pontos.push({
+          bucket: dia,
+          observed_minutes: minutos,
+          sleep_minutes: null,
+          sleep_quality: null,
+          energy: null,
+          on_call_days: i % 7 === 3 ? 1 : 0,
+          covered_days: 1,
+        });
+      }
+      return fulfillJson(route, {
+        contract_version: "student-evolution-v1",
+        window: {
+          range_key: "4w",
+          date_from: plusDays(todayISO(), -27),
+          date_to: todayISO(),
+          granularity: "daily",
+          timezone: "America/Sao_Paulo",
+        },
+        points: pontos,
+        associations: [],
+      });
+    }
+
+    // O plano vigente (`9c`). Sem ele a tela do plano mede a si mesma vazia, e
+    // o que o guard compara com o desenho passa a ser o estado vazio.
+    if (method === "GET" && path === "/api/plan/current") {
+      const dia = (n) => plusDays(todayISO(), n);
+      return fulfillJson(route, {
+        contract_version: "study-plan-v1",
+        plan_id: "plan-design",
+        revision: 3,
+        policy_version: "study-plan-1",
+        evidence_level: "adaptado_por_evidencias",
+        horizon_start: todayISO(),
+        horizon_end: dia(41),
+        generated_at: NOW,
+        objectives: [],
+        explanation: {},
+        activities: [
+          {
+            activity_id: "at-1",
+            scheduled_date: dia(0),
+            slot_order: 0,
+            kind: "topic_practice",
+            title: "Insuficiencia cardiaca",
+            difficulty_class: "padrao",
+            estimated_minutes: 24,
+            estimated_questions: 12,
+            status: "pending",
+            locked: false,
+            session_id: null,
+            review_task_id: null,
+            observed_minutes: null,
+            observed_questions: null,
+            completed_at: null,
+            change_type: "kept",
+            unscheduled_reason: null,
+            recommended_window: null,
+            rationale: {},
+          },
+          {
+            activity_id: "at-2",
+            scheduled_date: dia(9),
+            slot_order: 0,
+            kind: "review",
+            title: "Revisao do que voce errou",
+            difficulty_class: "leve",
+            estimated_minutes: 16,
+            estimated_questions: 8,
+            status: "pending",
+            locked: false,
+            session_id: null,
+            review_task_id: "rt-1",
+            observed_minutes: null,
+            observed_questions: null,
+            completed_at: null,
+            change_type: "added",
+            unscheduled_reason: null,
+            recommended_window: null,
+            rationale: {},
+          },
+          {
+            activity_id: "at-3",
+            scheduled_date: dia(24),
+            slot_order: 0,
+            kind: "review",
+            title: "Revisao final",
+            difficulty_class: "leve",
+            estimated_minutes: 20,
+            estimated_questions: 10,
+            status: "pending",
+            locked: false,
+            session_id: null,
+            review_task_id: "rt-2",
+            observed_minutes: null,
+            observed_questions: null,
+            completed_at: null,
+            change_type: "added",
+            unscheduled_reason: null,
+            recommended_window: null,
+            rationale: {},
+          },
+        ],
+      });
+    }
+
+    // A semana declarada, que o cartao da rotina le no `9c` e a tela
+    // "Minha semana" edita no `14a`.
+    if (method === "GET" && path === "/api/onboarding") {
+      return fulfillJson(route, {
+        contract_version: "student-onboarding-v1",
+        state: "ready",
+        next_step: "ready",
+        completed_steps: ["objectives", "routine", "capacity"],
+        has_selected_objectives: true,
+        objectives_revision: 2,
+        has_routine: true,
+        has_availability: true,
+        weekly_goal_questions: 300,
+        // seg plantao, ter pos-plantao, qua livre, qui ambulatorio, sex nada,
+        // sab e dom livres — a semana do `14a`.
+        study_availability: { 0: 10, 1: 20, 2: 60, 3: 35, 4: 0, 5: 60, 6: 35 },
+        completed_at: NOW,
+      });
+    }
+
+    // A proficiencia do aluno por competencia — o eixo "A prova e voce" do
+    // mapa (`12b`). Sem ela a tela inteira cai em "Algo deu errado", porque a
+    // consulta e' obrigatoria naquela aba.
+    //
+    // A fixture cobre os TRES estados de proposito: `medido` (>= o piso),
+    // `estimado` (1..piso-1) e `nao_avaliado` (zero respostas). Sao formas
+    // diferentes na grade, e um mock com um estado so' nao provaria nenhuma.
+    if (method === "GET" && path === "/api/student/competency-mastery") {
+      return fulfillJson(route, {
+        contract_version: "competency-mastery-v1",
+        observation_floor: 5,
+        attempts_considered: 31,
+        items: [
+          {
+            objective_id: "obj-diabetes",
+            label: "Diabetes",
+            primary_subtheme: "Diabetes",
+            competency_question_count: 24,
+            attempts: 12,
+            correct: 7,
+            mastery: 0.58,
+            certeza: "medido",
+          },
+          {
+            objective_id: "obj-prenatal",
+            label: "Assistencia pre-natal",
+            primary_subtheme: "Assistencia pre-natal",
+            competency_question_count: 18,
+            attempts: 3,
+            correct: 2,
+            mastery: 0.66,
+            certeza: "estimado",
+          },
+          {
+            objective_id: "obj-arritmias",
+            label: "Arritmias Cardiacas",
+            primary_subtheme: "Arritmias Cardiacas",
+            competency_question_count: 14,
+            attempts: 0,
+            correct: 0,
+            mastery: 0.5,
+            certeza: "nao_avaliado",
+          },
+        ],
+      });
+    }
+
     // A facies da banca-alvo, servida pelo BFF (`app/api/facies/banca/[key]`).
     // E' o que o Mapa desenha; sem ela a tela cai em "Algo deu errado".
     if (method === "GET" && path.startsWith("/api/facies/banca/")) {
+      const chave = decodeURIComponent(path.split("/").pop());
+      // ⚠️ O MOCK RESPONDE PELA CHAVE, e nao com uma banca fixa.
+      //
+      // Ele devolvia a UNIFESP para qualquer chave, e a aba Comparar acabava
+      // exibindo "UNIFESP" contra "UNIFESP", com todas as diferencas em zero.
+      // A tela passava, o guard passava, e nenhum dos dois exercia a
+      // comparacao -- que e a unica coisa que aquela aba faz.
+      const outra = chave.includes("ENAMED") || chave.includes("ENARE");
       return fulfillJson(route, {
-        institution_key: decodeURIComponent(path.split("/").pop()),
+        institution_key: chave,
         // `slug` NAO e' decorativo: `nomeCurto()` faz `banca.slug.startsWith(...)`
         // para achar os nomes fixos (ENARE, Revalida). Sem ele o render estoura
         // em TypeError e a tela cai no error boundary — "Algo deu errado", sem
         // nada no console, porque o boundary engole.
-        slug: "sp-universidade-federal-de-sao-paulo-unifesp-hospital-universitario-da-unifesp",
-        nome: "SP - Universidade Federal de Sao Paulo - UNIFESP",
-        uf: "SP",
+        slug: outra
+          ? "exame-nacional-de-residencia-enamed"
+          : "sp-universidade-federal-de-sao-paulo-unifesp-hospital-universitario-da-unifesp",
+        nome: outra
+          ? "Exame Nacional de Residencia (ENAMED)"
+          : "SP - Universidade Federal de Sao Paulo - UNIFESP",
+        uf: outra ? null : "SP",
         total: 1137,
         questoes_total: 1137,
         questoes_recentes: 604,
+        // ⚠️ `forma_recente` E OBRIGATORIO no tipo `Banca`, e a aba Comparar
+        // le `forma_recente.vinheta_pct` sem guarda: sem ele o mapa inteiro
+        // caia em "Algo deu errado" ao escolher a segunda prova, com o error
+        // boundary comendo a causa. O dataset real tem o bloco nas 138 bancas
+        // (medido), entao a falha era so do mock -- e um mock incompleto que
+        // derruba a tela e' pior que mock nenhum, porque parece defeito do app.
+        forma_recente: {
+          anos: [2024, 2025, 2026],
+          base: 604,
+          base_com_tema: 588,
+          formato_pct: outra ? 4.1 : 1.2,
+          formato_pct_com_tema: outra ? 4.1 : 1.2,
+          vinheta_pct: outra ? 51.4 : 21.6,
+          vinheta_pct_com_tema: outra ? 52.0 : 22.1,
+        },
         questoes_anuladas: 0,
         primeiro_ano: 2016,
         ultimo_ano: 2026,
@@ -821,6 +1066,57 @@ export async function mockApi(page) {
           source: { institution: "USP", board_code: "USP-SP", year: 2025 },
           metadata: { state_code: "SP" },
         },
+      ]);
+    }
+    // ⚠️ TRES areas de proposito, e nao uma.
+    //
+    // `/banco/guardadas` so mostra os chips de area quando ha mais de uma —
+    // um fixture de area unica exercitaria a tela sem a barra de filtro, que e
+    // metade do que ela faz. E as `attempt_stats` variam para o chip de acerto
+    // aparecer nos tres estados que ele tem.
+    if (method === "GET" && path === "/api/question-bank/bookmarks") {
+      const guardada = (id, area, no, stem, acertos, tentativas) => ({
+        id,
+        stem,
+        alternatives: { A: "Primeira conduta", B: "Segunda conduta", C: "Terceira conduta" },
+        answer: null,
+        difficulty_estimate: 0.6,
+        content_grade: "reviewed",
+        image_refs: [],
+        table_refs: [],
+        knowledge_nodes: [
+          qbankTopic({ knowledge_node_id: `${id}-no`, node_name: no, node_path: [area, no] }),
+        ],
+        attempt_stats: { attempt_count: tentativas, correct_count: acertos },
+        bookmarked: true,
+        source: { institution: "USP", board_code: "USP-SP", year: 2025 },
+        metadata: { state_code: "SP" },
+      });
+      return fulfillJson(route, [
+        guardada(
+          "q-guardada-1",
+          "Clínica Médica",
+          "Sepse",
+          "Homem de 62 anos, taquicárdico e hipotenso após 48h de tosse produtiva. Qual a primeira medida?",
+          1,
+          4,
+        ),
+        guardada(
+          "q-guardada-2",
+          "Clínica Médica",
+          "Síndrome coronariana aguda",
+          "Dor torácica há 2h com supradesnivelamento de ST em parede inferior. Qual a conduta?",
+          3,
+          4,
+        ),
+        guardada(
+          "q-guardada-3",
+          "Ginecologia e Obstetricia",
+          "Hipertensão na gestação",
+          "Gestante com PA 170/110, cefaleia e proteinúria. Qual a conduta?",
+          0,
+          2,
+        ),
       ]);
     }
     if (method === "GET" && path === "/api/question-bank/sessions") {

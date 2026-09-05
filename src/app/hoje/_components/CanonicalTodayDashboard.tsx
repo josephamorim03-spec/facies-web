@@ -15,6 +15,8 @@ import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentAgenda } from "@/features/student-agenda/useStudentAgenda";
 import { firstName, useProfileDisplayName } from "@/lib/ProfileContext";
 import { AgendaItemRow } from "@/features/student-agenda/AgendaItemRow";
+import { ContinuarDeOndeParou } from "./ContinuarDeOndeParou";
+import { manchetteDoDia } from "../_lib/manchete";
 import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
 // A pergunta de tempo e energia morreu com a aba Rota. O que ela produzia — o
 // tamanho do dia — agora é INFERIDO e exibido como contexto da próxima ação, não
@@ -175,14 +177,31 @@ export function CanonicalTodayDashboard() {
     null,
   ).reduce((soma, item) => soma + (item.expected_questions ?? 0), 0);
   const minutosDoDia = today.today_load.estimated_minutes ?? 0;
-  const tamanhoDoDia = (() => {
-    const q = questoesDoDia > 0 ? `${questoesDoDia} ${questoesDoDia === 1 ? "questão" : "questões"}` : null;
-    const m = minutosDoDia > 0 ? `cerca de ${minutosDoDia} minutos` : null;
-    if (q && m) return `Hoje são ${q}, ${m}`;
-    if (q) return `Hoje são ${q}`;
-    if (m) return `Hoje, ${m}`;
-    return null;
-  })();
+
+  /**
+   * O DIA COMECADO, do artboard `13e`.
+   *
+   * O `8b` desenha o dia intocado e era o unico estado que esta tela tinha. O
+   * `13e` desenha o outro — e e' o que o plantonista mais encontra, porque ele
+   * abre o app varias vezes no mesmo dia.
+   *
+   * A manchete inverte: conta o que FALTA, nao o que ja' foi feito. "Faltam 16
+   * das 24" e' a frase que decide se da' tempo agora; "voce fez 8" e' consolo,
+   * e vai para a linha de apoio.
+   */
+  const respondidasHoje = uniqueAgendaItems(
+    [...(agenda?.overdue ?? []), ...(day?.items ?? [])],
+    null,
+  ).reduce((soma, item) => soma + (item.completed_questions ?? 0), 0);
+  const sessaoAberta = today.details.active_session ?? null;
+  const diaComecado = respondidasHoje > 0 || sessaoAberta !== null;
+
+  const tamanhoDoDia = manchetteDoDia({
+    questoesDoDia,
+    respondidasHoje,
+    minutosDoDia,
+    temSessaoAberta: sessaoAberta !== null,
+  });
 
   const backupActions = today.backup_actions.filter(
     (action) =>
@@ -217,6 +236,15 @@ export function CanonicalTodayDashboard() {
             e line-height no mesmo bloco. Era `text-3xl md:text-4xl` (30 e 36px)
             contra os 25px medidos no artboard `8b`. */}
         <h1 className="mt-2 font-serif font-semibold text-ink">{tamanhoDoDia}</h1>
+        {/* A linha de apoio do `13e`: o que ja' foi feito hoje. Ela so' existe
+            com o dia comecado — no dia intocado nao ha' o que contar, e uma
+            linha "Você fez 0 hoje" seria cobranca disfarcada de informacao. */}
+        {diaComecado && respondidasHoje > 0 ? (
+          <p className="mt-1 text-nota text-muted">
+            Você fez {respondidasHoje}{" "}
+            {respondidasHoje === 1 ? "questão" : "questões"} hoje.
+          </p>
+        ) : null}
       </header>
 
       {partial ? (
@@ -227,48 +255,24 @@ export function CanonicalTodayDashboard() {
         </Alert>
       ) : null}
 
+      {/* Retomar vem ANTES de propor comecar: o produto nao deve abrir frente
+          nova enquanto ha' uma aberta. A proxima acao continua logo abaixo,
+          porque a sessao pendente pode ser justamente a que o aluno largou. */}
+      {sessaoAberta ? <ContinuarDeOndeParou sessao={sessaoAberta} /> : null}
+
       {isRest ? <TodayEmptyState /> : <TodayPrimaryAction action={today.primary_action} />}
 
       {/* Depois da ação, não antes: o dimensionamento explica o TAMANHO do que
           foi proposto, e explicação que precede a proposta vira formulário. */}
       <TodayDimensioning />
 
-      <section aria-label="Resumo de hoje" className="grid grid-cols-3 divide-x divide-edge border-y border-edge py-3">
-        <div className="px-2 text-center sm:px-4">
-          <p className="paper-eyebrow">Dia</p>
-          <p className="mt-1 font-serif text-xl font-semibold text-ink">
-            {day ? `${day.completed_items}/${day.total_items}` : "—"}
-          </p>
-          <p className="text-xs text-muted">atividades</p>
-        </div>
-        {/* Das tres celulas, esta e a unica que responde "estou em dia?" — o
-            hero acima ja respondeu "o que faco agora", e "Dia" e "Carga"
-            descrevem o presente. Progresso da semana e a unica que diz se o
-            plano esta se cumprindo.
-
-            As tres tinham peso identico, e tres pesos iguais nao tem climax:
-            a faixa lia como tres campos de um formulario. Escala e marca aqui
-            nao acrescentam informacao — declaram qual dos tres numeros a
-            pessoa veio buscar.
-
-            Uma vez por tela. Se as outras duas tambem crescessem, voltariamos
-            ao empate, com mais tinta. */}
-        <div className="bg-[var(--wash-selecao)] px-2 text-center sm:px-4">
-          <p className="paper-eyebrow">Semana</p>
-          {/* Numero e MONO, nao serifa: os artboards `9a`/`9b` poem a metrica em
-              DM Mono a 46px, e a landing ja trata numero como dado pela mesma
-              regra. Ele continua grande — o desenho tambem o mantem. */}
-          <p className="mt-1 font-mono text-3xl font-semibold leading-none tabular-nums text-marca">
-            {pct(agenda?.summary?.weekly_progress_pct ?? today.progress_snapshot.weekly_progress_pct)}
-          </p>
-          <p className="mt-1.5 text-xs text-muted">da meta</p>
-        </div>
-        <div className="px-2 text-center sm:px-4">
-          <p className="paper-eyebrow">Carga</p>
-          <p className="mt-1 font-serif text-xl font-semibold capitalize text-ink">{today.today_load.label}</p>
-          <p className="text-xs text-muted">{today.today_load.estimated_minutes} min planejados</p>
-        </div>
-      </section>
+      {/* ⚠️ A FAIXA "DIA · SEMANA · CARGA" SAIU.
+          Ela nao existe no artboard `8b`, e o que ela media ja aparece: o
+          tamanho do dia esta na manchete, o que falta na linha de apoio, e o
+          dimensionamento logo acima. Tres numeros a mais competindo com a UNICA
+          decisao desta tela -- o que fazer agora -- e ela tinha ate uma celula
+          com fundo proprio para declarar qual dos tres importava, o que e a
+          confissao de que os outros dois nao importavam. */}
 
       <section aria-labelledby="today-after-title">
         <div className="flex items-start justify-between gap-3">
@@ -295,25 +299,13 @@ export function CanonicalTodayDashboard() {
         ) : null}
       </section>
 
-      <details className="group border-y border-edge">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-semibold text-ink">
-          <span>Alternativas e métricas</span>
-          <span className="text-muted transition group-open:rotate-90" aria-hidden="true">›</span>
-        </summary>
-        <div className="space-y-4 border-t border-edge py-4">
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <p className="text-xs text-muted">Precisão observada</p>
-              <p className="mt-1 font-semibold text-ink">{pct(today.progress_snapshot.accuracy_pct)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted">Revisões estimadas</p>
-              <p className="mt-1 font-semibold text-ink">{today.review_snapshot.estimated_minutes} min</p>
-            </div>
-          </div>
-          <TodayBackupActions actions={backupActions} />
-        </div>
-      </details>
+      {/* As alternativas ficam; a GAVETA saiu.
+          O `8b` poe "Só tenho 10 minutos hoje" a um toque, na propria tela --
+          e ela e a saida de quem tem pouco tempo, exatamente quem nao vai abrir
+          um acordeao chamado "Alternativas e métricas" para procura-la. As duas
+          metricas que moravam ali (precisao observada, revisoes estimadas) sao
+          leitura de consulta e vivem na Evolucao. */}
+      <TodayBackupActions actions={backupActions} />
     </div>
   );
 }

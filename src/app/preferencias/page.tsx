@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { ContaSection } from "./_components/ContaSection";
+import { MinhaSemana } from "./_components/MinhaSemana";
 import { Bell, Calendar as CalendarClock, CalendarDays as CalendarPlus, Check, Goal, NotepadText as Layers3, Repeat, Save, Target, Trash2 as Trash2 } from "lucide-react";
 
 import {
@@ -20,6 +21,11 @@ import {
   getAPIErrorMessage,
 } from "@/lib/api";
 import { getAuthToken } from "@/lib/auth";
+import { useQueryClient } from "@tanstack/react-query";
+
+import { getOnboarding, saveOnboardingCapacity } from "@/lib/api/domains/study-plan";
+import { queryKeys } from "@/lib/queryKeys";
+import { getStudentToday } from "@/lib/api/domains/student-experience";
 import {
   filterEffectivePunctualEvents,
   filterEffectiveRoutineEvents,
@@ -127,6 +133,16 @@ export default function PreferenciasPage() {
   const [eventError, setEventError] = useState<string | null>(null);
   const [eventSaving, setEventSaving] = useState(false);
   const [retention, setRetention] = useState(0.9);
+  // A semana padrao vem de `study_availability` (weekday -> minutos), que ate'
+  // agora so' era escrito pelo questionario inicial e nunca mais relido.
+  const [disponibilidade, setDisponibilidade] = useState<Record<string, number> | null>(
+    null,
+  );
+  const [salvandoSemana, setSalvandoSemana] = useState(false);
+  const queryClient = useQueryClient();
+  // Procedencia da taxa: a frase muda entre "no seu ritmo" e "supondo N min".
+  const [minutosPorQuestao, setMinutosPorQuestao] = useState(2);
+  const [ritmoEhDoAluno, setRitmoEhDoAluno] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -138,8 +154,12 @@ export default function PreferenciasPage() {
       listEvents(token).catch(() => []),
       getFsrsConfig(token),
       getCapabilities(token).catch(() => ({ capabilities: [] })),
+      // As duas ultimas sao INFORMATIVAS: sem elas a semana ainda edita e
+      // salva. Falhar aqui nao pode fechar a tela de preferencias inteira.
+      getOnboarding(token).catch(() => null),
+      getStudentToday(token).catch(() => null),
     ])
-      .then(([nextProfile, nextEvents, fsrs, capabilities]) => {
+      .then(([nextProfile, nextEvents, fsrs, capabilities, onboarding, hoje]) => {
         setProfile(nextProfile);
         setEvents(nextEvents);
         // `.catch` no fetch protege REJEICAO, nao resposta com outra forma.
@@ -160,6 +180,15 @@ export default function PreferenciasPage() {
         setWeeklyGoalInput(String(nextProfile.weekly_goal_questions));
         setShift12hInput(nextProfile.shift_12h_capacity == null ? "" : String(nextProfile.shift_12h_capacity));
         setRetention(fsrs.desired_retention);
+        // `null` quando a leitura falhou; `{}` quando o aluno nunca declarou.
+        // A tela distingue os dois, e colapsa-los mostraria a semana em branco
+        // depois de uma falha de rede.
+        setDisponibilidade(onboarding ? (onboarding.study_availability ?? {}) : null);
+        const orcamento = hoje?.effort_budget ?? null;
+        if (orcamento?.minutes_per_question) {
+          setMinutosPorQuestao(orcamento.minutes_per_question);
+          setRitmoEhDoAluno(orcamento.pace_source === "observed");
+        }
       })
       .catch((cause) => {
         // A mensagem tecnica vai para o console, nunca para o aluno: `cause`
@@ -277,6 +306,33 @@ export default function PreferenciasPage() {
     }
   }
 
+  async function salvarSemana(proxima: Record<string, number>) {
+    if (!token) return;
+    setSalvandoSemana(true);
+    setError(null);
+    try {
+      // O mesmo endpoint do questionario inicial. `save_capacity` nao rebaixa
+      // aluno pronto (`_advance` devolve "ready") e regenera a trilha por conta
+      // propria -- que e' exatamente o "o plano se refaz" que a tela promete.
+      const estado = await saveOnboardingCapacity(token, proxima, null);
+      setDisponibilidade(estado.study_availability ?? proxima);
+      // ⚠️ O SERVIDOR JA' REFEZ O PLANO, e o cliente ainda tem o antigo em
+      // cache. Sem esta invalidacao o aluno salva a semana, vai para o Hoje e ve
+      // o dia montado pela rotina ANTIGA -- o pior momento possivel para o
+      // produto parecer que ignorou o que ele acabou de dizer.
+      await queryClient.invalidateQueries({ queryKey: queryKeys.studentToday });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.studentAgendaAll });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.studyPlanCurrent });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.rotinaDoPlano });
+    } catch (cause) {
+      setError(
+        getErrorMessage(cause, "Não foi possível salvar a sua semana. Tente de novo."),
+      );
+    } finally {
+      setSalvandoSemana(false);
+    }
+  }
+
   async function save() {
     if (!token || !profile || saving) return;
     setSaving(true);
@@ -329,11 +385,45 @@ export default function PreferenciasPage() {
   return (
     <div className={`mx-auto max-w-4xl ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
       <div className="divide-y divide-edge">
+        {/* ── Minha semana (artboard `14a`) ──────────────────────────────
+            Entra ANTES de tudo porque e' a unica coisa nesta pagina que o
+            plano do dia consome diretamente. Ate' agora `study_availability`
+            so' era escrito no questionario inicial e nunca mais relido: o
+            aluno respondia "quanto tempo por dia" uma vez, na vida, sem porta
+            de volta. */}
+        <section className="py-7">
+          <SectionTitle
+            icon={CalendarClock}
+            title="Minha semana"
+            description="Quanto dá para estudar em cada tipo de dia. É daqui que sai o tamanho do seu dia."
+          />
+          <div className="mt-5">
+            <MinhaSemana
+              eventos={events}
+              disponibilidade={disponibilidade}
+              hojeISO={currentTodayISO}
+              minutosPorQuestao={minutosPorQuestao}
+              ritmoEhDoAluno={ritmoEhDoAluno}
+              diasAteAProva={null}
+              salvando={salvandoSemana}
+              onSalvar={salvarSemana}
+              onAdicionar={() => {
+                document
+                  .getElementById("adicionar-compromisso")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              onRemoverExcecao={(evento) => {
+                void removeEvent(evento.event_id);
+              }}
+            />
+          </div>
+        </section>
+
         <section className="py-7">
           <SectionTitle
             icon={Repeat}
-            title="Rotina"
-            description="Meta, capacidade e compromissos que bloqueiam ou reduzem a carga de estudo."
+            title="Compromissos e metas"
+            description="Meta semanal e os compromissos que bloqueiam ou reduzem a carga de estudo."
           />
           <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
             <div className="space-y-5">
@@ -415,7 +505,10 @@ export default function PreferenciasPage() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-surface border border-edge bg-surface p-4">
+            <div
+              id="adicionar-compromisso"
+              className="scroll-alvo space-y-4 rounded-surface border border-edge bg-surface p-4"
+            >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-ink">Adicionar compromisso</p>

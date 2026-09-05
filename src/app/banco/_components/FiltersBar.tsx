@@ -419,7 +419,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                       )}
                     >
                       <span className="break-words text-sm font-semibold [overflow-wrap:anywhere]">{topic.node_name}</span>
-                      <span className="break-words text-xs text-muted [overflow-wrap:anywhere]">{topicPathLabel(topic)} · {topic.question_count} questões</span>
+                      <span className="break-words font-mono text-micro tabular-nums text-muted [overflow-wrap:anywhere]">{topicPathLabel(topic)} · {topic.question_count} q</span>
                     </button>
                   </li>
                 );

@@ -77,6 +77,10 @@ const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
   map: [],
   bank: [
     { href: "/banco", label: "Montar sessão", matches: ["/banco"] },
+    // A lista de guardadas mora sob o Banco, e nao na barra: o desenho fixa
+    // SEIS destinos e o setimo nao caberia em 390px. E guardadas e' uma forma
+    // de olhar o Banco, nao um lugar diferente dele.
+    { href: "/banco/guardadas", label: "Guardadas", matches: ["/banco/guardadas"] },
     { href: "/banco/historico", label: "Histórico", matches: ["/banco/historico"] },
   ],
   cards: [
@@ -90,9 +94,12 @@ const CHILDREN: Record<StudentIntent, NavChildConfig[]> = {
     // Os rotulos sao os das duas abas do artboard `14a`.
     { href: "/preferencias", label: "Minha semana", matches: ["/preferencias", "/rotina-e-metas"] },
     {
-      href: "/cronograma",
+      // O `9c` e' a LEITURA do plano (fases, o que nao coube, quanto a rotina
+      // comporta). `/cronograma` continua existindo e continua sendo onde se
+      // arrasta atividade entre dias -- ele vira ferramenta, e nao destino.
+      href: "/plano",
       label: "O plano até a prova",
-      matches: ["/cronograma", "/agenda-operacional", "/desempenho", "/trilha"],
+      matches: ["/plano", "/cronograma", "/agenda-operacional", "/desempenho", "/trilha"],
     },
   ],
   account: [],
@@ -110,16 +117,16 @@ const LEGACY_PATHS: Record<StudentIntent, string[]> = {
   bank: [],
   cards: [],
   profile: ["/estatisticas"],
-  routine: ["/agenda-operacional", "/desempenho", "/trilha", "/rotina-e-metas"],
+  routine: ["/cronograma", "/agenda-operacional", "/desempenho", "/trilha", "/rotina-e-metas"],
   account: [],
 };
 
-// A ordem e a do desenho: hoje · [mapa] · banco · evolucao · rotina · conta.
+// A ordem e a do desenho: hoje · mapa · banco · evolucao · rotina · conta.
 //
-// `mapa` (artboard `9a`, a facies da banca dentro do app) NAO entra ainda: a
-// tela nao existe, e ligar o objetivo do aluno (`institution_id`) a banca do
-// dataset (`institution_key`) e investigacao propria que pode nao casar. Aba
-// para uma tela vazia e pior que aba ausente. Entra quando a tela entrar.
+// `mapa` (artboard `9a`) JA' ENTROU: `/mapa` existe e mostra a facies da
+// banca-alvo. A ponte que eu tinha dado como incerta e' direta --
+// `StudentTargetExamItem.institution_key` e `Banca.institution_key` sao o mesmo
+// vocabulario, validado no onboarding.
 //
 // `cards` fica na lista para as ROTAS continuarem resolvendo; quem o tira da
 // barra e `INTENTS_VISIVEIS`, mais abaixo.
@@ -304,20 +311,21 @@ function navItem(intent: StudentIntent): NavItemConfig {
 const FLASHCARDS_LIGADOS = process.env.NEXT_PUBLIC_FLASHCARDS === "1";
 
 /**
- * `account` SAI da barra, e continua alcançável pelo avatar.
+ * `account` VOLTA para a barra: sao SEIS destinos, iguais no celular e no
+ * desktop.
  *
- * Ela ocupava o mesmo peso visual de Hoje, Banco e Rotina — telas que o aluno
- * abre todo dia — para algo que se usa poucas vezes por ano: trocar senha,
- * exportar dados, encerrar a conta. Item de navegação permanente para tarefa
- * rara é ruído permanente.
+ * Ela tinha saido por ser tarefa rara (trocar senha, exportar, encerrar) num
+ * lugar de peso permanente. O desenho decide o contrario, e o motivo esta' no
+ * que a Conta passa a guardar: o estado do acesso, as suas provas, os avisos e
+ * -- proximo turno -- "Acessibilidade e leitura" e "Como voce resolve". Deixou
+ * de ser a gaveta de senha para ser onde o aluno ajusta o produto.
  *
- * A porta passou a ser o próprio nome no rodapé da barra (`Nav.tsx`), que é
- * onde as pessoas já procuram conta em qualquer produto. Some da lista, não do
- * alcance — e a ROTA continua aqui em `INTENT_ORDER`, então `/conta` segue
- * resolvendo, ativa e com rótulo, exatamente como `cards` faz desde que saiu.
+ * O avatar no rodape da sidebar CONTINUA levando a `/conta`: duas portas para o
+ * mesmo lugar nao competem, e a de cima e' a que existe no celular, onde a
+ * sidebar nao e' montada.
  */
 const INTENTS_VISIVEIS: StudentIntent[] = INTENT_ORDER.filter(
-  (intent) => intent !== "account" && (intent !== "cards" || FLASHCARDS_LIGADOS),
+  (intent) => intent !== "cards" || FLASHCARDS_LIGADOS,
 );
 
 export const NAV_GROUPS_CONFIG: NavGroupConfig[] = [
