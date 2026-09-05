@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { clearAuthToken } from "@/lib/auth";
+import { destinoInternoSeguro } from "@/lib/destinoInterno";
 import { resolveAuthenticatedLandingRoute } from "@/lib/initialGoalSetup";
 import { loginLocalAccount } from "@/lib/api";
 import { useGoogleSignIn } from "./_hooks/useGoogleSignIn";
@@ -14,18 +15,6 @@ import { GoogleSection } from "./_components/GoogleSection";
 import { InstallBanner } from "./_components/InstallBanner";
 import { FaciesWordmark } from "@/components/FaciesWordmark";
 import styles from "./LoginPremium.module.css";
-
-function safeInternalNext(value: string): string | null {
-  const normalized = value.trim();
-  if (!normalized.startsWith("/") || normalized.startsWith("//")) return null;
-  if (normalized.startsWith("/login") || normalized.startsWith("/auth")) return null;
-  try {
-    const parsed = new URL(normalized, "http://krosmed.local");
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-  } catch {
-    return null;
-  }
-}
 
 function LoginPageContent() {
   const router = useRouter();
@@ -78,7 +67,7 @@ function LoginPageContent() {
         password: loginPassword,
         remember_device: rememberDevice,
       });
-      const route = safeInternalNext(nextParam) ?? await resolveAuthenticatedLandingRoute("");
+      const route = destinoInternoSeguro(nextParam) ?? await resolveAuthenticatedLandingRoute("");
       router.replace(route);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";

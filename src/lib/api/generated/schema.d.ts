@@ -598,9 +598,8 @@ export interface paths {
          *     pior que a versao honesta -- e quem clica isto suspeita de conta invadida,
          *     caso em que derrubar tambem a propria sessao e' o comportamento certo.
          *
-         *     `revoke_user` ja existia no repo. O access token corrente sobrevive ate
-         *     expirar (<=1h, sem estado por usuario nos tokens); o que morre aqui e' a
-         *     capacidade de renovar.
+         *     Morre a capacidade de renovar E o access token ja emitido, inclusive o desta
+         *     requisicao: e' preciso autenticar de novo.
          */
         post: operations["revoke_all_sessions_account_sessions_revoke_all_post"];
         delete?: never;
@@ -2234,6 +2233,34 @@ export interface paths {
          * @description Proxy para o kbank: registra um report de problema em uma questão.
          */
         post: operations["report_question_problem_question_bank_questions__question_id__report_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/exam-editions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Question Bank Exam Editions
+         * @description As edições de prova escolhíveis, com o denominador de cada uma.
+         *
+         *     Substitui o texto livre do modo prova, em que o aluno digitava nome, ano e
+         *     tipo e o servidor casava por string contra as fontes. Quando não casava, a
+         *     sessão saía com o recorte errado sem dizer nada.
+         *
+         *     Lista vazia é resposta legítima: significa que o banco ainda não publicou as
+         *     views de edição (migration 137 do fbank). Quem consome mostra "nenhuma prova
+         *     disponível", não erro.
+         */
+        get: operations["list_question_bank_exam_editions_question_bank_exam_editions_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7615,6 +7642,57 @@ export interface components {
             data_quality: components["schemas"]["ExamDebriefDataQualityOut"];
             /** Generated At */
             generated_at: string;
+        };
+        /**
+         * QuestionBankExamEditionOut
+         * @description Uma edição de prova, com o denominador ao lado do que foi capturado.
+         *
+         *     O modo prova pedia texto livre (nome, ano, tipo) e casava por string. Isso
+         *     falhava em silêncio de três jeitos: o nome digitado não batia com nenhuma
+         *     fonte; a mesma instituição tinha duas provas no mesmo ano (44 casos); e o
+         *     caderno servido vinha do índice de treino, que exclui anulada, desatualizada
+         *     e duplicata. Aqui a edição é um objeto escolhível, não uma frase.
+         */
+        QuestionBankExamEditionOut: {
+            /** Exam Edition Key */
+            exam_edition_key: string;
+            /** Institution Key */
+            institution_key: string;
+            /** Institution Label */
+            institution_label: string;
+            /** Year */
+            year: number;
+            /** Exam Number */
+            exam_number: string;
+            /** Access Type */
+            access_type?: string | null;
+            /** Access Group */
+            access_group: string;
+            /** Declared Count */
+            declared_count?: number | null;
+            /** Declared Origin */
+            declared_origin?: string | null;
+            /**
+             * Captured Count
+             * @default 0
+             */
+            captured_count: number;
+            /**
+             * Annulled Count
+             * @default 0
+             */
+            annulled_count: number;
+            /**
+             * Outdated Count
+             * @default 0
+             */
+            outdated_count: number;
+            /**
+             * Completeness
+             * @default unknown
+             * @enum {string}
+             */
+            completeness: "complete" | "partial" | "over" | "unknown";
         };
         /**
          * QuestionBankExamStateOut
@@ -16000,6 +16078,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_question_bank_exam_editions_question_bank_exam_editions_get: {
+        parameters: {
+            query?: {
+                institution_key?: string[] | null;
+                year?: number[] | null;
+                access_group?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionBankExamEditionOut"][];
                 };
             };
             /** @description Validation Error */

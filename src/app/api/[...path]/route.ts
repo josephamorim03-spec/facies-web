@@ -9,6 +9,10 @@ import {
   parseEnvPositiveInt,
   setSessionCookies,
 } from "@/lib/server/sessionCookies";
+import {
+  CABECALHOS_DE_PROCEDENCIA_MINUSCULOS,
+  cabecalhosDeProcedencia,
+} from "@/lib/server/procedencia";
 import { decidirAuthorizationUpstream } from "@/lib/server/upstreamAuth";
 import { tokenEstaExpirado } from "@/lib/server/tokenExpiry";
 
@@ -126,6 +130,18 @@ function buildUpstreamHeaders(request: NextRequest, requestId: string, pathKey: 
   headers.delete("connection");
   headers.delete("transfer-encoding");
   headers.delete(INTERNAL_CSRF_HEADER);
+
+  // ⚠️ APAGAR ANTES DE ACRESCENTAR. Esta rota copia TODOS os headers do
+  // cliente, então sem estas duas linhas qualquer pessoa declararia o próprio
+  // IP de origem — e o segredo, se o adivinhasse — através da nossa rota. O
+  // backend confia neles quando o token bate; a garantia de que só o BFF os
+  // escreve tem de estar aqui.
+  for (const cabecalho of CABECALHOS_DE_PROCEDENCIA_MINUSCULOS) {
+    headers.delete(cabecalho);
+  }
+  for (const [nome, valor] of Object.entries(cabecalhosDeProcedencia(request))) {
+    headers.set(nome, valor);
+  }
 
   const decisao = decidirAuthorizationUpstream({
     pathKey,

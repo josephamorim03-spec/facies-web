@@ -12,13 +12,13 @@ import { Skeleton } from "@/components/Skeleton";
 // resolvido -- porque a contagem de dias depende de qual origem respondeu: so
 // o objetivo v2 carrega data de EDITAL e pode dizer "63 dias" sem a ressalva
 // de estimativa. A precedencia mora nos construtores, e nao em cada tela.
+import { AlvoEContagem } from "@/components/AlvoEContagem";
 import {
-  AlvoEContagem,
   alvoDaProvaAlvo,
   alvoDoObjetivoV2,
   objetivoPrincipal,
   provaAlvoPrincipal,
-} from "@/components/AlvoEContagem";
+} from "@/components/alvoDaTela";
 import {
   getCurrentPlan,
   getMyObjectivesV2,

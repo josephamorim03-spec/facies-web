@@ -162,15 +162,20 @@ test.describe("Explorar o mapa (/mapa)", () => {
     await mockMapaApi(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/mapa");
-    // ⚠️ SEM CLIQUE. O mosaico era a SEGUNDA aba ("A prova e você") e a tela
-    // abria num laudo; agora ele e a aba "Mapa", que e a que abre. A leitura
-    // "você" virou um interruptor DENTRO da grade, e nao outra aba.
+    // ⚠️ SEM CLIQUE EM ABA. O mosaico era a SEGUNDA aba ("A prova e você") e a
+    // tela abria num laudo; agora ele e a aba "Mapa", que e a que abre. A
+    // leitura "você" virou um interruptor DENTRO da grade.
+    //
+    // A asserção é a NOTA de baixo da grade, e não uma sobrancelha de cima: a
+    // sobrancelha dizia a mesma coisa que a nota e saiu justamente por isso —
+    // duas legendas para a mesma codificação, uma delas empurrando o mosaico
+    // para fora da dobra a 390px.
     await expect(
-      page.getByText("tamanho é incidência · preenchimento é o quanto cai"),
+      page.getByText("Quanto mais escuro, mais a prova cobra.", { exact: false }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Você", exact: true }).click();
     await expect(
-      page.getByText("tamanho é incidência · preenchimento é o que falta"),
+      page.getByText("Quanto mais escuro, mais falta.", { exact: false }),
     ).toBeVisible();
   });
 

@@ -25,6 +25,7 @@
     "capture:design": "node scripts/capture-design-redesign.mjs",
     "test:e2e:smoke": "node scripts/run-smoke-e2e.mjs",
     "test:e2e:auth": "node scripts/run-smoke-e2e.mjs auth.proxy-cookie.spec.ts cadastro.funil.spec.ts",
+    "test:e2e:completo": "node scripts/run-smoke-e2e.mjs --completo",
     "test:e2e:ui": "playwright test --ui",
     "verificar:design": "node scripts/spec-do-design.mjs && node scripts/spec-do-design.mjs --ritmo --artboard=1b --design=\"C:/Users/josep/Downloads/Fácies design handoff/Primeira Tela - Direções.dc.html\"",
     "verificar:design-app": "node scripts/spec-do-app.mjs"

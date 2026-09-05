@@ -8,13 +8,8 @@ import { SeletorDeTema } from "@/components/SeletorDeTema";
 import { UserAvatar } from "@/components/UserAvatar";
 import { SuaEspecialidade } from "./_components/SuaEspecialidade";
 import { LoadBar } from "@/components/ui/LoadBar";
-import {
-  AlvoEContagem,
-  alvoDaProvaAlvo,
-  alvoDoObjetivoV2,
-  objetivoPrincipal,
-  provaAlvoPrincipal,
-} from "@/components/AlvoEContagem";
+import { AlvoEContagem } from "@/components/AlvoEContagem";
+import { alvoDaProvaAlvo, alvoDoObjetivoV2, objetivoPrincipal, provaAlvoPrincipal } from "@/components/alvoDaTela";
 import { mosaicoDeDias } from "@/app/evolucao/_lib/leitura";
 import {
   getMyObjectivesV2,

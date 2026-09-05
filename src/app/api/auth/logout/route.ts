@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cabecalhosDeProcedencia } from "@/lib/server/procedencia";
 
 const SESSION_COOKIE_NAME = "krosmed_session";
 const REFRESH_COOKIE_NAME = "krosmed_refresh";
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
           "Content-Type": "application/json",
+          ...cabecalhosDeProcedencia(request),
         },
         body: JSON.stringify({ refresh_token: refreshToken }),
       });
