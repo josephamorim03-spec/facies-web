@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { historicoDaLista } from "@/lib/historico";
 import { revisaoPorExamKey } from "@/lib/revisao";
 
 import { CabecalhoPublico } from "@/components/facies/CabecalhoPublico";
@@ -92,6 +93,8 @@ export default async function PaginaDaAposta({ params }: Props) {
   if (!prova || !previsao || !lista) notFound();
 
   const revisao = revisaoPorExamKey(prova.exam_key);
+  // Some quando o artefato descreve outra lista. Ver `historicoDaLista`.
+  const presenca = historicoDaLista(prova.exam_key);
 
   const v = prova.validacao;
   const medido = v.status === "medido" ? v : null;
@@ -250,15 +253,46 @@ export default async function PaginaDaAposta({ params }: Props) {
         <h2 id="lista" className="paper-eyebrow">
           os {previsao.base_composition.top_n} assuntos, na ordem
         </h2>
+        {/* ── OS DOIS EIXOS, E POR QUE PRECISAM SER DOIS ──────────────────
+            A lista mostrava posição e rótulo, e nada mais: o primeiro e o
+            último chegavam iguais. O plano do motor chama isso de "mentira de
+            formato".
+
+            ⚠️ A correção óbvia foi MEDIDA E REPROVADA. A faixa qualitativa
+            separa bem na população inteira, e dentro desta lista colapsa — 38
+            dos 42 seriam "recorrente". O que varia é a contagem crua, e ela não
+            é redundante com a ordem: correlação −0,51. */}
+        {presenca ? (
+          <p className="mt-3 max-w-[62ch] text-base text-muted">
+            A <span className="text-ink">ordem</span> é o peso — quantas questões
+            o assunto rende. A contagem ao lado é a{" "}
+            <span className="text-ink">constância</span>: em quantas das{" "}
+            {presenca.edicoes} provas anteriores ele apareceu. Um assunto pode
+            ser sempre presente e pequeno, ou grande e intermitente.
+          </p>
+        ) : null}
         <ol className="mt-4 grid gap-px overflow-hidden border border-edge bg-edge sm:grid-cols-2">
-          {lista.lista.map((item) => (
-            <li key={item.posicao} className="flex gap-3 bg-surface px-4 py-3">
-              <span className="w-6 shrink-0 font-mono text-sm text-muted">
-                {String(item.posicao).padStart(2, "0")}
-              </span>
-              <span className="min-w-0 text-base text-ink">{item.rotulo}</span>
-            </li>
-          ))}
+          {lista.lista.map((item) => {
+            // `null` = sem histórico nas correlatas (entrou pela prova direta).
+            // Ausência de medida não é medida de ausência, então não vira "0 de 9".
+            const vezes = presenca?.presenca[item.rotulo] ?? null;
+            return (
+              <li key={item.posicao} className="flex gap-3 bg-surface px-4 py-3">
+                <span className="w-6 shrink-0 font-mono text-sm text-muted">
+                  {String(item.posicao).padStart(2, "0")}
+                </span>
+                <span className="min-w-0 flex-1 text-base text-ink">{item.rotulo}</span>
+                {vezes !== null && presenca ? (
+                  <span
+                    className="shrink-0 font-mono text-sm tabular-nums text-muted"
+                    title={`Apareceu em ${vezes} das ${presenca.edicoes} provas anteriores`}
+                  >
+                    {vezes}/{presenca.edicoes}
+                  </span>
+                ) : null}
+              </li>
+            );
+          })}
         </ol>
       </section>
 
