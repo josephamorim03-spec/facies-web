@@ -17,10 +17,24 @@ const SCROLLER =
   "flex max-w-full items-center gap-1 overflow-x-auto rounded-control border border-edge bg-surface p-1 " +
   "snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 
+/*
+ * ⚠️ ABAIXO DE 13px O DESENHO NUNCA PESA, e isto é medida, não gosto.
+ *
+ * Lido das 22 artboards por `scripts/spec-do-app.mjs --so-desenho`: 10px, 11px
+ * e 12px aparecem 330 vezes e **sempre em 400**. Peso só começa em 13px
+ * (13/500 e 13/600). O app pintava 12/600 (41x), 12/500 (24x), 11/600 (7x),
+ * 11/500 (11x) e até 9/600 (10x) — cinco degraus que o desenho não tem.
+ *
+ * A ênfase nesse tamanho vem de outro lugar, e o próprio desenho mostra qual:
+ * a `.paper-eyebrow` é 11/400 em CAIXA ALTA com `tracking`, e lê-se como
+ * rótulo sem um grama de peso. Onde há estado (aba ativa, chip escolhido), quem
+ * o carrega é a cor de fundo, que já está lá.
+ */
+
 /** Base de um gatilho de aba. O estado ativo vem de `data-state` (Radix) ou `aria-current` (link). */
 export const TAB_TRIGGER_CLASS =
   "group paper-control inline-flex min-h-11 shrink-0 snap-start items-center gap-1.5 whitespace-nowrap " +
-  "px-3 text-xs font-semibold text-muted hover:text-ink md:min-h-9 " +
+  "px-3 text-xs text-muted hover:text-ink md:min-h-9 " +
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary " +
   "data-[state=active]:bg-primary data-[state=active]:text-primaryInk " +
   "aria-[current=page]:bg-primary aria-[current=page]:text-primaryInk";
@@ -33,7 +47,7 @@ export function TabCount({ children }: { children: ReactNode }) {
   return (
     <span
       className={
-        "rounded-control bg-surfaceMuted px-1.5 py-0.5 text-micro font-semibold tabular-nums text-muted " +
+        "rounded-control bg-surfaceMuted px-1.5 py-0.5 text-micro tabular-nums text-muted " +
         "group-data-[state=active]:bg-primaryInk/25 group-data-[state=active]:text-primaryInk " +
         "group-aria-[current=page]:bg-primaryInk/25 group-aria-[current=page]:text-primaryInk"
       }

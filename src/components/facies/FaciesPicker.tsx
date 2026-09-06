@@ -192,7 +192,7 @@ export function FaciesPicker({
           <a
             href={alvo.url}
             onClick={() => registrarEvento("facies_pagina_aberta", chave)}
-            className="paper-control inline-flex min-h-11 items-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)]"
+            className="paper-control inline-flex min-h-11 items-center rounded-control border border-primary bg-primary px-5 text-sm font-medium text-primaryInk transition hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)]"
           >
             {alvo.link}
           </a>

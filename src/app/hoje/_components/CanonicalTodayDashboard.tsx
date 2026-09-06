@@ -286,7 +286,7 @@ export function CanonicalTodayDashboard() {
           </div>
           <Link
             href={`/cronograma?view=week&anchor=${localDate}`}
-            className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-primary hover:underline"
+            className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-primary hover:underline"
           >
             Semana
             <CalendarDays className="h-4 w-4" aria-hidden="true" />

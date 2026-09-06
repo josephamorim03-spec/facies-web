@@ -268,7 +268,7 @@ export function ObjectiveSelector({
             return (
               <li key={`${item.program_id}:${item.edition_id}`} className="space-y-3 py-4">
                 <div className="flex items-start gap-3">
-                  <span className="w-6 shrink-0 pt-0.5 text-sm font-semibold text-muted">{index + 1}</span>
+                  <span className="w-6 shrink-0 pt-0.5 text-sm font-medium text-muted">{index + 1}</span>
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-ink">
                       {catalog
@@ -283,7 +283,7 @@ export function ObjectiveSelector({
                           href={catalog.source.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                          className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
                         >
                           {catalog.source.title}<ExternalLink className="h-3 w-3" aria-hidden="true" />
                         </a>
@@ -345,7 +345,7 @@ export function ObjectiveSelector({
                 return (
                   <li key={key} className="flex items-start gap-3 py-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-ink">{item.destination.institution_name} · {item.destination.program_name}</p>
+                      <p className="text-sm font-medium text-ink">{item.destination.institution_name} · {item.destination.program_name}</p>
                       <p className="mt-1 text-xs text-muted">{item.planning_focus.label} — {item.planning_date.explanation}</p>
                     </div>
                     <Button size="sm" variant="outline" disabled={alreadySelected || !item.selectable} onClick={() => add(item)}>
@@ -364,7 +364,7 @@ export function ObjectiveSelector({
       ) : null}
 
       <div className="border-t border-edge pt-4">
-        <p className="text-sm font-semibold text-ink">Não encontrei minha prova</p>
+        <p className="text-sm font-medium text-ink">Não encontrei minha prova</p>
         <p className="mt-1 text-xs text-muted">A solicitação vai para curadoria; ela não cria objetivo nem altera seu plano.</p>
         <div className="mt-2 flex gap-2">
           <input value={requestLabel} onChange={(event) => setRequestLabel(event.target.value)} placeholder="Nome da instituição ou processo" className="paper-control min-h-10 min-w-0 flex-1 border border-edge bg-surface px-3 text-sm text-ink" />

@@ -197,7 +197,7 @@ export function BuscaDeProva() {
           if (sugestoes.length > 0) abrir(sugestoes[0].slug);
           else campoRef.current?.focus();
         }}
-        className="mt-4 min-h-11 rounded-control border border-primary bg-primary px-4 text-sm font-semibold text-primaryInk transition hover:border-primaryStrong hover:bg-primaryStrong"
+        className="mt-4 min-h-11 rounded-control border border-primary bg-primary px-4 text-sm font-medium text-primaryInk transition hover:border-primaryStrong hover:bg-primaryStrong"
       >
         Ver a cara da prova
       </button>

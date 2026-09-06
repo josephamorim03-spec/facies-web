@@ -135,13 +135,13 @@ export default function QuickNoteModal({
           className="w-full max-w-sm rounded-surface border border-edge bg-paper p-6 text-center shadow-overlay"
           onClick={(event) => event.stopPropagation()}
         >
-          <p className="text-sm font-semibold text-ink">
+          <p className="text-sm font-medium text-ink">
             {isCardIntent ? "Flashcard salvo no caderno." : "Regra salva no caderno."}
           </p>
           <button
             type="button"
             onClick={onClose}
-            className="mt-4 border border-edge px-4 py-2 text-sm font-semibold text-ink hover:border-primary"
+            className="mt-4 border border-edge px-4 py-2 text-sm font-medium text-ink hover:border-primary"
           >
             Fechar
           </button>
@@ -162,7 +162,7 @@ export default function QuickNoteModal({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-ink">{primaryLabel}</p>
+            <p className="text-sm font-medium text-ink">{primaryLabel}</p>
             <p className="mt-1 text-xs text-muted">{theme}</p>
           </div>
           <button
@@ -190,7 +190,7 @@ export default function QuickNoteModal({
           </div>
         )}
 
-        <label className="mt-4 block text-xs font-semibold text-muted" htmlFor="quick-note-insight">
+        <label className="mt-4 block text-xs text-muted" htmlFor="quick-note-insight">
           {insightLabel}
         </label>
         <input
@@ -208,7 +208,7 @@ export default function QuickNoteModal({
         <button
           type="button"
           onClick={() => setAdvancedOpen((open) => !open)}
-          className="mt-4 border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
+          className="mt-4 border border-edge px-3 py-1.5 text-xs text-muted hover:text-ink"
         >
           {advancedOpen ? "Ocultar detalhes" : "Editar card"}
         </button>
@@ -222,7 +222,7 @@ export default function QuickNoteModal({
                   key={item}
                   type="button"
                   onClick={() => setArea(item)}
-                  className={`border px-2.5 py-1 text-xs font-semibold ${
+                  className={`border px-2.5 py-1 text-xs ${
                     area === item ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:border-primary hover:text-ink"
                   }`}
                 >
@@ -230,7 +230,7 @@ export default function QuickNoteModal({
                 </button>
               ))}
             </div>
-            <label className="block text-xs font-semibold text-muted" htmlFor="quick-note-body">
+            <label className="block text-xs text-muted" htmlFor="quick-note-body">
               Verso / resposta
             </label>
             <textarea
@@ -249,7 +249,7 @@ export default function QuickNoteModal({
         <button
           type="submit"
           disabled={!canSubmit}
-          className="mt-4 w-full border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk disabled:opacity-50"
+          className="mt-4 w-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk disabled:opacity-50"
         >
           {busy ? "Salvando..." : primaryLabel}
         </button>

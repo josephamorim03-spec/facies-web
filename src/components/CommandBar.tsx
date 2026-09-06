@@ -95,7 +95,7 @@ export function CommandBar() {
           {/* O prompt é decoração: conteúdo gerado não entra no nome acessível,
               então o leitor de tela anuncia o rótulo do campo, não "C dois
               pontos barra invertida KROS maior que". */}
-          <span aria-hidden="true" className="text-xs font-semibold text-primary">
+          <span aria-hidden="true" className="text-xs text-primary">
             {"C:\\KROS>"}
           </span>
           <input

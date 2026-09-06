@@ -234,7 +234,7 @@ function StatePicker({
           <button
             type="button"
             onClick={() => onChange([])}
-            className="text-xs font-semibold text-muted underline underline-offset-2 hover:text-ink"
+            className="text-xs text-muted underline underline-offset-2 hover:text-ink"
           >
             Limpar
           </button>
@@ -418,7 +418,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                         selectable ? "hover:bg-surfaceMuted" : "cursor-not-allowed opacity-65",
                       )}
                     >
-                      <span className="break-words text-sm font-semibold [overflow-wrap:anywhere]">{topic.node_name}</span>
+                      <span className="break-words text-sm font-medium [overflow-wrap:anywhere]">{topic.node_name}</span>
                       <span className="break-words font-mono text-micro tabular-nums text-muted [overflow-wrap:anywhere]">{topicPathLabel(topic)} · {topic.question_count} q</span>
                     </button>
                   </li>
@@ -613,7 +613,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                     : "border-edge bg-surface hover:border-primary",
                 )}
               >
-                <span className="block text-sm font-semibold text-ink">{option.label}</span>
+                <span className="block text-sm font-medium text-ink">{option.label}</span>
                 <span className="mt-1 block text-xs text-muted">{option.help}</span>
               </button>
             ))}
@@ -651,7 +651,7 @@ export default function FiltersBar(props: FiltersBarProps) {
                     : "border-edge bg-surface hover:border-primary",
                 )}
               >
-                <span className="block text-sm font-semibold text-ink">{option.label}</span>
+                <span className="block text-sm font-medium text-ink">{option.label}</span>
                 <span className="mt-1 block text-xs text-muted">{option.help}</span>
               </button>
             ))}
@@ -706,7 +706,7 @@ export default function FiltersBar(props: FiltersBarProps) {
               className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--teal)]"
             />
             <span>
-              <span className="block text-sm font-semibold text-ink">
+              <span className="block text-sm font-medium text-ink">
                 Completar com as questoes anuladas e desatualizadas
               </span>
               <span className="mt-1 block text-xs text-muted">

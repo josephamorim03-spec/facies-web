@@ -124,7 +124,7 @@ export function NoteEditForm({
         <div className="flex items-center justify-between">
           <p className="paper-eyebrow">Peso</p>
           <span
-            className="border bg-surface px-1 py-0.5 text-xs font-semibold tabular-nums"
+            className="border bg-surface px-1 py-0.5 text-xs tabular-nums"
             style={{ borderColor: weightBadgeColor(weight), color: weightBadgeColor(weight) }}
           >
             {weight}

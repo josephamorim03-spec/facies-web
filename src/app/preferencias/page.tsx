@@ -546,7 +546,7 @@ export default function PreferenciasPage() {
             <div className="space-y-5">
               <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2">
                 <label className="block">
-                  <span className="text-sm font-semibold text-ink">Questões por semana</span>
+                  <span className="text-sm font-medium text-ink">Questões por semana</span>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -574,14 +574,14 @@ export default function PreferenciasPage() {
                   `None` quando a capacidade não existe, e os chamadores caem no
                   caminho geral. Não foi preciso mudar uma linha lá. */}
               <div>
-                <p className="text-sm font-semibold text-ink">Reagendamento</p>
+                <p className="text-sm font-medium text-ink">Reagendamento</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {RESCHEDULE_MODES.map((mode) => (
                     <button
                       key={mode.value}
                       type="button"
                       onClick={() => patchLocal({ reschedule_mode: mode.value })}
-                      className={`paper-control min-h-9 border px-3 text-xs font-semibold transition-colors ${
+                      className={`paper-control min-h-9 border px-3 text-xs transition-colors ${
                         profile.reschedule_mode === mode.value
                           ? "border-primary bg-primary text-primaryInk"
                           : "border-edge text-muted hover:border-primary hover:text-ink"
@@ -600,7 +600,7 @@ export default function PreferenciasPage() {
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-ink">Adicionar compromisso</p>
+                  <p className="text-sm font-medium text-ink">Adicionar compromisso</p>
                   <p className="mt-1 text-xs text-muted">Filtra a rotina entre trabalho e outros bloqueios.</p>
                 </div>
                 <SegmentedToggle
@@ -621,7 +621,7 @@ export default function PreferenciasPage() {
                       key={day}
                       type="button"
                       onClick={() => setEventWeekday(index)}
-                      className={`paper-control min-h-8 border px-2.5 text-xs font-semibold ${
+                      className={`paper-control min-h-8 border px-2.5 text-xs ${
                         eventWeekday === index
                           ? "border-primary bg-primary text-primaryInk"
                           : "border-edge text-muted hover:text-ink"
@@ -650,7 +650,7 @@ export default function PreferenciasPage() {
                     key={category.value}
                     type="button"
                     onClick={() => setEventCategory(category.value)}
-                    className={`paper-control min-h-9 border px-3 text-xs font-semibold ${
+                    className={`paper-control min-h-9 border px-3 text-xs ${
                       eventCategory === category.value
                         ? "border-primary bg-primary text-primaryInk"
                         : "border-edge text-muted hover:text-ink"
@@ -830,7 +830,7 @@ export default function PreferenciasPage() {
             />
           </div>
           <fieldset className="mt-5">
-            <legend className="text-sm font-semibold text-ink">
+            <legend className="text-sm font-medium text-ink">
               Feedback padrão após o resultado
             </legend>
             <div className="mt-3 grid grid-cols-2 gap-1 rounded-control border border-edge bg-paper p-1">
@@ -842,7 +842,7 @@ export default function PreferenciasPage() {
               ).map(([value, label]) => (
                 <label
                   key={value}
-                  className={`paper-control cursor-pointer px-3 py-3 text-center text-sm font-semibold transition-colors ${
+                  className={`paper-control cursor-pointer px-3 py-3 text-center text-sm font-medium transition-colors ${
                     profile.default_feedback_reveal_policy === value
                       ? "bg-primary text-primaryInk"
                       : "text-muted hover:bg-surfaceMuted hover:text-ink"
@@ -865,7 +865,7 @@ export default function PreferenciasPage() {
           </fieldset>
 
           <fieldset className="mt-5">
-            <legend className="text-sm font-semibold text-ink">
+            <legend className="text-sm font-medium text-ink">
               Quando declarar confiança
             </legend>
             {/* Dois eixos independentes: QUANDO ver o gabarito (acima) e QUANDO
@@ -884,7 +884,7 @@ export default function PreferenciasPage() {
               ).map(([value, label]) => (
                 <label
                   key={value}
-                  className={`paper-control cursor-pointer px-3 py-3 text-center text-sm font-semibold transition-colors ${
+                  className={`paper-control cursor-pointer px-3 py-3 text-center text-sm font-medium transition-colors ${
                     profile.confidence_timing === value
                       ? "bg-primary text-primaryInk"
                       : "text-muted hover:bg-surfaceMuted hover:text-ink"
@@ -912,7 +912,7 @@ export default function PreferenciasPage() {
             description="A retenção desejada controla o ritmo do FSRS somente nos flashcards."
           />
           <label className="mt-5 block max-w-xl">
-            <span className="flex items-center justify-between gap-4 text-sm font-semibold text-ink">
+            <span className="flex items-center justify-between gap-4 text-sm font-medium text-ink">
               Retenção desejada
               <span>{Math.round(retention * 100)}%</span>
             </span>

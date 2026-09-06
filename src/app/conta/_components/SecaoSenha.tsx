@@ -127,7 +127,7 @@ export function SecaoSenha() {
       <form className="mt-4 max-w-sm space-y-3" onSubmit={enviar} noValidate>
         {pedeAtual ? (
           <div>
-            <label htmlFor="senha-atual" className="block text-sm font-semibold text-ink">
+            <label htmlFor="senha-atual" className="block text-sm font-medium text-ink">
               Senha atual
             </label>
             <input
@@ -142,7 +142,7 @@ export function SecaoSenha() {
         ) : null}
 
         <div>
-          <label htmlFor="senha-nova" className="block text-sm font-semibold text-ink">
+          <label htmlFor="senha-nova" className="block text-sm font-medium text-ink">
             Nova senha
           </label>
           <input
@@ -169,7 +169,7 @@ export function SecaoSenha() {
         </div>
 
         <div>
-          <label htmlFor="senha-confirma" className="block text-sm font-semibold text-ink">
+          <label htmlFor="senha-confirma" className="block text-sm font-medium text-ink">
             Repita a nova senha
           </label>
           <input
@@ -199,7 +199,7 @@ export function SecaoSenha() {
         <button
           type="submit"
           disabled={!podeEnviar}
-          className="paper-control rounded-control border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk disabled:opacity-50"
+          className="paper-control rounded-control border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk disabled:opacity-50"
         >
           {enviando ? "Salvando…" : "Salvar senha"}
         </button>

@@ -191,7 +191,7 @@ export default async function PaginaRevisaoFinal({ params }: Props) {
           <div className="flex flex-wrap items-center gap-3">
             <a
               href="/revisao-final"
-              className="paper-control inline-flex min-h-11 items-center rounded-control border border-edge bg-ink px-4 py-2 text-sm font-semibold text-paper transition hover:brightness-95"
+              className="paper-control inline-flex min-h-11 items-center rounded-control border border-edge bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:brightness-95"
             >
               Resolver no app
             </a>

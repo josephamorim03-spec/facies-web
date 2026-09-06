@@ -105,7 +105,7 @@ export function CalendarActionButtons({
         <button
           type="button"
           onClick={onOpenCreateModal}
-          className={`flex items-center gap-1.5 border px-4 py-2.5 text-sm font-semibold transition-colors ${
+          className={`flex items-center gap-1.5 border px-4 py-2.5 text-sm font-medium transition-colors ${
             modal === "create"
               ? "border-primary bg-primary text-primaryInk"
               : "border-edge bg-paper text-ink hover:border-primary hover:text-primary"
@@ -184,7 +184,7 @@ function ReadonlyStudyPopupContent({
     <>
       <div>
         <p className="paper-eyebrow">{recordType}</p>
-        <p className="mt-0.5 text-sm font-semibold leading-snug text-ink">{displayLabel}</p>
+        <p className="mt-0.5 text-sm font-medium leading-snug text-ink">{displayLabel}</p>
         <p className="mt-1 text-xs text-muted">{secondary}</p>
       </div>
 
@@ -209,7 +209,7 @@ function ReadonlyStudyPopupContent({
         <button
           type="button"
           onClick={() => onDeleteRequest?.(study)}
-          className="flex w-full items-center justify-center border border-danger/50 bg-paper py-2.5 text-xs font-semibold text-danger transition-colors hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          className="flex w-full items-center justify-center border border-danger/50 bg-paper py-2.5 text-xs text-danger transition-colors hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
         >
           Apagar registro
         </button>
@@ -242,7 +242,7 @@ function EventPopupContent({
     <>
       <div>
         <p className="paper-eyebrow">{kindLabel}</p>
-        <p className="mt-0.5 text-sm font-semibold leading-snug text-ink">{title}</p>
+        <p className="mt-0.5 text-sm font-medium leading-snug text-ink">{title}</p>
         <p className="mt-1 text-xs text-muted">
           {displayDate(sourceISO)} - {event.duration_hours}h{completed ? " - concluido" : ""}
         </p>
@@ -253,14 +253,14 @@ function EventPopupContent({
           <button
             type="button"
             onClick={() => onRescheduleRequest?.(event, sourceISO, iconType)}
-            className="flex w-full items-center justify-center rounded-control border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="flex w-full items-center justify-center rounded-control border border-edge bg-paper py-2.5 text-xs text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Reagendar
           </button>
           <button
             type="button"
             onClick={() => onDeleteRequest?.(event, sourceISO)}
-            className="flex w-full items-center justify-center border border-danger/50 bg-paper py-2.5 text-xs font-semibold text-danger transition-colors hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+            className="flex w-full items-center justify-center border border-danger/50 bg-paper py-2.5 text-xs text-danger transition-colors hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
           >
             Apagar
           </button>
@@ -320,7 +320,7 @@ export function CalendarEntryPopup({
       <>
         <div>
           <p className="paper-eyebrow">{task.area}</p>
-          <p className="mt-0.5 text-sm font-semibold text-ink leading-snug">{displayLabel}</p>
+          <p className="mt-0.5 text-sm font-medium text-ink leading-snug">{displayLabel}</p>
           <p className="mt-1 text-xs text-muted">
             {parentThemeLabel ? `${parentThemeLabel} · ` : ""}Revisão pendente
           </p>
@@ -348,7 +348,7 @@ export function CalendarEntryPopup({
           href={bancoUrl}
           onClick={onClose}
           aria-label={sessionTitle}
-          className="flex w-full items-center justify-center border border-primary bg-primary py-2.5 text-xs font-semibold text-primaryInk transition-all hover:brightness-105"
+          className="flex w-full items-center justify-center border border-primary bg-primary py-2.5 text-xs text-primaryInk transition-all hover:brightness-105"
         >
           Abrir revisão no banco
         </Link>
@@ -359,7 +359,7 @@ export function CalendarEntryPopup({
             onClose();
             onRescheduleRequest?.(task);
           }}
-          className="flex w-full items-center justify-center rounded-control border border-edge bg-paper py-2.5 text-xs font-semibold text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex w-full items-center justify-center rounded-control border border-edge bg-paper py-2.5 text-xs text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Reagendar
         </button>
@@ -376,7 +376,7 @@ export function CalendarEntryPopup({
       <>
         <div>
           <p className="paper-eyebrow">Revisão concluída</p>
-          <p className="mt-0.5 text-sm font-semibold text-ink leading-snug">{displayLabel}</p>
+          <p className="mt-0.5 text-sm font-medium text-ink leading-snug">{displayLabel}</p>
           <p className="mt-1 text-xs text-muted">
             {[task.area, parentThemeLabel, `Revisão #${revision}`].filter(Boolean).join(" · ")}
           </p>
@@ -561,7 +561,7 @@ export function CalendarEventRescheduleSheet({
         </div>
 
         <label className="mt-4 block">
-          <span className="text-sm font-semibold text-ink">Nova data</span>
+          <span className="text-sm font-medium text-ink">Nova data</span>
           <input
             type="date"
             value={date}
@@ -647,7 +647,7 @@ export function CalendarTaskRescheduleSheet({
         </div>
 
         <label className="mt-4 block">
-          <span className="text-sm font-semibold text-ink">Nova data</span>
+          <span className="text-sm font-medium text-ink">Nova data</span>
           <input
             type="date"
             value={date}
@@ -694,7 +694,7 @@ export function CalendarUndoRescheduleToast({
         <button
           type="button"
           onClick={onUndo}
-          className="min-h-10 shrink-0 px-3 text-sm font-semibold text-primary hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="min-h-10 shrink-0 px-3 text-sm font-medium text-primary hover:bg-surfaceMuted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           {undoLabel}
         </button>

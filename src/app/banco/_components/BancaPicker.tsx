@@ -207,7 +207,7 @@ export default function BancaPicker({
           <button
             type="button"
             onClick={() => onChange({ boardCodes: [], examCodes: [], institutions: [] })}
-            className="text-xs font-semibold text-muted underline underline-offset-2 hover:text-ink"
+            className="text-xs text-muted underline underline-offset-2 hover:text-ink"
           >
             Limpar ({selectedCount})
           </button>
@@ -327,7 +327,7 @@ export default function BancaPicker({
                               className="h-4 w-4 shrink-0 accent-[var(--color-primary)]"
                             />
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate font-medium text-ink">{source.label}</span>
+                              <span className="block truncate text-ink">{source.label}</span>
                               {source.option_kind !== "institution" && source.label.toUpperCase() !== key ? (
                                 <span className="block truncate text-xs text-muted">{key}</span>
                               ) : null}

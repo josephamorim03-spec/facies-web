@@ -16,7 +16,7 @@ export function QuestionImageRefs({
   alt = "Imagem da questão",
   className = "grid gap-3 md:grid-cols-2",
   imageClassName = "border border-edge bg-surface",
-  placeholderClassName = "paper-dashed flex min-h-32 items-center justify-center bg-surface px-4 py-6 text-center text-sm font-semibold text-muted",
+  placeholderClassName = "paper-dashed flex min-h-32 items-center justify-center bg-surface px-4 py-6 text-center text-sm font-medium text-muted",
 }: QuestionImageRefsProps) {
   const [failedImages, setFailedImages] = useState<Set<string>>(() => new Set());
   const refs = imageRefs.filter((src) => src.trim().length > 0);

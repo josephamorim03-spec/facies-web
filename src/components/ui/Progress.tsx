@@ -20,7 +20,7 @@ export function Progress({ value, label, showValue = false, className = "" }: Pr
         >
           <div className="h-full bg-primary transition-[width] duration-200 ease-out" style={{ width: `${safeValue}%` }} />
         </div>
-        {showValue ? <span className="w-10 text-right text-xs font-semibold tabular-nums text-muted">{safeValue}%</span> : null}
+        {showValue ? <span className="w-10 text-right text-xs tabular-nums text-muted">{safeValue}%</span> : null}
       </div>
     </div>
   );

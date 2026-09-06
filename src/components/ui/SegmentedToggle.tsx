@@ -29,7 +29,7 @@ export function SegmentedToggle<T extends string>({ value, onChange, options, ar
             type="button"
             aria-pressed={active}
             onClick={() => onChange(opt.value)}
-            className={`font-semibold transition ${pad} ${FOCUS} ${
+            className={`transition ${pad} ${FOCUS} ${
               active ? "bg-primary text-primaryInk" : "text-muted hover:text-ink"
             }`}
           >

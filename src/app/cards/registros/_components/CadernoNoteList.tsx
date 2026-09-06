@@ -87,7 +87,7 @@ export function CadernoNoteList({
                     <p className="text-sm">{note.insight_question}</p>
                     <div className="flex items-center gap-1 shrink-0">
                       <span
-                        className="border bg-surface px-1 py-0.5 text-xs font-semibold tabular-nums"
+                        className="border bg-surface px-1 py-0.5 text-xs tabular-nums"
                         style={{ borderColor: weightBadgeColor(note.weight), color: weightBadgeColor(note.weight) }}
                       >
                         {note.weight}
@@ -121,7 +121,7 @@ export function CadernoNoteList({
                   <div className="mt-1 flex flex-wrap items-center gap-3">
                     <Link
                       href={`/banco?area=${encodeURIComponent(note.area)}&theme=${encodeURIComponent(note.theme)}&answer_status=unanswered_or_wrong`}
-                      className="text-xs font-medium text-primary hover:underline"
+                      className="text-xs text-primary hover:underline"
                     >
                       Estudar no banco →
                     </Link>

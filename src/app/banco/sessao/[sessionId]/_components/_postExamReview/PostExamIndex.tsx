@@ -54,7 +54,7 @@ export function PostExamIndex({ items, currentPosition, onSelect }: PostExamInde
                 isWrong ? ", errou" : isRight ? ", acertou" : ""
               }`}
               className={cx(
-                "flex min-h-10 w-full items-center justify-center border text-xs font-semibold tabular-nums transition-colors",
+                "flex min-h-10 w-full items-center justify-center border text-xs tabular-nums transition-colors",
                 isCurrent && "ring-2 ring-primary ring-offset-2 ring-offset-surface",
                 isWrong
                   ? "border-danger bg-danger text-paper"

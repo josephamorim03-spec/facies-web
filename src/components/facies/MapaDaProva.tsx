@@ -482,9 +482,18 @@ export function MapaDaProva({
                     conteúdo, então sem ele o clamp resolveria e o overflow
                     voltaria pelo outro lado. */}
                 <span
-                  className={`min-h-0 flex-1 hyphens-auto font-serif font-semibold leading-tight text-ink ${
+                  /* ⚠️ O PESO ENTRA NO RAMO, e não no comum.
+
+                     Era `font-semibold` nas duas, e a 390px isso pintava
+                     14/600 na célula grande e 11/600 na pequena — dois
+                     degraus que as 22 artboards não têm. O desenho pesa 500
+                     a partir de 13px e nunca abaixo.
+
+                     A hierarquia entre grande e pequena continua onde ela
+                     sempre esteve: no TAMANHO da célula, que é o dado. */
+                  className={`min-h-0 flex-1 hyphens-auto font-serif leading-tight text-ink ${
                     grande
-                      ? "line-clamp-3 text-sm sm:text-base"
+                      ? "line-clamp-3 text-sm font-medium sm:text-base"
                       : "line-clamp-2 text-micro sm:text-sm"
                   }`}
                 >

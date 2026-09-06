@@ -50,7 +50,7 @@ export function ContinuarDeOndeParou({
       <p className="paper-eyebrow">Você parou no meio</p>
       <p className="mt-2 text-sm leading-6 text-ink">
         {sessao.answered_count} de {sessao.total_questions} respondidas em{" "}
-        <span className="font-semibold">{sessao.title}</span>.
+        <span className="font-medium">{sessao.title}</span>.
       </p>
       <Link
         href={sessao.href}

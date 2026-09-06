@@ -33,7 +33,7 @@ export function LinkDestaque({
     <Link
       href={`/prova/${slug}`}
       onClick={() => registrarEvento("destaque_clicado", chave)}
-      className="paper-control mt-6 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)]"
+      className="paper-control mt-6 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primaryInk hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)]"
     >
       {children}
     </Link>

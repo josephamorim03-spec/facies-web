@@ -13,7 +13,7 @@ export function Field({ label, hint, error, children }: Props) {
       <p className="paper-eyebrow">{label}</p>
       {children}
       {error ? (
-        <p className="text-xs font-medium text-danger">{error}</p>
+        <p className="text-xs text-danger">{error}</p>
       ) : hint ? (
         <p className="text-xs text-muted">{hint}</p>
       ) : null}

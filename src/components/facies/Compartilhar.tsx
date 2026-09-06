@@ -181,7 +181,7 @@ export function Compartilhar({
 /** O mesmo botão nos dois caminhos: quem abre a bandeja e quem abre o menu vê a
  *  mesma coisa, porque para o visitante é a mesma ação. */
 const BOTAO =
-  "paper-control rounded-control border border-edge bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surfaceMuted disabled:opacity-60";
+  "paper-control rounded-control border border-edge bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:bg-surfaceMuted disabled:opacity-60";
 
 /** Alvo de 40px, que é o piso de toque do sistema. */
 const ITEM =

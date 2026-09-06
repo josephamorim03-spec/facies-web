@@ -62,7 +62,7 @@ export default function AttemptHistoryModal({ questionId, onClose }: AttemptHist
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-ink">Histórico de respostas</p>
+            <p className="text-sm font-medium text-ink">Histórico de respostas</p>
             {stats && stats.attempt_count > 0 && ratio !== null ? (
               <p className="mt-1 text-xs text-muted">
                 <span className={`font-semibold ${accuracyTone(ratio)}`}>
@@ -101,7 +101,7 @@ export default function AttemptHistoryModal({ questionId, onClose }: AttemptHist
                     className="flex items-center justify-between gap-3 border border-edge px-3 py-2"
                   >
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-ink">{formatAnsweredAt(attempt.answered_at)}</p>
+                      <p className="text-xs text-ink">{formatAnsweredAt(attempt.answered_at)}</p>
                       <p className="mt-0.5 text-micro text-muted">
                         {attempt.selected_option ? `Marcou ${attempt.selected_option}` : "Sem alternativa"}
                         {duration ? ` · ${duration}` : ""}
@@ -109,12 +109,12 @@ export default function AttemptHistoryModal({ questionId, onClose }: AttemptHist
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                       {attempt.doubtful && (
-                        <span className="border border-warning/40 px-2 py-0.5 text-micro font-semibold text-warning">
+                        <span className="border border-warning/40 px-2 py-0.5 text-micro text-warning">
                           Em dúvida
                         </span>
                       )}
                       <span
-                        className={`border px-2 py-0.5 text-micro font-semibold ${
+                        className={`border px-2 py-0.5 text-micro ${
                           attempt.is_correct
                             ? "border-success/40 text-success"
                             : "border-danger/40 text-danger"
@@ -133,7 +133,7 @@ export default function AttemptHistoryModal({ questionId, onClose }: AttemptHist
         <button
           type="button"
           onClick={onClose}
-          className="mt-4 w-full border border-edge px-4 py-2 text-sm font-semibold text-ink hover:border-primary"
+          className="mt-4 w-full border border-edge px-4 py-2 text-sm font-medium text-ink hover:border-primary"
         >
           Fechar
         </button>

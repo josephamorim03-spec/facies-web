@@ -86,7 +86,7 @@ export function RevisaoDiaLauncher({
           type="button"
           onClick={() => void resolver()}
           disabled={estado === "criando"}
-          className="paper-control inline-flex min-h-11 items-center rounded-control border border-edge bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:bg-surfaceMuted disabled:opacity-60"
+          className="paper-control inline-flex min-h-11 items-center rounded-control border border-edge bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:bg-surfaceMuted disabled:opacity-60"
         >
           {estado === "criando" ? "Abrindo…" : `Resolver dia ${dia}`}
         </button>

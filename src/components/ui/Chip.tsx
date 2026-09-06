@@ -11,7 +11,7 @@ type Props = {
 };
 
 const BASE =
-  "inline-flex items-center gap-1.5 border px-2.5 py-1 text-xs font-semibold transition " +
+  "inline-flex items-center gap-1.5 border px-2.5 py-1 text-xs transition " +
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 /** Chip único (neutro e selecionável). Unifica `.km-chip`/pills ad-hoc. */

@@ -607,14 +607,14 @@ export default function CronogramaMonthView({
       <button
         type="button"
         onClick={restartCalendarCoach}
-        className="self-start text-xs font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="self-start text-xs text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         Como usar o Cronograma
       </button>
 
       {!loading && calendarRecommendationsEnabled ? (
         <section aria-labelledby="routine-suggestions-title">
-          <h2 id="routine-suggestions-title" className="text-sm font-semibold text-ink">
+          <h2 id="routine-suggestions-title" className="text-sm font-medium text-ink">
             Sugestões para a rotina
           </h2>
           {/* Tracejado + tom `attention`: estas linhas dividiam a mesma
@@ -649,7 +649,7 @@ export default function CronogramaMonthView({
                   <strong className="mt-0.5 block font-semibold text-ink">{item.title}</strong>
                   <span className="text-xs text-muted">{item.detail}</span>
                 </span>
-                <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-primary">
+                <span className="flex shrink-0 items-center gap-1 text-xs text-primary">
                   {item.cta}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                 </span>
@@ -705,7 +705,7 @@ export default function CronogramaMonthView({
               </button>
             </div>
             <label className="mt-4 block">
-              <span className="text-sm font-semibold text-ink">Ano</span>
+              <span className="text-sm font-medium text-ink">Ano</span>
               <select
                 value={monthPickerYear}
                 onChange={(event) => setMonthPickerYear(Number(event.target.value))}
@@ -726,7 +726,7 @@ export default function CronogramaMonthView({
                     key={label}
                     type="button"
                     onClick={() => selectMonth(monthPickerYear, index)}
-                    className={`min-h-11 border px-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    className={`min-h-11 border px-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       selected
                         ? "border-primary bg-primary text-primaryInk"
                         : "border-edge bg-paper text-ink hover:bg-surfaceMuted"

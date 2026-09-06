@@ -146,7 +146,7 @@ export function TreinoDirigidoChooser({
                 : "border-edge bg-paper enabled:hover:bg-surfaceMuted"
             }`}
           >
-            <span className={`block text-sm font-semibold ${ativo ? "text-ink" : "text-muted"}`}>
+            <span className={`block text-sm font-medium ${ativo ? "text-ink" : "text-muted"}`}>
               {opcao.label}
             </span>
             <span className="mt-1 block text-xs leading-5 text-muted">{help}</span>

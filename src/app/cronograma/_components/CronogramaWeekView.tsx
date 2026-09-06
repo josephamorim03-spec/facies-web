@@ -205,7 +205,7 @@ export function CronogramaWeekView({
 
       {!isCurrentWeek ? (
         <div className="text-center">
-          <Link href={`/cronograma?view=week&anchor=${today}&day=${today}`} className="text-sm font-semibold text-primary hover:underline">
+          <Link href={`/cronograma?view=week&anchor=${today}&day=${today}`} className="text-sm font-medium text-primary hover:underline">
             Voltar para esta semana
           </Link>
         </div>
@@ -247,7 +247,7 @@ export function CronogramaWeekView({
                   <span className="paper-eyebrow">
                     {shortWeekday(day.date)}
                   </span>
-                  <span className={`flex h-6 w-6 items-center justify-center text-xs font-semibold ${current ? "bg-ink text-paper" : "text-ink"}`}>
+                  <span className={`flex h-6 w-6 items-center justify-center text-xs ${current ? "bg-ink text-paper" : "text-ink"}`}>
                     {dayNumber(day.date)}
                   </span>
                   <span className="flex min-h-2 items-center justify-center gap-0.5" aria-hidden="true">
@@ -263,10 +263,10 @@ export function CronogramaWeekView({
                       );
                     })}
                     {hasOverflow ? (
-                      <span data-week-day-overflow="true" className="text-micro font-semibold leading-none text-muted">...</span>
+                      <span data-week-day-overflow="true" className="text-micro leading-none text-muted">...</span>
                     ) : null}
                   </span>
-                  <span className="min-h-3 truncate text-micro font-medium text-muted sm:text-micro">
+                  <span className="min-h-3 truncate text-micro text-muted sm:text-micro">
                     {activityCount === 0 ? "livre" : hasOverflow ? `${activityCount} ativ.` : null}
                   </span>
                 </button>
@@ -299,7 +299,7 @@ export function CronogramaWeekView({
             </div>
             <Link
               href={`/cronograma?view=month&anchor=${selectedDay.date}&day=${selectedDay.date}`}
-              className="inline-flex min-h-9 items-center gap-1.5 border border-edge px-3 text-xs font-semibold text-primary transition-colors hover:border-primary hover:bg-surfaceMuted"
+              className="inline-flex min-h-9 items-center gap-1.5 border border-edge px-3 text-xs text-primary transition-colors hover:border-primary hover:bg-surfaceMuted"
             >
               <CalendarPlus2 className="h-4 w-4" aria-hidden="true" />
               Organizar dia
@@ -319,13 +319,13 @@ export function CronogramaWeekView({
             ].map(([label, value]) => (
               <div key={label} className="bg-paper px-3 py-2.5">
                 <dt className="paper-eyebrow">{label}</dt>
-                <dd className="mt-0.5 text-sm font-semibold tabular-nums text-ink">{value}</dd>
+                <dd className="mt-0.5 text-sm font-medium tabular-nums text-ink">{value}</dd>
               </div>
             ))}
           </dl>
 
           {selectedDay.overloaded ? (
-            <p className="mt-3 text-xs font-semibold text-warning">Carga acima da capacidade recomendada.</p>
+            <p className="mt-3 text-xs text-warning">Carga acima da capacidade recomendada.</p>
           ) : null}
           {selectedItems.length > 0 ? (
             <ul className="mt-3 divide-y divide-edge border-t border-edge">
@@ -334,7 +334,7 @@ export function CronogramaWeekView({
           ) : (
             <div className="mt-4 bg-surfaceMuted px-3 py-4 text-sm text-muted">
               <p>Dia livre. Nenhuma atividade planejada.</p>
-              <Link href={`/cronograma?view=month&anchor=${selectedDay.date}&day=${selectedDay.date}`} className="mt-2 inline-block font-semibold text-primary hover:underline">
+              <Link href={`/cronograma?view=month&anchor=${selectedDay.date}&day=${selectedDay.date}`} className="mt-2 inline-block font-medium text-primary hover:underline">
                 Adicionar atividade
               </Link>
             </div>
@@ -349,7 +349,7 @@ export function CronogramaWeekView({
               <h2 id="week-overdue-title" className="font-serif text-lg font-semibold text-ink">Atrasadas</h2>
               <p className="text-xs text-muted">Aparecem somente aqui para não duplicar o dia original.</p>
             </div>
-            <Link href="/cronograma?view=month" className="text-xs font-semibold text-primary hover:underline">Reorganizar</Link>
+            <Link href="/cronograma?view=month" className="text-xs text-primary hover:underline">Reorganizar</Link>
           </div>
           <ul className="mt-2 divide-y divide-edge">
             {uniqueAgendaItems(agenda.overdue).map((item) => <AgendaItemRow key={item.occurrence_id} item={item} />)}
@@ -374,12 +374,18 @@ export function CronogramaWeekView({
       <section aria-labelledby="week-settings-title" data-week-context="true" className="rounded-surface border border-edge bg-surface px-3 py-3 sm:px-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 id="week-settings-title" className="text-sm font-semibold text-ink">Preferências da semana</h2>
+            {/* ⚠️ SEM CLASSE DE PESO AQUI, de propósito.
+
+    `.paper-page h2` vence o `text-sm` por especificidade e renderiza isto a
+    22px — mas `font-medium` é utilitário e VENCE o peso do CSS. O resultado
+    era 22/500, um degrau que o desenho não tem (ele tem 22/600). Deixar o
+    peso ao CSS devolve o par certo. */}
+<h2 id="week-settings-title" className="font-semibold text-ink">Preferências da semana</h2>
             <p className="mt-0.5 text-xs text-muted">Ajuste meta, dias disponíveis, capacidade e lembretes.</p>
           </div>
           <Link
             href="/preferencias"
-            className="inline-flex min-h-10 items-center gap-1.5 border border-primary px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-primaryInk"
+            className="inline-flex min-h-10 items-center gap-1.5 border border-primary px-3 text-xs text-primary transition-colors hover:bg-primary hover:text-primaryInk"
           >
             <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
             Abrir preferências

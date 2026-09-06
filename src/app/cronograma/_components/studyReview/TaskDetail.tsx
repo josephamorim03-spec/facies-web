@@ -270,7 +270,7 @@ export function TaskDetail({ task, token, studies, studyMap, onRefresh, onClose,
           <div className="flex gap-2">
             <Link
               href={studyReviewHref}
-              className="inline-flex flex-1 items-center justify-center border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-105"
+              className="inline-flex flex-1 items-center justify-center border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk transition hover:brightness-105"
             >
               Estudar no banco
             </Link>

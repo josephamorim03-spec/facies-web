@@ -107,7 +107,7 @@ function VerifyEmailInner() {
         <button
           type="button"
           onClick={() => router.push("/login")}
-          className="paper-control mt-6 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk"
+          className="paper-control mt-6 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primaryInk"
         >
           Entrar
         </button>
@@ -136,7 +136,7 @@ function VerifyEmailInner() {
         </p>
       ) : (
         <div className="mt-6 border-t border-rule pt-5">
-          <label htmlFor="email-reenvio" className="block text-sm font-semibold text-ink">
+          <label htmlFor="email-reenvio" className="block text-sm font-medium text-ink">
             Reenviar para
           </label>
           <input
@@ -152,7 +152,7 @@ function VerifyEmailInner() {
             type="button"
             onClick={reenviar}
             disabled={!email.trim() || reenviando}
-            className="paper-control mt-3 w-full rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk disabled:opacity-50"
+            className="paper-control mt-3 w-full rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primaryInk disabled:opacity-50"
           >
             {reenviando ? "Enviando…" : "Enviar novo link"}
           </button>

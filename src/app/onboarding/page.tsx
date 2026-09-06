@@ -201,7 +201,7 @@ export default function OnboardingPage() {
             <li key={item.key} className="flex flex-1 items-center gap-2">
               <span
                 aria-current={active ? "step" : undefined}
-                className={`flex h-7 w-7 shrink-0 items-center justify-center border text-xs font-semibold ${
+                className={`flex h-7 w-7 shrink-0 items-center justify-center border text-xs ${
                   done
                     ? "border-success bg-success text-primaryInk"
                     : active

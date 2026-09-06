@@ -42,7 +42,7 @@ export function StudentPrimaryAction({
         </div>
         <Link
           href={action.href}
-          className="inline-flex min-h-12 w-full items-center justify-center border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:w-auto"
+          className="inline-flex min-h-12 w-full items-center justify-center border border-primary bg-primary px-5 text-sm font-medium text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:w-auto"
         >
           {action.cta_label}
         </Link>
@@ -56,7 +56,7 @@ export function StudentLoadNote({ load }: { load: StudentSurfaceHome["load_note"
   return (
     <aside className={`border px-4 py-3 text-sm ${load.overload_alert ? "border-warning/50 bg-warning/5" : "border-edge bg-surface"}`}>
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <p className="font-semibold text-ink">Carga {load.label}</p>
+        <p className="font-medium text-ink">Carga {load.label}</p>
         <p className="text-xs text-muted">
           {load.estimated_minutes} min / limite {load.recommended_limit_minutes} min
         </p>
@@ -80,10 +80,10 @@ export function StudentBackupActions({ actions }: { actions: StudentTodayAction[
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="truncate text-sm font-semibold text-ink">{action.title}</h3>
+                <h3 className="truncate text-sm font-medium text-ink">{action.title}</h3>
                 <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{action.rationale}</p>
               </div>
-              <span className="shrink-0 text-xs font-semibold text-muted">{action.cta_label}</span>
+              <span className="shrink-0 text-xs text-muted">{action.cta_label}</span>
             </div>
           </Link>
         ))}
@@ -136,7 +136,7 @@ export function StudentDeepLinks({ links }: { links: StudentSurfaceHome["deep_li
           href={link.href}
           className="rounded-surface border border-edge bg-surface px-4 py-3 transition hover:border-primary"
         >
-          <p className="text-sm font-semibold text-ink">{link.label}</p>
+          <p className="text-sm font-medium text-ink">{link.label}</p>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{link.reason}</p>
         </Link>
       ))}
@@ -157,7 +157,7 @@ export function StudentDetailsDisclosure({
 }) {
   return (
     <details className="group rounded-surface border border-edge bg-surface">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-ink sm:px-5">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-ink sm:px-5">
         <span>{title}</span>
         <span className="text-muted transition group-open:rotate-90" aria-hidden="true">
           &gt;

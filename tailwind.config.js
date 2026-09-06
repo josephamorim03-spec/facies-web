@@ -96,6 +96,21 @@ module.exports = {
          *
          * A entrelinha e a do desenho: 19,5px sobre 13 da exatamente 1,5. */
         nota: ["13px", { lineHeight: "1.5" }],
+        /* OS DOIS DEGRAUS GRANDES, lidos das artboards e não escolhidos.
+         *
+         * `scripts/spec-do-app.mjs --so-desenho` lista o vocabulário do
+         * desenho: acima de 26px ele usa 28, 30, **32**, 46 e 56 — e mais
+         * abaixo, 25. O app pintava **34** (o número grande da Evolução) e
+         * **24** (os três da tela Você), dois degraus que o desenho não tem.
+         *
+         * Ficam nomeados porque literal em pixel é como uma escala morre: o
+         * `2.125rem` da Evolução era invisível a qualquer busca por token, e
+         * foi assim que ele divergiu sem ninguém ver.
+         *
+         * `leading-none`: número grande é dado, não prosa — entrelinha aqui
+         * só afasta o rótulo que vem logo abaixo. */
+        dado: ["32px", { lineHeight: "1" }],
+        "dado-menor": ["25px", { lineHeight: "1" }],
       },
       fontFamily: {
         sans: [

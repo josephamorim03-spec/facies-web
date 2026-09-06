@@ -57,7 +57,7 @@ const META_DIARIA_MINUTOS = 30;
 function Registro({ valor, rotulo }: { valor: string; rotulo: string }) {
   return (
     <div>
-      <p className="font-mono text-2xl tabular-nums leading-none text-ink">{valor}</p>
+      <p className="font-mono text-dado-menor tabular-nums text-ink">{valor}</p>
       <p className="paper-eyebrow mt-1">{rotulo}</p>
     </div>
   );

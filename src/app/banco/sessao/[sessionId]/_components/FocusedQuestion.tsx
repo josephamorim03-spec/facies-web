@@ -690,7 +690,7 @@ export default function FocusedQuestion({
                   <span className="paper-eyebrow shrink-0">
                     {sessionKindLabel}
                   </span>
-                  <span className="hidden truncate text-sm font-semibold text-ink md:inline">
+                  <span className="hidden truncate text-sm font-medium text-ink md:inline">
                     {sessionLabel}
                   </span>
                 </>
@@ -719,7 +719,7 @@ export default function FocusedQuestion({
                     onClick={() => updatePrefs({ presentationMode: mode })}
                     aria-pressed={presentationMode === mode}
                     className={cx(
-                      "px-2.5 py-1.5 text-xs font-semibold transition-colors",
+                      "px-2.5 py-1.5 text-xs transition-colors",
                       presentationMode === mode ? "bg-primary text-primaryInk" : "text-muted hover:text-ink",
                     )}
                   >
@@ -728,7 +728,7 @@ export default function FocusedQuestion({
                 ))}
               </div>
             ) : (
-              <span className="hidden rounded-control border border-edge bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink md:inline">
+              <span className="hidden rounded-control border border-edge bg-surface px-2.5 py-1.5 text-xs text-ink md:inline">
                 {sessionKindLabel}
               </span>
             )}
@@ -815,7 +815,7 @@ export default function FocusedQuestion({
             <div className={cx("flex flex-wrap items-center gap-3", prefs.sourceVisible ? "justify-between" : "justify-end")}>
               {prefs.sourceVisible && <p className="text-xs text-muted">{formatSourceLabel(item.source)}</p>}
               {item.selected_option && (
-                <span className="rounded-control border border-edge bg-paper px-2.5 py-1 text-xs font-semibold text-muted">
+                <span className="rounded-control border border-edge bg-paper px-2.5 py-1 text-xs text-muted">
                   Resposta {item.selected_option}
                 </span>
               )}
@@ -870,7 +870,7 @@ export default function FocusedQuestion({
                   className="flex min-w-0 flex-1 items-start gap-4 px-4 py-4 text-left disabled:cursor-not-allowed"
                 >
                   <span className={cx(
-                    "flex h-8 w-8 shrink-0 items-center justify-center border text-xs font-bold",
+                    "flex h-8 w-8 shrink-0 items-center justify-center border text-nota font-medium",
                     selected || isCorrect ? "border-current bg-paper" : "border-edge bg-paper text-ink",
                   )}>
                     {option}
@@ -886,7 +886,7 @@ export default function FocusedQuestion({
                     {renderHighlightedText(item.alternatives[option], highlightsForTarget(item, "alternative", option), openHighlightToolbar)}
                   </span>
                   {(isCorrect || isWrong) && (
-                    <span className="hidden shrink-0 border border-current px-2 py-0.5 text-micro font-semibold sm:inline">
+                    <span className="hidden shrink-0 border border-current px-2 py-0.5 text-micro sm:inline">
                       {isCorrect ? "Gabarito" : "Sua escolha"}
                     </span>
                   )}
@@ -938,7 +938,7 @@ export default function FocusedQuestion({
               "mt-4 flex flex-wrap items-center gap-2 border bg-paper px-3 py-2",
               hasPostAnswerReflection ? "border-edge" : "border-ink",
             )}>
-              <span className="text-sm font-semibold text-ink">Como foi?</span>
+              <span className="text-sm font-medium text-ink">Como foi?</span>
               {reflectionOptions.map((reflection) => (
                 <button
                   key={reflection}
@@ -969,7 +969,7 @@ export default function FocusedQuestion({
                   type="button"
                   onClick={onQuickNote}
                   disabled={!onQuickNote}
-                  className="border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk transition hover:brightness-[1.04] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   {quickNoteActionLabel}
                 </button>
@@ -977,7 +977,7 @@ export default function FocusedQuestion({
                 <button
                   type="button"
                   onClick={() => openWhy()}
-                  className="border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   Rever armadilha
                 </button>
@@ -999,7 +999,7 @@ export default function FocusedQuestion({
                     type="button"
                     onClick={() => openWhy()}
                     className={cx(
-                      "border px-3 py-2 text-xs font-semibold hover:text-ink",
+                      "border px-3 py-2 text-xs hover:text-ink",
                       emphasizeTrap ? "border-ink bg-paper text-ink" : "border-edge text-muted",
                     )}
                   >
@@ -1007,7 +1007,7 @@ export default function FocusedQuestion({
                   </button>
                 )}
                 {hasPostAnswerReflection && !hasDistractorDiagnosis && (
-                  <button type="button" onClick={() => openWhy()} className="border border-edge px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
+                  <button type="button" onClick={() => openWhy()} className="border border-edge px-3 py-2 text-xs text-muted hover:text-ink">
                     Por que esta?
                   </button>
                 )}
@@ -1016,7 +1016,7 @@ export default function FocusedQuestion({
                     type="button"
                     onClick={onQuickNote}
                     className={cx(
-                      "border px-3 py-2 text-xs font-semibold hover:text-ink",
+                      "border px-3 py-2 text-xs hover:text-ink",
                       emphasizeQuickNote ? "border-primary bg-primary text-primaryInk hover:text-paper" : "border-edge text-muted",
                     )}
                   >
@@ -1028,7 +1028,7 @@ export default function FocusedQuestion({
                     type="button"
                     onClick={() => setRuleComposerOpen((open) => !open)}
                     className={cx(
-                      "border border-edge px-3 py-2 text-xs font-semibold hover:text-ink",
+                      "border border-edge px-3 py-2 text-xs hover:text-ink",
                       hasRuleComposerContent ? "text-ink" : "text-muted",
                     )}
                   >
@@ -1036,12 +1036,12 @@ export default function FocusedQuestion({
                   </button>
                 )}
                 {onShowHistory && (
-                  <button type="button" onClick={onShowHistory} className="border border-edge px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
+                  <button type="button" onClick={onShowHistory} className="border border-edge px-3 py-2 text-xs text-muted hover:text-ink">
                     Historico
                   </button>
                 )}
                 {!reportDone && (
-                  <button type="button" onClick={onToggleReport} className="border border-edge px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
+                  <button type="button" onClick={onToggleReport} className="border border-edge px-3 py-2 text-xs text-muted hover:text-ink">
                     Reportar
                   </button>
                 )}
@@ -1057,7 +1057,7 @@ export default function FocusedQuestion({
                   <div className="mb-3 space-y-2">
                     {guidedReview.checkpoints.map((checkpoint) => (
                       <div key={checkpoint.checkpoint_key} className="rounded-control border border-edge bg-surface p-3">
-                        <p className="text-sm font-semibold text-ink">{checkpoint.prompt}</p>
+                        <p className="text-sm font-medium text-ink">{checkpoint.prompt}</p>
                         {checkpoint.micro_question && <p className="mt-1 text-xs text-muted">{checkpoint.micro_question}</p>}
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {GUIDED_REVIEW_OPTIONS.map(([value, label]) => (
@@ -1066,7 +1066,7 @@ export default function FocusedQuestion({
                               type="button"
                               onClick={() => onGuidedResponseChange(checkpoint.checkpoint_key, value)}
                               className={cx(
-                                "border px-3 py-1.5 text-xs font-semibold transition",
+                                "border px-3 py-1.5 text-xs transition",
                                 guidedResponses[checkpoint.checkpoint_key] === value
                                   ? "border-primary bg-primary text-primaryInk"
                                   : "border-edge bg-paper text-muted hover:text-ink",
@@ -1098,7 +1098,7 @@ export default function FocusedQuestion({
                         type="button"
                         onClick={() => onCorrectionConfidenceChange(level)}
                         className={cx(
-                          "border px-3 py-1.5 text-xs font-semibold",
+                          "border px-3 py-1.5 text-xs",
                           correctionConfidenceLevel === level ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:text-ink",
                         )}
                       >
@@ -1112,7 +1112,7 @@ export default function FocusedQuestion({
                     type="button"
                     onClick={onSubmitCorrection}
                     disabled={busy || (!correctionDraft.trim() && !hasGuidedResponses)}
-                    className="border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk transition hover:brightness-[1.04] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
                     Salvar regra
                   </button>
@@ -1146,7 +1146,7 @@ export default function FocusedQuestion({
               className="min-h-16 w-full resize-none"
             />
             <div className="mt-3 flex gap-2">
-              <button type="button" onClick={onSubmitReport} className="border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+              <button type="button" onClick={onSubmitReport} className="border border-primary bg-primary px-3 py-1.5 text-xs text-primaryInk transition hover:brightness-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                 Enviar
               </button>
               <button type="button" onClick={onCancelReport} className="border border-edge px-3 py-1.5 text-xs text-muted hover:text-ink">
@@ -1203,7 +1203,7 @@ export default function FocusedQuestion({
                 aria-pressed={item.doubtful}
                 aria-label={item.doubtful ? "Desmarcar questão" : "Marcar questão"}
                 className={cx(
-                  "inline-flex min-h-11 items-center gap-1.5 border px-3 py-2 text-sm font-semibold transition-colors sm:px-4",
+                  "inline-flex min-h-11 items-center gap-1.5 border px-3 py-2 text-sm font-medium transition-colors sm:px-4",
                   item.doubtful ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:text-ink",
                 )}
               >
@@ -1216,7 +1216,7 @@ export default function FocusedQuestion({
                 aria-pressed={localFavorite}
                 aria-label={localFavorite ? "Tirar das guardadas" : "Guardar questão"}
                 className={cx(
-                  "inline-flex min-h-11 items-center gap-1.5 border px-3 py-2 text-sm font-semibold transition-colors sm:px-4",
+                  "inline-flex min-h-11 items-center gap-1.5 border px-3 py-2 text-sm font-medium transition-colors sm:px-4",
                   localFavorite ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:text-ink",
                 )}
               >
@@ -1229,7 +1229,7 @@ export default function FocusedQuestion({
                 type="button"
                 disabled={!canPrev}
                 onClick={onPrev}
-                className="border border-edge px-4 py-2 text-sm font-semibold text-muted hover:text-ink disabled:opacity-40"
+                className="border border-edge px-4 py-2 text-sm font-medium text-muted hover:text-ink disabled:opacity-40"
               >
                 Anterior
               </button>
@@ -1238,7 +1238,7 @@ export default function FocusedQuestion({
                   type="button"
                   disabled={busy}
                   onClick={onReveal}
-                  className="border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk transition hover:brightness-[1.04] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   Responder
                 </button>
@@ -1247,7 +1247,7 @@ export default function FocusedQuestion({
                   type="button"
                   disabled={!canNext}
                   onClick={onNext}
-                  className="border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-[1.04] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk transition hover:brightness-[1.04] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   Próxima
                 </button>
@@ -1257,7 +1257,7 @@ export default function FocusedQuestion({
                   type="button"
                   disabled={busy}
                   onClick={onFixar}
-                  className="border border-edge px-4 py-2 text-sm font-semibold text-muted hover:text-ink disabled:opacity-50"
+                  className="border border-edge px-4 py-2 text-sm font-medium text-muted hover:text-ink disabled:opacity-50"
                 >
                   Fixar erros ({fixacaoCount})
                 </button>
@@ -1267,7 +1267,7 @@ export default function FocusedQuestion({
               type="button"
               onClick={onFinalize}
               disabled={busy}
-              className="border border-edge px-4 py-2 text-sm font-semibold text-muted hover:text-ink disabled:opacity-50"
+              className="border border-edge px-4 py-2 text-sm font-medium text-muted hover:text-ink disabled:opacity-50"
             >
               {finalizeLabel ?? "Finalizar"}
             </button>
@@ -1299,7 +1299,7 @@ export default function FocusedQuestion({
                 onClick={() => void applyHighlight("ponto_chave")}
                 aria-pressed={highlightSelection.kind === "ponto_chave"}
                 className={cx(
-                  "border px-3 py-1.5 text-xs font-semibold disabled:opacity-50",
+                  "border px-3 py-1.5 text-xs disabled:opacity-50",
                   canUsePostAnswerActions && item.post_answer_reflection === "correct_guess"
                     ? "border-primary bg-primary text-primaryInk"
                     : "border-edge text-muted hover:text-ink",
@@ -1313,7 +1313,7 @@ export default function FocusedQuestion({
                 onClick={() => void applyHighlight("pegadinha")}
                 aria-pressed={highlightSelection.kind === "pegadinha"}
                 className={cx(
-                  "border px-3 py-1.5 text-xs font-semibold disabled:opacity-50",
+                  "border px-3 py-1.5 text-xs disabled:opacity-50",
                   canUsePostAnswerActions && item.post_answer_reflection === "wrong_distraction"
                     ? "border-primary bg-primary text-primaryInk"
                     : "border-edge text-muted hover:text-ink",
@@ -1325,7 +1325,7 @@ export default function FocusedQuestion({
                 type="button"
                 disabled={highlightBusy}
                 onClick={() => void clearSelectedHighlight()}
-                className="border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink disabled:opacity-50"
+                className="border border-edge px-3 py-1.5 text-xs text-muted hover:text-ink disabled:opacity-50"
               >
                 Limpar
               </button>
@@ -1352,7 +1352,7 @@ export default function FocusedQuestion({
                         onClick={() => updatePrefs({ presentationMode: mode })}
                         aria-pressed={presentationMode === mode}
                         className={cx(
-                          "px-3 py-1.5 text-xs font-semibold",
+                          "px-3 py-1.5 text-xs",
                           presentationMode === mode ? "bg-primary text-primaryInk" : "text-muted hover:text-ink",
                         )}
                       >
@@ -1382,7 +1382,7 @@ export default function FocusedQuestion({
                         onClick={() => void onFeedbackRevealPolicyChange(policy)}
                         aria-pressed={feedbackRevealPolicy === policy}
                         className={cx(
-                          "border px-3 py-2 text-left text-sm font-semibold disabled:opacity-50",
+                          "border px-3 py-2 text-left text-sm font-medium disabled:opacity-50",
                           feedbackRevealPolicy === policy
                             ? "border-primary bg-primary text-primaryInk"
                             : "border-edge bg-paper text-muted hover:text-ink",
@@ -1397,7 +1397,7 @@ export default function FocusedQuestion({
                       type="button"
                       disabled={busy}
                       onClick={() => void onSaveFeedbackRevealPolicyDefault()}
-                      className="mt-3 text-xs font-semibold text-primary underline-offset-4 hover:underline disabled:opacity-50"
+                      className="mt-3 text-xs text-primary underline-offset-4 hover:underline disabled:opacity-50"
                     >
                       Salvar esta escolha como padrão
                     </button>
@@ -1515,7 +1515,7 @@ export default function FocusedQuestion({
                 </div>
               )}
               {onRequestAiCorrection && showFeedback && (
-                <button type="button" onClick={onRequestAiCorrection} className="w-full border border-edge px-3 py-2 text-sm font-semibold text-muted hover:text-ink">
+                <button type="button" onClick={onRequestAiCorrection} className="w-full border border-edge px-3 py-2 text-sm font-medium text-muted hover:text-ink">
                   Solicitar leitura por IA
                 </button>
               )}

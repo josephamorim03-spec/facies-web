@@ -98,7 +98,7 @@ export function ConfidenceReviewStep({
           <button
             type="button"
             onClick={() => setAll(3)}
-            className="border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
+            className="border border-edge px-3 py-1.5 text-xs text-muted hover:text-ink"
           >
             Marcar restantes como dúvida
           </button>
@@ -127,7 +127,7 @@ export function ConfidenceReviewStep({
                       key={lvl.value}
                       type="button"
                       onClick={() => setRatings((prev) => ({ ...prev, [it.position]: lvl.value }))}
-                      className={`min-h-8 flex-1 border px-2 py-1.5 text-xs font-semibold transition ${
+                      className={`min-h-8 flex-1 border px-2 py-1.5 text-xs transition ${
                         active
                           ? "border-primary bg-primary text-primaryInk"
                           : "border-edge text-muted hover:text-ink"
@@ -148,7 +148,7 @@ export function ConfidenceReviewStep({
             type="button"
             onClick={() => void saveAndProceed()}
             disabled={busy}
-            className="inline-flex items-center justify-center border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk disabled:opacity-60"
+            className="inline-flex items-center justify-center border border-primary bg-primary px-5 py-3 text-sm font-medium text-primaryInk disabled:opacity-60"
           >
             {busy ? "Salvando…" : "Salvar e corrigir"}
           </button>
@@ -156,7 +156,7 @@ export function ConfidenceReviewStep({
             type="button"
             onClick={onProceed}
             disabled={busy}
-            className="inline-flex items-center justify-center border border-edge px-5 py-3 text-sm font-semibold text-muted hover:text-ink disabled:opacity-60"
+            className="inline-flex items-center justify-center border border-edge px-5 py-3 text-sm font-medium text-muted hover:text-ink disabled:opacity-60"
           >
             Pular e corrigir
           </button>

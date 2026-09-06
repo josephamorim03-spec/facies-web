@@ -113,7 +113,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
   if (!review) {
     return (
       <div className="mt-4 border border-primary/35 bg-[var(--wash-selecao)] p-4">
-        <p className="text-sm font-semibold text-ink">Antes de ver o comentário</p>
+        <p className="text-sm font-medium text-ink">Antes de ver o comentário</p>
         <p className="mt-1 text-sm leading-relaxed text-muted">
           Você pode localizar até onde seu raciocínio chegou ou abrir o feedback agora.
         </p>
@@ -123,7 +123,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
               type="button"
               disabled={busy}
               onClick={() => void openReview()}
-              className="border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-primaryInk disabled:opacity-50"
+              className="border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primaryInk disabled:opacity-50"
             >
               Revisar raciocínio
             </button>
@@ -132,12 +132,12 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
             type="button"
             disabled={busy}
             onClick={() => void reveal()}
-            className="rounded-control border border-edge bg-surface px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-50"
+            className="rounded-control border border-edge bg-surface px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-50"
           >
             Revelar resposta e comentários
           </button>
         </div>
-        {error && <p role="alert" className="mt-2 text-xs font-semibold text-danger">{error}</p>}
+        {error && <p role="alert" className="mt-2 text-xs text-danger">{error}</p>}
       </div>
     );
   }
@@ -151,7 +151,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
           </p>
           <p className="mt-1 text-xs text-muted">Autorrelato — não altera seu domínio.</p>
         </div>
-        <button type="button" disabled={busy} onClick={() => void reveal()} className="text-xs font-semibold text-muted underline">
+        <button type="button" disabled={busy} onClick={() => void reveal()} className="text-xs text-muted underline">
           Pular e revelar
         </button>
       </div>
@@ -169,7 +169,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
                 type="button"
                 disabled={busy}
                 onClick={() => void answer(value)}
-                className="border border-edge px-3 py-2 text-sm font-semibold text-ink hover:border-primary disabled:opacity-50"
+                className="border border-edge px-3 py-2 text-sm font-medium text-ink hover:border-primary disabled:opacity-50"
               >
                 {label}
               </button>
@@ -183,11 +183,11 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
       {review.first_gap && (
         <div className="mt-4 border border-warning/40 bg-[var(--wash-atencao)] p-3">
           <p className="paper-eyebrow text-warning">Primeira lacuna percebida</p>
-          <p className="mt-1 text-sm font-semibold text-ink">
+          <p className="mt-1 text-sm font-medium text-ink">
             {review.first_gap.knowledge_node_name ?? "Microcompetência associada"}
           </p>
           <p className="mt-1 font-serif text-sm leading-relaxed text-muted">{review.first_gap.feedback}</p>
-          <button type="button" disabled={busy} onClick={() => void reveal()} className="mt-3 bg-primary px-4 py-2 text-sm font-semibold text-primaryInk disabled:opacity-50">
+          <button type="button" disabled={busy} onClick={() => void reveal()} className="mt-3 bg-primary px-4 py-2 text-sm font-medium text-primaryInk disabled:opacity-50">
             Ver resposta e comentários
           </button>
         </div>
@@ -197,7 +197,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
 
       {review.status === "awaiting_attribution" && (
         <div className="mt-4">
-          <h3 className="text-sm font-semibold text-ink">Você reconheceu todos os passos. O que melhor explica o erro?</h3>
+          <h3 className="text-sm font-medium text-ink">Você reconheceu todos os passos. O que melhor explica o erro?</h3>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {Object.entries(review.attribution_options).map(([value, label]) => (
               <button
@@ -205,7 +205,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
                 type="button"
                 disabled={busy}
                 onClick={() => void attribute(value as Parameters<typeof attribute>[0])}
-                className="border border-edge px-3 py-2 text-left text-sm font-semibold text-ink hover:border-primary disabled:opacity-50"
+                className="border border-edge px-3 py-2 text-left text-sm font-medium text-ink hover:border-primary disabled:opacity-50"
               >
                 {label}
               </button>
@@ -213,7 +213,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
           </div>
         </div>
       )}
-      {error && <p role="alert" className="mt-3 text-xs font-semibold text-danger">{error}</p>}
+      {error && <p role="alert" className="mt-3 text-xs text-danger">{error}</p>}
     </div>
   );
 }

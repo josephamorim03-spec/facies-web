@@ -166,7 +166,7 @@ export function PlanoClientPage() {
         ) : (
           <p className="mt-2 text-sm leading-6 text-ink">
             Este plano usa a sua rotina:{" "}
-            <strong className="font-semibold">{horasPorExtenso(semana.minutosTotais)}</strong> por
+            <strong className="font-medium">{horasPorExtenso(semana.minutosTotais)}</strong> por
             semana, cerca de {semana.questoes} questões
             {ritmoEhDoAluno ? " no seu ritmo" : `, supondo ${minutosPorQuestao} min por questão`}.
             {plantao ? ` ${minutosPorExtenso(plantao.minutos)} em dia de plantão` : ""}
@@ -207,7 +207,7 @@ export function PlanoClientPage() {
                 key={fase.chave}
                 className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-rule px-4 py-3 last:border-b-0"
               >
-                <span className="text-sm font-semibold text-ink">{fase.rotulo}</span>
+                <span className="text-sm font-medium text-ink">{fase.rotulo}</span>
                 <span className="font-mono text-nota text-muted">
                   {fase.dias} {fase.dias === 1 ? "dia" : "dias"} · {fase.questoes} questões
                 </span>

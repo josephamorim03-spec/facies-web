@@ -59,8 +59,8 @@ export function ReviewSignalChips({
   if (!memory && !mastery && !task.at_risk && questionPracticeCount <= 0) return null;
 
   const baseClass = compact
-    ? "border px-1.5 py-0.5 text-micro font-medium leading-none"
-    : "border px-2 py-0.5 text-micro font-medium leading-none";
+    ? "border px-1.5 py-0.5 text-micro leading-none"
+    : "border px-2 py-0.5 text-micro leading-none";
 
   return (
     <div className={`flex flex-wrap items-center gap-1 ${className}`}>

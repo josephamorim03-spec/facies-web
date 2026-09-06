@@ -239,7 +239,7 @@ function RecommendedTopicsPanel({
                   </p>
                   <p className="mt-1 line-clamp-2 break-words text-lg font-semibold leading-snug text-ink [overflow-wrap:anywhere]">{topic.node_name}</p>
                 </div>
-                <span className={cx("shrink-0 whitespace-nowrap px-2 py-0.5 text-micro font-semibold", selected ? "bg-primary text-primaryInk" : "bg-surfaceMuted text-ink")}>
+                <span className={cx("shrink-0 whitespace-nowrap px-2 py-0.5 text-micro", selected ? "bg-primary text-primaryInk" : "bg-surfaceMuted text-ink")}>
                   #{topic.recommendation_rank}
                 </span>
               </div>
@@ -1054,7 +1054,7 @@ function BancoDeQuestoesContent() {
                     }
                     setFilterMenuOpen((open) => !open);
                   }}
-                  className="min-h-11 bg-surfaceMuted px-3 text-xs font-semibold text-muted transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  className="min-h-11 bg-surfaceMuted px-3 text-xs text-muted transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                 >
                   {activeFilters.length === 1 ? activeFilters[0].label : activeFilters.length + " filtros"}
                 </button>

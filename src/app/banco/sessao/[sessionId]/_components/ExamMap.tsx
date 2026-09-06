@@ -98,7 +98,7 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
                 type="button"
                 onClick={() => onNavigateTo(item.position)}
                 className={cx(
-                  "flex h-10 w-full items-center justify-center border text-xs font-semibold transition-colors",
+                  "flex h-10 w-full items-center justify-center border text-xs transition-colors",
                   isCurrent && "ring-2 ring-primary ring-offset-2 ring-offset-surface",
                   isDoubtful
                     ? "border-warning bg-warning text-paper"

@@ -205,7 +205,7 @@ export function CadernoRegistroPanel({
           <div className="flex items-center justify-between">
             <label className="paper-eyebrow">Peso</label>
             <span
-              className="border bg-surface px-1.5 py-0.5 text-xs font-semibold tabular-nums"
+              className="border bg-surface px-1.5 py-0.5 text-xs tabular-nums"
               style={{ borderColor: weightBadgeColor(weight), color: weightBadgeColor(weight) }}
             >
               {weight}

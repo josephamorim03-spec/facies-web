@@ -133,7 +133,7 @@ function Linha({
           de pontos como pontuação. */}
       <span className="paper-leader" aria-hidden="true" />
       <dd
-        className={`shrink-0 font-semibold tabular-nums ${
+        className={`shrink-0 tabular-nums ${
           alerta ? "text-warning" : "text-ink"
         }`}
       >

@@ -412,7 +412,7 @@ export function CalendarGrid({
                     } : undefined}
                     onDragEnd={interactive && canDragOtherEvent && otherEvent ? () => handleEventDragEnd() : undefined}
                   >
-                    <span className={`inline-flex ${showDayDetail ? "w-2 h-2" : "w-2.5 h-2.5"} items-center justify-center text-ink font-semibold leading-none text-micro`}>
+                    <span className={`inline-flex ${showDayDetail ? "w-2 h-2" : "w-2.5 h-2.5"} items-center justify-center text-ink leading-none text-micro`}>
                       !
                     </span>
                     <span className="pointer-events-none absolute bottom-full right-0 mb-0.5 whitespace-nowrap bg-ink text-paper px-1 py-0.5 text-micro opacity-0 group-hover:opacity-100 transition-opacity z-30">

@@ -132,7 +132,7 @@ export default function YearPicker({
               current selection so it always reflects the chips below. */}
           {numericYears.length > 1 && (
             <div className="flex flex-wrap items-end gap-2">
-              <label className="flex flex-col gap-1 text-micro font-medium text-muted">
+              <label className="flex flex-col gap-1 text-micro text-muted">
                 De
                 <select
                   value={selMin ?? ""}
@@ -152,7 +152,7 @@ export default function YearPicker({
                   ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-1 text-micro font-medium text-muted">
+              <label className="flex flex-col gap-1 text-micro text-muted">
                 Até
                 <select
                   value={selMax ?? ""}

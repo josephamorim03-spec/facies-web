@@ -33,8 +33,8 @@ export function StudyActionCard({
           <h2 className="mt-1.5 font-serif text-2xl font-semibold leading-tight text-ink md:text-3xl">{title}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{reason}</p>
           <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted">
-            {typeof minutes === "number" ? <span className="font-medium tabular-nums">≈ {minutes} min</span> : null}
-            {expectedResult ? <span><span className="text-muted/75">Resultado:</span> <strong className="font-medium text-ink">{expectedResult}</strong></span> : null}
+            {typeof minutes === "number" ? <span className="tabular-nums">≈ {minutes} min</span> : null}
+            {expectedResult ? <span><span className="text-muted/75">Resultado:</span> <strong className="text-ink">{expectedResult}</strong></span> : null}
             {metadata}
           </div>
         </div>

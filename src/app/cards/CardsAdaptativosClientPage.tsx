@@ -125,7 +125,7 @@ function CardsAreaFilterControl({
                 aria-pressed={active}
                 onClick={() => onSelect?.(option)}
                 className={[
-                  "paper-control inline-flex min-h-10 shrink-0 items-center justify-center px-3 text-xs font-semibold",
+                  "paper-control inline-flex min-h-10 shrink-0 items-center justify-center px-3 text-xs",
                   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                   active ? "bg-primary text-primaryInk" : "text-ink hover:bg-surfaceMuted",
                   marcado ? "gap-1.5" : "",

@@ -50,7 +50,7 @@ export function Numero({
 }) {
   return (
     <p className={`font-mono tabular-nums leading-none text-ink ${className}`}>
-      <span className="text-[2.125rem]">{valor}</span>
+      <span className="text-dado">{valor}</span>
       {unidade ? <span className="ml-1 text-nota text-muted">{unidade}</span> : null}
     </p>
   );

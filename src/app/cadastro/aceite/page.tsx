@@ -148,7 +148,7 @@ export default function AceitePage() {
           <button
             type="submit"
             disabled={!aceite || salvando}
-            className="paper-control inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk disabled:opacity-50"
+            className="paper-control inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primaryInk disabled:opacity-50"
           >
             {salvando ? "Registrando…" : "Concordar e continuar"}
           </button>

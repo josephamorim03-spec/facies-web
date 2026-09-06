@@ -108,7 +108,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
         {primary && (
           <Link
             href={primary.href}
-            className="inline-flex shrink-0 items-center justify-center gap-2 border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-primaryInk transition hover:brightness-105"
+            className="inline-flex shrink-0 items-center justify-center gap-2 border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primaryInk transition hover:brightness-105"
           >
             {primary.title}
           </Link>
@@ -216,7 +216,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
               .map((n) => (
                 <li key={n.knowledge_node_id} className="flex items-center justify-between gap-3">
                   <span className="truncate text-ink">{n.node_name ?? "Competência"}</span>
-                  <span className="shrink-0 text-xs font-semibold text-muted">
+                  <span className="shrink-0 text-xs text-muted">
                     {pct(n.accuracy)} · {n.correct}/{n.correct + n.wrong}
                   </span>
                 </li>

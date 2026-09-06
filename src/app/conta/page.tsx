@@ -165,7 +165,7 @@ export default function ContaPage() {
           type="button"
           onClick={encerrarSessoes}
           disabled={ocupado}
-          className="paper-control mt-4 inline-flex rounded-control border border-edge bg-surfaceMuted px-4 py-2 text-sm font-semibold text-ink disabled:opacity-40"
+          className="paper-control mt-4 inline-flex rounded-control border border-edge bg-surfaceMuted px-4 py-2 text-sm font-medium text-ink disabled:opacity-40"
         >
           Encerrar todas as sessões
         </button>
@@ -187,7 +187,7 @@ export default function ContaPage() {
             Content-Disposition para salvar o arquivo. */}
         <a
           href={CAMINHO_EXPORTACAO}
-          className="paper-control mt-4 inline-flex rounded-control border border-edge bg-surfaceMuted px-4 py-2 text-sm font-semibold text-ink"
+          className="paper-control mt-4 inline-flex rounded-control border border-edge bg-surfaceMuted px-4 py-2 text-sm font-medium text-ink"
         >
           Exportar meus dados
         </a>
@@ -245,7 +245,7 @@ export default function ContaPage() {
                 type="button"
                 onClick={confirmarExclusao}
                 disabled={ocupado || !emailConfere}
-                className="paper-control rounded-control border border-danger bg-danger px-4 py-2 text-sm font-semibold text-ink disabled:opacity-40"
+                className="paper-control rounded-control border border-danger bg-danger px-4 py-2 text-sm font-medium text-ink disabled:opacity-40"
               >
                 Excluir definitivamente
               </button>

@@ -312,7 +312,7 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
           {selected.map((item, index) => (
             <li key={identity(item)} className="space-y-3 py-4">
               <div className="flex items-start gap-3">
-                <span className="w-6 shrink-0 pt-0.5 text-sm font-semibold text-muted">
+                <span className="w-6 shrink-0 pt-0.5 text-sm font-medium text-muted">
                   {index + 1}
                 </span>
                 <div className="min-w-0 flex-1">
@@ -431,7 +431,7 @@ export function TargetExamSelector({ token, mode, onSaved }: Props) {
                 return (
                   <li key={institution.institution_key} className="flex items-center gap-3 py-3">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-ink">
+                      <p className="truncate text-sm font-medium text-ink">
                         {institution.institution_label}
                       </p>
                       <p className="mt-1 text-xs text-muted">

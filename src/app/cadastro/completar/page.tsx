@@ -152,7 +152,7 @@ export default function CompletarCadastroPage() {
 
         <form className="mt-8 space-y-6" onSubmit={enviar} noValidate>
           <div>
-            <label htmlFor="nome" className="block text-sm font-semibold text-ink">
+            <label htmlFor="nome" className="block text-sm font-medium text-ink">
               Nome completo <span className="text-danger">*</span>
             </label>
             <input
@@ -166,7 +166,7 @@ export default function CompletarCadastroPage() {
           </div>
 
           <div>
-            <label htmlFor="nascimento" className="block text-sm font-semibold text-ink">
+            <label htmlFor="nascimento" className="block text-sm font-medium text-ink">
               Data de nascimento <span className="text-danger">*</span>
             </label>
             <input
@@ -181,7 +181,7 @@ export default function CompletarCadastroPage() {
           </div>
 
           <fieldset>
-            <legend className="text-sm font-semibold text-ink">
+            <legend className="text-sm font-medium text-ink">
               Situação <span className="text-danger">*</span>
             </legend>
             <div className="mt-2 grid gap-2">
@@ -214,7 +214,7 @@ export default function CompletarCadastroPage() {
               metade o futuro na mesma coluna. */}
           {exigeAno ? (
             <div>
-              <label htmlFor="ano" className="block text-sm font-semibold text-ink">
+              <label htmlFor="ano" className="block text-sm font-medium text-ink">
                 {rotuloAno} <span className="text-danger">*</span>
               </label>
               <input
@@ -279,7 +279,7 @@ export default function CompletarCadastroPage() {
           <button
             type="submit"
             disabled={!podeEnviar}
-            className="paper-control w-full rounded-control border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk disabled:opacity-50"
+            className="paper-control w-full rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primaryInk disabled:opacity-50"
           >
             {salvando ? "Salvando…" : "Continuar"}
           </button>

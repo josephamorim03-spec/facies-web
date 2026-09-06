@@ -242,7 +242,7 @@ export default function PostExamReview({
             <ScoreReadout pct={accuracy * 100} label="Acerto na prova" color={accuracyColor(accuracy)} />
           </div>
           <details className="mt-5">
-            <summary className="cursor-pointer text-sm font-semibold text-muted">Ver métricas da sessão</summary>
+            <summary className="cursor-pointer text-sm font-medium text-muted">Ver métricas da sessão</summary>
             <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
             <div className="rounded-surface border border-edge bg-paper px-4 py-3">
               <p className="paper-eyebrow">Acertos</p>
@@ -273,7 +273,7 @@ export default function PostExamReview({
                 type="button"
                 disabled={isWorking}
                 onClick={() => void revealAll()}
-                className="rounded-control border border-edge bg-surface px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
+                className="rounded-control border border-edge bg-surface px-4 py-2 text-sm font-medium text-ink disabled:opacity-50"
               >
                 Revelar todas
               </button>
@@ -293,13 +293,13 @@ export default function PostExamReview({
                     ? "Revise as questões denunciadas antes de gravar seu desempenho."
                     : "Conferiu o resultado? Grave para atualizar seu desempenho e agenda."}
                 </p>
-                {actionError && <p className="mt-2 text-xs font-semibold text-danger">{actionError}</p>}
+                {actionError && <p className="mt-2 text-xs text-danger">{actionError}</p>}
               </div>
               <button
                 type="button"
                 onClick={onFinalize}
                 disabled={isWorking}
-                className="border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk transition hover:brightness-105 disabled:opacity-50"
+                className="border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primaryInk transition hover:brightness-105 disabled:opacity-50"
               >
                 Contabilizar resultado
               </button>
@@ -326,11 +326,11 @@ export default function PostExamReview({
               <button
                 type="button"
                 onClick={() => router.push(primaryAction.href)}
-                className="paper-control min-h-11 border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition hover:brightness-105"
+                className="paper-control min-h-11 border border-primary bg-primary px-5 text-sm font-medium text-primaryInk transition hover:brightness-105"
               >
                 {primaryAction.title}
               </button>
-              <button type="button" onClick={() => router.push("/hoje")} className="min-h-11 px-3 text-sm font-semibold text-muted hover:text-ink">
+              <button type="button" onClick={() => router.push("/hoje")} className="min-h-11 px-3 text-sm font-medium text-muted hover:text-ink">
                 Encerrar por hoje
               </button>
             </div>
@@ -349,7 +349,7 @@ export default function PostExamReview({
               <button
                 type="button"
                 onClick={() => router.push("/cards")}
-                className="mt-3 border border-warning/40 bg-surface px-3 py-1.5 text-xs font-semibold text-warning hover:border-warning"
+                className="mt-3 border border-warning/40 bg-surface px-3 py-1.5 text-xs text-warning hover:border-warning"
               >
                 Recalibrar próximo passo
               </button>
@@ -360,7 +360,7 @@ export default function PostExamReview({
               <button
                 type="button"
                 onClick={() => setActiveTab("erros")}
-                className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+                className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-medium text-ink hover:border-primary"
               >
                 Reparar erros
                 <span className="mt-1 block text-xs font-normal text-muted">{diagnosedWrongCount} com diagnóstico de armadilha</span>
@@ -369,7 +369,7 @@ export default function PostExamReview({
             <button
               type="button"
               onClick={() => router.push("/cards/registros")}
-              className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+              className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-medium text-ink hover:border-primary"
             >
               Abrir caderno
               <span className="mt-1 block text-xs font-normal text-muted">Revisar notas e cards salvos</span>
@@ -378,7 +378,7 @@ export default function PostExamReview({
               <button
                 type="button"
               onClick={() => router.push("/cards")}
-                className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-semibold text-ink hover:border-primary"
+                className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-medium text-ink hover:border-primary"
               >
                 Continuar revisão
                 <span className="mt-1 block text-xs font-normal text-muted">{scheduledCount} {scheduledCount === 1 ? "revisão criada" : "revisões criadas"}</span>
@@ -463,7 +463,7 @@ export default function PostExamReview({
                     className="flex w-full items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                   >
                     <div>
-                      <p className="text-sm font-semibold text-ink">Revisar só erros</p>
+                      <p className="text-sm font-medium text-ink">Revisar só erros</p>
                       <p className="text-xs text-muted">{wrongItems.length} questões para revisar</p>
                     </div>
                     <span className="text-muted">→</span>
@@ -476,7 +476,7 @@ export default function PostExamReview({
                     className="flex w-full items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                   >
                     <div>
-                      <p className="text-sm font-semibold text-ink">
+                      <p className="text-sm font-medium text-ink">
                         {finalizeOut.created_tasks.length === 1 ? "1 tarefa agendada" : `${finalizeOut.created_tasks.length} tarefas agendadas`}
                       </p>
                       <p className="text-xs text-muted">Revisão programada no seu cronograma</p>
@@ -490,7 +490,7 @@ export default function PostExamReview({
                   className="flex w-full items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-ink">Nova sessão</p>
+                    <p className="text-sm font-medium text-ink">Nova sessão</p>
                     <p className="text-xs text-muted">Voltar ao banco de questões</p>
                   </div>
                   <span className="text-muted">→</span>
@@ -515,7 +515,7 @@ export default function PostExamReview({
                         className="flex items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-ink">{n.node_name ?? "—"}</p>
+                          <p className="truncate text-sm font-medium text-ink">{n.node_name ?? "—"}</p>
                           <p className="text-xs text-danger">{Math.round(n.accuracy * 100)}% · {n.correct + n.wrong} questões</p>
                         </div>
                         <span className="ml-2 shrink-0 text-muted">→</span>
@@ -624,12 +624,12 @@ export default function PostExamReview({
                               prev === item.position ? null : item.position,
                             )
                           }
-                          className="text-xs font-semibold text-muted transition hover:text-ink"
+                          className="text-xs text-muted transition hover:text-ink"
                         >
                           {item.reported_problem ? "Editar denuncia" : "Denunciar questão"}
                         </button>
                         {item.reported_problem && (
-                          <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink">
+                          <label className="inline-flex items-center gap-1.5 text-xs text-ink">
                             <input
                               type="checkbox"
                               checked={item.excluded_from_scoring}
@@ -652,7 +652,7 @@ export default function PostExamReview({
                               type="button"
                               onClick={() => setReportType(type)}
                               className={cx(
-                                "border px-2.5 py-1 text-xs font-semibold",
+                                "border px-2.5 py-1 text-xs",
                                 reportType === type
                                   ? "border-primary bg-primary text-primaryInk"
                                   : "border-edge text-muted hover:text-ink",
@@ -674,7 +674,7 @@ export default function PostExamReview({
                           <button
                             type="button"
                             onClick={() => setReportingPosition(null)}
-                            className="border border-edge px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink"
+                            className="border border-edge px-3 py-1.5 text-xs text-muted hover:text-ink"
                           >
                             Cancelar
                           </button>
@@ -682,7 +682,7 @@ export default function PostExamReview({
                             type="button"
                             disabled={isWorking}
                             onClick={() => void submitSessionReport(item)}
-                            className="border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primaryInk disabled:opacity-50"
+                            className="border border-primary bg-primary px-3 py-1.5 text-xs text-primaryInk disabled:opacity-50"
                           >
                             Enviar denuncia
                           </button>
@@ -693,24 +693,24 @@ export default function PostExamReview({
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {item.selected_option && (
                         <span className={cx(
-                          "border px-2.5 py-1 text-xs font-semibold",
+                          "border px-2.5 py-1 text-xs",
                           item.is_correct ? "border-success/40 text-success" : "border-danger/40 text-danger",
                         )}>
                           Sua resposta: {item.selected_option}
                         </span>
                       )}
                       {item.doubtful && (
-                        <span className="border border-warning/40 bg-[var(--wash-atencao)] px-2.5 py-1 text-xs font-semibold text-warning">
+                        <span className="border border-warning/40 bg-[var(--wash-atencao)] px-2.5 py-1 text-xs text-warning">
                           Marcada
                         </span>
                       )}
                       {item.reported_problem && (
-                        <span className="border border-warning/40 bg-[var(--wash-atencao)] px-2.5 py-1 text-xs font-semibold text-warning">
+                        <span className="border border-warning/40 bg-[var(--wash-atencao)] px-2.5 py-1 text-xs text-warning">
                           Denunciada
                         </span>
                       )}
                       {item.excluded_from_scoring && !item.is_annulled && (
-                        <span className="rounded-control border border-edge bg-surfaceMuted px-2.5 py-1 text-xs font-semibold text-muted">
+                        <span className="rounded-control border border-edge bg-surfaceMuted px-2.5 py-1 text-xs text-muted">
                           Descartada por você
                         </span>
                       )}
@@ -718,12 +718,12 @@ export default function PostExamReview({
                           anulada nao entra no seu desempenho, desatualizada entra.
                           Dizer "descartada" para as duas apagaria essa diferenca. */}
                       {item.is_annulled && (
-                        <span className="rounded-control border border-edge bg-surfaceMuted px-2.5 py-1 text-xs font-semibold text-muted">
+                        <span className="rounded-control border border-edge bg-surfaceMuted px-2.5 py-1 text-xs text-muted">
                           Anulada pela banca · não conta
                         </span>
                       )}
                       {item.is_outdated && !item.is_annulled && (
-                        <span className="border border-warning/40 bg-[var(--wash-atencao)] px-2.5 py-1 text-xs font-semibold text-warning">
+                        <span className="border border-warning/40 bg-[var(--wash-atencao)] px-2.5 py-1 text-xs text-warning">
                           Conduta desatualizada
                         </span>
                       )}
@@ -808,7 +808,7 @@ export default function PostExamReview({
                         <button
                           type="button"
                           onClick={() => setHistoryQuestionId(item.question_id)}
-                          className="text-xs font-semibold text-muted transition hover:text-ink"
+                          className="text-xs text-muted transition hover:text-ink"
                         >
                           Histórico · {item.attempt_stats.correct_count}/{item.attempt_stats.attempt_count} acertos
                         </button>
@@ -827,7 +827,7 @@ export default function PostExamReview({
                               return next;
                             })
                           }
-                          className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-ink"
+                          className="flex items-center gap-1.5 text-xs text-primary hover:text-ink"
                         >
                           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className={cx("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-90")} aria-hidden="true">
                             <path d="m7 4 6 6-6 6" />
@@ -863,7 +863,7 @@ export default function PostExamReview({
                     type="button"
                     disabled={index === 0}
                     onClick={() => goToReviewIndex(index - 1)}
-                    className="min-h-11 border border-edge px-4 text-sm font-semibold text-muted transition-colors enabled:hover:text-ink disabled:opacity-40"
+                    className="min-h-11 border border-edge px-4 text-sm font-medium text-muted transition-colors enabled:hover:text-ink disabled:opacity-40"
                   >
                     Anterior
                   </button>
@@ -874,7 +874,7 @@ export default function PostExamReview({
                     type="button"
                     disabled={index >= displayItems.length - 1}
                     onClick={() => goToReviewIndex(index + 1)}
-                    className="min-h-11 border border-primary bg-primary px-4 text-sm font-semibold text-primaryInk transition enabled:hover:brightness-[1.04] disabled:opacity-40"
+                    className="min-h-11 border border-primary bg-primary px-4 text-sm font-medium text-primaryInk transition enabled:hover:brightness-[1.04] disabled:opacity-40"
                   >
                     Próxima
                   </button>

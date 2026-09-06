@@ -31,13 +31,24 @@
 
 export type TamanhoDoAvatar = "tab" | "sm" | "md" | "lg";
 
+/*
+ * ⚠️ O PESO DO MONOGRAMA ACOMPANHA O TAMANHO, porque o desenho faz isso.
+ *
+ * A inicial era `font-semibold` nos quatro tamanhos, e isso pintava 9/600,
+ * 12/600 e 14/600 — três degraus que as 22 artboards não têm. O desenho só
+ * pesa a partir de 13px, e a 9px nem chega (o menor dele é 10).
+ *
+ * Então cada tamanho usa o par que existe no desenho: 10/400, 12/400,
+ * 13/500 e 18/600. O quadrado preenchido é o que faz o monograma ser lido,
+ * não a gordura da letra.
+ */
 const DIMENSAO: Record<TamanhoDoAvatar, string> = {
   // 20px, o mesmo do icone das outras abas (`h-5 w-5`), para a fileira nao
   // ganhar um degrau de altura so' na quinta.
-  tab: "h-5 w-5 text-[9px]",
+  tab: "h-5 w-5 text-[10px]",
   sm: "h-7 w-7 text-xs",
-  md: "h-9 w-9 text-sm",
-  lg: "h-14 w-14 text-lg",
+  md: "h-9 w-9 text-nota font-medium",
+  lg: "h-14 w-14 text-lg font-semibold",
 };
 
 export function UserAvatar({
@@ -75,7 +86,7 @@ export function UserAvatar({
   return (
     <span
       aria-hidden="true"
-      className={`${dim} flex shrink-0 items-center justify-center rounded-control bg-primary font-semibold text-primaryInk${borda}`}
+      className={`${dim} flex shrink-0 items-center justify-center rounded-control bg-primary text-primaryInk${borda}`}
     >
       {initial}
     </span>

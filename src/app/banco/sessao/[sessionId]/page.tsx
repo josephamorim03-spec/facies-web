@@ -933,14 +933,14 @@ export default function SessionPage() {
           <button
             type="button"
             onClick={() => loadSession()}
-            className="bg-primary px-4 py-2 text-sm font-semibold text-primaryInk hover:opacity-90"
+            className="bg-primary px-4 py-2 text-sm font-medium text-primaryInk hover:opacity-90"
           >
             Tentar novamente
           </button>
           <button
             type="button"
             onClick={() => router.push("/banco")}
-            className="border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
+            className="border border-primary px-4 py-2 text-sm font-medium text-primary hover:bg-surfaceMuted"
           >
             Voltar ao banco
           </button>
@@ -956,7 +956,7 @@ export default function SessionPage() {
         <button
           type="button"
           onClick={() => router.push("/banco")}
-          className="border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-surfaceMuted"
+          className="border border-primary px-4 py-2 text-sm font-medium text-primary hover:bg-surfaceMuted"
         >
           Voltar ao banco
         </button>

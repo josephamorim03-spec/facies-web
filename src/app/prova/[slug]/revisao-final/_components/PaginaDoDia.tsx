@@ -172,7 +172,7 @@ export function PaginaDoDia({
                     <th
                       key={coluna}
                       scope="col"
-                      className="border-b border-edge px-3 py-2 text-left align-bottom font-mono text-xs font-semibold text-muted"
+                      className="border-b border-edge px-3 py-2 text-left align-bottom font-mono text-xs text-muted"
                     >
                       {coluna}
                     </th>
@@ -314,7 +314,7 @@ export function PaginaDoDia({
                 pública que não existe. O botão diz para onde vai. */}
             <a
               href={pagina.exemplo_de_cobranca.url_banco}
-              className="paper-control inline-flex min-h-11 items-center rounded-control border border-edge bg-ink px-4 py-2 text-sm font-semibold text-paper transition hover:brightness-95"
+              className="paper-control inline-flex min-h-11 items-center rounded-control border border-edge bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:brightness-95"
             >
               Resolver as {tema.questoes.length} questões deste assunto
             </a>

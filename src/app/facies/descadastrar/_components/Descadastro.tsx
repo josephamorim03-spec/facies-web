@@ -55,7 +55,7 @@ function Botao() {
         type="button"
         onClick={cancelar}
         disabled={estado === "enviando"}
-        className="paper-control rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk disabled:opacity-60"
+        className="paper-control rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primaryInk disabled:opacity-60"
       >
         {estado === "enviando" ? "Cancelando…" : "Parar de receber"}
       </button>

@@ -416,7 +416,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
             <div className="space-y-2">
               {onlyExistingCoverage ? (
                 <div className="border border-warning bg-surfaceMuted p-3">
-                  <p className="text-xs font-medium text-warning break-words [overflow-wrap:anywhere]">
+                  <p className="text-xs text-warning break-words [overflow-wrap:anywhere]">
                     ⚠ Conceito já no seu caderno — e você errou.
                   </p>
                   <p className="mt-1 text-xs text-warning break-words [overflow-wrap:anywhere]">
@@ -431,7 +431,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                 </div>
               ) : (
                 <div className="border border-edge p-2">
-                  <p className="text-xs font-medium text-ink break-words [overflow-wrap:anywhere]">
+                  <p className="text-xs text-ink break-words [overflow-wrap:anywhere]">
                     Resumo dos flashcards desta questão.
                   </p>
                   <p className="mt-1 text-xs text-muted break-words [overflow-wrap:anywhere]">
@@ -482,7 +482,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                                 Salvo
                               </span>
                             </div>
-                            <p className="text-xs font-medium break-words [overflow-wrap:anywhere] [text-align:justify]">{draft.insight_question}</p>
+                            <p className="text-xs break-words [overflow-wrap:anywhere] [text-align:justify]">{draft.insight_question}</p>
                             <p className="mt-1 text-xs text-muted whitespace-pre-wrap break-words [overflow-wrap:anywhere] [text-align:justify]">
                               {bodyTruncated && !isBodyExpanded ? `${body.slice(0, 200)}...` : body}
                               {bodyTruncated && (
@@ -575,7 +575,7 @@ export function AnalysisResultCard(props: AnalysisResultCardProps) {
                                   />
                                 )}
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium break-words [overflow-wrap:anywhere]">
+                                  <p className="text-xs break-words [overflow-wrap:anywhere]">
                                     {draft.note_payload.insight_question}
                                   </p>
                                   {typeof draft.retrieval_difficulty === "number" && (

@@ -64,7 +64,7 @@ function Linha({ a }: { a: Atualizacao }) {
         )}
       </div>
 
-      <p className="mt-1 text-sm font-semibold text-ink">{a.titulo}</p>
+      <p className="mt-1 text-sm font-medium text-ink">{a.titulo}</p>
 
       {a.subtemas.length > 0 ? (
         <p className="mt-1 text-sm text-muted">

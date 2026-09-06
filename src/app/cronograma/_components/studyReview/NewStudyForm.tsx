@@ -93,7 +93,7 @@ export function NewStudyForm({ token, dateISO, onDone, onCancel, existingStudies
           <button
             type="button"
             onClick={() => router.push("/banco")}
-            className="mt-3 bg-primary px-4 py-2 text-sm font-semibold text-primaryInk"
+            className="mt-3 bg-primary px-4 py-2 text-sm font-medium text-primaryInk"
           >
             Resolver questões do banco
           </button>

@@ -129,7 +129,7 @@ export function DocumentoLegal({ titulo, documento }: Props) {
           </p>
           <Link
             href="/"
-            className="paper-control mt-4 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk"
+            className="paper-control mt-4 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primaryInk"
           >
             Ver a fácies da sua prova
           </Link>

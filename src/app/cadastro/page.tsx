@@ -240,7 +240,7 @@ export default function CadastroPage() {
                 type="button"
                 onClick={() => void reenviar()}
                 disabled={reenviando || reenvioFeito}
-                className="paper-control rounded-control border border-edge bg-surfaceMuted px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
+                className="paper-control rounded-control border border-edge bg-surfaceMuted px-4 py-2 text-sm font-medium text-ink disabled:opacity-50"
               >
                 {reenviando ? "Enviando…" : "Reenviar o link"}
               </button>

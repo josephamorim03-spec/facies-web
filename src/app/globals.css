@@ -787,7 +787,12 @@
   }
 
   .km-chip {
-    @apply inline-flex items-center gap-1.5 border border-edge bg-surfaceMuted px-3 py-1 text-xs font-medium text-ink;
+    /* ⚠️ SEM PESO: 12px no desenho é SEMPRE 400 (109 ocorrências, zero em
+       500 ou 600). Este `font-medium` era, sozinho, 23 das 143 divergências
+       tipográficas que `scripts/spec-do-app.mjs` media — um chip usado em toda
+       a barra de filtros do Banco. O que separa o chip escolhido do não
+       escolhido é `.km-chip-active`, que é cor, e continua igual. */
+    @apply inline-flex items-center gap-1.5 border border-edge bg-surfaceMuted px-3 py-1 text-xs text-ink;
     border-radius: var(--radius-control);
     transition: background-color var(--motion-fast) var(--ease-paper), border-color var(--motion-fast) var(--ease-paper), color var(--motion-fast) var(--ease-paper);
   }

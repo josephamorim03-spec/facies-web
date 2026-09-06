@@ -299,7 +299,7 @@ export function FolhaDePlantao({
         type="button"
         onClick={() => void guardar()}
         disabled={salvando}
-        className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition-colors hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)] disabled:opacity-50"
+        className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-medium text-primaryInk transition-colors hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)] disabled:opacity-50"
       >
         {salvando ? "Guardando…" : "Guardar"}
       </button>

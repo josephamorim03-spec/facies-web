@@ -512,7 +512,7 @@ export function CronogramaCalendarView({
               className="h-3 w-3 shrink-0 border border-ink/35"
               style={{ backgroundColor: touchDragGhost.color, opacity: 0.92 }}
             />
-            <span className="min-w-0 truncate text-micro font-semibold text-ink">
+            <span className="min-w-0 truncate text-micro text-ink">
               {touchDragGhost.label}
             </span>
           </div>
@@ -528,7 +528,7 @@ export function CronogramaCalendarView({
             {touchEventGhost.iconType === "work" ? (
               <IconStethoscope className="w-3.5 h-3.5 text-ink" />
             ) : (
-              <span className="text-xs font-semibold leading-none text-ink">!</span>
+              <span className="text-xs leading-none text-ink">!</span>
             )}
           </div>
         </div>

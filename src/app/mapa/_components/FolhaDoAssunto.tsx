@@ -158,7 +158,7 @@ export function FolhaDoAssunto({
               type="button"
               onClick={() => void praticar()}
               disabled={criando}
-              className="inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition-colors hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)] disabled:opacity-50"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-medium text-primaryInk transition-colors hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)] disabled:opacity-50"
             >
               {criando ? "Montando…" : `Praticar ${quantas} ${quantas === 1 ? "questão" : "questões"}`}
             </button>

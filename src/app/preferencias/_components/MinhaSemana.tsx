@@ -324,7 +324,7 @@ export function MinhaSemana({
         ) : (
           <>
             Com esta rotina cabem{" "}
-            <strong className="font-semibold">{horasPorExtenso(resumo.minutosTotais)}</strong> por
+            <strong className="font-medium">{horasPorExtenso(resumo.minutosTotais)}</strong> por
             semana — cerca de {resumo.questoes} questões
             {ritmoEhDoAluno
               ? ", no seu ritmo"

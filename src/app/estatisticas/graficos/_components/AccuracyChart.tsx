@@ -60,7 +60,7 @@ export function AccuracyChart({ state, refs, actions }: Props) {
       <div ref={refs.accuracyFrameRef} className="relative overflow-visible">
         {delta !== null && (
           <span
-            className={`pointer-events-none absolute z-20 text-micro font-semibold tabular-nums ${deltaTone}`}
+            className={`pointer-events-none absolute z-20 text-micro tabular-nums ${deltaTone}`}
             // Ancorado a DIREITA. Encostado na esquerda ele caia exatamente
             // sobre o tick "100%" do eixo — dois numeros colados que se leem
             // como um so. A direita a area esta sempre livre: a serie de acerto
@@ -178,7 +178,7 @@ export function AccuracyChart({ state, refs, actions }: Props) {
         {activeAccuracyOverlayLabel && (
           <span
             data-testid="accuracy-overlay-percent-label"
-            className="pointer-events-none absolute z-20 whitespace-nowrap text-micro font-bold leading-none text-ink"
+            className="pointer-events-none absolute z-20 whitespace-nowrap text-micro leading-none text-ink"
             style={{
               left: activeAccuracyOverlayLabel.placement.left,
               top: activeAccuracyOverlayLabel.placement.top,

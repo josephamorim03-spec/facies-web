@@ -79,7 +79,7 @@ export function WeeklyGoalControl({
           aria-label="Editar meta semanal"
         >
           <div className="flex items-baseline justify-between gap-4 text-sm">
-            <p className="font-semibold text-ink">Meta semanal</p>
+            <p className="font-medium text-ink">Meta semanal</p>
             <span className="inline-flex items-center gap-1.5 text-muted group-hover:text-ink">
               <span>
                 {completedQuestions} de {weeklyGoal} questões · {safePct}%
@@ -111,7 +111,7 @@ export function WeeklyGoalControl({
             <h3 className="text-base font-semibold text-ink">Meta semanal</h3>
             <p className="mt-1 text-xs text-muted">Atual: {weeklyGoal} questões por semana</p>
             <label className="mt-4 block">
-              <span className="text-sm font-semibold text-ink">Questões por semana</span>
+              <span className="text-sm font-medium text-ink">Questões por semana</span>
               <input
                 type="number"
                 inputMode="numeric"

@@ -123,7 +123,7 @@ export function SecaoPreco({ numero }: { numero: string }) {
               {plano.cartao ? <p className="mt-2 text-sm text-muted">{plano.cartao}</p> : null}
               <button
                 type="button"
-                className="mt-5 min-h-11 rounded-control border border-primary bg-primary px-4 text-sm font-semibold text-primaryInk"
+                className="mt-5 min-h-11 rounded-control border border-primary bg-primary px-4 text-sm font-medium text-primaryInk"
               >
                 {plano.cta}
               </button>

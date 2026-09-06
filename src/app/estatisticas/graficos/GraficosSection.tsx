@@ -66,7 +66,7 @@ export function GraficosSection({
         <button
           type="button"
           onClick={actions.retryCharts}
-          className="mt-3 rounded-control border border-edge bg-paper px-3 py-2 text-xs font-semibold text-ink transition hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="mt-3 rounded-control border border-edge bg-paper px-3 py-2 text-xs text-ink transition hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Tentar novamente
         </button>

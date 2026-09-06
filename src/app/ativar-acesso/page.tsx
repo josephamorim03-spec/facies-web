@@ -80,14 +80,14 @@ export default function AtivarAcessoPage() {
         </p>
 
         <div className="mt-6 border-t border-rule pt-5">
-          <p className="text-sm font-semibold text-ink">Enquanto isso</p>
+          <p className="text-sm font-medium text-ink">Enquanto isso</p>
           <p className="mt-1 text-sm leading-6 text-muted">
             A leitura da sua prova é gratuita e não depende disto. Lá dá para ver como a sua
             banca cobra e ser avisado quando ela mudar.
           </p>
           <Link
             href="/"
-            className="paper-control mt-4 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk"
+            className="paper-control mt-4 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primaryInk"
           >
             Ver a fácies da sua prova
           </Link>

@@ -50,7 +50,7 @@ export function MetricCard({ metric, compact = false }: { metric: StudentMetric;
   const unavailable = metric.source_status !== "complete";
   return (
     <Surface as="article" variant="outlined" className={compact ? "p-3" : "p-4"} title={`${metric.definition} Universo: ${metric.scope}`}>
-      <p className="text-xs font-medium text-muted">{metric.label}</p>
+      <p className="text-xs text-muted">{metric.label}</p>
       <p className={`mt-1 font-semibold tabular-nums text-ink ${compact ? "text-xl" : "text-2xl"}`}>
         {unavailable ? "—" : metricValue(metric)}
         {!unavailable && metric.unit === "%" ? <span className="text-base">%</span> : null}
@@ -80,7 +80,7 @@ export function ContextNotice({
   const toneClass = tone === "attention" ? "border-warning/40" : tone === "info" ? "border-info/40" : "border-edge";
   return (
     <aside className={`border bg-surface px-4 py-3 ${toneClass}`}>
-      <p className="text-sm font-semibold text-ink">{title}</p>
+      <p className="text-sm font-medium text-ink">{title}</p>
       <div className="mt-1 text-xs leading-relaxed text-muted">{children}</div>
     </aside>
   );

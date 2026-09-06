@@ -742,7 +742,7 @@ export default function RelatorioClientPage() {
           </p>
         </div>
         <div className="mt-1.5 flex items-baseline gap-2">
-          {displayName && <p className="text-sm font-semibold text-ink">{displayName}</p>}
+          {displayName && <p className="text-sm font-medium text-ink">{displayName}</p>}
           <p className="text-xs text-muted">Gerado em {new Date().toLocaleDateString("pt-BR")}</p>
         </div>
       </div>

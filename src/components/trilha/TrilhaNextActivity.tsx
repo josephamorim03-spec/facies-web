@@ -253,7 +253,7 @@ export function TrilhaNextActivity({ fallback = null }: Props) {
           {/* O rótulo de evidência nunca aparece sozinho: sempre com o que o
               sustenta e o que ainda falta (KROS-007). */}
           <div>
-            <p className="text-xs font-medium text-ink">{evidence.label}</p>
+            <p className="text-xs text-ink">{evidence.label}</p>
             <ul className="mt-1 space-y-0.5 text-micro text-muted">
               {evidences.map((item) => (
                 <li key={item}>✓ {item}</li>

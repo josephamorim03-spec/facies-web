@@ -51,7 +51,7 @@ export function TrainerActionCTA({
   const [busy, setBusy] = useState(false);
 
   const baseClass =
-    "inline-flex items-center justify-center gap-2 border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-primaryInk transition hover:brightness-105 disabled:opacity-60";
+    "inline-flex items-center justify-center gap-2 border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primaryInk transition hover:brightness-105 disabled:opacity-60";
 
   async function handleClick() {
     if (busy || action.blocked_reason) return;

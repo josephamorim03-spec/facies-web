@@ -231,7 +231,7 @@ export default function BancoHistoricoPage() {
                 className="grid gap-3 py-5 sm:grid-cols-[8rem_minmax(0,1fr)_8rem] sm:items-center"
               >
                 <div>
-                  <p className="text-sm font-semibold text-ink">
+                  <p className="text-sm font-medium text-ink">
                     {SESSION_LABELS[session.session_kind]}
                   </p>
                   <p className="mt-1 text-xs text-muted">
@@ -289,7 +289,7 @@ export default function BancoHistoricoPage() {
                   )}
                   <Link
                     href={`/banco/sessao/${session.session_id}`}
-                    className="text-xs font-semibold text-primary hover:underline"
+                    className="text-xs text-primary hover:underline"
                   >
                     {pending ? "Retomar" : "Resultado"}
                   </Link>

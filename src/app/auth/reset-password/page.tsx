@@ -94,7 +94,7 @@ function ResetPasswordInner() {
         </p>
         <Link
           href="/login"
-          className="paper-control mt-6 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk"
+          className="paper-control mt-6 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primaryInk"
         >
           Ir para entrar
         </Link>
@@ -116,7 +116,7 @@ function ResetPasswordInner() {
         <button
           type="button"
           onClick={() => router.push("/login")}
-          className="paper-control mt-6 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-primaryInk"
+          className="paper-control mt-6 inline-flex rounded-control border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primaryInk"
         >
           Entrar com a senha nova
         </button>
@@ -133,7 +133,7 @@ function ResetPasswordInner() {
 
       <form className="mt-6 space-y-4" onSubmit={enviar} noValidate>
         <div>
-          <label htmlFor="senha" className="block text-sm font-semibold text-ink">
+          <label htmlFor="senha" className="block text-sm font-medium text-ink">
             Nova senha
           </label>
           <input
@@ -160,7 +160,7 @@ function ResetPasswordInner() {
         </div>
 
         <div>
-          <label htmlFor="confirma" className="block text-sm font-semibold text-ink">
+          <label htmlFor="confirma" className="block text-sm font-medium text-ink">
             Repita a senha
           </label>
           <input
@@ -185,7 +185,7 @@ function ResetPasswordInner() {
         <button
           type="submit"
           disabled={!senhaValida || !conferem || enviando}
-          className="paper-control w-full rounded-control border border-primary bg-primary px-5 py-3 text-sm font-semibold text-primaryInk disabled:opacity-50"
+          className="paper-control w-full rounded-control border border-primary bg-primary px-5 py-3 text-sm font-medium text-primaryInk disabled:opacity-50"
         >
           {enviando ? "Salvando…" : "Trocar senha"}
         </button>

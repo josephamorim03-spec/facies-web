@@ -71,7 +71,7 @@ function TopicTreeItem({
             className="mt-1 h-4 w-4 shrink-0 accent-primary"
           />
           <span className="min-w-0 flex-1">
-            <span className={cx("block break-words text-sm font-semibold leading-snug [overflow-wrap:anywhere]", selectable || node.synthetic ? "text-ink" : "text-muted")}>{node.node_name}</span>
+            <span className={cx("block break-words text-sm font-medium leading-snug [overflow-wrap:anywhere]", selectable || node.synthetic ? "text-ink" : "text-muted")}>{node.node_name}</span>
             {topicPathLabel(node) !== node.node_name && (
               <span className="mt-0.5 block line-clamp-2 break-words text-xs text-muted [overflow-wrap:anywhere]">{topicPathLabel(node)}</span>
             )}
@@ -79,7 +79,7 @@ function TopicTreeItem({
               <span className="mt-0.5 block text-xs text-muted">{node.question_count} questões nesse grupo</span>
             )}
             {!node.synthetic && node.question_count === 0 && (
-              <span className="mt-1 inline-block rounded-control border border-edge bg-surfaceMuted px-2 py-0.5 text-micro font-medium text-muted">
+              <span className="mt-1 inline-block rounded-control border border-edge bg-surfaceMuted px-2 py-0.5 text-micro text-muted">
                 0 questões · em curadoria
               </span>
             )}
@@ -131,7 +131,7 @@ export function TopicTreeList({
             <button
               type="button"
               onClick={onRetry}
-              className="mt-2 border border-edge px-3 py-1.5 text-xs font-semibold text-muted transition-colors hover:border-primary hover:text-ink"
+              className="mt-2 border border-edge px-3 py-1.5 text-xs text-muted transition-colors hover:border-primary hover:text-ink"
             >
               Tentar novamente
             </button>

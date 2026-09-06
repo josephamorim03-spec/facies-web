@@ -21,7 +21,7 @@ export function PreferenceToggle({ checked, label, description, onChange }: Togg
   return (
     <label className="flex cursor-pointer items-start justify-between gap-5 border-b border-edge py-4 last:border-b-0">
       <span className="min-w-0">
-        <span className="block text-sm font-semibold text-ink">{label}</span>
+        <span className="block text-sm font-medium text-ink">{label}</span>
         <span className="mt-1 block max-w-2xl text-xs leading-5 text-muted">
           {description}
         </span>

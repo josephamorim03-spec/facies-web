@@ -77,7 +77,7 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
   if (cancelConfirm) {
     return (
       <div className="border border-edge p-3 space-y-2">
-        <p className="text-xs font-medium">
+        <p className="text-xs">
           {studyIsFullExam
             ? "Cancelar este registro de prova na íntegra?"
             : study.is_review
@@ -121,7 +121,7 @@ export function StudyDotCard({ study, token, onRefresh, onClose }: {
         </div>
         {impactPreview && (
           <div className="border border-edge p-2 space-y-1 bg-surfaceMuted">
-            <p className="text-xs font-medium">Confirmar edição</p>
+            <p className="text-xs">Confirmar edição</p>
             <p className="text-xs text-muted">
               Acurácia: {impactPreview.accuracy_before_pct.toFixed(1)}% -&gt; {impactPreview.accuracy_after_pct.toFixed(1)}%
             </p>

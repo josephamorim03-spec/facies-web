@@ -82,7 +82,7 @@ export function CabecalhoLaudo({
             className={
               campo.mono
                 ? "font-mono text-sm text-ink"
-                : "text-sm font-semibold text-ink lg:text-base"
+                : "text-sm font-medium text-ink lg:text-base"
             }
           >
             {campo.valor}

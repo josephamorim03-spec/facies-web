@@ -22,10 +22,22 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   success: "border border-success bg-success text-primaryInk hover:brightness-[0.94]",
 };
 
+/*
+ * ⚠️ O PESO MORA AQUI, e não no BASE, porque ele depende do tamanho.
+ *
+ * O botão era `font-semibold` nos três, o que pintava **14/600** (46x, o
+ * degrau mais repetido do app) e **12/600** — nenhum dos dois existe nas 22
+ * artboards. O desenho pesa 500 a partir de 13px e nunca pesa abaixo disso:
+ * ele tem 14/500, 15/500 e 16/500, e 12 só em 400.
+ *
+ * O que segura a hierarquia do botão primário não é a gordura da letra — é o
+ * retângulo teal preenchido, que continua igual. Medido com
+ * `scripts/spec-do-app.mjs`.
+ */
 const SIZE_CLASSES: Record<ButtonSize, string> = {
   xs: "min-h-8 text-xs px-2.5 py-1",
-  sm: "min-h-10 text-sm px-3 py-2",
-  md: "min-h-11 text-sm px-4 py-2.5",
+  sm: "min-h-10 text-sm font-medium px-3 py-2",
+  md: "min-h-11 text-sm font-medium px-4 py-2.5",
 };
 
 // O colchete (`.chrome-bracket`) saiu daqui junto com a identidade KROS/DOS:
@@ -36,7 +48,7 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
 // O caixa-alta saiu pelo mesmo motivo. Rotulo de acao em sentenca le como
 // instrumento clinico; em versal espacada, le como console.
 const BASE =
-  "paper-control inline-flex items-center justify-center gap-1.5 font-semibold tracking-[0.01em] leading-none " +
+  "paper-control inline-flex items-center justify-center gap-1.5 tracking-[0.01em] leading-none " +
   "disabled:cursor-not-allowed disabled:opacity-50 " +
   // Foco pontilhado POR DENTRO: o anel de 2px por fora encostava na borda dura
   // do vizinho e sumia. `outline-offset` negativo o traz para dentro do relevo,

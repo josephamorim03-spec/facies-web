@@ -87,7 +87,7 @@ export function TurboLobby({
                   {topReasons.length > 0 ? topReasons.map((reason) => (
                     <div key={reason.reason} className="flex items-start justify-between gap-3 text-sm">
                       <span className="text-ink">{reason.label}</span>
-                      <span className="shrink-0 text-sm font-semibold tabular-nums text-ink">{reason.count}</span>
+                      <span className="shrink-0 text-sm font-medium tabular-nums text-ink">{reason.count}</span>
                     </div>
                   )) : (
                     <p className="text-sm text-muted">Cards novos ou na janela ideal de revisão.</p>
@@ -127,7 +127,7 @@ export function TurboLobby({
                     return (
                       <div key={card.note_id} className="border border-edge border-l-4 bg-surface px-3 py-2 text-sm " style={{ borderLeftColor: cardAreaColor }}>
                         <div className="mb-1 flex items-center gap-1.5">
-                          <span className="text-micro font-semibold leading-none text-ink">{card.area}</span>
+                          <span className="text-micro leading-none text-ink">{card.area}</span>
                           <span className="border border-edge px-1.5 py-0.5 text-micro leading-none text-muted">{card.context.label}</span>
                         </div>
                         <p className="line-clamp-1 text-ink">{card.insight_question}</p>
@@ -169,7 +169,7 @@ export function TurboLobby({
             type="button"
             data-testid="turbo-start"
             onClick={() => void onStartAction(questionCount)}
-            className="bg-primary inline-flex min-h-11 w-full items-center justify-center rounded-control border border-primary text-sm font-semibold text-primaryInk transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="bg-primary inline-flex min-h-11 w-full items-center justify-center rounded-control border border-primary text-sm font-medium text-primaryInk transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             Iniciar revisão · {questionCount} cards
             {isTurboMode ? ` · ~${fmtTime(questionCount * ESTIMATED_MS_PER_CARD)}` : ""}

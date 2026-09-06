@@ -55,7 +55,7 @@ export function ContaSection() {
       <div className="mt-4 border-t border-rule pt-4">
         <Link
           href="/conta"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-primary"
+          className="inline-flex items-center gap-2 text-sm font-medium text-primary"
         >
           <ShieldCheck className="h-4 w-4" aria-hidden="true" />
           Conta e privacidade

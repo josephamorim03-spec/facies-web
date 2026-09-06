@@ -72,7 +72,7 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
           </div>
           <TodayActionCTA
             action={action}
-            className="inline-flex min-h-12 w-full shrink-0 items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-semibold text-primaryInk transition-colors hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:translate-y-px md:w-auto"
+            className="inline-flex min-h-12 w-full shrink-0 items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-medium text-primaryInk transition-colors hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:translate-y-px md:w-auto"
           >
             {action.cta_label}
           </TodayActionCTA>

@@ -8,7 +8,7 @@ export function TodayEmptyState() {
       <h2 className="font-serif text-2xl font-semibold text-ink">Suficiente por hoje</h2>
       <Link
         href="/banco?limit=10"
-        className="mt-5 inline-flex min-h-11 w-full items-center justify-center border border-edge px-4 text-sm font-semibold text-ink transition hover:border-primary sm:w-auto"
+        className="mt-5 inline-flex min-h-11 w-full items-center justify-center border border-edge px-4 text-sm font-medium text-ink transition hover:border-primary sm:w-auto"
       >
         Comecar bloco curto
       </Link>

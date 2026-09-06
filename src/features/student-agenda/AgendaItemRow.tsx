@@ -54,11 +54,11 @@ export function AgendaItemRow({ item }: { item: StudentAgendaItem }) {
       )}
       <div className="min-w-0 flex-1">
         {item.href ? (
-          <Link href={item.href} className="block truncate text-sm font-semibold text-ink hover:text-primary hover:underline">
+          <Link href={item.href} className="block truncate text-sm font-medium text-ink hover:text-primary hover:underline">
             {item.title}
           </Link>
         ) : (
-          <p className="truncate text-sm font-semibold text-ink">{item.title}</p>
+          <p className="truncate text-sm font-medium text-ink">{item.title}</p>
         )}
         {/* A linha de meta e MONO, e nao sans.
             Area, quantidade e tempo sao DADO -- e a mono e a textura de dado
@@ -100,7 +100,7 @@ export function AgendaItemRow({ item }: { item: StudentAgendaItem }) {
         ) : null}
       </div>
       <span
-        className={`shrink-0 text-xs font-semibold ${
+        className={`shrink-0 text-xs ${
           item.status === "overdue"
             ? "text-warning"
             : item.status === "done"
@@ -114,7 +114,7 @@ export function AgendaItemRow({ item }: { item: StudentAgendaItem }) {
       </span>
       </div>
       {item.capabilities.can_start || item.capabilities.can_edit || item.capabilities.can_reschedule ? (
-        <div className="mt-2 flex flex-wrap justify-end gap-x-4 gap-y-2 text-xs font-semibold">
+        <div className="mt-2 flex flex-wrap justify-end gap-x-4 gap-y-2 text-xs">
           {item.capabilities.can_start && item.href ? (
             <Link href={item.href} className="text-primary hover:underline" aria-label={`${item.status === "in_progress" ? "Continuar" : "Iniciar"} ${item.title}`}>
               {item.status === "in_progress" ? "Continuar" : "Iniciar"}

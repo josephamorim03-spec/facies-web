@@ -189,7 +189,7 @@ export function CadernoPesquisarPanel({
               <div className="flex items-center justify-between">
                 <p className="paper-eyebrow">Peso a partir de</p>
                 <span
-                  className="border bg-surface px-1 py-0.5 text-xs font-semibold tabular-nums"
+                  className="border bg-surface px-1 py-0.5 text-xs tabular-nums"
                   style={{ borderColor: weightBadgeColor(filterWeightMin), color: weightBadgeColor(filterWeightMin) }}
                 >
                   {filterWeightMin}

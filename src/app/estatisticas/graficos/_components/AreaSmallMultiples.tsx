@@ -84,10 +84,10 @@ export function AreaSmallMultiples({ activeAreaLines, areaLineData }: Props) {
                     className="h-2 w-2 shrink-0 rounded-control"
                     style={{ backgroundColor: color }}
                   />
-                  <span className="text-micro font-bold tracking-wide text-ink">{area}</span>
+                  <span className="text-micro tracking-wide text-ink">{area}</span>
                 </span>
                 {delta !== null && (
-                  <span className={`text-micro font-semibold tabular-nums ${tone}`}>
+                  <span className={`text-micro tabular-nums ${tone}`}>
                     {arrow} {delta > 0 ? "+" : ""}
                     {delta}
                   </span>

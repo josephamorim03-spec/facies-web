@@ -55,7 +55,7 @@ export function CronogramaTodayPanel({
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="font-serif text-sm font-semibold leading-tight">Para revisar hoje</h2>
+          <h2 className="font-serif text-sm font-medium leading-tight">Para revisar hoje</h2>
           <p className="mt-0.5 text-xs text-muted">
             {taskLabel}
             {practiceCount > 0 ? ` · ${questionLabel} para prática direcionada` : ""}
@@ -64,7 +64,7 @@ export function CronogramaTodayPanel({
         <div className="flex items-start gap-2">
           {practiceCount > 0 && (
             <div className="border border-primary bg-paper px-2.5 py-1 text-right">
-              <p className="text-sm font-semibold leading-none text-primary">{practiceCount}</p>
+              <p className="text-sm font-medium leading-none text-primary">{practiceCount}</p>
               <p className="mt-0.5 text-micro leading-none text-muted">prática</p>
             </div>
           )}

@@ -167,7 +167,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
             type="button"
             onClick={() => void generate()}
             disabled={loading}
-            className="inline-flex shrink-0 items-center gap-2 border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primaryInk transition hover:brightness-105 disabled:opacity-50"
+            className="inline-flex shrink-0 items-center gap-2 border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk transition hover:brightness-105 disabled:opacity-50"
           >
             {loading ? "Analisando seus erros..." : "Gerar cards dos erros"}
           </button>
@@ -187,7 +187,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
       {resultsWithDrafts.length > 0 && (
         <div className="mt-4 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-control border border-edge bg-paper px-3 py-2">
-            <p className="text-xs font-semibold text-ink">
+            <p className="text-xs text-ink">
               {selectedCount === 0 ? "Selecione os cards que valem revisar." : `${selectedCount} card${selectedCount === 1 ? "" : "s"} selecionado${selectedCount === 1 ? "" : "s"}.`}
             </p>
           </div>
@@ -220,7 +220,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
                         }`}
                       >
                         <span
-                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border text-micro font-bold ${
+                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border text-nota font-medium ${
                             isSaved
                               ? "border-success bg-success text-paper"
                               : isSelected
@@ -232,9 +232,9 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
                           ✓
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-semibold text-ink">{draft.note_payload.insight_question}</span>
+                          <span className="block text-sm font-medium text-ink">{draft.note_payload.insight_question}</span>
                           <span className="mt-1 block line-clamp-3 whitespace-pre-wrap text-xs text-muted">{draft.note_payload.body}</span>
-                          {isSaved && <span className="mt-1 block text-xs font-semibold text-success">Salvo no caderno</span>}
+                          {isSaved && <span className="mt-1 block text-xs text-success">Salvo no caderno</span>}
                         </span>
                       </button>
                     );
@@ -246,7 +246,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
                     type="button"
                     onClick={() => void saveForQuestion(result)}
                     disabled={savingQuestion === result.question_id || selectedForQuestion.length === 0}
-                    className="border border-primary px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-surfaceMuted disabled:opacity-50"
+                    className="border border-primary px-3 py-1.5 text-xs text-primary transition-colors hover:bg-surfaceMuted disabled:opacity-50"
                   >
                     {savingQuestion === result.question_id ? "Salvando..." : selectedForQuestion.length > 0 ? `Salvar ${selectedForQuestion.length}` : "Salvar"}
                   </button>

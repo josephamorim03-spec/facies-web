@@ -192,7 +192,7 @@ export default function CreateSessionPanel({
           className="mt-4"
           action={
             onRetry ? (
-              <button type="button" onClick={onRetry} className="text-xs font-semibold text-danger underline">
+              <button type="button" onClick={onRetry} className="text-xs text-danger underline">
                 Tentar novamente
               </button>
             ) : undefined

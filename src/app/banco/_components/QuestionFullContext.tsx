@@ -100,17 +100,17 @@ export function QuestionFullContext({
         </div>
         <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
           {resultLabel ? (
-            <span className="rounded-control border border-edge bg-surface px-2.5 py-1 text-xs font-semibold text-ink">
+            <span className="rounded-control border border-edge bg-surface px-2.5 py-1 text-xs text-ink">
               {resultLabel}
             </span>
           ) : null}
           {showCorrectAnswer && correct ? (
-            <span className={`px-2.5 py-1 text-xs font-semibold ${isCorrect === false ? "bg-danger text-paper" : "bg-success text-paper"}`}>
+            <span className={`px-2.5 py-1 text-xs ${isCorrect === false ? "bg-danger text-paper" : "bg-success text-paper"}`}>
               Gabarito {correct}
             </span>
           ) : null}
           {selected ? (
-            <span className={`border px-2.5 py-1 text-xs font-semibold ${selectedTone}`}>
+            <span className={`border px-2.5 py-1 text-xs ${selectedTone}`}>
               Sua resposta: {selected}
             </span>
           ) : null}
@@ -124,7 +124,7 @@ export function QuestionFullContext({
       ) : null}
 
       {tableCount > 0 ? (
-        <div className="mt-3 rounded-control border border-edge bg-surface px-3 py-2 text-xs font-semibold text-muted">
+        <div className="mt-3 rounded-control border border-edge bg-surface px-3 py-2 text-xs text-muted">
           {tableCount === 1 ? "1 tabela vinculada" : `${tableCount} tabelas vinculadas`}
         </div>
       ) : null}
@@ -162,7 +162,7 @@ export function QuestionFullContext({
           })}
         </div>
       ) : (
-        <div className="paper-dashed mt-4 bg-surface px-3 py-2 text-sm font-semibold text-muted">
+        <div className="paper-dashed mt-4 bg-surface px-3 py-2 text-sm font-medium text-muted">
           Alternativas não disponíveis neste contexto.
         </div>
       )}
@@ -172,7 +172,7 @@ export function QuestionFullContext({
           {visibleNodes.map((node, index) => (
             <span
               key={node.knowledge_node_id ?? `${nodeLabel(node)}-${index}`}
-              className="border border-primary/30 bg-surface px-2 py-0.5 text-micro font-semibold text-primary"
+              className="border border-primary/30 bg-surface px-2 py-0.5 text-micro text-primary"
             >
               {nodeLabel(node)}
             </span>

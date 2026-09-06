@@ -30,7 +30,7 @@ export default function FontScaleControl({
         disabled={!canDecrease}
         aria-label="Diminuir texto da questão"
         title="Diminuir texto"
-        className="px-2.5 py-1.5 text-xs font-semibold text-muted transition-colors hover:text-ink disabled:opacity-40"
+        className="px-2.5 py-1.5 text-xs text-muted transition-colors hover:text-ink disabled:opacity-40"
       >
         A−
       </button>
@@ -40,7 +40,7 @@ export default function FontScaleControl({
         disabled={!canIncrease}
         aria-label="Aumentar texto da questão"
         title="Aumentar texto"
-        className="border-l border-edge px-2.5 py-1.5 text-xs font-semibold text-muted transition-colors hover:text-ink disabled:opacity-40"
+        className="border-l border-edge px-2.5 py-1.5 text-xs text-muted transition-colors hover:text-ink disabled:opacity-40"
       >
         A+
       </button>

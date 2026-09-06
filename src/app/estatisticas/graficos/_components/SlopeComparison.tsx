@@ -44,7 +44,7 @@ export function SlopeComparison({ state, actions }: Props) {
             >
               {/* Sigla em tinta: a cor ja esta nos dois quadrados e na linha
                   entre eles, logo a direita. */}
-              <span className="w-8 text-micro font-semibold shrink-0 text-ink">{area}</span>
+              <span className="w-8 text-micro shrink-0 text-ink">{area}</span>
               <span className="w-10 text-right text-xs tabular-nums shrink-0">{first !== null ? `${first}%` : "—"}</span>
               <div className="flex-1 flex items-center">
                 <div className="w-2 h-2 shrink-0" style={{ backgroundColor: color, opacity: first !== null ? 1 : 0.2 }} />
@@ -52,7 +52,7 @@ export function SlopeComparison({ state, actions }: Props) {
                 <div className="w-2 h-2 shrink-0" style={{ backgroundColor: color, opacity: second !== null ? 1 : 0.2 }} />
               </div>
               <span className="w-10 text-xs tabular-nums shrink-0">{second !== null ? `${second}%` : "—"}</span>
-              <span className={`w-10 text-right text-micro font-semibold tabular-nums shrink-0 ${deltaClass}`}>
+              <span className={`w-10 text-right text-micro tabular-nums shrink-0 ${deltaClass}`}>
                 {delta !== null
                   ? delta > 0 ? `↑ ${delta}%` : delta < 0 ? `↓ ${Math.abs(delta)}%` : "= 0%"
                   : "—"}

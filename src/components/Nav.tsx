@@ -162,7 +162,7 @@ export function SidebarNav({
                     data-nav-surface="sidebar"
                     data-nav-item-href={href}
                     data-nav-active={active ? "true" : "false"}
-                    className={`paper-control flex min-h-11 w-full min-w-0 items-center border text-xs font-medium leading-tight focus-visible:outline-none ${visible ? "gap-3 px-2.5" : "justify-center px-0"} ${
+                    className={`paper-control flex min-h-11 w-full min-w-0 items-center border text-xs leading-tight focus-visible:outline-none ${visible ? "gap-3 px-2.5" : "justify-center px-0"} ${
                       active ? "border-primary bg-surface text-ink" : restingClass
                     }`}
                     aria-current={active ? "page" : undefined}
@@ -205,7 +205,7 @@ export function SidebarNav({
               <UserAvatar photoUrl={photoUrl} displayName={displayName} size={visible ? "md" : "sm"} />
               {visible && (
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-ink truncate">{displayName?.split(" ")[0] ?? ""}</p>
+                  <p className="text-xs text-ink truncate">{displayName?.split(" ")[0] ?? ""}</p>
                   {displayName?.includes(" ") && (
                     <p className="text-micro text-muted truncate leading-tight">{displayName.split(" ").slice(1).join(" ")}</p>
                   )}

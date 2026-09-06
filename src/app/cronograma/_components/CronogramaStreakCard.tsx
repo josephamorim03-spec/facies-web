@@ -93,11 +93,11 @@ export function CronogramaStreakCard({ streak, loading = false }: Props) {
       <span
         data-streak-days={estudados}
         data-streak-protected={protegidos}
-        className="inline-flex items-center gap-2 rounded-control border border-edge bg-surface px-3 py-1 text-xs font-medium text-ink"
+        className="inline-flex items-center gap-2 rounded-control border border-edge bg-surface px-3 py-1 text-xs text-ink"
       >
         <Trilho estudados={estudados} protegidos={protegidos} />
         <span>
-          <span className="font-semibold tabular-nums">{estudados}</span> de {JANELA_DIAS} dias
+          <span className="tabular-nums">{estudados}</span> de {JANELA_DIAS} dias
           {protegidos > 0 ? (
             <>
               {" · "}
