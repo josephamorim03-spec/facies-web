@@ -84,6 +84,14 @@ jobs:
         if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
         run: npm run test:unit
 
+      # A catraca de tamanho: modulo grande so' pode encolher. Ela vivia na
+      # `check_architecture_invariants.py` do backend e ficou sem casa quando o
+      # frontend saiu de la' -- por alguns dias estes seis arquivos puderam
+      # crescer sem que nada reclamasse.
+      - name: Catraca de tamanho de módulo
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
+        run: npm run check:tamanho
+
   build:
     name: Build de produção
     runs-on: ubuntu-latest
