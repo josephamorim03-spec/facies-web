@@ -1,0 +1,113 @@
+# Gate do frontend da Fácies.
+#
+# ── POR QUE ESTE REPOSITÓRIO EXISTE SEPARADO ─────────────────────────────────
+#
+# O frontend vivia dentro do monorepo privado `faciesapp`. Medido em 06/09/2026:
+# a conta gastava ~6.877 min/mês de GitHub Actions contra uma cota de 2.000
+# (Free) / 3.000 (Pro) — e os minutos são da CONTA, não do repositório, então
+# `faciesapp` e `fbank` dividiam o mesmo balde. A cota estourou às 18:05 de
+# 05/09 e TODO job dos dois repos passou a morrer em 3 segundos, sem passo
+# nenhum. Nove horas sem CI.
+#
+# Actions é **gratuito e ilimitado em repositório público** com runners padrão.
+# O frontend era o maior consumidor e não tinha razão para ser privado: o código
+# já é servido ao navegador. Separá-lo devolve os minutos ao backend, que é onde
+# o sigilo de fato importa.
+#
+# A extração preservou os 350 commits que tocaram `krosmed/web`, e o histórico
+# foi auditado antes de publicar: 901 caminhos e 3.700 blobs de texto varridos
+# atrás de DSN com credencial, chave AWS, token do GitHub, chave privada e
+# segredo atribuído. Zero ocorrências. Os cinco segredos que existem no
+# histórico do monorepo estavam em `env/`, fora do `web/`, e não vieram junto.
+#
+# ── POR QUE AQUI OS JOBS NÃO SÃO CONSOLIDADOS ────────────────────────────────
+#
+# No repositório privado eu juntei cinco jobs num só, porque o GitHub cobra cada
+# job arredondado para cima e 138s de trabalho viravam 5 minutos faturados. Aqui
+# o minuto é grátis, então a otimização certa é a OPOSTA: separar por sinal.
+# `qualidade` e `build` falham por motivos diferentes e é útil saber qual caiu
+# sem abrir o log.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # `main` nunca é cancelado: numa branch de PR o commit novo contém o anterior,
+  # mas em `main` cada commit é um estado que já foi para produção, e cancelá-lo
+  # o deixaria sem veredito para sempre.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+# O `GITHUB_TOKEN` só lê. Num repositório público isso importa mais, não menos:
+# o padrão de repositórios antigos é leitura E escrita, e qualquer action de
+# terceiro comprometida poderia empurrar commit direto.
+permissions:
+  contents: read
+
+env:
+  # Node 24, e não 20: `npm run lint` termina em
+  # `node --experimental-strip-types ... smoke-midia-peca.mjs`, e essa flag só
+  # existe a partir do 22.6. No 20 o processo morre com `bad option` e código 9
+  # ANTES do `eslint .` — o job falhava sem nunca ter lintado nada.
+  NODE_VERSION: "24"
+
+jobs:
+  qualidade:
+    name: Lint + Typecheck + Testes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        id: deps
+        run: npm ci
+
+      # Cada passo roda mesmo que o anterior falhe: quem abre o log quer ver
+      # TODOS os problemas, não descobrir um por execução. O guard cobre só o
+      # caso em que a instalação falhou — aí não há o que verificar.
+      - name: Lint
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
+        run: npm run lint
+      - name: Typecheck
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
+        run: npm run typecheck
+      - name: Testes unitários
+        if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
+        run: npm run test:unit
+
+  build:
+    name: Build de produção
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      # ⚠️ O build do Next pode terminar com código 0 e não gerar as rotas.
+      # Sem esta conferência, um deploy vazio passaria no gate: o manifesto só
+      # existe se a geração estática chegou ao fim.
+      - name: Verificar que o build chegou ao fim
+        run: |
+          test -f .next/prerender-manifest.json || {
+            echo "build terminou sem gerar .next/prerender-manifest.json —"
+            echo "a geração estática não chegou ao fim"
+            exit 1
+          }
