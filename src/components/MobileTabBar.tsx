@@ -120,7 +120,7 @@ export function MobileTabBar({
           // "isto sou eu" numa fileira de icones iguais. Cai no `CircleUser` do
           // `ICON_MAP` so' quando nao ha foto NEM nome -- com nome, a inicial
           // ja e' identidade.
-          const mostraOAluno = item.icon === "you" && Boolean(photoUrl || displayName);
+          const mostraOAluno = item.icon === "voce" && Boolean(photoUrl || displayName);
           return (
             <FastNavLink
               key={item.href}

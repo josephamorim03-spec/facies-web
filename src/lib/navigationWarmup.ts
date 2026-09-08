@@ -90,12 +90,22 @@ export function warmRouteData(href: string, token: string | null | undefined): v
   requests.push(getStudentExperience(token, "week"));
   const intent = getStudentWarmupIntent(pathname);
 
-  // As cinco abas absorveram os intents antigos: `planning` virou filho de
-  // INICIO (Hoje + Cronograma) e `evolution` virou filho de PERFIL (Evolucao +
-  // Preferencias). Os conjuntos de dados dos dois pais foram fundidos — quem
-  // toca a aba pode ir para qualquer um dos dois filhos, entao aquecer so metade
-  // deixaria o segundo destino frio exatamente na navegacao mais provavel.
-  if (intent === "today") {
+  // Cada aba absorveu os intents antigos: `planning` virou secao de CONDUTA
+  // (Hoje + Minha semana + O plano) e os flashcards viraram secao de PRATICA. Os
+  // conjuntos de dados dos pais foram fundidos — quem toca a aba pode ir para
+  // qualquer uma das secoes, entao aquecer so metade deixaria o segundo
+  // destino frio exatamente na navegacao mais provavel.
+  //
+  // ⚠️ Os flashcards saem por PATHNAME, e nao por intent: `/cards` virou secao
+  // da Pratica, entao `getStudentWarmupIntent` devolve "pratica" para ele e as
+  // consultas do banco de questoes nao servem a tela de cards.
+  if (pathname.startsWith("/cards")) {
+    requests.push(
+      getOperationalTurboOverview(token, { previewLimit: 4 }),
+      getOperationalStreak(token),
+      getTurboAreaStats(token),
+    );
+  } else if (intent === "conduta") {
     const today = todayISO();
     requests.push(
       getStudentToday(token),
@@ -109,19 +119,13 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       getReviewAgenda(token),
       listScheduleSuggestions(token),
     );
-  } else if (intent === "bank") {
+  } else if (intent === "pratica") {
     requests.push(
       browseQuestionBankTopics(token, { limit: 40, include_empty: false }),
       previewQuestionBankAvailability(token),
       getQuestionBankPerformance(token),
     );
-  } else if (intent === "cards") {
-    requests.push(
-      getOperationalTurboOverview(token, { previewLimit: 4 }),
-      getOperationalStreak(token),
-      getTurboAreaStats(token),
-    );
-  } else if (intent === "profile") {
+  } else if (intent === "evolucao") {
     // vindos do antigo intent `evolution`
     requests.push(
       listDirectedStudies(token),
