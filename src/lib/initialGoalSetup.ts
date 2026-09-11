@@ -8,7 +8,14 @@ import {
 
 export const INITIAL_GOAL_SETUP_ROUTE = "/preferencias";
 export const ONBOARDING_ROUTE = "/onboarding";
-export const DEFAULT_AUTHENTICATED_ROUTE = "/hoje";
+/**
+ * ⚠️ `/inicio`, e nao `/hoje` — mudou em 2026-09-10 com a barra nova.
+ *
+ * `/hoje` continua a ser tela viva (a agenda do dia inteira), mas deixou de ser
+ * a HOME: o Inicio e' o resumo, e uma home que nao e' o destino de aterragem e'
+ * uma home que o aluno so' encontra por engano.
+ */
+export const DEFAULT_AUTHENTICATED_ROUTE = "/inicio";
 export const ACTIVATE_ROUTE = "/ativar-acesso";
 export const CADASTRO_ROUTE = "/cadastro/completar";
 export const ACEITE_ROUTE = "/cadastro/aceite";

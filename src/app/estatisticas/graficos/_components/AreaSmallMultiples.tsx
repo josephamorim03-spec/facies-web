@@ -1,7 +1,7 @@
 "use client";
 
-import { AREA_COLORS, AREA_LABELS } from "@/app/desempenho/_lib/perfilAnalytics";
-import type { Area as AreaKey } from "@/app/desempenho/_lib/perfilShared";
+import { AREA_COLORS, AREA_LABELS } from "@/lib/perfil/perfilAnalytics";
+import type { Area as AreaKey } from "@/lib/perfil/perfilShared";
 
 type Props = {
   activeAreaLines: AreaKey[];
@@ -84,17 +84,19 @@ export function AreaSmallMultiples({ activeAreaLines, areaLineData }: Props) {
                     className="h-2 w-2 shrink-0 rounded-control"
                     style={{ backgroundColor: color }}
                   />
-                  <span className="text-micro tracking-wide text-ink">{area}</span>
+                  <span className="font-mono text-micro tracking-wide text-ink">{area}</span>
                 </span>
                 {delta !== null && (
-                  <span className={`text-micro tabular-nums ${tone}`}>
+                  <span className={`font-mono text-micro tabular-nums ${tone}`}>
                     {arrow} {delta > 0 ? "+" : ""}
                     {delta}
                   </span>
                 )}
               </div>
               <div className="truncate text-micro leading-tight text-muted">{AREA_LABELS[area]}</div>
-              <div className="mt-0.5 text-base font-semibold tabular-nums text-ink">
+              {/* 16/400 em mono, e nao 16/600 em sans: o numero e' dado, e a
+                  mono do desenho nunca pesa. */}
+              <div className="mt-0.5 font-mono text-base tabular-nums text-ink">
                 {current === null ? "—" : `${current}%`}
               </div>
               <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="mt-1 block w-full" style={{ height: "auto" }} aria-hidden="true">

@@ -55,7 +55,7 @@ export function CronogramaTodayPanel({
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="font-serif text-sm font-medium leading-tight">Para revisar hoje</h2>
+          <h2 className="font-serif font-medium leading-tight">Para revisar hoje</h2>
           <p className="mt-0.5 text-xs text-muted">
             {taskLabel}
             {practiceCount > 0 ? ` · ${questionLabel} para prática direcionada` : ""}

@@ -8,9 +8,10 @@ import {
   type WeeklyTimeline,
   type OperationalTurboAreaStats,
 } from "@/lib/api";
+import { FLASHCARDS_LIGADOS } from "@/lib/flags";
 import { getAuthToken } from "@/lib/auth";
-import { AREA_COLORS } from "@/app/desempenho/_lib/perfilAnalytics";
-import type { Area as AreaKey } from "@/app/desempenho/_lib/perfilShared";
+import { AREA_COLORS } from "@/lib/perfil/perfilAnalytics";
+import type { Area as AreaKey } from "@/lib/perfil/perfilShared";
 import {
   AREA_SEGMENT_ORDER,
   CHART_MUTED,
@@ -128,7 +129,9 @@ export function useGraficosData(
   const [error, setError] = useState("");
   const [reloadVersion, setReloadVersion] = useState(0);
   const [turboAreaStats, setTurboAreaStats] = useState<OperationalTurboAreaStats | null>(null);
-  const [turboAreaLoading, setTurboAreaLoading] = useState(true);
+  // Com os Cards desligados não há o que esperar: nasce resolvido, em vez de
+  // nascer "a carregar" e ser corrigido dentro de um efeito.
+  const [turboAreaLoading, setTurboAreaLoading] = useState(FLASHCARDS_LIGADOS);
   const [isTouchInteractionMode, setIsTouchInteractionMode] = useState(false);
 
   const [accuracyLockedWeekIndex, setAccuracyLockedWeekIndex] = useState<number | null>(null);
@@ -185,6 +188,11 @@ export function useGraficosData(
   }, [reloadVersion, rangeWeeks]);
 
   useEffect(() => {
+    // ⚠️ ATRÁS DA CHAVE. `CardsAnalysis` deixou de ser montada quando os Cards
+    // estão desligados, mas este pedido continuava a sair: uma ida à rede por
+    // abertura dos Gráficos para alimentar um cartão que ninguém vê. Gatear a
+    // renderização e deixar a busca correr é meia correção.
+    if (!FLASHCARDS_LIGADOS) return;
     const token = getAuthToken();
     getTurboAreaStats(token)
       .then(setTurboAreaStats)

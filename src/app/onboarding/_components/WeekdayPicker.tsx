@@ -26,9 +26,9 @@ export function WeekdayPicker({ selected, onToggle, disabled = false, ariaLabel 
             aria-pressed={active}
             disabled={disabled}
             onClick={() => onToggle(weekday)}
-            className={`paper-control min-h-11 px-1 py-2 text-xs disabled:opacity-60 ${
+            className={`paper-control min-h-11 border px-1 py-2 text-xs disabled:opacity-60 ${
               active
-                ? "border-primary bg-primary text-primaryInk"
+                ? "border-primary bg-washSelecao text-ink"
                 : "border-edge bg-surface text-muted hover:bg-surfaceMuted hover:text-ink"
             }`}
           >

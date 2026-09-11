@@ -11,7 +11,7 @@ import { buildStudyImportRuntimePath, readActiveStudyImportSessionId } from "@/l
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 
 import { CronogramaCalendarView } from "./_components/CronogramaCalendarView";
-import { IconSearch, IconWeekRow, IconX } from "./_components/CronogramaIcons";
+import { IconSearch, IconX } from "./_components/CronogramaIcons";
 import { CronogramaStreakCard } from "./_components/CronogramaStreakCard";
 import { RescheduleSuggestionDialog } from "./_components/RescheduleSuggestionDialog";
 import { WeeklyGoalControl } from "./_components/WeeklyGoalControl";
@@ -216,10 +216,8 @@ function MonthControl({
 
 export default function CronogramaMonthView({
   initialSelectedDay = null,
-  showWeekSwitch = false,
 }: {
   initialSelectedDay?: string | null;
-  showWeekSwitch?: boolean;
 }) {
   const router = useRouter();
   const isDesktopNavigation = useDesktopNavigationMode();
@@ -418,23 +416,17 @@ export default function CronogramaMonthView({
         >
           <IconSearch className="h-5 w-5" />
         </button>
-        {showWeekSwitch ? (
-          <Link
-            href={`/cronograma?view=week&anchor=${today}&day=${today}`}
-            data-testid="schedule-view-week"
-            aria-label="Ver calendário semanal"
-            className="flex h-9 w-9 shrink-0 items-center justify-center text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <IconWeekRow className="h-5 w-5" />
-          </Link>
-        ) : null}
+        {/* ⚠️ O ÍCONE "VER SEMANA" SAIU. A troca entre as duas leituras mora
+            agora na linha de seções do Plano (`IntentSubNav`), igual nas duas
+            larguras — ver a nota em `CronogramaClientPage`. O que fica aqui é o
+            que é DESTA tela: a busca por tema. */}
       </>,
     );
     return () => {
       setTitle(null);
       setActions(null);
     };
-  }, [isDesktopNavigation, renderMonthControl, restartCalendarCoach, searchOpen, setActions, setTitle, showWeekSwitch, today]);
+  }, [isDesktopNavigation, renderMonthControl, restartCalendarCoach, searchOpen, setActions, setTitle]);
 
   function closeSearch() {
     setSearchOpen(false);
@@ -575,7 +567,10 @@ export default function CronogramaMonthView({
             goToMonthRef.current = goToMonth;
             if (monthChangeSeenRef.current) {
               const anchor = `${y}-${String(m + 1).padStart(2, "0")}-01`;
-              router.replace(`/cronograma?view=month&anchor=${anchor}`, { scroll: false });
+              // A rota do mês é `/cronograma/mes`. Manter `?view=month` aqui
+              // faria a própria tela reescrever o endereço para a URL que
+              // `next.config.js` encaminha — um 307 por troca de mês.
+              router.replace(`/cronograma/mes?anchor=${anchor}`, { scroll: false });
               completeCoachStep("month");
             }
             monthChangeSeenRef.current = true;
@@ -614,7 +609,7 @@ export default function CronogramaMonthView({
 
       {!loading && calendarRecommendationsEnabled ? (
         <section aria-labelledby="routine-suggestions-title">
-          <h2 id="routine-suggestions-title" className="text-sm font-medium text-ink">
+          <h2 id="routine-suggestions-title" className="font-medium text-ink">
             Sugestões para a rotina
           </h2>
           {/* Tracejado + tom `attention`: estas linhas dividiam a mesma
@@ -694,7 +689,7 @@ export default function CronogramaMonthView({
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-3">
-              <h3 className="text-base font-semibold text-ink">Selecionar mês</h3>
+              <h3 className="font-semibold text-ink">Selecionar mês</h3>
               <button
                 type="button"
                 onClick={() => setMonthPickerOpen(false)}

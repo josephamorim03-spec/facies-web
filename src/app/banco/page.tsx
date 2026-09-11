@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type JSX } from "react";
+import { Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
@@ -24,11 +24,9 @@ import {
   type QuestionBankTopic,
   type QuestionBankYearStat,
   type FullExamType,
-  type KrosMode,
   type StudyKind,
   getAPIErrorMessage,
 } from "@/lib/api";
-import { motivoDoTopico } from "@/lib/motivoDoTopico";
 import { useNavbar } from "@/lib/NavbarContext";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { invalidateLearningQueries } from "@/lib/queryKeys";
@@ -37,28 +35,32 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import FiltersBar from "./_components/FiltersBar";
 import type { TipoDeSessao } from "./_components/FiltersBar";
-import { previewKros } from "@/lib/api";
 import QuestionList from "./_components/QuestionList";
 import CreateSessionPanel from "./_components/CreateSessionPanel";
+import { BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
 import { BancoDeQuestoesSkeleton } from "./_components/BancoDeQuestoesSkeleton";
+import { useEdicoesDaProva } from "./_lib/useEdicoesDaProva";
 import { filterTopicsLocally } from "./_components/topicTree";
-import { IconBookOpen, IconChevronRight, IconTrophy } from "./_components/iconesDoBanco";
 import {
   QUESTION_BANK_LIMIT_CAP,
   clampQuestionLimit,
   CORRECTION_MODE_SHORT_LABEL,
   getActiveFilters,
   motivoParaNaoComecar,
+  ressalvaDoTreinoDirigido,
+  resolverProvaEscolhida,
+  focoClinicoTemFiltro,
+  recorteDeFocoClinico,
   parseQuestionBankEntryContext,
+  politicaDeCorrecao,
   questionBankCtaLabel,
   resolveEntryTopic,
   type CorrectionMode,
   type QuestionBankEntryContext,
 } from "./_lib/sessionBuilder";
-
-function cx(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
+import { useFocoDeEntrada } from "./_lib/useFocoDeEntrada";
+import { useTreinoDirigido } from "./_lib/useTreinoDirigido";
+import { BarraDeFiltrosAtivos } from "./_components/BarraDeFiltrosAtivos";
 
 const DEFAULT_EXAM_CODES = ["ACESSO-DIRETO"];
 
@@ -75,188 +77,18 @@ function splitBootstrapTopics(topics: QuestionBankTopic[]) {
   };
 }
 
-type SessionIntentCardProps = {
-  eyebrow: string;
-  title: string;
-  description: string;
-  active: boolean;
-  Icon: (props: { className?: string }) => JSX.Element;
-  onClick: () => void;
-};
-
-function SessionIntentCard({ eyebrow, title, description, active, Icon, onClick }: SessionIntentCardProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cx(
-        "paper-control group flex min-h-11 items-center gap-4 border bg-surface p-4 text-left transition-colors md:flex-col md:items-start md:justify-between md:min-h-[8rem] md:p-5",
-        active ? "border-primary bg-surfaceMuted" : "border-edge hover:border-primary",
-      )}
-    >
-      <Icon className={cx("h-7 w-7 shrink-0 md:h-8 md:w-8", active ? "text-primary" : "text-muted")} />
-      <div className="min-w-0 flex-1 md:flex-none">
-        <p className={cx("paper-eyebrow", active ? "text-primary" : "text-muted")}>{eyebrow}</p>
-        <h2 className={cx("font-serif text-base font-semibold leading-tight md:text-lg", active ? "text-ink" : "text-muted group-hover:text-ink")}>{title}</h2>
-        <p className="mt-0.5 text-xs leading-relaxed text-muted md:mt-1 md:text-sm">{description}</p>
-      </div>
-      <IconChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 md:hidden" />
-    </button>
-  );
-}
-
-function topicPathLabel(topic: QuestionBankTopic): string {
-  const normalized = (value: string) =>
-    value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
-  const sanitize = (parts: string[]) => {
-    const cleaned = parts.map((part) => part.trim()).filter(Boolean);
-    while (cleaned.length > 0 && normalized(cleaned[0]) === "medicina") cleaned.shift();
-    return cleaned;
-  };
-  const nodePath = Array.isArray(topic.node_path)
-    ? sanitize(topic.node_path.map((part) => String(part)))
-    : [];
-  if (nodePath.length > 0) return nodePath.join(" / ");
-  if (topic.path_label?.trim()) {
-    const fromLabel = sanitize(topic.path_label.split(/\s*(?:\/|>)\s*/));
-    if (fromLabel.length > 0) return fromLabel.join(" / ");
-  }
-  return topic.node_name;
-}
-
-/**
- * Por que o sistema escolheu este tema — e é isto que o produto vende.
- *
- * A DECISÃO mora em `motivoDoTopico`, fora do JSX: ela tem um controle negativo
- * (sem evidência, nada genérico entra no lugar do número) que precisa de teste
- * de verdade, e regra presa dentro de componente só se testa por regex no
- * texto-fonte — que prova que a linha existe, não que ela decide certo.
- *
- * Aqui fica só a forma.
- */
-function TopicReason({ topic }: { topic: QuestionBankTopic }) {
-  const motivo = motivoDoTopico(topic);
-  if (motivo.forma === "evidencia") {
-    return (
-      <p className="mt-1.5 text-sm text-muted">
-        <span className="font-mono font-semibold tabular-nums text-ink">{motivo.cobradas}</span>
-        {" de "}
-        <span className="font-mono tabular-nums text-ink">
-          {motivo.total.toLocaleString("pt-BR")}
-        </span>
-        {" questões recentes da "}
-        {motivo.instituicao}
-      </p>
-    );
-  }
-  return <p className="mt-1.5 text-sm text-muted">{motivo.texto}</p>;
-}
-
-type RecommendedTopicsPanelProps = {
-  topics: QuestionBankTopic[];
-  selectedTopics: QuestionBankTopic[];
-  activeIntent: "learning" | "simulation" | "weakness" | "near_miss";
-  onToggleTopic: (topic: QuestionBankTopic) => void;
-};
-
-function RecommendedTopicsPanel({
-  topics,
-  selectedTopics,
-  activeIntent,
-  onToggleTopic,
-}: RecommendedTopicsPanelProps) {
-  const selectedIds = new Set(selectedTopics.map((topic) => topic.knowledge_node_id));
-  const recommended = [...topics]
-    .filter((topic) => topic.question_count > 0)
-    .sort((a, b) => {
-      const rankDelta = a.recommendation_rank - b.recommendation_rank;
-      if (rankDelta !== 0) return rankDelta;
-      return a.knowledge_node_id.localeCompare(b.knowledge_node_id);
-    })
-    .slice(0, 6);
-
-  if (recommended.length === 0) return null;
-
-  const intentCopy =
-    activeIntent === "simulation"
-      ? "Recorte de prova para medir desempenho."
-      : activeIntent === "weakness"
-        ? "Onde poucas questões fecham mais lacuna."
-        : activeIntent === "near_miss"
-          ? "Itens no limiar entre acerto e erro."
-          : "Priorizadas pelo seu histórico.";
-
-  return (
-    <section className="rounded-surface border border-edge bg-surface p-4" aria-label="Microcompetências recomendadas">
-      <div>
-        <div>
-          <p className="paper-eyebrow">Sugestões do sistema</p>
-          <h3 className="mt-1 font-serif text-lg font-semibold leading-tight">Microcompetências</h3>
-          <p className="mt-1 text-sm leading-relaxed text-muted">{intentCopy}</p>
-        </div>
-      </div>
-
-      <div className="mt-3 space-y-2">
-        {recommended.map((topic) => {
-          const selected = selectedIds.has(topic.knowledge_node_id);
-          return (
-            <button
-              key={topic.knowledge_node_id}
-              type="button"
-              onClick={() => onToggleTopic(topic)}
-              aria-pressed={selected}
-              title={topic.node_code ? `${topic.node_code} - ${topic.node_name}` : topic.node_name}
-              className={cx(
-                "w-full border p-3 text-left transition-colors",
-                selected ? "border-primary bg-[var(--wash-selecao)]" : "border-edge bg-paper hover:border-primary",
-              )}
-            >
-              {/* O maior texto deste card tinha 14px e era o NOME DO TEMA — a
-                  razão de o card existir. O caminho da taxonomia, que é
-                  metadado, ocupava a mesma faixa visual logo abaixo, em 12px
-                  cinza. Nada aqui era conteúdo; tudo era legenda.
-
-                  Três trocas, todas de hierarquia e nenhuma de informação:
-
-                  1. O CAMINHO vira rótulo. Ele diz onde o tema mora, e é
-                     exatamente o trabalho de um `paper-eyebrow`. Sai da faixa
-                     de conteúdo e para de competir com o nome.
-                  2. O NOME sobe para tamanho de leitura. É o que a pessoa
-                     procura na lista, e procurar num texto de 14px em cartão
-                     de 12 itens é o que fazia a tela parecer formulário.
-                  3. A CONTAGEM recebe a marca. É o número que responde "vale o
-                     meu tempo?" — a única pergunta que o card existe para
-                     responder antes do clique. `--color-marca` já passa o gate
-                     de contraste contra todo fundo (4,70:1 no pior).
-
-                  O motivo da recomendação passa a apoio: ele explica o `#rank`,
-                  não compete com o nome. */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="paper-eyebrow line-clamp-1 break-words [overflow-wrap:anywhere]">
-                    {topicPathLabel(topic)}
-                  </p>
-                  <p className="mt-1 line-clamp-2 break-words text-lg font-semibold leading-snug text-ink [overflow-wrap:anywhere]">{topic.node_name}</p>
-                </div>
-                <span className={cx("shrink-0 whitespace-nowrap px-2 py-0.5 text-micro", selected ? "bg-primary text-primaryInk" : "bg-surfaceMuted text-ink")}>
-                  #{topic.recommendation_rank}
-                </span>
-              </div>
-              <p className="mt-2.5 flex flex-wrap items-baseline gap-x-1.5">
-                <b className="font-mono text-xl font-semibold tabular-nums text-marca">{topic.question_count}</b>
-                <span className="text-sm text-muted">questões disponíveis</span>
-              </p>
-              <TopicReason topic={topic} />
-            </button>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ⚠️ ~180 LINHAS DE UI QUE NUNCA FORAM RENDERIZADAS saíram daqui em
+// 2026-09-06: `SessionIntentCard`, `RecommendedTopicsPanel`, `TopicReason` e o
+// `topicPathLabel` local que só elas usavam. Zero call sites — e
+// `tests/unit/metacognition-exposure.test.mjs` chega a EXIGIR a ausência do
+// painel de recomendação — ou seja, o contrato já dizia que aquilo não devia
+// aparecer enquanto o código continuava a mantê-lo.
+//
+// ⚠️ E o nome dele não se escreve aqui: esse teste varre o FONTE CRU, comentário
+// incluído. Citar o símbolo entre crases faria o próprio registo reprovar.
+//
+// Foi essa gordura que abriu o orçamento para a tela passar a abrir na decisão
+// em vez de num formulário.
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -324,21 +156,13 @@ function BancoDeQuestoesContent() {
   // Derivado, nunca guardado: o contrato so conhece dois valores, e o servidor
   // pina `study_kind="topic"` quando `session_kind="kros"`.
   const studyKind: StudyKind = tipoSessao === "full_exam" ? "full_exam" : "topic";
-  // O preset do Treino dirigido. `equilibrado` e' o default do dominio
-  // (`DEFAULT_KROS_MODE`), e nao um palpite desta tela.
-  const [krosMode, setKrosMode] = useState<KrosMode>("equilibrado");
   // UMA fonte de verdade. `studyKind` e `treinoDirigido` sao DERIVADOS: dois
   // estados que precisam concordar e o padrao de defeito que esta sessao achou
   // tres vezes hoje.
   const treinoDirigido = tipoSessao === "kros";
-  // Bancas-alvo, para o cartao "Foco na banca" nao afirmar o contrario do que e'
-  // verdade. `null` = a previa ainda nao respondeu.
-  const [krosBancas, setKrosBancas] = useState<{ alvo: string[]; semCobertura: string[] } | null>(
-    null,
-  );
-  const [fullExamName, setFullExamName] = useState("");
-  const [fullExamYear, setFullExamYear] = useState(() => String(new Date().getFullYear()));
   const [fullExamType, setFullExamType] = useState<FullExamType>("acesso_direto");
+  /** Qual das provas, quando a banca aplicou duas no mesmo ano. */
+  const [fullExamNumber, setFullExamNumber] = useState<string | null>(null);
   // Desligado por padrao: a pratica normal continua sendo a pratica normal.
   // Completar a prova com anulada e desatualizada e uma escolha do aluno, e o
   // valor esta em ele SABER que escolheu.
@@ -357,7 +181,6 @@ function BancoDeQuestoesContent() {
   const [bootstrapReady, setBootstrapReady] = useState(false);
   const [calendarContextResolved, setCalendarContextResolved] = useState(() => !initialContext.source);
   const [focusTopicId, setFocusTopicId] = useState<string | null>(null);
-  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [quantityEditing, setQuantityEditing] = useState(false);
 
   // Preview state
@@ -378,31 +201,55 @@ function BancoDeQuestoesContent() {
   // Derived
   const requestedLimit = clampQuestionLimit(limit);
   const maxSelectable = availability ? Math.max(0, availability.max_selectable) : requestedLimit;
-  const limitMax = Math.max(1, Math.min(QUESTION_BANK_LIMIT_CAP, maxSelectable || requestedLimit));
-  const clampedLimit = Math.max(1, Math.min(requestedLimit, limitMax));
+  const limitMaxLivre = Math.max(1, Math.min(QUESTION_BANK_LIMIT_CAP, maxSelectable || requestedLimit));
   const deferredSearchDraft = useDeferredValue(searchDraft);
   const normalizedSearch = committedSearch.trim();
-  const fullExamYearNumber = Number(fullExamYear);
-  const fullExamReady = fullExamName.trim().length > 0 && Number.isInteger(fullExamYearNumber) && fullExamYearNumber > 0;
+  // A regra e o porque moram em `_lib/sessionBuilder.resolverProvaEscolhida`.
+  const provaEscolhida = useMemo(() => resolverProvaEscolhida(institutions, selectedYears, sources), [institutions, selectedYears, sources]);
+  const fullExamReady = provaEscolhida !== null;
+  const { edicoes: examEditions, totaisDaProva, carregando: examEditionsLoading, tamanhoDoAno: tamanhoProva, tamanhoPorAnoDaProva, aplicacaoPorAnoDaProva } = useEdicoesDaProva({ token, pronto: tokenResolved, ehModoProva: tipoSessao === "full_exam", bancaEscolhida: institutions.length === 1 ? institutions[0] : "", accessGroup: fullExamType === "r_plus" ? "RPLUS" : "ACESSO-DIRETO", ano: selectedYears.length === 1 ? selectedYears[0] : null, escolha: fullExamNumber, incluirAnuladas: includeRetired });
 
   const selectedTopicSummary = selectedTopics.length > 0
     ? selectedTopics.map((t) => t.node_name).join(", ")
     : area || "Filtro atual";
 
+  /**
+   * Troca de modo — e encosta a quantidade na grade do modo escolhido.
+   *
+   * ⚠️ Sem esta função, `setTipoSessao` sozinho deixava o campo "Questões" a
+   * dizer 10 enquanto o resumo e o botão diziam 20: `clampedLimit` é derivado e
+   * já respeitava o piso do Treino dirigido, mas o `limit` — que é o que a
+   * barra e o campo desenham — continuava no valor antigo. Dois números para a
+   * mesma coisa na mesma tela é como o aluno deixa de acreditar em ambos.
+   */
+  function escolherTipoDeSessao(proximo: TipoDeSessao) {
+    setTipoSessao(proximo);
+    if (proximo === "kros") setLimit((atual) => kros.ajustar(atual, limitMaxLivre));
+  }
+
+  /** A saída do beco. Ver o docstring de `_components/BarraDeFiltrosAtivos`. */
+  function limparFiltros() {
+    setArea("");
+    setSearchDraft("");
+    setCommittedSearch("");
+    setBoardCodes([]);
+    // Volta ao PADRÃO, não a vazio: o acervo tem R+ e Revalida, e quem monta
+    // sessão de acesso direto não quer as três misturadas por engano.
+    setExamCodes([...DEFAULT_EXAM_CODES]);
+    setInstitutions([]);
+    setStateCodes([]);
+    setSelectedYears([]);
+    setIncludeNoYear(false);
+    setAnswerStatus("unanswered");
+    setCorrectionStatus("all");
+    setSelectedTopics([]);
+    setFocusTopicId(null);
+  }
+
   const activeFilters = useMemo(() => getActiveFilters({
     area, boardCodes, examCodes, institutions, stateCodes, selectedYears, includeNoYear,
     answerStatus, correctionStatus, selectedTopics, search: normalizedSearch,
-    defaultExamCodes: DEFAULT_EXAM_CODES,
   }), [answerStatus, area, boardCodes, correctionStatus, examCodes, includeNoYear, institutions, normalizedSearch, selectedTopics, selectedYears, stateCodes]);
-
-  const activeIntent =
-    answerStatus === "near_miss"
-      ? "near_miss"
-      : answerStatus === "wrong" || answerStatus === "needs_review"
-        ? "weakness"
-        : studyKind === "full_exam" || correctionMode !== "immediate"
-          ? "simulation"
-          : "learning";
 
   const filteredTaxonomyTopics = useMemo(
     () => filterTopicsLocally(taxonomyTopics, { area, search: searchDraft, preserveSearchAncestors: true }),
@@ -432,7 +279,11 @@ function BancoDeQuestoesContent() {
     setSearchDraft(context.source ? "" : context.theme ?? "");
     setCommittedSearch(context.source ? "" : (context.theme ?? "").trim());
     setCorrectionStatus("all");
-    setLimit(clampQuestionLimit(context.expectedQuestions ?? 10));
+    // ⚠️ `setAnswerStatus` ESTAVA AUSENTE DESTE RESET, e era esse o defeito:
+    // "Revisar os erros desta sessão" abria o Banco nas questões que o aluno
+    // NUNCA tinha visto. Ver `parseQuestionBankEntryContext`.
+    setAnswerStatus(context.answerStatus ?? "unanswered");
+    setLimit(clampQuestionLimit(context.limit ?? context.expectedQuestions ?? 10));
     setCorrectionMode("guided_choice");
     setTipoSessao(opensInstitutionalExam ? "full_exam" : "topic");
     setStateCodes([]);
@@ -505,64 +356,58 @@ function BancoDeQuestoesContent() {
 
   // ─── Filter params factory ───────────────────────────────────────────────
 
+  // Uma definicao so: tres chamadas montavam este recorte e uma esquecia a
+  // guarda de modo. Ver `_lib/sessionBuilder.recorteDeFocoClinico`.
+  const focoClinico = useMemo(() => recorteDeFocoClinico({ ehProva: tipoSessao === "full_exam", topicos: selectedTopics, area, busca: normalizedSearch }), [area, normalizedSearch, selectedTopics, tipoSessao]);
+
   const filterParams = useCallback((override: { limit?: number } = {}) => ({
-    knowledge_node_ids: selectedTopics.length > 0 ? selectedTopics.map((t) => t.knowledge_node_id) : undefined,
-    area: area || undefined,
+    knowledge_node_ids: focoClinico.knowledge_node_ids,
+    area: focoClinico.area,
     board_codes: boardCodes.length > 0 ? boardCodes : undefined,
     exam_codes: examCodes.length > 0 ? examCodes : undefined,
     institutions: institutions.length > 0 ? institutions : undefined,
     state_codes: stateCodes.length > 0 ? stateCodes : undefined,
     years: selectedYears.length > 0 ? selectedYears : undefined,
     include_no_year: includeNoYear || undefined,
-    search: normalizedSearch || undefined,
+    search: focoClinico.search,
     answer_status: answerStatus,
     only_unanswered: answerStatus === "unanswered",
     correction_status: correctionStatus,
     limit: override.limit,
-  }), [answerStatus, area, boardCodes, correctionStatus, examCodes, includeNoYear, institutions, normalizedSearch, selectedTopics, selectedYears, stateCodes]);
+  }), [answerStatus, boardCodes, correctionStatus, examCodes, focoClinico, includeNoYear, institutions, selectedYears, stateCodes]);
 
-  // As bancas-alvo, buscadas SÓ quando o Treino dirigido está na tela: a prévia
-  // roda a pipeline inteira no servidor, e chamá-la para quem escolheu "Por
-  // tópico" seria pagar por um dado que ninguém vai ler.
-  //
-  // Sem isto, o cartão "Foco na banca" diria "Defina sua prova-alvo no perfil"
-  // para TODO MUNDO, inclusive para quem já declarou — afirmação falsa dita a
-  // quem menos merece ouvi-la.
-  //
-  // As dependências são só as que mudam a RESPOSTA: as bancas-alvo vêm do perfil
-  // e a cobertura, do pool de candidatos, que é função dos filtros (`filterParams`
-  // é um useCallback que só troca de identidade quando eles trocam). O preset e o
-  // tamanho ficam de fora de propósito — arrastar o slider dispararia a pipeline
-  // inteira a cada tique para reler um dado que não depende dele.
-  useEffect(() => {
-    if (!treinoDirigido || !tokenResolved) return;
-    const controller = new AbortController();
-    previewKros(
-      token,
-      {
-        session_kind: "kros",
-        // Fixo, e não `krosMode`: esta chamada existe para ler as bancas, que são
-        // as mesmas nos quatro presets. Passar o preset atual só criaria uma
-        // dependência que não muda a resposta.
-        kros_mode: "equilibrado",
-        mode: "adaptive",
-        resolution_mode: "simulation",
-        ...filterParams(),
-      },
-      controller.signal,
-    )
-      .then((previa) => {
-        setKrosBancas({
-          alvo: previa.target_boards,
-          semCobertura: previa.unsatisfied_target_boards,
-        });
-      })
-      .catch(() => {
-        // Falha de prévia NÃO trava o seletor. Sem dado, o cartão da banca fica
-        // em "carregando" e não afirma nada — melhor que afirmar o contrário.
-      });
-    return () => controller.abort();
-  }, [treinoDirigido, tokenResolved, token, filterParams]);
+  // O preset, as bancas-alvo e a grade de tamanho do Treino dirigido — as tres
+  // saem da MESMA previa, e por isso vivem juntas num hook. Ver
+  // `_lib/useTreinoDirigido`.
+  const kros = useTreinoDirigido({
+    ativo: treinoDirigido,
+    token,
+    tokenResolved,
+    filtros: filterParams,
+  });
+
+  /**
+   * ⚠️ O TREINO DIRIGIDO TEM GRADE PRÓPRIA, e é isto que o fazia não iniciar.
+   *
+   * O servidor recusa com 422 (`invalid_kros_size`) qualquer sessão dirigida
+   * fora de 20–120 em múltiplos de 5. A tela abria em 10 e oferecia passo 1,
+   * então o caminho padrão do modo — escolher e premir começar — falhava
+   * sempre. Ver `_lib/useTreinoDirigido`.
+   *
+   * O piso e o passo entram no CONTROLE, não só no envio: barra que aceita 37 e
+   * manda 35 mente ao aluno sobre o que ele vai receber.
+   *
+   * ⚠️ Mora AQUI, e não no bloco `Derived` lá em cima, porque depende do hook —
+   * e o hook depende de `filterParams`. Ordem de declaração, não preferência.
+   */
+  const limitMin = treinoDirigido ? kros.grade.min : 1;
+  const limitMax = treinoDirigido
+    ? Math.max(kros.grade.min, kros.ajustar(limitMaxLivre, limitMaxLivre))
+    : limitMaxLivre;
+  const limitStep = treinoDirigido ? kros.grade.passo : 1;
+  const clampedLimit = treinoDirigido
+    ? kros.ajustar(requestedLimit, limitMax)
+    : Math.max(1, Math.min(requestedLimit, limitMax));
 
   // ─── Data fetching ───────────────────────────────────────────────────────
 
@@ -713,16 +558,29 @@ function BancoDeQuestoesContent() {
     setCalendarContextResolved(true);
   }, [bootstrapReady, calendarContextResolved, entryContext, microTopics, taxonomyTopics]);
 
+  // O foco que a origem pediu -- ver `_lib/useFocoDeEntrada`.
+  useFocoDeEntrada({
+    ativo: bootstrapReady,
+    contexto: entryContext,
+    chaveDaRota: routeSearchKey,
+    topicos: useMemo(() => [...taxonomyTopics, ...microTopics], [microTopics, taxonomyTopics]),
+    aoAplicar: useCallback((achados) => {
+      setSelectedTopics(achados);
+      setFocusTopicId(achados[0].knowledge_node_id);
+      // A busca por texto atrapalha quando ja ha no: ela e o caminho de
+      // recurso de quem so tem o nome do tema.
+      setSearchDraft("");
+      setCommittedSearch("");
+    }, []),
+  });
+
   // Cross-filtered facets (Estratégia-style): one call whose year counts react to
   // the selected banca and whose banca counts react to the selected years. It
   // overwrites the global catalogs above with the recorte-aware options. Silent
   // (no skeleton) so the counts feel live as filters change.
   const refreshFacets = useCallback(async () => {
     const requestKey = JSON.stringify({
-      knowledge_node_ids:
-        selectedTopics.length > 0 ? selectedTopics.map((t) => t.knowledge_node_id) : undefined,
-      area: area || undefined,
-      search: normalizedSearch || undefined,
+      ...focoClinico,
       board_codes: boardCodes.length > 0 ? boardCodes : undefined,
       exam_codes: examCodes.length > 0 ? examCodes : undefined,
       institutions: institutions.length > 0 ? institutions : undefined,
@@ -741,10 +599,7 @@ function BancoDeQuestoesContent() {
       const facets = await listQuestionBankFacets(
         token,
         {
-          knowledge_node_ids:
-            selectedTopics.length > 0 ? selectedTopics.map((t) => t.knowledge_node_id) : undefined,
-          area: area || undefined,
-          search: normalizedSearch || undefined,
+          ...focoClinico,
           board_codes: boardCodes.length > 0 ? boardCodes : undefined,
           exam_codes: examCodes.length > 0 ? examCodes : undefined,
           institutions: institutions.length > 0 ? institutions : undefined,
@@ -773,12 +628,14 @@ function BancoDeQuestoesContent() {
       if (facetsAbortRef.current === controller) facetsAbortRef.current = null;
       if (facetsInFlightRef.current?.key === requestKey) facetsInFlightRef.current = null;
     }
-  }, [area, boardCodes, correctionStatus, examCodes, institutions, normalizedSearch, selectedTopics, selectedYears, stateCodes, token]);
+  }, [boardCodes, correctionStatus, examCodes, focoClinico, institutions, selectedYears, stateCodes, token]);
 
   useEffect(() => {
     if (!tokenResolved || !bootstrapReady) return;
+    // Do recorte DERIVADO: contar `selectedTopics` aqui pediria faceta por um
+    // filtro que a prova deixou de enviar.
     const hasFacetFilters = Boolean(
-      area || normalizedSearch || selectedTopics.length || boardCodes.length || examCodes.length ||
+      focoClinicoTemFiltro(focoClinico) || boardCodes.length || examCodes.length ||
       institutions.length || stateCodes.length || selectedYears.length || correctionStatus !== "all"
     );
     if (!hasFacetFilters) {
@@ -794,7 +651,7 @@ function BancoDeQuestoesContent() {
       void refreshFacets();
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [area, boardCodes.length, bootstrapReady, correctionStatus, examCodes.length, institutions.length, normalizedSearch, refreshFacets, selectedTopics.length, selectedYears.length, stateCodes.length, tokenResolved]);
+  }, [boardCodes.length, bootstrapReady, correctionStatus, examCodes.length, focoClinico, institutions.length, refreshFacets, selectedYears.length, stateCodes.length, tokenResolved]);
 
   useEffect(() => {
     if (!tokenResolved || !bootstrapReady) return;
@@ -934,9 +791,7 @@ function BancoDeQuestoesContent() {
             : selectedTopics.length > 1
               ? "bank_combined"
               : "bank_topic",
-      feedback_timing: correctionMode === "immediate" ? "immediate" : "post_result",
-      feedback_reveal_policy:
-        correctionMode === "reveal_all" ? "reveal_all" : "guided_choice",
+      ...politicaDeCorrecao(correctionMode, tipoSessao),
       mode: studyKind === "full_exam" ? "by_exam" : "by_topic",
       resolution_mode: "simulation",
       study_kind: studyKind,
@@ -947,23 +802,27 @@ function BancoDeQuestoesContent() {
       // `max_answered_share = 0.0` no lugar de 0.40 e nenhum dos boosts
       // (`recent_error`, `deficit`, `fingerprint_need`): uma sessao que nunca
       // reexpoe o erro, que e a unica coisa que o modo faz.
-      ...(treinoDirigido ? { kros_mode: krosMode } : {}),
+      ...(treinoDirigido ? { kros_mode: kros.modo } : {}),
       performed_at: localNoonISO(entryContext.dateISO),
       review_task_id: studyKind === "topic" ? entryContext.reviewTaskId ?? undefined : undefined,
     };
     if (studyKind === "full_exam") {
-      payload.full_exam_name = fullExamName.trim();
-      payload.full_exam_year = fullExamYearNumber;
+      // `full_exam_name` e' ROTULO (vira o titulo da sessao); quem recorta e'
+      // `institutions`, com a chave do catalogo. Mandar o rotulo nos dois foi o
+      // defeito.
+      payload.full_exam_name = provaEscolhida?.rotulo ?? "";
+      payload.full_exam_year = provaEscolhida?.ano ?? 0;
       payload.full_exam_type = fullExamType;
-      payload.institutions = [fullExamName.trim()];
-      payload.years = [fullExamYearNumber];
+      payload.institutions = provaEscolhida ? [provaEscolhida.chave] : [];
+      payload.years = provaEscolhida ? [provaEscolhida.ano] : [];
+      if (fullExamNumber) payload.full_exam_number = fullExamNumber;
       payload.exam_codes = [fullExamType === "r_plus" ? "RPLUS" : "ACESSO-DIRETO"];
-      // Um controle, dois flags: para o aluno a pergunta e "quero a prova como ela
-      // caiu?", nao "anulada sim, desatualizada nao". O backend mantem os eixos
-      // separados porque o tratamento difere -- anulada nao pontua, desatualizada
-      // pontua -- mas essa distincao e' do sistema, nao da decisao dele.
+      // UM controle, UM flag -- e a desatualizada saiu dele de proposito. Ela
+      // TINHA resposta certa a epoca, caiu naquele dia e pontua normalmente, so
+      // que os dois eixos viajavam juntos como se fossem a mesma pergunta. A
+      // anulada nao tem gabarito valido, entao sai por padrao e volta com um
+      // clique. (`include_outdated` segue no contrato para o caminho antigo.)
       payload.include_annulled = includeRetired;
-      payload.include_outdated = includeRetired;
       payload.generate_review_trail = false;
     } else {
       payload.generate_review_trail = false;
@@ -1013,14 +872,20 @@ function BancoDeQuestoesContent() {
   }
 
   const canStartConfigured = !busy && (studyKind !== "full_exam" || fullExamReady) && !!availability && availability.available_count > 0;
-  const configuredStartLabel = questionBankCtaLabel(clampedLimit, correctionMode, studyKind);
+  // Dá para começar, mas o acervo não chega ao piso do modo: o número do botão
+  // passa a ser TETO, e por isso ele muda de "Começar N" para "Começar até N".
+  const ressalva = ressalvaDoTreinoDirigido({ treinoDirigido, availableCount: availability?.available_count ?? null, piso: kros.grade.min });
+  const configuredStartLabel = questionBankCtaLabel(tamanhoProva ?? clampedLimit, correctionMode, tipoSessao, ressalva !== null);
   // Zero questoes tem causas diferentes e acoes diferentes. Sem dizer qual, a
   // tela so mostra "Max. 0" e um botao morto — foi o que fez o filtro parecer
   // quebrado.
   // A decisao mora em `motivoParaNaoComecar`, fora do JSX: varios ramos, e
   // regra presa em componente so' se testa por regex no texto-fonte.
   const emptyReason = motivoParaNaoComecar({
-    studyKind, fullExamReady, fullExamName, fullExamYear, loadingPreview,
+    studyKind, fullExamReady,
+    fullExamName: provaEscolhida?.rotulo ?? "", temBanca: institutions.length === 1,
+    fullExamYear: provaEscolhida?.ano ?? null, temAno: selectedYears.length === 1,
+    loadingPreview,
     answerStatus, activeFilterCount: activeFilters.length,
     availableCount: availability ? availability.available_count : null,
     totalCount: availability ? availability.total_count : null,
@@ -1030,61 +895,57 @@ function BancoDeQuestoesContent() {
     <div className="min-h-screen bg-paper text-ink">
       {/* Sem max-w proprio: o AppShell ja limita o conteudo em `lg:max-w-6xl`.
           O `max-w-7xl` que estava aqui nunca chegava a valer. */}
-      <div className="space-y-5">
+      {/* ⚠️ A RESERVA É OBRIGATÓRIA desde que o `CreateSessionPanel` voltou a
+          montar uma `BottomActionBar`: no telemóvel ela é `fixed`, sai do
+          fluxo, e sem este recuo o fim dos filtros fica por baixo dela. É o
+          mesmo que o `CadernoClientPage` faz. */}
+      <div className={`ritmo-secao ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
         <section className="space-y-4" aria-label="Montador de sessão">
-          {activeFilters.length > 0 && (
-            /* A linha ganha rotulo e deixa de flutuar a direita: ela abria a
-               tela com um chip solto no canto, sem nada que dissesse o que
-               aquilo era. Os chips ficam onde estavam -- muda o que a linha
-               AFIRMA, nao a geometria de toque. */
-            <div className="flex w-full flex-wrap items-center justify-between gap-3 border-b border-edge pb-4">
-              <p className="paper-eyebrow">filtros ativos</p>
-              <div className="relative shrink-0">
-                <button
-                  type="button"
-                  aria-expanded={filterMenuOpen}
-                  aria-controls="question-bank-active-filters"
-                  aria-label={activeFilters.length === 1
-                    ? "1 filtro ativo: " + activeFilters[0].label + ". Toque para localizar."
-                    : activeFilters.length + " filtros ativos. Toque para visualizar."}
-                  onClick={() => {
-                    if (activeFilters.length === 1) {
-                      locateActiveFilter(activeFilters[0]);
-                      return;
-                    }
-                    setFilterMenuOpen((open) => !open);
-                  }}
-                  className="min-h-11 bg-surfaceMuted px-3 text-xs text-muted transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                >
-                  {activeFilters.length === 1 ? activeFilters[0].label : activeFilters.length + " filtros"}
-                </button>
-                {filterMenuOpen && activeFilters.length > 1 && (
-                  <div id="question-bank-active-filters" role="dialog" aria-label="Filtros ativos" className="absolute right-0 z-30 mt-2 w-72 rounded-control border border-edge bg-surface p-2 ">
-                    {activeFilters.map((filter) => (
-                      <button
-                        key={filter.id}
-                        type="button"
-                        onClick={() => {
-                          setFilterMenuOpen(false);
-                          locateActiveFilter(filter);
-                        }}
-                        className="flex min-h-11 w-full items-center px-3 text-left text-sm font-medium text-ink hover:bg-surfaceMuted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                      >
-                        {filter.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           <section
             aria-label="Filtros e resumo do banco de questões"
             className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem]"
             data-testid="question-bank-top-filters"
           >
-            <div className="min-w-0 space-y-4">
+            {/* ⚠️ O RESUMO VEM PRIMEIRO NO DOM. A 390px a ordem visual é a ordem
+                do DOM: o Banco abre na decisão, não num formulário — o botão
+                ficava ~2.000px abaixo. No desktop a colocação por linha/coluna
+                devolve tudo ao lugar. O botão NÃO é duplicado (`/^Começar/` é
+                estrito no e2e) e nada é fixado ao rodapé: a ação SOBE no fluxo.
+                Ver `_components/SecaoRecolhivel`. */}
+            <CreateSessionPanel
+              availability={availability}
+              loadingPreview={loadingPreview}
+              busy={busy}
+              clampedLimit={tamanhoProva ?? clampedLimit}
+              correctionMode={correctionMode}
+              studyKind={studyKind}
+              canStartSession={studyKind !== "full_exam" || fullExamReady}
+              error={error}
+              startLabel={configuredStartLabel}
+              emptyReason={emptyReason}
+              ressalva={ressalva}
+              onRefreshAvailability={() => void refreshAvailability()}
+              onPreviewQuestions={() => void previewQuestions()}
+              onStartSession={() => void startSession()}
+              onRetry={() => {
+                // TENTA DE NOVO — nunca cria sessão. Chamava `startSession()`
+                // sempre que havia disponibilidade carregada, e era o caso
+                // comum: o aluno via "não foi possível carregar as questões",
+                // clicava, e ganhava uma sessão de 10 questões que não pediu.
+                // Botão de recuperação de erro não pode ter efeito colateral
+                // irreversível.
+                setError(null);
+                if (topicsError || !bootstrapReady) void loadBootstrap();
+                void refreshAvailability();
+              }}
+            />
+
+            <div className="min-w-0 space-y-4 lg:col-start-1 lg:row-start-1">
+              <BarraDeFiltrosAtivos
+                filtros={activeFilters}
+                onLocalizar={locateActiveFilter}
+                onLimpar={limparFiltros}
+              />
               <div className="min-w-0 overflow-visible border-y border-edge">
                 <FiltersBar
                   area={area}
@@ -1124,24 +985,25 @@ function BancoDeQuestoesContent() {
                   correctionMode={correctionMode}
                   onCorrectionModeChange={setCorrectionMode}
                   tipoSessao={tipoSessao}
-                  onTipoSessaoChange={setTipoSessao}
-                  krosMode={krosMode}
-                  onKrosModeChange={setKrosMode}
-                  krosBancasAlvo={krosBancas?.alvo ?? []}
-                  krosBancasSemCobertura={krosBancas?.semCobertura ?? []}
-                  krosPreviaCarregando={treinoDirigido && krosBancas === null}
+                  onTipoSessaoChange={escolherTipoDeSessao}
+                  krosMode={kros.modo}
+                  onKrosModeChange={kros.escolherModo}
+                  krosBancasAlvo={kros.bancasAlvo}
+                  krosBancasSemCobertura={kros.bancasSemCobertura}
+                  krosPreviaCarregando={kros.previaCarregando}
                   includeRetired={includeRetired}
                   onIncludeRetiredChange={setIncludeRetired}
-                  fullExamName={fullExamName}
-                  onFullExamNameChange={setFullExamName}
-                  fullExamYear={fullExamYear}
-                  onFullExamYearChange={setFullExamYear}
+                  examEditions={examEditions} tamanhoPorAnoDaProva={tamanhoPorAnoDaProva} aplicacaoPorAnoDaProva={aplicacaoPorAnoDaProva} totaisDaProva={totaisDaProva}
+                  examEditionsLoading={examEditionsLoading}
+                  fullExamNumber={fullExamNumber}
+                  onFullExamNumberChange={setFullExamNumber}
                   fullExamType={fullExamType}
                   onFullExamTypeChange={setFullExamType}
                   limit={limit}
                   clampedLimit={clampedLimit}
-                  maxSelectable={maxSelectable}
                   limitMax={limitMax}
+                  limitMin={limitMin}
+                  limitStep={limitStep}
                   onLimitChange={setLimit}
                   focusTopicId={focusTopicId}
                   onQuantityEditingChange={setQuantityEditing}
@@ -1149,32 +1011,6 @@ function BancoDeQuestoesContent() {
               </div>
             </div>
 
-            <CreateSessionPanel
-              availability={availability}
-              loadingPreview={loadingPreview}
-              busy={busy}
-              clampedLimit={clampedLimit}
-              correctionMode={correctionMode}
-              studyKind={studyKind}
-              canStartSession={studyKind !== "full_exam" || fullExamReady}
-              error={error}
-              startLabel={configuredStartLabel}
-              emptyReason={emptyReason}
-              onRefreshAvailability={() => void refreshAvailability()}
-              onPreviewQuestions={() => void previewQuestions()}
-              onStartSession={() => void startSession()}
-              onRetry={() => {
-                // TENTA DE NOVO — nunca cria sessão. Chamava `startSession()`
-                // sempre que havia disponibilidade carregada, e era o caso
-                // comum: o aluno via "não foi possível carregar as questões",
-                // clicava, e ganhava uma sessão de 10 questões que não pediu.
-                // Botão de recuperação de erro não pode ter efeito colateral
-                // irreversível.
-                setError(null);
-                if (topicsError || !bootstrapReady) void loadBootstrap();
-                void refreshAvailability();
-              }}
-            />
           </section>
 
           <QuestionList

@@ -118,7 +118,7 @@ export function SecaoSenha() {
 
   return (
     <section className="mt-6 rounded-surface border border-edge bg-surface p-5 sm:p-6">
-      <h2 className="font-serif text-lg font-semibold text-ink">Senha</h2>
+      <h2 className="font-serif font-semibold text-ink">Senha</h2>
       <p className="mt-1 max-w-[62ch] text-sm text-muted">
         Defina uma senha para entrar com e-mail, além do Google. Se um dia você perder
         o acesso à conta Google, é ela que mantém o Fácies acessível.

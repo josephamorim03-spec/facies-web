@@ -131,7 +131,19 @@ test("robots nao deixa o app autenticado ser indexado", () => {
   const robots = ler("app/robots.ts");
   // Não é controle de acesso — quem protege rota é o proxy. É higiene de
   // índice: rota que sempre cai no login não é resultado de busca, é beco.
-  for (const rota of ["/hoje", "/banco", "/cards", "/evolucao", "/admin", "/api/"]) {
+  // ⚠️ `/inicio` e `/mais` entraram com a barra nova (2026-09-10). O `/inicio` é
+  // o mais importante da lista: ele virou a HOME do aluno, e uma home indexada
+  // é a primeira coisa que aparece na busca e a primeira a cair no login.
+  for (const rota of [
+    "/inicio",
+    "/mais",
+    "/hoje",
+    "/banco",
+    "/cards",
+    "/evolucao",
+    "/admin",
+    "/api/",
+  ]) {
     assert.ok(robots.includes(`"${rota}"`), `robots.ts nao bloqueia ${rota}`);
   }
   // E o caminho de cancelamento fica fora: ele chega por e-mail, e indexá-lo é
@@ -148,11 +160,23 @@ test("o manifest identifica o app instalado e abre no lugar certo", () => {
   // órfão que nunca mais atualiza, e um segundo aparece do lado.
   assert.match(manifest, /id:\s*"\/"/);
 
-  // `/hoje` e não `/`: quem abre pelo ícone é aluno, e `/` é o funil público.
+  // `/inicio` e não `/`: quem abre pelo ícone é aluno, e `/` é o funil público.
   // Abrir em `/` carregava a página de marketing, esperava o `fetch` do
   // `RedirectIfAuthenticated` e só então chegava ao app — uma piscada de página
   // errada em toda abertura.
-  assert.match(manifest, /start_url:\s*"\/hoje"/);
+  //
+  // ⚠️ MUDOU DE `/hoje` PARA `/inicio` em 2026-09-10, e a asserção do `id` logo
+  // acima é o que torna a mudança segura: com `id: "/"` fixo, a identidade da
+  // instalação NÃO depende do `start_url`, então quem já instalou continua com
+  // o mesmo app e passa a abrir na home nova. Sem o `id`, esta linha teria sido
+  // um ícone órfão para toda a base instalada — e é por isso que as duas
+  // asserções vivem na mesma prova.
+  //
+  // A home mudou porque a barra mudou: `/inicio` é o resumo, `/hoje` continua a
+  // ser a agenda do dia. O ícone na tela inicial é a porta mais usada de um app
+  // instalado; deixá-la na agenda faria a home nova ser a tela que menos gente
+  // vê.
+  assert.match(manifest, /start_url:\s*"\/inicio"/);
   // O escopo fica em "/" mesmo assim: o app instalado precisa alcançar
   // `/login` e `/ativar` sem sair para o navegador.
   assert.match(manifest, /scope:\s*"\/"/);

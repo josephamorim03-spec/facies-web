@@ -291,7 +291,7 @@ export function CadernoRegistroPanel({
             onClick={onCreateNote}
             disabled={!canSave}
             loading={saving}
-            className="w-full sm:w-auto"
+            bloco
           >
             Salvar
           </Button>

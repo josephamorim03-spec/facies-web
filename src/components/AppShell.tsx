@@ -106,7 +106,9 @@ function MobileTopBar({ pathname }: { pathname: string }) {
   const displayTitle = title ?? fallbackTitle(pathname);
   return (
     <header
-      className="fixed inset-x-0 top-0 z-30 flex h-12 items-center border-b border-edge bg-surfaceMuted px-3 md:hidden"
+      // `lg:hidden` pelo mesmo motivo da barra inferior — ver a nota longa em
+      // `MobileTabBar.tsx`. As duas têm de sumir juntas, senão sobra meia casca.
+      className="fixed inset-x-0 top-0 z-30 flex h-12 items-center border-b border-edge bg-surfaceMuted px-3 lg:hidden"
       style={{ paddingTop: "env(safe-area-inset-top, 0px)", height: "calc(3rem + env(safe-area-inset-top, 0px))" }}
     >
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-14">
@@ -161,7 +163,7 @@ function BuildVersionBadge() {
   return (
     <span
       title={title}
-      className="paper-eyebrow pointer-events-none fixed right-2 z-[60] rounded-control border border-edge bg-paper px-1.5 py-0.5 bottom-[calc(env(safe-area-inset-bottom,0px)+0.8rem)] md:bottom-3"
+      className="paper-eyebrow acima-da-barra-de-abas acima-da-barra-de-abas--solto pointer-events-none fixed right-2 z-[60] rounded-control border border-edge bg-paper px-1.5 py-0.5 md:bottom-3"
       aria-label={`Build ${shortSha}`}
     >
       build: {shortSha}
@@ -256,6 +258,36 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       : showMobileTopBar
         ? `tela-app max-w-lg mx-auto px-4 pt-[calc(env(safe-area-inset-top,0px)+3.75rem)] ${mobileBottomPad}`
         : `tela-app max-w-lg mx-auto px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] ${mobileBottomPad}`;
+
+  /**
+   * ⚠️ O TOKEN TAMBÉM VAI PARA `documentElement`, e não só para o wrapper.
+   *
+   * O wrapper abaixo cobre o `<main>` — e com ele todo `BottomActionBar` que
+   * as páginas montam lá dentro. Só que MUITA coisa que flutua sobre o rodapé
+   * NÃO vive lá: o `<Toast />` e o `<BuildVersionBadge />` são IRMÃOS deste
+   * componente, e o FAB de análises monta num `Portal` para `document.body`.
+   * Todos esses liam o `0px` de `:root`, porque propriedade customizada
+   * herda pela árvore e eles não descendem do wrapper.
+   *
+   * A consequência era visível: com a barra de abas na tela, o toast e o FAB
+   * assentavam no rodapé e tapavam-na.
+   *
+   * ⚠️ O WRAPPER MANTÉM A SUA DECLARAÇÃO, e não é redundância. Ele pinta o
+   * valor certo no PRIMEIRO paint, do servidor; este efeito só corre depois
+   * da hidratação. Sem ele, o `<main>` reservaria espaço errado por um frame
+   * a cada carregamento. Quem só existe depois da hidratação — portal,
+   * toast — é servido por aqui.
+   *
+   * A limpeza REMOVE em vez de zerar: assim o valor volta a ser o de `:root`
+   * (`0px`), que é o mesmo que uma tela sem barra de abas quer.
+   */
+  useEffect(() => {
+    const raiz = document.documentElement;
+    raiz.style.setProperty("--nav-stack-height", navStackHeight);
+    return () => {
+      raiz.style.removeProperty("--nav-stack-height");
+    };
+  }, [navStackHeight]);
 
   useEffect(() => {
     if (pathname === INITIAL_GOAL_SETUP_ROUTE) {
@@ -414,7 +446,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       </div>
       {/* O perfil desce por PROP, e nao por contexto: `ProfileDisplayNameProvider`
           vive dentro do `<main>` e esta barra e' irma dele. */}
-      {showMobileTabBar && <MobileTabBar displayName={userDisplayName} photoUrl={userPhotoUrl} />}
+      {showMobileTabBar && <MobileTabBar />}
       {/* Acelerador de teclado, e só. Fica fora das telas sem chrome (login,
           sessão imersiva) pela mesma razão que o menu fica: lá o aluno tem uma
           tarefa só, e navegar para outro lugar não é ela. */}

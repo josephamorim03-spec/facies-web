@@ -3,6 +3,8 @@
 import { displayAreaLabel, resolveDisplayArea } from "@/lib/areaDisplay";
 import { AREA_VAR } from "@/lib/areaIdentity";
 import type { StudentTodayAction } from "@/lib/api";
+import { classesDeBotao } from "@/components/ui/Button";
+import { PorQueIsto } from "./PorQueIsto";
 import { TodayActionCTA } from "./TodayActionCTA";
 
 function sourceLabel(source: string): string {
@@ -16,7 +18,24 @@ function sourceLabel(source: string): string {
   return labels[source] ?? source;
 }
 
-export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
+export function TodayPrimaryAction({
+  action,
+  cede,
+}: {
+  action: StudentTodayAction;
+  /**
+   * Há uma sessão aberta, e retomá-la é a ação de verdade.
+   *
+   * ⚠️ DUAS TEALS CHEIAS EMPILHADAS era o que existia: "Continuar de onde
+   * parou" tem o mesmo preenchimento desta CTA e renderiza ANTES dela. O
+   * produto pedia duas coisas com a mesma voz, e a primeira contradizia a
+   * segunda -- não se abre frente nova com uma aberta.
+   *
+   * Quando isso acontece, esta desce para secundária. A regra da rodada é uma
+   * só: um preenchimento por tela, e para a ação que a tela quer.
+   */
+  cede?: boolean;
+}) {
   // Mesma cascata do heroi antigo: codigo do servidor primeiro, inferencia pelo
   // texto depois, `OU` como ultimo recurso. O campo `area` do contrato so torna
   // o primeiro passo confiavel -- o resultado visivel continua o mesmo.
@@ -68,11 +87,30 @@ export function TodayPrimaryAction({ action }: { action: StudentTodayAction }) {
               <p className="mt-3 max-w-2xl font-serif text-sm leading-6 text-muted sm:text-base">
                 {action.rationale}
               </p>
+              {/* A frase continua sendo a leitura rapida; os numeros que a
+                  sustentam ficam a um toque, fechados por padrao. */}
+              {action.explanation ? (
+                <div className="max-w-2xl">
+                  <PorQueIsto explanation={action.explanation} />
+                </div>
+              ) : null}
             </div>
           </div>
+          {/* ⚠️ O CTA é um `<Link>`, e não um `<button>` — por isso recebe a
+              RECEITA do primitivo em vez do componente. Antes pintava as 20
+              classes à mão, e a cópia já tinha divergido: `min-h-12` contra os
+              `min-h-11` do primitivo, e um `hover` próprio. */}
           <TodayActionCTA
             action={action}
-            className="inline-flex min-h-12 w-full shrink-0 items-center justify-center rounded-control border border-primary bg-primary px-5 text-sm font-medium text-primaryInk transition-colors hover:border-[var(--color-primary-strong)] hover:bg-[var(--color-primary-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:translate-y-px md:w-auto"
+            // ⚠️ A largura vem por `className`, e NÃO por `bloco`: `bloco` vira
+            // em `sm`, e este cartão só passa a `md:flex-row`. Com `bloco`, o
+            // CTA encolhia para o conteúdo enquanto o cartão ainda estava
+            // empilhado, e ficava solto à esquerda entre 640 e 767px.
+            className={classesDeBotao({
+              variant: cede ? "secondary" : "primary",
+              size: "md",
+              className: "w-full shrink-0 md:w-auto",
+            })}
           >
             {action.cta_label}
           </TodayActionCTA>

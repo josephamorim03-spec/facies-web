@@ -159,7 +159,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
       {review.current_checkpoint && (
         <div className="mt-4">
           <p className="text-xs text-muted">Passo {review.current_checkpoint.step_order}</p>
-          <h3 className="mt-1 text-base font-semibold leading-relaxed text-ink">
+          <h3 className="mt-1 font-semibold leading-relaxed text-ink">
             {review.current_checkpoint.prompt}
           </h3>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -197,7 +197,7 @@ export function ReasoningReviewPanel({ token, session, item, onSessionChange }: 
 
       {review.status === "awaiting_attribution" && (
         <div className="mt-4">
-          <h3 className="text-sm font-medium text-ink">Você reconheceu todos os passos. O que melhor explica o erro?</h3>
+          <h3 className="font-medium text-ink">Você reconheceu todos os passos. O que melhor explica o erro?</h3>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {Object.entries(review.attribution_options).map(([value, label]) => (
               <button

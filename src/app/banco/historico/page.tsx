@@ -299,11 +299,35 @@ export default function BancoHistoricoPage() {
           })}
         </ol>
       ) : (
-        <p className="py-8 text-sm text-muted">
-          {sessions.length
-            ? "Nenhuma sessão com esses filtros."
-            : "Suas sessões aparecerão aqui — as em andamento no topo."}
-        </p>
+        <div className="space-y-3 py-8">
+          <p className="text-sm text-muted">
+            {sessions.length
+              ? "Nenhuma sessão com esses filtros."
+              : "Suas sessões aparecerão aqui — as em andamento no topo."}
+          </p>
+          {/* Duas causas, duas saídas: filtrei demais, ou ainda não estudei. */}
+          {sessions.length ? (
+            <button
+              type="button"
+              onClick={() => {
+                setEstado("todas");
+                setOrigem("todas");
+                setArea("todas");
+                setBusca("");
+              }}
+              className="min-h-11 rounded-control border border-edge bg-surface px-3 text-sm text-ink transition-colors hover:border-primary hover:text-primary"
+            >
+              Limpar filtros
+            </button>
+          ) : (
+            <Link
+              href="/banco"
+              className="paper-control inline-flex min-h-11 items-center rounded-control border border-edge bg-surface px-3 text-sm text-ink hover:border-primary hover:text-primary"
+            >
+              Montar a primeira sessão
+            </Link>
+          )}
+        </div>
       )}
     </div>
   );
@@ -324,16 +348,18 @@ function FilterGroup<T extends string>({
     <div className="flex flex-wrap items-center gap-1.5">
       <span className="paper-eyebrow mr-1 shrink-0">{label}</span>
       {options.map(([optionValue, optionLabel]) => (
+        // ⚠️ ERA UM RETÂNGULO DE CANTO VIVO montado à mão — `border px-2.5
+        // py-1` sem raio nenhum, numa fileira densa de filtros onde o resto do
+        // Banco usa `.km-chip`. O chip canônico entrega o mesmo tamanho, o raio
+        // do sistema e o estado que a identidade inteira usa; não vira
+        // `BotaoDeEscolha` de propósito, porque este é o controlo DENSO: 44px
+        // aqui empurraria a lista de sessões para fora da dobra.
         <button
           key={optionValue}
           type="button"
           aria-pressed={value === optionValue}
           onClick={() => onChange(optionValue)}
-          className={`border px-2.5 py-1 text-xs transition-colors ${
-            value === optionValue
-              ? "border-primary bg-primary text-primaryInk"
-              : "border-edge text-muted hover:border-primary hover:text-ink"
-          }`}
+          className={`km-chip ${value === optionValue ? "km-chip-active" : ""}`}
         >
           {optionLabel}
         </button>

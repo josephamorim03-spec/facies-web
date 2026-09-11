@@ -679,6 +679,36 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/stats/policy-ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Admin Policy Ledger
+         * @description Agregado do ledger de decisao por ``policy_version``.
+         *
+         *     O ledger do trainer guarda snapshot de estado, candidatos rejeitados e
+         *     desfecho desde sempre, e nunca teve leitor em agregado -- so leitura por
+         *     linha e export de LGPD. Este endpoint e esse leitor.
+         *
+         *     Ler ``acceptance_rate: null`` como "ninguem viu", nao como "ninguem
+         *     aceitou": politica com ``recommendations > 0`` e ``events`` vazio e uma
+         *     peca que gera e nunca chega a tela.
+         *
+         *     Somente agregados; nenhum id de usuario sai daqui.
+         */
+        get: operations["admin_policy_ledger_admin_stats_policy_ledger_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/ops/audit-log": {
         parameters: {
             query?: never;
@@ -2231,8 +2261,42 @@ export interface paths {
         /**
          * Report Question Problem
          * @description Proxy para o kbank: registra um report de problema em uma questão.
+         *
+         *     ⚠️ `body` era `dict` cru: sem schema, sem teto de 4000 caracteres e sem
+         *     limite de volume, repassando o texto direto ao faciesbank. A rota irmã
+         *     (`/sessions/{id}/items/{pos}/report`) sempre teve o schema. As duas
+         *     enfileiram `triage_question_report`, que é job de IA PAGO e leva o texto
+         *     para dentro do prompt -- a mesma regra em duas cópias, e uma delas sem o
+         *     filtro.
          */
         post: operations["report_question_problem_question_bank_questions__question_id__report_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/question-bank/exam-totals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Question Bank Exam Totals
+         * @description O tamanho de prova de CADA instituição, para o seletor de banca.
+         *
+         *     Agregado no banco: sem agrupar são 2.102 linhas para ~270 instituições,
+         *     e mandar tudo ao navegador por causa de um número ao lado de cada nome é
+         *     pagar 200 KB para exibir três dígitos.
+         *
+         *     Lista vazia é resposta legítima — o banco pode não ter as views de
+         *     edição. Quem consome cai na contagem que já tinha.
+         */
+        get: operations["list_question_bank_exam_totals_question_bank_exam_totals_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7687,6 +7751,10 @@ export interface components {
              * @default 0
              */
             outdated_count: number;
+            /** Applied On */
+            applied_on?: string | null;
+            /** Applied Year */
+            applied_year?: number | null;
             /**
              * Completeness
              * @default unknown
@@ -7715,6 +7783,37 @@ export interface components {
             avg_time_ms?: number | null;
             /** Slow Rate */
             slow_rate?: number | null;
+        };
+        /**
+         * QuestionBankExamTotalOut
+         * @description Quantas questões de PROVA uma instituição tem, e em quantas edições.
+         *
+         *     O seletor de banca mostrava a contagem do índice de TREINO: o ENARE
+         *     aparecia com 530 quando as seis provas somam 600 — a diferença são as
+         *     anuladas, desatualizadas e duplicatas que o treino exclui com razão e a
+         *     prova precisa ter.
+         *
+         *     `editions` vem junto porque responde melhor a quem está escolhendo a
+         *     banca: "6 provas" decide mais que "600 questões".
+         */
+        QuestionBankExamTotalOut: {
+            /** Institution Key */
+            institution_key: string;
+            /**
+             * Total
+             * @default 0
+             */
+            total: number;
+            /**
+             * Annulled
+             * @default 0
+             */
+            annulled: number;
+            /**
+             * Editions
+             * @default 0
+             */
+            editions: number;
         };
         /**
          * QuestionBankFacetsOut
@@ -8475,6 +8574,8 @@ export interface components {
             full_exam_year?: number | null;
             /** Full Exam Type */
             full_exam_type?: ("acesso_direto" | "r_plus") | null;
+            /** Full Exam Number */
+            full_exam_number?: string | null;
             /** Generate Review Trail */
             generate_review_trail?: boolean | null;
             /** Question Ids */
@@ -9094,6 +9195,16 @@ export interface components {
              * @default 0
              */
             question_count: number;
+            /**
+             * Servable Question Count
+             * @default 0
+             */
+            servable_question_count: number;
+            /**
+             * Annulled Question Count
+             * @default 0
+             */
+            annulled_question_count: number;
             /**
              * Primary Question Count
              * @default 0
@@ -10380,6 +10491,7 @@ export interface components {
             /** Area */
             area?: string | null;
             execution?: components["schemas"]["StudentTodayExecutionOut"] | null;
+            explanation?: components["schemas"]["StudentTodayExplanationOut"] | null;
             /**
              * Agenda Occurrence Id
              * @description Stable occurrence rendered by student-agenda-v1 when this action belongs to the agenda.
@@ -10423,6 +10535,43 @@ export interface components {
             session_id?: string | null;
             /** Href */
             href?: string | null;
+        };
+        /**
+         * StudentTodayExplanationOut
+         * @description O porquê ESTRUTURADO da ação — o que `rationale` achata numa frase.
+         *
+         *     `rationale` continua sendo a frase curta que o herói mostra. Este campo é o
+         *     que sustenta a frase, e existe porque a constituição do produto exige duas
+         *     coisas que uma string não entrega: *"toda recomendação diz o que foi
+         *     recomendado e por quê"* e *"a incerteza deve ser representada"*.
+         *
+         *     Aditivo e opcional: cliente que não o conhece continua funcionando.
+         */
+        StudentTodayExplanationOut: {
+            /** Selected Because */
+            selected_because?: string[];
+            /** Factors */
+            factors?: components["schemas"]["StudentTodayFactorOut"][];
+            /** Confidence Label */
+            confidence_label?: string | null;
+            /** Confidence Reason */
+            confidence_reason?: string | null;
+            /** Policy Version */
+            policy_version?: string | null;
+        };
+        /**
+         * StudentTodayFactorOut
+         * @description Um número que o motor usou, com o que ele significa.
+         */
+        StudentTodayFactorOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Value */
+            value: string;
+            /** Meaning */
+            meaning: string;
         };
         /** StudentTodayLoadOut */
         StudentTodayLoadOut: {
@@ -11116,6 +11265,12 @@ export interface components {
             } | null;
             /** Why Factors */
             why_factors?: components["schemas"]["TrainerWhyFactorOut"][];
+            /** Factors */
+            factors?: {
+                [key: string]: unknown;
+            };
+            /** Selected Because */
+            selected_because?: string[];
             /** Outcome Targets */
             outcome_targets?: ("retention" | "transfer" | "speed" | "calibration")[];
             /** Signals */
@@ -12776,6 +12931,42 @@ export interface operations {
             };
         };
     };
+    admin_policy_ledger_admin_stats_policy_ledger_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: {
+                "X-Ops-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_audit_log_admin_ops_audit_log_get: {
         parameters: {
             query?: {
@@ -14264,6 +14455,7 @@ export interface operations {
                 years?: number[] | null;
                 include_empty?: boolean;
                 limit?: number;
+                population?: "servable" | "exam";
             };
             header?: {
                 authorization?: string | null;
@@ -16063,11 +16255,9 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
+        requestBody: {
             content: {
-                "application/json": {
-                    [key: string]: unknown;
-                };
+                "application/json": components["schemas"]["QuestionBankItemReportIn"];
             };
         };
         responses: {
@@ -16078,6 +16268,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_question_bank_exam_totals_question_bank_exam_totals_get: {
+        parameters: {
+            query?: {
+                access_group?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionBankExamTotalOut"][];
                 };
             };
             /** @description Validation Error */

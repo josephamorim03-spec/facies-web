@@ -7,6 +7,28 @@ type YearPickerProps = {
   // Cross-filtered year facet: numeric years present in the current recorte plus
   // a { year: null } "sem ano" bucket. Counts react to the selected banca.
   yearStats: QuestionBankYearStat[];
+  /**
+   * No MODO PROVA, quantas questões a prova daquele ano teve.
+   *
+   * `yearStats` conta o índice de TREINO, que exclui anulada, desatualizada e
+   * duplicata. O aluno via "2026 · 67" e escolhia uma prova de 100 — certo
+   * para treino, errado num seletor que está escolhendo qual PROVA fazer.
+   *
+   * `null` fora do modo prova: ali o número do treino É o número certo.
+   */
+  tamanhoPorAnoDaProva?: Map<number, number> | null;
+  /**
+   * QUANDO A PROVA DAQUELE ANO CAIU — "out/2025" sob o "2026".
+   *
+   * A fonte rotula pela TURMA: a "ENARE 2026" foi aplicada em 20/10/2025,
+   * porque o processo seletivo para ingresso em 2026 acontece no fim de 2025.
+   * Quem lê "2026" entende "a prova deste ano" e se engana — relatado na tela
+   * sobre uma prova que o aluno acreditava ainda não ter ocorrido.
+   *
+   * Ano sem entrada não ganha frase nenhuma: só 662 das 2.043 edições têm data
+   * provada, e inventar `ano - 1` para as outras seria afirmar sem medir.
+   */
+  aplicacaoPorAnoDaProva?: Map<number, string> | null;
   selectedYears: number[];
   onSelectedYearsChange: (years: number[]) => void;
   includeNoYear: boolean;
@@ -22,6 +44,8 @@ function cx(...classes: Array<string | false | null | undefined>) {
 
 export default function YearPicker({
   yearStats,
+  tamanhoPorAnoDaProva = null,
+  aplicacaoPorAnoDaProva = null,
   selectedYears,
   onSelectedYearsChange,
   includeNoYear,
@@ -40,8 +64,20 @@ export default function YearPicker({
     for (const item of yearStats) {
       if (item.year !== null) map.set(item.year, item.question_count);
     }
+    // ⚠️ O tamanho da PROVA sobrepõe o do treino ANO A ANO, e nunca substitui o
+    // mapa inteiro.
+    //
+    // A primeira versão fazia `return tamanhoPorAnoDaProva`, e no modo prova
+    // esse mapa nasce VAZIO — as edições chegam por rede, depois. Resultado: ao
+    // escolher a banca, a lista de anos SUMIA; e ficava sumida de vez numa
+    // banca sem edição publicada. Relatado na tela em 2026-09-10.
+    //
+    // Quais anos existem é do `yearStats`; quantas questões cada um tem é da
+    // prova, onde ela souber. Ano que a prova não conhece continua ofertado com
+    // a contagem do treino — que é o que a sessão de fato serviria ali.
+    for (const [ano, tamanho] of tamanhoPorAnoDaProva ?? []) map.set(ano, tamanho);
     return map;
-  }, [yearStats]);
+  }, [tamanhoPorAnoDaProva, yearStats]);
 
   // Show the union of available years and any still-selected year (which may have
   // dropped out of the facet after a banca change) so the user can always
@@ -104,7 +140,7 @@ export default function YearPicker({
       </div>
 
       {loading ? (
-        <div className="flex flex-wrap gap-2" aria-hidden="true">
+        <div className="fileira-de-controles" aria-hidden="true">
           {[0, 1, 2, 3, 4].map((i) => (
             <span key={i} className="h-9 w-16 paper-skeleton" />
           ))}
@@ -175,10 +211,11 @@ export default function YearPicker({
             </div>
           )}
 
-          <div className="flex flex-wrap gap-2">
+          <div className="fileira-de-controles">
             {numericYears.map((year) => {
               const selected = selectedSet.has(year);
               const count = countByYear.get(year) ?? 0;
+              const quando = aplicacaoPorAnoDaProva?.get(year) ?? null;
               return (
                 <button
                   key={year}
@@ -191,8 +228,15 @@ export default function YearPicker({
                   )}
                   aria-pressed={selected}
                 >
-                  {year}
-                  <span className="ml-1 text-micro text-muted">{count}</span>
+                  <span className="flex flex-col items-center leading-tight">
+                    <span>
+                      {year}
+                      <span className="ml-1 text-micro text-muted">{count}</span>
+                    </span>
+                    {quando !== null && (
+                      <span className="text-micro text-muted">{quando}</span>
+                    )}
+                  </span>
                 </button>
               );
             })}

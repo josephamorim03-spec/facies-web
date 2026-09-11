@@ -159,7 +159,7 @@ export default function ErrorFlashcardsPanel({ token, session, wrongItems }: Pro
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="paper-eyebrow text-primary">De erro para revisão ativa</p>
-          <h3 className="mt-1 font-serif text-xl font-semibold leading-tight">Flashcards dos seus erros</h3>
+          <h3 className="mt-1 font-serif font-semibold leading-tight">Flashcards dos seus erros</h3>
           <p className="mt-1 text-sm leading-relaxed text-muted">A IA transforma seus erros em perguntas de recall.</p>
         </div>
         {!response && (

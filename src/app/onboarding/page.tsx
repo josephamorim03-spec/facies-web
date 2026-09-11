@@ -19,9 +19,12 @@ import { getAPIErrorDetail, getCapabilities, type CapabilityStatus } from "@/lib
 import { getAuthToken } from "@/lib/auth";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { BotaoDeEscolha } from "@/components/ui/BotaoDeEscolha";
+import { ATALHOS_DE_MINUTOS } from "@/lib/rotina";
 import { ObjectiveSelector } from "@/components/objectives/ObjectiveSelector";
 import { TargetExamSelector } from "@/components/objectives/TargetExamSelector";
 import { WeekdayPicker } from "./_components/WeekdayPicker";
+import { DEFAULT_AUTHENTICATED_ROUTE } from "@/lib/initialGoalSetup";
 
 const STEPS: { key: OnboardingStep; label: string; title: string; help: string }[] = [
   {
@@ -38,21 +41,39 @@ const STEPS: { key: OnboardingStep; label: string; title: string; help: string }
   },
   {
     key: "capacity",
-    label: "Tempo",
-    title: "Quanto tempo por dia?",
-    help: "Deixe em zero os dias de descanso — eles ficam intocados no seu plano.",
+    label: "Semana",
+    // ⚠️ ESTA É A PERGUNTA QUE FAZ O PLANO EXISTIR, e o título dizia-o de
+    // lado. "Quanto tempo por dia?" soa a formulário; o que se está a
+    // declarar é a semana padrão — a mesma que `/preferencias` edita depois,
+    // e da qual o tamanho de cada bloco do dia é consequência direta.
+    title: "Como é a sua semana?",
+    help: "Quanto dá para estudar em cada dia. Zero é resposta legítima e sem penalidade — o dia fica intocado no seu plano.",
   },
   {
     key: "ready",
     label: "Pronto",
-    title: "Sua trilha está pronta",
-    help: "Ela começa provisória e fica mais precisa a cada simulado diagnóstico.",
+    // ⚠️ "TRILHA" ERA VOCABULARIO ORFAO. A palavra so existia aqui e numa rota
+    // sem link nenhum (`/trilha`, agora apagada). O aluno terminava o primeiro
+    // contato com o produto ouvindo o nome de uma tela que nunca mais ia
+    // encontrar -- o app chama isto de "O plano ate a prova", em `/voce`.
+    title: "Seu plano está pronto",
+    // ⚠️ E O GENERO MUDA COM O SUBSTANTIVO. Ao trocar "trilha" por "plano" eu
+    // deixei "Ela começa provisória" para trás: a ultima tela do primeiro
+    // contato do aluno com o produto ficou agramatical. Nenhum guard testa
+    // concordancia -- `check-portuguese-ui-copy` mede acento, nao sintaxe.
+    help: "Ele começa provisório e fica mais preciso a cada simulado diagnóstico.",
   },
 ];
 
 type RoutineDraft = { weekday: number; kind: "shift" | "work" | "other"; duration_hours: number };
 
 const DEFAULT_MINUTES = 120;
+
+// ⚠️ A LISTA MORA EM `lib/rotina`, e não aqui. Esta tela chegou a ter a sua
+// própria (`0/30/60/90/120/180`) enquanto "Minha semana" tinha outra
+// (`0/10/20/35/45/60`) — duas escalas para a MESMA pergunta, e a da tela de
+// edição nem alcançava o padrão que esta grava. Ver o docstring de
+// `ATALHOS_DE_MINUTOS`.
 
 function errorMessage(error: unknown, fallback: string): string {
   const detail = getAPIErrorDetail(error);
@@ -165,9 +186,13 @@ export default function OnboardingPage() {
     setError(null);
     try {
       await completeOnboarding(getAuthToken());
-      router.push("/hoje");
+      // ⚠️ O INICIO, e nao a agenda do dia. Quem acaba de declarar a rotina
+      // ainda nao tem sequencia, nem diagnostico, nem base para medir -- o
+      // Inicio mostra a porta ("comece pelo banco") em vez de uma agenda que
+      // ainda nao tem o que agendar.
+      router.push(DEFAULT_AUTHENTICATED_ROUTE);
     } catch (err) {
-      setError(errorMessage(err, "Não foi possível gerar sua trilha."));
+      setError(errorMessage(err, "Não foi possível gerar seu plano."));
       setBusy(false);
     }
   }, [router]);
@@ -205,7 +230,7 @@ export default function OnboardingPage() {
                   done
                     ? "border-success bg-success text-primaryInk"
                     : active
-                      ? "border-primary bg-primary text-primaryInk"
+                      ? "border-primary bg-washSelecao text-ink"
                       : "border-edge bg-surface text-muted"
                 }`}
               >
@@ -221,7 +246,7 @@ export default function OnboardingPage() {
         })}
       </ol>
 
-      <h1 className="font-serif text-2xl text-ink">{current.title}</h1>
+      <h1 className="font-serif text-ink">{current.title}</h1>
       <p className="mt-2 text-sm text-muted">{current.help}</p>
 
       {error && (
@@ -252,7 +277,7 @@ export default function OnboardingPage() {
             <div className="space-y-4">
               <Alert variant="info">
                 A seleção de prova alvo está indisponível no momento. Você pode seguir e
-                defini-la depois em Perfil.
+                defini-la depois em Você › A sua prova.
               </Alert>
               <Button variant="primary" onClick={() => setStep("routine")}>
                 Continuar
@@ -359,53 +384,91 @@ export default function OnboardingPage() {
         )}
 
         {step === "capacity" && (
-          <div className="space-y-3 rounded-surface border border-edge bg-surface p-4">
+          <div className="space-y-4 rounded-surface border border-edge bg-surface p-4">
+            {/* ⚠️ OS ATALHOS ENTRARAM, e o campo numérico ficou.
+
+                Antes eram sete campos `type="number"` de 0 a 960 e passo 15 —
+                o aluno tinha de INVENTAR um número, sete vezes, na primeira
+                tela do produto. `/preferencias` (a mesma pergunta, feita
+                depois) sempre ofereceu atalhos; a versão do onboarding é que
+                estava fora da língua da casa.
+
+                O campo continua para quem quer o número exato: atalho que
+                substitui o campo tira precisão de quem já sabe a resposta. */}
             {["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"].map(
               (label, weekday) => {
                 const minutes = availability[weekday] ?? 0;
                 return (
-                  <div key={label} className="flex items-center justify-between gap-4">
-                    <label htmlFor={`day-${weekday}`} className="text-sm text-ink">
-                      {label}
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        id={`day-${weekday}`}
-                        type="number"
-                        min={0}
-                        max={960}
-                        step={15}
-                        className="w-24 rounded-control border border-edge bg-surface px-2 py-2 text-sm text-ink"
-                        value={minutes}
-                        onChange={(event) =>
-                          setAvailability((previous) => ({
-                            ...previous,
-                            [weekday]: Math.max(
-                              0,
-                              Math.min(960, Number(event.target.value) || 0),
-                            ),
-                          }))
-                        }
-                      />
-                      <span className="w-24 text-xs text-muted">
-                        {minutes === 0 ? "descanso" : "min/dia"}
-                      </span>
+                  <div key={label} className="space-y-2 border-b border-rule pb-4 last:border-b-0 last:pb-0">
+                    <div className="flex items-center justify-between gap-4">
+                      <label htmlFor={`day-${weekday}`} className="text-sm text-ink">
+                        {label}
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          id={`day-${weekday}`}
+                          type="number"
+                          min={0}
+                          max={960}
+                          step={15}
+                          className="w-24 rounded-control border border-edge bg-surface px-2 py-2 text-sm text-ink"
+                          value={minutes}
+                          onChange={(event) =>
+                            setAvailability((previous) => ({
+                              ...previous,
+                              [weekday]: Math.max(
+                                0,
+                                Math.min(960, Number(event.target.value) || 0),
+                              ),
+                            }))
+                          }
+                        />
+                        <span className="w-24 text-xs text-muted">
+                          {minutes === 0 ? "descanso" : "min/dia"}
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      className="fileira-de-controles"
+                      role="radiogroup"
+                      aria-label={`Minutos em ${label}`}
+                    >
+                      {ATALHOS_DE_MINUTOS.map((valor) => (
+                        <BotaoDeEscolha
+                          key={valor}
+                          escolhido={minutes === valor}
+                          onClick={() =>
+                            setAvailability((previous) => ({ ...previous, [weekday]: valor }))
+                          }
+                        >
+                          {valor === 0 ? "Nada" : `${valor} min`}
+                        </BotaoDeEscolha>
+                      ))}
                     </div>
                   </div>
                 );
               },
             )}
+            <p className="text-xs text-muted">
+              Dá para mudar quando quiser, em Você › Minha semana. O plano é
+              refeito a partir da semana nova.
+            </p>
           </div>
         )}
 
         {step === "ready" && (
           <div className="rounded-surface border border-edge bg-surface p-4">
+            {/* ⚠️ "TRILHA" ERA VOCABULÁRIO ÓRFÃO, e o título desta etapa já
+                tinha sido corrigido — o CORPO ficou para trás, que é como uma
+                palavra morta sobrevive a uma limpeza. A tela chama-se "O plano
+                até a prova", e é essa a palavra que o aluno vai reencontrar. */}
             <p className="text-sm text-ink">
-              Vamos montar sua trilha agora. Ela já começa com os simulados diagnósticos —
-              é com eles que o sistema aprende onde você está.
+              Vamos montar o seu plano agora. Ele já começa com os simulados
+              diagnósticos — é com eles que o Fácies aprende onde você está.
             </p>
             <p className="mt-3 text-xs text-muted">
-              Você pode ajustar rotina, metas e objetivos quando quiser.
+              A sua semana, as metas e a prova-alvo mudam quando quiser, na aba
+              Você.
             </p>
           </div>
         )}

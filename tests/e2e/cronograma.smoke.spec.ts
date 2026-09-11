@@ -171,8 +171,11 @@ test.describe("Cronograma smoke", () => {
     // `/agenda-operacional` deixou de ser tela própria em f426e1d e virou atalho:
     // o contrato agora é que o atalho ENTREGA a visão de mês, não que ele preserve
     // a URL antiga.
+    // ⚠️ O DESTINO MUDOU: o mes ganhou rota propria (`/cronograma/mes`) quando
+    // "Semana" e "Mes" viraram secoes do Plano — `navConfig` casa secao por
+    // pathname, e as duas leituras nao podiam partilhar `/cronograma?view=`.
     await page.goto("/agenda-operacional");
-    await expect(page).toHaveURL(/\/cronograma\?view=month$/);
+    await expect(page).toHaveURL(/\/cronograma\/mes$/);
     await expect(page.getByLabel(/M.s anterior/i)).toBeVisible();
   });
 

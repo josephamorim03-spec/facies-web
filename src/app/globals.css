@@ -154,6 +154,21 @@
      três cópias do valor divergiriam na primeira mudança. */
   --gutter: 20px;
   --bloco: 56px;
+  /* ⚠️ O RITMO DO APP, que até 2026-09-06 não existia.
+
+     As cinco telas de aluno usavam QUATRO ritmos de seção diferentes: o Hoje
+     20→24px, o Banco 20, o Mapa 12/16/20 conforme o estado da MESMA tela, a
+     Evolução 16 e o Você 24. Nada disso era decisão — era o que cada tela
+     tinha na hora em que foi escrita.
+
+     O valor é o do Hoje, que é a tela de referência do artboard `8b`: 20px, e
+     24 quando há largura para respirar. `--bloco` acima é o ritmo da LANDING e
+     é outro assunto — lá as seções são páginas inteiras.
+
+     ⚠️ Isto existe porque `--space-page` e `--content-wide`, os dois tokens de
+     espaço que o sistema já declarava, têm ZERO consumidores: o único ritmo
+     tokenizado da casa nunca chegou ao app. */
+  --ritmo-secao: 1.25rem;
   --motion-fast: 120ms;
   --motion-base: 180ms;
   --motion-slow: 240ms;
@@ -163,7 +178,6 @@
   --ease-paper: cubic-bezier(0.2, 0, 0, 1);
   /* Assentamento mais macio que o --ease-paper, sem overshoot. */
   --ease-cozy: cubic-bezier(0.32, 0.72, 0, 1);
-  --mobile-nav-height: 4rem;
   /* Altura REAL da navegacao inferior no mobile, escrita por `AppShell`:
      0 quando ela nao aparece (desktop, tela imersiva), a fileira de abas
      sozinha, ou a fileira mais a linha de filhos. Ja INCLUI a safe-area, que a
@@ -194,7 +208,13 @@
   --bottom-action-bar-min-height: 5.25rem;
   --bottom-action-bar-space: calc(var(--bottom-action-bar-min-height) + env(safe-area-inset-bottom, 0px));
 
-  /* Paleta de área — EGA de 16 cores, uma matiz canônica por especialidade:
+  /* ⚠️ VENCIDO como DESCRIÇÃO — vale como registro. A paleta abaixo não é mais
+     EGA: ela voltou às Okabe-Ito puras (ver o bloco marcado assim, adiante), e
+     OU deixou o cinza pelo violeta em 2026-09-06. Nenhuma das matizes citadas
+     nesta frase descreve um hex vigente. O parágrafo final — fonte única — esse
+     continua valendo.
+
+     Paleta de área — EGA de 16 cores, uma matiz canônica por especialidade:
      CM verde, CG vermelho, GO magenta, OB azul, PD ciano, MP marrom, OU cinza.
      Metade escura no tema claro, metade brilhante no escuro.
 
@@ -250,7 +270,30 @@
   --area-ob:  #8F2A62;  /* familia de GO, 6,14 — 1,71:1 de distancia dele  */
   --area-ped: #009E73;  /* Okabe-Ito H=164, 3,57 (era 3,05)                */
   --area-mp:  #E69F00;  /* Okabe-Ito H=41,  3,57 (era 3,03)                */
-  --area-ou:  #5A6067;  /* neutro: "Outras" nao e area, e o resto */
+  /* OU DEIXOU DE SER O CINZA, e o motivo antigo nao sobrevive ao teste.
+     Esta linha dizia `neutro: "Outras" nao e area, e o resto`. O argumento e'
+     semantico e soa bem, mas o valor era `#5A6067` — byte a byte o mesmo hex de
+     `--color-muted`, nos DOIS temas. Na tela isso nao lia como "residual": lia
+     como legenda apagada, e o ponto de OU precisava de um anel extra em
+     `AreaDot` so' para nao sumir no papel.
+
+     O projeto de design deu identidade propria a "Outras", e o violeta esta
+     MEDIDO contra os cinco fundos deste tema: 4,73:1 no pior par
+     (`--color-surface-muted`). Nao e' so' o piso de marca grafica (3:1) — passa
+     tambem o de TEXTO (4,5:1), e isso e' o que mantem legais os tres lugares que
+     ainda escrevem a sigla NA cor da area: `AreaLinesChart.tsx` (a legenda
+     clicavel), `VolumeChart.tsx` (os rotulos de segmento) e o `label.color` de
+     `useGraficosData.tsx`. A alternativa `#56B4E9` media 1,81:1 e teria obrigado
+     a mover os tres para `text-ink` antes de qualquer coisa.
+
+     Matiz 271: 69 graus do CM (202) e 56 do GO/OB (327) — folga na vizinhanca
+     mais apertada desta paleta.
+
+     ⚠️ OU e' TAMBEM o fallback de area desconhecida: `resolveDisplayArea` cai
+     em "OU" por padrao e ha ~12 sitios com `?? AREA_VAR.OU`. O que era
+     cinza-de-"sem sinal" agora e' violeta-de-"area chamada Outras". E'
+     consequencia aceita da decisao, nao efeito colateral esquecido. */
+  --area-ou:  #7A4FA3;  /* violeta H=271, 4,73 — acima do piso de TEXTO    */
   /* "Prova inteira" nao e especialidade: e modo. Usa o primary para nao
      disputar matiz com as sete areas — e o primary ja passa no gate. */
   --area-full-exam: var(--color-primary);
@@ -350,7 +393,12 @@
   --area-ob:  #B85C85;
   --area-ped: #43C6A0;
   --area-mp:  #F0B84A;
-  --area-ou:  #9AA0A2;
+  /* O violeta do claro, pela MESMA regra dos outros seis: matiz preservada
+     (271), luminosidade acima. O projeto de design so' fornece o tom claro, e
+     usar `#7A4FA3` aqui repetiria o defeito que estes overrides existem para
+     corrigir — hex saturado do tema claro desenhado sobre papel preto.
+     Medido: 5,35:1 no pior par, ao lado dos 5,44 do cinza que ele substitui. */
+  --area-ou:  #B48ED7;
   --area-full-exam: var(--color-primary);
 }
 
@@ -364,6 +412,15 @@
   :root {
     --gutter: 32px;
     --bloco: 96px;
+  }
+}
+
+/* O respiro do app cresce no mesmo ponto em que o Tailwind abre `md`, e não no
+   760 da landing: as telas de aluno são governadas pelas classes `md:`, e dois
+   pontos de quebra para o mesmo respiro fariam a tela saltar duas vezes. */
+@media (min-width: 768px) {
+  :root {
+    --ritmo-secao: 1.5rem;
   }
 }
 
@@ -774,6 +831,12 @@
      resultado de deriva histórica. Viraram uma regra com os seletores que
      ainda têm call site; `.km-panel` e `.surface-panel` tinham zero usos e
      foram embora. */
+  /* ⚠️ TRÊS NOMES, UMA REGRA. `.km-card` e `.surface-hero` são ALIAS de
+     `.paper-surface` — não há um pixel de diferença entre eles, e o Banco
+     chegou a usar os três na mesma tela. O JSX foi unificado em 2026-09-06;
+     os alias ficam apenas para o dia em que algum deles precise mesmo
+     divergir. Nome novo para forma igual é como um sistema de design perde a
+     autoridade: quem lê deixa de saber se a escolha significa algo. */
   .paper-surface,
   .km-card,
   .surface-hero {
@@ -797,12 +860,135 @@
     transition: background-color var(--motion-fast) var(--ease-paper), border-color var(--motion-fast) var(--ease-paper), color var(--motion-fast) var(--ease-paper);
   }
 
+  /* ⚠️ TRÊS SINAIS, E NENHUM DELES É PESO OU PREENCHIMENTO.
+
+     O chip escolhido era `bg-primary text-primaryInk` — o mesmo tratamento da
+     ação principal do dia. Um destaque que marca a ação E o filtro não marca
+     nenhum dos dois.
+
+     Aqui o estado precisa de mais que a borda, ao contrário de uma barra de
+     três abas: numa barra de filtros há uma dúzia de chips lado a lado, e o
+     olho procura UM entre muitos. `wash-selecao` contra `surfaceMuted` é
+     1,02:1 — o campo sozinho seria invisível. Então: a borda vira teal, o
+     campo esverdeia, e a tinta acompanha.
+
+     `text-primary` sobre `wash-selecao` mede 4,84:1 — passa AA para 12px, e o
+     par já é medido por `check-contrast-tokens.mjs`. Peso continua proibido,
+     pela medida do comentário acima. */
   .km-chip-active {
-    @apply border-primary bg-primary text-primaryInk;
+    @apply border-primary bg-washSelecao text-primary;
   }
 
   .km-muted-surface {
     background: color-mix(in srgb, var(--color-surface-muted) 74%, transparent);
+  }
+
+  /**
+   * O respiro entre as seções de uma tela de aluno.
+   *
+   * Substitui os `space-y-4|5|6` que cada tela escolhia por conta própria. A
+   * medida vive em `--ritmo-secao`, num lugar só — mudar o respiro do produto
+   * passa a ser uma linha, e não uma caçada por cinco arquivos.
+   */
+  .ritmo-secao > * + * {
+    margin-top: var(--ritmo-secao);
+  }
+
+  /**
+   * Uma fileira de controles do mesmo tipo — chips de área, atalhos de minutos,
+   * dias da semana, filtros.
+   *
+   * ## No telefone ela é JUSTIFICADA; no desktop, alinhada à esquerda
+   *
+   * ⚠️ A pedido do operador (2026-09-06), e a razão é de leitura, não de gosto.
+   * A 390px uma fileira `flex flex-wrap` deixa um dente irregular à direita:
+   * cinco chips numa linha, dois na seguinte, e a margem direita muda de lugar
+   * a cada quebra. O olho lê isso como desalinho, e não como conteúdo.
+   *
+   * Em grade de colunas iguais os controles enchem a largura e ficam
+   * simétricos nos dois lados — e como bônus todos ganham a mesma largura de
+   * alvo, o que no polegar importa mais que no rato.
+   *
+   * No desktop há largura de sobra e a fileira volta a ser `flex`: ali o
+   * esticado seria vazio no meio de cada botão.
+   *
+   * ⚠️ Existe porque a mesma fileira estava escrita à mão em 17 lugares, com
+   * oito formas diferentes de a declarar. Repetição sem norma é como o produto
+   * deixa de parecer um só.
+   */
+  .fileira-de-controles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .fileira-de-controles {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  }
+
+  /* O conteúdo do controle centra-se dentro da própria célula: numa grade de
+     colunas iguais, texto encostado à esquerda desfaz a simetria que a grade
+     acabou de criar. */
+  .fileira-de-controles > * {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /*
+   * QUEM FLUTUA SOBRE O RODAPÉ ASSENTA ACIMA DA BARRA DE ABAS — e SEGUE ela
+   * quando ela some.
+   *
+   * ⚠️ Isto NÃO é regra nova: era o `style` embutido do `BottomActionBar`, e
+   * funcionava em TRÊS telas. Nas outras, cada botão flutuante escrevia o seu
+   * `bottom` à mão com `env(safe-area-inset-bottom)` e IGNORAVA a navegação —
+   * o arranque dos flashcards e o `Adicionar` do calendário ficavam por baixo
+   * da barra de abas. O operador reportou os dois. Extrair aqui é o que torna
+   * o contrato obrigatório em vez de opcional.
+   *
+   * ⚠️ A ALTURA ENTRA MULTIPLICADA PELA VISIBILIDADE. A barra de abas esconde-se
+   * pela direção do scroll com `translateY(110%)`, e o elemento CONTINUA no
+   * layout: `--nav-stack-height` não muda. Medido em `/preferencias`: rolando
+   * até ao fim, a barra ia para 855 (fora do ecrã) e o botão primário ficava
+   * parado em 641–738, com uma faixa morta de 106px por baixo dele.
+   *
+   * ⚠️ AS DUAS VARIÁVEIS LOCAIS SÃO DECLARADAS AQUI, NO PONTO DE USO, e nunca
+   * em `:root` — a nota de `--nav-stack-height` regista porquê: propriedade
+   * customizada computa no elemento ONDE É DECLARADA, e em `:root` a altura
+   * ainda vale `0px`, porque quem lhe escreve o valor real é um wrapper do
+   * `AppShell`, mais abaixo na árvore. Declarada aqui, já herdou o valor certo.
+   *
+   * NÃO define `position`: quem usa isto é `fixed` (barra de ação, FAB) ou
+   * `sticky` (o arranque dos flashcards), e a classe serve os dois.
+   */
+  .acima-da-barra-de-abas {
+    /* Zero quando a barra saiu de cena: a ação encosta ao rodapé, que é onde o
+       polegar a espera. */
+    --barra-efetiva: calc(var(--nav-stack-height) * var(--nav-stack-shown));
+    /* A safe-area que AINDA NÃO foi consumida por ninguém. Com a barra de abas
+       presente, quem já a consumiu foi ela no seu próprio `padding-bottom`, e
+       somá-la de novo abriria ~34px de vazio num aparelho com notch. */
+    --sobra-segura: max(0px, env(safe-area-inset-bottom, 0px) - var(--barra-efetiva));
+    bottom: var(--barra-efetiva);
+    /* Mesma duração e mesma curva da barra de abas, senão o botão salta
+       enquanto a outra desliza. A regra global de `prefers-reduced-motion` zera
+       isto — e nesse modo a barra nunca se esconde, logo não há o que seguir. */
+    transition: bottom var(--motion-base) var(--ease-paper);
+  }
+
+  /* Faixa de largura total que pinta o próprio fundo até à borda do ecrã. */
+  .acima-da-barra-de-abas--faixa {
+    padding-bottom: calc(0.75rem + var(--sobra-segura));
+  }
+
+  /* Botão solto (FAB de canto, arranque em `sticky`): não pinta fundo até à
+     borda, então a folga tem de entrar no `bottom` e não no `padding`. */
+  .acima-da-barra-de-abas--solto {
+    bottom: calc(var(--barra-efetiva) + 0.75rem + var(--sobra-segura));
   }
 
   .paper-control {

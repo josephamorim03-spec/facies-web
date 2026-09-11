@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { fonteDoBackend, MOTIVO } from "./_contrato-com-o-backend.mjs";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
@@ -58,17 +57,14 @@ function eventosDoFrontend() {
   return new Set([...semComentarios(bloco[1], "ts").matchAll(/"([a-z_]+)"/g)].map((m) => m[1]));
 }
 
-//: `null` quando o backend nao esta ao lado -- ver `_contrato-com-o-backend.mjs`.
-const FONTE_BACKEND = fonteDoBackend("app/repos/facies_funnel_repo.py");
-
 function eventosDoBackend() {
-  const fonte = FONTE_BACKEND;
+  const fonte = readFileSync(`${KROSMED}/app/repos/facies_funnel_repo.py`, "utf8");
   const bloco = fonte.match(/EVENTOS = frozenset\(\s*\{([\s\S]*?)\}\s*\)/);
   assert.ok(bloco, "não achei a allowlist `EVENTOS`");
   return new Set([...semComentarios(bloco[1], "py").matchAll(/"([a-z_]+)"/g)].map((m) => m[1]));
 }
 
-test("evento comentado não conta como declarado", { skip: FONTE_BACKEND ? false : MOTIVO }, () => {
+test("evento comentado não conta como declarado", () => {
   const ts = `\n  | "facies_vista"\n  // | "destaque_clicado";\n  | "diagnostico_clicado";`;
   assert.deepEqual(
     [...semComentarios(ts, "ts").matchAll(/"([a-z_]+)"/g)].map((m) => m[1]),
@@ -88,7 +84,7 @@ test("evento comentado não conta como declarado", { skip: FONTE_BACKEND ? false
   assert.ok(eventosDoFrontend().size >= 6, "a extração encolheu — o filtro comeu evento real");
 });
 
-test("a allowlist do backend e o tipo do frontend sao o MESMO conjunto", { skip: FONTE_BACKEND ? false : MOTIVO }, () => {
+test("a allowlist do backend e o tipo do frontend sao o MESMO conjunto", () => {
   const front = eventosDoFrontend();
   const back = eventosDoBackend();
 

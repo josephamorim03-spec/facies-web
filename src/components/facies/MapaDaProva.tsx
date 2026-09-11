@@ -141,12 +141,37 @@ function tamanho(indice: number): string {
  */
 const NA_HOME = 8;
 
+/**
+ * O que o aluno já mediu, por rótulo de linha.
+ *
+ * ⚠️ TEM NOME PORQUE ATRAVESSA MÓDULO. Ele era inline na assinatura do
+ * componente, e o `FaciesReport` — que declara a mesma coisa como prova
+ * própria — importava `DominioDoAluno` daqui. Sem o nome exportado o build
+ * parava em `has no exported member 'DominioDoAluno'`, depois de
+ * `✓ Compiled successfully`: o grafo de módulos resolve, o TypeScript não.
+ */
+export type DominioDoAluno = Map<
+  string,
+  {
+    mastery: number;
+    attempts: number;
+    /**
+     * Os TRÊS estados da certeza do aluno (`competency-mastery-v1`).
+     *
+     * Opcional para não quebrar quem já passa o mapa sem ele: ausente, a
+     * célula com dado pinta como `medido`, que é o comportamento anterior.
+     */
+    certeza?: "medido" | "estimado" | "nao_avaliado";
+  }
+>;
+
 export function MapaDaProva({
   linhas,
   limite,
   preOrdenado = false,
   pisoDeObservacao = 5,
   onSelecionar,
+  onAreaMudou,
   dominio = null,
 }: {
   linhas: LinhaDoMapa[];
@@ -190,20 +215,7 @@ export function MapaDaProva({
    * seria transformar "não sei" em "você é ruim nisto", que é a mentira mais
    * cara que um mapa de estudo pode contar.
    */
-  dominio?: Map<
-    string,
-    {
-      mastery: number;
-      attempts: number;
-      /**
-       * Os TRÊS estados da certeza do aluno (`competency-mastery-v1`).
-       *
-       * Opcional para não quebrar quem já passa o mapa sem ele: ausente, a
-       * célula com dado pinta como `medido`, que é o comportamento anterior.
-       */
-      certeza?: "medido" | "estimado" | "nao_avaliado";
-    }
-  > | null;
+  dominio?: DominioDoAluno | null;
   /**
    * Avisa quem monta o mapa qual assunto esta aberto — para ele oferecer uma
    * acao sobre o assunto (praticar, por exemplo).
@@ -215,6 +227,15 @@ export function MapaDaProva({
    * cliente.
    */
   onSelecionar?: (rotulo: string | null) => void;
+  /**
+   * A área aberta mudou.
+   *
+   * O estado vive AQUI porque é aqui que a fileira de chips o move — mas quem
+   * o consome é a página, para abrir a exploração do acervo por baixo do
+   * mosaico. Levantar o estado inteiro para a página faria o mosaico deixar de
+   * funcionar sozinho, e ele é usado também fora do app.
+   */
+  onAreaMudou?: (area: string | null) => void;
 }) {
   const [aberta, setAberta] = useState<string | null>(null);
   /**
@@ -281,11 +302,12 @@ export function MapaDaProva({
             aria-pressed={areaAberta === null}
             onClick={() => {
               setAreaAberta(null);
+              onAreaMudou?.(null);
               escolher(null);
             }}
             className={`paper-control min-h-9 shrink-0 snap-start rounded-control border px-3 text-nota transition-colors ${
               areaAberta === null
-                ? "border-ink bg-ink text-paper"
+                ? "border-primary bg-washSelecao text-ink"
                 : "border-edge bg-surface text-muted hover:text-ink"
             }`}
           >
@@ -301,7 +323,9 @@ export function MapaDaProva({
                   type="button"
                   aria-pressed={escolhida}
                   onClick={() => {
-                    setAreaAberta(escolhida ? null : codigo);
+                    const proxima = escolhida ? null : codigo;
+                    setAreaAberta(proxima);
+                    onAreaMudou?.(proxima);
                     escolher(null);
                   }}
                   className="paper-control flex min-h-9 shrink-0 snap-start items-center gap-2 whitespace-nowrap rounded-control border border-edge bg-surface px-3 text-nota text-ink transition-colors"

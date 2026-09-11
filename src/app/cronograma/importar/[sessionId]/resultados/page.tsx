@@ -142,7 +142,7 @@ export default function ResultadosPage() {
   if (sessionData.error) {
     return (
       <div className="space-y-3">
-        <h1 className="font-serif text-lg">Resultados</h1>
+        <h1 className="font-serif">Resultados</h1>
         <p className="text-sm text-danger">{sessionData.error}</p>
         <button
           type="button"
@@ -158,7 +158,7 @@ export default function ResultadosPage() {
   if (!sessionData.finResult) {
     return (
       <div className="space-y-3">
-        <h1 className="font-serif text-lg">Resultados</h1>
+        <h1 className="font-serif">Resultados</h1>
         <p className="text-sm text-muted">Dados de resultado não encontrados.</p>
         <button
           type="button"
@@ -174,7 +174,7 @@ export default function ResultadosPage() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4 px-4 pb-24 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] sm:px-6 sm:pt-[calc(env(safe-area-inset-top,0px)+1rem)] lg:px-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="font-serif text-lg">Correção do simulado</h1>
+        <h1 className="font-serif">Correção do simulado</h1>
         <button
           type="button"
           onClick={() => sessionData.requestExitConfirmation("/agenda-operacional")}

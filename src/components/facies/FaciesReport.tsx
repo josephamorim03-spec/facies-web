@@ -2,9 +2,10 @@ import type { Banca } from "@/lib/facies";
 import { janela, nomeCurto } from "@/lib/facies";
 import { BarrasArea } from "./BarrasArea";
 import { ComoCobra, notaComoCobra } from "./ComoCobra";
-import { MapaDaProva } from "./MapaDaProva";
+import { MapaDaProva, type DominioDoAluno } from "./MapaDaProva";
 import { CabecalhoLaudo, PainelLaudo } from "./PainelLaudo";
 import { PrevisaoDaForma } from "./PrevisaoDaForma";
+import { linhaBase, notaDaClassificacao } from "./linhaDaBase";
 
 /**
  * A Fácies da prova, em DOIS painéis — eram quatro.
@@ -37,59 +38,80 @@ import { PrevisaoDaForma } from "./PrevisaoDaForma";
  * diferentes que a nota antiga confundia.
  */
 
-/**
- * A linha "Base" — N de M, nunca um número sem denominador.
- *
- * `questoes_total` já conta as anuladas (migration 118), então é o número que
- * bate com a prova, e é ele que a linha mostra quando não há denominador.
- *
- * ⚠️ O PAR COMPARÁVEL É `cobertas` × `declaradas`, nunca `questoes_total` ×
- * `declaradas`. `declaradas` soma só as edições que TÊM denominador, enquanto
- * `questoes_total` conta o acervo inteiro — comparar os dois é comparar
- * conjuntos diferentes, e fazia 65 das 86 bancas caírem no ramo "sem
- * denominador" e perderem a linha em silêncio. Com o par certo, sobram 14.
- *
- * `estimado` é conservador: basta UMA edição vir da moda para o total ser
- * estimativa, e aí a tela diz "estimadas", nunca "declaradas".
- */
-function linhaBase(banca: Banca): string {
-  const totalTxt = banca.questoes_total.toLocaleString("pt-BR");
-  const den = banca.denominador;
-  if (!den || den.declaradas == null || den.cobertas == null) {
-    return `${totalTxt} questões`;
-  }
-  const { cobertas, declaradas } = den;
-  const declaradasTxt = declaradas.toLocaleString("pt-BR");
-  const rotulo = den.estimado ? " estimadas" : " declaradas";
-
-  // SOBRA: temos MAIS do que a prova declarou. É anomalia — ou a moda errou, ou
-  // há questão atribuída a uma edição que não a teve. Some da tela era o pior
-  // desfecho: some justamente o caso que pede investigação.
-  if (cobertas > declaradas) {
-    return `${cobertas.toLocaleString("pt-BR")} questões · ${declaradasTxt}${rotulo} nas edições medidas`;
-  }
-  if (cobertas === declaradas) {
-    // "Completa" só vale para a fase que medimos. A UNICAMP fecha as 80
-    // objetivas E aplica uma fase dissertativa inteira que a leitura não cobre —
-    // dizer "cobertura completa" sem nomeá-la seria a afirmação mais cara desta
-    // linha.
-    if (den.fase_nao_coberta) {
-      return `${totalTxt} questões · fase objetiva completa; a ${den.fase_nao_coberta} não entra nesta leitura`;
-    }
-    return `${totalTxt} questões · cobertura completa das ${den.edicoes_declaradas} edições medidas`;
-  }
-  return `${cobertas.toLocaleString("pt-BR")} de ${declaradasTxt} questões${rotulo}`;
-}
-
 export function FaciesReport({
   banca,
   limiteAssuntos,
+  dominio = null,
+  pisoDeObservacao = 5,
+  comparacao = null,
 }: {
   banca: Banca;
   /** A home passa 8; a pagina da banca nao passa, e mostra os 15. E o que faz
    *  "Ver a facies completa" entregar alguma coisa. */
   limiteAssuntos?: number;
+  /**
+   * O EIXO DO ALUNO: a mesma grade, com a tinta vindo do que ele já mediu.
+   *
+   * Sem `dominio` a tinta é incidência ("o que a banca cobra"); com ele é o que
+   * FALTA. As duas leituras significam ATENÇÃO de propósito — está registrado no
+   * `MapaDaProva` —, então a codificação não inverte quando o dado chega.
+   *
+   * Passando-o, o painel 01 ganha a tarja "tamanho é incidência · preenchimento
+   * é você" e a nota de cobertura ("N de M assuntos têm resposta sua"), que é o
+   * que impede uma grade meio no piso de parecer "vou mal em metade da prova".
+   *
+   * ⚠️ HOJE NINGUÉM PASSA. Os três chamadores montam `<FaciesReport banca=…/>` e
+   * nada mais: o `/mapa` voltou a ter abas e serve o eixo do aluno pelo mapa
+   * navegável, não por aqui. A capacidade fica porque funciona e é barata; não
+   * confunda "existe" com "está na tela" — é o erro que este repositório já
+   * catalogou como "constante existe ≠ caminho executa".
+   *
+   * ⚠️ OPT-IN também por segurança: este componente serve a pública
+   * `/prova/[slug]`, onde não existe aluno.
+   */
+  dominio?: DominioDoAluno | null;
+  /** Do contrato (`CompetencyMasteryOut.observation_floor`), nunca um literal. */
+  pisoDeObservacao?: number;
+  /*
+   * Havia aqui um `filtroPorArea?: boolean`. Ele saiu, e não é perda:
+   * `MapaDaProva` deixou de aceitá-lo quando o filtro por área virou
+   * `onSelecionar`/`onAreaMudou` no mapa novo, então repassá-lo quebrava o
+   * build e declará-lo sem repassar era pior — uma prop que não faz nada, com
+   * um comentário dizendo que não faz nada.
+   *
+   * Sair não custou comportamento: NENHUM dos três chamadores o passava
+   * (`MapaClientPage`, `prova/[slug]/page`, `FaciesPicker`), então ele sempre
+   * valeu `false`. Quem quiser o filtro de volta liga os dois callbacks acima —
+   * não é ressuscitar este sinalizador.
+   */
+  /**
+   * A comparacao com outra prova, como painel 05.
+   *
+   * ⚠️ Chega como NO' PRONTO, e nao como dado. `EixoComparar` tem `useState` e
+   * `useQuery`, e este arquivo nao tem `"use client"` — ele e' server component
+   * no `/prova/[slug]`. Recebendo o no' montado, quem decide o ambiente e' quem
+   * chama: sob o `MapaClientPage` tudo ja' e' cliente, e na pagina publica isto
+   * chega `null`.
+   *
+   * ⚠️ HOJE NINGUÉM PASSA, pelo mesmo motivo do `dominio`: o `/mapa` voltou a
+   * ter aba "Comparar" própria, e ela monta o `EixoComparar` direto. Quando o
+   * painel 05 chegou a existir, ele ficava abaixo de quatro painéis e perdia
+   * descoberta — a âncora `#comparar` foi a compensação, e continua aqui para
+   * quem religar isto não ter de redescobrir o problema.
+   */
+  comparacao?: React.ReactNode;
 }) {
+  // "Com dado" quer dizer COM RESPOSTA: `nao_avaliado` continua no mapa, mas
+  // nao conta como medida. Sem nenhuma, o `dominio` nao desce para a grade —
+  // uma grade inteira de celulas tracejadas parece defeito, e nao ausencia.
+  const assuntos = banca.mais_cai.linhas;
+  const comDado = dominio
+    ? assuntos.filter((linha) => {
+        const meu = dominio.get(linha.rotulo);
+        return !!meu && meu.certeza !== "nao_avaliado";
+      }).length
+    : 0;
+  const dominioVivo = comDado > 0 ? dominio : null;
 
   return (
     <div className="rounded-surface border border-edge bg-surface">
@@ -208,7 +230,23 @@ export function FaciesReport({
         <PainelLaudo
           numero="01"
           titulo="O que mais cai"
-          nota={`${banca.mais_cai.base.toLocaleString("pt-BR")} questões classificadas · ${banca.mais_cai.cobertura.toFixed(0)}% da base`}
+          /**
+           * ⚠️ O DENOMINADOR VAI POR EXTENSO, e isto é correção de um defeito
+           * que o operador encontrou lendo a tela.
+           *
+           * A nota dizia "553 questões classificadas · 99% da base", logo abaixo
+           * de um cabeçalho que diz "593 questões". Quem faz a conta obtém
+           * 553/593 = 93%, não 99% — porque `cobertura` é medida contra as
+           * VÁLIDAS, não contra o total. Conferido nas 138 bancas do dataset:
+           * `cobertura === base / (questoes_total - questoes_anuladas)`, sem
+           * exceção.
+           *
+           * A palavra "base" carregava essa troca em silêncio. Agora os dois
+           * números aparecem e a conta fecha na tela: 553 + 4 = 557 válidas, e
+           * 557 + 36 anuladas = 593. É a mesma regra que a `FolhaDoAssunto`
+           * impõe — percentual sem denominador visível é afirmação sem sujeito.
+           */
+          nota={notaDaClassificacao(banca)}
         >
           {/* MAPA, e nao a lista numerada.
               Os dois mostram `mais_cai`, mas a lista pedia leitura linha a
@@ -216,8 +254,33 @@ export function FaciesReport({
               justamente a forma. No mapa a prova inteira cabe num olhar, e o
               bloco vira a peca que circula em print. A ordem nao se perde: ela
               e o tamanho, e a posicao exata aparece no clique. */}
-          {banca.mais_cai.linhas.length > 0 ? (
-            <MapaDaProva linhas={banca.mais_cai.linhas} limite={limiteAssuntos} />
+          {assuntos.length > 0 ? (
+            <>
+              {/* A regra do `12b`, e só quando ela vale: sem domínio a tinta é
+                  incidência, e anunciar "preenchimento é você" seria falso. */}
+              {dominioVivo ? (
+                <p className="paper-eyebrow mb-2">
+                  tamanho é incidência · preenchimento é você
+                </p>
+              ) : null}
+              <MapaDaProva
+                linhas={assuntos}
+                limite={limiteAssuntos}
+                dominio={dominioVivo}
+                pisoDeObservacao={pisoDeObservacao}
+              />
+              {/* A COBERTURA VAI NA TELA. O aluno tem domínio medido em alguns
+                  subtemas e em outros não, e uma grade onde metade das células
+                  está no piso por falta de dado parece uma grade onde ele vai
+                  mal em metade da prova. Esta frase separa as duas leituras. */}
+              {dominioVivo ? (
+                <p className="mt-3 text-nota text-muted">
+                  Quanto mais escuro, mais falta. {comDado} de {assuntos.length}{" "}
+                  assuntos têm resposta sua; a partir de {pisoDeObservacao}{" "}
+                  respostas o assunto deixa de ser estimado e passa a ser medido.
+                </p>
+              ) : null}
+            </>
           ) : (
             <p className="text-sm text-muted">
               Base insuficiente para listar assuntos nesta banca.
@@ -225,7 +288,10 @@ export function FaciesReport({
           )}
           {banca.mais_cai.cobertura < 60 ? (
             <p className="mt-3 text-sm text-muted">
-              A classificação por assunto cobre {banca.mais_cai.cobertura.toFixed(0)}% desta
+              {/* Mesmo cuidado da nota acima: a porcentagem é sobre as válidas,
+                  e dizer só "desta banca" convida a dividir pelo total. */}
+              A classificação por assunto cobre {banca.mais_cai.cobertura.toFixed(0)}% das
+              questões não anuladas desta
               banca. A lista descreve essa parte, não a prova inteira.
             </p>
           ) : null}
@@ -268,6 +334,24 @@ export function FaciesReport({
             (3,5 pp de erro medio). Banca com menos de 3 edicoes cai no ramo que
             declara o motivo, em vez de sumir. */}
         <PrevisaoDaForma numero="04" institutionKey={banca.institution_key} />
+
+        {/* 05 — comparar com outra prova. Era a terceira aba.
+            Vem DEPOIS da previsão porque os painéis 01-04 são todos sobre ESTA
+            banca, e este é o único que traz uma segunda. A âncora existe porque
+            fundir as abas custou descoberta: como aba ela estava no topo, aqui
+            está abaixo de quatro painéis, e `/mapa#comparar` é o que devolve o
+            acesso direto que a aba dava. */}
+        {comparacao ? (
+          <PainelLaudo
+            numero="05"
+            titulo="Comparar com outra prova"
+            nota="duas provas com o mesmo edital cobram diferente"
+          >
+            <div id="comparar" className="scroll-mt-24">
+              {comparacao}
+            </div>
+          </PainelLaudo>
+        ) : null}
       </div>
     </div>
   );

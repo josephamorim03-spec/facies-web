@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { CalendarEventOut, deleteDirectedStudy, DirectedStudyListItem, ReviewTask, updateReviewTask } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
+import { BottomActionBar } from "@/components/ui/BottomActionBar";
 import { IconPlus } from "../CronogramaIcons";
 import { NewStudyForm } from "../CronogramaStudyReviewComponents";
 import {
@@ -97,26 +98,37 @@ export function CalendarActionButtons({
   return (
     <>
       <div className="mt-3 md:hidden">{viewSwitchSlot ?? null}</div>
-      <div
-        className="fixed right-4 z-40"
-        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
-        data-testid="calendar-action-mode"
-      >
-        <button
-          type="button"
-          onClick={onOpenCreateModal}
-          className={`flex items-center gap-1.5 border px-4 py-2.5 text-sm font-medium transition-colors ${
-            modal === "create"
-              ? "border-primary bg-primary text-primaryInk"
-              : "border-edge bg-paper text-ink hover:border-primary hover:text-primary"
-          }`}
-          title="Adicionar estudo ou compromisso"
-          aria-label="Adicionar"
-          data-testid="calendar-action-plus"
-        >
-          <IconPlus className="w-4 h-4" />
-          Adicionar
-        </button>
+      {/* 🚨 DEIXOU DE SER FAB DE CANTO, e eu tinha decidido o contrário.
+
+          O plano dizia `FAB de canto é a convenção, o pedido dele ali era
+          desenho e sobreposição`. Errado: o operador pediu para PADRONIZAR
+          estes botões, e depois nomeou o padrão — o `Pesquisar` do Caderno,
+          numa `BottomActionBar`. Um FAB de canto não é esse padrão, e manter
+          a convenção genérica contra o padrão declarado da casa é escolher
+          o livro em vez do produto.
+
+          De quebra some a classe de defeito inteira: a barra assenta acima
+          das abas por construção, em vez de eu ter de me lembrar de lhe pôr
+          o `bottom` certo. */}
+      <div data-testid="calendar-action-mode">
+        <BottomActionBar>
+          {/* O estado aberto vira `variant`: era `border-primary bg-primary
+              text-primaryInk` escrito à mão, uma das formas que o
+              `check-estado-selecionado` conta como dívida. */}
+          <Button
+            type="button"
+            onClick={onOpenCreateModal}
+            variant={modal === "create" ? "primary" : "secondary"}
+            size="md"
+            bloco
+            leftIcon={<IconPlus className="h-4 w-4" />}
+            title="Adicionar estudo ou compromisso"
+            aria-label="Adicionar"
+            data-testid="calendar-action-plus"
+          >
+            Adicionar
+          </Button>
+        </BottomActionBar>
       </div>
     </>
   );
@@ -485,7 +497,7 @@ export function CalendarStudyDeleteConfirmModal({
         className="w-full max-w-sm space-y-3 rounded-surface border border-edge bg-paper p-4 "
         onClick={(event) => event.stopPropagation()}
       >
-        <h3 className="font-serif text-base">Apagar estudo</h3>
+        <h3 className="font-serif">Apagar estudo</h3>
         <p className="text-sm text-muted">Este registro sera removido do calendario.</p>
         {error ? <p className="text-xs text-danger" role="alert">{error}</p> : null}
         <div className="flex flex-col gap-2">
@@ -556,7 +568,7 @@ export function CalendarEventRescheduleSheet({
       >
         <div>
           <p className="paper-eyebrow">Compromisso</p>
-          <h3 className="mt-1 text-base font-semibold leading-snug text-ink">{title}</h3>
+          <h3 className="mt-1 font-semibold leading-snug text-ink">{title}</h3>
           <p className="mt-1 text-xs text-muted">Data atual: {displayDate(selectedSourceISO)}</p>
         </div>
 
@@ -642,7 +654,7 @@ export function CalendarTaskRescheduleSheet({
       >
         <div>
           <p className="paper-eyebrow">{selectedTask.area}</p>
-          <h3 className="mt-1 text-base font-semibold leading-snug text-ink">{selectedTask.subtheme || selectedTask.theme}</h3>
+          <h3 className="mt-1 font-semibold leading-snug text-ink">{selectedTask.subtheme || selectedTask.theme}</h3>
           <p className="mt-1 text-xs text-muted">Data atual: {displayDate(fromISO)}</p>
         </div>
 
@@ -688,7 +700,7 @@ export function CalendarUndoRescheduleToast({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] z-[90] mx-auto max-w-md rounded-control border border-edge bg-paper px-3 py-2.5 ">
+    <div className="acima-da-barra-de-abas acima-da-barra-de-abas--solto fixed inset-x-3 z-[90] mx-auto max-w-md rounded-control border border-edge bg-paper px-3 py-2.5">
       <div className="flex items-center gap-3">
         <p className="min-w-0 flex-1 text-sm leading-snug text-ink">{message}</p>
         <button
@@ -778,7 +790,7 @@ export function CalendarEventDeleteConfirmModal({
   return (
     <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4 modal-backdrop">
       <div className="w-full max-w-sm space-y-3 rounded-surface border border-edge bg-paper p-4">
-        <h3 className="font-serif text-base">Apagar compromisso</h3>
+        <h3 className="font-serif">Apagar compromisso</h3>
         <p className="text-sm text-muted">Você tem certeza que deseja apagar esse compromisso?</p>
         <div className="flex flex-col gap-2">
           <Button type="button" variant="danger" size="md" onClick={onConfirmDelete}>
@@ -812,7 +824,7 @@ export function CalendarRescheduleWarningModal({
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4 modal-backdrop">
       <div className="w-full max-w-sm space-y-3 rounded-surface border border-edge bg-paper p-4">
-        <h3 className="font-serif text-base">Reagendamento longo</h3>
+        <h3 className="font-serif">Reagendamento longo</h3>
         <p className="text-sm text-muted">
           Esta revisão está <strong>{warnTask.days} dias</strong> fora do agendamento ideal. Deseja continuar?
         </p>

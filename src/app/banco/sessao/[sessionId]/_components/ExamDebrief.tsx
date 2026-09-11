@@ -20,6 +20,7 @@ import {
   studyChartTooltipContentStyle,
   studyChartTooltipCursor,
 } from "@/components/charts/studyChartTooltip";
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, TabsScrollArea } from "@/components/ui/Tabs";
 
 type Tab = "resumo" | "tempo" | "confianca" | "temas";
 
@@ -95,7 +96,7 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
       {/* First fold */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-ink">
+          <h2 className="font-semibold text-ink">
             {summary.correct}/{summary.answered} · {Math.round(summary.accuracy * 100)}% de acerto
           </h2>
           <p className="mt-1 text-sm text-muted">
@@ -115,26 +116,50 @@ export default function ExamDebrief({ sessionId }: { sessionId: string }) {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="mt-4 flex flex-wrap gap-1 border-b border-edge">
-        {([
-          ["resumo", "Resumo"],
-          ["tempo", "Tempo"],
-          ["confianca", "Confiança"],
-          ["temas", "Temas"],
-        ] as [Tab, string][]).map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setTab(value)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition ${
-              tab === value ? "border-primary text-ink" : "border-transparent text-muted hover:text-ink"
-            }`}
+      {/* ⚠️ DUAS LINGUAS DE ABA NA MESMA TELA, e esta era a errada.
+          Isto era um sublinhado feito a mao (`border-b-2` + `font-medium`)
+          desenhado a centimetros da faixa de pilulas canonica que o
+          `PostExamTabs` monta no mesmo ecra. Duas gramaticas de aba empilhadas
+          e' como o produto deixa de parecer um so'.
+
+          O trilho canonico traz de lambuja o que faltava aqui: `overflow-x-auto`
+          (esta faixa nao tinha, e "Confiança" a 390px e' o que a faz roçar a
+          borda), alvo de 44px, `aria-current` e o peso 400 que o desenho pede
+          abaixo de 13px. */}
+      {/* Centrado abaixo de `md` pela mesma regra da subnavegação: o trilho
+          é `inline-flex` e encostava à esquerda. A nota longa, com a causa e
+          a ressalva do trilho rolável, está em `IntentSubNav.tsx`. */}
+      <TabsScrollArea className="mt-4 w-full justify-center md:justify-start">
+        {/* `role="group"` + `aria-current`, exatamente como o `PostExamTabs` que
+            vive no mesmo ecra — nao `role="tab"`, que exigiria `tabpanel`s
+            ligados por `aria-controls` que nao existem aqui. */}
+        {({ ref, onScroll }) => (
+          <div
+            ref={ref}
+            onScroll={onScroll}
+            role="group"
+            aria-label="Recorte do debrief"
+            className={TAB_LIST_CLASS}
           >
-            {label}
-          </button>
-        ))}
-      </div>
+            {([
+              ["resumo", "Resumo"],
+              ["tempo", "Tempo"],
+              ["confianca", "Confiança"],
+              ["temas", "Temas"],
+            ] as [Tab, string][]).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                aria-current={tab === value ? "page" : undefined}
+                onClick={() => setTab(value)}
+                className={TAB_TRIGGER_CLASS}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+      </TabsScrollArea>
 
       <div className="mt-4 text-sm text-ink">
         {tab === "resumo" && (

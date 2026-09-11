@@ -224,7 +224,7 @@ export function CorrectionTab(props: CorrectionTabProps) {
             <button type="button" aria-label="Fechar navegação" onClick={onCloseNavDrawer} className="absolute inset-0 bg-black/40" />
             <aside className="absolute right-0 top-0 h-full w-[min(88vw,22rem)] bg-paper border-l border-edge p-3 flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <h2 className="font-serif text-sm">Questões</h2>
+                <h2 className="font-serif">Questões</h2>
                 <button type="button" onClick={onCloseNavDrawer} className="text-xs border border-edge px-2 py-1 text-ink">
                   Voltar
                 </button>
@@ -274,7 +274,7 @@ export function CorrectionTab(props: CorrectionTabProps) {
               className="border border-edge px-4 py-3 space-y-2 scroll-mt-16"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-sm font-medium text-ink">Questão {question.question_number}</h2>
+                <h2 className="font-medium text-ink">Questão {question.question_number}</h2>
                 <span className={`shrink-0 text-xs px-2 py-0.5 border ${question.status === "correct" ? "border-success bg-surfaceMuted text-success" : "border-danger bg-surfaceMuted text-danger"}`}>
                   {question.status === "correct" ? "Certa" : "Errada"}
                 </span>

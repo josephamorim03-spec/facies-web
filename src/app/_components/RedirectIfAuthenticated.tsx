@@ -2,7 +2,10 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { resolveAuthenticatedLandingRoute } from "@/lib/initialGoalSetup";
+import {
+  DEFAULT_AUTHENTICATED_ROUTE,
+  resolveAuthenticatedLandingRoute,
+} from "@/lib/initialGoalSetup";
 
 /**
  * Manda quem já entrou para dentro do app, e NÃO manda mais ninguém para o login.
@@ -38,9 +41,15 @@ export function RedirectIfAuthenticated() {
             if (ativo) router.replace(rota);
           })
           .catch(() => {
-            // Sessão válida mas rota indeterminada: `/hoje` é o destino padrão
-            // do aluno. Nunca `/login` — ele JÁ está autenticado.
-            if (ativo) router.replace("/hoje");
+            // Sessão válida mas rota indeterminada: o destino padrão do aluno.
+            // Nunca `/login` — ele JÁ está autenticado.
+            //
+            // ⚠️ A CONSTANTE, e não a string. Era `"/hoje"` escrito à mão aqui,
+            // ao lado de um `DEFAULT_AUTHENTICATED_ROUTE` que dizia a mesma
+            // coisa — duas fontes para a mesma verdade, que divergem no dia em
+            // que uma delas muda. Foi exatamente o que aconteceu quando a home
+            // passou a ser `/inicio`.
+            if (ativo) router.replace(DEFAULT_AUTHENTICATED_ROUTE);
           });
       })
       .catch(() => {

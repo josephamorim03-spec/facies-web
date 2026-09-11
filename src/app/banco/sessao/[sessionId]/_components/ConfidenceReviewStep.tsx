@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 
 import { postConfidenceReview, type QuestionBankSession } from "@/lib/api";
 import { QuestionFullContext } from "@/app/banco/_components/QuestionFullContext";
+// As duas regras vivem fora daqui porque `tests/unit` não renderiza React:
+// dentro do componente, o mais que um teste alcançava era o TEXTO do código.
+import { marcarRestantes, questoesParaConfianca } from "@/app/banco/_lib/confianca";
 import { getAuthToken } from "@/lib/auth";
 import { useToast } from "@/lib/useToast";
 
@@ -35,13 +38,7 @@ export function ConfidenceReviewStep({
   onProceed: () => void;
 }) {
   const { showToast } = useToast();
-  const items = useMemo(
-    () =>
-      session.items
-        .filter((i) => i.answered && !i.is_annulled && !i.excluded_from_scoring)
-        .sort((a, b) => a.position - b.position),
-    [session.items],
-  );
+  const items = useMemo(() => questoesParaConfianca(session.items), [session.items]);
   const [ratings, setRatings] = useState<Record<number, number>>(() => {
     const seed: Record<number, number> = {};
     for (const it of items) {
@@ -51,12 +48,22 @@ export function ConfidenceReviewStep({
     return seed;
   });
   const [busy, setBusy] = useState(false);
+  /**
+   * Só a questão aberta monta o enunciado inteiro.
+   *
+   * ⚠️ `QuestionFullContext` traz enunciado, alternativas, imagens e tabelas.
+   * Montá-lo para as 100 questões de uma prova, de uma vez, num overlay
+   * `fixed inset-0`, é o que fazia o telemóvel parecer travado. Aqui o aluno
+   * marca de memória — é disso que a calibração trata — e abre a questão só
+   * quando não se lembra.
+   *
+   * Renderização condicional, e não `hidden`: escondido com CSS o DOM continua
+   * lá, e o custo era o DOM.
+   */
+  const [aberta, setAberta] = useState<number | null>(null);
+  const marcadas = items.filter((it) => ratings[it.position]).length;
 
-  function setAll(value: number) {
-    const next: Record<number, number> = {};
-    for (const it of items) next[it.position] = value;
-    setRatings(next);
-  }
+  const posicoes = items.map((it) => it.position);
 
   async function saveAndProceed() {
     if (busy) return;
@@ -88,16 +95,19 @@ export function ConfidenceReviewStep({
       <div className="mx-auto max-w-3xl px-4 py-6 md:py-8">
         <header className="mb-4">
           <p className="paper-eyebrow">Antes de corrigir</p>
-          <h1 className="font-serif text-2xl font-semibold text-ink">Quão confiante você estava?</h1>
+          <h1 className="font-serif font-semibold text-ink">Quão confiante você estava?</h1>
           <p className="mt-1 text-sm text-muted">
             Marque sua confiança em cada questão — sem ver o gabarito.
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            {marcadas} de {items.length} marcadas
           </p>
         </header>
 
         <div className="mb-4 flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setAll(3)}
+            onClick={() => setRatings((prev) => marcarRestantes(prev, posicoes, 3))}
             className="border border-edge px-3 py-1.5 text-xs text-muted hover:text-ink"
           >
             Marcar restantes como dúvida
@@ -107,18 +117,35 @@ export function ConfidenceReviewStep({
         <ul className="space-y-2">
           {items.map((it) => (
             <li key={it.position} className="rounded-control border border-edge bg-surface p-3">
-              <QuestionFullContext
-                eyebrow={`Q${it.position}${it.doubtful ? " - marcada" : ""}`}
-                stem={it.stem}
-                alternatives={it.alternatives}
-                imageRefs={it.image_refs}
-                tableRefs={it.table_refs}
-                source={it.source}
-                knowledgeNodes={it.knowledge_nodes}
-                selectedOption={it.selected_option}
-                showCorrectAnswer={false}
-                className="rounded-control border border-edge bg-paper p-3"
-              />
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="text-xs text-muted">
+                  Q{it.position}
+                  {it.doubtful ? " - marcada" : ""}
+                  {it.selected_option ? ` - você marcou ${it.selected_option}` : ""}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setAberta((atual) => (atual === it.position ? null : it.position))}
+                  className="border border-edge px-2 py-1 text-xs text-muted hover:text-ink"
+                  aria-expanded={aberta === it.position}
+                >
+                  {aberta === it.position ? "Esconder questão" : "Ver questão"}
+                </button>
+              </div>
+              {aberta === it.position ? (
+                <QuestionFullContext
+                  eyebrow={`Q${it.position}`}
+                  stem={it.stem}
+                  alternatives={it.alternatives}
+                  imageRefs={it.image_refs}
+                  tableRefs={it.table_refs}
+                  source={it.source}
+                  knowledgeNodes={it.knowledge_nodes}
+                  selectedOption={it.selected_option}
+                  showCorrectAnswer={false}
+                  className="mt-2 rounded-control border border-edge bg-paper p-3"
+                />
+              ) : null}
               <div className="mt-2 flex gap-1.5">
                 {LEVELS.map((lvl) => {
                   const active = ratings[it.position] === lvl.value;
@@ -129,7 +156,7 @@ export function ConfidenceReviewStep({
                       onClick={() => setRatings((prev) => ({ ...prev, [it.position]: lvl.value }))}
                       className={`min-h-8 flex-1 border px-2 py-1.5 text-xs transition ${
                         active
-                          ? "border-primary bg-primary text-primaryInk"
+                          ? "border-primary bg-washSelecao text-ink"
                           : "border-edge text-muted hover:text-ink"
                       }`}
                       aria-pressed={active}

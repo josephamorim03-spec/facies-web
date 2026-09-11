@@ -9,7 +9,10 @@ import {
   salvarIdentidade,
   type StatusProfissional,
 } from "@/lib/api/domains/cadastro";
-import { resolveAuthenticatedLandingRoute } from "@/lib/initialGoalSetup";
+import {
+  DEFAULT_AUTHENTICATED_ROUTE,
+  resolveAuthenticatedLandingRoute,
+} from "@/lib/initialGoalSetup";
 import { LoadBar } from "@/components/ui/LoadBar";
 
 /**
@@ -67,7 +70,7 @@ export default function CompletarCadastroPage() {
         if (statusCadastro.cadastro_completo) {
           resolveAuthenticatedLandingRoute("")
             .then((rota) => router.replace(rota))
-            .catch(() => router.replace("/hoje"));
+            .catch(() => router.replace(DEFAULT_AUTHENTICATED_ROUTE));
           return;
         }
         // O Google já entregou o nome: adiantar o campo evita redigitar o que a
@@ -141,7 +144,7 @@ export default function CompletarCadastroPage() {
     <div className="min-h-screen bg-paper px-4 py-10">
       <main className="mx-auto w-full max-w-lg">
         <span className="paper-eyebrow">Falta pouco</span>
-        <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
+        <h1 className="mt-3 font-serif font-semibold leading-snug text-ink">
           Antes de entrar, quem é você?
         </h1>
         <p className="mt-3 max-w-[52ch] text-sm leading-6 text-muted">

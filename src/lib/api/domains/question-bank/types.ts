@@ -170,6 +170,17 @@ export type QuestionBankTopic = {
   display_order?: number | null;
   description: string | null;
   question_count: number;
+  /**
+   * Quantas das `question_count` dá para praticar.
+   *
+   * Nos caminhos de treino é IGUAL a `question_count` — a população já é a
+   * servível. Em `population: "exam"` (o `/mapa`) elas divergem: a prova cobrou
+   * anuladas, duplicatas e desatualizadas que o Banco não serve. Medido no
+   * ENARE em 2026-09-10: 600 cobradas, 530 servíveis.
+   */
+  servable_question_count: number;
+  /** Quantas das `question_count` são anuladas. Cobradas, e sem valer ponto. */
+  annulled_question_count: number;
   primary_question_count: number;
   board_count: number;
   avg_link_weight?: number | null;
@@ -964,6 +975,7 @@ export type QuestionBankSessionCreatePayload = {
   feedback_reveal_policy?: QuestionBankFeedbackRevealPolicy;
   study_kind?: StudyKind;
   full_exam_name?: string | null;
+  full_exam_number?: string | null;
   full_exam_year?: number | null;
   full_exam_type?: FullExamType | null;
   generate_review_trail?: boolean | null;

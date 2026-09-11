@@ -27,7 +27,10 @@ export function Toast() {
   const tone = TOAST_TONE[type] ?? "neutral";
 
   return (
-    <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] left-1/2 z-[90] w-[min(92vw,34rem)] -translate-x-1/2 md:bottom-5">
+    // ⚠️ `z-[90]` está ACIMA da barra de abas (`z-40`), então o toast não
+    // desaparecia — TAPAVA a navegação. `.acima-da-barra-de-abas` põe-no por
+    // cima dela e fá-lo descer para o lugar dela quando ela se esconde.
+    <div className="acima-da-barra-de-abas acima-da-barra-de-abas--solto fixed left-1/2 z-[90] w-[min(92vw,34rem)] -translate-x-1/2 md:bottom-5">
       <div
         key={id}
         role="status"

@@ -68,6 +68,11 @@ const TELAS = [
   // sem medida nenhuma -- que foi como o Banco chegou a 16% de mono.
   "/banco/guardadas",
   "/evolucao",
+  // A tela dos GRÁFICOS. Ela é o segundo olhar da Evolução e nunca foi medida:
+  // ficou com `h2` em 22/500, contagem em sans e texto de SVG em 9px e 700 —
+  // três degraus que as 22 artboards não têm — enquanto as cinco telas ao lado
+  // eram vigiadas. Tela fora da lista é tela autorizada a divergir.
+  "/estatisticas/graficos",
   "/cronograma",
   "/preferencias",
   // A leitura do plano (artboard `9c`). `/cronograma` fica na lista porque
@@ -101,6 +106,12 @@ const MONO_MINIMO = {
   "/hoje": 40,
   "/evolucao": 60,
   "/mapa": 28,
+  // 84% medido em 2026-09-08, a fatia mais alta do app — e nao e' merito, e'
+  // a natureza da tela: quase todo o texto dela e' tick de eixo, sigla de area
+  // e percentual, que sao dado. O piso fica em 78 pela mesma razao que o do
+  // /mapa fica abaixo da medida: prosa nova (um estado vazio, uma nota) deve
+  // caber sem reprovar, mas inverter a familia nao.
+  "/estatisticas/graficos": 78,
   "/plano": 20,
   // 16% antes desta branch. O resumo da sessao, a disponibilidade e a linha de
   // tema passaram a mono; os chips de filtro (12/500) sao o que ainda falta.

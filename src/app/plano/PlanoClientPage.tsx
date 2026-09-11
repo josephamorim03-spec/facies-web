@@ -104,7 +104,7 @@ export function PlanoClientPage() {
   });
 
   if (plano.isPending) {
-    return <Skeleton className="h-64 w-full" aria-label="Plano carregando" />;
+    return <Skeleton className="h-64 w-full" rotulo="Plano carregando" />;
   }
 
   if (plano.isError || !plano.data) {

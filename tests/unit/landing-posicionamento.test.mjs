@@ -3,7 +3,6 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { fonteDoBackend, MOTIVO } from "./_contrato-com-o-backend.mjs";
 
 /**
  * O checklist de `docs/product/positioning.md`, executável.
@@ -21,7 +20,9 @@ import { fonteDoBackend, MOTIVO } from "./_contrato-com-o-backend.mjs";
  * quem a escreve.
  */
 const RAIZ = fileURLToPath(new URL("../../src", import.meta.url));
-const DOC = fonteDoBackend("docs/product/positioning.md");
+const DOC = fileURLToPath(
+  new URL("../../../docs/product/positioning.md", import.meta.url),
+);
 
 function varrer(dir) {
   return readdirSync(dir).flatMap((entrada) => {
@@ -151,8 +152,8 @@ test("a home mostra a CENA e uma recomendacao com o porque", () => {
   assert.match(ponte, /Exemplo\./, "o artefato precisa ser marcado como exemplo");
 });
 
-test("o doc canonico existe e a promessa esta atualizada", { skip: DOC ? false : MOTIVO }, () => {
-  const doc = DOC;
+test("o doc canonico existe e a promessa esta atualizada", () => {
+  const doc = readFileSync(DOC, "utf8");
   // Se o doc sumir ou for renomeado, este teste avisa — em vez de as asserções
   // acima continuarem verdes protegendo regras que ninguém mais mantém.
   assert.match(doc, /## A promessa/);

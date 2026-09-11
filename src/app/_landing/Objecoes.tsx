@@ -1,4 +1,4 @@
-import { DIAS_DE_TRIAL, type DadosDaLanding } from "./dados";
+import { type DadosDaLanding } from "./dados";
 
 /**
  * As quatro objeções reais, e nada além delas.
@@ -31,17 +31,16 @@ export function Objecoes({ dados }: { dados: DadosDaLanding }) {
     {
       p: "Preciso pagar para ver?",
       r: (
-        // ⚠️ Esta resposta dizia "cadastro só para guardar o seu mapa", e
-        // subestimava o que o cadastro dá: `conceder_trial` roda no signup e a
-        // conta nasce com DIAS_DE_TRIAL dias de acesso, sem cartão. Responder
-        // "não" a "preciso pagar" e depois esconder o teste gratuito é perder a
-        // venda por excesso de modéstia.
+        // ⚠️ A resposta é "não, e não vai precisar" desde 07/09/2026, e o
+        // motivo não é generosidade: a Fácies vende diagnóstico de coorte para
+        // a instituição, e só consegue vender porque NÃO disputa o aluno dela
+        // com um curso. Cobrar do aluno destruiria o argumento inteiro.
+        // `conceder_trial` concede com `ends_at=None` — sem prazo.
         <>
-          Não. A fácies e os trinta assuntos são gratuitos e não pedem cadastro. O cadastro,
-          também de graça e sem cartão, abre o mapa e o plano por{" "}
-          <span className="font-mono tabular-nums">{DIAS_DE_TRIAL}</span> dias. Depois, quem se
-          cadastrar agora paga <span className="text-ink">R$ 490 no primeiro ano</span> — e a
-          leitura da prova segue gratuita de qualquer forma.
+          Não, e não vai precisar. A fácies e os trinta assuntos são gratuitos e não pedem
+          cadastro. O cadastro, também de graça e sem cartão, abre o mapa e o plano{" "}
+          <span className="text-ink">sem prazo</span>. Não vendemos assinatura para aluno: quem
+          contrata a Fácies é a instituição de ensino.
         </>
       ),
     },

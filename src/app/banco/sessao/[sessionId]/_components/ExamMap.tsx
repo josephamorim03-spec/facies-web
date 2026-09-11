@@ -34,7 +34,7 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="paper-eyebrow">Navegação</p>
-            <h2 className="mt-0.5 font-serif text-lg font-semibold leading-tight text-ink">
+            <h2 className="mt-0.5 font-serif font-semibold leading-tight text-ink">
               {sessionKindLabel === "Prova" ? "Mapa da prova" : "Mapa do simulado"}
             </h2>
           </div>
@@ -100,10 +100,21 @@ export default function ExamMap({ items, sessionKindLabel, currentPosition, onNa
                 className={cx(
                   "flex h-10 w-full items-center justify-center border text-xs transition-colors",
                   isCurrent && "ring-2 ring-primary ring-offset-2 ring-offset-surface",
+                  // ⚠️ AQUI A REGRA DA RODADA QUEBROU PELO OUTRO LADO.
+                  //
+                  // Ao drenar o `bg-primary` da célula respondida, o único
+                  // preenchimento que sobrou nesta grade de 100 células foi o
+                  // `bg-warning` da marcada — o marcador secundário virou a
+                  // coisa mais alta da tela, e "respondida" passou a diferir de
+                  // "em branco" só por 1px de borda.
+                  //
+                  // O eixo desta grade é RESPONDIDA versus EM BRANCO: é isso que
+                  // o aluno varre. A dúvida é anotação, e anota-se com a cor da
+                  // borda e do texto, sem tomar o campo.
                   isDoubtful
-                    ? "border-warning bg-warning text-paper"
+                    ? "border-warning bg-washAtencao text-ink"
                     : isAnswered
-                      ? "border-primary bg-primary text-primaryInk"
+                      ? "border-primary bg-washSelecao text-ink"
                       : "border-edge bg-paper text-muted hover:border-primary hover:text-ink",
                 )}
                 title={`Questão ${item.position}`}

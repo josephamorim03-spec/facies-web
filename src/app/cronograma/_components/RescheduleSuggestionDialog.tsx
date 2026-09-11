@@ -51,7 +51,7 @@ export function RescheduleSuggestionDialog({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base">{title}</h3>
+          <h3>{title}</h3>
         </div>
 
         {loading ? (

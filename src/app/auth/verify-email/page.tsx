@@ -97,7 +97,7 @@ function VerifyEmailInner() {
     return (
       <div className="w-full max-w-md">
         <span className="paper-eyebrow">E-mail confirmado</span>
-        <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
+        <h1 className="mt-3 font-serif font-semibold leading-snug text-ink">
           Pronto, {email} está confirmado.
         </h1>
         <p className="mt-3 text-sm leading-6 text-muted">
@@ -121,7 +121,7 @@ function VerifyEmailInner() {
   return (
     <div className="w-full max-w-md">
       <span className="paper-eyebrow">Link inválido</span>
-      <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
+      <h1 className="mt-3 font-serif font-semibold leading-snug text-ink">
         Este link não vale mais.
       </h1>
       <p className="mt-3 text-sm leading-6 text-muted">

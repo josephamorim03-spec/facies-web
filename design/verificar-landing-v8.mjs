@@ -237,16 +237,17 @@ console.log('\n== o porte carregou a copy aprovada? ==');
       ['objeções: quem', 'não é braço de cursinho'],
       ['fecho: a decisão', 'ninguém aprende matéria nova'],
       ['fecho: e-mail', 'Ninguém mostra a conta'],
-      // A PECA E O PORTE DIVERGEM AQUI, DE PROPOSITO -- e a assercao mudou de
-      // lado para acompanhar. A peca foi aprovada em 23/08 SEM cifra (oferta
-      // vincula, art. 30 do CDC, e o checkout nao abriu). Em 30/08 o operador
-      // decidiu outra coisa e a home ja anunciava R$ 490 no primeiro ano contra
-      // R$ 590; a promocao carregou isso, porque reverter em silencio uma
-      // decisao de negocio de tres dias antes nao e portar, e apagar.
+      // ⚠️ AQUI HAVIA UMA CHECAGEM DE PRECO QUE NAO PODIA DISPARAR, removida em
+      // 07/09/2026. Ela era ['mapa: preço', 'R$ 490 no primeiro ano'], e o filtro
+      // abaixo so acusa frase que esta na PECA e sumiu do PORTE. A peca foi
+      // aprovada sem cifra -- `facies-landing-v8.html` tem zero ocorrencia de
+      // "490" --, entao `texto.includes(...)` era sempre falso e a entrada nunca
+      // entrava em `perdidas`. O comentario dizia "se alguem tirar o preco, isto
+      // reprova"; medido, nao reprovava nada.
       //
-      // Entao o que se exige do porte agora e a CIFRA, nao a promessa de que ela
-      // viria. Se alguem tirar o preco da pagina, isto reprova.
-      ['mapa: preço', 'R$ 490 no primeiro ano'],
+      // Guard que nao pode falhar e pior que guard nenhum, porque alguem confia
+      // nele. A checagem real do compromisso de preco esta abaixo, fora deste
+      // mecanismo de diff.
     ];
     const perdidas = APROVADAS.filter(([, f]) => texto.includes(f) && !porte.includes(f));
     perdidas.length === 0
@@ -261,29 +262,52 @@ console.log('\n== o porte carregou a copy aprovada? ==');
     console.log('        no porte: "fácies" ' + nome + 'x · "cara" ' + vern
       + 'x — manchete e botão não vêm daqui (CabecalhoPublico e BuscaDeProva)');
 
-    // ═══ O TRIAL: o número tem de bater com o backend ═══════════════════════
+    // ═══ O ACESSO DE ALUNO: sem prazo dos dois lados ════════════════════════
     //
-    // `DIAS_DE_TRIAL` mora em `app/repos/entitlement_repo.py` e é constante de
-    // OUTRO runtime — não dá para importar. A landing repete o número, então
-    // este laço lê o Python e reprova se divergirem.
+    // Era uma checagem de NÚMERO: a landing repetia `DIAS_DE_TRIAL` e este laço
+    // lia o Python para ver se batia. Em 07/09/2026 o prazo deixou de existir —
+    // `conceder_trial` concede com `ends_at=None` porque o lado do aluno é
+    // gratuito permanentemente —, então não há mais número para comparar.
     //
-    // Não é zelo abstrato: `web/src/lib/accessLapse.ts` diz "trial de 14 dias"
-    // enquanto o backend concede 30. Número em comentário é afirmação com prazo
-    // de validade, e o repositório já documenta isso uma vez.
-    const py = path.join(AQUI, '..', '..', 'app', 'repos', 'entitlement_repo.py');
-    if (fs.existsSync(py)) {
-      const m = fs.readFileSync(py, 'utf8').match(/DIAS_DE_TRIAL\s*=\s*(\d+)/);
-      const naLanding = porte.match(/DIAS_DE_TRIAL\s*=\s*(\d+)/);
-      if (m && naLanding) {
-        m[1] === naLanding[1]
-          ? ok('o trial da landing (' + naLanding[1] + ' dias) bate com entitlement_repo.py')
-          : bad('a landing diz ' + naLanding[1] + ' dias de trial e o backend concede ' + m[1]);
+    // O laço não sumiu, mudou de objeto: agora ele confere que os dois lados
+    // concordam sobre NÃO haver prazo. Se o backend voltar a conceder com data
+    // e a página continuar dizendo "sem prazo", isto reprova — que é o caso em
+    // que a landing passaria a mentir sobre o produto.
+    const servico = path.join(AQUI, '..', '..', 'app', 'services', 'entitlement_service.py');
+    const prometeSemPrazo = porte.includes('sem prazo');
+    if (fs.existsSync(servico)) {
+      const fonte = fs.readFileSync(servico, 'utf8');
+      // A assinatura com default `None` É a concessão sem prazo. Ler o default
+      // em vez de procurar `ends_at=None` solto evita casar com o ramo `else`,
+      // que ainda existe para a coorte antiga e para os testes.
+      const semPrazoNoBackend = /def conceder_trial\([^)]*dias:\s*int\s*\|\s*None\s*=\s*None/s.test(fonte);
+      if (prometeSemPrazo && semPrazoNoBackend) {
+        ok('a landing promete acesso sem prazo e conceder_trial concede sem prazo');
+      } else if (prometeSemPrazo) {
+        bad('a landing promete "sem prazo" mas conceder_trial voltou a conceder com data');
+      } else if (semPrazoNoBackend) {
+        bad('o backend concede sem prazo e a landing parou de dizer "sem prazo" — a página esconde o produto');
       } else {
-        bad('não consegui ler DIAS_DE_TRIAL nos dois lados — o laço quebrou');
+        bad('os dois lados voltaram a ter prazo — decisão de negócio revertida; conferir se foi de propósito');
       }
     } else {
-      console.log('        (entitlement_repo.py fora de alcance — checagem do trial pulada)');
+      console.log('        (entitlement_service.py fora de alcance — checagem do prazo pulada)');
     }
+
+    // ═══ O COMPROMISSO DE PREÇO COM O ALUNO ═════════════════════════════════
+    //
+    // Fora do mecanismo de diff de propósito: a peça aprovada não tem nada sobre
+    // preço, então qualquer asserção que dependa dela nasce inerte (foi o que
+    // aconteceu com a cifra de R$ 490 — ver o bloco removido acima).
+    //
+    // O compromisso é: o aluno não paga. Não é promoção, é o fosso — a Fácies
+    // vende diagnóstico de coorte à instituição e só consegue porque não disputa
+    // o aluno dela. Se alguém reintroduzir cobrança de aluno na página, isto
+    // reprova, e a conversa volta para a mesa antes do deploy.
+    const cobraDoAluno = /R\$\s*\d/.test(porte);
+    cobraDoAluno
+      ? bad('voltou cifra para o aluno na landing — o lado do aluno é gratuito por decisão de mercado (07/09/2026)')
+      : ok('a landing não cobra do aluno');
 
     // O cartão do link: a descrição é cortada perto de 160 caracteres na busca e
     // em ~2 linhas no WhatsApp. A primeira versão tinha 234, e o que caía fora

@@ -180,8 +180,8 @@ test.describe("student agenda alignment", () => {
     await expect(anotherDay).toHaveAttribute("data-selected-day", "true");
     await expect(page.locator("[data-week-detail='true']")).toHaveAttribute("data-detail-date", anotherDate ?? "");
 
-    await page.getByRole("link", { name: "Mês" }).click();
-    await expect(page).toHaveURL(/view=month/);
+    await page.getByRole("link", { name: "Mês", exact: true }).first().click();
+    await expect(page).toHaveURL(/\/cronograma\/mes/);
     await expect(page.locator("[data-calendar-summary-stack='true']")).toBeVisible();
   });
 
@@ -213,30 +213,41 @@ test.describe("student agenda alignment", () => {
     expect(new Set(colors).size).toBe(5);
   });
 
-  test("Mobile uses compact view icons, switches to today, and hides the Today shortcut", async ({ page }) => {
+  test("no mobile, a troca de visao e' a MESMA linha de secoes do desktop", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const today = currentTodayISO();
 
+    /**
+     * ⚠️ ESTE TESTE MEDIA TRES AFORDANCIAS PARA A MESMA TROCA, e essa era a
+     * queixa: um `ScheduleViewTabs` textual so no desktop, um icone
+     * `schedule-view-month` so na semana mobile e um `schedule-view-week` so no
+     * mes mobile. Nenhuma delas existia nas duas larguras — o aluno tinha de
+     * aprender a troca duas vezes, conforme o aparelho.
+     *
+     * Com "Semana" e "Mes" como secoes do Plano, a troca e' o `IntentSubNav`,
+     * igual em 390px e em 1280px. O contrato passou a ser esse: a linha existe
+     * no telemovel, leva as duas leituras, e nao ha um segundo caminho.
+     */
     await page.goto("/hoje");
     await expect(page.getByRole("link", { name: "Abrir cronograma da semana" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Semana", exact: true })).toBeVisible();
+    const secoes = page.getByLabel("Seções desta área");
+    await expect(secoes).toBeVisible();
 
     await page.goto(`/cronograma?view=week&anchor=${shiftISO(today, -7)}&day=${shiftISO(today, -7)}`);
-    await expect(page.getByRole("navigation", { name: "Visão do cronograma" })).toHaveCount(0);
-    const monthSwitch = page.getByTestId("schedule-view-month");
-    await expect(monthSwitch).toBeVisible();
-    await monthSwitch.click();
-    await expect(page).toHaveURL(new RegExp(`view=month&anchor=${today}&day=${today}`));
+    await expect(page.getByTestId("schedule-view-month")).toHaveCount(0);
+    await secoes.getByText("Mês", { exact: true }).click();
+    await expect(page).toHaveURL(/\/cronograma\/mes$/);
 
+    // A busca por tema CONTINUA na barra de titulo: ela e' desta tela, e nao
+    // uma segunda porta para algo que ja esta na linha de secoes.
     const searchButton = page.getByLabel("Buscar tema");
     await expect(searchButton).toBeVisible();
-    const weekSwitch = page.getByTestId("schedule-view-week");
-    await expect(weekSwitch).toBeVisible();
+    await expect(page.getByTestId("schedule-view-week")).toHaveCount(0);
     await searchButton.click();
     await expect(page.getByPlaceholder("Buscar tema...")).toBeVisible();
     await page.getByTestId("cronograma-search-action").click();
-    await expect(weekSwitch).toBeVisible();
-    await weekSwitch.click();
-    await expect(page).toHaveURL(new RegExp(`view=week&anchor=${today}&day=${today}`));
+
+    await secoes.getByText("Semana", { exact: true }).click();
+    await expect(page).toHaveURL(/\/cronograma$/);
   });
 });

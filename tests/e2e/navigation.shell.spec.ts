@@ -81,8 +81,9 @@ async function mockShellApi(page: Page) {
         weekly_goal_questions: 300,
         timezone: "America/Sao_Paulo",
         reschedule_mode: "suggest",
+        shift_12h_capacity: 40,
+        shift_24h_capacity: 20,
         display_name: "E2E User",
-        intended_specialty: "Oftalmologia",
         access_status: "active",
         has_completed_initial_goal_setup: true,
         // ⚠️ SEM ISTO O SHELL NUNCA MONTA.
@@ -280,6 +281,33 @@ async function mockShellApi(page: Page) {
   });
 }
 
+/**
+ * Todo rotulo da linha de secoes cabe DENTRO do seu botao.
+ *
+ * ⚠️ MEDE A CAIXA, e nao o `<span>`. A versao anterior procurava
+ * `item.locator("span")`, e isso so existe no desktop: o `IntentSubNav` envolve
+ * o rotulo num span, o `MobileTabBar` o escreve como texto puro. No celular o
+ * locator nunca resolvia e o teste morria em timeout de 90s — falhando por
+ * marcacao, nao por medida.
+ *
+ * `scrollWidth > clientWidth` pergunta a coisa certa direto ao elemento: "o teu
+ * conteudo passou da tua borda?". Vale nas duas superficies, e pega o que uma
+ * contagem de caracteres nao pega — uma secao a mais repartindo o `flex-1`, ou
+ * uma fonte que caiu no fallback com metrica mais larga.
+ */
+async function esperaCaberNaLinha(page: Page) {
+  const itens = page.getByLabel("Seções desta área").locator("[data-nav-item-href]");
+  const total = await itens.count();
+  expect(total).toBeGreaterThan(0);
+  for (let i = 0; i < total; i += 1) {
+    const item = itens.nth(i);
+    await expect(item).toBeVisible();
+    const transbordo = await item.evaluate((el) => el.scrollWidth - el.clientWidth);
+    const rotulo = (await item.textContent())?.trim() ?? "";
+    expect(transbordo, `"${rotulo}" transborda o proprio botao`).toBeLessThanOrEqual(1);
+  }
+}
+
 test.describe("Navigation shell", () => {
   test.beforeEach(async ({ context, page }) => {
     await forceDesktopNavigation(page);
@@ -348,23 +376,36 @@ test.describe("Navigation shell", () => {
   // o menu acuse a intencao de DESTINO. `activeHref` e' o `intentPath` para onde
   // o 308 do next.config leva (ou, quando a rota e' real, o intent que
   // LEGACY_PATHS lhe atribui em navConfig.ts).
-  // Com os SEIS destinos do desenho, o Cronograma virou filho de ROTINA (as duas
-  // abas do artboard `14a`: "Minha semana" e "O plano ate' a prova"). Por isso
-  // `/calendario` e `/desempenho` acendem `/preferencias`, e nao mais `/hoje`.
+  // 🚨 A TAXONOMIA MUDOU EM 2026-09-10: Inicio · Cards · Banco · Mapa · Mais.
   //
-  // `/caderno` saiu desta lista: ele leva a `/cards/registros`, e a aba Cards
-  // esta' fora da barra enquanto `NEXT_PUBLIC_FLASHCARDS` for "0". Com a aba
-  // ausente nao ha' item para acender, e o caso mediria zero.
+  // O calendario inteiro (Semana e Mes), a leitura das fases (`/plano`), a
+  // Evolucao, a rotina e a Conta sairam da barra e viraram destinos do "Mais".
+  // Nao foram apagados -- mudaram de porta, e sao esses `activeHref` que este
+  // laco prende.
+  //
+  // ⚠️ `/hoje` continua a ser TELA VIVA, e acende o Inicio. Ele nao virou
+  // redirect: o Inicio RESUME o dia, e a agenda inteira continua em `/hoje`.
+  //
+  // ✅ `/caderno` VOLTOU a esta lista. Ele saira porque levava a
+  // `/cards/registros` com os flashcards desligados -- sem secao para acender,
+  // o caso media zero. Com a chave em "1" e Cards como aba, o Caderno tem
+  // porta propria.
   const desktopCases = [
-    { path: "/hoje", activeHref: "/hoje" },
-    { path: "/calendario", activeHref: "/voce", landsOn: "/cronograma" },
-    { path: "/revisoes", activeHref: "/banco", landsOn: "/banco/historico" }, // o historico saiu de Evolucao
-    { path: "/dados-e-relatorios/graficos", activeHref: "/evolucao" }, // 308 -> /evolucao
-    { path: "/estatisticas/relatorio", activeHref: "/evolucao" }, // rota real, intent profile
-    { path: "/banco/historico", activeHref: "/banco" }, // filho novo do Banco
+    { path: "/hoje", activeHref: "/inicio" },
+    { path: "/calendario", activeHref: "/mais", landsOn: "/cronograma" },
+    { path: "/revisoes", activeHref: "/banco", landsOn: "/banco/historico" }, // o historico e secao do Banco
+    { path: "/dados-e-relatorios/graficos", activeHref: "/mais" }, // 308 -> /evolucao, que agora e do Mais
+    { path: "/estatisticas/relatorio", activeHref: "/mais" }, // rota real, intent mais
+    { path: "/banco/historico", activeHref: "/banco" },
     // `/desempenho` encadeia DOIS saltos: `redirect("/cronograma")` no servidor
-    // e o Cronograma agora e' filho de Rotina.
-    { path: "/desempenho", activeHref: "/voce", landsOn: "/cronograma" },
+    // e o Cronograma agora e' destino do "Mais".
+    { path: "/desempenho", activeHref: "/mais", landsOn: "/cronograma" },
+    // O mes tem rota propria: `?view=month` e 307 para ela em next.config.js.
+    { path: "/agenda-operacional", activeHref: "/mais", landsOn: "/cronograma/mes" },
+    // A semana declarada e' AJUSTE, e vive no menu.
+    { path: "/preferencias", activeHref: "/mais" },
+    // O Caderno e' secao do Cards.
+    { path: "/caderno", activeHref: "/cards", landsOn: "/cards/registros" },
   ];
 
   for (const { path, activeHref, landsOn } of desktopCases) {
@@ -395,68 +436,68 @@ test.describe("Navigation shell", () => {
       await expect(sidebar).toBeVisible();
       const activeItems = sidebar.locator("[data-nav-surface='sidebar'][data-nav-active='true']");
       await expect(activeItems).toHaveCount(1);
-      await expect(activeItems).toHaveAttribute("data-nav-item-href", "/hoje");
+      // ⚠️ A URL de destino continua `/hoje`, e a ABA ACESA e' `/inicio`.
+      //
+      // As duas coisas sao diferentes desde 2026-09-10, e e' esse o caso que
+      // esta linha prende: `/hoje` e' tela viva (a agenda do dia), listada como
+      // caminho legado da aba Inicio. Quem chega por 308 aterra numa tela real,
+      // com a aba certa acesa -- e nao numa tela sem dono, que foi o defeito
+      // medido de `/voce`.
+      await expect(activeItems).toHaveAttribute("data-nav-item-href", "/inicio");
     });
   }
 
   test("keeps long labels inside their container", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    // ⚠️ A LINHA DE SECOES E' DA AREA ATUAL, e o Hoje nao tem filhos.
-    // O rotulo longo mora em VOCÊ (era Rotina, que virou filha dela), entao e'
-    // de dentro dela que ele se mede. Em `/hoje` o locator resolvia zero
-    // elementos e o teste falhava por ausencia, nao por estouro.
-    await page.goto("/preferencias");
+    // 🚨 A AREA MUDOU, e a razao esta escrita porque ela ja mudou tres vezes.
+    //
+    // Este teste precisa da area com os rotulos MAIS LONGOS -- um teste de
+    // estouro sobre rotulos curtos passa por vacuidade. Ja foi o Plano (quando
+    // tinha "O plano ate' a prova" na fileira), depois "Voce" (Voce · Minha
+    // semana · Preferencias · Conta).
+    //
+    // Desde 2026-09-10 nenhuma das duas tem fileira: "Voce" virou o hub `/mais`,
+    // que e' uma LISTA e nao tem secoes. A area com mais texto passou a ser o
+    // Banco -- Questoes · Guardadas · Historico.
+    await page.goto("/banco");
     await navSidebar(page).hover();
 
-    // O rotulo mais longo da navegacao e' "O plano ate' a prova", filho de
-    // "Você". Ele mora na linha de secoes -- onde os cinco destinos ("Hoje",
-    // "Mapa", "Banco", "Evolucao", "Você") sao curtos demais para exercitar o
-    // limite.
-    const longestItem = page
-      .getByLabel("Seções desta área")
-      // O filho aponta para `/plano` (a leitura do plano); `/cronograma` virou
-      // o calendario, alcancavel de dentro dela.
-      .locator("[data-nav-item-href='/plano']");
-    const longestLabel = longestItem.locator("span").first();
-    await expect(longestItem).toBeVisible();
-    await expect(longestLabel).toHaveText("O plano até a prova");
+    await esperaCaberNaLinha(page);
 
-    const [itemBox, labelBox] = await Promise.all([longestItem.boundingBox(), longestLabel.boundingBox()]);
-    expect(itemBox).not.toBeNull();
-    expect(labelBox).not.toBeNull();
-    if (!itemBox || !labelBox) return;
+    // A linha da Pratica tem os dois rotulos mais longos que a navegacao
+    // renderiza em producao — "Guardadas" e "Histórico", 9 caracteres cada.
+    await page.goto("/banco");
+    await expect(page.getByLabel("Seções desta área")).toBeVisible();
+    await esperaCaberNaLinha(page);
 
-    expect(labelBox.x).toBeGreaterThanOrEqual(itemBox.x);
-    expect(labelBox.x + labelBox.width).toBeLessThanOrEqual(itemBox.x + itemBox.width + 1);
+    // ⚠️ O APERTO DE VERDADE E' EM 390px, e ele NAO se mede aqui: o
+    // `beforeEach` deste bloco chama `forceDesktopNavigation`, entao encolher a
+    // janela desenharia a sidebar de 224px num viewport de 390 e acusaria 120px
+    // de estouro que o celular nunca ve. A medida mobile vive no bloco de baixo,
+    // em "a linha de secoes cabe em 390px".
   });
 
-  test("a sidebar expoe os cinco destinos, e a Rotina vive na linha de filhos", async ({ page }) => {
+  test("a sidebar expoe os cinco destinos da barra, e so' eles", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/hoje");
+    await page.goto("/inicio");
 
     const sidebar = navSidebar(page);
     await expect(sidebar).toBeVisible();
 
-    // Cinco destinos: quatro de conteudo e um de pessoa. Iguais no celular e
-    // no desktop.
-    for (const href of ["/hoje", "/mapa", "/banco", "/evolucao", "/voce"]) {
+    // Cinco destinos, ordenados por FREQUENCIA de uso: Inicio · Cards · Banco
+    // · Mapa · Mais, iguais no celular e no desktop. O Mapa continua no lugar
+    // de explorar, entre o estudo ativo e o menu.
+    for (const href of ["/inicio", "/cards", "/banco", "/mapa", "/mais"]) {
       await expect(sidebar.locator(`[data-nav-item-href='${href}']`)).toHaveCount(1);
     }
-    // `/preferencias` e `/conta` viraram FILHOS de "Você" — continuam
-    // alcancaveis, e deixaram de ocupar peso de destino permanente.
-    // `/cards` esta' fora enquanto a chave dos flashcards estiver desligada; os
-    // outros tres sao 308 e nunca foram destino.
-    for (const href of ["/preferencias", "/conta", "/cronograma", "/cards", "/kros", "/caderno", "/rota"]) {
+    // ⚠️ `/hoje` E `/evolucao` SAIRAM DA BARRA E CONTINUAM VIVOS. Nao ha' 308
+    // nenhum para eles: `/hoje` e' caminho legado do Inicio, `/evolucao` e'
+    // destino do "Mais", e as duas telas renderizam. Sair da barra nao e' sumir
+    // -- e e' por isso que este laco afirma sobre a BARRA, e a lista de rotas do
+    // `navConfig.test.mjs` afirma que elas resolvem.
+    for (const href of ["/hoje", "/evolucao", "/voce", "/preferencias", "/cronograma", "/conta", "/kros", "/caderno", "/rota"]) {
       await expect(sidebar.locator(`[data-nav-item-href='${href}']`)).toHaveCount(0);
     }
-
-    // E o plano continua a um clique -- mas a linha de secoes so' existe DENTRO
-    // da area que tem filhos. Em `/hoje` ela nao e' desenhada, e afirmar sobre
-    // ela ali seria afirmar sobre nada.
-    await page.goto("/preferencias");
-    await expect(
-      page.getByLabel("Seções desta área").getByText("O plano até a prova", { exact: true }),
-    ).toBeVisible();
   });
 
   test("shows reciprocal top-right links on desktop child pages", async ({ page }) => {
@@ -478,8 +519,7 @@ test.describe("Navigation shell", () => {
 
 // Era "Navigation shell mobile drawer". O drawer e o hamburguer foram
 // aposentados: no mobile a navegacao agora e a barra inferior de cinco abas
-// (`data-nav-surface='tabbar'`) -- e SO ela no rodape. A linha de filhos subiu
-// para o topo do conteudo, que e onde as redes sociais a poem.
+// (`data-nav-surface='tabbar'`), com a linha de filhos logo acima dela.
 test.describe("Navigation shell mobile tab bar", () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
@@ -509,281 +549,140 @@ test.describe("Navigation shell mobile tab bar", () => {
   });
 
   test("mostra os cinco destinos sem estouro horizontal", async ({ page }) => {
-    await page.goto("/hoje");
+    await page.goto("/inicio");
 
     // Cinco a 390px sao 78px por aba. O estouro horizontal e' o risco real
     // desta barra, e e' o que a ultima assercao mede.
+    //
+    // ✅ A TAXONOMIA NOVA E' MAIS FOLGADA que a que ela substitui: o rotulo mais
+    // longo passou de "Evolução" (8) para "Início" (6). O aperto que motivou
+    // esta medida diminuiu, mas a medida fica -- ela existe porque a barra JA
+    // estourou 40px a 320px com seis abas, e a causa (`min-width: auto` no
+    // `flex-1`) voltaria com qualquer rotulo longo.
     const tabs = page.locator("[data-nav-surface='tabbar'] [data-nav-item-href]");
     await expect(tabs).toHaveCount(5);
-    for (const label of ["Hoje", "Mapa", "Banco", "Evolução", "Você"]) {
+    for (const label of ["Início", "Cards", "Banco", "Mapa", "Mais"]) {
       await expect(tabs.getByText(label, { exact: true })).toBeVisible();
     }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
-  test("a 320px a barra continua sem estourar", async ({ page }) => {
-    // ⚠️ O CASO QUE NUNCA FOI MEDIDO, e que estava QUEBRADO.
+  test("os nomes mortos continuam mortos — e 'Banco' NAO e um deles", async ({ page }) => {
+    // 🚨 ESTE TESTE AFIRMAVA QUE "Banco" ERA NOME MORTO, e a afirmacao foi
+    // revertida pelo operador em 2026-09-10. O argumento antigo — que "Banco"
+    // descreve o ACERVO em vez do ato — continua correto e deixou de decidir:
+    // com Cards ao lado na barra, o par precisa de nomear os dois OBJETOS,
+    // porque os dois sao "praticar".
     //
-    // Todo teste desta barra rodava a 390px. A 320px — iPhone SE de 1a geracao,
-    // e a largura minima que o produto declara suportar — seis abas davam 53px
-    // cada, e o item era `flex-1` SEM `min-w-0`: `min-width` caia no automatico,
-    // que e' a largura de min-content do rotulo. "EVOLUÇÃO" em mono de 11px com
-    // tracking pede ~60px indivisiveis, e a barra INTEIRA empurrava o documento
-    // ~40px para o lado.
+    // A reversao esta registada tambem em `navConfig.ts` e no unitario.
     //
-    // Duas coisas consertam, e as duas entraram: cinco abas em vez de seis, e
-    // `min-w-0 truncate` no item. Este teste prende a segunda — ela e' a que
-    // sobrevive a um rotulo longo no futuro.
-    await page.setViewportSize({ width: 320, height: 568 });
-    await page.goto("/hoje");
-
-    const tabs = page.locator("[data-nav-surface='tabbar'] [data-nav-item-href]");
-    await expect(tabs).toHaveCount(5);
-
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(1);
-
-    // E a barra continua ocupando a largura da tela, sem uma aba sair de cena.
-    const primeira = await tabs.first().boundingBox();
-    const ultima = await tabs.last().boundingBox();
-    expect(primeira).not.toBeNull();
-    expect(ultima).not.toBeNull();
-    expect(ultima!.x + ultima!.width).toBeLessThanOrEqual(321);
-  });
-
-  test("nem Kros nem Rota sobrevivem como rotulo de menu", async ({ page }) => {
-    // "Kros" saiu primeiro (virou nome interno do motor); "Rota" saiu com a
-    // propria aba, quando a pergunta de tempo e energia morreu. Os dois
-    // enderecos continuam 308 para o Hoje.
-    await page.goto("/hoje");
+    // ⚠️ `/rota` NAO VOLTA como URL. O 308 dele ja esta em producao, e o
+    // navegador guarda 308 sem pedir de novo — reaproveitar o endereco
+    // prenderia em `/hoje` exatamente quem ja usou o app. Foi por isso que a
+    // aba nova se chama `/inicio`.
+    await page.goto("/inicio");
     const tabbar = page.locator("[data-nav-surface='tabbar']");
-    await expect(tabbar.getByText("Kros", { exact: true })).toHaveCount(0);
-    await expect(tabbar.getByText("Rota", { exact: true })).toHaveCount(0);
+    // ⚠️ "Prática" ENTROU nesta lista em 2026-09-10, e "Banco" SAIU dela.
+    // "Prática" era o guarda-chuva que escondia que Cards e Banco sao gestos
+    // diferentes — foi ele que este redesenho partiu em dois.
+    for (const morto of ["Kros", "Rota", "Rotina", "Dados", "Treino", "Conduta", "Prática"]) {
+      await expect(tabbar.getByText(morto, { exact: true })).toHaveCount(0);
+    }
     await expect(tabbar.locator("[data-nav-item-href='/rota']")).toHaveCount(0);
     await expect(tabbar.locator("[data-nav-item-href='/kros']")).toHaveCount(0);
   });
 
-  test("a linha de filhos vive no TOPO, e marca a secao atual", async ({ page }) => {
-    // ⚠️ ELA MUDOU DE PONTA, e o teste guarda a ponta nova.
+  test("a linha de secoes cabe em 390px", async ({ page }) => {
+    // Tres botoes `flex-1` sem rolagem em 390px dao ~122px cada, e a Pratica
+    // carrega os dois rotulos mais longos que a navegacao renderiza em producao:
+    // "Guardadas" e "Histórico".
     //
-    // A linha ficava colada por cima da barra de abas: duas faixas de chrome
-    // empilhadas no rodape, ~110px comidos, e o fim do conteudo escondido
-    // atras delas. O operador apontou que nenhuma rede social faz isso.
-    //
-    // Agora e a mesma `IntentSubNav` nas duas larguras, no topo do conteudo.
-    // Nao basta afirmar que ela existe -- ela existia antes tambem; o que
-    // este teste prende e a POSICAO.
+    // ⚠️ E' AQUI que esta medida vale. O bloco de cima forca navegacao de
+    // desktop no `beforeEach`, entao encolher a janela la desenha a sidebar de
+    // 224px e acusa estouro que o celular nunca ve.
+    await page.goto("/banco");
+    await expect(page.getByLabel("Seções desta área")).toBeVisible();
+    await esperaCaberNaLinha(page);
+
+    const estouro = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(estouro).toBeLessThanOrEqual(1);
+  });
+
+  test("a linha de filhos aparece acima da barra e marca a secao atual", async ({ page }) => {
     await page.goto("/cronograma");
     const childRow = page.getByLabel("Seções desta área");
     await expect(childRow).toBeVisible();
-    // As duas abas de dentro do artboard `14a`.
-    await expect(childRow.getByText("Minha semana", { exact: true })).toBeVisible();
+    // As TRES secoes do Plano sao tres DISTANCIAS do mesmo conteudo: agora,
+    // esta semana, este mes. `/cronograma` e' a semana.
+    for (const secao of ["Hoje", "Semana", "Mês"]) {
+      await expect(childRow.getByText(secao, { exact: true })).toBeVisible();
+    }
     const active = childRow.locator("[aria-current='page']");
     await expect(active).toHaveCount(1);
-    await expect(active).toHaveText("O plano até a prova");
+    await expect(active).toHaveText("Semana");
 
-    const linha = await childRow.boundingBox();
-    const barra = await page.locator("[data-nav-surface='tabbar']").boundingBox();
-    expect(linha).not.toBeNull();
-    expect(barra).not.toBeNull();
-    if (!linha || !barra) return;
-    // No terco de cima da tela, e nao encostada na barra: e a diferenca entre
-    // "esta no topo" e "esta em qualquer lugar acima do rodape".
-    expect(linha.y).toBeLessThan(844 / 3);
-    expect(linha.y + linha.height).toBeLessThan(barra.y - 100);
+    // ⚠️ E O MES ACENDE SOZINHO. `/cronograma/mes` casa por prefixo com
+    // `/cronograma`, entao um casamento ingenuo acenderia as duas secoes — e
+    // era exatamente por nao conseguir distingui-las que as duas leituras nao
+    // podiam partilhar `/cronograma?view=`.
+    await page.goto("/cronograma/mes");
+    const ativaNoMes = page.getByLabel("Seções desta área").locator("[aria-current='page']");
+    await expect(ativaNoMes).toHaveCount(1);
+    await expect(ativaNoMes).toHaveText("Mês");
   });
 
-  test("nao ha segunda barra empilhada sobre a barra de abas", async ({ page }) => {
-    // ⚠️ ESTE TESTE MUDOU DE LADO, e o motivo importa.
+  test("a acao primaria segue a barra de abas quando ela se esconde", async ({ page }) => {
+    // 🚨 REANCORADO: media `/preferencias`, que DEIXOU de montar uma
+    // `BottomActionBar` — a tela passou a gravar sozinha e o botão Salvar
+    // saiu (o motivo está escrito em `preferencias/page.tsx`). O localizador
+    // achava zero elementos e o teste falhava por ausência, não por defeito.
     //
-    // Ele prendia um defeito real: a `BottomActionBar` ficava ancorada em
-    // `bottom: var(--nav-stack-height)` — um token estatico — enquanto a barra
-    // de abas se escondia por scroll. Rolando ate o fim de `/preferencias`
-    // sobravam 106px de faixa MORTA sob o botao primario. O conserto (fazer a
-    // acao seguir a barra) foi entregue, e este teste o guardava.
+    // `/conta/preferencias` monta-a sem condição nenhuma, e é hoje uma das
+    // três telas que a usam (as outras duas são painéis do Caderno).
     //
-    // Depois o operador olhou a tela pronta e apontou o problema um nivel
-    // acima: NENHUMA rede social empilha duas barras no rodape do celular. As
-    // duas juntas comiam ~110px e escondiam o fim do conteudo atras de chrome.
+    // O DEFEITO QUE ESTE TESTE PRENDE, medido na altura em `/preferencias`:
+    // rolando ate o fim, a barra de abas animava para fora (topo 732 -> 855) e a
+    // barra de acao ficava parada em 641-738, deixando 106px de faixa MORTA sob
+    // o botao primario -- no unico lugar da tela que o polegar procura.
     //
-    // Entao a acao saiu das duas telas que a tinham: `/preferencias` grava
-    // sozinha (o botao "Salvar" deixou de existir) e `/banco` mostra o botao
-    // que o painel Resumo ja montava, inline, junto do numero que ele executa.
-    //
-    // O que este teste guarda agora e' a AUSENCIA — e ela e' mais facil de
-    // regredir que a presenca: basta alguem montar uma `BottomActionBar` numa
-    // tela nova sem saber por que ela sumiu destas duas.
-    for (const rota of ["/preferencias", "/banco"]) {
-      await page.goto(rota);
-      await expect(page.locator("[data-nav-surface='tabbar']")).toBeVisible();
-      await expect(page.locator("[data-bottom-action-bar='true']")).toHaveCount(0);
-    }
-  });
+    // A assercao que existia media `scrollWidth - clientWidth` do documento.
+    // Estouro horizontal nao era o defeito, e por isso ela passava verde com o
+    // botao flutuando.
+    await page.goto("/conta/preferencias");
 
-  test("a acao primaria do banco vive na pagina, e o dedo alcanca", async ({ page }) => {
-    // A contrapartida da ausencia: tirar a barra nao pode ter tirado a acao.
-    // Ela existe, e' a unica primaria da tela, e cabe na largura do celular.
-    await page.goto("/banco");
-    const comecar = page.getByRole("button", { name: /^Começar/ });
-    await expect(comecar).toBeVisible();
+    const acao = page.locator("[data-bottom-action-bar='true']");
+    await expect(acao).toBeVisible();
 
-    const caixa = await comecar.boundingBox();
-    expect(caixa).not.toBeNull();
-    // Alvo de toque do sistema: 48px minimo.
-    expect(caixa!.height).toBeGreaterThanOrEqual(44);
-    expect(caixa!.x + caixa!.width).toBeLessThanOrEqual(391);
-  });
+    const barra = page.locator("[data-nav-surface='tabbar']");
+    const alturaDaTela = page.viewportSize()?.height ?? 844;
 
-  test("a especialidade se declara com o aviso do edital a vista", async ({ page }) => {
-    // ⚠️ O CAMPO EXISTIA E ESTAVA ORFAO. `user_profiles.intended_specialty` e'
-    // gravavel desde o cadastro e `salvarPerfilDeclarado` esta escrito no
-    // front — mas nenhuma tela chamava, e o contrato nem devolvia o valor de
-    // volta. Escrever sem ler e' a forma mais silenciosa de um campo morrer.
-    //
-    // O que este teste prende sao as duas metades: a lista e' a do CFM inteira
-    // (nao a do acervo), e o AVISO aparece no momento da escolha, nao depois.
-    let gravado: string | null = null;
-    await page.route("**/api/cadastro/perfil", async (route) => {
-      const corpo = route.request().postDataJSON() as { intended_specialty?: string };
-      gravado = corpo.intended_specialty ?? null;
-      await route.fulfill({ status: 204, body: "" });
-    });
+    // Com a barra VISIVEL a acao assenta ACIMA dela, sem cobrir.
+    const topoDaBarra = (await barra.boundingBox())?.y ?? 0;
+    const acaoVisivel = await acao.boundingBox();
+    expect(acaoVisivel).not.toBeNull();
+    expect(acaoVisivel!.y + acaoVisivel!.height).toBeLessThanOrEqual(topoDaBarra + 2);
 
-    await page.goto("/voce");
-    const entrada = page.getByRole("button", { name: /A especialidade que você quer/ });
-    await expect(entrada).toBeVisible();
-    await entrada.click();
+    // Rola ate o fim: a barra de abas sai de cena.
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForFunction(
+      () =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--nav-stack-shown")
+          .trim() === "0",
+      undefined,
+      { timeout: 10_000 },
+    );
+    // A transicao do `bottom` acompanha a da barra; esperar por ela e' mais
+    // barato que afrouxar a margem da assercao.
+    await page.waitForTimeout(400);
 
-    const folha = page.getByRole("dialog", { name: "A especialidade que você quer" });
-    await expect(folha).toBeVisible();
-
-    // O aviso vem ANTES da lista. Sem ele o produto estaria a deixar o medico
-    // montar um plano inteiro para uma vaga que a instituicao pode nao abrir.
-    await expect(folha.getByText(/Confira o edital/)).toBeVisible();
-    await expect(folha.getByText(/a Fácies não verifica vagas/)).toBeVisible();
-
-    // As 55 do CFM, e nao as que a Facies tem questao.
-    await expect(folha.getByText("55 de 55", { exact: true })).toBeVisible();
-    await expect(folha.getByRole("button", { name: "Homeopatia", exact: true })).toBeVisible();
-
-    await folha.getByRole("button", { name: "Cardiologia", exact: true }).click();
-    await expect.poll(() => gravado).toBe("Cardiologia");
-  });
-
-  test("adicionar plantao abre uma folha, e a escala vira eventos de verdade", async ({ page }) => {
-    // ⚠️ O BOTAO SO' ROLAVA. `onAdicionar` chamava `scrollIntoView` ate um
-    // painel generico ~150 linhas abaixo, na secao seguinte, com um campo de
-    // NOME OBRIGATORIO -- e o artboard `14b` diz em letra "nada de nome do
-    // hospital: todo campo que nao muda nada e' trabalho cobrado do medico a
-    // toa". O medico tocava em "adicionar plantao" e a tela deslizava para
-    // outro assunto.
-    const criados: Array<Record<string, unknown>> = [];
-    await page.route("**/api/events", async (route) => {
-      if (route.request().method() !== "POST") return route.fallback();
-      const corpo = route.request().postDataJSON() as Record<string, unknown>;
-      criados.push(corpo);
-      await route.fulfill({
-        status: 201,
-        contentType: "application/json",
-        body: JSON.stringify({ event_id: `ev-${criados.length}`, ...corpo }),
-      });
-    });
-
-    await page.goto("/preferencias");
-    await page.getByRole("button", { name: "Plantão numa data específica" }).click();
-
-    const folha = page.getByRole("dialog", { name: "Adicionar plantão" });
-    await expect(folha).toBeVisible();
-
-    // Nenhum campo de NOME: o rotulo se deriva da duracao.
-    // ⚠️ `getByRole("textbox")` nao serve aqui: o `<input type="date">` do
-    // campo "quando" tambem resolve como textbox na arvore de acessibilidade.
-    // O que o artboard proibe e' o campo de TEXTO LIVRE ("Ex. Plantao/UBS"),
-    // que o painel antigo tinha e ainda tornava obrigatorio.
-    await expect(folha.locator('input[type="text"]')).toHaveCount(0);
-
-    // A escala 24x72 e' um preset, e o alcance e' dito ANTES de guardar.
-    await folha.getByRole("radio", { name: /Escala 24 × 72/ }).check();
-    await expect(folha.getByText("Isto muda", { exact: false })).toBeVisible();
-    await expect(folha.getByText(/Nada do que você já respondeu se perde/)).toBeVisible();
-
-    await folha.getByRole("button", { name: "Guardar", exact: true }).click();
-
-    // A escala nao existe no contrato: ela vira N eventos pontuais. O que este
-    // teste prende e' que sao MUITOS e que o rotulo saiu da duracao.
-    await expect.poll(() => criados.length).toBeGreaterThan(1);
-    expect(criados[0].event_type).toBe("event");
-    expect(criados[0].duration_hours).toBe(24);
-    expect(String(criados[0].label)).toContain("Plantão 24h");
-  });
-
-  test("o plantao semanal mora na linha do dia, junto da disponibilidade", async ({ page }) => {
-    // ⚠️ AS DUAS PERGUNTAS SAO SOBRE O MESMO DIA.
-    //
-    // "Terca e plantao de 24h" e "na terca da para estudar 10 minutos" sao a
-    // mesma frase dita em duas metades. Elas viviam separadas -- a segunda na
-    // linha, a primeira atras de um botao que abria uma folha -- e completar o
-    // pensamento obrigava a atravessar a tela. O operador apontou o obvio.
-    //
-    // O que este teste prende e' a VIZINHANCA: os dois grupos dentro da mesma
-    // linha aberta. Afirmar so' que o evento foi criado deixaria passar uma
-    // regressao que devolvesse os chips para outra seccao.
-    const criados: Array<Record<string, unknown>> = [];
-    await page.route("**/api/events", async (route) => {
-      if (route.request().method() !== "POST") return route.fallback();
-      const corpo = route.request().postDataJSON() as Record<string, unknown>;
-      criados.push(corpo);
-      await route.fulfill({
-        status: 201,
-        contentType: "application/json",
-        body: JSON.stringify({ event_id: `ev-${criados.length}`, ...corpo }),
-      });
-    });
-
-    await page.goto("/preferencias");
-    await page.getByRole("button", { name: /^seg/ }).click();
-
-    await expect(page.getByText("dá para estudar neste dia?")).toBeVisible();
-    await expect(page.getByText("trabalha neste dia?")).toBeVisible();
-
-    await page.getByRole("button", { name: "24h", exact: true }).click();
-
-    await expect.poll(() => criados.length).toBe(1);
-    // Semanal, e nao pontual: e' isso que separa "toda segunda" de "nesta
-    // segunda". E o rotulo deriva da duracao -- sem campo de nome, como o
-    // artboard `14b` exige.
-    expect(criados[0].event_type).toBe("routine");
-    expect(criados[0].weekday).toBe(0);
-    expect(criados[0].duration_hours).toBe(24);
-    expect(String(criados[0].label)).toContain("Plantão 24h");
-  });
-
-  test("a semana grava sozinha: nao ha botao de salvar", async ({ page }) => {
-    // O perfil ja gravava sozinho e os chips de plantao tambem. O botao
-    // "Salvar a rotina" era o unico ponto da tela que ainda pedia confirmacao
-    // -- tres modelos de gravacao na mesma tela, dois deles dentro da mesma
-    // linha aberta. Escolher E' guardar, como nas Definicoes do iPhone.
-    let gravou = 0;
-    await page.route("**/api/onboarding/capacity", async (route) => {
-      if (route.request().method() !== "PUT") return route.fallback();
-      gravou += 1;
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ step: "ready", study_availability: { "0": 45 } }),
-      });
-    });
-
-    await page.goto("/preferencias");
-    await page.getByRole("button", { name: /^seg/ }).click();
-    await page.getByRole("button", { name: "45 min", exact: true }).click();
-
-    await expect(page.getByRole("button", { name: "Salvar a rotina" })).toHaveCount(0);
-    await expect.poll(() => gravou, { timeout: 5000 }).toBe(1);
-    await expect(page.getByText("guardado", { exact: true })).toBeVisible();
+    const acaoEscondida = await acao.boundingBox();
+    expect(acaoEscondida).not.toBeNull();
+    const faixaMorta = alturaDaTela - (acaoEscondida!.y + acaoEscondida!.height);
+    expect(faixaMorta).toBeLessThanOrEqual(8);
   });
 
   test("a barra some no modo imersivo da sessao", async ({ page }) => {

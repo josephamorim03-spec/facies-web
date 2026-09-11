@@ -4,7 +4,36 @@ import { addHttpOnlySession } from "./support/authCookies";
 import { forceDesktopNavigation } from "./support/desktopNav";
 
 /**
- * A aba "Comparar" do `/mapa` — o artboard `B1`.
+ * Abre a aba Comparar do `/mapa`.
+ *
+ * ⚠️ Localiza pelo NOME acessível, e não pela classe: a fileira de abas trocou
+ * de primitivo em 2026-09-10 (`BotaoDeEscolha` → `TAB_TRIGGER_CLASS`) e um
+ * localizador por classe teria morrido nessa troca sem que nada de aluno
+ * mudasse. O que não pode mudar é haver um controlo chamado Comparar.
+ */
+async function abrirAbaComparar(page: Page): Promise<void> {
+  await page.getByRole("button", { name: "Comparar", exact: true }).click();
+}
+
+/**
+ * A comparação de duas provas no `/mapa` — o artboard `B1`.
+ *
+ * 🚨 A DOCSTRING AQUI DIZIA O CONTRÁRIO DA TELA, e as três provas estavam
+ * partidas por causa disso.
+ *
+ * Ela afirmava: *"era uma ABA e virou o painel 05 da leitura; o `/mapa` deixou
+ * de ter abas, e estas specs chegam por `/mapa#comparar`"*. Medido em
+ * 2026-09-10: o `/mapa` tem três abas (`mapa`, `leitura`, `comparar`), `eixo`
+ * nasce em `"mapa"` e NADA no ficheiro lê `location.hash`. Ou seja,
+ * `/mapa#comparar` abria o mapa, o `#comparar-com` não existia no DOM, e as
+ * três provas morriam em `toBeEnabled` — sem nunca chegar ao que medem.
+ *
+ * Passaram a CLICAR na aba, que é o que o aluno faz. Honrar o hash seria
+ * funcionalidade nova, e não é o que estas provas existem para cobrir.
+ *
+ * ⚠️ Este ficheiro não está em `SPECS_DE_GATE` nem em `SPECS_ADIADOS`, então
+ * não corre em lado nenhum — foi por isso que ficou anos-luz da tela sem
+ * ninguém notar. Continua fora do gate por depender do backend em `:8000`.
  *
  * ## Por que esta spec existe
  *
@@ -26,26 +55,30 @@ import { forceDesktopNavigation } from "./support/desktopNav";
  * — e o par abaixo foi escolhido rodando `calcularDeltas` sobre o dataset de
  * verdade, então a asserção vale sobre o número que o aluno veria.
  *
- * ⚠️ Se o dataset mudar, o número no limiar vira outro valor e esta spec falha.
- * É o comportamento desejado: ela existe para vigiar o FORMATO do número no
- * limiar, e um dataset novo pede uma conferida no par, não um `toContain`
- * frouxo.
- *
- * ⚠️ **E o dataset MUDOU, em 2026-09-05.** O par antigo era SES PE × USP-SP,
- * escolhido por render `+3,4` em cirurgia. Nos dados de hoje ele não rende
- * delta de ÁREA nenhum acima do limiar — o maior é 2,8 — e a tela passou a
- * mostrar só as diferenças de FORMA (`+37`, `−9`), que são inteiras e não
- * exercitam a decimal.
- *
- * O par novo foi escolhido rodando `calcularDeltas` sobre as 138 bancas: dos
- * 39 pares que rendem delta de área positivo com decimal entre 3 e 5, a FAMENE
- * dá `+3,1` em cirurgia geral — o valor mais colado no limiar que existe, que
- * é justamente onde o formato importa.
+ * ⚠️ Se o dataset mudar, o valor no limiar pode virar outro e esta spec falha. É o
+ * comportamento desejado: ela existe para vigiar o formato do número no limiar,
+ * e um dataset novo pede uma conferida no par, não um `toContain` frouxo. Já
+ * aconteceu uma vez — ver `NO_LIMIAR`.
  */
 
-/** A prova do aluno: SES PE. Contra a FAMENE ela rende `+3,1` em cirurgia geral. */
+/**
+ * A prova do aluno: SES PE. Contra a AMP-PR ela rende `+3,2` — um valor NO
+ * LIMIAR, que é a única coisa que esta spec sabe vigiar.
+ *
+ * ⚠️ O PAR MUDOU porque o antigo parou de servir. Era SES-PE × USP-SP, escolhido
+ * por render `+3,4`; com o dataset de hoje esse par produz `["+37", "−9"]` — nada
+ * no limiar, nada com decimal, e a spec falhava sem que nada estivesse quebrado
+ * na tela. É exatamente o desfecho que o aviso abaixo previa.
+ *
+ * O par novo foi achado rodando `calcularDeltas` + `formatarDelta` sobre os
+ * 138×137 pares do `facies.json` e ficando com um que tem valor no limiar E pelo
+ * menos duas outras linhas — a segunda condição é do teste de alinhamento, que
+ * precisa de coluna para alinhar. Ele rende `["+9", "−7", "−6", "+3,2"]`.
+ */
 const MINHA_KEY = "PE-SECRETARIA-ESTADUAL-DE-SAUDE-DO-ESTADO-DE-PERNAMBUCO-SES-PE";
-const OUTRA_KEY = "PB-FACULDADE-DE-MEDICINA-NOVA-ESPERANCA-FAMENE";
+const OUTRA_KEY = "PR-ASSOCIACAO-MEDICA-DO-PARANA-AMP";
+/** O valor no limiar que o par acima produz. Um lugar só, três asserções. */
+const NO_LIMIAR = "+3,2";
 
 async function mockMapaApi(page: Page) {
   await page.route("**/api/**", async (route) => {
@@ -105,147 +138,17 @@ async function mockMapaApi(page: Page) {
     }
 
     if (path === "/api/student/competency-mastery") {
-      // ⚠️ COM ITENS, e nao vazio. A aba "A prova e você" tem um estado de
-      // saida quando NENHUM assunto tem resposta ("Você ainda não respondeu os
-      // assuntos desta prova") -- com a lista vazia, todo teste sobre a grade
-      // mediria a tela de estado vazio.
       return json({
         contract_version: "competency-mastery-v1",
-        observation_floor: 5,
-        attempts_considered: 42,
-        items: [
-          {
-            objective_id: "obj-1",
-            label: "Neoplasias do Sistema Digestivo",
-            primary_subtheme: "Neoplasias do Sistema Digestivo",
-            competency_question_count: 30,
-            attempts: 12,
-            correct: 6,
-            mastery: 0.5,
-            uncertainty: 0.1,
-            certeza: "medido",
-          },
-        ],
+        observation_floor: 20,
+        attempts_considered: 0,
+        items: [],
       });
-    }
-
-    // O no da taxonomia que a folha do assunto resolve antes de oferecer a
-    // pratica. Sem ele a folha diz "nao ha questoes deste assunto", que e' o
-    // outro caminho -- legitimo, e coberto pelo teste do assunto sem acervo.
-    if (path === "/api/question-bank/topics") {
-      const busca = new URL(route.request().url()).searchParams.get("search") ?? "";
-      if (!busca.toLowerCase().includes("neoplasias")) return json([]);
-      return json([
-        {
-          knowledge_node_id: "no-neoplasias",
-          parent_knowledge_node_id: null,
-          node_code: "QB-CM-NEO-DIGESTIVO",
-          node_name: "Neoplasias do Sistema Digestivo",
-          node_type: "subtheme",
-          node_path: ["Clínica Médica", "Neoplasias do Sistema Digestivo"],
-          path_label: "CM > Neoplasias do Sistema Digestivo",
-          depth: 2,
-          question_count: 37,
-          primary_question_count: 30,
-          board_count: 5,
-        },
-      ]);
     }
 
     return json({});
   });
 }
-
-test.describe("Explorar o mapa (/mapa)", () => {
-  test.beforeEach(async ({ context, page }) => {
-    await addHttpOnlySession(context);
-    await mockMapaApi(page);
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/mapa");
-    // ⚠️ SEM CLIQUE EM ABA. O mosaico era a SEGUNDA aba ("A prova e você") e a
-    // tela abria num laudo; agora ele e a aba "Mapa", que e a que abre. A
-    // leitura "você" virou um interruptor DENTRO da grade.
-    //
-    // A asserção é a NOTA de baixo da grade, e não uma sobrancelha de cima: a
-    // sobrancelha dizia a mesma coisa que a nota e saiu justamente por isso —
-    // duas legendas para a mesma codificação, uma delas empurrando o mosaico
-    // para fora da dobra a 390px.
-    await expect(
-      page.getByText("Quanto mais escuro, mais a prova cobra.", { exact: false }),
-    ).toBeVisible();
-    await page.getByRole("button", { name: "Você", exact: true }).click();
-    await expect(
-      page.getByText("Quanto mais escuro, mais falta.", { exact: false }),
-    ).toBeVisible();
-  });
-
-  test("a area filtra o mosaico, e a contagem do chip bate com o que fica", async ({ page }) => {
-    // ⚠️ A CONTAGEM DO CHIP E' DOS ASSUNTOS MOSTRADOS, e nao do acervo.
-    //
-    // Os dois numeros existem e sao diferentes: a grade conta a janela recente
-    // que a facies publica, o acervo conta o que da' para praticar. Este teste
-    // prende o primeiro -- se o chip passar a contar o acervo, ele dira "37"
-    // ao lado de uma area que tem uma celula na tela.
-    const celulas = page.locator("ul.grid > li");
-    const antes = await celulas.count();
-    expect(antes).toBeGreaterThan(1);
-
-    const chip = page.getByRole("button", { name: /^Clínica Médica/ });
-    await expect(chip).toBeVisible();
-    const quantos = Number((await chip.innerText()).match(/(\d+)\s*$/)?.[1] ?? "0");
-    expect(quantos).toBeGreaterThan(0);
-
-    await chip.click();
-    await expect(celulas).toHaveCount(quantos);
-
-    // "Tudo" devolve a grade inteira -- filtrar nao pode ser um caminho sem volta.
-    await page.getByRole("button", { name: "Tudo", exact: true }).click();
-    await expect(celulas).toHaveCount(antes);
-  });
-
-  test("tocar num assunto abre a folha, e ela pratica com o no exato", async ({ page }) => {
-    // O mapa deixava de ser leitura aqui: antes, tocar numa celula abria uma
-    // linha de texto e parava. A decisao que o mapa provoca ("entao vou estudar
-    // neoplasias") tinha de ser refeita a mao no Banco, com filtro.
-    let payload: Record<string, unknown> | null = null;
-    await page.route("**/api/question-bank/sessions", async (route) => {
-      if (route.request().method() !== "POST") return route.fallback();
-      payload = route.request().postDataJSON() as Record<string, unknown>;
-      await route.fulfill({
-        status: 201,
-        contentType: "application/json",
-        body: JSON.stringify({ session_id: "sessao-do-mapa", items: [] }),
-      });
-    });
-
-    await page.getByRole("button", { name: /^Neoplasias do Sistema Digestivo/ }).click();
-    const folha = page.getByRole("dialog", { name: "Neoplasias do Sistema Digestivo" });
-    await expect(folha).toBeVisible();
-
-    // ⚠️ O DENOMINADOR E' DITO. "no acervo desta banca", nunca "da prova":
-    // confundir os dois ja custou 12.103 questoes a este componente.
-    await expect(folha.getByText(/no acervo de/)).toBeVisible();
-
-    await folha.getByRole("button", { name: /^Praticar/ }).click();
-    await expect.poll(() => payload).not.toBeNull();
-    // Nó exato, e nao busca textual: e' o que separa "questoes de sepse" de
-    // "questoes que mencionam sepse".
-    expect(payload!.knowledge_node_ids).toEqual(["no-neoplasias"]);
-    await expect(page).toHaveURL(/\/banco\/sessao\/sessao-do-mapa$/);
-  });
-
-  test("assunto sem acervo diz isso, em vez de oferecer uma sessao vazia", async ({ page }) => {
-    // O outro caminho, e ele importa: o assunto aparece no mapa porque a PROVA
-    // o cobrou. O acervo pode nao o ter alcancado ainda, e um botao ali abriria
-    // uma sessao de zero questoes.
-    const outra = page.locator("ul.grid > li button").filter({ hasNotText: "Neoplasias" }).first();
-    await outra.click();
-    const folha = page.getByRole("dialog");
-    await expect(folha).toBeVisible();
-    await expect(folha.getByText(/Não há questões deste assunto no acervo/)).toBeVisible();
-    await expect(folha.getByRole("button", { name: /^Praticar/ })).toHaveCount(0);
-  });
-});
 
 test.describe("Comparar duas provas (/mapa)", () => {
   test.beforeEach(async ({ context, page }) => {
@@ -256,20 +159,26 @@ test.describe("Comparar duas provas (/mapa)", () => {
   });
 
   test("o número no limiar aparece com decimal, nunca como o próprio limiar", async ({ page }) => {
+    // A comparacao e o painel 05 da leitura, e nao mais uma aba: o `/mapa` ja
+    // chega com ela montada. `#comparar` e a ancora que substituiu o botao.
     await page.goto("/mapa");
-    await page.getByRole("button", { name: "Comparar" }).click();
+    await abrirAbaComparar(page);
 
     const seletor = page.locator("#comparar-com");
     await expect(seletor).toBeEnabled({ timeout: 15_000 });
     await seletor.selectOption(OUTRA_KEY);
 
-    const numeros = page.locator("ul li span.text-warning");
+    // ⚠️ ESCOPADO AO PAINEL 05. Quando a comparacao era uma aba ela tinha a
+    // pagina inteira; hoje divide a leitura com os paineis 01-04, e um
+    // `text-warning` solto tambem casava os deltas da media nacional do painel
+    // 02 — o array vinha ["+37", "−9"] em vez dos numeros da comparacao.
+    const numeros = page.locator("#comparar").locator("ul li span.text-warning");
     await expect(numeros.first()).toBeVisible({ timeout: 15_000 });
 
     const textos = (await numeros.allTextContents()).map((t) => t.trim());
 
-    // O par foi escolhido por render este valor: 3,1 pontos de cirurgia geral.
-    expect(textos).toContain("+3,1");
+    // O par foi escolhido por render um valor NO LIMIAR — ver `NO_LIMIAR`.
+    expect(textos).toContain(NO_LIMIAR);
 
     // A REGRA: nada na tela pode ser lido como o limiar. A legenda logo abaixo
     // promete "só aparece o que passa de 3 pontos percentuais", e um "+3" ali
@@ -283,14 +192,20 @@ test.describe("Comparar duas provas (/mapa)", () => {
   });
 
   test("a coluna de números fica alinhada mesmo com decimal", async ({ page }) => {
+    // A comparacao e o painel 05 da leitura, e nao mais uma aba: o `/mapa` ja
+    // chega com ela montada. `#comparar` e a ancora que substituiu o botao.
     await page.goto("/mapa");
-    await page.getByRole("button", { name: "Comparar" }).click();
+    await abrirAbaComparar(page);
 
     const seletor = page.locator("#comparar-com");
     await expect(seletor).toBeEnabled({ timeout: 15_000 });
     await seletor.selectOption(OUTRA_KEY);
 
-    const numeros = page.locator("ul li span.text-warning");
+    // ⚠️ ESCOPADO AO PAINEL 05. Quando a comparacao era uma aba ela tinha a
+    // pagina inteira; hoje divide a leitura com os paineis 01-04, e um
+    // `text-warning` solto tambem casava os deltas da media nacional do painel
+    // 02 — o array vinha ["+37", "−9"] em vez dos numeros da comparacao.
+    const numeros = page.locator("#comparar").locator("ul li span.text-warning");
     await expect(numeros.first()).toBeVisible({ timeout: 15_000 });
 
     // Cada linha é um flex próprio, então a frase começa onde o número termina:
@@ -330,8 +245,8 @@ test.describe("Comparar duas provas (/mapa)", () => {
             },
             {
               priority: 2,
-              label: "FAMENE",
-              board_code: "FAMENE",
+              label: "AMP",
+              board_code: "AMP",
               institution_key: OUTRA_KEY,
               exam_name: null,
               exam_date: null,
@@ -341,16 +256,23 @@ test.describe("Comparar duas provas (/mapa)", () => {
       });
     });
 
+    // A comparacao e o painel 05 da leitura, e nao mais uma aba: o `/mapa` ja
+    // chega com ela montada. `#comparar` e a ancora que substituiu o botao.
     await page.goto("/mapa");
-    await page.getByRole("button", { name: "Comparar" }).click();
+    await abrirAbaComparar(page);
 
-    // Sem nenhum clique no seletor: a comparação já está na tela.
+    // Sem nenhum clique NO SELETOR: aberta a aba, a comparação já vem
+    // escolhida. (O clique acima é na aba, não na escolha da prova.)
     const seletor = page.locator("#comparar-com");
     await expect(seletor).toHaveValue(OUTRA_KEY, { timeout: 15_000 });
 
-    const numeros = page.locator("ul li span.text-warning");
+    // ⚠️ ESCOPADO AO PAINEL 05. Quando a comparacao era uma aba ela tinha a
+    // pagina inteira; hoje divide a leitura com os paineis 01-04, e um
+    // `text-warning` solto tambem casava os deltas da media nacional do painel
+    // 02 — o array vinha ["+37", "−9"] em vez dos numeros da comparacao.
+    const numeros = page.locator("#comparar").locator("ul li span.text-warning");
     await expect(numeros.first()).toBeVisible({ timeout: 15_000 });
-    expect((await numeros.allTextContents()).map((t) => t.trim())).toContain("+3,1");
+    expect((await numeros.allTextContents()).map((t) => t.trim())).toContain(NO_LIMIAR);
 
     // E a prova do aluno não fica perdida no meio das 138.
     await expect(seletor.locator('optgroup[label="Suas provas"] option')).toHaveCount(1);

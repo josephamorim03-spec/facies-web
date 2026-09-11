@@ -170,6 +170,8 @@ export {
   listQuestionBankBoards,
   listQuestionBankInstitutions,
   listQuestionBankFacets,
+  listQuestionBankExamEditions,
+  listQuestionBankExamTotals,
   previewQuestionBankAvailability,
   createQuestionBankSession,
   previewKros,
@@ -218,6 +220,8 @@ export type {
   QuestionBankBoard,
   QuestionBankInstitution,
   QuestionBankTargetDemandEvidence,
+  QuestionBankExamEdition,
+  QuestionBankExamTotal,
   QuestionBankSourceOption,
   QuestionBankSourceEntity,
   QuestionBankSourceEntities,
@@ -343,6 +347,8 @@ export type {
   StudentSurfaceHome,
   StudentToday,
   StudentTodayAction,
+  StudentTodayExplanation,
+  StudentTodayFactor,
 } from "./api/domains/student-experience";
 export type {
   TrainerPrescription,

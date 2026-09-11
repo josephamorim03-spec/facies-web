@@ -17,6 +17,19 @@ type AlertProps = {
   icon?: ReactNode;
   /** Optional trailing action (e.g. a "Tentar novamente" button). */
   action?: ReactNode;
+  /**
+   * Atalho para a acao mais comum: tentar de novo.
+   *
+   * ⚠️ EXISTE PORQUE O ERRO SEM SAIDA ERA A REGRA, nao a excecao. Seis
+   * `<Alert variant="danger">` de tela de aluno diziam "Nao consegui carregar"
+   * e ofereciam ZERO acoes -- o unico retry do app inteiro estava escrito a
+   * mao dentro dos Graficos. Deixar a saida a cargo de quem chama garante que
+   * ela sera esquecida; um atalho de uma prop garante que ela e barata.
+   *
+   * `action` continua existindo para o caso que precisa de outra coisa (um
+   * link, um botao com outro verbo). Passar os dois usa `action`.
+   */
+  onRetry?: () => void;
   /** When provided, renders a dismiss (×) button that calls this. */
   onDismiss?: () => void;
   children: ReactNode;
@@ -27,7 +40,18 @@ type AlertProps = {
  * Theme-safe inline message box. Uses semantic border/text tokens over `bg-surface`
  * so it works in light and dark — replacing scattered `border-danger bg-surfaceMuted` patterns.
  */
-export function Alert({ variant = "info", icon, action, onDismiss, children, className = "" }: AlertProps) {
+export function Alert({ variant = "info", icon, action, onRetry, onDismiss, children, className = "" }: AlertProps) {
+  const acao =
+    action ??
+    (onRetry ? (
+      <button
+        type="button"
+        onClick={onRetry}
+        className="rounded-control border border-edge bg-paper px-3 py-2 text-xs text-ink transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        Tentar de novo
+      </button>
+    ) : null);
   return (
     <div
       role="alert"
@@ -35,7 +59,7 @@ export function Alert({ variant = "info", icon, action, onDismiss, children, cla
     >
       {icon && <span className="mt-0.5 shrink-0">{icon}</span>}
       <div className="min-w-0 flex-1 text-ink">{children}</div>
-      {action && <div className="shrink-0">{action}</div>}
+      {acao && <div className="shrink-0">{acao}</div>}
       {onDismiss && (
         <button
           type="button"

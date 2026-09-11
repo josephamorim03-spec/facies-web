@@ -83,6 +83,15 @@ export function UserAvatar({
     );
   }
 
+  // ⚠️ EXCECAO ESCRITA A REGRA DO PREENCHIMENTO.
+  //
+  // A rodada de 2026-09-06 reservou `bg-primary` cheio para a ACAO da tela.
+  // Este monograma continua preenchido de proposito: em `/voce` nao existe
+  // acao primaria nenhuma -- as nove linhas sao gavetas -- e a inicial e
+  // IDENTIDADE, nao convite. Ninguem toca num avatar esperando que algo
+  // aconteca; ele diz de quem e a conta.
+  //
+  // Se um dia `/voce` ganhar uma acao de verdade, e esta marca que cede.
   return (
     <span
       aria-hidden="true"

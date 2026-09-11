@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import QuestionList from "@/app/banco/_components/QuestionList";
 import { Alert } from "@/components/ui/Alert";
+import { BotaoDeEscolha } from "@/components/ui/BotaoDeEscolha";
 import { LoadBar } from "@/components/ui/LoadBar";
 import { displayAreaLabel, resolveDisplayArea } from "@/lib/areaDisplay";
 import {
@@ -33,9 +34,15 @@ import { useAuthToken } from "@/lib/useAuthToken";
  *
  * ## Por que ela nao e um destino da barra
  *
- * O desenho fixa SEIS destinos (`Webapp - telas.dc.html:278-288`) e sete nao
- * cabem em 390px. Guardadas e uma forma de olhar o Banco, entao mora sob ele,
- * ao lado de "Montar sessão" e "Histórico".
+ * A barra fixa CINCO destinos e o sexto nao caberia em 390px. Guardadas e uma
+ * forma de olhar o acervo, nao um lugar diferente dele, entao mora sob a
+ * Pratica, ao lado de "Questões" e "Histórico".
+ *
+ * ⚠️ Este paragrafo dizia SEIS, citando `Webapp - telas.dc.html:278-288`. Aquele
+ * desenho e de agosto e a barra dele ("hoje mapa banco evolução rotina conta")
+ * nao existe mais: a taxonomia passou ao vocabulario do prontuario — conduta ·
+ * prática · mapa · evolução · você. O ARGUMENTO nao mudou, e e' por isso que ele
+ * fica: a barra tem um teto de largura, e guardadas nunca disputou esse teto.
  *
  * ## O que ela NAO tenta ser
  *
@@ -121,6 +128,12 @@ export default function GuardadasPage() {
         question_ids: filtradas.map((questao) => questao.id),
         mode: "by_topic",
         resolution_mode: "simulation",
+        // ⚠️ TREINO, e não simulado. Sem este campo a sessão cai no padrão do
+        // perfil (`post_result`) e o aluno que tocou em "Praticar" para APRENDER
+        // um assunto não vê correção nenhuma até o fim -- um verbo com dois
+        // significados dentro do mesmo app. É o que `RevisaoDiaLauncher` já faz
+        // (`lib/revisaoSessao.ts`), e agora os três concordam.
+        feedback_timing: "immediate",
         study_kind: "topic",
         session_kind: "bank_topic",
         generate_review_trail: false,
@@ -139,8 +152,8 @@ export default function GuardadasPage() {
 
   if (guardadas.isError) {
     return (
-      <Alert variant="danger">
-        Não foi possível carregar as suas guardadas. Tente novamente em alguns instantes.
+      <Alert variant="danger" onRetry={() => void guardadas.refetch()}>
+        Não foi possível carregar as suas guardadas.
       </Alert>
     );
   }
@@ -159,7 +172,7 @@ export default function GuardadasPage() {
       </header>
 
       {todas.length === 0 ? (
-        <section className="rounded-surface border border-edge bg-surface p-5">
+        <section className="rounded-surface border border-edge bg-surface p-4 sm:p-5">
           <p className="text-sm leading-6 text-ink">
             Nada guardado ainda. Durante uma sessão, o botão{" "}
             <strong className="font-semibold">Guardar</strong> na barra de baixo — ou a tecla{" "}
@@ -187,43 +200,39 @@ export default function GuardadasPage() {
             </label>
 
             {areas.length > 1 ? (
-              <div className="flex flex-wrap gap-2">
+              <div className="fileira-de-controles">
                 {/* A contagem por area vem da lista carregada, entao ela nunca
                     promete um filtro que devolve zero — que e o defeito classico
                     de barra de filtro com contagem vinda de outra consulta. */}
-                <button
-                  type="button"
+                <BotaoDeEscolha
+                  papel="aba"
+                  escolhido={areaEscolhida === null}
                   onClick={() => setAreaEscolhida(null)}
-                  aria-pressed={areaEscolhida === null}
-                  className={`min-h-11 rounded-control border px-3 text-sm transition-colors ${
-                    areaEscolhida === null
-                      ? "border-primary bg-primary text-primaryInk"
-                      : "border-edge bg-surface text-muted hover:text-ink"
-                  }`}
                 >
                   Todas
-                </button>
+                </BotaoDeEscolha>
                 {areas.map(([area, quantas]) => (
-                  <button
+                  <BotaoDeEscolha
                     key={area}
-                    type="button"
+                    papel="aba"
+                    escolhido={area === areaEscolhida}
                     onClick={() => setAreaEscolhida(area === areaEscolhida ? null : area)}
-                    aria-pressed={area === areaEscolhida}
-                    className={`min-h-11 rounded-control border px-3 text-sm transition-colors ${
-                      area === areaEscolhida
-                        ? "border-primary bg-primary text-primaryInk"
-                        : "border-edge bg-surface text-muted hover:text-ink"
-                    }`}
                   >
-                    {displayAreaLabel(area)}{" "}
-                    <span className="font-mono tabular-nums">{quantas}</span>
-                  </button>
+                    <>
+                      {displayAreaLabel(area)}{" "}
+                      <span className="font-mono tabular-nums">{quantas}</span>
+                    </>
+                  </BotaoDeEscolha>
                 ))}
               </div>
             ) : null}
           </section>
 
-          {erro ? <Alert variant="danger">{erro}</Alert> : null}
+          {erro ? (
+            <Alert variant="danger" onDismiss={() => setErro(null)}>
+              {erro}
+            </Alert>
+          ) : null}
 
           <button
             type="button"
@@ -237,9 +246,23 @@ export default function GuardadasPage() {
           </button>
 
           {filtradas.length === 0 ? (
-            <p className="text-sm text-muted">
-              Nenhuma guardada com esse filtro. As {todas.length} continuam aqui.
-            </p>
+            <div className="space-y-3">
+              <p className="text-sm text-muted">
+                Nenhuma guardada com esse filtro. As {todas.length} continuam aqui.
+              </p>
+              {/* A frase dizia ONDE estavam as outras e não dava como chegar
+                  lá. Dizer que a saída existe sem oferecê-la é pior que calar. */}
+              <button
+                type="button"
+                onClick={() => {
+                  setAreaEscolhida(null);
+                  setBusca("");
+                }}
+                className="min-h-11 rounded-control border border-edge bg-surface px-3 text-sm text-ink transition-colors hover:border-primary hover:text-primary"
+              >
+                Ver as {todas.length}
+              </button>
+            </div>
           ) : (
             <QuestionList
               questions={filtradas}

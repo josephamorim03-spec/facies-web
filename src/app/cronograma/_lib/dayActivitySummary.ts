@@ -1,3 +1,4 @@
+import { FLASHCARDS_LIGADOS } from "@/lib/flags";
 import type {
   CalendarEventOut,
   DirectedStudyListItem,
@@ -188,7 +189,9 @@ export function buildDayActivitySummary(params: {
     });
   }
 
-  if (cardsCompleted > 0) {
+  // ⚠️ O item emitia `href: "/cards"` com a chave desligada, e o dia do
+  // cronograma ficava com uma linha que so' sabia levar a um 307.
+  if (FLASHCARDS_LIGADOS && cardsCompleted > 0) {
     increment(categories, "cards", "Cards");
     items.push({
       key: "cards:done",

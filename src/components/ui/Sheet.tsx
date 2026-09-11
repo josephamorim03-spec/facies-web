@@ -196,7 +196,7 @@ export function Sheet({ open, onClose, title, eyebrow, children, className }: Sh
             <div className="flex items-start justify-between gap-3">
               <div>
                 {eyebrow ? <p className="paper-eyebrow">{eyebrow}</p> : null}
-                <h2 id={tituloId} className="mt-1 font-serif text-xl font-semibold text-ink">
+                <h2 id={tituloId} className="mt-1 font-serif font-semibold text-ink">
                   {title}
                 </h2>
               </div>

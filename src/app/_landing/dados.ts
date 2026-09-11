@@ -52,15 +52,21 @@ const PREFIXO_FAMILIA = "exame-nacional-de-residencia-medica-ebserh";
  * `n`. Quem escrever a copy tem de citar o `n` que vem junto do número.
  */
 /**
- * Quantos dias o cadastro concede, de graca e sem cartao.
+ * ⚠️ `DIAS_DE_TRIAL` FOI REMOVIDO daqui em 07/09/2026, e a remocao e a decisao.
  *
- * ⚠️ FONTE DE VERDADE:  (DIAS_DE_TRIAL).
- * E constante de OUTRO runtime, entao nao da para importar -- ela e repetida
- * aqui e  le o arquivo Python e reprova se
- * os dois divergirem. Sem esse laco isto vira o que ja aconteceu em
- * , que ate hoje diz "trial de 14 dias".
+ * O cadastro deixou de conceder por prazo: `conceder_trial` concede com
+ * `ends_at=None` porque o lado do aluno e gratuito permanentemente -- a
+ * neutralidade e o unico fosso da Facies contra quem vende curso ao aluno.
+ *
+ * Nao ha mais numero para repetir aqui, entao nao ha mais o que divergir. O
+ * laco com o backend continua existindo em `verificar-landing-v8.mjs`, e mudou
+ * de objeto: ele confere que o servico NAO voltou a conceder com data enquanto
+ * esta pagina promete "sem prazo".
+ *
+ * ⚠️ `web/src/lib/accessLapse.ts` ainda fala em trial de 14 dias. Ja estava
+ * errado antes desta mudanca (o backend concedia 30) e continua errado agora
+ * por outro motivo. Nao foi tocado aqui para nao misturar com a WIP em curso.
  */
-export const DIAS_DE_TRIAL = 30;
 
 export type Base = { n: number; do_que: string };
 

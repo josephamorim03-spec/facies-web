@@ -3,7 +3,6 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { fonteDoBackend, MOTIVO } from "./_contrato-com-o-backend.mjs";
 
 /**
  * O front continua sendo capaz de pedir uma sessão dirigida.
@@ -32,7 +31,9 @@ import { fonteDoBackend, MOTIVO } from "./_contrato-com-o-backend.mjs";
  * `session_kind: "kros"`.
  */
 const SRC = fileURLToPath(new URL("../../src", import.meta.url));
-const DOMINIO = fonteDoBackend("app/domain/kros_modes.py");
+const DOMINIO = fileURLToPath(
+  new URL("../../../app/domain/kros_modes.py", import.meta.url),
+);
 
 function varrer(dir) {
   return readdirSync(dir).flatMap((entrada) => {
@@ -181,8 +182,8 @@ test("o preset viaja junto — sem ele o modo não faz o que promete", () => {
  */
 const PADRAO_MODO = /^\s+key="([a-z_]+)",\s*$/gm;
 
-test("os quatro modos do domínio chegam ao aluno", { skip: DOMINIO ? false : MOTIVO }, () => {
-  const py = DOMINIO;
+test("os quatro modos do domínio chegam ao aluno", () => {
+  const py = readFileSync(DOMINIO, "utf8");
   const doDominio = [...py.matchAll(PADRAO_MODO)].map((m) => m[1]);
   assert.ok(
     doDominio.length >= 4,
