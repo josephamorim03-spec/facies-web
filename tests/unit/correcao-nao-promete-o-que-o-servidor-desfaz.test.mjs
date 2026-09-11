@@ -23,8 +23,8 @@
  */
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
+import { fonteDoBackend, MOTIVO } from "./_contrato-com-o-backend.mjs";
 
 import {
   CORRECTION_MODE_SHORT_LABEL,
@@ -102,15 +102,15 @@ test("por tópico o botão continua a dizer `a cada questão`", () => {
   assert.match(questionBankCtaLabel(20, "immediate", "topic"), /a cada questão/);
 });
 
-test("o servidor ainda pina os dois — se parar, este espelho tem de cair", () => {
-  const schema = readFileSync(
-    new URL("../../../app/api/schemas/question_bank.py", import.meta.url).pathname.replace(
-      /^\/([A-Za-z]:)/,
-      "$1",
-    ),
-    "utf8",
-  );
-  const normalizacao = schema.slice(schema.indexOf("def normalize_session_contract"));
+// ⚠️ Pelo helper, e nao por caminho cru. Este arquivo vive em DOIS
+// repositorios -- o monorepo e o frontend separado -- e `fonteDoBackend`
+// resolve os dois layouts. Com caminho cru, o teste rebenta com ENOENT no
+// repo do frontend em vez de pular com motivo; foi o que aconteceu na
+// primeira sincronizacao.
+const SCHEMA = fonteDoBackend("app/api/schemas/question_bank.py");
+
+test("o servidor ainda pina os dois — se parar, este espelho tem de cair", { skip: SCHEMA ? false : MOTIVO }, () => {
+  const normalizacao = SCHEMA.slice(SCHEMA.indexOf("def normalize_session_contract"));
   assert.ok(normalizacao.length > 0, "`normalize_session_contract` sumiu; reveja este teste");
 
   for (const kind of ["kros", "institutional_exam"]) {
