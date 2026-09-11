@@ -11,6 +11,7 @@ import type {
 } from "@/lib/api";
 import { revealAllQuestionBankFeedback } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
+import { FormularioDeDenuncia } from "./_postExamReview/FormularioDeDenuncia";
 import { getAPIErrorMessage } from "@/lib/api/shared/http";
 import { useToast } from "@/lib/useToast";
 import { ScoreReadout } from "@/components/ui/ScoreReadout";
@@ -760,60 +761,16 @@ export default function PostExamReview({
                     )}
 
                     {reportingPosition === item.position && (
-                      <div className="mt-3 rounded-control border border-edge bg-paper p-3">
-                        <div className="flex flex-wrap gap-2">
-                          {REPORT_OPTIONS.map(({ type, label }) => (
-                            <button
-                              key={type}
-                              type="button"
-                              onClick={() => setReportType(type)}
-                              className={cx(
-                                "border px-2.5 py-1 text-xs",
-                                reportType === type
-                                  ? "border-primary bg-washSelecao text-ink"
-                                  : "border-edge text-muted hover:text-ink",
-                              )}
-                            >
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-                        <textarea
-                          value={reportReason}
-                          onChange={(event) => setReportReason(event.target.value)}
-                          maxLength={4000}
-                          rows={3}
-                          className="mt-3 w-full rounded-control border border-edge bg-surface px-3 py-2 text-sm outline-none focus:border-primary"
-                          placeholder="O que parece errado nesta questão?"
-                        />
-                        {/* ⚠️ `.fileira-de-controles`, e não `justify-end`: os
-                            dois botões ficavam encostados à DIREITA com alvo de
-                            ~26px (`py-1.5 text-xs`) — o pior par possível num
-                            rodapé de formulário, onde errar o toque cancela o
-                            que se acabou de escrever.
-
-                            O helper põe-nos em colunas iguais no telemóvel e
-                            devolve a fileira `flex` a partir de 768px. */}
-                        <div className="fileira-de-controles mt-2">
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            size="md"
-                            onClick={() => setReportingPosition(null)}
-                          >
-                            Cancelar
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="primary"
-                            size="md"
-                            disabled={isWorking}
-                            onClick={() => void submitSessionReport(item)}
-                          >
-                            Enviar denúncia
-                          </Button>
-                        </div>
-                      </div>
+                      <FormularioDeDenuncia
+                        opcoes={REPORT_OPTIONS}
+                        tipo={reportType}
+                        aoEscolherTipo={setReportType}
+                        motivo={reportReason}
+                        aoEscreverMotivo={setReportReason}
+                        ocupado={isWorking}
+                        aoCancelar={() => setReportingPosition(null)}
+                        aoEnviar={() => void submitSessionReport(item)}
+                      />
                     )}
 
                     <div className="mt-3 flex flex-wrap gap-1.5">

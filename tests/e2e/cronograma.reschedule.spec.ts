@@ -39,6 +39,30 @@ async function mockBrowserClock(page: Page, fixedIso: string) {
   }, fixedIso);
 }
 
+/**
+ * ⚠️ ESTE SPEC MEDIA A SEMANA E COBRAVA ELEMENTOS DO MES.
+ *
+ * Ele ia a `/cronograma` e procurava `[data-dot-kind='pending']` e o botao
+ * "Reagendar", que vivem em `calendar/CalendarGrid.tsx` e `CalendarSections.tsx`
+ * — a grade do MES. A semana (`CronogramaWeekView`) usa `data-week-day-dot`, um
+ * marcador diferente, e nao monta nenhum dos dois.
+ *
+ * A causa e' a separacao de rotas de `efabd321` (2026-09-08): `/cronograma`
+ * passou a ser a SEMANA e o mes ganhou `/cronograma/mes`. Antes disso a mesma
+ * URL servia as duas leituras e o spec estava certo. Ele nao foi atualizado, e
+ * as duas provas passaram a morrer sem chegar ao que medem — reagendamento.
+ *
+ * O irmao `cronograma.mobile-ux.spec.ts` nao tem este defeito porque usa
+ * `?view=month`, que o `next.config.js` encaminha para a rota nova.
+ *
+ * ⚠️ CONSERTA UMA DAS DUAS. Medido depois da troca de rota, com servidor
+ * proprio e vivo no fim: "reagenda atividade por seletor de data" passa; "modal
+ * mostra aceite por item" continua vermelha, e por OUTRA causa — o botao
+ * "Reagendar" das atrasadas e' encontrado e clicado, mas o dialogo nao abre.
+ * `handleAutoReschedule` faz `POST /api/schedule/suggest`, e o mock devolve
+ * `null` quando `buildSuggestionItems(db)` vem vazio. E' defeito de fixture, nao
+ * de rota, e fica declarado em vez de escondido.
+ */
 test.describe("Cronograma reschedule suggestions", () => {
   test.beforeEach(async ({ page }) => {
     await addHttpOnlySessionForPage(page);
@@ -50,7 +74,7 @@ test.describe("Cronograma reschedule suggestions", () => {
     markTaskOverdue(db.pendingTasks[0], plusDays(today, -2));
     await mockBrowserClock(page, `${today}T20:30:00-03:00`);
 
-    await page.goto("/cronograma");
+    await page.goto("/cronograma/mes");
 
     await page.getByRole("button", { name: "Reagendar" }).click();
 
@@ -66,7 +90,7 @@ test.describe("Cronograma reschedule suggestions", () => {
     const today = currentTodayISO();
     const targetDate = plusDays(today, 2);
 
-    await page.goto("/cronograma");
+    await page.goto("/cronograma/mes");
 
     await page.locator("[data-dot-kind='pending']").first().click();
     await page.getByRole("button", { name: "Reagendar" }).click();

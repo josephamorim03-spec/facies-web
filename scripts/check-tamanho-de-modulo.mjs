@@ -64,7 +64,7 @@ const TETOS = {
   // 2026-09-11: 1217 -> 1053. DESCE 164 -- a diferenca entre o que este repo
   // congelou em 08/09 e o que o arquivo e' hoje. A `BottomActionBar` e a saida
   // de UI que nunca foi renderizada sairam nesse intervalo.
-  "src/app/banco/page.tsx": 1053,
+  "src/app/banco/page.tsx": 1048,
   // 2026-09-11: 1526 -> 1516. DESCE, e o teto tem de acompanhar: espaco
   // reconquistado que fica sem teto e' espaco que volta a ser ocupado. Saiu com
   // a troca dos botoes a mao pelo primitivo `Button` (faciesapp #90-#93).
@@ -74,7 +74,7 @@ const TETOS = {
   // atravessaram o limite padrao de 1000. Registado em vez de dividido, pela
   // mesma razao que no backend: dividir um componente de mil linhas por causa
   // de quarenta seria divisao pelo NUMERO, nao por responsabilidade.
-  "src/app/banco/sessao/[sessionId]/_components/PostExamReview.tsx": 1040,
+  "src/app/banco/sessao/[sessionId]/_components/PostExamReview.tsx": 997,
   // 2026-09-11: 1328 -> 1343. As 15 linhas sao a derivacao do item que o
   // modal de card passa a IA e a condicao que esconde o toggle de correcao
   // guiada quando ela nao existe (faciesapp #76).

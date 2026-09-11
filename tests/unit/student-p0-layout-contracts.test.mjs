@@ -70,23 +70,39 @@ test("Cronograma abre na semana e preserva o calendario mensal como modo secunda
     "<WeeklyGoalControl",
     "a faixa e o detalhe diario devem continuar protagonistas antes da meta auxiliar",
   );
-  // ⚠️ AS TRES AFORDANCIAS DE TROCA VIRARAM UMA.
+  // ⚠️ ESTE CONTRATO AFIRMAVA UMA AUSENCIA, E A AUSENCIA VIROU UM BURACO.
   //
-  // O que este teste prendia antes: um `ScheduleViewTabs` textual so no
-  // desktop, mais um icone `schedule-view-month` so na semana mobile, mais um
-  // `schedule-view-week` so no mes mobile. Tres desenhos para a mesma troca, e
-  // nenhum deles presente nas duas larguras — o aluno tinha de a aprender duas
-  // vezes conforme o aparelho.
+  // O que ele prendia: nenhuma das duas telas podia ter
+  // `data-testid="schedule-view-*"`, porque a troca entre semana e mes tinha
+  // migrado para a linha de secoes (`IntentSubNav`), igual nas duas larguras.
+  // Era verdade — enquanto "Semana" e "Mes" fossem secoes do Plano.
   //
-  // Agora "Semana" e "Mes" sao SECOES do Plano e a troca mora no `IntentSubNav`,
-  // igual nas duas larguras. O contrato passa a ser a AUSENCIA dos duplicados —
-  // o positivo (a linha existir com as duas secoes) e' de `navConfig.test.mjs`,
-  // que le a fonte da verdade em vez do JSX.
+  // Quando o calendario virou destino do "Mais", `CHILDREN.mais` ficou vazio e
+  // `getIntentChildren("/cronograma")` passou a devolver lista vazia: a linha
+  // NAO desenha nada nestas duas rotas. O guard continuou verde, porque medir
+  // ausencia nunca ve o que sumiu do outro lado — e o aluno ficou sem troca
+  // nenhuma, em largura nenhuma.
+  //
+  // O contrato agora e' POSITIVO, que e' o unico que nao pode ser satisfeito
+  // por remocao: cada tela leva ao OUTRO lado, pelo mesmo componente.
+  assert.match(week, /<AlternarVista para="month"/, "a semana deve levar ao mes");
+  assert.match(month, /<AlternarVista para="week"/, "o mes deve levar a semana");
+  // ⚠️ E o botao e' UM SO'. A queixa que matou a versao anterior era tres
+  // desenhos para a mesma troca, cada um numa largura — entao a marcacao de
+  // teste tem de nascer no componente partilhado, e nao copiada em cada tela.
+  const alternador = read("src/app/cronograma/_components/AlternarVista.tsx");
+  for (const marca of ["schedule-view-month", "schedule-view-week"]) {
+    assert.equal(
+      alternador.includes(marca),
+      true,
+      `a marcacao ${marca} deve vir do componente partilhado`,
+    );
+  }
   for (const [nome, fonte] of [["a semana", week], ["o mes", month]]) {
     assert.equal(
       /data-testid="schedule-view-(week|month)"/.test(fonte),
       false,
-      `${nome} nao deve ter um segundo caminho para a troca de visao`,
+      `${nome} nao deve desenhar um segundo botao de troca por fora do partilhado`,
     );
   }
   // ⚠️ CASA O USO, e nao a PALAVRA: o proprio arquivo explica em comentario

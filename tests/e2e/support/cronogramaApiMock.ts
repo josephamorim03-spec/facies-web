@@ -528,6 +528,18 @@ export async function mockCronogramaApi(
     const path = url.pathname;
 
     // App shell route-guard profile check
+    //
+    // ⚠️ `cadastro_completo` NAO E' OPCIONAL AQUI, e a sua falta matava todos os
+    // testes que usam este mock.
+    //
+    // `resolveBlockingRoute` le este campo ANTES do acesso e de tudo o mais
+    // (`src/lib/initialGoalSetup.ts`): sem ele, `!resolved.cadastro_completo` e'
+    // verdadeiro e o guard do `AppShell` manda toda navegacao para
+    // `/cadastro/completar` — que, sem `/api/cadastro/status` mockado, rebenta
+    // em `undefined.length` e pinta a fronteira de erro. O sintoma nao mencionava
+    // cadastro em lado nenhum: "Algo deu errado. Tente recarregar a pagina."
+    //
+    // O campo entrou no guard depois deste mock e ninguem o acrescentou aqui.
     if (method === "GET" && path === "/api/profile") {
       return json(route, {
         user_id: "user_e2e",
@@ -536,8 +548,14 @@ export async function mockCronogramaApi(
         reschedule_mode: "suggest",
         display_name: "E2E User",
         access_status: "active",
+        cadastro_completo: true,
         has_completed_initial_goal_setup: true,
       });
+    }
+    // O degrau seguinte do mesmo guard. Ele so' e' consultado no login, mas a
+    // rota existe e devolver `{}` faz `aceites_pendentes` chegar `undefined`.
+    if (method === "GET" && path === "/api/cadastro/status") {
+      return json(route, { cadastro_completo: true, aceites_pendentes: [] });
     }
     if (method === "PATCH" && path === "/api/profile") {
       const payload = request.postDataJSON() as { weekly_goal_questions: number };

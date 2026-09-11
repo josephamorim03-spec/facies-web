@@ -59,8 +59,19 @@ export function valoresExportados(fonte) {
   const declaracao = /^\s*export\s+(?:async\s+)?(const|let|var|function|class)\s+([A-Za-z_$][\w$]*)/gm;
   for (const achado of fonte.matchAll(declaracao)) {
     const nome = achado[2];
-    // Componente: PascalCase. `TOTAL_DE_MARCAS` e `marcasDaProva` não são.
-    if (/^[A-Z][a-z]/.test(nome)) continue;
+    // Componente: começa em maiúscula e NÃO é uma constante em caixa alta.
+    //
+    // ⚠️ A REGRA ERA `/^[A-Z][a-z]/`, e ela exigia minúscula na SEGUNDA letra —
+    // o que reprova todo componente cujo nome começa com duas maiúsculas. Em
+    // português isso não é raro: `OQueOAppFaz` (o artigo "O" + "Que") foi
+    // acusado de ser valor cruzando a fronteira, e o `npm run lint` inteiro
+    // ficou vermelho por um componente perfeitamente legítimo.
+    //
+    // O que distingue componente de constante não é a segunda letra: é haver
+    // minúscula em algum lugar. `TOTAL_DE_MARCAS` e `X` não têm; `OQueOAppFaz`
+    // e `QuestaoAnotada` têm. `marcasDaProva` cai pela primeira letra.
+    const ehComponente = /^[A-Z]/.test(nome) && !/^[A-Z0-9_]+$/.test(nome);
+    if (ehComponente) continue;
     nomes.add(nome);
   }
   return nomes;
@@ -150,6 +161,22 @@ const CASOS = [
     nome: "ignora componente PascalCase",
     fonte: `"use client";\nexport function QuestaoAnotada() { return null; }\n`,
     esperaValor: [],
+    cliente: true,
+  },
+  {
+    // ⚠️ REGRESSÃO MEDIDA: a regra antiga (`/^[A-Z][a-z]/`) reprovava este
+    // nome, porque a segunda letra é maiúscula. É o artigo "O" do português,
+    // e ele derrubou o `npm run lint` inteiro por um componente legítimo.
+    nome: "ignora componente que comeca com DUAS maiusculas",
+    fonte: `"use client";\nexport function OQueOAppFaz() { return null; }\n`,
+    esperaValor: [],
+    cliente: true,
+  },
+  {
+    // A contraparte: uma letra maiuscula sozinha continua sendo constante.
+    nome: "constante de uma letra ainda e valor",
+    fonte: `"use client";\nexport const X = 1;\n`,
+    esperaValor: ["X"],
     cliente: true,
   },
   {

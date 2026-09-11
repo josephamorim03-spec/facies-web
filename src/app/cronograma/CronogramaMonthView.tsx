@@ -10,6 +10,7 @@ import { useNavbar } from "@/lib/NavbarContext";
 import { buildStudyImportRuntimePath, readActiveStudyImportSessionId } from "@/lib/studyImportRuntime";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 
+import { AlternarVista } from "./_components/AlternarVista";
 import { CronogramaCalendarView } from "./_components/CronogramaCalendarView";
 import { IconSearch, IconX } from "./_components/CronogramaIcons";
 import { CronogramaStreakCard } from "./_components/CronogramaStreakCard";
@@ -367,6 +368,19 @@ export default function CronogramaMonthView({
     setCoachStep("month");
   }, []);
 
+  /**
+   * O dia que a SEMANA deve abrir quando o aluno troca de leitura daqui.
+   *
+   * Não é `today` sempre: quem está a olhar novembro e carrega em "ver a
+   * semana" quer a semana de novembro, e não ser atirado de volta para hoje.
+   * Só quando o mês visível É o mês corrente é que hoje é a resposta certa.
+   */
+  const diaParaASemana = useMemo(() => {
+    const noMesCorrente = calendarYear === currentRealYear && calendarMonth === currentRealMonth;
+    if (noMesCorrente) return today;
+    return `${calendarYear}-${String(calendarMonth + 1).padStart(2, "0")}-01`;
+  }, [calendarMonth, calendarYear, currentRealMonth, currentRealYear, today]);
+
   const openMonthPicker = useCallback(() => {
     setMonthPickerYear(calendarYear);
     setMonthPickerOpen(true);
@@ -416,17 +430,18 @@ export default function CronogramaMonthView({
         >
           <IconSearch className="h-5 w-5" />
         </button>
-        {/* ⚠️ O ÍCONE "VER SEMANA" SAIU. A troca entre as duas leituras mora
-            agora na linha de seções do Plano (`IntentSubNav`), igual nas duas
-            larguras — ver a nota em `CronogramaClientPage`. O que fica aqui é o
-            que é DESTA tela: a busca por tema. */}
+        {/* ⚠️ O ÍCONE "VER SEMANA" VOLTOU, e o motivo está em `AlternarVista`:
+            a linha de seções que o substituiu deixou de existir nesta tela
+            quando o calendário virou destino do "Mais". Ele fica à direita da
+            lupa, e é o mesmo botão que a semana usa para vir para cá. */}
+        <AlternarVista para="week" dia={diaParaASemana} tamanho="sm" />
       </>,
     );
     return () => {
       setTitle(null);
       setActions(null);
     };
-  }, [isDesktopNavigation, renderMonthControl, restartCalendarCoach, searchOpen, setActions, setTitle]);
+  }, [diaParaASemana, isDesktopNavigation, renderMonthControl, restartCalendarCoach, searchOpen, setActions, setTitle]);
 
   function closeSearch() {
     setSearchOpen(false);
@@ -520,6 +535,9 @@ export default function CronogramaMonthView({
             >
               <IconSearch className="h-5 w-5" />
             </button>
+            {/* A MESMA troca do telemóvel, no mesmo lugar relativo à lupa: o
+                desktop não ganha um segundo desenho para a mesma decisão. */}
+            <AlternarVista para="week" dia={diaParaASemana} />
           </div>
         </div>
       ) : null}

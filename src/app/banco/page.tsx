@@ -36,8 +36,7 @@ import { Button } from "@/components/ui/Button";
 import FiltersBar from "./_components/FiltersBar";
 import type { TipoDeSessao } from "./_components/FiltersBar";
 import QuestionList from "./_components/QuestionList";
-import CreateSessionPanel from "./_components/CreateSessionPanel";
-import { BOTTOM_ACTION_BAR_RESERVE_CLASS } from "@/components/ui/BottomActionBar";
+import CreateSessionPanel, { RESERVA_DA_BARRA } from "./_components/CreateSessionPanel";
 import { BancoDeQuestoesSkeleton } from "./_components/BancoDeQuestoesSkeleton";
 import { useEdicoesDaProva } from "./_lib/useEdicoesDaProva";
 import { filterTopicsLocally } from "./_components/topicTree";
@@ -895,11 +894,7 @@ function BancoDeQuestoesContent() {
     <div className="min-h-screen bg-paper text-ink">
       {/* Sem max-w proprio: o AppShell ja limita o conteudo em `lg:max-w-6xl`.
           O `max-w-7xl` que estava aqui nunca chegava a valer. */}
-      {/* ⚠️ A RESERVA É OBRIGATÓRIA desde que o `CreateSessionPanel` voltou a
-          montar uma `BottomActionBar`: no telemóvel ela é `fixed`, sai do
-          fluxo, e sem este recuo o fim dos filtros fica por baixo dela. É o
-          mesmo que o `CadernoClientPage` faz. */}
-      <div className={`ritmo-secao ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}>
+      <div className={`ritmo-secao ${RESERVA_DA_BARRA}`}>
         <section className="space-y-4" aria-label="Montador de sessão">
           <section
             aria-label="Filtros e resumo do banco de questões"

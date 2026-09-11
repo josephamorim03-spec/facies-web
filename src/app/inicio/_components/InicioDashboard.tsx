@@ -29,6 +29,7 @@ import { ordenarBlocos, type BlocoDoInicio } from "../_lib/ordem";
 import { BlocoEvolucao } from "./BlocoEvolucao";
 import { BlocoQuentes } from "./BlocoQuentes";
 import { BlocoSequencia } from "./BlocoSequencia";
+import { PortaDoCalendario } from "./PortaDoCalendario";
 
 /**
  * O INÍCIO — o resumo do que importa agora.
@@ -208,6 +209,12 @@ export function InicioDashboard() {
       ) : (
         ordem.map((bloco) => <div key={bloco}>{desenhar(bloco)}</div>)
       )}
+
+      {/* ⚠️ FORA do `ternário` acima, e não dentro de um dos ramos. O aluno novo
+          é justamente quem mais precisa de ver que existe um calendário — pôr a
+          porta só ao lado dos blocos com dado escondê-la-ia de quem ainda não
+          tem nenhum. Ver o registo em `PortaDoCalendario`. */}
+      <PortaDoCalendario />
     </div>
   );
 }
