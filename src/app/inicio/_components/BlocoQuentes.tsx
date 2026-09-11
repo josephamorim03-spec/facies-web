@@ -57,7 +57,24 @@ export function BlocoQuentes({
         {blocos.map((bloco) => (
           <Link
             key={bloco.node_id}
-            href={`/banco?theme=${encodeURIComponent(bloco.node_name)}&answer_status=unanswered_or_wrong`}
+            /* 🚨 MANDA O `node_id`, e não só o nome.
+
+               Isto era `?theme=<node_name>` sozinho — e `theme` no Banco não é
+               um filtro de tópico: vira o TEXTO da caixa de busca
+               (`banco/page.tsx` usa-o para `searchDraft`/`committedSearch`).
+               Ou seja, o bloco recomendado chegava ao Banco como quem digitou o
+               nome à mão, e acertava só quando a string batia certo com um nó
+               da lista carregada.
+
+               O caminho forte já existia e ninguém daqui o usava:
+               `knowledge_node_ids` é lido por `useFocoDeEntrada`, que procura o
+               nó por ID, selecciona-o e LIMPA a busca por texto.
+
+               ⚠️ Os dois vão juntos de propósito. O hook desiste em silêncio
+               quando o nó ainda não está na lista carregada (está escrito lá
+               porquê), e nesse caso o `theme` continua a servir de recurso —
+               que é exactamente o papel que o comentário dele lhe dá. */
+            href={`/banco?knowledge_node_ids=${encodeURIComponent(bloco.node_id)}&theme=${encodeURIComponent(bloco.node_name)}&answer_status=unanswered_or_wrong`}
             className="paper-control flex min-w-0 items-center justify-between gap-3 rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
           >
             <span className="min-w-0 flex-1">

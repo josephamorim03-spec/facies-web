@@ -10,6 +10,7 @@ import { classesDeBotao } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
 import { useNavbar } from "@/lib/NavbarContext";
+import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { AREA_BG_CLASS } from "@/lib/areaIdentity";
 import { resolveDisplayArea } from "@/lib/areaDisplay";
 import { getOperationalStreak, invalidateStudentExperienceCache } from "@/lib/api";
@@ -27,6 +28,7 @@ import {
   weekRange,
 } from "@/features/student-agenda/dateRange";
 
+import { AlternarVista } from "./AlternarVista";
 import { CronogramaStreakCard } from "./CronogramaStreakCard";
 import { WeeklyGoalControl } from "./WeeklyGoalControl";
 
@@ -79,7 +81,8 @@ export function CronogramaWeekView({
   initialSelectedDay?: string | null;
 }) {
   const router = useRouter();
-  const { setTitle } = useNavbar();
+  const isDesktopNavigation = useDesktopNavigationMode();
+  const { setTitle, setActions } = useNavbar();
   const { token, tokenResolved } = useAuthToken();
   const range = useMemo(() => weekRange(anchor), [anchor]);
   const agendaQuery = useStudentAgenda(range.start, range.end);
@@ -107,23 +110,43 @@ export function CronogramaWeekView({
   });
 
   /**
-   * ⚠️ O ÍCONE "VER MÊS" SAIU DA BARRA DE TÍTULO.
+   * ⚠️ O ÍCONE "VER MÊS" VOLTOU À BARRA DE TÍTULO — e agora tem par.
    *
-   * Ele existia só no telemóvel, porque no desktop a troca vinha de um seletor
-   * textual dentro do conteúdo. Com "Semana" e "Mês" como seções do Plano, a
-   * troca passou a ser a MESMA nas duas larguras, no topo do conteúdo
-   * (`IntentSubNav`) — e um segundo caminho para ela, com outro desenho e outro
-   * lugar, é chrome que o aluno tem de aprender duas vezes.
+   * Ele tinha saído porque a troca passara a viver na linha de seções do Plano,
+   * igual nas duas larguras. Essa linha não existe mais aqui: com o calendário
+   * como destino do "Mais", `IntentSubNav` não desenha nada nesta rota. O
+   * registo inteiro está em `AlternarVista`, que é o MESMO botão que o mês usa.
    *
-   * O título passa a ser "Semana", que é o nome da seção. "Cronograma" era o
+   * ⚠️ Ele mora na barra de título, e não no conteúdo, de propósito: os dois
+   * retornos antecipados abaixo (a semana a carregar, e a semana que falhou)
+   * não desenham conteúdo nenhum. Uma troca que desaparece quando a agenda cai
+   * prende o aluno na tela partida — que é o caso em que ele mais quer sair.
+   *
+   * O título continua "Semana", que é o nome da leitura. "Cronograma" era o
    * nome do arquivo, e dizia respeito ao mês e à semana ao mesmo tempo.
    */
   useEffect(() => {
     setTitle("Semana");
+    if (!isDesktopNavigation) {
+      setActions(<AlternarVista para="month" dia={selectedDate} tamanho="sm" />);
+    }
     return () => {
       setTitle(null);
+      setActions(null);
     };
-  }, [setTitle]);
+  }, [isDesktopNavigation, selectedDate, setActions, setTitle]);
+
+  /**
+   * A mesma troca no desktop, onde não há barra de título para a receber.
+   *
+   * Fica acima da fileira da semana, alinhada à direita — o mesmo lugar
+   * relativo que ela ocupa no mês, ao lado da lupa.
+   */
+  const barraDeVista = isDesktopNavigation ? (
+    <div className="flex min-h-11 items-center justify-end">
+      <AlternarVista para="month" dia={selectedDate} />
+    </div>
+  ) : null;
 
   useEffect(() => {
     writeCronogramaViewModeSession("week");
@@ -132,6 +155,7 @@ export function CronogramaWeekView({
   if (agendaQuery.isPending) {
     return (
       <div className="space-y-4" aria-label="Semana carregando">
+        {barraDeVista}
         <Skeleton className="mx-auto h-6 w-40 " />
         <Skeleton className="h-24 w-full " />
         <Skeleton className="h-52 w-full " />
@@ -150,9 +174,12 @@ export function CronogramaWeekView({
   // deploy com contrato antigo e resposta parcial fazem o mesmo.
   if (!agenda || !Array.isArray(agenda.days) || !agenda.summary) {
     return (
-      <Alert variant="danger" onRetry={() => void agendaQuery.refetch()}>
-        Não foi possível carregar esta semana.
-      </Alert>
+      <div className="space-y-4">
+        {barraDeVista}
+        <Alert variant="danger" onRetry={() => void agendaQuery.refetch()}>
+          Não foi possível carregar esta semana.
+        </Alert>
+      </div>
     );
   }
 
@@ -170,6 +197,7 @@ export function CronogramaWeekView({
 
   return (
     <div className="space-y-5" data-cronograma-week="true">
+      {barraDeVista}
       {agenda.status !== "complete" ? (
         <Alert variant="warning">A semana está parcial; fontes indisponíveis não foram convertidas em zero.</Alert>
       ) : null}

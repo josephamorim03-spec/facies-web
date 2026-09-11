@@ -172,7 +172,11 @@ test.describe("student agenda alignment", () => {
     await expect(constancia).toContainText("5 de 7 dias");
     await expect(constancia).toContainText("2 protegidos");
     await expect(constancia).not.toContainText("seguidos");
-    await expect(page.getByRole("link", { name: "Abrir preferências" })).toBeVisible();
+    // ⚠️ O ROTULO E' "Abrir minha semana", e este teste ficou a exigir "Abrir
+    // preferências" depois de a copy mudar — vermelho antigo, sem relacao com a
+    // troca de vista. A rota continua `/preferencias`; o que mudou foi o nome
+    // que o aluno le.
+    await expect(page.getByRole("link", { name: "Abrir minha semana" })).toBeVisible();
 
     const anotherDay = page.locator("[data-week-day]:not([data-current-day='true'])").first();
     const anotherDate = await anotherDay.getAttribute("data-week-day");
@@ -180,7 +184,11 @@ test.describe("student agenda alignment", () => {
     await expect(anotherDay).toHaveAttribute("data-selected-day", "true");
     await expect(page.locator("[data-week-detail='true']")).toHaveAttribute("data-detail-date", anotherDate ?? "");
 
-    await page.getByRole("link", { name: "Mês", exact: true }).first().click();
+    // ⚠️ ERA O BOTAO "Mês" DA LINHA DE SECOES, e essa linha deixou de ser
+    // desenhada nesta rota quando o calendario virou destino do "Mais" — o
+    // registo inteiro esta em `AlternarVista`. A troca e' agora o icone, e o
+    // teste passa a apontar para ele.
+    await page.getByTestId("schedule-view-month").click();
     await expect(page).toHaveURL(/\/cronograma\/mes/);
     await expect(page.locator("[data-calendar-summary-stack='true']")).toBeVisible();
   });
@@ -213,41 +221,60 @@ test.describe("student agenda alignment", () => {
     expect(new Set(colors).size).toBe(5);
   });
 
-  test("no mobile, a troca de visao e' a MESMA linha de secoes do desktop", async ({ page }) => {
+  test("a troca de visao existe nos DOIS sentidos, e e' o mesmo botao", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const today = currentTodayISO();
 
     /**
-     * ⚠️ ESTE TESTE MEDIA TRES AFORDANCIAS PARA A MESMA TROCA, e essa era a
-     * queixa: um `ScheduleViewTabs` textual so no desktop, um icone
-     * `schedule-view-month` so na semana mobile e um `schedule-view-week` so no
-     * mes mobile. Nenhuma delas existia nas duas larguras — o aluno tinha de
-     * aprender a troca duas vezes, conforme o aparelho.
+     * ⚠️ ESTE TESTE JA MEDIU O CONTRARIO, e a inversao e' o registo.
      *
-     * Com "Semana" e "Mes" como secoes do Plano, a troca e' o `IntentSubNav`,
-     * igual em 390px e em 1280px. O contrato passou a ser esse: a linha existe
-     * no telemovel, leva as duas leituras, e nao ha um segundo caminho.
+     * Ele exigia a AUSENCIA dos dois icones, porque a troca tinha migrado para
+     * a linha de secoes (`IntentSubNav`), igual nas duas larguras. Era verdade
+     * enquanto "Semana" e "Mes" fossem secoes do Plano — deixaram de ser quando
+     * o calendario virou destino do "Mais", e `getIntentChildren` passou a
+     * devolver lista vazia nestas rotas. A linha sumiu; o teste continuou a
+     * exigir que os icones tambem nao existissem, e o aluno ficou sem nenhuma
+     * troca, em nenhuma largura. Guard que mede ausencia nunca ve isso.
+     *
+     * O contrato agora e' de IDA E VOLTA: o mes leva a semana, a semana leva ao
+     * mes, e as duas usam o MESMO `AlternarVista` — um desenho so, que era o
+     * ganho legitimo da versao anterior e o unico que valia a pena guardar.
      */
     await page.goto("/hoje");
     await expect(page.getByRole("link", { name: "Abrir cronograma da semana" })).toHaveCount(0);
-    const secoes = page.getByLabel("Seções desta área");
-    await expect(secoes).toBeVisible();
 
     await page.goto(`/cronograma?view=week&anchor=${shiftISO(today, -7)}&day=${shiftISO(today, -7)}`);
-    await expect(page.getByTestId("schedule-view-month")).toHaveCount(0);
-    await secoes.getByText("Mês", { exact: true }).click();
-    await expect(page).toHaveURL(/\/cronograma\/mes$/);
+    await page.getByTestId("schedule-view-month").click();
+    await expect(page).toHaveURL(/\/cronograma\/mes/);
 
-    // A busca por tema CONTINUA na barra de titulo: ela e' desta tela, e nao
-    // uma segunda porta para algo que ja esta na linha de secoes.
+    // A busca por tema CONTINUA na barra de titulo, e a troca fica a' DIREITA
+    // dela — foi o lugar que o operador pediu, por ser o canto onde a mao ja
+    // esta quando abre o mes.
     const searchButton = page.getByLabel("Buscar tema");
     await expect(searchButton).toBeVisible();
-    await expect(page.getByTestId("schedule-view-week")).toHaveCount(0);
     await searchButton.click();
     await expect(page.getByPlaceholder("Buscar tema...")).toBeVisible();
     await page.getByTestId("cronograma-search-action").click();
 
-    await secoes.getByText("Semana", { exact: true }).click();
-    await expect(page).toHaveURL(/\/cronograma$/);
+    await page.getByTestId("schedule-view-week").click();
+    await expect(page).toHaveURL(/\/cronograma(\?|$)/);
+  });
+
+  test("o Inicio tem porta para as duas leituras do calendario", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    /**
+     * O calendario e' destino do "Mais" — tres toques de qualquer lugar. Esta
+     * porta e' o caminho curto, e ela nao depende de dado nenhum: o aluno novo,
+     * sem sequencia nem diagnostico, e' justamente quem mais precisa de saber
+     * que existe um calendario.
+     */
+    await page.goto("/inicio");
+    await page.getByTestId("inicio-porta-mes").click();
+    await expect(page).toHaveURL(/\/cronograma\/mes/);
+
+    await page.goto("/inicio");
+    await page.getByTestId("inicio-porta-semana").click();
+    await expect(page).toHaveURL(/\/cronograma(\?|$)/);
   });
 });

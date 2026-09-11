@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   analyzeSimulationErrors,
   createOperationalNote,
+  type OperationalNoteItem,
   getSimulationAnalysisResults,
   me,
   type OperationalAreaCode,
@@ -196,7 +197,11 @@ export default function QuickNoteModal({
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  // A NOTA que o servidor devolveu, e nao um booleano: e' nela que esta'
+  // `turbo_due_at`, o unico jeito de saber se isto virou card AGENDADO ou
+  // ficou so' anotado. Adivinhar pelo `weight` seria espelhar a regra do
+  // servidor aqui -- e regra espelhada e' regra que passa a divergir.
+  const [notaCriada, setNotaCriada] = useState<OperationalNoteItem | null>(null);
 
   const canSubmit = Boolean(token) && insight.trim().length >= 6 && Boolean(body.trim()) && !busy;
 
@@ -216,7 +221,7 @@ export default function QuickNoteModal({
     setBusy(true);
     setError(null);
     try {
-      await createOperationalNote(token, {
+      const nota = await createOperationalNote(token, {
         area,
         theme,
         source_type: "question",
@@ -226,7 +231,7 @@ export default function QuickNoteModal({
         weight: isError ? 9 : 7,
         question_id: questionId,
       });
-      setDone(true);
+      setNotaCriada(nota);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao salvar nota.");
     } finally {
@@ -234,7 +239,7 @@ export default function QuickNoteModal({
     }
   }
 
-  if (done) {
+  if (notaCriada) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" onClick={onClose}>
         <div
@@ -244,15 +249,33 @@ export default function QuickNoteModal({
           onClick={(event) => event.stopPropagation()}
         >
           <p className="text-sm font-medium text-ink">
-            {isCardIntent ? "Flashcard salvo no caderno." : "Regra salva no caderno."}
+            {notaCriada.turbo_due_at
+              ? "Card criado. Ele volta na sua revisão."
+              : "Salvo no caderno."}
           </p>
-          <button
-            type="button"
-            onClick={onClose}
-            className="mt-4 border border-edge px-4 py-2 text-sm font-medium text-ink hover:border-primary"
+          {/* O caderno existe e abre -- ate' 2026-09-10 o `redirects()` mandava
+              `/cards` para `/hoje`, e por isso a frase "salvo no caderno" nao
+              tinha onde aterrar. Agora tem, e o link diz para onde. */}
+          <a
+            href="/cards/registros"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-block text-sm font-medium text-primary underline underline-offset-4"
           >
-            Fechar
-          </button>
+            Abrir o caderno
+          </a>
+          {/* Aba nova de proposito: este modal abre no meio da prova e no
+              pos-prova. Navegar na mesma aba custaria a sessao ao aluno para
+              lhe mostrar onde a nota foi parar. */}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="border border-edge px-4 py-2 text-sm font-medium text-ink hover:border-primary"
+            >
+              Fechar
+            </button>
+          </div>
         </div>
       </div>
     );

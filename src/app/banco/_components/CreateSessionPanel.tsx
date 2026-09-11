@@ -7,7 +7,18 @@ import type { QuestionBankAvailability, StudyKind } from "@/lib/api";
 import { CORRECTION_MODE_LABEL, type CorrectionMode } from "../_lib/sessionBuilder";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { BottomActionBar } from "@/components/ui/BottomActionBar";
+import { BOTTOM_ACTION_BAR_RESERVE_CLASS, BottomActionBar } from "@/components/ui/BottomActionBar";
+
+/**
+ * O recuo que a página hospedeira tem de aplicar ao seu contentor de scroll.
+ *
+ * ⚠️ Reexportado DAQUI de propósito, e não importado do primitivo pela página.
+ * Quem monta a barra é este painel; a reserva é consequência dessa decisão, e
+ * não uma escolha da página. Com o import direto, mover a barra para outro
+ * componente deixaria a página a reservar espaço para uma barra que já não
+ * existe — e ninguém teria por que reparar.
+ */
+export const RESERVA_DA_BARRA = BOTTOM_ACTION_BAR_RESERVE_CLASS;
 
 function availabilityText(availability: QuestionBankAvailability | null): string {
   if (!availability) return "Calculando";
@@ -206,9 +217,20 @@ export default function CreateSessionPanel({
           className="mt-4"
           action={
             onRetry ? (
-              <button type="button" onClick={onRetry} className="text-xs text-danger underline">
+              /* ⚠️ BOTÃO, e não um link de 12px sublinhado.
+
+                 Medido em produção em 2026-09-11: quando o banco de questões
+                 fica indisponível (503 em `facets` e `availability`), esta é a
+                 ÚNICA saída da tela — o `Começar` ao lado fica desactivado,
+                 porque `availability` veio `null`. A saída de emergência era
+                 `text-xs underline`, ~16px de alvo, no canto de um alerta.
+
+                 O retry automático do cliente não cobre este caso: ele repete
+                 uma vez honrando o `Retry-After: 5` da API, e a indisponibilidade
+                 medida durou ~4 MINUTOS. Quem tem de poder tentar é o aluno. */
+              <Button type="button" variant="secondary" size="md" onClick={onRetry}>
                 Tentar novamente
-              </button>
+              </Button>
             ) : undefined
           }
         >

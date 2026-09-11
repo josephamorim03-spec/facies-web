@@ -127,11 +127,45 @@ function MobileTopBar({ pathname }: { pathname: string }) {
   );
 }
 
+/**
+ * 🚨 O COMMIT DE QUEM ESTÁ NA TELA, e não o de quem responde no servidor.
+ *
+ * Este emblema perguntava só ao `/api/version`, com `cache: "no-store"` — ou
+ * seja, mostrava sempre o build ATUAL do servidor, mesmo quando a página que o
+ * aluno tinha à frente viera de um cache antigo. Para o defeito que ele existe
+ * para diagnosticar, era a medida errada: o número batia certo justamente nos
+ * casos em que a tela estava errada.
+ *
+ * O operador relatou, e repetidamente: *"principalmente no primeiro
+ * carregamento ela carrega a versão anterior; atualizar geralmente corrige"*.
+ * Medido em produção, `/` volta com `X-Nextjs-Prerender: 1`,
+ * `X-Nextjs-Stale-Time: 300` e `X-Vercel-Cache: HIT` — há cinco minutos de
+ * payload reaproveitável entre o que se vê e o que existe.
+ *
+ * Agora são DUAS leituras, e a comparação é a informação:
+ *
+ * - **inlinado** — `NEXT_PUBLIC_GIT_COMMIT_SHA`, que o Next grava como literal
+ *   dentro do bundle no momento do build (é por isso que `publicar.mjs` o passa
+ *   com `--build-env`). Ele identifica o JAVASCRIPT que está a correr.
+ * - **servido** — `/api/version`, sempre fresco. Identifica o servidor.
+ *
+ * Divergir quer dizer, sem ambiguidade: este cliente é antigo. Igual quer dizer
+ * que o cache não é a causa, e a investigação vai para outro lado.
+ *
+ * ⚠️ A DIVERGÊNCIA APARECE MESMO COM A CHAVE DESLIGADA, e é deliberado. Um
+ * emblema permanente é chrome que 100% dos alunos pagam para diagnosticar um
+ * defeito que atinge uma fração deles; um emblema que só acende quando há
+ * defeito custa zero enquanto está tudo bem — e quando acende, diz ao aluno a
+ * única coisa que ele pode fazer (recarregar).
+ */
+const COMMIT_NO_BUNDLE = (process.env.NEXT_PUBLIC_GIT_COMMIT_SHA ?? "").trim();
+
 function BuildVersionBadge() {
   const [version, setVersion] = useState<BuildVersionPayload | null>(null);
 
   useEffect(() => {
-    if (!SHOW_BUILD_BADGE) return;
+    // ⚠️ A consulta NÃO depende mais da chave: sem ela não há como detectar a
+    // divergência, e a detecção é o que justifica o componente.
     let cancelled = false;
     api<BuildVersionPayload>("/api/version", { cache: "no-store" })
       .then((payload) => {
@@ -151,22 +185,41 @@ function BuildVersionBadge() {
     };
   }, []);
 
-  if (!version || !SHOW_BUILD_BADGE) return null;
+  if (!version) return null;
   const env = (version.environment ?? "").toLowerCase();
   if (env !== "production" && env !== "preview") return null;
 
   const shortSha = version.commit_sha && version.commit_sha !== "unknown"
     ? version.commit_sha.slice(0, 7)
     : "unknown";
-  const title = `commit=${version.commit_sha} | env=${version.environment} | build=${version.build_time_utc}`;
+  // Só há divergência quando os DOIS lados se identificam. Um lado desconhecido
+  // é ausência de medida, e ausência de medida não é defeito — anunciá-la faria
+  // o emblema acender em todo ambiente que não carimba o commit.
+  const conhecidos =
+    COMMIT_NO_BUNDLE !== "" &&
+    version.commit_sha !== "" &&
+    version.commit_sha !== "unknown";
+  const divergente = conhecidos && !version.commit_sha.startsWith(COMMIT_NO_BUNDLE.slice(0, 7));
+
+  if (!SHOW_BUILD_BADGE && !divergente) return null;
+
+  const title = divergente
+    ? `Esta página foi carregada de um build antigo. nesta tela=${COMMIT_NO_BUNDLE} | no servidor=${version.commit_sha} | build=${version.build_time_utc}`
+    : `commit=${version.commit_sha} | env=${version.environment} | build=${version.build_time_utc}`;
 
   return (
     <span
       title={title}
-      className="paper-eyebrow acima-da-barra-de-abas acima-da-barra-de-abas--solto pointer-events-none fixed right-2 z-[60] rounded-control border border-edge bg-paper px-1.5 py-0.5 md:bottom-3"
-      aria-label={`Build ${shortSha}`}
+      className={`paper-eyebrow acima-da-barra-de-abas acima-da-barra-de-abas--solto pointer-events-none fixed right-2 z-[60] rounded-control border px-1.5 py-0.5 md:bottom-3 ${
+        divergente ? "border-danger bg-paper text-danger" : "border-edge bg-paper"
+      }`}
+      aria-label={
+        divergente
+          ? `Página de um build antigo (${COMMIT_NO_BUNDLE.slice(0, 7)}); recarregue para atualizar`
+          : `Build ${shortSha}`
+      }
     >
-      build: {shortSha}
+      {divergente ? `build antigo: ${COMMIT_NO_BUNDLE.slice(0, 7)} · recarregue` : `build: ${shortSha}`}
     </span>
   );
 }
