@@ -258,8 +258,7 @@ export function AnalysisTab(props: AnalysisTabProps) {
             onClick={() => setAnalysisNavOpen(true)}
             title="Navegar por análises"
             aria-label="Navegar por análises"
-            style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
-            className="fixed left-4 z-40 h-12 w-12 border border-ink bg-ink text-paper flex items-center justify-center shadow-overlay"
+            className="acima-da-barra-de-abas acima-da-barra-de-abas--solto fixed left-4 z-40 flex h-12 w-12 items-center justify-center border border-ink bg-ink text-paper shadow-overlay"
           >
             <IconAiSpark className="h-5 w-5" />
           </button>
@@ -280,7 +279,7 @@ export function AnalysisTab(props: AnalysisTabProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <IconAiSpark className="h-4 w-4" />
-                <h2 className="font-serif text-sm">Análises</h2>
+                <h2 className="font-serif">Análises</h2>
               </div>
               <button
                 type="button"

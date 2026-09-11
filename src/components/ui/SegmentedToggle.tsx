@@ -14,8 +14,16 @@ const FOCUS =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 /**
- * Controle segmentado canônico (alterna visões). Ativo = primário (teal),
- * o mesmo estado "selecionado" do resto da identidade.
+ * Controle segmentado canônico (alterna visões).
+ *
+ * ⚠️ O ATIVO DEIXOU DE SER O TEAL CHEIO em 2026-09-06. Ele partilhava o
+ * preenchimento com a ação principal do dia, e o resultado media-se em
+ * `/voce`: o elemento visualmente mais forte da tela inteira era o seletor de
+ * tema — o ajuste menos consequente do app.
+ *
+ * Agora o selecionado é borda `primary` sobre campo `wash-selecao`. Sem peso:
+ * este controle é `text-micro` (11px), e abaixo de 13px o desenho nunca pesa
+ * (a medida está em `ui/Tabs.tsx`).
  */
 export function SegmentedToggle<T extends string>({ value, onChange, options, ariaLabel, size = "sm" }: Props<T>) {
   const pad = size === "md" ? "min-h-9 px-3 py-1.5 text-xs" : "min-h-8 px-2.5 py-1 text-micro";
@@ -29,8 +37,10 @@ export function SegmentedToggle<T extends string>({ value, onChange, options, ar
             type="button"
             aria-pressed={active}
             onClick={() => onChange(opt.value)}
-            className={`transition ${pad} ${FOCUS} ${
-              active ? "bg-primary text-primaryInk" : "text-muted hover:text-ink"
+            // A borda transparente na base reserva o espaço: sem ela o segmento
+            // ativo cresce 2px e empurra os irmãos a cada troca.
+            className={`border border-transparent transition ${pad} ${FOCUS} ${
+              active ? "border-primary bg-washSelecao text-ink" : "text-muted hover:text-ink"
             }`}
           >
             {opt.label}

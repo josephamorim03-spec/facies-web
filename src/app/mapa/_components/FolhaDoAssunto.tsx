@@ -88,7 +88,19 @@ export function FolhaDoAssunto({
       browseQuestionBankTopics(token, {
         search: assunto as string,
         institutions: [institutionKey],
-        node_types: ["subtheme"],
+        // ⚠️ TEMA TAMBÉM, e não só subtema.
+        //
+        // O mapa navegável abre esta folha em qualquer FOLHA da árvore — e uma
+        // folha pode ser um tema, quando o acervo ainda não tem subtemas dele.
+        // Com `["subtheme"]`, tocar em "Endocrinologia" (que a célula anuncia
+        // com 44 questões) abria uma folha a dizer que não há questão nenhuma:
+        // o rótulo prometendo o que o mecanismo não entrega, outra vez.
+        //
+        // ⚠️ E `specialty` PELO MESMO MOTIVO, um grão acima. Se o acervo desta
+        // banca não tiver tema nenhum sob uma especialidade, ela é folha no mapa
+        // — o predicado é `filhos.length === 0`, não `node_type` — e abriria aqui
+        // exatamente o mesmo vazio que o comentário acima descreve.
+        node_types: ["specialty", "theme", "subtheme"],
         include_empty: false,
         limit: 1,
       }),
@@ -109,6 +121,12 @@ export function FolhaDoAssunto({
         institutions: [institutionKey],
         mode: "by_topic",
         resolution_mode: "simulation",
+        // ⚠️ TREINO, e não simulado. Sem este campo a sessão cai no padrão do
+        // perfil (`post_result`) e o aluno que tocou em "Praticar" para APRENDER
+        // um assunto não vê correção nenhuma até o fim -- um verbo com dois
+        // significados dentro do mesmo app. É o que `RevisaoDiaLauncher` já faz
+        // (`lib/revisaoSessao.ts`), e agora os três concordam.
+        feedback_timing: "immediate",
         study_kind: "topic",
         session_kind: "bank_topic",
         generate_review_trail: false,

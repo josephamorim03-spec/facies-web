@@ -28,12 +28,24 @@ export default function robots(): MetadataRoute.Robots {
       disallow: [
         "/api/",
         "/admin",
+        // ⚠️ `/inicio` e `/mais` entraram com a barra nova. Esta lista e' de
+        // telas do ALUNO -- indexar uma delas publica uma pagina que so'
+        // responde depois do login, e a home nova seria a primeira a aparecer.
+        "/inicio",
+        "/mais",
         "/hoje",
         "/banco",
         "/cards",
         "/evolucao",
         "/cronograma",
         "/preferencias",
+        // Cobre `/conta/preferencias`, que nasceu quando as preferências
+        // saíram da rotina. `/conta` faltava desde antes — a lista tinha as
+        // telas de estudo e esquecera a de identidade, que é a mais privada
+        // das três.
+        "/conta",
+        "/plano",
+        "/mapa",
         "/estatisticas",
         "/login",
         "/auth/",

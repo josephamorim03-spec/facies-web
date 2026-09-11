@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { getCronogramaAgendaHref } from "@/app/cronograma/_lib/viewModeSession";
-import { NAV_GROUPS_CONFIG, isNavItemActive } from "@/lib/navConfig";
+import { NAV_ITEMS_DESKTOP, isNavItemActive } from "@/lib/navConfig";
 import { FaciesMark, FaciesWordmark } from "@/components/FaciesWordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FastNavLink } from "@/components/FastNavLink";
@@ -16,13 +16,26 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { deveEsconderChrome } from "@/lib/chromeVisibility";
 import { NavIcon } from "@/components/navIcons";
 
-const NAV_GROUPS = NAV_GROUPS_CONFIG;
+// 🚨 A RAIL DO DESKTOP LÊ A LISTA DO DESKTOP, e não a da barra inferior.
+//
+// Eram a mesma (`NAV_GROUPS_CONFIG`) até 2026-09-10. O operador pediu Evolução,
+// Calendário e Rotina no menu do desktop, e a razão de a barra do telemóvel não
+// os ter é de espaço: lá são cinco pesos e 78px por aba; aqui é uma coluna que
+// rola (`flex-1 overflow-y-auto`, logo abaixo) e não tem esse teto.
+//
+// ⚠️ O agrupamento com divisórias continua a existir na estrutura, mas há um
+// grupo só — por isso a lista é embrulhada aqui em vez de vir pronta.
+const NAV_GROUPS = [{ items: NAV_ITEMS_DESKTOP }];
 
 export const NAV_OPEN_EVENT = "kros:open-nav";
 
 function resolveNavHref(href: string): string {
   if (href === "/agenda-operacional" || href === "/calendario") return getCronogramaAgendaHref();
-  if (href === "/hoje") return "/hoje";
+  // ⚠️ Havia aqui um `if (href === "/hoje") return "/hoje"` — uma identidade,
+  // que não fazia nada, e que a partir de 2026-09-10 nem podia ser alcançada:
+  // `/hoje` deixou de ser href de aba quando a barra virou Início · Cards ·
+  // Banco · Mapa · Mais. Ramo morto num resolvedor é pior que ruído — ele
+  // sugere que aquele destino precisa de tratamento especial.
   return href;
 }
 
@@ -188,14 +201,17 @@ export function SidebarNav({
               procura o próprio nome, e é nele que se clica. É a convenção que
               já existe fora daqui, então não precisa ser ensinada.
 
-              ⚠️ E O DESTINO MUDOU PARA `/voce`, com a barra de cinco.
+              ⚠️ E O DESTINO É `/voce`, o MESMO da quinta aba desde 2026-09-08.
 
-              Enquanto a Conta era o quinto item da rail, este avatar apontava
-              para o MESMO lugar que ele -- duas portas para um destino so, que
-              nao competem. Com "Você" no lugar dela, apontar aqui para
-              `/conta` criaria dois avatares identicos levando a telas
-              diferentes, na mesma tela. A Conta continua a um toque, agora de
-              dentro do `/voce`. */}
+              Enquanto a aba "Você" caía em `/conta`, esta divergência era
+              deliberada: dois avatares iguais levando a telas diferentes, na
+              mesma tela, seria pior. Agora a aba também abre o hub, e os dois
+              apontam ao mesmo lugar — duas portas para um destino só, que não
+              competem. É o arranjo que existia quando a Conta era a quinta.
+
+              O que ficou aqui e a aba não tem é o NOME escrito: o avatar da
+              rail mostra quem está com sessão aberta, que é informação e não
+              navegação. A Conta continua a um toque, de dentro do `/voce`. */}
           {(displayName || photoUrl) && (
             <Link
               href="/voce"

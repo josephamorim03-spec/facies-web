@@ -126,7 +126,7 @@ function surfaceHome(kind: "review" | "track" | "plan") {
     },
     deep_links: [
       { label: "Banco de questões", href: "/banco-de-questoes", reason: "treino ativo" },
-      { label: "Relatório", href: "/estatisticas/relatorio", reason: "detalhar sinal" },
+      { label: "Gráficos", href: "/estatisticas/graficos", reason: "detalhar sinal" },
     ],
     data_quality: "sufficient",
     goal_status: {

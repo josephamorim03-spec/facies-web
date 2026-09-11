@@ -41,5 +41,13 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.svg|.*\\.ico|.*\\.webmanifest).*)"],
+  // `_next/webpack-hmr` entra na exclusão: é o WebSocket do hot reload, e o
+  // guard interceptava o upgrade e devolvia resposta HTTP inválida
+  // (`net::ERR_INVALID_HTTP_RESPONSE`, medido no console em 2026-09-10). Só
+  // existe em `next dev` — em produção não há HMR, então a exclusão não abre
+  // nada. Os outros dois `_next` já estavam aqui pelo mesmo motivo: asset de
+  // build não passa por decisão de sessão.
+  matcher: [
+    "/((?!_next/static|_next/image|_next/webpack-hmr|favicon.ico|.*\\.svg|.*\\.ico|.*\\.webmanifest).*)",
+  ],
 };

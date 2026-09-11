@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoDeEscolha } from "@/components/ui/BotaoDeEscolha";
 import type { KrosMode } from "@/lib/api";
 
 type Opcao = {
@@ -133,24 +134,20 @@ export function TreinoDirigidoChooser({
         const ativo = opcao.value === value;
         const help = ehBanca ? (carregando ? "Verificando as suas provas-alvo…" : banca.help) : opcao.help;
         return (
-          <button
+          // ⚠️ O rótulo era `text-muted` quando não escolhido, e isso é uma
+          // divergência com consequência: nas quatro opções do preset, três
+          // ficavam esmaecidas como se estivessem desativadas — e uma DELAS
+          // pode de facto estar ("Foco na banca" sem prova-alvo). O aluno não
+          // tinha como distinguir "não escolhido" de "indisponível".
+          <BotaoDeEscolha
             key={opcao.value}
-            type="button"
-            role="radio"
-            aria-checked={ativo}
+            escolhido={ativo}
             disabled={disabled || indisponivel}
             onClick={() => onChange(opcao.value)}
-            className={`paper-control rounded-control border px-4 py-3 text-left disabled:opacity-60 ${
-              ativo
-                ? "border-primary bg-surfaceMuted"
-                : "border-edge bg-paper enabled:hover:bg-surfaceMuted"
-            }`}
+            descricao={help}
           >
-            <span className={`block text-sm font-medium ${ativo ? "text-ink" : "text-muted"}`}>
-              {opcao.label}
-            </span>
-            <span className="mt-1 block text-xs leading-5 text-muted">{help}</span>
-          </button>
+            {opcao.label}
+          </BotaoDeEscolha>
         );
       })}
     </div>

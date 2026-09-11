@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import { Sheet } from "@/components/ui/Sheet";
 import { createEvent, listEvents, type CalendarEventOut } from "@/lib/api/domains/calendar";
-import { encodeEventLabel } from "@/app/desempenho/_lib/perfilShared";
+import { encodeEventLabel } from "@/lib/perfil/perfilShared";
 import { getErrorMessage } from "@/lib/error-utils";
 
 /**
@@ -170,7 +170,7 @@ export function FolhaDePlantao({
       <fieldset>
         <legend className="paper-eyebrow">quando</legend>
         {cadencia === "semanal" ? (
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="fileira-de-controles mt-2">
             {DIAS.map((dia, indice) => (
               <button
                 key={dia}
@@ -179,7 +179,7 @@ export function FolhaDePlantao({
                 onClick={() => setDiaDaSemana(indice)}
                 className={`min-h-11 rounded-control border px-3 text-sm ${
                   diaDaSemana === indice
-                    ? "border-primary bg-primary text-primaryInk"
+                    ? "border-primary bg-washSelecao text-ink"
                     : "border-edge bg-surface text-ink"
                 }`}
               >
@@ -200,7 +200,7 @@ export function FolhaDePlantao({
 
       <fieldset className="mt-5">
         <legend className="paper-eyebrow">duração</legend>
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="fileira-de-controles mt-2">
           {DURACOES.map((valor) => (
             <button
               key={valor}
@@ -212,7 +212,7 @@ export function FolhaDePlantao({
               }}
               className={`min-h-11 rounded-control border px-3 text-sm ${
                 !outraAberta && horas === valor
-                  ? "border-primary bg-primary text-primaryInk"
+                  ? "border-primary bg-washSelecao text-ink"
                   : "border-edge bg-surface text-ink"
               }`}
             >

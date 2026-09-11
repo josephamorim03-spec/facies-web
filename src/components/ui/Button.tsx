@@ -60,9 +60,58 @@ const BASE =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 " +
   "focus-visible:outline-primary";
 
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
+/*
+ * ⚠️ LARGURA TOTAL NO TELEMÓVEL, automática a partir daqui.
+ *
+ * O primitivo não tinha noção nenhuma de largura, então cada chamador
+ * escrevia `w-full` à mão — e quem se esquecia ficava com a ação encostada à
+ * esquerda. O operador reportou o sintoma em várias telas de uma vez; a causa
+ * era esta lacuna, não desleixo de quem chamou.
+ *
+ * Vale para a ação SOLITÁRIA. Fileira de vários controlos tem resposta própria
+ * e mais antiga — `.fileira-de-controles`, em `globals.css` —, que os põe numa
+ * grade de colunas iguais no telemóvel; aplicar `bloco` a cada um deles
+ * empilharia sete botões de largura total.
+ *
+ * ⚠️ VIRA EM `sm` (640px), E ISTO JÁ ERA O PADRÃO DA CASA — eu é que tinha
+ * escolhido `md` sem olhar. O operador apontou o `Pesquisar` do Caderno como
+ * a referência, e ele (com o `Salvar`, ao lado) escrevia à mão exatamente
+ * `w-full sm:w-auto`, dentro de uma `BottomActionBar` cuja própria fileira
+ * passa a linha em `sm:flex-row`. Virar em `md` punha o botão de largura
+ * total numa barra que já era uma linha, entre 640 e 767px.
+ *
+ * Quem precisa de outro ponto passa a largura por `className` e diz porquê —
+ * é o caso do CTA do Hoje, cujo cartão só vira em `md:flex-row`.
+ */
+const BLOCO = "w-full sm:w-auto";
+
+type ReceitaDeBotao = {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  bloco?: boolean;
+  className?: string;
+};
+
+/**
+ * As classes do botão, sem o botão.
+ *
+ * Existe porque nem toda ação é um `<button>`: o CTA do Hoje é um `<Link>` e
+ * pintava a receita inteira à mão a 12 classes de distância desta. Duas cópias
+ * do mesmo desenho divergem — foi assim que ele ficou `min-h-12` enquanto o
+ * primitivo era `min-h-11`.
+ */
+export function classesDeBotao({
+  variant = "secondary",
+  size = "sm",
+  bloco = false,
+  className = "",
+}: ReceitaDeBotao = {}): string {
+  return [BASE, VARIANT_CLASSES[variant], SIZE_CLASSES[size], bloco ? BLOCO : "", className]
+    .filter(Boolean)
+    .join(" ");
+}
+
+type Props = ButtonHTMLAttributes<HTMLButtonElement> & ReceitaDeBotao & {
   loading?: boolean;
   leftIcon?: ReactNode;
 };
@@ -70,6 +119,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
   variant = "secondary",
   size = "sm",
+  bloco = false,
   loading = false,
   leftIcon,
   disabled,
@@ -82,7 +132,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button({
       ref={ref}
       {...rest}
       disabled={disabled || loading}
-      className={`${BASE} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
+      className={classesDeBotao({ variant, size, bloco, className })}
     >
       {loading ? (
         <span className="opacity-60">...</span>

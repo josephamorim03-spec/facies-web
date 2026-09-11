@@ -8,9 +8,11 @@ import { Skeleton } from "@/components/Skeleton";
 import { Alert } from "@/components/ui/Alert";
 import { CompararProvas } from "@/components/facies/CompararProvas";
 import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, TabsScrollArea } from "@/components/ui/Tabs";
 import { LIMIAR_EM_PONTOS } from "@/components/facies/comparacaoDeProvas";
 import { FaciesReport } from "@/components/facies/FaciesReport";
 import { MapaDaProva } from "@/components/facies/MapaDaProva";
+import { MapaNavegavel } from "./_components/MapaNavegavel";
 import { FolhaDoAssunto } from "./_components/FolhaDoAssunto";
 import {
   getFaciesDaBanca,
@@ -18,7 +20,7 @@ import {
   getMyCompetencyMastery,
   getMyTargetExam,
 } from "@/lib/api";
-import type { CompetencyMasteryItem } from "@/lib/api/domains/study-plan";
+import type { CompetencyMasteryItem, StudentTargetExamItem } from "@/lib/api/domains/study-plan";
 import { nomeCurto, type Banca } from "@/lib/facies";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
@@ -97,6 +99,98 @@ type Eixo = (typeof ABAS)[number][0];
  * prioridade. Vem de `items`, que sempre foi um array — a tela é que lia só o
  * primeiro e jogava o resto fora.
  */
+/**
+ * O NOME DA PROVA É O BOTÃO — pedido do operador, 2026-09-10.
+ *
+ * Antes eram três `BotaoDeEscolha` numa fileira abaixo do título. Com os nomes
+ * institucionais por extenso ("SP - Universidade de São Paulo - USP - SP
+ * (Hospital das Clínicas…)"), cada um virava uma caixa de largura total: três
+ * blocos empilhados a empurrar o mapa para fora da primeira tela.
+ *
+ * ## Por que `<select>` nativo
+ *
+ * É o idioma que o desenho já usa nesta mesma tela — o seletor de edições da
+ * aba Comparar (`EixoComparar`, logo abaixo) é um `<select>`, com o motivo
+ * escrito lá: o `9a` desenha "5 provas ▾", e o nativo traz de graça a roda do
+ * telemóvel, a busca por digitação e o teclado.
+ *
+ * ## ⚠️ O SELECT É TRANSPARENTE, SOBREPOSTO AO TÍTULO
+ *
+ * E não é enfeite: um `<select>` dimensiona-se pela opção MAIS LARGA, e as
+ * opções aqui são os nomes por extenso. Estilizá-lo diretamente faria o título
+ * herdar a largura do nome mais comprido — o mesmo estouro que os chips
+ * causavam, noutra forma.
+ *
+ * Sobreposto (`absolute inset-0 opacity-0`), o que se vê é o nome CURTO que o
+ * `9a` pede, e o que se toca é o seletor nativo com os nomes por extenso — que
+ * são o que distingue "USP - SP" de "USP - RP".
+ *
+ * ⚠️ O texto visível é `aria-hidden` de propósito: o `<select>` já anuncia a
+ * opção escolhida, e sem isso o leitor de tela diria o nome duas vezes.
+ */
+function SeletorDaProva({
+  banca,
+  provas,
+  escolhida,
+  onEscolher,
+}: {
+  banca: Banca;
+  provas: StudentTargetExamItem[];
+  escolhida: string | null;
+  onEscolher: (chave: string | null) => void;
+}) {
+  const nome = nomeCurto(banca);
+  const comEscolha = provas.filter((p) => p.institution_key);
+
+  // Uma prova declarada: texto simples. Um seletor de um item é ruído que
+  // ensina que há escolha onde não há.
+  if (comEscolha.length < 2) return <>{nome}</>;
+
+  return (
+    <span className="relative inline-flex items-baseline gap-1">
+      {/* ⚠️ `data-testid` porque o texto do `<h1>` NÃO SERVE de âncora: o
+          `<select>` vive dentro dele, e o `textContent` de um `<select>`
+          inclui o rótulo de TODAS as opções. Um teste que afirmasse
+          `não contém "UNIFESP"` depois de trocar para a ENARE falharia com
+          o ecrã correto. O nome escolhido precisa de um sítio só dele. */}
+      <span
+        aria-hidden="true"
+        data-testid="mapa-prova-escolhida"
+        className="underline decoration-edge decoration-1 underline-offset-4"
+      >
+        {nome}
+      </span>
+      <span aria-hidden="true" className="text-muted">
+        ▾
+      </span>
+      <select
+        aria-label="Qual das suas provas o mapa mostra"
+        value={escolhida ?? ""}
+        onChange={(evento) => onEscolher(evento.target.value || null)}
+        // Cobre exatamente o nome e a seta, então o alvo de toque é o que se
+        // vê — e não uma área menor escondida atrás dele.
+        //
+        // ⚠️ `min-h-11` E `top-1/2 -translate-y-1/2`, e não `inset-0` puro.
+        // Medido a 390px: o `<span>` pai é `items-baseline`, então a sua altura
+        // é a caixa de linha do título — 38px, abaixo do piso de 44px do
+        // sistema. Com `inset-0` o alvo ficava do TAMANHO DO TEXTO, que é
+        // precisamente o que este seletor não podia ser: ele é a única porta
+        // para trocar de prova.
+        //
+        // A altura extra distribui-se para os dois lados (centrada), e não
+        // para baixo: crescer só para baixo roubaria o toque da linha de
+        // contagem que vem logo a seguir.
+        className="absolute inset-x-0 top-1/2 min-h-11 w-full -translate-y-1/2 cursor-pointer opacity-0"
+      >
+        {comEscolha.map((item) => (
+          <option key={item.institution_key} value={item.institution_key ?? ""}>
+            {item.label ?? item.institution_key}
+          </option>
+        ))}
+      </select>
+    </span>
+  );
+}
 function EixoComparar({ minha, outrasDoAluno }: { minha: Banca; outrasDoAluno: string[] }) {
   // ⚠️ O PADRÃO É A SEGUNDA PROVA DO ALUNO, e isso é regra do desenho, não
   // conveniência: "Até três provas […] Só a principal monta o dia; as outras
@@ -140,7 +234,7 @@ function EixoComparar({ minha, outrasDoAluno }: { minha: Banca; outrasDoAluno: s
     `${banca.nome}${banca.uf ? ` · ${banca.uf}` : ""}`;
 
   return (
-    <div className="space-y-5">
+    <div className="ritmo-secao">
       <div>
         <label htmlFor="comparar-com" className="paper-eyebrow">
           comparar a {nomeCurto(minha)} com
@@ -177,7 +271,9 @@ function EixoComparar({ minha, outrasDoAluno }: { minha: Banca; outrasDoAluno: s
       </div>
 
       {indice.isError ? (
-        <Alert variant="danger">Não consegui carregar a lista de provas.</Alert>
+        <Alert variant="danger" onRetry={() => void indice.refetch()}>
+          Não consegui carregar a lista de provas.
+        </Alert>
       ) : null}
 
       {escolhida === "" ? (
@@ -195,11 +291,13 @@ function EixoComparar({ minha, outrasDoAluno }: { minha: Banca; outrasDoAluno: s
       ) : null}
 
       {escolhida !== "" && outra.isPending ? (
-        <Skeleton className="h-64 w-full" aria-label="Comparação carregando" />
+        <Skeleton className="h-64 w-full" rotulo="Comparação carregando" />
       ) : null}
 
       {escolhida !== "" && outra.isError ? (
-        <Alert variant="danger">Não consegui carregar a leitura dessa prova.</Alert>
+        <Alert variant="danger" onRetry={() => void outra.refetch()}>
+          Não consegui carregar a leitura dessa prova.
+        </Alert>
       ) : null}
 
       {/* `null` com sucesso é a banca sem fácies publicada, e é diferente de
@@ -322,21 +420,40 @@ function EixoMapa({ banca, tinta }: { banca: Banca; tinta: TintaDoMapa }) {
       : null;
 
   const podeVoce = comDado > 0;
-  const mostrandoVoce = tinta === "voce" && podeVoce;
+  // ⚠️ `mostrandoVoce` SAIU, e com ele o interruptor "A prova / Você".
+  //
+  // No mosaico dos quinze o preenchimento tinha de escolher entre as duas
+  // leituras, porque só havia UMA dimensão para pintar. No mapa navegável há
+  // duas ao mesmo tempo: o TAMANHO é quantas questões o acervo desta banca tem
+  // do nó, e a TINTA é o quanto lhe falta. Não há o que alternar — e um
+  // interruptor que não muda nada é pior que interruptor nenhum, porque promete
+  // um estado que a tela não tem.
+  //
+  // ⚠️ ESTA FRASE JÁ DISSE "o tamanho é o quanto a sua PROVA cobra", e era falso.
+  // O tamanho vinha de `target_bank_demand_score` quando ele existia — um score
+  // normalizado em [0,1] que some no grão de subtema para bancas menores, então
+  // irmãos eram dimensionados em unidades incomparáveis. Hoje o tamanho é
+  // `question_count`, uma unidade só; o eixo da prova-alvo virou frase com
+  // denominador na `FolhaDoAssunto`. A conclusão continua de pé; a premissa não.
 
   return (
-    <div className="space-y-3">
-      {/* ⚠️ A GRADE NAO ESPERA MAIS PELA PROFICIENCIA.
-          Esta secao inteira ficava atras de um `Skeleton` enquanto
-          `/student/competency-mastery` respondia, e de um cartao "voce ainda
-          nao respondeu" quando nao havia dado -- ou seja, o MAPA da prova, que
-          nao depende do aluno para nada, ficava escondido por causa de um dado
-          sobre o aluno. Agora ele pinta primeiro e a sua camada chega por cima. */}
-      <MapaDaProva
-        linhas={assuntos}
-        dominio={mostrandoVoce ? dominio : null}
-        pisoDeObservacao={piso}
-        onSelecionar={setAssuntoAberto}
+    <div className="ritmo-secao">
+      {/* ⚠️ A ABA "MAPA" DEIXOU DE SER O MOSAICO DOS QUINZE.
+
+          O operador apontou o que o nome já dizia: mapa é instrumento de
+          orientação — mostra o território todo, a posição significa alguma
+          coisa, e dá para aproximar sem perder onde se está. Quinze quadrados
+          ordenados por posto é uma LISTA desenhada em grade.
+
+          O mosaico dos quinze não morreu, e não devia: ele é a *cara* da banca,
+          o corte editorial do gerador (`TOP_SUBTEMAS = 15`). Ele mudou para a
+          aba "Leitura", dentro do `FaciesReport`, que é onde a leitura mora — e
+          isso também apaga a duplicação de DOIS mosaicos na mesma tela. */}
+      <MapaNavegavel
+        institutionKey={banca.institution_key}
+        nomeDaBanca={nomeCurto(banca)}
+        dominio={dominio}
+        onPraticar={setAssuntoAberto}
       />
       <FolhaDoAssunto
         assunto={assuntoAberto}
@@ -347,27 +464,27 @@ function EixoMapa({ banca, tinta }: { banca: Banca; tinta: TintaDoMapa }) {
         onFechar={() => setAssuntoAberto(null)}
       />
 
-      {/* A nota diz o tamanho da amostra, que nenhuma textura carrega — e, na
-          leitura "você", explica por que a grade pode estar quase toda vazia. */}
-      {tinta === "voce" ? (
-        proficiencia.isPending ? (
-          <p className="text-nota text-muted">Lendo as suas respostas…</p>
-        ) : podeVoce ? (
-          <p className="text-nota text-muted">
-            Quanto mais escuro, mais falta. {comDado} de {assuntos.length} assuntos
-            têm resposta sua; a partir de {piso} respostas o assunto deixa de ser
-            estimado e passa a ser medido.
-          </p>
-        ) : (
-          <p className="text-nota text-muted">
-            Este mapa acende conforme você responde: cada sessão pinta os assuntos
-            que ela tocou. Por enquanto o preenchimento continua mostrando o
-            quanto a prova cobra.
-          </p>
-        )
+      {/* A nota diz o tamanho da amostra, que nenhuma textura carrega.
+
+          ⚠️ O DENOMINADOR SAIU DAQUI, e a razão é que ele mentia. A frase dizia
+          "{comDado} de {assuntos.length} assuntos" — e `assuntos` são os QUINZE
+          da fácies, que desde 2026-09-06 já não estão nesta aba: o mapa passou a
+          ser a árvore inteira. Comparar a sua cobertura com um total que não
+          está na tela é a troca silenciosa de denominador que este arquivo passa
+          o tempo a evitar. O que sobra é o que se sabe: quantos assuntos você já
+          tocou, e a partir de quantas respostas a medida deixa de ser palpite. */}
+      {proficiencia.isPending ? (
+        <p className="text-nota text-muted">Lendo as suas respostas…</p>
+      ) : podeVoce ? (
+        <p className="text-nota text-muted">
+          Quanto mais escuro, mais falta. Você já respondeu em {comDado}
+          {comDado === 1 ? " assunto" : " assuntos"}; a partir de {piso} respostas
+          o assunto deixa de ser estimado e passa a ser medido.
+        </p>
       ) : (
         <p className="text-nota text-muted">
-          Quanto mais escuro, mais a prova cobra. Toque num assunto para praticá-lo.
+          O mapa acende conforme você responde: cada sessão pinta os assuntos que
+          ela tocou.
         </p>
       )}
     </div>
@@ -387,7 +504,10 @@ export function MapaClientPage() {
    * O padrão é "prova" porque ela não depende de consulta nenhuma: a grade
    * pinta no primeiro frame. "Você" espera a proficiência, e diz que espera.
    */
-  const [tinta, setTinta] = useState<TintaDoMapa>("prova");
+  // A tinta continua a existir para a aba "Leitura", que monta o mosaico dos
+  // quinze por dentro do `FaciesReport`. O que saiu foi o INTERRUPTOR da aba do
+  // mapa, onde ele deixou de ter o que alternar.
+  const [tinta] = useState<TintaDoMapa>("prova");
 
   const provaAlvo = useQuery({
     queryKey: queryKeys.studentTargetExam,
@@ -401,15 +521,48 @@ export function MapaClientPage() {
   const porPrioridade = [...(provaAlvo.data?.items ?? [])].sort(
     (a, b) => a.priority - b.priority,
   );
-  const alvo = porPrioridade[0];
+
+  /**
+   * 🚨 A BANCA DO MAPA PASSOU A SER ESCOLHA, e antes era imposição.
+   *
+   * O operador perguntou: *"esse mapa é só do ENAMED ou de todas bancas
+   * prioritárias?"*, depois de ver o título dizer uma banca e a lista de Atenção
+   * citar outra. A resposta medida é **as duas coisas, e é esse o bug**:
+   *
+   * | elemento | escopo antes desta linha |
+   * | --- | --- |
+   * | título, questões, anos, área das peças | UMA banca — `porPrioridade[0]` |
+   * | tinta das peças | maestria do aluno, sem banca |
+   * | Atenção: ordem e frase | TODAS as ≤3 declaradas ("vence a maior") |
+   *
+   * O próprio backend já previa a queixa em comentário
+   * (`topic_explanation.py:170-176`): *"na tela de OUTRA banca, porque a
+   * evidência é do objetivo do aluno, não do mapa que ele está olhando"*.
+   *
+   * ⚠️ ISTO RESOLVE METADE. Trocar a banca exibida é do cliente e custa zero de
+   * rede — `queryKeys.studentTargetExam` já é partilhada. O escopo da **Atenção**
+   * é do servidor: `_apply_target_demand` agrega sobre todas as provas
+   * declaradas, e limitá-lo a uma exige `institution_key` no serviço. Enquanto
+   * isso não acontece, a tela DIZ de quem é a evidência quando ela diverge, em
+   * vez de deixar o aluno descobrir sozinho — ver `evidenciaDeOutraBanca` em
+   * `MapaNavegavel`.
+   */
+  const [chaveEscolhida, setChaveEscolhida] = useState<string | null>(null);
+  const alvo =
+    porPrioridade.find((item) => item.institution_key === chaveEscolhida) ??
+    porPrioridade[0];
   const chave = alvo?.institution_key ?? null;
 
   // As OUTRAS provas declaradas — o desenho manda que elas sejam a comparação
   // do mapa. `items` sempre veio com todas; era esta linha que faltava.
+  //
+  // ⚠️ ERA `.slice(1)`, e isso passou a estar errado quando a banca do mapa
+  // virou escolha: com a segunda prova selecionada, `slice(1)` deixaria a
+  // PRÓPRIA banca exibida na lista de comparação — comparar uma prova consigo
+  // mesma — e esconderia a primeira. O corte certo é por identidade.
   const outrasDoAluno = porPrioridade
-    .slice(1)
     .map((item) => item.institution_key)
-    .filter((k): k is string => Boolean(k));
+    .filter((k): k is string => Boolean(k) && k !== chave);
 
   const facies = useQuery({
     queryKey: queryKeys.faciesDaBanca(chave ?? ""),
@@ -421,7 +574,7 @@ export function MapaClientPage() {
 
   if (!tokenResolved || provaAlvo.isPending) {
     return (
-      <div className="space-y-4" aria-label="Mapa da prova carregando">
+      <div className="ritmo-secao" aria-label="Mapa da prova carregando">
         <Skeleton className="h-8 w-56" />
         <Skeleton className="h-6 w-full" />
         <Skeleton className="h-64 w-full" />
@@ -430,15 +583,19 @@ export function MapaClientPage() {
   }
 
   if (provaAlvo.isError) {
-    return <Alert variant="danger">Não consegui ler a sua prova-alvo agora.</Alert>;
+    return (
+      <Alert variant="danger" onRetry={() => void provaAlvo.refetch()}>
+        Não consegui ler a sua prova-alvo agora.
+      </Alert>
+    );
   }
 
   // SEM prova declarada. Nao e erro: e o estado de quem ainda nao escolheu, e a
   // tela precisa levar ao lugar onde se escolhe em vez de so avisar.
   if (!chave) {
     return (
-      <div className="rounded-surface border border-edge bg-surface p-6">
-        <h2 className="font-serif text-xl font-semibold text-ink">
+      <div className="rounded-surface border border-edge bg-surface p-4 sm:p-5">
+        <h2 className="font-serif font-semibold text-ink">
           Escolha a sua prova para ver a cara dela
         </h2>
         <p className="mt-2 max-w-[52ch] text-base text-muted">
@@ -461,11 +618,15 @@ export function MapaClientPage() {
   }
 
   if (facies.isPending) {
-    return <Skeleton className="h-64 w-full" aria-label="Fácies carregando" />;
+    return <Skeleton className="h-64 w-full" rotulo="Fácies carregando" />;
   }
 
   if (facies.isError) {
-    return <Alert variant="danger">Não consegui carregar a leitura desta banca.</Alert>;
+    return (
+      <Alert variant="danger" onRetry={() => void facies.refetch()}>
+        Não consegui carregar a leitura desta banca.
+      </Alert>
+    );
   }
 
   // A banca existe no catalogo de objetivos e NAO tem facies publicada. O
@@ -473,8 +634,8 @@ export function MapaClientPage() {
   // e real e precisa dizer a verdade em vez de mostrar tela vazia.
   if (!facies.data) {
     return (
-      <div className="rounded-surface border border-edge bg-surface p-6">
-        <h2 className="font-serif text-xl font-semibold text-ink">
+      <div className="rounded-surface border border-edge bg-surface p-4 sm:p-5">
+        <h2 className="font-serif font-semibold text-ink">
           Ainda não há leitura publicada da {alvo?.label ?? "sua prova"}
         </h2>
         <p className="mt-2 max-w-[52ch] text-base text-muted">
@@ -487,7 +648,7 @@ export function MapaClientPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="ritmo-secao">
       <div>
         <h1 className="font-serif font-semibold text-ink">
           {/* ⚠️ NOME CURTO, e nao o institucional por extenso.
@@ -498,12 +659,31 @@ export function MapaClientPage() {
               linhas a 390px, empurrando as abas e o mapa para fora da
               primeira tela. `nomeCurto` ja resolve homonimo com a UF e e o
               mesmo nome dos chips da landing. */}
-          A cara da {nomeCurto(facies.data)}
+          A cara da <SeletorDaProva
+            banca={facies.data}
+            provas={porPrioridade}
+            escolhida={chave}
+            onEscolher={setChaveEscolhida}
+          />
         </h1>
         {/* A janela e o denominador da leitura, e o handoff pede que numero
-            nunca apareca sem ele. */}
+            nunca apareca sem ele.
+
+            ⚠️ "COBRADAS", e o adjetivo carrega a correção inteira desta tela.
+
+            Até 2026-09-10 este número era `read index + anuladas` — 566 no
+            ENARE/ENAMED, onde a prova cobrou 600 e as células do mapa somavam
+            530. Três números na mesma tela, e o do cabeçalho não era o tamanho
+            de nada: somava a população de TREINO com parte da de MEDIÇÃO.
+
+            Agora ele vem inteiro de `question_source_dimensions`, a mesma
+            população que a árvore passou a dimensionar (`population: "exam"`),
+            então cabeçalho e grade voltam a falar do mesmo conjunto. O
+            substantivo tem de dizer QUAL conjunto é: um "600 questões" solto,
+            numa tela com botão de praticar, promete um acervo que não existe —
+            530 dessas é que se resolvem, e a legenda do nível diz isso. */}
         <p className="paper-eyebrow mt-1">
-          {facies.data.questoes_total.toLocaleString("pt-BR")} questões
+          {facies.data.questoes_total.toLocaleString("pt-BR")} questões cobradas
           {facies.data.primeiro_ano && facies.data.ultimo_ano
             ? ` · ${facies.data.primeiro_ano}–${facies.data.ultimo_ano}`
             : ""}
@@ -535,36 +715,65 @@ export function MapaClientPage() {
           sobre o pacote. O `B1` do `Instagram - modelos` e' esta tela, com
           regra explicita -- duas faixas empilhadas, mesma escala, ambar so'
           acima de 3 pontos. Ver `CompararProvas.tsx`. */}
-      <div className="flex flex-wrap items-center gap-2">
-        {ABAS.map(([chave, rotulo]) => (
-          <button
-            key={chave}
-            type="button"
-            aria-pressed={eixo === chave}
-            onClick={() => setEixo(chave)}
-            className={`paper-control inline-flex min-h-11 items-center rounded-surface border px-3.5 py-2 text-sm font-medium transition ${
-              eixo === chave
-                ? "border-primary bg-primary text-primaryInk"
-                : "border-rule bg-transparent text-ink hover:border-muted"
-            }`}
-          >
-            {rotulo}
-          </button>
-        ))}
-        {eixo === "mapa" ? (
-          <div className="ml-auto flex items-center gap-2">
-            <span className="paper-eyebrow hidden sm:inline">preenchimento</span>
-            <SegmentedToggle
-              value={tinta}
-              onChange={setTinta}
-              options={[
-                { value: "prova", label: "A prova" },
-                { value: "voce", label: "Você" },
-              ]}
-              ariaLabel="O que o preenchimento da grade mostra"
-            />
-          </div>
-        ) : null}
+      {/* ⚠️ NO TELEMÓVEL AS TRÊS ABAS ENCHEM A LARGURA, como toda fileira de
+          controles desta rodada. Antes eram três botões encostados à esquerda com
+          um vazio à direita, e o interruptor de preenchimento pendurado com
+          `ml-auto` — dois blocos desalinhados na mesma linha. */}
+      <div className="fileira-de-controles md:flex md:flex-wrap md:items-center">
+        {/* 🚨 O TRILHO CANÓNICO, e não pastilhas soltas.
+
+            Esta fileira era `BotaoDeEscolha papel="aba"`: pastilhas de 14px
+            com borda visível também no não-escolhido, sem trilho à volta. As
+            secções do resto do app (Cards, Banco, pós-simulado) usam
+            `TAB_LIST_CLASS` + `TAB_TRIGGER_CLASS` — trilho, 12px, borda
+            transparente no não-escolhido. Duas línguas para a mesma coisa, e
+            foi o que o operador apontou ao dizer que os botões do Mapa não
+            combinavam com os dos Cards.
+
+            ⚠️ Botões com `aria-current`, e não o `Tabs` do Radix: os painéis
+            aqui são ramos condicionais, não `TabsContent`. É o mesmo arranjo
+            do `PostExamTabs` e do `ExamDebrief`, e `TAB_TRIGGER_CLASS` pinta o
+            estado por `data-[state=active]` OU `aria-[current=page]`
+            justamente para servir os dois casos.
+
+            A história antiga desta fileira continua a valer e por isso fica
+            registada: ela já foi um teal cheio, que fazia a aba ativa parecer
+            a ação principal do app — um botão no topo que, ao ser premido, não
+            levava a lado nenhum. O único teal cheio desta tela continua a ser
+            "Praticar", dentro da folha do assunto: a ação de verdade. */}
+        <TabsScrollArea className="w-full md:w-auto">
+          {({ ref, onScroll }) => (
+            <div
+              ref={ref}
+              onScroll={onScroll}
+              role="group"
+              aria-label="O que o mapa mostra"
+              className={TAB_LIST_CLASS}
+            >
+              {ABAS.map(([chave, rotulo]) => (
+                <button
+                  key={chave}
+                  type="button"
+                  onClick={() => setEixo(chave)}
+                  aria-current={eixo === chave ? "page" : undefined}
+                  className={TAB_TRIGGER_CLASS}
+                >
+                  {rotulo}
+                </button>
+              ))}
+            </div>
+          )}
+        </TabsScrollArea>
+        {/* ⚠️ O INTERRUPTOR "A PROVA / VOCÊ" SAIU com o mosaico dos quinze.
+
+            Ali o preenchimento tinha de escolher entre as duas leituras, porque
+            havia UMA dimensão para pintar. No mapa navegável há duas ao mesmo
+            tempo: o tamanho é quantas questões o acervo desta banca tem do nó, a
+            tinta é o quanto lhe falta. Não sobrou o que alternar.
+
+            ⚠️ Dizia "o tamanho é o quanto a sua prova cobra" — falso desde que o
+            peso deixou de sair de `target_bank_demand_score`, que era um score
+            [0,1] e não uma contagem. Ver a nota em `mapaLayout.pesoDoNo`. */}
       </div>
 
       {eixo === "mapa" ? (

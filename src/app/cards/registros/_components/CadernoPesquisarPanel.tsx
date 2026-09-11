@@ -254,7 +254,7 @@ export function CadernoPesquisarPanel({
               size="md"
               onClick={onSearch}
               loading={searchLoading}
-              className="w-full sm:w-auto"
+              bloco
             >
               Pesquisar
             </Button>

@@ -1,12 +1,21 @@
 "use client";
 
-import { ScheduleViewTabs } from "./_components/ScheduleViewTabs";
 import { CronogramaWeekView } from "./_components/CronogramaWeekView";
 import CronogramaMonthView from "./CronogramaMonthView";
 import { localISO } from "@/features/student-agenda/dateRange";
 import { STUDENT_AGENDA_FRONTEND_ENABLED } from "@/features/student-agenda/useStudentAgenda";
-import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 
+/**
+ * ⚠️ A LINHA "SEMANA · MÊS" SAIU DAQUI, e não perdeu função: subiu.
+ *
+ * Ela era um `ScheduleViewTabs` desenhado só no desktop, dentro do conteúdo, e
+ * duplicava-se com dois ícones na barra de título só no telemóvel — três
+ * afordâncias para a mesma troca, nenhuma delas nas duas larguras.
+ *
+ * Com "Semana" e "Mês" como seções do Plano, a troca mora onde moram as outras
+ * seções do app: `IntentSubNav`, no topo do conteúdo, igual nas duas larguras e
+ * com as mesmas classes do primitivo de abas. Uma linguagem só.
+ */
 export default function CronogramaClientPage({
   initialView = "week",
   initialAnchor = null,
@@ -16,19 +25,13 @@ export default function CronogramaClientPage({
   initialAnchor?: string | null;
   initialSelectedDay?: string | null;
 }) {
-  const isDesktopNavigation = useDesktopNavigationMode();
   const anchor = initialAnchor ?? initialSelectedDay ?? localISO();
   if (!STUDENT_AGENDA_FRONTEND_ENABLED) {
     return <CronogramaMonthView initialSelectedDay={initialSelectedDay ?? initialAnchor} />;
   }
-  return (
-    <div className="space-y-4">
-      {isDesktopNavigation ? <ScheduleViewTabs active={initialView} anchor={anchor} /> : null}
-      {initialView === "month" ? (
-        <CronogramaMonthView initialSelectedDay={initialSelectedDay ?? anchor} showWeekSwitch />
-      ) : (
-        <CronogramaWeekView anchor={anchor} initialSelectedDay={initialSelectedDay} />
-      )}
-    </div>
+  return initialView === "month" ? (
+    <CronogramaMonthView initialSelectedDay={initialSelectedDay ?? anchor} />
+  ) : (
+    <CronogramaWeekView anchor={anchor} initialSelectedDay={initialSelectedDay} />
   );
 }

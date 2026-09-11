@@ -5,7 +5,6 @@ import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
 import { useEffect, useState } from "react";
 import { FastNavLink } from "@/components/FastNavLink";
 import { ICON_MAP } from "@/components/navIcons";
-import { UserAvatar } from "@/components/UserAvatar";
 import { NAV_ITEMS, isNavItemActive } from "@/lib/navConfig";
 
 /** Distancia acumulada antes de esconder/mostrar. Abaixo disto o scroll de
@@ -39,13 +38,21 @@ const SCROLL_THRESHOLD_PX = 56;
  * quem pediu menos movimento ao sistema fica com a barra sempre visivel, porque
  * uma barra que aparece e some E movimento.
  */
-export function MobileTabBar({
-  displayName,
-  photoUrl,
-}: {
-  displayName?: string | null;
-  photoUrl?: string | null;
-} = {}) {
+/**
+ * ⚠️ A BARRA DEIXOU DE MOSTRAR O ROSTO DO ALUNO (2026-09-10).
+ *
+ * Ela recebia `displayName`/`photoUrl` para trocar o ícone da aba "Você" por um
+ * `UserAvatar` — a única convenção de rede social que este produto copiava ao pé
+ * da letra, e valia a pena porque o rosto é o marcador mais rápido de "isto sou
+ * eu" numa fileira de ícones iguais.
+ *
+ * Deixou de valer porque a aba "Você" deixou de existir. No lugar dela está
+ * "Mais", que não é o aluno: é uma lista de nove destinos, dos quais a Conta é
+ * UM. Pôr o rosto na aba prometeria que ela abre o perfil.
+ *
+ * O rosto foi para onde o operador pediu — a linha "Conta", dentro de `/mais`.
+ */
+export function MobileTabBar() {
   const pathname = usePathname() ?? "";
   const { scrollY } = useScroll();
   const reduceMotion = useReducedMotion();
@@ -98,7 +105,22 @@ export function MobileTabBar({
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-40 md:hidden"
+      // 🚨 `lg:hidden`, E NÃO `md:hidden` — em tablet táctil não havia
+      // navegação NENHUMA.
+      //
+      // Havia dois portões a medir coisas diferentes. O de JS
+      // (`useDesktopNavigationMode`) exige 1024px OU ponteiro fino sem toque; o
+      // de CSS escondia isto a partir de 768px. Num tablet táctil de 768–1023px
+      // o JS dizia "mobile" (a sidebar devolve `null`) e o CSS dizia "desktop"
+      // (esconde a barra) — e o aluno ficava sem barra e sem rail.
+      //
+      // ⚠️ O CSS NÃO CONSEGUE exprimir `navigator.maxTouchPoints`, então
+      // replicar a condição do JS numa media query não fecha: um aparelho com
+      // toque E rato casa `(hover: hover) and (pointer: fine)` e mesmo assim o
+      // JS o trata como mobile. O portão de CSS passa a cobrir só o caso em que
+      // há CERTEZA (≥1024px), que é o que evita o piscar antes da hidratação; da
+      // hidratação em diante quem manda é a montagem em JS, que já estava certa.
+      className="fixed inset-x-0 bottom-0 z-40 lg:hidden"
       style={{
         transform: hidden ? "translateY(110%)" : "translateY(0)",
         transition: reduceMotion ? "none" : "transform var(--motion-base) var(--ease-paper)",
@@ -113,14 +135,6 @@ export function MobileTabBar({
         {NAV_ITEMS.map((item) => {
           const active = isNavItemActive(pathname, item);
           const Icon = ICON_MAP[item.icon];
-          // ⚠️ A ABA "VOCÊ" MOSTRA A PESSOA, e nao um simbolo de pessoa.
-          //
-          // E' a unica convencao de rede social que este produto copia ao pe da
-          // letra, e ela vale a pena: o rosto e' o marcador mais rapido de
-          // "isto sou eu" numa fileira de icones iguais. Cai no `CircleUser` do
-          // `ICON_MAP` so' quando nao ha foto NEM nome -- com nome, a inicial
-          // ja e' identidade.
-          const mostraOAluno = item.icon === "you" && Boolean(photoUrl || displayName);
           return (
             <FastNavLink
               key={item.href}
@@ -149,11 +163,7 @@ export function MobileTabBar({
                 active ? "border-t-primary text-primary" : "border-t-transparent text-muted",
               ].join(" ")}
             >
-              {mostraOAluno ? (
-                <UserAvatar photoUrl={photoUrl} displayName={displayName} size="tab" />
-              ) : (
-                <Icon className="h-5 w-5" aria-hidden="true" />
-              )}
+              <Icon className="h-5 w-5" aria-hidden="true" />
               {/* ⚠️ 11px, e o DESENHO PEDE 10 — desvio aprovado em 2026-08-30.
 
                   O piso de 11px (`text-micro`) e do sistema e existe por

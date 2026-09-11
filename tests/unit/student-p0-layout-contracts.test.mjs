@@ -20,17 +20,25 @@ function assertComesBefore(source, firstNeedle, secondNeedle, message) {
 
 test("Cronograma abre na semana e preserva o calendario mensal como modo secundario", () => {
   const page = read("src/app/cronograma/page.tsx");
+  const mes = read("src/app/cronograma/mes/page.tsx");
   const source = read("src/app/cronograma/CronogramaClientPage.tsx");
   const month = read("src/app/cronograma/CronogramaMonthView.tsx");
   const week = read("src/app/cronograma/_components/CronogramaWeekView.tsx");
-  const viewTabs = read("src/app/cronograma/_components/ScheduleViewTabs.tsx");
 
   assert.equal(
     source.includes("<StudentPrimaryAction"),
     false,
     "calendario nao deve renderizar CTA redundante do proprio plano",
   );
-  assert.match(page, /initialView=\{view\}/);
+  // ⚠️ A VISAO DEIXOU DE VIR DA QUERY e passou a vir da ROTA.
+  //
+  // Era `initialView={view}` lido de `?view=`, e as duas leituras dividiam
+  // `/cronograma`. `navConfig` casa secao por PATHNAME, entao com "Semana" e
+  // "Mes" na barra as duas empatavam e a barra acendia sempre a mesma. O mes
+  // ganhou `/cronograma/mes`; `?view=month` encaminha para la em
+  // `next.config.js`.
+  assert.match(page, /initialView="week"/);
+  assert.match(mes, /initialView="month"/);
   assert.match(source, /initialView = "week"/);
   assert.match(source, /<CronogramaWeekView/);
   assert.match(source, /<CronogramaMonthView/);
@@ -62,11 +70,33 @@ test("Cronograma abre na semana e preserva o calendario mensal como modo secunda
     "<WeeklyGoalControl",
     "a faixa e o detalhe diario devem continuar protagonistas antes da meta auxiliar",
   );
-  assert.match(viewTabs, /TAB_LIST_CLASS/);
-  assert.match(viewTabs, /TAB_TRIGGER_CLASS/);
-  assert.match(source, /isDesktopNavigation \? <ScheduleViewTabs/, "o seletor textual deve ficar restrito ao desktop");
-  assert.match(week, /data-testid="schedule-view-month"/, "a semana mobile deve oferecer o icone do mes");
-  assert.match(month, /data-testid="schedule-view-week"/, "o mes mobile deve oferecer o icone da semana");
+  // ⚠️ AS TRES AFORDANCIAS DE TROCA VIRARAM UMA.
+  //
+  // O que este teste prendia antes: um `ScheduleViewTabs` textual so no
+  // desktop, mais um icone `schedule-view-month` so na semana mobile, mais um
+  // `schedule-view-week` so no mes mobile. Tres desenhos para a mesma troca, e
+  // nenhum deles presente nas duas larguras — o aluno tinha de a aprender duas
+  // vezes conforme o aparelho.
+  //
+  // Agora "Semana" e "Mes" sao SECOES do Plano e a troca mora no `IntentSubNav`,
+  // igual nas duas larguras. O contrato passa a ser a AUSENCIA dos duplicados —
+  // o positivo (a linha existir com as duas secoes) e' de `navConfig.test.mjs`,
+  // que le a fonte da verdade em vez do JSX.
+  for (const [nome, fonte] of [["a semana", week], ["o mes", month]]) {
+    assert.equal(
+      /data-testid="schedule-view-(week|month)"/.test(fonte),
+      false,
+      `${nome} nao deve ter um segundo caminho para a troca de visao`,
+    );
+  }
+  // ⚠️ CASA O USO, e nao a PALAVRA: o proprio arquivo explica em comentario
+  // porque o `ScheduleViewTabs` saiu, e um `includes("ScheduleViewTabs")`
+  // reprovava pela explicacao. Guard que le prosa mede a prosa.
+  assert.equal(
+    /<ScheduleViewTabs/.test(source),
+    false,
+    "a troca de visao nao volta para dentro do conteudo",
+  );
 });
 
 // Le `/evolucao`, que e a tela do Acompanhar que o aluno realmente ve.
@@ -90,15 +120,46 @@ test("Evolucao nao concorre com a acao do dia", () => {
   const source =
     read("src/app/evolucao/page.tsx") + read("src/app/evolucao/EvolucaoClientPage.tsx");
 
+  // ⚠️ ESTE CONTRATO AFIRMAVA UM PROXY, E O PROXY MORREU.
+  //
+  // Ele nomeava dois componentes -- `StudentPrimaryAction` e o strip do
+  // treinador. O segundo foi apagado em 2026-09-06 por nunca ter sido montado,
+  // e o primeiro nao existe nesta tela: as duas assercoes passavam por
+  // VACUIDADE, e teriam continuado a passar se alguem enchesse a Evolucao de
+  // botoes primarios com outro nome.
+  //
+  // A regra de verdade e sobre PESO VISUAL: quem decide o que fazer agora e o
+  // Hoje, e duas telas a disputar a acao dominante foi o defeito que este teste
+  // nasceu para pegar. Entao ele passou a medir isso -- nenhum preenchimento
+  // primario na Evolucao.
+  //
+  // Isto e o que deixou as linhas de "Onde mais escapa?" praticarem o assunto
+  // que nomeiam sem quebrar o contrato: elas sao links do peso que ja tinham.
   assert.equal(
     source.includes("<StudentPrimaryAction"),
     false,
     "Evolucao nao deve renderizar CTA primario concorrendo com a leitura",
   );
+  // ⚠️ POR LINHA, e nao por string adjacente. A primeira versao procurava o
+  // literal "bg-primary text-primaryInk" -- e eu provei que era inerte
+  // injetando `bg-primary py-2 text-primaryInk`, que passa incolume. O que
+  // define o preenchimento e a COOCORRENCIA das duas classes no mesmo
+  // `className`, em qualquer ordem.
+  //
+  // `bg-primary` sozinho fica de fora de proposito: ele pinta as barras e o
+  // mosaico desta tela, que sao marca grafica e nao convite.
+  for (const linha of source.split("\n")) {
+    const preenchido = linha.includes("bg-primary") && linha.includes("text-primaryInk");
+    assert.equal(
+      preenchido,
+      false,
+      `Evolucao nao deve ter preenchimento primario -- ele compete com a acao do Hoje: ${linha.trim()}`,
+    );
+  }
   assert.equal(
-    source.includes("<TrainerContextStrip"),
+    source.includes('variant="primary"'),
     false,
-    "Evolucao nao deve duplicar a acao do dia",
+    "Evolucao nao deve usar o Button primario",
   );
 });
 

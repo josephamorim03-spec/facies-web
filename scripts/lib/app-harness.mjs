@@ -162,7 +162,7 @@ export function surfaceHome(kind) {
     support_metric: { label: "Precisao recente", value: 64, unit: "%", period: "week", source: "question_bank", interpretation: "Abaixo do seu plato de 72%." },
     deep_links: [
       { label: "Banco de questões", href: "/banco-de-questoes", reason: "treino ativo" },
-      { label: "Relatorio", href: "/estatisticas/relatorio", reason: "detalhar sinal" },
+      { label: "Graficos", href: "/estatisticas/graficos", reason: "detalhar sinal" },
     ],
     data_quality: "sufficient",
     goal_status: { weekly_goal: 240, weekly_progress_pct: 78, load_label: "adequada", overload_alert: false, recommended_action: "manter revisão curta" },
@@ -397,17 +397,101 @@ export function qbankTopic(overrides = {}) {
     board_frequency: { "USP-SP": 8, "ENARE": 6 },
     charge_patterns: {},
     answer_types: {},
-    adaptive_weight: 0.86,
-    adaptive_weight_score: 86,
-    adaptive_weight_factors: { student_error_need: 0.9, bank_demand: 0.8 },
+    // ⚠️ SAÍRAM DAQUI `adaptive_weight`, `adaptive_weight_score` e
+    // `adaptive_weight_factors`. Três defeitos num bloco só:
+    //
+    //   · eles NÃO pertencem a um tópico — são de `QuestionBankSessionOut`, e
+    //     `QuestionBankTopicOut` nem os declara (Pydantic descarta em silêncio);
+    //   · os dois primeiros estavam com os tipos TROCADOS (`weight` é int 1|2|3,
+    //     `score` é float 0..1);
+    //   · `student_error_need` não é produzido por NADA no backend — a string
+    //     não aparece em `app/` inteiro. Era fixture inventada.
+    //
+    // O que o `/topics` devolve de verdade, e que o mapa agora consome, é o
+    // trio abaixo. `recommendation_explanation` é `null` por padrão porque
+    // `topic_explanation.py` não inventa frase sem evidência — quem quiser
+    // exercitar a atenção sobrescreve nos tópicos que interessam.
+    recommendation_rank: 999,
+    recommendation_reason: "high_yield",
+    recommendation_explanation: null,
     ...overrides,
   };
 }
 
+/**
+ * ⚠️ `target_bank_demand_score` É NORMALIZADO EM [0,1] — o backend faz `clamp()`
+ * em `app/domain/target_relevance.py`.
+ *
+ * Este fixture servia 34, 14, 13, 4, 3 — fora do contrato —, e isso escondeu um
+ * defeito real por duas versões: o mapa imprimia `Math.round(score)` na célula,
+ * o que com os valores daqui dava números plausíveis e em produção dava
+ * literalmente "0" e "1". O operador viu; o teste não.
+ *
+ * Fixture que mente é pior que fixture que falta: ele produz confiança.
+ */
 export function questionBankBootstrap() {
   const topics = [
-    qbankTopic({ knowledge_node_id: "go-root", parent_knowledge_node_id: null, node_name: "Ginecologia e Obstetricia", node_type: "specialty", depth: 1, question_count: 180, adaptive_weight_score: 72 }),
-    qbankTopic({ knowledge_node_id: "go-hipertensao", parent_knowledge_node_id: "go-root", node_name: "Hipertensão na gestação", node_type: "theme", depth: 2, question_count: 74, adaptive_weight_score: 80 }),
+    qbankTopic({ knowledge_node_id: "cm-root", parent_knowledge_node_id: null, node_name: "Clínica Médica", node_type: "specialty", node_path: ["Clínica Médica"], depth: 1, question_count: 480, target_bank_demand_score: 0.85 }),
+    qbankTopic({ knowledge_node_id: "cm-t0", parent_knowledge_node_id: "cm-root", node_name: "Cardiologia", node_type: "theme", node_path: ["Clínica Médica", "Cardiologia"], depth: 2, question_count: 53, target_bank_demand_score: 0.1 }),
+    qbankTopic({ knowledge_node_id: "cm-t0-s0", recommendation_rank: 1, recommendation_reason: "knowledge_gap", recommendation_explanation: "Você acertou 2 de 7 em Insuficiência cardíaca — é onde mais perde ponto.", parent_knowledge_node_id: "cm-t0", node_name: "Insuficiência cardíaca", node_type: "subtheme", node_path: ["Clínica Médica", "Cardiologia", "Insuficiência cardíaca"], depth: 3, question_count: 27 }),
+    qbankTopic({ knowledge_node_id: "cm-t0-s1", recommendation_rank: 5, recommendation_reason: "high_yield", recommendation_explanation: "Síndrome coronariana aguda é um tema de alta incidência nas provas.", parent_knowledge_node_id: "cm-t0", node_name: "Síndrome coronariana aguda", node_type: "subtheme", node_path: ["Clínica Médica", "Cardiologia", "Síndrome coronariana aguda"], depth: 3, question_count: 18 }),
+    qbankTopic({ knowledge_node_id: "cm-t0-s2", parent_knowledge_node_id: "cm-t0", node_name: "Arritmias", node_type: "subtheme", node_path: ["Clínica Médica", "Cardiologia", "Arritmias"], depth: 3, question_count: 13 }),
+    qbankTopic({ knowledge_node_id: "cm-t0-s3", parent_knowledge_node_id: "cm-t0", node_name: "Hipertensão arterial", node_type: "subtheme", node_path: ["Clínica Médica", "Cardiologia", "Hipertensão arterial"], depth: 3, question_count: 11 }),
+    qbankTopic({ knowledge_node_id: "cm-t0-s4", parent_knowledge_node_id: "cm-t0", node_name: "Valvopatias", node_type: "subtheme", node_path: ["Clínica Médica", "Cardiologia", "Valvopatias"], depth: 3, question_count: 9 }),
+    qbankTopic({ knowledge_node_id: "cm-t1", parent_knowledge_node_id: "cm-root", node_name: "Pneumologia", node_type: "theme", node_path: ["Clínica Médica", "Pneumologia"], depth: 2, question_count: 50, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "cm-t1-s0", recommendation_rank: 2, recommendation_reason: "under_covered", recommendation_explanation: "Você quase não praticou Asma ainda.", parent_knowledge_node_id: "cm-t1", node_name: "Asma", node_type: "subtheme", node_path: ["Clínica Médica", "Pneumologia", "Asma"], depth: 3, question_count: 25 }),
+    qbankTopic({ knowledge_node_id: "cm-t1-s1", parent_knowledge_node_id: "cm-t1", node_name: "DPOC", node_type: "subtheme", node_path: ["Clínica Médica", "Pneumologia", "DPOC"], depth: 3, question_count: 17 }),
+    qbankTopic({ knowledge_node_id: "cm-t1-s2", parent_knowledge_node_id: "cm-t1", node_name: "Pneumonia adquirida na comunidade", node_type: "subtheme", node_path: ["Clínica Médica", "Pneumologia", "Pneumonia adquirida na comunidade"], depth: 3, question_count: 13 }),
+    qbankTopic({ knowledge_node_id: "cm-t1-s3", parent_knowledge_node_id: "cm-t1", node_name: "Tromboembolismo pulmonar", node_type: "subtheme", node_path: ["Clínica Médica", "Pneumologia", "Tromboembolismo pulmonar"], depth: 3, question_count: 10 }),
+    qbankTopic({ knowledge_node_id: "cm-t2", parent_knowledge_node_id: "cm-root", node_name: "Nefrologia", node_type: "theme", node_path: ["Clínica Médica", "Nefrologia"], depth: 2, question_count: 47, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "cm-t2-s0", recommendation_rank: 3, recommendation_reason: "knowledge_gap", recommendation_explanation: "Você ainda não respondeu Lesão renal aguda — é por onde dá para medir.", parent_knowledge_node_id: "cm-t2", node_name: "Lesão renal aguda", node_type: "subtheme", node_path: ["Clínica Médica", "Nefrologia", "Lesão renal aguda"], depth: 3, question_count: 24 }),
+    qbankTopic({ knowledge_node_id: "cm-t2-s1", parent_knowledge_node_id: "cm-t2", node_name: "Doença renal crônica", node_type: "subtheme", node_path: ["Clínica Médica", "Nefrologia", "Doença renal crônica"], depth: 3, question_count: 16 }),
+    qbankTopic({ knowledge_node_id: "cm-t2-s2", parent_knowledge_node_id: "cm-t2", node_name: "Distúrbios do sódio", node_type: "subtheme", node_path: ["Clínica Médica", "Nefrologia", "Distúrbios do sódio"], depth: 3, question_count: 12 }),
+    qbankTopic({ knowledge_node_id: "cm-t3", parent_knowledge_node_id: "cm-root", node_name: "Endocrinologia", node_type: "theme", node_path: ["Clínica Médica", "Endocrinologia"], depth: 2, question_count: 44, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "cm-t4", parent_knowledge_node_id: "cm-root", node_name: "Infectologia", node_type: "theme", node_path: ["Clínica Médica", "Infectologia"], depth: 2, question_count: 42, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "cm-t5", parent_knowledge_node_id: "cm-root", node_name: "Gastroenterologia", node_type: "theme", node_path: ["Clínica Médica", "Gastroenterologia"], depth: 2, question_count: 40, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "cm-t6", parent_knowledge_node_id: "cm-root", node_name: "Reumatologia", node_type: "theme", node_path: ["Clínica Médica", "Reumatologia"], depth: 2, question_count: 38, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "cm-t7", parent_knowledge_node_id: "cm-root", node_name: "Hematologia", node_type: "theme", node_path: ["Clínica Médica", "Hematologia"], depth: 2, question_count: 36, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "cm-t8", parent_knowledge_node_id: "cm-root", node_name: "Neurologia", node_type: "theme", node_path: ["Clínica Médica", "Neurologia"], depth: 2, question_count: 35, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "cg-root", parent_knowledge_node_id: null, node_name: "Cirurgia", node_type: "specialty", node_path: ["Cirurgia"], depth: 1, question_count: 181, target_bank_demand_score: 0.33 }),
+    qbankTopic({ knowledge_node_id: "cg-t0", parent_knowledge_node_id: "cg-root", node_name: "Trauma", node_type: "theme", node_path: ["Cirurgia", "Trauma"], depth: 2, question_count: 36, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "cg-t0-s0", recommendation_rank: 4, recommendation_reason: "scheduled", recommendation_explanation: "ATLS está no seu cronograma para hoje, e você acertou 3 de 9.", parent_knowledge_node_id: "cg-t0", node_name: "ATLS", node_type: "subtheme", node_path: ["Cirurgia", "Trauma", "ATLS"], depth: 3, question_count: 18 }),
+    qbankTopic({ knowledge_node_id: "cg-t0-s1", parent_knowledge_node_id: "cg-t0", node_name: "Trauma abdominal", node_type: "subtheme", node_path: ["Cirurgia", "Trauma", "Trauma abdominal"], depth: 3, question_count: 12 }),
+    qbankTopic({ knowledge_node_id: "cg-t0-s2", parent_knowledge_node_id: "cg-t0", node_name: "Trauma torácico", node_type: "subtheme", node_path: ["Cirurgia", "Trauma", "Trauma torácico"], depth: 3, question_count: 9 }),
+    qbankTopic({ knowledge_node_id: "cg-t1", parent_knowledge_node_id: "cg-root", node_name: "Abdome agudo", node_type: "theme", node_path: ["Cirurgia", "Abdome agudo"], depth: 2, question_count: 32, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "cg-t2", parent_knowledge_node_id: "cg-root", node_name: "Cirurgia vascular", node_type: "theme", node_path: ["Cirurgia", "Cirurgia vascular"], depth: 2, question_count: 29, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "cg-t3", parent_knowledge_node_id: "cg-root", node_name: "Coloproctologia", node_type: "theme", node_path: ["Cirurgia", "Coloproctologia"], depth: 2, question_count: 27, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "cg-t4", parent_knowledge_node_id: "cg-root", node_name: "Urologia", node_type: "theme", node_path: ["Cirurgia", "Urologia"], depth: 2, question_count: 24, target_bank_demand_score: 1 }),
+    qbankTopic({ knowledge_node_id: "ped-root", parent_knowledge_node_id: null, node_name: "Pediatria", node_type: "specialty", node_path: ["Pediatria"], depth: 1, question_count: 196, target_bank_demand_score: 0.35 }),
+    qbankTopic({ knowledge_node_id: "ped-t0", parent_knowledge_node_id: "ped-root", node_name: "Neonatologia", node_type: "theme", node_path: ["Pediatria", "Neonatologia"], depth: 2, question_count: 39, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "ped-t0-s0", parent_knowledge_node_id: "ped-t0", node_name: "Icterícia neonatal", node_type: "subtheme", node_path: ["Pediatria", "Neonatologia", "Icterícia neonatal"], depth: 3, question_count: 20 }),
+    qbankTopic({ knowledge_node_id: "ped-t0-s1", parent_knowledge_node_id: "ped-t0", node_name: "Reanimação neonatal", node_type: "subtheme", node_path: ["Pediatria", "Neonatologia", "Reanimação neonatal"], depth: 3, question_count: 13 }),
+    qbankTopic({ knowledge_node_id: "ped-t0-s2", parent_knowledge_node_id: "ped-t0", node_name: "Sepse neonatal", node_type: "subtheme", node_path: ["Pediatria", "Neonatologia", "Sepse neonatal"], depth: 3, question_count: 10 }),
+    qbankTopic({ knowledge_node_id: "ped-t1", parent_knowledge_node_id: "ped-root", node_name: "Infecções na infância", node_type: "theme", node_path: ["Pediatria", "Infecções na infância"], depth: 2, question_count: 35, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "ped-t2", parent_knowledge_node_id: "ped-root", node_name: "Crescimento e desenvolvimento", node_type: "theme", node_path: ["Pediatria", "Crescimento e desenvolvimento"], depth: 2, question_count: 32, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "ped-t3", parent_knowledge_node_id: "ped-root", node_name: "Aleitamento", node_type: "theme", node_path: ["Pediatria", "Aleitamento"], depth: 2, question_count: 29, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "ped-t4", parent_knowledge_node_id: "ped-root", node_name: "Imunizações", node_type: "theme", node_path: ["Pediatria", "Imunizações"], depth: 2, question_count: 26, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "go-root", parent_knowledge_node_id: null, node_name: "Ginecologia e Obstetricia", node_type: "specialty", node_path: ["Ginecologia e Obstetricia"], depth: 1, question_count: 288, target_bank_demand_score: 0.5 }),
+    qbankTopic({ knowledge_node_id: "go-t0", parent_knowledge_node_id: "go-root", node_name: "Hipertensão na gestação", node_type: "theme", node_path: ["Ginecologia e Obstetricia", "Hipertensão na gestação"], depth: 2, question_count: 58, target_bank_demand_score: 0.1 }),
+    qbankTopic({ knowledge_node_id: "go-t0-s0", parent_knowledge_node_id: "go-t0", node_name: "Pré-eclâmpsia grave", node_type: "subtheme", node_path: ["Ginecologia e Obstetricia", "Hipertensão na gestação", "Pré-eclâmpsia grave"], depth: 3, question_count: 29 }),
+    qbankTopic({ knowledge_node_id: "go-t0-s1", parent_knowledge_node_id: "go-t0", node_name: "Eclâmpsia", node_type: "subtheme", node_path: ["Ginecologia e Obstetricia", "Hipertensão na gestação", "Eclâmpsia"], depth: 3, question_count: 19 }),
+    qbankTopic({ knowledge_node_id: "go-t0-s2", parent_knowledge_node_id: "go-t0", node_name: "Síndrome HELLP", node_type: "subtheme", node_path: ["Ginecologia e Obstetricia", "Hipertensão na gestação", "Síndrome HELLP"], depth: 3, question_count: 15 }),
+    qbankTopic({ knowledge_node_id: "go-t1", parent_knowledge_node_id: "go-root", node_name: "Parto e puerpério", node_type: "theme", node_path: ["Ginecologia e Obstetricia", "Parto e puerpério"], depth: 2, question_count: 51, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "go-t2", parent_knowledge_node_id: "go-root", node_name: "Oncologia ginecológica", node_type: "theme", node_path: ["Ginecologia e Obstetricia", "Oncologia ginecológica"], depth: 2, question_count: 46, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "go-t3", parent_knowledge_node_id: "go-root", node_name: "Contracepção", node_type: "theme", node_path: ["Ginecologia e Obstetricia", "Contracepção"], depth: 2, question_count: 42, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "go-t4", parent_knowledge_node_id: "go-root", node_name: "Infecções genitais", node_type: "theme", node_path: ["Ginecologia e Obstetricia", "Infecções genitais"], depth: 2, question_count: 39, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "mp-root", parent_knowledge_node_id: null, node_name: "Medicina Preventiva", node_type: "specialty", node_path: ["Medicina Preventiva"], depth: 1, question_count: 243, target_bank_demand_score: 0.43 }),
+    qbankTopic({ knowledge_node_id: "mp-t0", parent_knowledge_node_id: "mp-root", node_name: "Epidemiologia", node_type: "theme", node_path: ["Medicina Preventiva", "Epidemiologia"], depth: 2, question_count: 49, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "mp-t0-s0", parent_knowledge_node_id: "mp-t0", node_name: "Medidas de associação", node_type: "subtheme", node_path: ["Medicina Preventiva", "Epidemiologia", "Medidas de associação"], depth: 3, question_count: 25 }),
+    qbankTopic({ knowledge_node_id: "mp-t0-s1", parent_knowledge_node_id: "mp-t0", node_name: "Tipos de estudo", node_type: "subtheme", node_path: ["Medicina Preventiva", "Epidemiologia", "Tipos de estudo"], depth: 3, question_count: 16 }),
+    qbankTopic({ knowledge_node_id: "mp-t0-s2", parent_knowledge_node_id: "mp-t0", node_name: "Vieses", node_type: "subtheme", node_path: ["Medicina Preventiva", "Epidemiologia", "Vieses"], depth: 3, question_count: 12 }),
+    qbankTopic({ knowledge_node_id: "mp-t1", parent_knowledge_node_id: "mp-root", node_name: "SUS e políticas", node_type: "theme", node_path: ["Medicina Preventiva", "SUS e políticas"], depth: 2, question_count: 43, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "mp-t2", parent_knowledge_node_id: "mp-root", node_name: "Vigilância em saúde", node_type: "theme", node_path: ["Medicina Preventiva", "Vigilância em saúde"], depth: 2, question_count: 39, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "mp-t3", parent_knowledge_node_id: "mp-root", node_name: "Bioestatística", node_type: "theme", node_path: ["Medicina Preventiva", "Bioestatística"], depth: 2, question_count: 36, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "mp-t4", parent_knowledge_node_id: "mp-root", node_name: "Saúde do trabalhador", node_type: "theme", node_path: ["Medicina Preventiva", "Saúde do trabalhador"], depth: 2, question_count: 33, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "ou-root", parent_knowledge_node_id: null, node_name: "Outros", node_type: "specialty", node_path: ["Outros"], depth: 1, question_count: 48, target_bank_demand_score: 0.08 }),
+    qbankTopic({ knowledge_node_id: "ou-t0", parent_knowledge_node_id: "ou-root", node_name: "Medicina legal", node_type: "theme", node_path: ["Outros", "Medicina legal"], depth: 2, question_count: 24, target_bank_demand_score: 0.05 }),
+    qbankTopic({ knowledge_node_id: "ou-t1", parent_knowledge_node_id: "ou-root", node_name: "Bioética", node_type: "theme", node_path: ["Outros", "Bioética"], depth: 2, question_count: 18, target_bank_demand_score: 1 }),
     qbankTopic(),
   ];
   return {
@@ -764,11 +848,26 @@ export async function mockApi(page) {
         // para achar os nomes fixos (ENARE, Revalida). Sem ele o render estoura
         // em TypeError e a tela cai no error boundary — "Algo deu errado", sem
         // nada no console, porque o boundary engole.
+        // ⚠️ O SLUG DA "OUTRA" ESTAVA INVENTADO, e fazia `nomeCurto` tomar um
+        // RAMO DIFERENTE do de producao.
+        //
+        // Ele era `exame-nacional-de-residencia-enamed`. O slug real do dataset
+        // e' `exame-nacional-de-residencia-medica-ebserh-enare-e-...`, e a
+        // diferenca nao e' cosmetica: `NOME_CURTO_FIXO` (`lib/facies.ts`) casa
+        // por PREFIXO `exame-nacional-de-residencia-medica-ebserh` e devolve
+        // "ENARE". Com o slug inventado nada casava, e `nomeCurto` caia na
+        // derivacao a partir do nome -- "Exame Nacional de Residencia".
+        //
+        // Ou seja: um teste que afirmasse o titulo desta banca estaria a afirmar
+        // uma string que o aluno NUNCA ve. Mock que representa mal e' pior que
+        // mock nenhum, e este ficheiro ja' diz isso duas vezes noutros campos.
+        //
+        // Os dois valores agora sao os do dataset, medidos.
         slug: outra
-          ? "exame-nacional-de-residencia-enamed"
+          ? "exame-nacional-de-residencia-medica-ebserh-enare-e-exame-nacional-de-avaliacao-d"
           : "sp-universidade-federal-de-sao-paulo-unifesp-hospital-universitario-da-unifesp",
         nome: outra
-          ? "Exame Nacional de Residencia (ENAMED)"
+          ? "Exame Nacional de Residência Médica EBSERH (ENARE) e Exame Nacional de Avaliação da Formação Médica (Enamed)"
           : "SP - Universidade Federal de Sao Paulo - UNIFESP",
         uf: outra ? null : "SP",
         total: 1137,

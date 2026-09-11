@@ -114,6 +114,10 @@ function makeSyntheticGroup(label: string, code: string | null): TopicTreeNode {
     display_order: null,
     description: null,
     question_count: 0,
+    // Grupo sintético não tem questões próprias — as duas contagens são 0 pelo
+    // mesmo motivo, e a igualdade aqui é verdade, não default preguiçoso.
+    servable_question_count: 0,
+    annulled_question_count: 0,
     primary_question_count: 0,
     board_count: 0,
     difficulty_mean: null,

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import type {
+  QuestionBankExamEdition,
   KrosMode,
   FullExamType,
   QuestionBankAnswerStatus,
@@ -12,11 +13,20 @@ import type {
   QuestionBankYearStat,
   StudyKind,
 } from "@/lib/api";
-import { CORRECTION_MODE_SHORT_LABEL, type CorrectionMode } from "../_lib/sessionBuilder";
+import { BotaoDeEscolha } from "@/components/ui/BotaoDeEscolha";
+import {
+  CORRECTION_MODE_SHORT_LABEL,
+  correcaoEfetiva,
+  correcaoEhEscolhaDoAluno,
+  type CorrectionMode,
+} from "../_lib/sessionBuilder";
 import { TopicTreeList } from "./TopicTreeList";
 import { buildTopicTree, flattenTopicTree, topicPathLabel } from "./topicTree";
 import BancaPicker from "./BancaPicker";
 import YearPicker from "./YearPicker";
+import { EscolhaDaProva } from "./EscolhaDaProva";
+import { EscolhaDoModo } from "./EscolhaDoModo";
+import { SecaoRecolhivel } from "./SecaoRecolhivel";
 import { TreinoDirigidoChooser } from "./TreinoDirigidoChooser";
 
 const AREA_OPTIONS = [
@@ -94,16 +104,6 @@ function deriveRealizacaoLabel(s: RealizacaoState): string {
  */
 export type TipoDeSessao = StudyKind | "kros";
 
-const TIPO_OPTIONS: { value: TipoDeSessao; label: string; help: string }[] = [
-  { value: "topic", label: "Por tópico", help: "Você escolhe as áreas e os temas." },
-  { value: "full_exam", label: "Prova institucional", help: "Uma instituição e um ano." },
-  {
-    value: "kros",
-    label: "Treino dirigido",
-    help: "A Fácies monta, e você escolhe a ênfase.",
-  },
-];
-
 const CORRECAO_OPTIONS: { value: CorrectionMode; label: string; help: string }[] = [
   { value: "immediate", label: "A cada questão", help: "Você responde, confere na hora e segue. O comentário abre logo abaixo." },
   { value: "guided_choice", label: "Ao terminar, uma a uma", help: "Termina tudo primeiro; depois revisa o raciocínio ou revela questão por questão." },
@@ -158,16 +158,29 @@ export type FiltersBarProps = {
   /** Inclui na prova as questoes que a banca anulou ou que estao desatualizadas. */
   includeRetired: boolean;
   onIncludeRetiredChange: (value: boolean) => void;
-  fullExamName: string;
-  onFullExamNameChange: (v: string) => void;
-  fullExamYear: string;
-  onFullExamYearChange: (v: string) => void;
+  /** As edições da banca/ano escolhidos. Vazio = uma só, ou banco sem as views. */
+  examEditions: QuestionBankExamEdition[];
+  /** Tamanho da prova por ano, no modo prova. `null` nos outros. */
+  tamanhoPorAnoDaProva: Map<number, number> | null;
+  /** Quando a prova de cada ano caiu ("out/2025"). Ausente = sem evidência. */
+  aplicacaoPorAnoDaProva: Map<number, string> | null;
+  /** Tamanho de PROVA por banca. `null` = nao e modo prova, ou ainda carregando. */
+  totaisDaProva: Map<string, number> | null;
+  examEditionsLoading: boolean;
+  fullExamNumber: string | null;
+  onFullExamNumberChange: (v: string | null) => void;
   fullExamType: FullExamType;
   onFullExamTypeChange: (v: FullExamType) => void;
   limit: number;
   clampedLimit: number;
-  maxSelectable: number;
   limitMax: number;
+  /**
+   * Piso e passo da quantidade. Valem 1 e 1 em quase toda a tela; no Treino
+   * dirigido são 20 e 5, porque é a grade que o servidor aceita — fora dela ele
+   * responde 422 e a sessão não nasce. Ver `_lib/sessionBuilder`.
+   */
+  limitMin?: number;
+  limitStep?: number;
   onLimitChange: (v: number) => void;
   focusTopicId?: string | null;
   onQuantityEditingChange?: (editing: boolean) => void;
@@ -177,17 +190,6 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-function SectionHeader({ step, title, detail }: { step: string; title: string; detail?: ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-baseline justify-between gap-2">
-      <div>
-        <p className="paper-eyebrow text-primary">{step}</p>
-        <h3 className="mt-0.5 text-xl font-semibold leading-tight text-ink">{title}</h3>
-      </div>
-      {detail ? <p className="max-w-md text-sm text-muted">{detail}</p> : null}
-    </div>
-  );
-}
 
 function toggleCode(values: string[], code: string): string[] {
   const normalized = values.map((value) => value.trim().toUpperCase()).filter(Boolean);
@@ -281,9 +283,13 @@ export default function FiltersBar(props: FiltersBarProps) {
     krosMode, onKrosModeChange, krosBancasAlvo, krosBancasSemCobertura,
     krosPreviaCarregando,
     includeRetired, onIncludeRetiredChange,
-    fullExamName, onFullExamNameChange, fullExamYear, onFullExamYearChange,
+    examEditions, examEditionsLoading, fullExamNumber, onFullExamNumberChange,
+    tamanhoPorAnoDaProva,
+    aplicacaoPorAnoDaProva,
+    totaisDaProva,
     fullExamType, onFullExamTypeChange,
-    limit, clampedLimit, maxSelectable, limitMax, onLimitChange, focusTopicId, onQuantityEditingChange,
+    limit, clampedLimit, limitMax, limitMin = 1, limitStep = 1,
+    onLimitChange, focusTopicId, onQuantityEditingChange,
   } = props;
 
   const [suggestionsFocused, setSuggestionsFocused] = useState(false);
@@ -340,12 +346,62 @@ export default function FiltersBar(props: FiltersBarProps) {
     return () => window.clearTimeout(timer);
   }, [flatTopics, focusTopicId]);
 
+  /**
+   * Encosta o que foi digitado no piso, no teto e no PASSO do modo.
+   *
+   * ⚠️ O passo entrava antes só como atributo do `<input>`, e atributo de passo
+   * não valida nada: o campo aceita 37 digitado à mão, o navegador não reclama,
+   * e no Treino dirigido esse 37 vira 422 no servidor. Quem decide é esta
+   * função.
+   */
+  function encostarNaGrade(valor: number): number {
+    const dentro = Math.max(limitMin, Math.min(limitMax, valor));
+    if (limitStep <= 1) return dentro;
+    const encostado = Math.floor((dentro - limitMin) / limitStep) * limitStep + limitMin;
+    return Math.max(limitMin, Math.min(limitMax, encostado));
+  }
+
   function commitLimitDraft() {
     const parsed = Number(limitDraft);
-    const next = Number.isInteger(parsed) ? Math.max(1, Math.min(limitMax, parsed)) : clampedLimit;
+    const next = Number.isInteger(parsed) ? encostarNaGrade(parsed) : clampedLimit;
     onLimitChange(next);
     setLimitDraft(String(next));
   }
+
+  /**
+   * No desktop abrem os passos 1 e 3; no telemóvel ficam todos recolhidos.
+   *
+   * ⚠️ O passo 2 fica fechado nas duas larguras, e isso é o comportamento que
+   * ele já tinha antes desta rodada: "Refinar seleção" sempre foi um
+   * `<details>` de abertura voluntária. Mexer nisso seria mudar uma decisão que
+   * não estava em causa.
+   *
+   * ⚠️ NÃO CONTROLADO POR ESTADO, e isso é deliberado. `banco/page.tsx` escreve
+   * `target.open = true` diretamente no DOM quando localiza um filtro ativo —
+   * com `open={estado}` o React voltaria a fechar o passo no render seguinte.
+   *
+   * O recolhido é a regra de quem tem 390px: ali a decisão tem de caber acima da
+   * dobra, e é ela que faz a tela avançar. No desktop há coluna para tudo, e
+   * esconder seria trabalho a mais.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(min-width: 1024px)").matches) return;
+    // Na PROVA o foco clínico nem existe, e o passo que importa é o da banca e
+    // do ano. Abrir "topic-filters" ali deixaria a pessoa diante de um passo
+    // recolhido justamente onde ela tem de escolher — que é a queixa de "não é
+    // prático". `question-bank-adjustments` é onde `BancaPicker` e `YearPicker`
+    // vivem.
+    const abrir = tipoSessao === "full_exam"
+      ? ["question-bank-adjustments", "question-bank-session-settings"]
+      : ["question-bank-topic-filters", "question-bank-session-settings"];
+    for (const id of abrir) {
+      const alvo = document.getElementById(id);
+      if (alvo instanceof HTMLDetailsElement) alvo.open = true;
+    }
+    // Reage à TROCA de modo, e não só à montagem: quem chega por tópico e muda
+    // para prova precisa que o passo certo abra na hora.
+  }, [tipoSessao]);
 
   // Os DOIS eixos no título. Antes "Prova institucional" engolia a correção, e o
   // aluno não via como a prova seria corrigida até terminá-la.
@@ -355,7 +411,7 @@ export default function FiltersBar(props: FiltersBarProps) {
       : tipoSessao === "kros"
         ? "Treino dirigido"
         : "Por tópico",
-    CORRECTION_MODE_SHORT_LABEL[correctionMode],
+    CORRECTION_MODE_SHORT_LABEL[correcaoEfetiva(correctionMode, tipoSessao)],
   ].join(" · ");
   const statusLabel = deriveRealizacaoLabel(realizacaoState);
   const selectedSourceCount = boardCodes.length + examCodes.length + institutions.length;
@@ -367,13 +423,27 @@ export default function FiltersBar(props: FiltersBarProps) {
 
   return (
     <div className="divide-y divide-edge">
-      <section id="question-bank-topic-filters" className="scroll-alvo space-y-4 p-4 md:p-5">
-        <SectionHeader
-          step="1. Foco clínico"
-          title="Escolha a área e os temas"
-        />
+      {/* A DECISAO PRIMEIRO, e sempre visivel. Ver `EscolhaDoModo`: ela estava
+          dentro de "3. Modo e carga", o ultimo bloco e fechado no telemovel,
+          entao a tela pedia o refinamento antes de perguntar o que a pessoa
+          vinha fazer. */}
+      <EscolhaDoModo valor={tipoSessao} onChange={onTipoSessaoChange} />
 
-        <div className="flex flex-wrap gap-2">
+      {/* O foco clinico NAO se aplica a prova: ela e' um caderno fechado, e
+          filtrar tema dentro dela entregaria um pedaco com nome de prova.
+          Esconder e' mais honesto que mostrar um controle sem efeito. */}
+      {tipoSessao === "full_exam" ? null : (
+      <SecaoRecolhivel
+        id="question-bank-topic-filters"
+        step="1. Foco clínico"
+        title="Escolha a área e os temas"
+        detail={`${AREA_OPTIONS.find((o) => o.value === area)?.label ?? "Todas"} · ${
+          selectedTopics.length > 0
+            ? `${selectedTopics.length} ${selectedTopics.length === 1 ? "tema" : "temas"}`
+            : "todos os assuntos"
+        }`}
+      >
+        <div className="fileira-de-controles">
           {AREA_OPTIONS.map((option) => {
             const selected = area === option.value;
             return (
@@ -432,7 +502,16 @@ export default function FiltersBar(props: FiltersBarProps) {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
-          <div className="max-h-[32rem] overflow-y-auto rounded-control border border-edge bg-paper p-2">
+          {/* ⚠️ O RECORTE PASSOU A SER SO DE DESKTOP.
+
+              A 390px esta caixa ERA a dobra: 512px de altura fixa, e um scroller
+              aninhado dentro do scroller da pagina — o antipadrao classico em
+              toque, porque o dedo nunca sabe qual dos dois vai mover.
+
+              Seguro porque a arvore nasce recolhida (`expandedIds` vazio), o que
+              da ~460px, e agora ela vive dentro de um passo que a pessoa abriu
+              de proposito. */}
+          <div className="overflow-visible rounded-control border border-edge bg-paper p-2 lg:max-h-[32rem] lg:overflow-y-auto">
             <TopicTreeList
               nodes={topicTree}
               selectedIds={selectedTopicIds}
@@ -473,26 +552,20 @@ export default function FiltersBar(props: FiltersBarProps) {
             )}
           </div>
         </div>
-      </section>
+      </SecaoRecolhivel>
+      )}
 
-      <details id="question-bank-adjustments" className="scroll-alvo group p-4 md:p-5">
-        <summary className="paper-control min-h-11 cursor-pointer list-none marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-          <SectionHeader
-            step="2. Refinar seleção"
-            title="Banca, ano e histórico"
-            detail={
-              <span className="text-right">
-                {statusLabel} · {sourceDetail} · {stateDetail}
-                <span className="ml-2 inline-block transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
-              </span>
-            }
-          />
-        </summary>
-
-        <div className="mt-4 space-y-4">
-
+      <SecaoRecolhivel
+        id="question-bank-adjustments"
+        // A prova nao tem "1. Foco clinico", entao aqui ela e' o passo 1 -- e o
+        // nome muda com ele: para a prova isto nao e' refinamento, e' A escolha.
+        step={tipoSessao === "full_exam" ? "1. A prova" : "2. Refinar seleção"}
+        title={tipoSessao === "full_exam" ? "Banca e ano" : "Banca, ano e histórico"}
+        detail={`${statusLabel} · ${sourceDetail} · ${stateDetail}`}
+      >
         <BancaPicker
           sources={sources}
+          totaisDaProva={totaisDaProva}
           selectedBoardCodes={boardCodes}
           selectedExamCodes={examCodes}
           selectedInstitutions={institutions}
@@ -511,6 +584,8 @@ export default function FiltersBar(props: FiltersBarProps) {
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <YearPicker
             yearStats={yearStats}
+            tamanhoPorAnoDaProva={tamanhoPorAnoDaProva}
+            aplicacaoPorAnoDaProva={aplicacaoPorAnoDaProva}
             selectedYears={selectedYears}
             onSelectedYearsChange={onSelectedYearsChange}
             includeNoYear={includeNoYear}
@@ -566,7 +641,7 @@ export default function FiltersBar(props: FiltersBarProps) {
             )}
             <div>
               <p className="paper-eyebrow mb-2">Correção IA</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="fileira-de-controles">
                 {([
                   ["all", "Todas"],
                   ["with_correction", "Com correção"],
@@ -585,40 +660,14 @@ export default function FiltersBar(props: FiltersBarProps) {
             </div>
           </div>
         </div>
-        </div>
-      </details>
+      </SecaoRecolhivel>
 
-      <section id="question-bank-session-settings" className="space-y-4 p-4 md:p-5">
-        <SectionHeader
-          step="3. Modo e carga"
-          title={`${modeLabel}, ${clampedLimit} questões`}
-        />
-
+      <SecaoRecolhivel
+        id="question-bank-session-settings"
+        step={tipoSessao === "full_exam" ? "2. A prova e a correção" : "3. Carga e correção"}
+        title={`${modeLabel}, ${clampedLimit} questões`}
+      >
         <fieldset>
-          <legend className="paper-eyebrow">
-            O que estudar
-          </legend>
-          <div className="mt-2 grid gap-3 md:grid-cols-3">
-            {TIPO_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                aria-pressed={tipoSessao === option.value}
-                // Só o tipo. A correção fica onde o aluno deixou.
-                onClick={() => onTipoSessaoChange(option.value)}
-                className={cx(
-                  "paper-control rounded-control border p-4 text-left",
-                  tipoSessao === option.value
-                    ? "border-primary bg-surfaceMuted"
-                    : "border-edge bg-surface hover:border-primary",
-                )}
-              >
-                <span className="block text-sm font-medium text-ink">{option.label}</span>
-                <span className="mt-1 block text-xs text-muted">{option.help}</span>
-              </button>
-            ))}
-          </div>
-
           {/* A ênfase só aparece depois de escolher o Treino dirigido: mostrar
               quatro cartões a mais para quem escolheu "Por tópico" seria oferecer
               uma decisão que não existe naquele caminho. */}
@@ -637,49 +686,44 @@ export default function FiltersBar(props: FiltersBarProps) {
           <legend className="paper-eyebrow">
             Como corrigir
           </legend>
+          {correcaoEhEscolhaDoAluno(tipoSessao) ? null : (
+            <p className="mt-1 text-nota text-muted">
+              {tipoSessao === "full_exam" ? "A prova" : "O treino dirigido"} corrige ao terminar —
+              ver o gabarito no meio desfaria o exercício.
+            </p>
+          )}
           <div className="mt-2 grid gap-3 md:grid-cols-3">
-            {CORRECAO_OPTIONS.map((option) => (
-              <button
+            {/* ⚠️ Estes três não tinham sequer `rounded-*` nem alvo mínimo: era
+                um retângulo de canto vivo, com o estado pintado em
+                `bg-surfaceMuted`. Mesma decisão do bloco acima, três gramáticas
+                diferentes na MESMA secção da tela. */}
+            {CORRECAO_OPTIONS.filter(
+              (option) => option.value !== "immediate" || correcaoEhEscolhaDoAluno(tipoSessao),
+            ).map((option) => (
+              <BotaoDeEscolha
                 key={option.value}
-                type="button"
-                aria-pressed={correctionMode === option.value}
+                escolhido={correcaoEfetiva(correctionMode, tipoSessao) === option.value}
                 onClick={() => onCorrectionModeChange(option.value)}
-                className={cx(
-                  "border p-4 text-left transition-colors",
-                  correctionMode === option.value
-                    ? "border-primary bg-surfaceMuted"
-                    : "border-edge bg-surface hover:border-primary",
-                )}
+                descricao={option.help}
               >
-                <span className="block text-sm font-medium text-ink">{option.label}</span>
-                <span className="mt-1 block text-xs text-muted">{option.help}</span>
-              </button>
+                {option.label}
+              </BotaoDeEscolha>
             ))}
           </div>
         </fieldset>
 
         {tipoSessao === "full_exam" ? (
-          <div className="grid gap-3 border-t border-edge pt-4 md:grid-cols-[1fr_7rem_11rem]">
-            <label className="space-y-1.5">
-              <span className="paper-eyebrow">Instituição</span>
-              <input
-                value={fullExamName}
-                onChange={(e) => onFullExamNameChange(e.target.value)}
-                placeholder="USP, UNIFESP, SUS-SP..."
-                className="w-full"
-              />
-            </label>
-            <label className="space-y-1.5">
-              <span className="paper-eyebrow">Ano</span>
-              <input
-                type="number"
-                min={1900}
-                max={2100}
-                value={fullExamYear}
-                onChange={(e) => onFullExamYearChange(e.target.value)}
-                className="w-full"
-              />
-            </label>
+          <div className="grid gap-3 border-t border-edge pt-4 md:grid-cols-[11rem_1fr]">
+            {/* A INSTITUIÇÃO E O ANO SAÍRAM DAQUI, e não foi cosmética.
+                Eram dois `<input>` de texto livre, e o payload mandava ao banco
+                o que a pessoa digitasse: `institutions = [fullExamName]`. As
+                chaves reais têm 60 a 90 caracteres e a comparação é exata, então
+                "USP" casava ZERO — e ainda sobrescrevia a banca já escolhida no
+                seletor logo acima, que trazia a chave certa. Campo vazio deixava
+                o botão morto sem dizer por quê.
+
+                Agora a prova é a banca e o ano do seletor. Aqui fica só o que
+                ele não cobre: a modalidade, e qual prova quando houve duas. */}
             <label className="space-y-1.5">
               <span className="paper-eyebrow">Tipo</span>
               <select
@@ -691,28 +735,46 @@ export default function FiltersBar(props: FiltersBarProps) {
                 <option value="r_plus">R+</option>
               </select>
             </label>
+            <EscolhaDaProva
+              edicoes={examEditions}
+              carregando={examEditionsLoading}
+              valor={fullExamNumber}
+              onChange={onFullExamNumberChange}
+            />
           </div>
         ) : null}
 
-        {/* So aparece na prova institucional: e o unico recorte onde "o resto
-            daquela prova" quer dizer alguma coisa. Num estudo por tema, questao
-            sem gabarito valido seria ruido. */}
+        {/* So aparece na prova institucional: e o unico recorte onde "a prova
+            inteira" quer dizer alguma coisa. Num estudo por tema, questao sem
+            gabarito valido seria ruido.
+
+            Destacado, e nao mais um checkbox na lista: quem escolhe fazer a
+            prova na integra precisa achar isto sem procurar. O texto diz o que
+            muda de fato -- a prova ja vem completa, e a unica coisa em jogo e a
+            anulada. */}
         {tipoSessao === "full_exam" ? (
-          <label className="flex cursor-pointer items-start gap-3 border-t border-edge pt-4">
+          <label
+            className={`flex cursor-pointer items-start gap-3 rounded-control border p-4 transition-colors ${
+              includeRetired
+                ? "border-accent bg-surface-muted"
+                : "border-edge bg-surface hover:border-accent"
+            }`}
+          >
             <input
               type="checkbox"
               checked={includeRetired}
               onChange={(e) => onIncludeRetiredChange(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--teal)]"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
             />
             <span>
               <span className="block text-sm font-medium text-ink">
-                Completar com as questoes anuladas e desatualizadas
+                Incluir as questoes anuladas
               </span>
               <span className="mt-1 block text-xs text-muted">
-                Como a prova caiu no dia: entram as que a banca anulou depois e as que
-                ficaram desatualizadas. Vem marcadas, com o provavel motivo, e a anulada
-                nao conta no seu desempenho.
+                A prova ja vem completa, como caiu no dia. As que a banca anulou
+                depois ficam de fora por padrao, porque nao tem gabarito valido.
+                Marque para enfrentar o caderno na integra: elas vem sinalizadas
+                e nao contam no seu desempenho.
               </span>
             </span>
           </label>
@@ -727,8 +789,9 @@ export default function FiltersBar(props: FiltersBarProps) {
               <span className="paper-eyebrow block">Questões</span>
               <input
                 type="number"
-                min={1}
+                min={limitMin}
                 max={limitMax}
+                step={limitStep}
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={limitDraft}
@@ -747,24 +810,42 @@ export default function FiltersBar(props: FiltersBarProps) {
                 className="w-24 text-center"
               />
             </label>
-            <p className="pb-2.5 text-xs text-muted">Máx. {Math.min(120, maxSelectable)}</p>
+            {/* ⚠️ O MÁXIMO É O DO CONTROLE, e não o do acervo.
+                Com o Treino dirigido num filtro de 12 questões, esta linha dizia
+                "Máx. 12" ao lado de uma barra travada em 20 — dois números para
+                a mesma coisa, na mesma linha, discordando um do outro. O que o
+                aluno precisa de saber aqui é até onde o controle vai; quantas
+                questões o filtro tem é o que a ressalva diz, com palavras. */}
+            <p className="pb-2.5 text-xs text-muted">Máx. {limitMax}</p>
           </div>
           <input
             type="range"
-            min={1}
+            min={limitMin}
             max={limitMax}
+            step={limitStep}
             value={clampedLimit}
             onChange={(e) => {
-              const next = Number(e.target.value);
+              const next = encostarNaGrade(Number(e.target.value));
               setLimitDraft(String(next));
               onLimitChange(next);
             }}
             className="w-full"
-            style={{ "--track-bg": `linear-gradient(to right, var(--range-fill) 0%, var(--range-fill) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) ${(clampedLimit / limitMax) * 100}%, var(--range-rest) 100%)` } as CSSProperties}
+            style={{ "--track-bg": `linear-gradient(to right, var(--range-fill) 0%, var(--range-fill) ${((clampedLimit - limitMin) / Math.max(1, limitMax - limitMin)) * 100}%, var(--range-rest) ${((clampedLimit - limitMin) / Math.max(1, limitMax - limitMin)) * 100}%, var(--range-rest) 100%)` } as CSSProperties}
             aria-label="Quantidade de questões"
           />
+          {/* A regra fica ESCRITA junto do controle que ela restringe. O piso do
+              Treino dirigido não é arbitrário: abaixo de 20 o motor não tem itens
+              para preencher as quotas do preset, e a sessão sairia com a mistura
+              torta — plausível e errada. Uma barra que simplesmente se recusa a
+              descer, sem dizer porquê, parece defeito. */}
+          {tipoSessao === "kros" ? (
+            <p className="text-xs text-muted">
+              O Treino dirigido monta de 20 a 120 questões, de 5 em 5 — é o
+              mínimo para a ênfase escolhida caber na mistura.
+            </p>
+          ) : null}
         </div>
-      </section>
+      </SecaoRecolhivel>
     </div>
   );
 }

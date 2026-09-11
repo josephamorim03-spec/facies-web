@@ -17,6 +17,7 @@ import type {
 import { formatClock } from "@/lib/formatDuration";
 import { formatSourceLabel } from "@/lib/formatSource";
 import { QuestionImageRefs } from "@/app/banco/_components/QuestionImageRefs";
+import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { useEdgeSwipeSuppression } from "@/hooks/useEdgeSwipeSuppression";
 import { ESTILO_DO_DESLIZE, useDeslizeLateral } from "@/hooks/useDeslizeLateral";
@@ -719,8 +720,8 @@ export default function FocusedQuestion({
                     onClick={() => updatePrefs({ presentationMode: mode })}
                     aria-pressed={presentationMode === mode}
                     className={cx(
-                      "px-2.5 py-1.5 text-xs transition-colors",
-                      presentationMode === mode ? "bg-primary text-primaryInk" : "text-muted hover:text-ink",
+                      "border border-transparent px-2.5 py-1.5 text-xs transition-colors",
+                      presentationMode === mode ? "border-primary bg-washSelecao text-ink" : "text-muted hover:text-ink",
                     )}
                   >
                     {mode === "learning" ? "Aprender" : "Prova"}
@@ -925,7 +926,7 @@ export default function FocusedQuestion({
                 <p className={cx("paper-eyebrow", item.is_correct ? "text-success" : "text-danger")}>
                   {item.is_correct ? "Correto" : "Incorreto"}
                 </p>
-                <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight text-ink">
+                <h2 className="mt-1 font-serif font-semibold leading-tight text-ink">
                   {item.is_correct ? "Caminho validado" : "Erro capturado"}
                 </h2>
               </div>
@@ -950,7 +951,7 @@ export default function FocusedQuestion({
                     "border font-semibold transition-colors disabled:opacity-50",
                     hasPostAnswerReflection ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm",
                     item.post_answer_reflection === reflection
-                      ? "border-primary bg-primary text-primaryInk"
+                      ? "border-primary bg-washSelecao text-ink"
                       : hasPostAnswerReflection
                         ? "border-edge text-muted hover:text-ink"
                         : "border-ink text-ink hover:bg-surfaceMuted",
@@ -1068,7 +1069,7 @@ export default function FocusedQuestion({
                               className={cx(
                                 "border px-3 py-1.5 text-xs transition",
                                 guidedResponses[checkpoint.checkpoint_key] === value
-                                  ? "border-primary bg-primary text-primaryInk"
+                                  ? "border-primary bg-washSelecao text-ink"
                                   : "border-edge bg-paper text-muted hover:text-ink",
                               )}
                             >
@@ -1099,7 +1100,7 @@ export default function FocusedQuestion({
                         onClick={() => onCorrectionConfidenceChange(level)}
                         className={cx(
                           "border px-3 py-1.5 text-xs",
-                          correctionConfidenceLevel === level ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:text-ink",
+                          correctionConfidenceLevel === level ? "border-primary bg-washSelecao text-ink" : "border-edge text-muted hover:text-ink",
                         )}
                       >
                         {level === "low" ? "Pouco" : level === "medium" ? "Ok" : "Bem"}
@@ -1107,15 +1108,21 @@ export default function FocusedQuestion({
                     ))}
                   </div>
                 )}
-                <div className="mt-3 flex justify-end">
-                  <button
+                {/* Centrado e de largura total abaixo de `sm`: era
+                    `justify-end` com um botão à mão, encostado à direita no
+                    fim de um formulário de correção — o sítio onde o polegar
+                    já está a escrever. */}
+                <div className="mt-3 flex justify-center sm:justify-end">
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="md"
+                    bloco
                     onClick={onSubmitCorrection}
                     disabled={busy || (!correctionDraft.trim() && !hasGuidedResponses)}
-                    className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk transition hover:brightness-[1.04] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
                     Salvar regra
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -1177,7 +1184,10 @@ export default function FocusedQuestion({
       <footer className={cx("sticky bottom-0 z-10 bg-paper px-4", focusActive ? "border-t border-transparent py-2" : "border-t border-edge py-3")}>
           <div
             className={cx(
-              "mx-auto flex flex-wrap items-center justify-between gap-3",
+              // ⚠️ CENTRADO ABAIXO DE `sm`: com `justify-between` e três grupos
+              // que quebram em 390px, cada linha alinhava-se de forma diferente
+              // e a margem direita mudava de sítio a cada quebra.
+              "mx-auto flex flex-wrap items-center justify-center gap-3 sm:justify-between",
               focusActive ? "max-w-6xl" : useWideReadingLayout ? "max-w-5xl" : "max-w-4xl",
             )}
           >
@@ -1204,7 +1214,7 @@ export default function FocusedQuestion({
                 aria-label={item.doubtful ? "Desmarcar questão" : "Marcar questão"}
                 className={cx(
                   "inline-flex min-h-11 items-center gap-1.5 border px-3 py-2 text-sm font-medium transition-colors sm:px-4",
-                  item.doubtful ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:text-ink",
+                  item.doubtful ? "border-primary bg-washSelecao text-ink" : "border-edge text-muted hover:text-ink",
                 )}
               >
                 <IconFlag className="h-3.5 w-3.5" />
@@ -1217,7 +1227,7 @@ export default function FocusedQuestion({
                 aria-label={localFavorite ? "Tirar das guardadas" : "Guardar questão"}
                 className={cx(
                   "inline-flex min-h-11 items-center gap-1.5 border px-3 py-2 text-sm font-medium transition-colors sm:px-4",
-                  localFavorite ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:text-ink",
+                  localFavorite ? "border-primary bg-washSelecao text-ink" : "border-edge text-muted hover:text-ink",
                 )}
               >
                 <IconStar filled={localFavorite} className="h-3.5 w-3.5" />
@@ -1225,52 +1235,32 @@ export default function FocusedQuestion({
               </button>
             </div>
             <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={!canPrev}
-                onClick={onPrev}
-                className="border border-edge px-4 py-2 text-sm font-medium text-muted hover:text-ink disabled:opacity-40"
-              >
+              <Button type="button" size="md" disabled={!canPrev} onClick={onPrev}>
                 Anterior
-              </button>
+              </Button>
               {canReveal ? (
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={onReveal}
-                  className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk transition hover:brightness-[1.04] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                >
+                <Button type="button" variant="primary" size="md" disabled={busy} onClick={onReveal}>
                   Responder
-                </button>
+                </Button>
               ) : (
-                <button
-                  type="button"
-                  disabled={!canNext}
-                  onClick={onNext}
-                  className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primaryInk transition hover:brightness-[1.04] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                >
+                <Button type="button" variant="primary" size="md" disabled={!canNext} onClick={onNext}>
                   Próxima
-                </button>
+                </Button>
               )}
               {onFixar && fixacaoCount ? (
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={onFixar}
-                  className="border border-edge px-4 py-2 text-sm font-medium text-muted hover:text-ink disabled:opacity-50"
-                >
+                <Button type="button" size="md" disabled={busy} onClick={onFixar}>
                   Fixar erros ({fixacaoCount})
-                </button>
+                </Button>
               ) : null}
             </div>
-            <button
-              type="button"
-              onClick={onFinalize}
-              disabled={busy}
-              className="border border-edge px-4 py-2 text-sm font-medium text-muted hover:text-ink disabled:opacity-50"
-            >
+            {/* ⚠️ `sm:ml-auto`, e não `ml-auto`: no telemóvel o Finalizar cai
+                para uma linha só dele, e `ml-auto` atirava-o para o canto
+                direito de uma linha vazia. Acima de `sm` volta a separar-se
+                dos outros dois grupos, que é o que o afasta de ser premido
+                por engano no lugar de Próxima. */}
+            <Button type="button" size="md" className="sm:ml-auto" onClick={onFinalize} disabled={busy}>
               {finalizeLabel ?? "Finalizar"}
-            </button>
+            </Button>
           </div>
       </footer>
 
@@ -1301,7 +1291,7 @@ export default function FocusedQuestion({
                 className={cx(
                   "border px-3 py-1.5 text-xs disabled:opacity-50",
                   canUsePostAnswerActions && item.post_answer_reflection === "correct_guess"
-                    ? "border-primary bg-primary text-primaryInk"
+                    ? "border-primary bg-washSelecao text-ink"
                     : "border-edge text-muted hover:text-ink",
                 )}
               >
@@ -1315,7 +1305,7 @@ export default function FocusedQuestion({
                 className={cx(
                   "border px-3 py-1.5 text-xs disabled:opacity-50",
                   canUsePostAnswerActions && item.post_answer_reflection === "wrong_distraction"
-                    ? "border-primary bg-primary text-primaryInk"
+                    ? "border-primary bg-washSelecao text-ink"
                     : "border-edge text-muted hover:text-ink",
                 )}
               >
@@ -1352,8 +1342,8 @@ export default function FocusedQuestion({
                         onClick={() => updatePrefs({ presentationMode: mode })}
                         aria-pressed={presentationMode === mode}
                         className={cx(
-                          "px-3 py-1.5 text-xs",
-                          presentationMode === mode ? "bg-primary text-primaryInk" : "text-muted hover:text-ink",
+                          "border border-transparent px-3 py-1.5 text-xs",
+                          presentationMode === mode ? "border-primary bg-washSelecao text-ink" : "text-muted hover:text-ink",
                         )}
                       >
                         {mode === "learning" ? "Aprender" : "Prova"}
@@ -1384,7 +1374,7 @@ export default function FocusedQuestion({
                         className={cx(
                           "border px-3 py-2 text-left text-sm font-medium disabled:opacity-50",
                           feedbackRevealPolicy === policy
-                            ? "border-primary bg-primary text-primaryInk"
+                            ? "border-primary bg-washSelecao text-ink"
                             : "border-edge bg-paper text-muted hover:text-ink",
                         )}
                       >

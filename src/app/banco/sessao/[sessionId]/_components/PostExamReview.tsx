@@ -10,6 +10,9 @@ import type {
   QuestionTextHighlight,
 } from "@/lib/api";
 import { revealAllQuestionBankFeedback } from "@/lib/api";
+import { Button } from "@/components/ui/Button";
+import { getAPIErrorMessage } from "@/lib/api/shared/http";
+import { useToast } from "@/lib/useToast";
 import { ScoreReadout } from "@/components/ui/ScoreReadout";
 import { QuestionFullContext } from "@/app/banco/_components/QuestionFullContext";
 import { cognitivePatternSummary } from "@/lib/guidanceCopy";
@@ -23,6 +26,7 @@ import { ReportedItemsPanel } from "./_postExamReview/ReportedItemsPanel";
 import { usePostExamReviewData } from "./_postExamReview/usePostExamReviewData";
 import type { PostExamReviewProps, PostExamReviewTab } from "./_postExamReview/types";
 import { accuracyColor, cx, formatAccuracy, microNodes } from "./_postExamReview/utils";
+import { FLASHCARDS_LIGADOS } from "@/lib/flags";
 import { CorrecaoStage } from "./CorrecaoStage";
 import LearningPackagePanel from "./LearningPackagePanel";
 
@@ -158,32 +162,48 @@ export default function PostExamReview({
     .filter((node) => node.accuracy < 0.6 && (node.correct + node.wrong) >= 1)
     .sort((a, b) => a.accuracy - b.accuracy)[0] ?? null;
   const recommendedBlock = diagnosis?.recommended_blocks?.[0] ?? null;
+  /**
+   * ⚠️ `cta` EXISTE PARA O BOTAO PARAR DE REPETIR O TITULO.
+   *
+   * O cartao imprimia `title` duas vezes: como `<h2>` e como rotulo do botao,
+   * logo abaixo. Alem de redundante, isso fazia o botao herdar frases longas
+   * ("Treinar Decidir a conduta na angina instavel...") num controlo que tem de
+   * caber a 390px.
+   *
+   * O `title` diz O QUE E'; o `cta` diz o ATO. Sao campos diferentes porque sao
+   * perguntas diferentes.
+   */
   const primaryAction = recommendedBlock
     ? {
         title: `Treinar ${recommendedBlock.label}`,
+        cta: "Treinar agora",
         detail: `${recommendedBlock.recommended_question_count} questão(ões) em ~${recommendedBlock.estimated_minutes} min · ${recommendedBlock.why_now}`,
         href: `/banco?knowledge_node_ids=${encodeURIComponent(recommendedBlock.node_id)}&answer_status=unanswered_or_wrong`,
       }
     : primaryWeakNode
     ? {
         title: `Treinar ${primaryWeakNode.node_name ?? "microcompetência fraca"}`,
+        cta: "Treinar agora",
         detail: `${formatAccuracy(primaryWeakNode.accuracy)} de acerto nesta sessão · ${primaryWeakNode.correct + primaryWeakNode.wrong} questão(ões)`,
         href: `/banco?theme=${encodeURIComponent(primaryWeakNode.node_name ?? "")}&answer_status=unanswered_or_wrong`,
       }
     : wrongItems.length > 0
       ? {
           title: "Revisar os erros desta sessão",
+          cta: "Revisar os erros",
           detail: `${wrongItems.length} questão(ões) para reconstruir raciocínio`,
           href: "/banco?answer_status=wrong",
         }
       : markedItems.length > 0
         ? {
             title: "Rever questões marcadas",
+            cta: "Rever as marcadas",
             detail: `${markedItems.length} questão(ões) que merecem segunda leitura`,
             href: "/banco?answer_status=answered",
           }
         : {
             title: "Iniciar novo bloco adaptativo",
+            cta: "Começar outro bloco",
             detail: "Mantenha o ritmo com outra missão curta",
             href: "/banco",
           };
@@ -204,6 +224,10 @@ export default function PostExamReview({
     { id: "descartadas", label: "Descartadas", count: excludedItems.length },
   ];
 
+  const { showToast } = useToast();
+  const quickNoteItem = quickNoteTarget
+    ? session.items.find((item) => item.question_id === quickNoteTarget.questionId)
+    : undefined;
   const examLike = isFullExam || session.resolution_mode === "simulation";
 
   async function revealAll() {
@@ -212,6 +236,15 @@ export default function PostExamReview({
     try {
       onSessionChange?.(
         await revealAllQuestionBankFeedback(token, session.session_id),
+      );
+    } catch (err) {
+      // ⚠️ Sem este `catch`, 409/401/rede viravam rejeição não tratada e o
+      // botão parecia morto. `getAPIErrorMessage` porque erro de API não é
+      // `Error` -- ver `http.ts`.
+      showToast(
+        getAPIErrorMessage(err)
+          ?? "Não foi possível revelar as respostas agora. Tente novamente em instantes.",
+        "error",
       );
     } finally {
       setRevealBusy(false);
@@ -225,7 +258,7 @@ export default function PostExamReview({
         {examLike && detailedFeedbackAvailable && <ExamDebrief sessionId={session.session_id} />}
 
         <header className="rounded-surface border border-edge bg-surface p-5">
-          <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
             <div className="min-w-0">
               <p className="paper-eyebrow">
                 O que você fez · {resultLabel}
@@ -235,7 +268,7 @@ export default function PostExamReview({
               </h1>
               <div className="mt-4 border border-primary/30 bg-[var(--wash-selecao)] p-4">
                 <p className="paper-eyebrow text-primary">O que você aprendeu</p>
-                <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight text-ink">{gainTitle}</h2>
+                <h2 className="mt-1 font-serif font-semibold leading-tight text-ink">{gainTitle}</h2>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{gainDetail}</p>
               </div>
             </div>
@@ -267,16 +300,28 @@ export default function PostExamReview({
             </div>
           </details>
           {!detailedFeedbackAvailable && (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-edge pt-4">
+            /* ⚠️ Comentário de JS, e não de JSX entre chavetas: logo depois de
+               `&& (` ainda não há filhos de JSX onde o pôr.
+
+               EMPILHA E CENTRA ABAIXO DE `sm`, como as outras linhas de
+               rótulo+controlo do app. `justify-between` servia o desktop e
+               espremia o botão contra a margem direita a 390px.
+
+               Centra a LINHA inteira, pergunta incluída: centrar só o botão
+               separá-lo-ia do texto que o motiva. */
+            <div className="mt-4 flex flex-col items-center gap-3 border-t border-edge pt-4 text-center sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:text-left">
               <p className="text-sm text-muted">Prefere conferir tudo de uma vez?</p>
-              <button
+              {/* Era um botão à mão com alvo de ~38px; o primitivo dá 44px. */}
+              <Button
                 type="button"
+                variant="secondary"
+                size="md"
+                bloco
                 disabled={isWorking}
                 onClick={() => void revealAll()}
-                className="rounded-control border border-edge bg-surface px-4 py-2 text-sm font-medium text-ink disabled:opacity-50"
               >
                 Revelar todas
-              </button>
+              </Button>
             </div>
           )}
         </header>
@@ -295,14 +340,19 @@ export default function PostExamReview({
                 </p>
                 {actionError && <p className="mt-2 text-xs text-danger">{actionError}</p>}
               </div>
-              <button
+              {/* A ação que fecha a prova: pelo primitivo, e de largura total
+                  no telemóvel. Era um botão à mão com `hover:brightness-105`
+                  próprio e alvo abaixo dos 44px. */}
+              <Button
                 type="button"
+                variant="primary"
+                size="md"
+                bloco
                 onClick={onFinalize}
                 disabled={isWorking}
-                className="border border-primary bg-primary px-5 py-2.5 text-sm font-medium text-primaryInk transition hover:brightness-105 disabled:opacity-50"
               >
                 Contabilizar resultado
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -319,20 +369,26 @@ export default function PostExamReview({
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="paper-eyebrow text-primary">O que vale fazer agora</p>
-              <h2 className="mt-1 font-serif text-2xl font-semibold leading-tight">{primaryAction.title}</h2>
+              <h2 className="mt-1 font-serif font-semibold leading-tight">{primaryAction.title}</h2>
               <p className="mt-1 text-sm text-muted">{primaryAction.detail}</p>
             </div>
-            <div className="flex flex-col gap-2 sm:items-end">
-              <button
-                type="button"
-                onClick={() => router.push(primaryAction.href)}
-                className="paper-control min-h-11 border border-primary bg-primary px-5 text-sm font-medium text-primaryInk transition hover:brightness-105"
-              >
-                {primaryAction.title}
-              </button>
-              <button type="button" onClick={() => router.push("/hoje")} className="min-h-11 px-3 text-sm font-medium text-muted hover:text-ink">
+            {/* ⚠️ `grid`, e nao `flex flex-col` de largura de conteudo.
+                A coluna era item de um `flex-wrap`: a 390px enrolava e assentava
+                a ESQUERDA; a partir de `sm:` o `items-end` empurrava para a
+                DIREITA. Nunca centrada, e os dois botoes saiam com larguras
+                diferentes um do outro (`px-5` contra `px-3`) dentro do mesmo
+                cartao -- que foi o que o operador viu.
+
+                `grid gap-2` estica os dois a mesma largura e o `justify-center`
+                do `Button` centra cada rotulo. E' o arranjo que o irmao
+                `SaidaDaSessao` ja usava. */}
+            <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:min-w-[16rem]">
+              <Button variant="primary" size="md" onClick={() => router.push(primaryAction.href)}>
+                {primaryAction.cta}
+              </Button>
+              <Button variant="ghost" size="md" onClick={() => router.push("/hoje")}>
                 Encerrar por hoje
-              </button>
+              </Button>
             </div>
           </div>
           {cognitivePattern && (
@@ -340,22 +396,25 @@ export default function PostExamReview({
               <p className="paper-eyebrow text-warning">
                 Padrão cognitivo dominante
               </p>
-              <h3 className="mt-1 font-serif text-lg font-semibold text-ink">
+              <h3 className="mt-1 font-serif font-semibold text-ink">
                 {cognitivePattern.label}
               </h3>
               <p className="mt-1 text-sm leading-relaxed text-muted">
                 {cognitivePattern.phrase}
               </p>
+              {/* ⚠️ IA PARA `/cards`, QUE NAO ABRE. O padrao cognitivo nao tem
+                  nada a ver com flashcards: recalibrar o passo seguinte e
+                  exatamente o que o Hoje faz, e e para la que isto aponta. */}
               <button
                 type="button"
-                onClick={() => router.push("/cards")}
+                onClick={() => router.push("/hoje")}
                 className="mt-3 border border-warning/40 bg-surface px-3 py-1.5 text-xs text-warning hover:border-warning"
               >
                 Recalibrar próximo passo
               </button>
             </div>
           )}
-          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
             {wrongItems.length > 0 && (
               <button
                 type="button"
@@ -366,18 +425,27 @@ export default function PostExamReview({
                 <span className="mt-1 block text-xs font-normal text-muted">{diagnosedWrongCount} com diagnóstico de armadilha</span>
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => router.push("/cards/registros")}
-              className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-medium text-ink hover:border-primary"
-            >
-              Abrir caderno
-              <span className="mt-1 block text-xs font-normal text-muted">Revisar notas e cards salvos</span>
-            </button>
+            {/* O UNICO destino de Cards desta tela, e por isso o unico com
+                gate. Com a chave desligada ele aterrissava em `/hoje` por um
+                307 -- o aluno tocava "Abrir caderno" e ia parar noutro dia. */}
+            {FLASHCARDS_LIGADOS && (
+              <button
+                type="button"
+                onClick={() => router.push("/cards/registros")}
+                className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-medium text-ink hover:border-primary"
+              >
+                Abrir caderno
+                <span className="mt-1 block text-xs font-normal text-muted">Revisar notas e cards salvos</span>
+              </button>
+            )}
+            {/* `scheduledCount` conta `created_tasks`, que sao tarefas do
+                CRONOGRAMA -- nao cards. O destino estava simplesmente errado, e
+                a propria legenda do outro botao ja dizia que a revisao fica
+                programada no cronograma. */}
             {scheduledCount > 0 && (
               <button
                 type="button"
-              onClick={() => router.push("/cards")}
+                onClick={() => router.push("/cronograma")}
                 className="rounded-control border border-edge bg-paper px-4 py-3 text-left text-sm font-medium text-ink hover:border-primary"
               >
                 Continuar revisão
@@ -411,19 +479,49 @@ export default function PostExamReview({
         />
 
         {/* Tab content */}
+        {/* 🚨 `grid-cols-1` NO TELEMOVEL, e nao so' `md:grid-cols-2`.
+            MEDIDO na CI (run 34464471909): 430px de estouro a 390px, com o
+            guard a nomear o botao culpado.
+
+            Um `grid` sem `grid-cols-*` cria a pista IMPLICITA, que e' `auto` --
+            e o minimo de uma pista `auto` e' o min-content do conteudo. La
+            dentro ha' `truncate` (= `white-space: nowrap`), cujo min-content e'
+            a frase INTEIRA: os rotulos de microcompetencia sao a frase mais
+            longa do produto ("Decidir a conduta na angina instavel quanto a
+            cateterismo cardiaco com tempo para estrategia invasiva <= 24h").
+
+            ⚠️ A primeira tentativa de conserto escreveu
+            `md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]` e parou ai'. Nao
+            consertou nada onde o defeito foi fotografado: `md:` comeca aos
+            768px, `sm:` aos 640px, e a captura do operador era de telemovel.
+            A pista base ficou `auto` nos tres blocos.
+
+            `grid-cols-1` E' `repeat(1, minmax(0, 1fr))` no Tailwind -- e' por
+            isso que o `grid-cols-2` da faixa de contadores nunca estourou. A
+            regra que fica: num `grid` que contenha texto, declarar as colunas
+            do telemovel para cima, nunca so' no breakpoint grande. */}
         {activeTab === "resumo" && detailedFeedbackAvailable && (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Performance by node — or error fallback */}
             {diagnosisError && !diagnosis && !dismissedDiagnosisError && (
-              <div className="km-card flex items-start justify-between gap-3 p-4">
+              <div className="paper-surface flex items-start justify-between gap-3 p-4">
                 <p className="text-xs text-muted">Não foi possível carregar o diagnóstico.</p>
                 <button type="button" onClick={() => setDismissedDiagnosisError(true)} aria-label="Fechar" className="-mr-1 -mt-0.5 shrink-0 p-1 text-muted transition-colors hover:bg-surfaceMuted hover:text-ink">
                   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className="h-4 w-4" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" /></svg>
                 </button>
               </div>
             )}
+            {/* ⚠️ `min-w-0` E' O CONSERTO, e nao enfeite.
+                Sem ele este cartao e' um item de grelha com `min-width: auto`,
+                e o `truncate` do rotulo abaixo deixa de truncar: passa a EMPURRAR
+                a pista ate' caber a frase toda.
+
+                A prova de que o diagnostico e' este esta no irmao: o
+                `ExamDebrief` tem markup identico (`truncate` dentro de `flex
+                justify-between`) e NAO estoura, porque o antecessor dele e' um
+                `<ul>` de bloco, com largura definida. */}
             {diagnosis && diagnosis.nodes.length > 0 && (
-              <div className="km-card p-4">
+              <div className="paper-surface min-w-0 p-4">
                 <p className="paper-eyebrow">Desempenho por tema</p>
                 <div className="mt-3 space-y-3">
                   {diagnosis.nodes.slice(0, 8).map((node) => (
@@ -453,13 +551,15 @@ export default function PostExamReview({
             )}
 
             {/* Recommended actions */}
-            <div className="km-card p-4">
+            <div className="paper-surface p-4">
               <p className="paper-eyebrow">Ações recomendadas</p>
               <div className="mt-3 space-y-2">
                 {wrongItems.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => router.push("/cards")}
+                    // Os erros estao NESTA tela, na aba "Erros". Mandar para
+                    // outra rota era perder o contexto da sessao recem-feita.
+                    onClick={() => setActiveTab("erros")}
                     className="flex w-full items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                   >
                     <div>
@@ -472,7 +572,7 @@ export default function PostExamReview({
                 {finalizeOut && finalizeOut.created_tasks.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => router.push("/cards")}
+                    onClick={() => router.push("/cronograma")}
                     className="flex w-full items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                   >
                     <div>
@@ -498,12 +598,25 @@ export default function PostExamReview({
               </div>
             </div>
 
-            {/* Weak topics focus */}
+            {/* 🚨 ESTE E' O BLOCO QUE O GUARD APANHOU: 787px de largura numa
+                viewport de 390. Mesma forma do bloco de desempenho, e o mesmo
+                conserto -- `grid-cols-1` na pista do telemovel.
+
+                ⚠️ O `min-w-0` do botao e' CINTO, nao o conserto -- e eu
+                afirmei o contrario antes de medir. Num repro da cadeia inteira
+                (grelha externa > cartao > grelha interna > botao) a 390px, o
+                botao fica com 356px com ou sem ele; sem `grid-cols-1` fica com
+                706px nos dois casos. A razao e' de especificacao: o minimo
+                automatico de um item de grelha so' se aplica quando a funcao
+                MINIMA da pista e' `auto`, e em `minmax(0,1fr)` ela e' `0`.
+                Fica porque protege a cadeia se alguem devolver a pista a `auto`.
+                O `<p>` nao precisa de nenhum dos dois: `truncate` traz
+                `overflow: hidden`, e isso ja' zera o minimo automatico. */}
             {diagnosis && diagnosis.nodes.some((n) => n.accuracy < 0.5 && (n.correct + n.wrong) >= 2) && (
-              <div className="km-card p-4 md:col-span-2">
+              <div className="paper-surface min-w-0 p-4 md:col-span-2">
                 <p className="paper-eyebrow">Focar nestes temas</p>
                 <p className="mt-1 text-xs text-muted">Abaixo de 50% de acerto nesta sessão</p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {diagnosis.nodes
                     .filter((n) => n.accuracy < 0.5 && (n.correct + n.wrong) >= 2)
                     .slice(0, 4)
@@ -512,7 +625,7 @@ export default function PostExamReview({
                         key={n.knowledge_node_id}
                         type="button"
                         onClick={() => router.push(`/banco?theme=${encodeURIComponent(n.node_name ?? "")}&answer_status=unanswered_or_wrong`)}
-                        className="flex items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
+                        className="flex min-w-0 items-center justify-between rounded-control border border-edge bg-paper px-4 py-3 text-left hover:border-primary"
                       >
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium text-ink">{n.node_name ?? "—"}</p>
@@ -527,7 +640,7 @@ export default function PostExamReview({
 
             {/* Behavioral insights */}
             {diagnosis && !dismissedInsights && (diagnosis.impulsive_count >= 2 || diagnosis.overconfident_count >= 2) && (
-              <div className="km-card border-warning/40 p-4 md:col-span-2">
+              <div className="paper-surface border-warning/40 p-4 md:col-span-2">
                 <div className="flex items-start justify-between gap-3">
                   <p className="paper-eyebrow text-warning">Padrão identificado</p>
                   <button type="button" onClick={() => setDismissedInsights(true)} aria-label="Fechar" className="-mr-1 -mt-0.5 shrink-0 p-1 text-muted transition-colors hover:bg-surfaceMuted hover:text-ink">
@@ -545,7 +658,10 @@ export default function PostExamReview({
               </div>
             )}
 
-            {session.resolution_mode === "simulation" && wrongItems.length > 0 && (
+            {/* ⚠️ 261 linhas de painel que OFERECIAM criar cards de uma tela que
+                nao abre. Ele era montado sem gate nenhum, entao o aluno podia
+                gerar flashcards e nunca mais encontra-los. */}
+            {FLASHCARDS_LIGADOS && session.resolution_mode === "simulation" && wrongItems.length > 0 && (
               <ErrorFlashcardsPanel token={token} session={session} wrongItems={wrongItems} />
             )}
           </div>
@@ -581,7 +697,7 @@ export default function PostExamReview({
           const current = displayItems[index];
 
           return (
-            <div className="grid gap-3" ref={reviewTopRef}>
+            <div className="grid grid-cols-1 gap-3" ref={reviewTopRef}>
               <PostExamIndex
                 items={displayItems}
                 currentPosition={current.position}
@@ -654,7 +770,7 @@ export default function PostExamReview({
                               className={cx(
                                 "border px-2.5 py-1 text-xs",
                                 reportType === type
-                                  ? "border-primary bg-primary text-primaryInk"
+                                  ? "border-primary bg-washSelecao text-ink"
                                   : "border-edge text-muted hover:text-ink",
                               )}
                             >
@@ -670,22 +786,32 @@ export default function PostExamReview({
                           className="mt-3 w-full rounded-control border border-edge bg-surface px-3 py-2 text-sm outline-none focus:border-primary"
                           placeholder="O que parece errado nesta questão?"
                         />
-                        <div className="mt-2 flex justify-end gap-2">
-                          <button
+                        {/* ⚠️ `.fileira-de-controles`, e não `justify-end`: os
+                            dois botões ficavam encostados à DIREITA com alvo de
+                            ~26px (`py-1.5 text-xs`) — o pior par possível num
+                            rodapé de formulário, onde errar o toque cancela o
+                            que se acabou de escrever.
+
+                            O helper põe-nos em colunas iguais no telemóvel e
+                            devolve a fileira `flex` a partir de 768px. */}
+                        <div className="fileira-de-controles mt-2">
+                          <Button
                             type="button"
+                            variant="secondary"
+                            size="md"
                             onClick={() => setReportingPosition(null)}
-                            className="border border-edge px-3 py-1.5 text-xs text-muted hover:text-ink"
                           >
                             Cancelar
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             type="button"
+                            variant="primary"
+                            size="md"
                             disabled={isWorking}
                             onClick={() => void submitSessionReport(item)}
-                            className="border border-primary bg-primary px-3 py-1.5 text-xs text-primaryInk disabled:opacity-50"
                           >
-                            Enviar denuncia
-                          </button>
+                            Enviar denúncia
+                          </Button>
                         </div>
                       </div>
                     )}
@@ -895,6 +1021,9 @@ export default function PostExamReview({
         <QuickNoteModal
           key={`${quickNoteTarget.questionId}-${quickNoteTarget.noteIntent}`}
           questionId={quickNoteTarget.questionId}
+          sessionId={session.session_id}
+          stem={quickNoteItem?.stem}
+          alternatives={quickNoteItem?.alternatives}
           defaultArea={session.area}
           defaultTheme={session.subtheme ?? session.theme ?? sessionDisplayLabel}
           questionOutcome={quickNoteTarget.questionOutcome}

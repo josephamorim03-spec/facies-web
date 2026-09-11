@@ -18,7 +18,7 @@ import { useTurboSession } from "./registros/_hooks/useTurboSession";
 import { AREA_COLORS, Area } from "./registros/_lib/cadernoShared";
 import { Skeleton } from "@/components/Skeleton";
 import { queryKeys } from "@/lib/queryKeys";
-import { TabsScrollArea } from "@/components/ui/Tabs";
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS, TabsScrollArea } from "@/components/ui/Tabs";
 
 function TurboLobbySkeleton() {
   return (
@@ -111,7 +111,10 @@ function CardsAreaFilterControl({
           onScroll={onScroll}
           role="group"
           aria-label="Filtrar cards por área"
-          className="mx-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-control border border-edge bg-surface p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          // O trilho é o MESMO das abas (`TAB_LIST_CLASS`). Antes era uma
+          // cópia literal dele escrita à mão aqui — e cópia literal foi o que
+          // deixou o estado ativo divergir sem ninguém notar.
+          className={`${TAB_LIST_CLASS} mx-auto`}
         >
           {AREA_FILTER_OPTIONS.map((option) => {
             const active = selectedArea === option;
@@ -124,13 +127,14 @@ function CardsAreaFilterControl({
                 disabled={!interactive}
                 aria-pressed={active}
                 onClick={() => onSelect?.(option)}
-                className={[
-                  "paper-control inline-flex min-h-10 shrink-0 items-center justify-center px-3 text-xs",
-                  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-                  active ? "bg-primary text-primaryInk" : "text-ink hover:bg-surfaceMuted",
-                  marcado ? "gap-1.5" : "",
-                  !interactive ? "opacity-70" : "",
-                ].join(" ")}
+                // ⚠️ O ESTADO VEM DO `aria-pressed`, não de uma classe daqui.
+                // Isto pintava `bg-primary text-primaryInk` — o teal cheio que
+                // saiu das abas em 2026-09-06 e que aqui competia com a ação
+                // principal da tela. `TAB_TRIGGER_CLASS` já traz alvo de 44px,
+                // snap e o `gap-1.5` do ponto de cor.
+                className={[TAB_TRIGGER_CLASS, !interactive ? "opacity-70" : ""]
+                  .filter(Boolean)
+                  .join(" ")}
                 title={AREA_FILTER_LABELS[option]}
               >
                 {marcado ? (

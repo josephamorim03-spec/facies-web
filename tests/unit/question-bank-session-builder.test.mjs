@@ -106,6 +106,9 @@ const baseEstado = {
   fullExamReady: false,
   fullExamName: "",
   fullExamYear: 2025,
+  // O que já foi escolhido, SEPARADO do rótulo — ver o teste do ano abaixo.
+  temBanca: false,
+  temAno: false,
   loadingPreview: false,
   availableCount: 10,
   totalCount: 10,
@@ -124,16 +127,55 @@ test("carregando nao inventa motivo", () => {
   );
 });
 
-test("prova sem instituicao diz o que falta", () => {
+test("prova sem banca diz o que falta -- e manda ESCOLHER, nao digitar", () => {
+  // A copia mudou junto com o controle: a instituicao saiu de um campo de
+  // texto livre para o seletor. Dizer "informe a instituicao" mandava
+  // procurar uma caixa que deixou de existir -- e era o texto digitado ali
+  // que o payload enviava como chave, casando zero no acervo.
   const motivo = motivoParaNaoComecar({ ...baseEstado, studyKind: "full_exam" });
-  assert.match(motivo, /instituição/i);
+  assert.match(motivo, /escolha a banca/i);
+  assert.doesNotMatch(motivo, /informe/i);
 });
 
-test("prova com instituicao e sem ano cobra o ano", () => {
+test("prova com banca e SEM ano cobra o ANO — não a banca", () => {
+  // O caso visto na tela do operador (2026-09-10): a banca estava escolhida, o
+  // ano não, e a tela pedia a BANCA.
+  //
+  // ⚠️ A versão anterior deste teste passava `fullExamName: "USP-SP"` e passava
+  // VERDE sobre o código defeituoso — porque o código lia o rótulo, e o rótulo
+  // sai de `provaEscolhida`, que é `null` quando falta QUALQUER um dos dois. O
+  // teste reproduzia a confusão em vez de a denunciar.
   const motivo = motivoParaNaoComecar({
-    ...baseEstado, studyKind: "full_exam", fullExamName: "USP-SP", fullExamYear: "",
+    ...baseEstado,
+    studyKind: "full_exam",
+    temBanca: true,
+    temAno: false,
+    fullExamName: "",
+    fullExamYear: null,
   });
+
   assert.match(motivo, /ano/i);
+  assert.doesNotMatch(motivo, /banca/i, "pediu a banca, que já estava escolhida");
+});
+
+test("prova sem banca e COM ano cobra a banca", () => {
+  const motivo = motivoParaNaoComecar({
+    ...baseEstado, studyKind: "full_exam", temBanca: false, temAno: true,
+  });
+
+  assert.match(motivo, /banca/i);
+  assert.doesNotMatch(motivo, /\bano\b/i);
+});
+
+test("sem nenhum dos dois, cobra a BANCA primeiro", () => {
+  // Uma coisa de cada vez, e nesta ordem: a banca decide quais anos existem.
+  // Pedir os dois juntos daria uma frase que o aluno nao satisfaz de uma vez.
+  const motivo = motivoParaNaoComecar({
+    ...baseEstado, studyKind: "full_exam", temBanca: false, temAno: false,
+  });
+
+  assert.match(motivo, /banca/i);
+  assert.doesNotMatch(motivo, /ano/i);
 });
 
 test("prova vazia NAO manda remover filtro -- o filtro e' a prova", () => {

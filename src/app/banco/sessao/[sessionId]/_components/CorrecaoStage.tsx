@@ -54,7 +54,7 @@ export function CorrecaoStage({ token, session, onSessionChange, onSkip }: Props
         <p className="paper-eyebrow">
           Antes do gabarito
         </p>
-        <h2 id="correcao-stage-title" className="mt-1 font-serif text-2xl font-semibold text-ink">
+        <h2 id="correcao-stage-title" className="mt-1 font-serif font-semibold text-ink">
           Onde seu raciocínio parou
         </h2>
         <p className="mt-2 max-w-[68ch] font-serif text-base leading-relaxed text-muted">

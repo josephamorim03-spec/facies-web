@@ -116,4 +116,82 @@ test.describe("Funil de cadastro", () => {
       await page.unrouteAll();
     }
   });
+
+  /**
+   * O outro lado do funil: ENTRAR com a conta de e-mail.
+   *
+   * ## O bug que originou estes dois testes
+   *
+   * `/login` oferecia "Prefere e-mail e senha? Criar conta" e nenhum campo. Dava
+   * para criar a conta e não dava para voltar — a via de e-mail era de mão
+   * única, em produção, por meses.
+   *
+   * A causa era um garfo: o formulário existia (`LoginForm`, agora apagado) mas
+   * era renderizado só quando `NEXT_PUBLIC_GOOGLE_CLIENT_ID` estava AUSENTE.
+   * Ou seja, aparecia exatamente onde não importa e faltava exatamente onde
+   * importa.
+   *
+   * ## Por que o teste não existia
+   *
+   * Porque nenhuma spec afirmava que a tela de ENTRAR oferece a via de e-mail —
+   * as duas irmãs acima verificam `/cadastro`, que é a de CRIAR. O invariante
+   * violado não tinha guarda, e um caminho de login que desaparece não levanta
+   * erro: a tela responde 200 e fica bonita.
+   *
+   * ⚠️ Estes testes só têm valor porque o garfo caiu. Enquanto ele existia,
+   * `.env.local` (com `NEXT_PUBLIC_GOOGLE_CLIENT_ID` vazio) fazia o e2e local
+   * exercitar sempre o ramo de desenvolvimento — os campos apareceriam pelo
+   * motivo errado, e o teste ficaria verde sobre a tela que produção não serve.
+   */
+  test("REGRESSÃO: com auth local, /login deixa ENTRAR com e-mail e senha", async ({ page }) => {
+    await comModos(page, true);
+    await page.goto("/login");
+
+    await expect(page.getByPlaceholder("seu@email.com")).toBeVisible();
+    await expect(page.getByPlaceholder("Senha", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Entrar", exact: true })).toBeVisible();
+
+    // Recuperar a senha é parte da via, não um extra: sem isso, esquecer a senha
+    // volta a ser uma conta perdida. É ação inline porque não existe página para
+    // PEDIR a redefinição — `/auth/reset-password` consome o token do e-mail.
+    await expect(page.getByRole("button", { name: /Esqueci a senha/i })).toBeVisible();
+
+    // "Criar conta" é LINK aqui (vai para `/cadastro`), e era `button` no
+    // `LoginForm` apagado — cujos botões chamavam `onSwitchView`, que a página
+    // passava como `() => undefined`. Dois controles mortos numa tela de login.
+    await expect(page.getByRole("link", { name: "Criar conta" })).toBeVisible();
+  });
+
+  test("sem auth local, /login não oferece campo de e-mail", async ({ page }) => {
+    // O regime google-only. Mostrar campos que `POST /auth/login` responderia
+    // com 404 é pior que não mostrar: convida a tentar o que não existe.
+    await comModos(page, false);
+    await page.goto("/login");
+
+    await expect(page.getByPlaceholder("seu@email.com")).toBeHidden();
+    await expect(page.getByPlaceholder("Senha", { exact: true })).toBeHidden();
+    await expect(page.getByRole("button", { name: "Entrar", exact: true })).toBeHidden();
+
+    // O ponto de montagem do Google sobrevive nos dois regimes — é o único
+    // caminho aqui, e o teste acima já prende isso para `/cadastro`.
+    await expect(
+      page
+        .locator("iframe[src*='accounts.google.com']")
+        .or(page.getByRole("button", { name: /Entrar com Google/i })),
+    ).toBeAttached();
+  });
+
+  test("a ressalva comercial NÃO aparece na tela de entrada", async ({ page }) => {
+    // Decisão do operador, 2026-09-10: a ressalva "não promete aprovação e não
+    // vende conteúdo teórico" pertence aos Termos, que é onde ela vincula.
+    //
+    // ⚠️ Isto NÃO a dispensa das superfícies de OFERTA. Na landing há alegação
+    // comercial, e ali ela é exigível (CONAR art. 27, CDC art. 30). Este teste
+    // prende só a tela de entrada; se alguém a devolver para cá por engano ao
+    // mexer na landing, o vermelho aparece aqui.
+    await comModos(page, true);
+    await page.goto("/login");
+
+    await expect(page.getByText(/não promete aprovação/i)).toBeHidden();
+  });
 });

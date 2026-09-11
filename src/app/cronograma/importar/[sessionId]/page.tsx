@@ -151,7 +151,7 @@ export default function ImportSessionPage() {
   if (token === null) {
     return (
       <div className="space-y-3">
-        <h1 className="font-serif text-lg">Resolver prova importada</h1>
+        <h1 className="font-serif">Resolver prova importada</h1>
         <p className="text-sm text-muted">Carregando...</p>
       </div>
     );
@@ -162,7 +162,7 @@ export default function ImportSessionPage() {
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0 space-y-0.5">
-          <h1 className="font-serif text-lg">{sessionTitle}</h1>
+          <h1 className="font-serif">{sessionTitle}</h1>
           {session && <p className="text-xs text-muted">{sessionSubtitle}</p>}
         </div>
         <button
@@ -247,7 +247,7 @@ export default function ImportSessionPage() {
           />
           <aside className="absolute right-0 top-0 bottom-0 w-[min(88vw,22rem)] bg-paper border-l border-edge p-3 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-serif text-sm">Navegação</h2>
+              <h2 className="font-serif">Navegação</h2>
               <button
                 type="button"
                 onClick={() => setNavDrawerOpen(false)}
@@ -309,7 +309,7 @@ export default function ImportSessionPage() {
             className="space-y-3 py-3 border-b border-edge scroll-mt-16"
           >
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-sm font-medium">Questão {question.question_number}</h2>
+              <h2 className="font-medium">Questão {question.question_number}</h2>
               <button
                 type="button"
                 onClick={() => handleToggleDoubt(question)}
@@ -608,7 +608,7 @@ export default function ImportSessionPage() {
             aria-label="Questões em branco"
             className="bg-paper border border-edge w-full max-w-md p-4 space-y-3"
           >
-            <h2 className="font-serif text-base">Existem questões em branco</h2>
+            <h2 className="font-serif">Existem questões em branco</h2>
             <p className="text-sm text-muted">
               Você tem {pendingNumbers.length} questões em branco.
             </p>

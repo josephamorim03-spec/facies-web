@@ -31,11 +31,11 @@ export default function QuestionList({
   if (questions.length === 0) return null;
 
   return (
-    <section className="km-card p-4 md:p-5">
+    <section className="paper-surface p-4 md:p-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="paper-eyebrow">{eyebrow}</p>
-          <h2 className="mt-1 font-serif text-2xl font-semibold">{title}</h2>
+          <h2 className="mt-1 font-serif font-semibold">{title}</h2>
           <p className="mt-1 text-sm text-muted">{selectedTopicSummary}</p>
         </div>
       </div>

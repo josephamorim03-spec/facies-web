@@ -7,6 +7,7 @@ import type { QuestionBankAvailability, StudyKind } from "@/lib/api";
 import { CORRECTION_MODE_LABEL, type CorrectionMode } from "../_lib/sessionBuilder";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { BottomActionBar } from "@/components/ui/BottomActionBar";
 
 function availabilityText(availability: QuestionBankAvailability | null): string {
   if (!availability) return "Calculando";
@@ -106,6 +107,8 @@ type CreateSessionPanelProps = {
   error?: string | null;
   startLabel: string;
   emptyReason?: string | null;
+  /** Dá para começar, mas a sessão não sai do tamanho pedido. Ver `sessionBuilder`. */
+  ressalva?: string | null;
   onRefreshAvailability: () => void;
   onPreviewQuestions: () => void;
   onStartSession: () => void;
@@ -123,6 +126,7 @@ export default function CreateSessionPanel({
   error,
   startLabel,
   emptyReason,
+  ressalva,
   onRefreshAvailability,
   onPreviewQuestions,
   onStartSession,
@@ -142,11 +146,21 @@ export default function CreateSessionPanel({
     : "Aguardando filtros";
 
   return (
-    <aside className="border-y border-edge py-4 lg:sticky lg:top-6 lg:self-start lg:border-y-0 lg:border-l lg:py-0 lg:pl-5">
-      <div className="flex items-start justify-between gap-3">
+    // `lg:col-start-2 lg:row-start-1` devolve o painel a coluna da direita no
+    // desktop: no DOM ele passou a vir PRIMEIRO, para o telemovel abrir na
+    // decisao, e sem a colocacao explicita a grelha o poria a esquerda.
+    <aside className="border-y border-edge py-4 lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:self-start lg:border-y-0 lg:border-l lg:py-0 lg:pl-5">
+      {/* ⚠️ EMPILHA E CENTRA ABAIXO DE `sm`, como as outras linhas de
+          rótulo+controlo do app (a "Aparência" do hub, os cabeçalhos do
+          cronograma). O `justify-between` servia o desktop e espremia o
+          controlo contra a margem direita a 390px.
+      
+          Centra a LINHA inteira, rótulo incluído: centrar só o controlo
+          deixaria-o órfão do texto que diz o que ele faz. */}
+      <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
         <div>
           <p className="paper-eyebrow">Sessão configurada</p>
-          <h2 className="mt-1 font-serif text-xl font-semibold leading-tight">Resumo</h2>
+          <h2 className="mt-1 font-serif font-semibold leading-tight">Resumo</h2>
           {loadingPreview ? (
             <div className="mt-2">
               <LoadBar label="Recalculando a prévia" className="w-40" />
@@ -210,33 +224,60 @@ export default function CreateSessionPanel({
         </p>
       )}
 
-      {/* ⚠️ A ACAO PRIMARIA APARECE NO CELULAR TAMBEM, e ela ja morava aqui.
-          Este botao existia com `hidden md:flex` porque uma `BottomActionBar`
-          o duplicava no mobile -- uma faixa fixa colada por cima da barra de
-          abas, empilhando duas linhas de chrome no rodape.
+      {/* ⚠️ RESSALVA ≠ MOTIVO. O bloco acima diz por que NÃO dá para começar; este
+          diz que dá, mas não como foi pedido. São estados diferentes e por isso
+          são elementos diferentes — juntá-los faria o aluno ler um aviso de
+          bloqueio num caso em que o botão está vivo. Só um dos dois aparece de
+          cada vez, porque `emptyReason` exige acervo zero e a ressalva exige
+          acervo entre 1 e o piso do modo. */}
+      {!error && !emptyReason && ressalva && (
+        <p className="mt-4 border-l-2 border-accent pl-3 text-sm text-muted" aria-live="polite">
+          {ressalva}
+        </p>
+      )}
 
-          O operador apontou o que nenhuma rede social faz. E a correcao nao foi
-          mover a acao: foi parar de duplicar. Ela sempre esteve no lugar certo
-          -- junto do resumo sobre o qual age, com o numero que ela executa a
-          uma linha de distancia. O que estava errado era esconde-la. */}
-      <div className="mt-4 space-y-2">
+      {/* A secundaria fica no painel, junto do resumo sobre o qual age. */}
+      <div className="mt-4">
+        <Button type="button" variant="secondary" size="md" onClick={onPreviewQuestions} disabled={busy || !canStart} className="w-full">
+          Ver prévia
+        </Button>
+      </div>
+
+      {/* 🚨 REVERSAO DECLARADA: a acao primaria VOLTA para uma `BottomActionBar`.
+          O comentario que vivia aqui dizia o contrario, e fica registado porque
+          o motivo dele continua valido -- so' nao era este.
+
+          O que ele dizia: este botao existiu com `hidden md:flex` porque uma
+          `BottomActionBar` o DUPLICAVA no telemovel, e o rodape ficava com duas
+          linhas de chrome mais um segundo botao a dizer a mesma coisa. O
+          operador apontou, e a correcao foi "parar de duplicar".
+
+          ⚠️ A queixa era a DUPLICACAO, e nao a barra. Agora o botao MUDA de
+          sitio em vez de nascer um segundo: continua a existir exatamente um
+          `/^Comecar/` na tela, que e' o que o e2e do Banco exige em regex
+          estrita. E em 2026-09-11 o operador pediu explicitamente que este
+          botao se comportasse como o `Pesquisar` do Caderno e o arranque dos
+          flashcards -- os dois sao esta barra.
+
+          ⚠️ A outra razao do comentario antigo TAMBEM continua atendida: a
+          `banco/page.tsx` monta o resumo PRIMEIRO no DOM para o Banco abrir na
+          decisao a 390px. Isso nao muda; a barra so' garante que a acao
+          continua alcancavel depois de o aluno rolar ate' aos filtros. */}
+      <BottomActionBar>
         <Button
           type="button"
           variant="primary"
           size="md"
+          bloco
           onClick={onStartSession}
           disabled={busy || !canStart}
-          className="w-full"
         >
           {busy ? "Preparando..." : startLabel}
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="miter" className="h-4 w-4" aria-hidden="true">
             <path d="M4 10h12" /><path d="m11 5 5 5-5 5" />
           </svg>
         </Button>
-        <Button type="button" variant="secondary" size="md" onClick={onPreviewQuestions} disabled={busy || !canStart} className="w-full">
-          Ver prévia
-        </Button>
-      </div>
+      </BottomActionBar>
     </aside>
   );
 }

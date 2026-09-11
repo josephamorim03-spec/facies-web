@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import type { QuestionBankSourceOption } from "@/lib/api";
 
+import { nomesCurtosDasBancas } from "../_lib/rotuloDaBanca";
+
 type SourceSelection = {
   boardCodes: string[];
   examCodes: string[];
@@ -11,6 +13,8 @@ type SourceSelection = {
 
 type BancaPickerProps = {
   sources: QuestionBankSourceOption[];
+  /** Tamanho de PROVA por instituicao. `null` = nao e modo prova, ou carregando. */
+  totaisDaProva?: Map<string, number> | null;
   selectedBoardCodes: string[];
   selectedExamCodes: string[];
   selectedInstitutions: string[];
@@ -61,6 +65,7 @@ const FINALITY_OPTION_KEYS = new Set(["ACESSO-DIRETO", "REVALIDA", "RPLUS"]);
 
 export default function BancaPicker({
   sources,
+  totaisDaProva = null,
   selectedBoardCodes,
   selectedExamCodes,
   selectedInstitutions,
@@ -85,6 +90,12 @@ export default function BancaPicker({
   );
   const selectedCount = selectedBoardSet.size + selectedExamSet.size + selectedInstitutionSet.size;
 
+  // O nome curto sai da LISTA INTEIRA, e nao de um rotulo por vez: e assim
+  // que a colisao se resolve. Sete bancas viram "SMS" sem esse desempate.
+  const nomeCurtoPorRotulo = useMemo(
+    () => nomesCurtosDasBancas(sources.map((item) => item.label)),
+    [sources],
+  );
   const sourceById = useMemo(
     () => new Map(sources.map((source) => [optionId(source), source])),
     [sources],
@@ -327,13 +338,19 @@ export default function BancaPicker({
                               className="h-4 w-4 shrink-0 accent-[var(--color-primary)]"
                             />
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate text-ink">{source.label}</span>
+                              <span className="block truncate text-ink" title={source.label}>
+                                {nomeCurtoPorRotulo.get(source.label) ?? source.label}
+                              </span>
                               {source.option_kind !== "institution" && source.label.toUpperCase() !== key ? (
                                 <span className="block truncate text-xs text-muted">{key}</span>
                               ) : null}
                             </span>
                             <span className="flex shrink-0 items-center">
-                              <span className="text-xs tabular-nums text-muted">{source.question_count}</span>
+                              <span className="text-xs tabular-nums text-muted">
+                                {/* O total da PROVA quando ele existe: o indice de
+                                    treino diz 530 onde as seis provas somam 600. */}
+                                {totaisDaProva?.get(source.option_key) ?? source.question_count}
+                              </span>
                             </span>
                           </label>
                         </li>

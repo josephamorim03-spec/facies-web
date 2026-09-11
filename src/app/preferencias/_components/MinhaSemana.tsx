@@ -6,6 +6,7 @@ import type { CalendarEventOut } from "@/lib/api/domains/calendar";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import {
+  ATALHOS_DE_MINUTOS,
   excecoesDaSemana,
   horasPorExtenso,
   minutosPorExtenso,
@@ -45,9 +46,6 @@ const FILETE: Record<TipoDeDia, string> = {
   livre: "bg-primary",
   trabalho: "bg-ink",
 };
-
-/** Os atalhos do `14b`, com "Nada" primeiro e sem penalidade. */
-const ATALHOS_DE_MINUTOS = [0, 10, 20, 35, 45, 60] as const;
 
 /** As durações que fazem um dia ser de trabalho. 0 = não trabalha. */
 const HORAS_DE_TRABALHO = [0, 6, 12, 24] as const;
@@ -93,7 +91,7 @@ function Linha({
       {aberta ? (
         <div className="px-3 pb-3">
           <p className="paper-eyebrow mb-2">dá para estudar neste dia?</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="fileira-de-controles">
             {ATALHOS_DE_MINUTOS.map((valor) => {
               const escolhido = linha.minutos === valor;
               return (
@@ -104,7 +102,7 @@ function Linha({
                   onClick={() => onEscolher(valor)}
                   className={`min-h-11 rounded-control border px-3 text-sm ${
                     escolhido
-                      ? "border-primary bg-primary text-primaryInk"
+                      ? "border-primary bg-washSelecao text-ink"
                       : "border-edge bg-surface text-ink"
                   }`}
                 >
@@ -129,7 +127,7 @@ function Linha({
               ⚠️ Sem nome. O artboard 14b é literal: "nada de nome do hospital,
               o plano não muda com o lugar". O rótulo deriva das horas. */}
           <p className="paper-eyebrow mb-2 mt-4">trabalha neste dia?</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="fileira-de-controles">
             {HORAS_DE_TRABALHO.map((horas) => {
               const escolhido =
                 horas === 0
@@ -144,7 +142,7 @@ function Linha({
                   onClick={() => onMarcarPlantao(horas)}
                   className={`min-h-11 rounded-control border px-3 text-sm disabled:opacity-50 ${
                     escolhido
-                      ? "border-primary bg-primary text-primaryInk"
+                      ? "border-primary bg-washSelecao text-ink"
                       : "border-edge bg-surface text-ink"
                   }`}
                 >

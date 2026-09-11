@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { NAV_ITEMS, getIntentChildren } from "@/lib/navConfig";
+import { NAV_ITEMS_DESKTOP, getIntentChildren } from "@/lib/navConfig";
 
 type Destino = { href: string; label: string; hint?: string };
 
@@ -31,7 +31,10 @@ export function CommandBar() {
 
   const destinos = useMemo<Destino[]>(() => {
     const out: Destino[] = [];
-    for (const item of NAV_ITEMS) {
+    // A lista do DESKTOP: esta barra é `md:flex` e o invariante do topo deste
+    // ficheiro é não divergir do menu. Com `NAV_ITEMS` ela ficaria sem Evolução,
+    // Calendário e Rotina — que o menu ao lado mostra.
+    for (const item of NAV_ITEMS_DESKTOP) {
       out.push({ href: item.href, label: item.shortLabel });
       for (const child of getIntentChildren(item.href)) {
         // O filho carrega o nome do pai: "Cronograma" sozinho não diz de onde

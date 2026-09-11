@@ -55,7 +55,7 @@ export function SectionTitle({
     <header className="grid gap-2 border-b border-edge pb-4 sm:grid-cols-[1.5rem_minmax(0,1fr)]">
       <Icon className="mt-0.5 h-5 w-5 text-primary" aria-hidden="true" />
       <div>
-        <h2 className="text-base font-semibold text-ink">{title}</h2>
+        <h2 className="font-semibold text-ink">{title}</h2>
         <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">{description}</p>
       </div>
     </header>

@@ -9,11 +9,17 @@ export const studyChartTooltipContentStyle = {
   boxShadow: "var(--overlay-shadow)",
   color: "var(--color-ink)",
   fontSize: 12,
+  // A caixa inteira em mono: o que ela mostra sao contagens e percentuais, e
+  // numero neste sistema e mono. Herdava a sans do documento.
+  fontFamily: "var(--font-mono)",
 };
 
 export const studyChartTooltipLabelStyle = {
   color: "var(--color-ink)",
-  fontWeight: 600,
+  // 400, e nao 600: 12/600 nao existe em nenhuma das 22 artboards, e no desenho
+  // a mono nunca pesa. O que separa o rotulo dos itens aqui e a tinta — eles
+  // vem em `muted`, ele em `ink`.
+  fontWeight: 400,
 };
 
 export const studyChartTooltipCursor = { fill: "var(--color-surface-muted)" };

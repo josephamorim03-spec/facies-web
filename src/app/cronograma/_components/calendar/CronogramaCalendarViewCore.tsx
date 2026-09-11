@@ -6,7 +6,7 @@ import {
   updateReviewTask,
 } from "@/lib/api";
 import { IconStethoscope } from "../CronogramaIcons";
-import { IconTrash } from "@/app/desempenho/_components/PerfilIcons";
+import { IconTrash } from "@/components/perfil/PerfilIcons";
 import {
   displayDate,
   getRevisionNumber,

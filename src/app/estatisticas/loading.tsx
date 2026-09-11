@@ -1,27 +1,28 @@
 import { Skeleton } from "@/components/Skeleton";
 
+/**
+ * A espera desta rota usa a MESMA superfície do conteúdo que vai substituir —
+ * `paper-surface`, e não uma moldura `border border-edge` sem raio. Sem isso a
+ * tela muda de forma ao acabar de carregar, que é o defeito que um esqueleto
+ * existe para não ter.
+ */
 export default function EstatisticasLoading() {
   return (
-    <div className="space-y-6 p-4">
-      <Skeleton className="h-7 w-36 " />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="ritmo-secao" aria-busy="true">
+      <Skeleton className="h-7 w-36" rotulo="Gráficos carregando" />
+      <div className="grid gap-4 md:grid-cols-2">
         {Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="border border-edge p-4 space-y-3 ">
-            <Skeleton className="h-4 w-24 " />
-            <Skeleton className="h-8 w-16 " />
-            <Skeleton className="h-3 w-full " />
-            <Skeleton className="h-3 w-3/4 " />
+          <div key={i} className="paper-surface space-y-3 p-4 sm:p-5">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-8 w-16" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-3/4" />
           </div>
         ))}
       </div>
-      <Skeleton className="h-64 w-full " />
-      <div className="space-y-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 py-2 border-b border-edge">
-            <Skeleton className="h-3 w-3/5 " />
-            <Skeleton className="h-2.5 w-16 ml-auto" />
-          </div>
-        ))}
+      <div className="paper-surface space-y-3 p-4 sm:p-5">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-56 w-full" />
       </div>
     </div>
   );

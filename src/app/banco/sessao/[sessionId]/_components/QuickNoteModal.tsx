@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
+  analyzeSimulationErrors,
   createOperationalNote,
+  getSimulationAnalysisResults,
+  me,
   type OperationalAreaCode,
   type OperationalQuestionOutcome,
   type QuestionBankOption,
@@ -23,6 +26,10 @@ function compactText(value: string | null | undefined, max = 120): string {
 
 type QuickNoteModalProps = {
   questionId: string;
+  sessionId: string;
+  /** A IA precisa dos dois, e o modal nao os recebia. */
+  stem?: string | null;
+  alternatives?: Record<string, string> | null;
   defaultArea: string | null | undefined;
   defaultTheme: string | null | undefined;
   questionOutcome: OperationalQuestionOutcome | null;
@@ -36,6 +43,9 @@ type QuickNoteModalProps = {
 
 export default function QuickNoteModal({
   questionId,
+  sessionId,
+  stem,
+  alternatives,
   defaultArea,
   defaultTheme,
   questionOutcome,
@@ -46,7 +56,7 @@ export default function QuickNoteModal({
   highlightContext = [],
   onClose,
 }: QuickNoteModalProps) {
-  const { token } = useAuthToken();
+  const { token, tokenResolved } = useAuthToken();
   const trimmedHypothesis = (errorHypothesis ?? "").trim();
   const theme = (defaultTheme ?? "").trim().slice(0, 120) || "Questão do banco";
   const isError = questionOutcome === "incorrect";
@@ -85,6 +95,104 @@ export default function QuickNoteModal({
     ].filter(Boolean);
     return `${contextLines.join("\n")}\n\n${isCardIntent ? "Ponto-chave" : "Regra curta"}: `;
   });
+  const [iaBuscando, setIaBuscando] = useState(false);
+  const [iaAplicada, setIaAplicada] = useState(false);
+  // Nunca e' renderizado: so' lido dentro do efeito e escrito no `onChange`.
+  // Ref, e nao estado, porque ler estado dentro de um atualizador exigiria
+  // efeito colateral num lugar que o React exige puro.
+  const tocouNoTexto = useRef(false);
+
+  /**
+   * Traz a sugestao da IA para dentro do "Criar card".
+   *
+   * ⚠️ O endpoint `POST /simulations/analyze-errors` ja' estava VIVO, sem flag
+   * nenhuma, e sem um unico chamador: o `ErrorFlashcardsPanel` era o unico, e
+   * ele esta' escondido por `FLASHCARDS_LIGADOS`. O que sobrava na tela era
+   * este modal, que se rotula "Criar card", diz "Flashcard salvo no caderno" e
+   * preenche o texto por interpolacao de template -- isto e', pede que o ALUNO
+   * escreva o conteudo. Era o "so' permite o usuario criar" relatado.
+   *
+   * Tres cuidados:
+   *
+   * 1. CACHE PRIMEIRO. Mesmo caminho do `ErrorFlashcardsPanel`: se a sessao ja'
+   *    foi analisada, reusa em vez de pagar de novo. A cota e' de 120 analises
+   *    por dia e 6 por minuto.
+   * 2. NAO SOBRESCREVE O QUE O ALUNO DIGITOU. O template continua sendo o valor
+   *    inicial, entao o modal e' utilizavel no primeiro instante; a IA so'
+   *    substitui se o campo ainda estiver intocado.
+   * 3. FALHA EM SILENCIO PARA O TEMPLATE. Cota estourada, rede caida ou provedor
+   *    fora do ar deixam o modal exatamente como era antes -- degradar aqui e'
+   *    melhor que bloquear a criacao do card.
+   *
+   * So' vale para ERRO: o endpoint recebe `marked_option` e `correct_option` e
+   * devolve `question_outcome: "incorrect"`. Acerto continua no template.
+   */
+  useEffect(() => {
+    // ⚠️ AQUI EU ESCREVI `!token`, E ISSO MATA O EFEITO INTEIRO.
+    // `getAuthToken()` devolve "" POR DESENHO -- a sessao vai por cookie
+    // httpOnly e o BFF injeta o `Authorization`. A condicao e' sempre
+    // verdadeira, entao a IA nunca era chamada e o modal abria manual como
+    // antes: verde no lint, verde na CI, recurso morto.
+    // O certo e' `tokenResolved`, como as tres chamadas de `page.tsx`.
+    if (!tokenResolved || !isError || !stem || !alternatives) return;
+    if (!selectedOption || !correctAnswer) return;
+    let cancelado = false;
+
+    async function sugerir() {
+      setIaBuscando(true);
+      try {
+        const cache = await getSimulationAnalysisResults(token, sessionId).catch(() => null);
+        const doCache = cache?.results.find(
+          (resultado) => resultado.question_id === questionId && resultado.caderno_drafts.length > 0,
+        );
+        let rascunho = doCache?.caderno_drafts[0];
+
+        if (!rascunho) {
+          const meus = await me(token);
+          const saida = await analyzeSimulationErrors(token, {
+            user_id: meus.user_id,
+            simulation_id: sessionId,
+            wrong_questions: [
+              {
+                question_id: questionId,
+                stem: stem as string,
+                options: alternatives as Record<string, string>,
+                marked_option: selectedOption as string,
+                correct_option: correctAnswer as string,
+                specialty: null,
+                theme: theme ?? null,
+                image_attachment_refs: null,
+              },
+            ],
+          });
+          rascunho = saida.results.find(
+            (resultado) => resultado.question_id === questionId,
+          )?.caderno_drafts[0];
+        }
+
+        if (cancelado || !rascunho) return;
+        const payload = rascunho.note_payload;
+        if (tocouNoTexto.current) return;
+        if (payload.insight_question.trim()) setInsight(payload.insight_question);
+        if (payload.body.trim()) setBody(payload.body);
+        setIaAplicada(true);
+      } catch {
+        // Silencio proposital: ver o cuidado 3 acima.
+      } finally {
+        if (!cancelado) setIaBuscando(false);
+      }
+    }
+
+    void sugerir();
+    return () => {
+      cancelado = true;
+    };
+    // `tokenResolved` e' a UNICA dependencia: ele nasce falso e vira verdadeiro
+    // no efeito de montagem do `useAuthToken`. Com `[]` o efeito corria uma vez
+    // so', com ele ainda falso, e voltava sem fazer nada.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokenResolved]);
+
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -193,11 +301,22 @@ export default function QuickNoteModal({
         <label className="mt-4 block text-xs text-muted" htmlFor="quick-note-insight">
           {insightLabel}
         </label>
+        {iaBuscando && (
+          <p className="mt-1 text-xs text-muted">Preparando uma sugestão com IA...</p>
+        )}
+        {iaAplicada && !iaBuscando && (
+          <p className="mt-1 text-xs text-muted">
+            Sugestão preparada com IA. Revise antes de salvar.
+          </p>
+        )}
         <input
           id="quick-note-insight"
           type="text"
           value={insight}
-          onChange={(event) => setInsight(event.target.value)}
+          onChange={(event) => {
+            tocouNoTexto.current = true;
+            setInsight(event.target.value);
+          }}
           minLength={6}
           maxLength={180}
           required
@@ -223,7 +342,7 @@ export default function QuickNoteModal({
                   type="button"
                   onClick={() => setArea(item)}
                   className={`border px-2.5 py-1 text-xs ${
-                    area === item ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:border-primary hover:text-ink"
+                    area === item ? "border-primary bg-washSelecao text-ink" : "border-edge text-muted hover:border-primary hover:text-ink"
                   }`}
                 >
                   {item}
@@ -236,7 +355,10 @@ export default function QuickNoteModal({
             <textarea
               id="quick-note-body"
               value={body}
-              onChange={(event) => setBody(event.target.value)}
+              onChange={(event) => {
+                tocouNoTexto.current = true;
+                setBody(event.target.value);
+              }}
               required
               placeholder="Escreva o conceito ou raciocinio correto"
               className="mt-1 min-h-24 w-full resize-y rounded-control border border-edge bg-paper px-3 py-2 text-sm outline-none focus:border-primary"

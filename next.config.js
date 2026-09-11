@@ -4,6 +4,25 @@ const faciesDataset = require("./src/data/facies/facies.json");
 const slugsCurtos = require("./src/data/facies/slugs.json");
 
 /**
+ * 🚨 UMA FONTE SÓ PARA OS FLASHCARDS — as duas leituras divergiam NESTE arquivo.
+ *
+ * O bloco `env` declarava o default (`?? "0"`), que é o que vai inlined no
+ * bundle do cliente; o `redirects()` lia `process.env.NEXT_PUBLIC_FLASHCARDS`
+ * **cru**, sem o default. Enquanto o valor foi "0" nos dois, ninguém notou —
+ * mas ligar pelo default deixaria o cliente a achar que a aba existe e o
+ * `redirects()` a mandar `/cards` para `/hoje`. Metade da feature ligada, que é
+ * exatamente o defeito que o comentário do bloco `env` avisava sobre as chaves
+ * do front e do backend, dentro do mesmo ficheiro.
+ *
+ * ⚠️ O PAR CONTINUA OBRIGATÓRIO: `FLASHCARDS_ENABLED` no backend impede a
+ * agenda de oferecer "Revisar cards no ponto". Ligar só um lado dá aba que não
+ * leva a nada, ou agenda a prometer o que a barra esconde.
+ *
+ * 2026-09-10: default passa a "1" a pedido do operador ("ligar as duas agora").
+ */
+const FLASHCARDS = (process.env.NEXT_PUBLIC_FLASHCARDS ?? "1") === "1";
+
+/**
  * As 138 bancas mudaram de endereço: `/facies/<slug-longo>` virou `/prova/<curto>`.
  *
  * ⚠️ O 301 É AQUI, e não num `redirect()` dentro da página. Este arquivo já
@@ -39,6 +58,11 @@ function redirectsDasBancas() {
   });
 }
 
+// Uma leitura só do ambiente, usada pelos três pontos abaixo que dependem dele
+// (HSTS, `unsafe-eval` e `ws:`). Repetir a comparação em cada um é como as três
+// cópias divergem quando alguém troca uma.
+const emDesenvolvimento = process.env.NODE_ENV !== "production";
+
 const securityHeaders = [
   ...(process.env.NODE_ENV === "production"
     ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }]
@@ -60,11 +84,34 @@ const securityHeaders = [
       // unsafe-inline is required by Next.js for its client-side runtime
       // (inline <script> tags for chunks, bootstrap, etc.). Without it the
       // entire app is non-interactive.
-      "script-src 'self' 'unsafe-inline' https://accounts.google.com https://www.gstatic.com",
+      //
+      // 🚨 `unsafe-eval` SÓ EM DESENVOLVIMENTO, e sem ele o `next dev` não
+      // hidrata. Medido em 2026-09-10, com instrumentação do navegador:
+      //
+      //   CONSOLE(error): eval() is not supported in this environment. If this
+      //   page was served with a `Content-Security-Policy` header, make sure
+      //   that `unsafe-eval` is included.
+      //
+      // O bundle de DEV usa `eval()` para os módulos (é assim que o HMR troca
+      // um módulo sem recarregar a página); o de produção não. Sem hidratar,
+      // NENHUM `useEffect` roda — e o modo de falha é cruel, porque a página
+      // renderiza bonita e completa: só não reage. Foi assim que dois specs
+      // ficaram vermelhos parecendo defeito da tela, quando o que faltava era
+      // a página estar viva.
+      //
+      // ⚠️ Produção fica BYTE POR BYTE igual: em `next build` o valor não muda,
+      // e é por isso que o e2e do repositório exige build de produção em vez de
+      // `next dev`. Essa exigência não era burocracia — era o que mantinha o
+      // e2e verde apesar deste defeito.
+      `script-src 'self' 'unsafe-inline'${emDesenvolvimento ? " 'unsafe-eval'" : ""} https://accounts.google.com https://www.gstatic.com`,
       // accounts.google.com needed for Google GSI stylesheet (gsi/style)
       "style-src 'self' 'unsafe-inline' https://accounts.google.com",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https:",
+      // `ws:` só em desenvolvimento, pelo mesmo motivo: o HMR do Next abre
+      // `ws://127.0.0.1:3000/_next/webpack-hmr`, e a mesma instrumentação
+      // registrou o handshake sendo recusado. Produção não abre WebSocket
+      // nenhum, então o valor lá continua idêntico.
+      `connect-src 'self' https:${emDesenvolvimento ? " ws://127.0.0.1:* ws://localhost:*" : ""}`,
       "frame-src https://accounts.google.com",
       "font-src 'self'",
       "object-src 'none'",
@@ -93,11 +140,11 @@ const nextConfig = {
   // explicito continua possivel por env.
   env: {
     NEXT_PUBLIC_STUDENT_AGENDA_V1: process.env.NEXT_PUBLIC_STUDENT_AGENDA_V1 ?? "1",
-    // Flashcards fora de producao, de molho para voltar depois. Desligado por
-    // padrao, e o par desta chave e `FLASHCARDS_ENABLED` no backend: uma sem a
-    // outra deixa metade da feature ligada -- aba escondida com a agenda ainda
-    // oferecendo o bloco, ou o inverso.
-    NEXT_PUBLIC_FLASHCARDS: process.env.NEXT_PUBLIC_FLASHCARDS ?? "0",
+    // Flashcards LIGADOS desde 2026-09-10, a pedido do operador. O valor vem da
+    // constante do topo -- ler o env outra vez aqui foi como as duas leituras
+    // deste ficheiro divergiram. O par obrigatorio continua sendo
+    // `FLASHCARDS_ENABLED` no backend.
+    NEXT_PUBLIC_FLASHCARDS: FLASHCARDS ? "1" : "0",
   },
   outputFileTracingRoot: __dirname,
   turbopack: {
@@ -126,7 +173,9 @@ const nextConfig = {
     // 1`), inclusive depois de apagar `.next` e reconstruir do zero. Este bloco
     // e o mecanismo que o repo ja usa para `/kros`, `/rota` e `/calendario`, e e
     // verificavel por `curl -I`.
-    const flashcards = process.env.NEXT_PUBLIC_FLASHCARDS === "1";
+    // A constante do topo do ficheiro, e não uma segunda leitura do env: eram
+    // duas fontes para a mesma verdade, e divergiam no default.
+    const flashcards = FLASHCARDS;
     const paraOsCards = (destino) => (flashcards ? destino : "/hoje");
     return [
       // ── `www` VAI PARA O APEX ──────────────────────────────────────────
@@ -190,6 +239,58 @@ const nextConfig = {
       // aterrissam nos Graficos, calados — que e exatamente o bug que
       // `banco.historico.spec.ts` existe para impedir.
       { source: "/revisoes", destination: "/banco/historico", permanent: true },
+      // ⚠️ AS SEIS QUE ERAM PAGINA E VIRARAM REGRA.
+      //
+      // `/today`, `/semana`, `/setup`, `/desempenho`, `/agenda-operacional` e
+      // `/provas` existiam como `page.tsx` de 5 a 13 linhas cujo corpo inteiro
+      // era `redirect(...)`. Redirect que mora em pagina custa um render de
+      // servidor para nao desenhar nada, e -- pior -- fica invisivel para quem
+      // le esta lista procurando o mapa de rotas do app.
+      //
+      // ⚠️ NENHUMA das seis estava aqui, ao contrario do que eu supus: apagar
+      // as paginas sem estas linhas teria criado seis 404. E `/agenda-operacional`
+      // nao e sequer legado morto -- o fluxo de importacao do cronograma navega
+      // para ela em 21 lugares, como alvo de saida.
+      // ⚠️ ESTES SEIS SAO 307, E NAO 308 — a mesma razao do `/cards` acima.
+      //
+      // Eles substituem paginas que FORAM APAGADAS (eram `page.tsx` de uma linha,
+      // so com `redirect()`). Apagar reverte-se; e um 308 fica cacheado no
+      // navegador de quem visitou, entao a rota que voltasse continuaria a
+      // desviar para sempre naquele aparelho, sem nada no servidor a explicar
+      // porque. O `/provas` e o caso mais claro: o comentario da pagina que saiu
+      // dizia que ele tinha vocacao de voltar.
+      //
+      // O custo do 307 e um pedido a mais por visita a um alias que quase
+      // ninguem usa. O custo do 308 errado e irreversivel do lado de fora.
+      { source: "/today", destination: "/hoje", permanent: false },
+      { source: "/semana", destination: "/hoje", permanent: false },
+      { source: "/setup", destination: "/", permanent: false },
+      { source: "/desempenho", destination: "/cronograma", permanent: false },
+      { source: "/agenda-operacional", destination: "/cronograma/mes", permanent: false },
+      { source: "/provas", destination: "/banco/historico", permanent: false },
+      // ── O MES GANHOU ROTA, E `?view=month` PASSOU A ENCAMINHAR ──────────
+      //
+      // "Semana" e "Mes" viraram secoes da barra do Plano, e `navConfig` casa
+      // secao por PATHNAME (`normalizePathname` corta a query antes de
+      // comparar). Enquanto as duas visoes dividiam `/cronograma`, elas
+      // empatavam no comprimento do casamento e a barra acendia sempre a mesma
+      // -- o aluno no mes lia "Semana" acesa.
+      //
+      // O encaminhamento e AQUI, e nao num `redirect()` dentro de
+      // `cronograma/page.tsx`, pela razao ja medida no bloco dos flashcards
+      // acima: `redirect()` em pagina continuou a ser pre-renderizado como
+      // HTML. `has` casa a query, e o Next reenvia os restantes parametros
+      // (`anchor`, `day`) sozinho.
+      //
+      // 307 e nao 308: `?view=month` circula em link colado e no historico do
+      // aparelho, e um 308 ficaria cacheado para sempre no navegador de quem o
+      // abriu -- mesmo raciocinio das seis linhas acima.
+      {
+        source: "/cronograma",
+        has: [{ type: "query", key: "view", value: "month" }],
+        destination: "/cronograma/mes",
+        permanent: false,
+      },
       // `/cronograma` e' a canonica: e' o nome que a tela usa com o aluno e o
       // diretorio real da pagina. O 308 estava invertido -- mandava a canonica
       // para o alias, e o proprio `app/planejamento/page.tsx` so reexportava

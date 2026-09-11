@@ -1,12 +1,24 @@
 "use client";
 
-import type { Area as AreaKey } from "@/app/desempenho/_lib/perfilShared";
+import type { Area as AreaKey } from "@/lib/perfil/perfilShared";
 
 // ── Chart constants ──────────────────────────────────────────────
 
 export const CHART_INK = "var(--color-ink)";
 export const CHART_EDGE = "var(--color-edge)";
 export const CHART_MUTED = "var(--color-muted)";
+/**
+ * O TEXTO DENTRO DO SVG — mono, 10px, 400.
+ *
+ * Os eixos herdavam a sans do documento, e cada gráfico repetia o seu
+ * `{ fontSize: 10, fill: CHART_MUTED }` à mão. Rótulo de eixo é DADO — a mesma
+ * família dos números, tempos e percentuais do resto do app — e o
+ * `spec-do-app.mjs` mede o texto de SVG como mede o de HTML: um `fontSize={9}`
+ * ou um `fontWeight={700}` aqui é um degrau que as 22 artboards não têm.
+ */
+export const CHART_FONT_MONO = "var(--font-mono)";
+export const CHART_TICK = { fontSize: 10, fill: CHART_MUTED, fontFamily: CHART_FONT_MONO } as const;
+export const CHART_SVG_LABEL = { fontSize: 10, fill: CHART_MUTED, fontFamily: CHART_FONT_MONO } as const;
 export const TOUCH_INTERACTION_QUERY = "(hover: none), (pointer: coarse)";
 export const AREA_SEGMENT_ORDER: AreaKey[] = ["GO", "PD", "CG", "MP", "CM", "OU"];
 // Contorno da barra ativa. Precisa ser token: com um cinza-quase-preto fixo,
@@ -511,8 +523,12 @@ export function renderWeekTickLabel(
       textAnchor="middle"
       dominantBaseline="hanging"
       fill={isActive ? (option.activeFill ?? CHART_INK) : (option.defaultFill ?? CHART_MUTED)}
+      fontFamily={CHART_FONT_MONO}
       fontSize={10}
-      fontWeight={isActive ? 700 : 400}
+      // A semana ativa distingue-se pela TINTA (`activeFill`), e nao pelo peso:
+      // no desenho a mono nunca e' negrito, e 10/700 nao existe em nenhuma das
+      // 22 artboards.
+      fontWeight={400}
     >
       {tickLabel}
     </text>

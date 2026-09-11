@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { BOTTOM_ACTION_BAR_RESERVE_CLASS, BottomActionBar } from "@/components/ui/BottomActionBar";
 import {
   type OperationalTurboOverview,
 } from "@/lib/api";
@@ -50,7 +52,13 @@ export function TurboLobby({
   const previewCards = turboOverview?.priority_preview.slice(0, 3) ?? [];
 
   return (
-    <div className="flex flex-col" style={{ minHeight: TURBO_VIEWPORT_MIN_HEIGHT }}>
+    // ⚠️ A RESERVA É OBRIGATÓRIA quando se monta uma `BottomActionBar`: no
+    // telemóvel ela é `fixed`, sai do fluxo, e sem este recuo o fim do
+    // conteúdo fica por baixo dela. É o mesmo que o `CadernoClientPage` faz.
+    <div
+      className={`flex flex-col ${BOTTOM_ACTION_BAR_RESERVE_CLASS}`}
+      style={{ minHeight: TURBO_VIEWPORT_MIN_HEIGHT }}
+    >
 
       {/* Button — absolutely centered in the full container */}
       <div className="flex flex-1 flex-col justify-center gap-5 py-6">
@@ -69,7 +77,7 @@ export function TurboLobby({
         ) : (
           <>
             <div className="space-y-2 text-center">
-              <div className="surface-hero px-5 py-6">
+              <div className="paper-surface px-5 py-6">
                 <p className="paper-eyebrow">Cards para revisar agora</p>
                 <p className="mt-2 text-5xl leading-none text-ink">{effectiveAvailableCount}</p>
                 <p className="mt-2 text-sm text-muted">
@@ -164,17 +172,32 @@ export function TurboLobby({
       )}
 
       {effectiveAvailableCount > 0 && (
-        <div className="sticky bottom-[calc(env(safe-area-inset-bottom,0px)+0.6rem)] z-40 -mx-1 rounded-control border border-edge bg-paper p-2">
-          <button
+        /* ⚠️ ISTO É UMA `BottomActionBar`, e a mudança foi PEDIDA: o operador
+           apontou que o arranque da revisão devia ser igual ao `Pesquisar` do
+           Caderno, e que esse desenho se devia repetir em necessidade
+           semelhante.
+
+           O que estava aqui antes era um `sticky` COM CAIXA PRÓPRIA — borda,
+           fundo e `-mx-1` — a fingir de barra dentro do cartão do lobby. Lia-se
+           como um cartãozinho colado, e não como a ação da tela.
+
+           A `BottomActionBar` traz de graça o que eu estava a remontar à mão:
+           assenta acima da barra de abas e segue-a quando ela se esconde
+           (`.acima-da-barra-de-abas`), vira estática no desktop, e a ação vai
+           centrada abaixo de `sm`. */
+        <BottomActionBar>
+          <Button
             type="button"
             data-testid="turbo-start"
+            variant="primary"
+            size="md"
+            bloco
             onClick={() => void onStartAction(questionCount)}
-            className="bg-primary inline-flex min-h-11 w-full items-center justify-center rounded-control border border-primary text-sm font-medium text-primaryInk transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             Iniciar revisão · {questionCount} cards
             {isTurboMode ? ` · ~${fmtTime(questionCount * ESTIMATED_MS_PER_CARD)}` : ""}
-          </button>
-        </div>
+          </Button>
+        </BottomActionBar>
       )}
     </div>
   );

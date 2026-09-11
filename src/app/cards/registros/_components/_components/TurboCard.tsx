@@ -7,6 +7,7 @@ import {
   type OperationalTurboReviewChange,
   type OperationalTurboResult,
 } from "@/lib/api";
+import { Button } from "@/components/ui/Button";
 import { AREA_COLORS, Area } from "../../_lib/cadernoShared";
 import type { UseTurboCardStateReturn } from "../_hooks/useTurboCardState";
 
@@ -256,16 +257,20 @@ export function TurboCard({
 
           {!cardState.showAnswer && (
             <div className="mt-auto pt-3 border-t border-edge/70 flex flex-col items-center">
-              <button
+              {/* A borda continua a ser a cor da área — é o único sítio do
+                  cartão que a mostra depois de o conteúdo rolar. O resto do
+                  desenho passa a vir do primitivo. */}
+              <Button
                 type="button"
                 data-testid="turbo-reveal"
                 data-prevent-reveal-tap="true"
-                onClick={(e) => { e.stopPropagation(); cardState.triggerRevealFlip(); }}
-                className="min-h-[40px] min-w-[120px] border bg-surface px-4 py-2 text-xs transition hover:bg-surfaceMuted active:scale-[0.98]"
+                size="md"
+                className="min-w-[120px]"
                 style={{ borderColor: areaColor }}
+                onClick={(e) => { e.stopPropagation(); cardState.triggerRevealFlip(); }}
               >
                 Revelar
-              </button>
+              </Button>
               {cardState.mobileGestureHint && (
                 <p className="mt-2 text-micro text-muted" aria-hidden="true">
                   ↑ {cardState.mobileGestureHint}
@@ -280,25 +285,30 @@ export function TurboCard({
           dele. Sem botao, o swipe era a UNICA porta: invisivel no desktop e
           inalcancavel por teclado. */}
       <nav aria-label="Navegar entre cards" className="flex items-center justify-between gap-2">
-        <button
+        <Button
           type="button"
           disabled={!canSwipePrev || turboLoading || isActionLocked}
           onClick={() => void onNavigatePrevAction()}
-          className="inline-flex min-h-10 items-center rounded-control border border-edge bg-surface px-3 text-xs text-muted transition-colors enabled:hover:text-ink disabled:opacity-40"
         >
           ← Anterior
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           disabled={!canSwipeNext || turboLoading || isActionLocked}
           onClick={() => void onNavigateNextAction()}
-          className="inline-flex min-h-10 items-center rounded-control border border-edge bg-surface px-3 text-xs text-muted transition-colors enabled:hover:text-ink disabled:opacity-40"
         >
           Próximo →
-        </button>
+        </Button>
       </nav>
 
-      {/* Rating buttons */}
+      {/* ⚠️ A FILEIRA DE AVALIAÇÃO FICA À MÃO, de propósito.
+
+          Ela não é quatro botões: é UM controlo de quatro vias em que a cor
+          É a informação (errei/difícil/bom/fácil), cada via empilha duas ou
+          três linhas (rótulo, intervalo previsto, tecla de atalho) e o
+          primitivo é `inline-flex` de uma linha só. Passá-la pelo `Button`
+          seria redesenhá-la, não normalizá-la — e as quatro vias já falam
+          uma língua entre si, que é o que o operador pediu. */}
       {cardState.showAnswer && (
         <div className="flex gap-1.5">
           <button

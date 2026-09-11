@@ -9,6 +9,7 @@ import {
   createQuestionTextHighlight,
   deleteQuestionTextHighlight,
   getAPIErrorDetail,
+  getAPIErrorMessage,
   getQuestionBankAiRequestPreview,
   getQuestionBankAiRequestStatus,
   getQuestionBankGuidedReview,
@@ -53,6 +54,7 @@ import PostExamReview from "./_components/PostExamReview";
 import { ConfidenceReviewStep } from "./_components/ConfidenceReviewStep";
 import { SessionErrorToast } from "./_components/SessionErrorToast";
 import AttemptHistoryModal from "../../_components/AttemptHistoryModal";
+import { posicaoParaRetomar } from "../../_lib/retomada";
 import LearningPackagePanel from "./_components/LearningPackagePanel";
 
 type QuickNoteTarget = {
@@ -456,10 +458,9 @@ export default function SessionPage() {
     getQuestionBankSession(token, sessionId)
       .then((s) => {
         setSession(s);
-        // Start at first unanswered question if available
-        if (s.unanswered_question_numbers.length > 0) {
-          setCurrentPosition(s.unanswered_question_numbers[0]);
-        }
+        // ⚠️ A primeira SEM resposta, e não `unanswered_question_numbers`, que
+        // conta tentativa e por isso devolvia 1 com a prova toda respondida.
+        setCurrentPosition((atual) => posicaoParaRetomar(s.items) ?? atual);
         questionStartTimeRef.current = Date.now();
       })
       .catch(() => setError("Não foi possível carregar a sessão."))
@@ -644,7 +645,7 @@ export default function SessionPage() {
       );
     } catch (err) {
       setSession(previous);
-      setError(err instanceof Error ? err.message : "Não foi possível salvar favorito.");
+      setError(getAPIErrorMessage(err) ?? "Não foi possível salvar favorito.");
       throw err;
     }
   }
@@ -684,7 +685,7 @@ export default function SessionPage() {
       });
       patchQuestionHighlights(questionId, (highlights) => [...highlights, highlight]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível salvar o grifo.");
+      setError(getAPIErrorMessage(err) ?? "Não foi possível salvar o grifo.");
       throw err;
     }
   }
@@ -696,7 +697,7 @@ export default function SessionPage() {
         highlights.filter((highlight) => highlight.highlight_id !== highlightId),
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível limpar o grifo.");
+      setError(getAPIErrorMessage(err) ?? "Não foi possível limpar o grifo.");
       throw err;
     }
   }
@@ -713,7 +714,7 @@ export default function SessionPage() {
         post_answer_reflection: reflection,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível salvar a reflexão.");
+      setError(getAPIErrorMessage(err) ?? "Não foi possível salvar a reflexão.");
     } finally {
       setReflectionBusyByPosition((prev) => ({ ...prev, [position]: false }));
     }
@@ -759,7 +760,7 @@ export default function SessionPage() {
       setCorrectionDrafts((prev) => ({ ...prev, [position]: "" }));
       setGuidedResponses((prev) => ({ ...prev, [position]: {} }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível salvar a correção guiada.");
+      setError(getAPIErrorMessage(err) ?? "Não foi possível salvar a correção guiada.");
     } finally {
       setBusy(false);
     }
@@ -793,12 +794,17 @@ export default function SessionPage() {
       setSession(out.session);
       void invalidateLearningQueries(queryClient);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível finalizar a sessão.");
+      setError(getAPIErrorMessage(err) ?? "Não foi possível finalizar a sessão.");
     } finally {
       setBusy(false);
     }
   }
 
+  /**
+   * ⚠️ Só oferece a correção guiada quando ela existe: sem checkpoints de
+   * `pedagogical-profile.v2` o toggle leva a um beco. A condição sai do
+   * contrato, não de uma flag espelhando a do servidor.
+   */
   async function applyFeedbackRevealPolicy(policy: QuestionBankFeedbackRevealPolicy) {
     if (!session || session.status !== "active") return;
     setBusy(true);
@@ -811,7 +817,7 @@ export default function SessionPage() {
       );
       setSession(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível alterar o feedback desta prova.");
+      setError(getAPIErrorMessage(err) ?? "Não foi possível alterar o feedback desta prova.");
     } finally {
       setBusy(false);
     }
@@ -828,7 +834,7 @@ export default function SessionPage() {
         has_chosen_feedback_default: true,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível salvar a preferência padrão.");
+      setError(getAPIErrorMessage(err) ?? "Não foi possível salvar a preferência padrão.");
     } finally {
       setBusy(false);
     }
@@ -849,7 +855,7 @@ export default function SessionPage() {
       setFinalizeOut(out);
       void invalidateLearningQueries(queryClient);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível corrigir a sessão.");
+      setError(getAPIErrorMessage(err) ?? "Não foi possível corrigir a sessão.");
     } finally {
       setBusy(false);
     }
@@ -908,7 +914,7 @@ export default function SessionPage() {
       }
       await loadAiRequestPreview(questionId);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Não foi possível solicitar a IA canônica.";
+      const message = getAPIErrorMessage(err) ?? "Não foi possível solicitar a IA canônica.";
       setError(message);
     } finally {
       setAiCorrectionRequesting((prev) => ({ ...prev, [questionId]: false }));
@@ -997,6 +1003,10 @@ export default function SessionPage() {
   // navegação e pode estar defasado de uma resposta que acabou de sair daqui,
   // e um diálogo que diz "6 respondidas" logo depois da sétima é pior que
   // diálogo nenhum.
+  const correcaoGuiadaExiste = session.items.some((item) => item.reasoning_review_eligible);
+  const quickNoteItem = quickNoteTarget
+    ? session.items.find((item) => item.question_id === quickNoteTarget.questionId)
+    : undefined;
   const respondidas = session.items.filter((item) => Boolean(item.selected_option)).length;
   const pendentes = Math.max(0, total - respondidas);
 
@@ -1190,6 +1200,9 @@ export default function SessionPage() {
           <QuickNoteModal
             key={quickNoteTarget.questionId}
             questionId={quickNoteTarget.questionId}
+            sessionId={session.session_id}
+            stem={quickNoteItem?.stem}
+            alternatives={quickNoteItem?.alternatives}
             defaultArea={quickNoteTarget.area}
             defaultTheme={quickNoteTarget.theme}
             questionOutcome={quickNoteTarget.questionOutcome}
@@ -1282,7 +1295,9 @@ export default function SessionPage() {
         onDeleteHighlight={(highlightId) => removeTextHighlight(currentItem.question_id, highlightId)}
         finalizeLabel={`Corrigir ${sessionKindLabel.toLowerCase()}`}
         feedbackRevealPolicy={session.feedback_reveal_policy}
-        onFeedbackRevealPolicyChange={applyFeedbackRevealPolicy}
+        onFeedbackRevealPolicyChange={
+          correcaoGuiadaExiste ? applyFeedbackRevealPolicy : undefined
+        }
         onSaveFeedbackRevealPolicyDefault={saveFeedbackRevealPolicyDefault}
       />
       {/* TRÊS SAÍDAS, e não duas — artboard 13b.

@@ -55,6 +55,27 @@ export type StudentExperience = {
   missing_sources: string[];
 };
 
+/** Um numero que o motor usou, ja formatado pelo servidor. */
+export type StudentTodayFactor = {
+  key: string;
+  label: string;
+  /**
+   * Vem pronto do servidor de proposito: o cliente nao tem como saber se `0.62`
+   * e' razao ou contagem, e adivinhar errado publica um numero falso.
+   */
+  value: string;
+  meaning: string;
+};
+
+/** O porque ESTRUTURADO da acao -- o que `rationale` achata numa frase. */
+export type StudentTodayExplanation = {
+  selected_because: string[];
+  factors: StudentTodayFactor[];
+  confidence_label: string | null;
+  confidence_reason: string | null;
+  policy_version: string | null;
+};
+
 export type StudentTodayAction = {
   kind: string;
   title: string;
@@ -67,6 +88,11 @@ export type StudentTodayAction = {
   confidence: "low" | "medium" | "high";
   /** Grande area, quando a origem sabe qual e. Nulo = nao ha area. */
   area: string | null;
+  /**
+   * Os numeros por tras da frase. Ausente quando a origem nao os produz --
+   * objeto vazio se leria como "sem motivo", que e' diferente de "sem dado".
+   */
+  explanation?: StudentTodayExplanation | null;
   execution?: {
     kind: "trainer_action" | "resume_session" | "href";
     recommendation_id: string | null;

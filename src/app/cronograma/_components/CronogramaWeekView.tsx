@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays as CalendarPlus2, ChevronLeft, ChevronRight, SlidersHorizontal as SlidersHorizontal } from "lucide-react";
 
+import { classesDeBotao } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
 import { useNavbar } from "@/lib/NavbarContext";
@@ -14,7 +15,7 @@ import { resolveDisplayArea } from "@/lib/areaDisplay";
 import { getOperationalStreak, invalidateStudentExperienceCache } from "@/lib/api";
 import type { StudentAgendaItem } from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
-import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
+
 import { AgendaItemRow } from "@/features/student-agenda/AgendaItemRow";
 import { uniqueAgendaItems } from "@/features/student-agenda/agendaSelectors";
 import { useStudentAgenda } from "@/features/student-agenda/useStudentAgenda";
@@ -28,7 +29,7 @@ import {
 
 import { CronogramaStreakCard } from "./CronogramaStreakCard";
 import { WeeklyGoalControl } from "./WeeklyGoalControl";
-import { IconMonthGrid } from "./CronogramaIcons";
+
 import { writeCronogramaViewModeSession } from "../_lib/viewModeSession";
 
 function isInsideRange(date: string | null | undefined, start: string, end: string): date is string {
@@ -78,8 +79,7 @@ export function CronogramaWeekView({
   initialSelectedDay?: string | null;
 }) {
   const router = useRouter();
-  const isDesktopNavigation = useDesktopNavigationMode();
-  const { setTitle, setActions } = useNavbar();
+  const { setTitle } = useNavbar();
   const { token, tokenResolved } = useAuthToken();
   const range = useMemo(() => weekRange(anchor), [anchor]);
   const agendaQuery = useStudentAgenda(range.start, range.end);
@@ -106,25 +106,24 @@ export function CronogramaWeekView({
     retry: 1,
   });
 
+  /**
+   * ⚠️ O ÍCONE "VER MÊS" SAIU DA BARRA DE TÍTULO.
+   *
+   * Ele existia só no telemóvel, porque no desktop a troca vinha de um seletor
+   * textual dentro do conteúdo. Com "Semana" e "Mês" como seções do Plano, a
+   * troca passou a ser a MESMA nas duas larguras, no topo do conteúdo
+   * (`IntentSubNav`) — e um segundo caminho para ela, com outro desenho e outro
+   * lugar, é chrome que o aluno tem de aprender duas vezes.
+   *
+   * O título passa a ser "Semana", que é o nome da seção. "Cronograma" era o
+   * nome do arquivo, e dizia respeito ao mês e à semana ao mesmo tempo.
+   */
   useEffect(() => {
-    setTitle("Cronograma");
-    setActions(
-      isDesktopNavigation ? null : (
-        <Link
-          href={`/cronograma?view=month&anchor=${today}&day=${today}`}
-          data-testid="schedule-view-month"
-          aria-label="Ver calendário mensal"
-          className="flex h-9 w-9 shrink-0 items-center justify-center text-muted transition-colors hover:bg-surfaceMuted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <IconMonthGrid className="h-5 w-5" />
-        </Link>
-      ),
-    );
+    setTitle("Semana");
     return () => {
       setTitle(null);
-      setActions(null);
     };
-  }, [isDesktopNavigation, setActions, setTitle, today]);
+  }, [setTitle]);
 
   useEffect(() => {
     writeCronogramaViewModeSession("week");
@@ -150,7 +149,11 @@ export function CronogramaWeekView({
   // Nada garante que só um mock produza payload incompleto — proxy que trunca,
   // deploy com contrato antigo e resposta parcial fazem o mesmo.
   if (!agenda || !Array.isArray(agenda.days) || !agenda.summary) {
-    return <Alert variant="danger">Não foi possível carregar esta semana.</Alert>;
+    return (
+      <Alert variant="danger" onRetry={() => void agendaQuery.refetch()}>
+        Não foi possível carregar esta semana.
+      </Alert>
+    );
   }
 
   const selectedDay = agenda.days.find((day) => day.date === selectedDate) ?? agenda.days[0];
@@ -283,10 +286,17 @@ export function CronogramaWeekView({
           data-detail-date={selectedDay.date}
           className="rounded-surface border border-edge bg-paper px-3 py-4 sm:px-4"
         >
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          {/* ⚠️ EMPILHA ABAIXO DE `sm`, e a ação passa a largura total.
+
+              Era `flex-wrap justify-between` nas duas larguras: a 390px o
+              `Organizar dia` ficava encostado à DIREITA, a +106px do centro
+              da tela — medido. O operador pediu ação centrada no telemóvel, e
+              num cabeçalho de cartão a forma de o fazer é deixar o título e a
+              ação em linhas próprias, não espremê-los na mesma. */}
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <h2 id="selected-day-title" className="font-serif text-xl font-semibold text-ink">
+                <h2 id="selected-day-title" className="font-serif font-semibold text-ink">
                   {formatWeekday(selectedDay.date)}
                 </h2>
                 {selectedDay.is_today ? (
@@ -297,9 +307,16 @@ export function CronogramaWeekView({
               </div>
               <p className="mt-0.5 text-xs text-muted">{formatShortDate(selectedDay.date)} · detalhes do dia</p>
             </div>
+            {/* A receita do primitivo, e não seis classes à mão: isto era
+                `min-h-9` (36px, abaixo do piso de 44px) com um `hover` só
+                dele. `<Link>` não é `<button>`, então recebe as classes. */}
             <Link
-              href={`/cronograma?view=month&anchor=${selectedDay.date}&day=${selectedDay.date}`}
-              className="inline-flex min-h-9 items-center gap-1.5 border border-edge px-3 text-xs text-primary transition-colors hover:border-primary hover:bg-surfaceMuted"
+              href={`/cronograma/mes?anchor=${selectedDay.date}&day=${selectedDay.date}`}
+              className={classesDeBotao({
+                variant: "secondary",
+                size: "md",
+                bloco: true,
+              })}
             >
               <CalendarPlus2 className="h-4 w-4" aria-hidden="true" />
               Organizar dia
@@ -334,7 +351,7 @@ export function CronogramaWeekView({
           ) : (
             <div className="mt-4 bg-surfaceMuted px-3 py-4 text-sm text-muted">
               <p>Dia livre. Nenhuma atividade planejada.</p>
-              <Link href={`/cronograma?view=month&anchor=${selectedDay.date}&day=${selectedDay.date}`} className="mt-2 inline-block font-medium text-primary hover:underline">
+              <Link href={`/cronograma/mes?anchor=${selectedDay.date}&day=${selectedDay.date}`} className="mt-2 inline-block font-medium text-primary hover:underline">
                 Adicionar atividade
               </Link>
             </div>
@@ -346,10 +363,10 @@ export function CronogramaWeekView({
         <section aria-labelledby="week-overdue-title" className="border-y border-warning/50 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 id="week-overdue-title" className="font-serif text-lg font-semibold text-ink">Atrasadas</h2>
+              <h2 id="week-overdue-title" className="font-serif font-semibold text-ink">Atrasadas</h2>
               <p className="text-xs text-muted">Aparecem somente aqui para não duplicar o dia original.</p>
             </div>
-            <Link href="/cronograma?view=month" className="text-xs text-primary hover:underline">Reorganizar</Link>
+            <Link href="/cronograma/mes" className="text-xs text-primary hover:underline">Reorganizar</Link>
           </div>
           <ul className="mt-2 divide-y divide-edge">
             {uniqueAgendaItems(agenda.overdue).map((item) => <AgendaItemRow key={item.occurrence_id} item={item} />)}
@@ -372,23 +389,37 @@ export function CronogramaWeekView({
       ) : null}
 
       <section aria-labelledby="week-settings-title" data-week-context="true" className="rounded-surface border border-edge bg-surface px-3 py-3 sm:px-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* Mesma correção do cabeçalho acima: a 390px este `Abrir minha
+            semana` ficava a −87px do centro, encostado à esquerda. */}
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div>
-            {/* ⚠️ SEM CLASSE DE PESO AQUI, de propósito.
+            {/* ⚠️ SEM CLASSE DE TAMANHO AQUI, de propósito (conserto vindo da
+                `main`). `.paper-page h2` vence o `text-sm` por especificidade e
+                renderiza isto a 22px — mas `font-medium` é utilitário e VENCE o
+                peso do CSS. O resultado era 22/500, um degrau que o desenho não
+                tem (ele tem 22/600). Deixar o peso ao CSS devolve o par certo.
 
-    `.paper-page h2` vence o `text-sm` por especificidade e renderiza isto a
-    22px — mas `font-medium` é utilitário e VENCE o peso do CSS. O resultado
-    era 22/500, um degrau que o desenho não tem (ele tem 22/600). Deixar o
-    peso ao CSS devolve o par certo. */}
-<h2 id="week-settings-title" className="font-semibold text-ink">Preferências da semana</h2>
+                A PALAVRA, essa, é "Minha semana" — o mesmo rótulo que a
+                `navConfig` dá a esta seção. O conserto de CSS e a troca de copy
+                vinham no mesmo hunk e são coisas separadas: o conserto entra, a
+                troca não, senão o título da página divergiria do menu que leva
+                até ela. */}
+            <h2 id="week-settings-title" className="font-semibold text-ink">Minha semana</h2>
             <p className="mt-0.5 text-xs text-muted">Ajuste meta, dias disponíveis, capacidade e lembretes.</p>
           </div>
+          {/* `outline` porque a ação é secundária mas convida — era
+              `border-primary` com texto primary e inversão no hover, que é
+              exatamente o que a variante já faz. */}
           <Link
             href="/preferencias"
-            className="inline-flex min-h-10 items-center gap-1.5 border border-primary px-3 text-xs text-primary transition-colors hover:bg-primary hover:text-primaryInk"
+            className={classesDeBotao({
+              variant: "outline",
+              size: "md",
+              bloco: true,
+            })}
           >
             <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-            Abrir preferências
+            Abrir minha semana
           </Link>
         </div>
       </section>

@@ -224,7 +224,7 @@ export default function CadastroPage() {
           <CabecalhoPublico />
           <div className="pt-10">
             <span className="paper-eyebrow">Conta criada</span>
-            <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
+            <h1 className="mt-3 font-serif font-semibold leading-snug text-ink">
               Confirme seu e-mail para continuar.
             </h1>
             <p className="mt-3 text-sm leading-6 text-muted">
@@ -276,7 +276,7 @@ export default function CadastroPage() {
 
         <div className="pt-6">
           <span className="paper-eyebrow">Criar conta</span>
-          <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
+          <h1 className="mt-3 font-serif font-semibold leading-snug text-ink">
             Comece pela sua prova.
           </h1>
           <p className="mt-3 text-sm leading-6 text-muted">

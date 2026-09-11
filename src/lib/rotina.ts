@@ -9,7 +9,7 @@ import {
   OTHER_EVENT_PREFIX,
   SKIP_ROUTINE_PREFIX,
   WORK_EVENT_PREFIX,
-} from "../app/desempenho/_lib/perfilShared.ts";
+} from "./perfil/perfilShared.ts";
 import {
   filterEffectivePunctualEvents,
   filterEffectiveRoutineEvents,
@@ -49,6 +49,30 @@ export const DIAS_DA_SEMANA = [
 ] as const;
 
 /** Fronteira do plantão longo, em horas. Espelha `POST_48H_HEAVY_DAY_THRESHOLD`. */
+/**
+ * OS ATALHOS DE MINUTOS POR DIA — uma lista só, para as DUAS telas.
+ *
+ * A mesma pergunta ("quanto dá para estudar neste dia") era feita com escalas
+ * diferentes conforme o momento: o onboarding oferecia `0/30/60/90/120/180` e
+ * "Minha semana" oferecia `0/10/20/35/45/60`. Duas escalas para um campo só.
+ *
+ * ⚠️ E a de "Minha semana" não alcançava o PRÓPRIO PADRÃO do produto. O
+ * onboarding abre com 120 min/dia (`DEFAULT_MINUTES`); quem aceitasse esse
+ * padrão e depois abrisse a tela que existe para o editar não conseguia
+ * reencontrar o seu valor por toque — o teto dos atalhos era 60. A tela de
+ * edição não sabia exprimir o que a tela de criação tinha gravado.
+ *
+ * A união é ADITIVA de propósito: os seis valores do artboard `14b` ficam todos
+ * (a granularidade fina no fundo da escala é onde vive o dia pós-plantão), e
+ * entram 90 e 120 para o padrão passar a ser alcançável. Trocar os valores do
+ * desenho seria decidir design a partir de um bug de consistência.
+ *
+ * "Nada" vem primeiro e sem penalidade: quem trabalha em escala vai ter dias em
+ * que não dá, e um produto que trata isso como falha é abandonado na terceira
+ * semana.
+ */
+export const ATALHOS_DE_MINUTOS = [0, 10, 20, 35, 45, 60, 90, 120] as const;
+
 export const HORAS_DE_PLANTAO_LONGO = 20;
 /** Fronteira do plantão, em horas. Espelha `CONSTRAINED_DAY_HOURS`. */
 export const HORAS_DE_PLANTAO = 10;

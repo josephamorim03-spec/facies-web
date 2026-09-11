@@ -170,9 +170,13 @@ export function QuestionFullContext({
       {visibleNodes.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {visibleNodes.map((node, index) => (
+            // ⚠️ `max-w-full break-words`: `nodeLabel` devolve
+            // `node_code - node_name`, a string mais longa desta tela, e um chip
+            // sem teto de largura empurra a linha inteira para fora do ecra. Os
+            // irmaos `FiltersBar` e `BancaPicker` ja o fazem.
             <span
               key={node.knowledge_node_id ?? `${nodeLabel(node)}-${index}`}
-              className="border border-primary/30 bg-surface px-2 py-0.5 text-micro text-primary"
+              className="max-w-full break-words border border-primary/30 bg-surface px-2 py-0.5 text-micro text-primary"
             >
               {nodeLabel(node)}
             </span>

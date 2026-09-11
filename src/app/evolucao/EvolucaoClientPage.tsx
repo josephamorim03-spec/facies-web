@@ -17,6 +17,7 @@ import {
   type CompetencyMasteryItem,
 } from "@/lib/api";
 import { getFaciesDaBanca } from "@/lib/api/domains/study-plan";
+import { provaAlvoPrincipal } from "@/components/alvoDaTela";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
 // ⚠️ O casamento entre "Clínica Médica" (rótulo da banca) e "CM" (código do
@@ -26,6 +27,7 @@ import { useAuthToken } from "@/lib/useAuthToken";
 // usa, e normaliza acento, caixa e sinonimo.
 import { resolveDisplayArea } from "@/lib/areaDisplay";
 import { Cartao, Numero, SemBase } from "./_components/Cartao";
+import { PortaDosGraficos } from "./_components/PortaDosGraficos";
 import {
   acertoPorSemana,
   mosaicoDeDias,
@@ -82,7 +84,15 @@ export function EvolucaoClientPage() {
     queryFn: () => getMyTargetExam(token),
     ...ativo,
   });
-  const chaveDaBanca = alvo.data?.items?.[0]?.institution_key ?? null;
+  // ⚠️ `provaAlvoPrincipal`, e NAO `items[0]`.
+  //
+  // Esta linha lia a POSICAO do array; a regra do produto e' o campo
+  // `priority`, e `alvoDaTela.ts` di-lo com todas as letras: "ordem de array e'
+  // acidente de serializacao; prioridade e' o campo que carrega a decisao do
+  // aluno". O `/mapa` ja ordenava por prioridade, entao as duas telas podiam
+  // discordar sobre qual e' "a sua banca" — o aluno via a estimativa de nota de
+  // uma prova e o mapa de outra, sem nada a explicar a diferenca.
+  const chaveDaBanca = provaAlvoPrincipal(alvo.data?.items)?.institution_key ?? null;
   const banca = useQuery({
     queryKey: queryKeys.faciesDaBanca(chaveDaBanca ?? "sem-prova"),
     queryFn: () => getFaciesDaBanca(chaveDaBanca as string),
@@ -167,7 +177,7 @@ export function EvolucaoClientPage() {
   const carregando = desempenho.isPending && semanas.isPending && banca.isPending;
 
   if (carregando) {
-    return <Skeleton className="h-96 w-full" aria-label="Evolução carregando" />;
+    return <Skeleton className="h-96 w-full" rotulo="Evolução carregando" />;
   }
 
   const seisSemanas = acertoPorSemana(semanas.data?.weeks ?? []);
@@ -177,7 +187,7 @@ export function EvolucaoClientPage() {
   const diasEstudados = mosaico.filter((d) => d.estado !== "vazio").length;
 
   return (
-    <div className="space-y-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
+    <div className="ritmo-secao md:grid md:grid-cols-2 md:gap-4 md:[&>*+*]:mt-0">
       {/* 1 ─────────────────────────────────────────────────────────────── */}
       <Cartao
         pergunta="Se a prova fosse hoje"
@@ -240,23 +250,44 @@ export function EvolucaoClientPage() {
         nota="Não é porcentagem: é quantas questões da prova você perderia por esse assunto."
       >
         {escapes.length ? (
-          <ul className="divide-y divide-rule">
+          <ul>
             {escapes.map((linha) => (
-              <li key={linha.assunto} className="flex items-baseline gap-3 py-2">
-                <span className="flex-1 text-sm text-ink">
-                  {linha.assunto}
-                  {linha.abaixoDoPiso ? (
-                    <span
-                      className="ml-1 text-muted"
-                      title="menos de 80 respostas suas: o número existe, a conclusão não"
-                    >
-                      ◐
-                    </span>
-                  ) : null}
-                </span>
-                <span className="font-mono text-nota tabular-nums text-ink">
-                  {linha.perdidas.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}
-                </span>
+              /* ⚠️ A LINHA PASSOU A PRATICAR O ASSUNTO QUE ELA NOMEIA.
+
+                 A Evolução tinha SETE cartões de leitura e UM elemento
+                 interativo em 2,6 telas de altura. Ela dizia ao médico onde ele
+                 mais perde questões e não oferecia nada — para agir, era
+                 preciso decorar o nome, atravessar para o Banco e digitá-lo.
+
+                 ⚠️ SEM PREENCHIMENTO, de propósito. O contrato desta tela é que
+                 ela não dispute a ação do dia com o Hoje, e ele continua de pé:
+                 quem decide o que fazer agora é o Hoje. Aqui a ação é a própria
+                 linha, do peso que ela já tinha — nada ganhou destaque.
+
+                 `answer_status=unanswered_or_wrong` é o recorte honesto para
+                 "onde escapa": o que ainda não viu, mais o que já errou. O
+                 Banco passou a ler os dois parâmetros na PR #37. */
+              <li key={linha.assunto} className="border-b border-rule last:border-b-0">
+                <Link
+                  href={`/banco?theme=${encodeURIComponent(linha.assunto)}&answer_status=unanswered_or_wrong`}
+                  className="paper-control flex min-h-11 items-baseline gap-3 py-2 hover:text-primary"
+                >
+                  <span className="flex-1 text-sm text-ink">
+                    {linha.assunto}
+                    {linha.abaixoDoPiso ? (
+                      <span
+                        className="ml-1 text-muted"
+                        title="menos de 80 respostas suas: o número existe, a conclusão não"
+                      >
+                        ◐
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="font-mono text-nota tabular-nums text-ink">
+                    {linha.perdidas.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}
+                  </span>
+                  <span aria-hidden="true" className="shrink-0 text-muted">›</span>
+                </Link>
               </li>
             ))}
           </ul>
@@ -343,45 +374,25 @@ export function EvolucaoClientPage() {
         )}
       </Cartao>
 
+      {/* A porta dos graficos. Vem DEPOIS dos sete cartoes porque a ordem e o
+          argumento: a tela responde a pergunta primeiro, e so entao oferece o
+          grafico que sustenta a resposta.
+
+          ⚠️ Era uma GAVETA VAZIA, e o link real vivia no rodape — duas coisas
+          a disputar o mesmo papel, e a que tinha o nome certo era a que nao
+          levava a lado nenhum. O porque esta em PortaDosGraficos. */}
+      <PortaDosGraficos />
+
       {!chaveDaBanca ? (
         <div className="md:col-span-2">
           <Alert variant="warning">
             Duas destas leituras dependem da sua prova: sem ela, não dá para pesar as áreas.{" "}
-            <Link href="/preferencias" className="underline underline-offset-4">
+            <Link href="/conta/preferencias#prova-alvo" className="underline underline-offset-4">
               Escolher a prova
             </Link>
           </Alert>
         </div>
       ) : null}
-
-      {/* ⚠️ OS GRÁFICOS EXISTEM, E ESTAVAM INALCANÇÁVEIS.
-          `/estatisticas/graficos` tem sete componentes vivos (acerto no tempo,
-          acerto por área, volume, comparativo, análise de cards) e continuou
-          servindo depois que esta tela virou os sete cartões-pergunta do
-          artboard `9b`. Só que o único link para lá era de dentro do
-          `/estatisticas/relatorio` — que também não tem porta. Na prática o
-          aluno não os encontrava, e o operador confirmou isso.
-
-          A porta fica AQUI, no fim, e não numa aba: os cartões respondem as
-          perguntas que o médico faz, e o gráfico é o segundo olhar de quem
-          quer ver a série inteira. Pôr os dois no mesmo nível traria de volta
-          o painel que o `9b` desfez. */}
-      <div className="md:col-span-2">
-        <Link
-          href="/estatisticas/graficos"
-          className="paper-control flex min-h-12 items-center justify-between gap-3 border-t border-rule pt-4 text-sm text-ink hover:text-primary"
-        >
-          <span className="min-w-0">
-            Ver as séries no tempo
-            <span className="mt-0.5 block text-nota text-muted">
-              Acerto por semana, por área, volume e comparativo
-            </span>
-          </span>
-          <span aria-hidden="true" className="shrink-0 text-muted">
-            ›
-          </span>
-        </Link>
-      </div>
     </div>
   );
 }

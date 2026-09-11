@@ -2,21 +2,14 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const ROOT = process.cwd();
+// ⚠️ DEZ ENTRADAS SAIRAM em 2026-09-06 junto com os ficheiros: eram primitivos
+// sem um unico call site. Um guard que aponta para arquivo apagado imprime verde
+// sobre o vazio -- e este repositorio ja pagou por isso uma vez.
 const PAPER_SURFACES = [
   "src/components/ui/Button.tsx",
-  "src/components/ui/Dialog.tsx",
-  "src/components/ui/Drawer.tsx",
   "src/components/ui/Sheet.tsx",
-  "src/components/ui/EmptyState.tsx",
-  "src/components/ui/IconButton.tsx",
-  "src/components/ui/OutcomeCard.tsx",
-  "src/components/ui/Progress.tsx",
-  "src/components/ui/Select.tsx",
-  "src/components/ui/StatusBadge.tsx",
-  "src/components/ui/StudyActionCard.tsx",
   "src/components/ui/Surface.tsx",
   "src/components/ui/Tabs.tsx",
-  "src/components/ui/Tooltip.tsx",
   "src/components/AlvoEContagem.tsx",
   "src/components/facies/BuscaDeProva.tsx",
   "src/components/facies/ContagemGigante.tsx",
@@ -28,8 +21,19 @@ const PAPER_SURFACES = [
   "src/components/Nav.tsx",
   "src/components/MobileTabBar.tsx",
   "src/components/UserAvatar.tsx",
+  // ⚠️ O hub mudou de casa: era `/voce`, virou `/mais`. As DUAS rotas o
+  // renderizam (`/voce` continua viva como porta antiga), mas o conteudo vive
+  // no componente -- e e o conteudo que esta lista cobre.
+  "src/app/mais/_components/HubDeDestinos.tsx",
+  "src/app/mais/_components/SuaEspecialidade.tsx",
+  // As duas cascas de rota, que so montam o componente acima.
+  "src/app/mais/page.tsx",
   "src/app/voce/page.tsx",
-  "src/app/voce/_components/SuaEspecialidade.tsx",
+  // O Inicio, a aba nova.
+  "src/app/inicio/_components/InicioDashboard.tsx",
+  "src/app/inicio/_components/BlocoSequencia.tsx",
+  "src/app/inicio/_components/BlocoQuentes.tsx",
+  "src/app/inicio/_components/BlocoEvolucao.tsx",
   "src/components/navIcons.tsx",
   "src/app/banco/guardadas/page.tsx",
   "src/app/banco/_components/iconesDoBanco.tsx",
@@ -39,8 +43,21 @@ const PAPER_SURFACES = [
   "src/app/banco/historico/page.tsx",
   "src/app/preferencias/_components/ContaSection.tsx",
   "src/components/charts/studyChartTooltip.ts",
-  "src/components/student/StudentActionSurface.tsx",
-  "src/components/student/StudentExperienceUI.tsx",
+  // Os gráficos da Evolução. Ficavam de fora, e foi por isso que a paleta e a
+  // escala deles puderam divergir da do resto do app sem nada acusar — o mesmo
+  // buraco que deixou o admin com 1500 cores literais.
+  "src/app/estatisticas/graficos/page.tsx",
+  "src/app/estatisticas/graficos/GraficosSection.tsx",
+  "src/app/estatisticas/graficos/_components/AccuracyChart.tsx",
+  "src/app/estatisticas/graficos/_components/AreaAccuracySnapshot.tsx",
+  "src/app/estatisticas/graficos/_components/AreaLinesChart.tsx",
+  "src/app/estatisticas/graficos/_components/AreaSmallMultiples.tsx",
+  "src/app/estatisticas/graficos/_components/CabecalhoDoGrafico.tsx",
+  "src/app/estatisticas/graficos/_components/CardsAnalysis.tsx",
+  "src/app/estatisticas/graficos/_components/SlopeComparison.tsx",
+  "src/app/estatisticas/graficos/_components/VolumeChart.tsx",
+  "src/app/estatisticas/graficos/_lib/chartGeometry.tsx",
+  "src/app/estatisticas/graficos/_hooks/useGraficosData.tsx",
   "src/app/banco/sessao/[sessionId]/_components/SaidaDaSessao.tsx",
   "src/app/hoje/_components/TodayBackupActions.tsx",
   "src/app/hoje/_components/TodayEmptyState.tsx",
@@ -91,8 +108,16 @@ for (const relativePath of PAPER_SURFACES) {
     process.exit(1);
   }
   for (const [index, line] of source.split(/\r?\n/).entries()) {
+    // ⚠️ `url(#id)` NAO E' COR. A referencia a um `<pattern>` do proprio SVG
+    // cai na regra "cor CSS literal" sempre que o id comeca por tres
+    // caracteres hexadecimais — `url(#accuracyFill)` casa por `#acc`.
+    //
+    // Medido ao trazer os graficos da Evolucao para esta lista: um achado, e
+    // falso. Guard que acusa o que nao existe e' guard que se aprende a
+    // ignorar, e o conserto certo nao e' rebatizar o id para fugir do regex.
+    const semReferenciaSvg = line.split("url(#").join("url(");
     for (const rule of rules) {
-      if (rule.pattern.test(line)) failures.push(`${relativePath}:${index + 1} ${rule.label}`);
+      if (rule.pattern.test(semReferenciaSvg)) failures.push(`${relativePath}:${index + 1} ${rule.label}`);
     }
   }
 }

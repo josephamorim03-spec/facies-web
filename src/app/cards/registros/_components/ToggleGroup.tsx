@@ -1,3 +1,17 @@
+import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
+
+/**
+ * Rótulo + controle segmentado, na horizontal.
+ *
+ * ⚠️ ISTO É UM ENVELOPE, e o controle é o `SegmentedToggle` canônico. O que
+ * vivia aqui era um par de botões próprios que pintava o escolhido com
+ * `border-primary bg-primary text-primaryInk` — o teal cheio que saiu das abas
+ * em 2026-09-06 —, tinha alvo de ~22px (`py-0.5`) e nem `type="button"`, o que
+ * o faria submeter qualquer formulário que o envolvesse.
+ *
+ * O envelope fica porque o rótulo visível ("Tempo:", "Peso:") é dele, não do
+ * primitivo; os dois consumidores não mudam.
+ */
 export function ToggleGroup<T extends string>({
   label,
   options,
@@ -9,20 +23,18 @@ export function ToggleGroup<T extends string>({
   value: T;
   onChange: (v: T) => void;
 }) {
+  // O rótulo visível traz dois-pontos; o nome acessível não os quer.
+  const nome = label.endsWith(":") ? label.slice(0, -1) : label;
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex flex-wrap items-center gap-2">
       <p className="paper-eyebrow whitespace-nowrap">{label}</p>
-      <div className="flex flex-wrap gap-1">
-        {options.map((o) => (
-          <button
-            key={o.value}
-            onClick={() => onChange(o.value)}
-            className={`text-xs px-2 py-0.5 border ${value === o.value ? "border-primary bg-primary text-primaryInk" : "border-edge text-muted hover:border-primary"}`}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
+      <SegmentedToggle<T>
+        value={value}
+        onChange={onChange}
+        options={options}
+        ariaLabel={nome}
+        size="md"
+      />
     </div>
   );
 }

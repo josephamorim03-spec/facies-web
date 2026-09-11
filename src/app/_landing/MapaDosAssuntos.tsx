@@ -1,5 +1,5 @@
 import { MapaDaProva, type LinhaDoMapa } from "@/components/facies/MapaDaProva";
-import { DIAS_DE_TRIAL, type DadosDaLanding } from "./dados";
+import { type DadosDaLanding } from "./dados";
 
 /** Quantos assuntos a home mostra. O mesmo `NA_HOME` do `MapaDaProva`: os oito
  *  que decidem o estudo aqui, os quinze na página da prova. */
@@ -102,45 +102,39 @@ export function MapaDosAssuntos({ dados }: { dados: DadosDaLanding }) {
           {/* ⚠️ AQUI A PÁGINA ESTAVA ERRADA, e errando contra si mesma.
               Dizia "com assinatura: o mapa e o plano" — mas `conceder_trial` é
               chamado no cadastro (`auth_accounts.py`), e a conta nasce podendo
-              entrar. Cadastro grátis dá o mapa e o plano por `DIAS_DE_TRIAL`
-              dias, sem cartão. Chamar isso de "assinatura" esconde o maior ativo
-              de conversão que o produto tem hoje.
+              entrar. Chamar isso de "assinatura" esconde o maior ativo de
+              conversão que o produto tem hoje.
 
-              ⚠️ SEM CIFRA continua valendo, por decisão de 23/08: oferta vincula
-              (CDC art. 30) e o checkout não abriu. Um teste gratuito que funciona
-              de verdade não é oferta de venda — é uma coisa que a pessoa obtém
-              agora —, então anunciá-lo é seguro e exato.
-
-              ⚠️ O NÚMERO vem de `app/repos/entitlement_repo.py:60`
-              (`DIAS_DE_TRIAL`). `verificar-landing-v8.mjs` lê a constante e
-              reprova se divergirem: `web/src/lib/accessLapse.ts` ainda diz
-              "14 dias", e é exatamente esse tipo de número em comentário que o
-              repositório já documenta como afirmação com prazo de validade. */}
+              ⚠️ O NÚMERO DE DIAS SUMIU porque o prazo sumiu (07/09/2026).
+              `conceder_trial` concede com `ends_at=None`, e `EntitlementRow.vivo`
+              lê nulo como "não expira". Não sobrou número para repetir aqui —
+              o que o guard confere agora é que os dois lados concordam sobre
+              NÃO haver prazo. */}
           <p className="mb-4">
-            Com cadastro, de graça e sem cartão: o mapa e o plano por{" "}
-            <span className="font-mono tabular-nums">{DIAS_DE_TRIAL}</span> dias.
+            Com cadastro, de graça e sem cartão: o mapa e o plano, <span className="text-ink">sem
+            prazo</span>.
           </p>
-          {/* ⚠️ A CIFRA VOLTOU, e ela SUPERA a decisão de 23/08 ("sem cifra").
-              Aquela decisão existia porque anunciar preço de algo incomprável é
-              oferta que o art. 30 do CDC obriga a cumprir, e não havia como
-              cumprir. Em 30/08 o operador decidiu outra coisa e a home no ar já
-              anunciava: R$ 490 no primeiro ano para quem se cadastrar agora,
-              contra R$ 590. A promessa é honrável com dado que já existe —
-              a coorte é `users.created_at`, que grava quem entrou quando.
+          {/* ⚠️ A CIFRA SAIU, e isto NÃO é a reversão silenciosa de 23/08.
+              É decisão de mercado de 07/09/2026, e ela é estrutural: o único
+              fosso da Fácies contra Estratégia MED, Medway e Afya é ser NEUTRA
+              — não vender curso ao aluno da escola que compra o diagnóstico
+              institucional. No minuto em que o aluno vira receita, essa defesa
+              desaparece. Então o lado do aluno é gratuito permanentemente e
+              quem paga é a instituição.
 
-              Portar a landing SEM a cifra teria revertido em silêncio uma
-              decisão de negócio de três dias antes, e removido da página o
-              único número que responde "quanto custa". Os dois valores são
-              oferta vinculante: subir qualquer um deles exige que esta página
-              deixe de prometê-los ANTES.
+              Sobre o CDC: a home prometia R$ 490 no primeiro ano a quem se
+              cadastrasse antes da abertura. Entregar acesso gratuito PERMANENTE
+              cumpre mais do que foi prometido, então não há oferta descumprida
+              — art. 30 obriga a honrar o anunciado, não proíbe dar melhor.
 
-              ⚠️ Não transformar em contagem regressiva. A limitação é dita UMA
-              vez, aqui; o aviso de proximidade é da interface do app, que já
-              recebe `access_expires_at` em `GET /profile`. */}
+              O laço com o backend continua existindo, e mudou de objeto: era
+              `DIAS_DE_TRIAL`, agora é a ausência de prazo. `conceder_trial` em
+              `app/services/entitlement_service.py` concede com `ends_at=None`,
+              e `verificar-landing-v8.mjs` reprova se um dos dois lados voltar a
+              ter prazo sem o outro. */}
           <p>
-            As assinaturas ainda não abriram. Quando abrirem, quem se cadastrar agora paga{" "}
-            <span className="text-ink">R$ 490 no primeiro ano</span>, em vez de R$ 590. Avisamos
-            antes, e ninguém é cobrado sem contratar.
+            O aluno não paga — nem agora, nem depois. Quem contrata a Fácies é a instituição de
+            ensino, e é por isso que esta página não tem letra miúda sobre preço.
           </p>
         </div>
       </div>

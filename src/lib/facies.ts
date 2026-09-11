@@ -83,7 +83,21 @@ export type Banca = {
   mais_cai: {
     cobertura: number;
     base: number;
-    linhas: { rotulo: string; n: number; exibivel: boolean }[];
+    /**
+     * ⚠️ `area` E' EMITIDA E ERA OMITIDA AQUI.
+     *
+     * `build_facies_dataset.py` escreve a grande area em toda linha de
+     * `mais_cai`, lida do `node_path` do no primario — e' o mesmo campo que
+     * alimenta `areas.linhas`. Conferido no dataset: as linhas chegam com
+     * `"area": "Clinica Medica"`, o rotulo por extenso.
+     *
+     * O tipo declarava tres campos e o JSON trazia quatro. Passava porque
+     * `LinhaDoMapa.area` e' opcional e a atribuicao casa estruturalmente — o
+     * `MapaDaProva` ja lia `linha.area` para pintar o filete, contra um tipo que
+     * dizia que o campo nao existia. Declarar fecha o buraco e e' o que permite
+     * os chips de area contarem por area sem `as any`.
+     */
+    linhas: { rotulo: string; n: number; exibivel: boolean; area?: string | null }[];
   };
   areas: {
     cobertura: number;
@@ -121,6 +135,19 @@ export type Banca = {
    *  `mais_cai`/`formato` seguem sem elas — anulada não representa o que a
    *  banca cobra. */
   questoes_anuladas: number;
+  /** Quantas a prova cobrou e o acervo NÃO serve, fora as anuladas.
+   *
+   *  Desde 2026-09-10 `questoes_total` é o total da PROVA
+   *  (`question_source_dimensions`) e não mais "projeção de treino + anuladas",
+   *  que dava 566 onde o ENARE cobrou 600. Este campo é a diferença que sobra:
+   *  duplicata (o sobrevivente do dedup vive noutra banca) e desatualizada.
+   *  Medido no ENARE: 34 = 27 + 7.
+   *
+   *  Ele existe para a tela poder NOMEAR a diferença. Descontá-la em silêncio
+   *  trocaria um número errado por outro mais difícil de auditar.
+   *
+   *  Opcional porque o dataset em produção pode ser anterior à mudança. */
+  questoes_fora_da_leitura?: number;
   /** O denominador da base, somado das edições de `exam_edition`.
    *
    *  `declaradas` é a soma do que cada edição declarou; `null` quando nenhuma

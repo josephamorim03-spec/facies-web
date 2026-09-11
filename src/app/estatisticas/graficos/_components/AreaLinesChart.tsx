@@ -9,11 +9,11 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import { AREA_COLORS } from "@/app/desempenho/_lib/perfilAnalytics";
-import type { Area as AreaKey } from "@/app/desempenho/_lib/perfilShared";
+import { AREA_COLORS } from "@/lib/perfil/perfilAnalytics";
 import {
   CHART_EDGE,
   CHART_MUTED,
+  CHART_TICK,
   WEEKLY_CHART_MARGIN,
   CHART_X_AXIS_PADDING,
   CHART_Y_AXIS_WIDTH,
@@ -24,6 +24,7 @@ import type { GraficosState, GraficosRefs, GraficosActions } from "../_hooks/use
 import { SegmentedToggle } from "@/components/ui/SegmentedToggle";
 import { AreaSmallMultiples } from "./AreaSmallMultiples";
 import { useChartEntrance } from "../_hooks/useChartEntrance";
+import { CabecalhoDoGrafico } from "./CabecalhoDoGrafico";
 
 type Props = {
   state: GraficosState;
@@ -46,19 +47,22 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
   if (activeAreaLines.length === 0) return null;
 
   return (
-    <section data-testid="chart-area-lines" className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-medium">Evolução de Acerto por Área</h2>
-        <SegmentedToggle
-          value={view}
-          onChange={setView}
-          ariaLabel="Visão do acerto por área"
-          options={[
-            { value: "grid", label: "Por área" },
-            { value: "lines", label: "Linhas" },
-          ]}
-        />
-      </div>
+    <section data-testid="chart-area-lines" className="space-y-3">
+      <CabecalhoDoGrafico
+        titulo="Acerto por área"
+        medida="cada área na sua cor"
+        acao={
+          <SegmentedToggle
+            value={view}
+            onChange={setView}
+            ariaLabel="Visão do acerto por área"
+            options={[
+              { value: "grid", label: "Por área" },
+              { value: "lines", label: "Linhas" },
+            ]}
+          />
+        }
+      />
 
       {view === "grid" ? (
         <AreaSmallMultiples activeAreaLines={activeAreaLines} areaLineData={areaLineData} />
@@ -73,7 +77,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
               key={area}
               type="button"
               onClick={(e) => { e.stopPropagation(); actions.setLockedAreaLine(lockedAreaLine === area ? null : area); }}
-              className="flex items-center gap-1 text-micro transition-opacity"
+              className="paper-control flex items-center gap-1 font-mono text-micro transition-opacity"
               style={{ color: isOtherLocked ? CHART_MUTED : AREA_COLORS[area], opacity: isOtherLocked ? 0.4 : 1 }}
             >
               <span className="inline-block w-2 h-2 " style={{ backgroundColor: AREA_COLORS[area] }} />
@@ -85,7 +89,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); actions.setLockedAreaLine(null); }}
-            className="ml-auto text-micro text-muted hover:text-ink transition-colors"
+            className="paper-control ml-auto font-mono text-micro text-muted hover:text-ink"
           >
             × limpar
           </button>
@@ -108,10 +112,9 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
                 renderWeekTickLabel(props, weekIndexByLabel, { defaultFill: CHART_MUTED })
               }
             />
-            <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: CHART_MUTED }} unit="%" width={CHART_Y_AXIS_WIDTH} />
+            <YAxis domain={[0, 100]} tick={CHART_TICK} unit="%" width={CHART_Y_AXIS_WIDTH} />
             {activeAreaLines.map((area) => {
               const isLocked = lockedAreaLine === area;
-              const isOtherLocked = lockedAreaLine !== null && !isLocked;
               const opacity = lockedAreaLine === null ? 0.9 : isLocked ? 1 : 0.15;
               return (
                 <Line
@@ -156,7 +159,7 @@ export function AreaLinesChart({ state, refs, actions }: Props) {
             data-week-index={label.weekIndex}
             /* Overlay denso (12 pontos × até 6 séries): fora de cima do gráfico
                no mobile pra não vazar/sobrepor; a linha destacada + legenda bastam. */
-            className="pointer-events-none absolute z-20 hidden whitespace-nowrap text-micro leading-none sm:block"
+            className="pointer-events-none absolute z-20 hidden whitespace-nowrap font-mono text-micro leading-none tabular-nums sm:block"
             style={{
               left: label.placement.left,
               top: label.placement.top,

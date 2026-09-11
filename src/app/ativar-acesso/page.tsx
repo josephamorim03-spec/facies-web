@@ -70,7 +70,7 @@ export default function AtivarAcessoPage() {
     <div className="flex min-h-screen items-center justify-center bg-paper px-4">
       <main className="w-full max-w-md">
         <span className="paper-eyebrow">Sua conta</span>
-        <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
+        <h1 className="mt-3 font-serif font-semibold leading-snug text-ink">
           {venceu ? "Sua avaliação terminou." : "Seu acesso ao app não está ativo."}
         </h1>
         <p className="mt-3 text-sm leading-6 text-muted">

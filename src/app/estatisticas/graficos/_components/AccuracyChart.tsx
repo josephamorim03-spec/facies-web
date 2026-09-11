@@ -14,6 +14,8 @@ import {
   CHART_INK,
   CHART_EDGE,
   CHART_MUTED,
+  CHART_SVG_LABEL,
+  CHART_TICK,
   WEEKLY_CHART_MARGIN,
   CHART_X_AXIS_PADDING,
   CHART_Y_AXIS_WIDTH,
@@ -22,6 +24,7 @@ import {
 } from "../_lib/chartGeometry";
 import type { GraficosState, GraficosRefs, GraficosActions } from "../_hooks/useGraficosData";
 import { useChartEntrance } from "../_hooks/useChartEntrance";
+import { CabecalhoDoGrafico } from "./CabecalhoDoGrafico";
 
 type Props = {
   state: GraficosState;
@@ -51,16 +54,17 @@ export function AccuracyChart({ state, refs, actions }: Props) {
     // eslint-disable-next-line react-hooks/refs
     <section ref={refs.accuracySectionRef}
       data-testid="chart-weekly-accuracy"
-      className="space-y-2"
+      className="space-y-3"
     >
-      <div className="flex items-center gap-2">
-        <h2 className="text-sm font-medium">Evolução de Acerto Geral</h2>
-      </div>
+      {/* Era "Evolução de Acerto Geral", em versal de manchete de relatório. O
+          nome é o que a gaveta da Evolução já reservou para este gráfico —
+          duas telas a chamar a mesma coisa pelo mesmo nome. */}
+      <CabecalhoDoGrafico titulo="Acerto ao longo do tempo" medida="acerto por semana" />
       {/* eslint-disable-next-line react-hooks/refs */}
       <div ref={refs.accuracyFrameRef} className="relative overflow-visible">
         {delta !== null && (
           <span
-            className={`pointer-events-none absolute z-20 text-micro tabular-nums ${deltaTone}`}
+            className={`pointer-events-none absolute z-20 font-mono text-micro tabular-nums ${deltaTone}`}
             // Ancorado a DIREITA. Encostado na esquerda ele caia exatamente
             // sobre o tick "100%" do eixo — dois numeros colados que se leem
             // como um so. A direita a area esta sempre livre: a serie de acerto
@@ -93,14 +97,14 @@ export function AccuracyChart({ state, refs, actions }: Props) {
                 renderWeekTickLabel(props, weekIndexByLabel, { defaultFill: CHART_MUTED })
               }
             />
-            <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: CHART_MUTED }} unit="%" width={CHART_Y_AXIS_WIDTH} />
+            <YAxis domain={[0, 100]} tick={CHART_TICK} unit="%" width={CHART_Y_AXIS_WIDTH} />
             <ReferenceArea
               y1={60}
               y2={75}
               fill="var(--color-primary)"
               fillOpacity={0.06}
               stroke="none"
-              label={{ value: "referência", position: "insideLeft", fontSize: 9, fill: CHART_MUTED }}
+              label={{ value: "referência", position: "insideLeft", ...CHART_SVG_LABEL }}
             />
             {activeAccuracyWeekWithData && (
               <ReferenceLine x={activeAccuracyWeekWithData.week_label} stroke={CHART_INK} strokeOpacity={0.28} />
@@ -178,7 +182,7 @@ export function AccuracyChart({ state, refs, actions }: Props) {
         {activeAccuracyOverlayLabel && (
           <span
             data-testid="accuracy-overlay-percent-label"
-            className="pointer-events-none absolute z-20 whitespace-nowrap text-micro leading-none text-ink"
+            className="pointer-events-none absolute z-20 whitespace-nowrap font-mono text-micro leading-none tabular-nums text-ink"
             style={{
               left: activeAccuracyOverlayLabel.placement.left,
               top: activeAccuracyOverlayLabel.placement.top,

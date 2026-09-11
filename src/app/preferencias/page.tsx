@@ -1,5 +1,6 @@
 "use client";
 
+import { FLASHCARDS_LIGADOS } from "@/lib/flags";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ContaSection } from "./_components/ContaSection";
@@ -49,7 +50,7 @@ import {
   RESCHEDULE_MODES,
   toDisplayDate,
   WEEKDAYS,
-} from "@/app/desempenho/_lib/perfilShared";
+} from "@/lib/perfil/perfilShared";
 
 function todayISO(): string {
   const now = new Date();
@@ -477,7 +478,7 @@ export default function PreferenciasPage() {
           { id: "objetivo", rotulo: "Objetivo" },
           { id: "alertas", rotulo: "Alertas" },
           { id: "correcao", rotulo: "Correção" },
-          { id: "cards", rotulo: "Cards" },
+          ...(FLASHCARDS_LIGADOS ? [{ id: "cards", rotulo: "Cards" }] : []),
         ]}
       />
       <div className="divide-y divide-edge">
@@ -583,7 +584,7 @@ export default function PreferenciasPage() {
                       onClick={() => patchLocal({ reschedule_mode: mode.value })}
                       className={`paper-control min-h-9 border px-3 text-xs transition-colors ${
                         profile.reschedule_mode === mode.value
-                          ? "border-primary bg-primary text-primaryInk"
+                          ? "border-primary bg-washSelecao text-ink"
                           : "border-edge text-muted hover:border-primary hover:text-ink"
                       }`}
                     >
@@ -623,7 +624,7 @@ export default function PreferenciasPage() {
                       onClick={() => setEventWeekday(index)}
                       className={`paper-control min-h-8 border px-2.5 text-xs ${
                         eventWeekday === index
-                          ? "border-primary bg-primary text-primaryInk"
+                          ? "border-primary bg-washSelecao text-ink"
                           : "border-edge text-muted hover:text-ink"
                       }`}
                     >
@@ -641,7 +642,7 @@ export default function PreferenciasPage() {
                 />
               )}
 
-              <div className="flex flex-wrap gap-2">
+              <div className="fileira-de-controles">
                 {[
                   { value: "work" as const, label: "Trabalho" },
                   { value: "other" as const, label: "Outros" },
@@ -652,7 +653,7 @@ export default function PreferenciasPage() {
                     onClick={() => setEventCategory(category.value)}
                     className={`paper-control min-h-9 border px-3 text-xs ${
                       eventCategory === category.value
-                        ? "border-primary bg-primary text-primaryInk"
+                        ? "border-primary bg-washSelecao text-ink"
                         : "border-edge text-muted hover:text-ink"
                     }`}
                   >
@@ -842,9 +843,9 @@ export default function PreferenciasPage() {
               ).map(([value, label]) => (
                 <label
                   key={value}
-                  className={`paper-control cursor-pointer px-3 py-3 text-center text-sm font-medium transition-colors ${
+                  className={`paper-control cursor-pointer border border-transparent px-3 py-3 text-center text-sm font-medium transition-colors ${
                     profile.default_feedback_reveal_policy === value
-                      ? "bg-primary text-primaryInk"
+                      ? "border-primary bg-washSelecao text-ink"
                       : "text-muted hover:bg-surfaceMuted hover:text-ink"
                   }`}
                 >
@@ -884,9 +885,9 @@ export default function PreferenciasPage() {
               ).map(([value, label]) => (
                 <label
                   key={value}
-                  className={`paper-control cursor-pointer px-3 py-3 text-center text-sm font-medium transition-colors ${
+                  className={`paper-control cursor-pointer border border-transparent px-3 py-3 text-center text-sm font-medium transition-colors ${
                     profile.confidence_timing === value
-                      ? "bg-primary text-primaryInk"
+                      ? "border-primary bg-washSelecao text-ink"
                       : "text-muted hover:bg-surfaceMuted hover:text-ink"
                   }`}
                 >
@@ -905,6 +906,11 @@ export default function PreferenciasPage() {
           </fieldset>
         </section>
 
+        {/* ⚠️ AJUSTE FINO PARA UMA FUNCIONALIDADE DESLIGADA. A retencao do FSRS
+            so' governa flashcards, e os flashcards estao atras da chave -- entao
+            esta seccao pedia ao medico que calibrasse o ritmo de revisoes que
+            nao existem. Ela volta inteira quando a chave voltar. */}
+        {FLASHCARDS_LIGADOS ? (
         <section id="cards" className="scroll-mt-24 py-7">
           <SectionTitle
             icon={Layers3}
@@ -933,6 +939,7 @@ export default function PreferenciasPage() {
             </span>
           </label>
         </section>
+        ) : null}
       </div>
 
       {/* O estado do que a tela grava sozinha.

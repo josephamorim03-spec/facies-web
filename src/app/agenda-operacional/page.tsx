@@ -1,5 +1,0 @@
-import { redirect } from "next/navigation";
-
-export default function Page() {
-  redirect("/cronograma?view=month");
-}

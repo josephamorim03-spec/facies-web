@@ -8,11 +8,12 @@ import { Calendar as CalendarDays } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Skeleton } from "@/components/Skeleton";
 import { useNavbar } from "@/lib/NavbarContext";
-import { useDesktopNavigationMode } from "@/lib/useDesktopNavigationMode";
 import { getMyObjectivesV2, getMyTargetExam, getStudentToday } from "@/lib/api";
+import type { StudentTodayAction } from "@/lib/api";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthToken } from "@/lib/useAuthToken";
 import { useStudentAgenda } from "@/features/student-agenda/useStudentAgenda";
+import { useRecordRecommendationShown } from "@/lib/trainer/useRecordRecommendationShown";
 import { firstName, useProfileDisplayName } from "@/lib/ProfileContext";
 import { AgendaItemRow } from "@/features/student-agenda/AgendaItemRow";
 import { ContinuarDeOndeParou } from "./ContinuarDeOndeParou";
@@ -49,7 +50,7 @@ function pct(value: number | null): string {
 
 function TodayDashboardSkeleton() {
   return (
-    <div className="space-y-5" aria-label="Hoje carregando">
+    <div className="ritmo-secao" aria-label="Hoje carregando">
       <Skeleton className="h-9 w-44" />
       <Skeleton className="h-44 w-full " />
       <div className="grid grid-cols-3 gap-2">
@@ -65,7 +66,6 @@ function TodayDashboardSkeleton() {
 export function CanonicalTodayDashboard() {
   const studentFirstName = firstName(useProfileDisplayName());
   const { setTitle, setActions } = useNavbar();
-  const isDesktopNavigation = useDesktopNavigationMode();
   const { token, tokenResolved } = useAuthToken();
   const todayQuery = useQuery({
     queryKey: queryKeys.studentToday,
@@ -115,32 +115,40 @@ export function CanonicalTodayDashboard() {
   // inicial inteira para o error boundary.
   const day = agenda?.days?.[0] ?? null;
 
+  // O laço: registra que ESTA recomendação chegou à tela. Sem isto,
+  // `acceptance_rate = started / shown` fica em `None` e o motor nunca descobre
+  // se acertou. Fica ACIMA dos early returns porque hook não pode ser
+  // condicional; o `null` cobre o intervalo em que `today` ainda não resolveu.
+  useRecordRecommendationShown(today?.primary_action.execution?.recommendation_id ?? null, "/hoje");
+
+  /**
+   * ⚠️ O ÍCONE DE CALENDÁRIO SAIU DA BARRA DE TÍTULO.
+   *
+   * Ele levava à semana, e só existia no desktop. Desde que "Semana" virou
+   * seção do Plano, ela está a um toque no topo do conteúdo, nas duas
+   * larguras, com o nome escrito — um ícone mudo ao lado do título passou a
+   * ser um segundo caminho para o mesmo lugar.
+   */
   useEffect(() => {
     setTitle("Hoje");
-    setActions(
-      isDesktopNavigation && localDate ? (
-        <Link
-          href={`/cronograma?view=week&anchor=${localDate}`}
-          aria-label="Abrir cronograma da semana"
-          className="inline-flex h-9 w-9 items-center justify-center text-muted hover:text-ink"
-        >
-          <CalendarDays className="h-5 w-5" aria-hidden="true" />
-        </Link>
-      ) : null,
-    );
+    setActions(null);
     return () => {
       setTitle(null);
       setActions(null);
     };
-  }, [isDesktopNavigation, localDate, setActions, setTitle]);
+  }, [setActions, setTitle]);
 
   if (todayQuery.isPending || (localDate && agendaQuery.isPending)) {
     return <TodayDashboardSkeleton />;
   }
   if (!today) {
     return (
-      <Alert variant="danger">
-        Não foi possível carregar seu dia. Tente novamente em alguns instantes.
+      // ⚠️ O `error.tsx` DESTA ROTA NAO COBRE ESTE CAMINHO. Ele so dispara
+      // quando o render lanca, e aqui nada lanca: a consulta falhou e devolveu
+      // `undefined`. Entao a tela mais importante do produto dizia "tente
+      // novamente" sem oferecer como.
+      <Alert variant="danger" onRetry={() => void todayQuery.refetch()}>
+        Não foi possível carregar seu dia.
       </Alert>
     );
   }
@@ -203,7 +211,44 @@ export function CanonicalTodayDashboard() {
     temSessaoAberta: sessaoAberta !== null,
   });
 
-  const backupActions = today.backup_actions.filter(
+  /**
+   * ⚠️ SEM PLANO, A PRIMARIA LEVAVA PARA FORA DE RESPONDER.
+   *
+   * `student_experience` emite `kind: "plan_routine"` com
+   * `cta_label: "Ajustar rotina"` e `href: "/rotina-e-metas"` (que e 308 para
+   * `/preferencias`) quando ainda nao ha plano. Ou seja: na tela cujo trabalho
+   * inteiro e "responda hoje", a acao mais destacada mandava preencher um
+   * formulario -- e o aluno que abriu o app para estudar saia dele sem ter
+   * respondido nada.
+   *
+   * A rotina nao some: ela desce para "Se nao couber agora", que e o lugar de
+   * quem tem razao mas nao tem pressa. Responder sobe, porque responder e o
+   * unico ato que move o objetivo.
+   */
+  const semPlano = today.primary_action.kind === "plan_routine";
+  const responderAgora: StudentTodayAction = {
+    kind: "question_bank_block",
+    title: "Comece por onde quiser",
+    rationale:
+      "Seu plano ainda não existe, e ele nasce do que você responde. Um bloco curto agora já ensina ao Fácies por onde começar.",
+    estimated_minutes: null,
+    href: "/banco",
+    cta_label: "Começar 10 questões",
+    source: "question_bank",
+    priority_reason: "Responder é o que faz o plano existir.",
+    confidence: "medium",
+    area: null,
+    execution: null,
+    agenda_occurrence_id: null,
+  };
+  const acaoPrimaria = semPlano ? responderAgora : today.primary_action;
+
+  const backupActions = [
+    // A rotina vira recurso, e entra na FRENTE: ela continua sendo a coisa
+    // certa a fazer, so nao e a primeira.
+    ...(semPlano ? [today.primary_action] : []),
+    ...today.backup_actions,
+  ].filter(
     (action) =>
       !action.agenda_occurrence_id ||
       action.agenda_occurrence_id !== primaryOccurrenceId,
@@ -214,7 +259,7 @@ export function CanonicalTodayDashboard() {
     (agenda && agenda.status !== "complete");
 
   return (
-    <div className="space-y-5 md:space-y-6">
+    <div className="ritmo-secao">
       {/* A PRIMEIRA LINHA E A PROVA E O PRAZO, e a manchete e o TAMANHO DO DIA.
 
           O cumprimento ("Bom dia, Joseph") saiu a pedido do usuario em
@@ -234,8 +279,19 @@ export function CanonicalTodayDashboard() {
         <FaixaDaProva />
         {/* Sem classe de tamanho: a escala vive em `.tela-app h1`, com font-size
             e line-height no mesmo bloco. Era `text-3xl md:text-4xl` (30 e 36px)
-            contra os 25px medidos no artboard `8b`. */}
-        <h1 className="mt-2 font-serif font-semibold text-ink">{tamanhoDoDia}</h1>
+            contra os 25px medidos no artboard `8b`.
+
+            ⚠️ O `?? "Hoje"` NAO e' enfeite: sem ele esta tag renderizava VAZIA.
+            `manchetteDoDia` devolve `null` de proposito quando nao ha numero
+            nenhum -- "degradar em vez de mentir", diz o docstring dela, e a
+            regra esta certa. So que o JSX renderizava a tag na mesma, e um
+            `<h1>` vazio e' pior que os dois: o leitor de tela anuncia um
+            titulo sem conteudo, e o `mt-2` mais a entrelinha reservam a altura
+            de uma linha que ninguem ve.
+
+            "Hoje" e' o nome da tela: nunca e' falso, nunca inventa numero, e
+            deixa a acao principal logo abaixo dizer o que ha' para fazer. */}
+        <h1 className="mt-2 font-serif font-semibold text-ink">{tamanhoDoDia ?? "Hoje"}</h1>
         {/* A linha de apoio do `13e`: o que ja' foi feito hoje. Ela so' existe
             com o dia comecado — no dia intocado nao ha' o que contar, e uma
             linha "Você fez 0 hoje" seria cobranca disfarcada de informacao. */}
@@ -260,7 +316,11 @@ export function CanonicalTodayDashboard() {
           porque a sessao pendente pode ser justamente a que o aluno largou. */}
       {sessaoAberta ? <ContinuarDeOndeParou sessao={sessaoAberta} /> : null}
 
-      {isRest ? <TodayEmptyState /> : <TodayPrimaryAction action={today.primary_action} />}
+      {isRest ? (
+        <TodayEmptyState />
+      ) : (
+        <TodayPrimaryAction action={acaoPrimaria} cede={sessaoAberta !== null} />
+      )}
 
       {/* Depois da ação, não antes: o dimensionamento explica o TAMANHO do que
           foi proposto, e explicação que precede a proposta vira formulário. */}
@@ -277,18 +337,28 @@ export function CanonicalTodayDashboard() {
       <section aria-labelledby="today-after-title">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 id="today-after-title" className="font-serif text-xl font-semibold text-ink">Depois</h2>
+            <h2 id="today-after-title" className="font-serif font-semibold text-ink">Depois</h2>
             <p className="mt-1 text-sm text-muted">
               {uniqueRemaining.length > 0
                 ? `${uniqueRemaining.length} atividade${uniqueRemaining.length === 1 ? "" : "s"} restante${uniqueRemaining.length === 1 ? "" : "s"}.`
                 : "Nenhuma outra atividade planejada para hoje."}
             </p>
           </div>
+          {/* ⚠️ ESTE LINK DEIXOU DE APONTAR PARA A SEMANA, e a razão é que a
+              semana passou a ser SEÇÃO: ela está no topo desta mesma tela, com
+              o nome escrito. Repeti-la aqui seria o terceiro caminho para o
+              mesmo lugar.
+
+              Quem perdeu porta foi "O plano até a prova" — a leitura das fases,
+              do que não coube e de quanto a rotina comporta. Ela era a terceira
+              seção da aba e saiu da fileira quando esta virou Hoje · Semana ·
+              Mês. É daqui que ela passa a ser alcançada, que é onde a pergunta
+              "e depois de hoje?" acontece. */}
           <Link
-            href={`/cronograma?view=week&anchor=${localDate}`}
+            href="/plano"
             className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-primary hover:underline"
           >
-            Semana
+            O plano até a prova
             <CalendarDays className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>

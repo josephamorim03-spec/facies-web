@@ -155,13 +155,38 @@ function walk(target) {
   return out;
 }
 
-function candidatesFromLine(line) {
+/**
+ * 🚨 O EXTRATOR DE TEXTO JSX SÓ CORRE EM FICHEIRO QUE PODE TER JSX.
+ *
+ * Ele corria em TODOS — `.ts`, `.js`, `.mjs` e `.py` incluídos — e nesses
+ * ficheiros `>` e `<` são operadores de comparação, não etiquetas. Qualquer
+ * cadeia como `a >= nivel.length || posicao - base < c` produzia o candidato
+ * `= nivel.length || posicao - base`, e o guard acusava "nivel -> nível" a
+ * apontar para um NOME DE VARIÁVEL.
+ *
+ * ⚠️ E isso não era um aviso: `npm run lint` é uma cadeia `&&`, então a
+ * acusação falsa derrubava o eslint do repositório inteiro. Medido em
+ * 2026-09-10 — a `main` ficou vermelha por causa de `mapaLayout.ts:529`, uma
+ * linha de aritmética que nenhum aluno lê.
+ *
+ * Este ficheiro JÁ REGISTAVA o mesmo defeito noutra forma, logo abaixo: a nota
+ * sobre `calc(100% - ${pct(media + desvio)})` diz, com todas as letras, que
+ * tratar caso a caso "nunca termina" e que a regra tem de ser pela FORMA. A
+ * forma aqui é a extensão: sem JSX, não há texto de JSX para extrair.
+ */
+function podeTerJsx(relative) {
+  return /\.(tsx|jsx)$/i.test(relative);
+}
+
+function candidatesFromLine(line, { jsx }) {
   const candidates = [];
   const literalRegex = /(["'`])((?:\\.|(?!\1).)*?)\1/g;
   let match;
   while ((match = literalRegex.exec(line)) !== null) {
     candidates.push(match[2]);
   }
+
+  if (!jsx) return candidates;
 
   const jsxTextRegex = />([^<>{}][^<]*?)</g;
   while ((match = jsxTextRegex.exec(line)) !== null) {
@@ -228,6 +253,65 @@ function checkQuestionContract(line, file, index) {
   }
 }
 
+// ⚠️ AUTOTESTE, porque este guard acabou de ficar mais ESTREITO.
+//
+// Restringir o extrator de JSX a `.tsx`/`.jsx` conserta o falso positivo sobre
+// aritmética — e é exatamente o tipo de mudança que pode cegar um guard sem que
+// ninguém note: ele continua a imprimir "passed", só que a olhar para menos.
+//
+// Estes seis casos prendem as DUAS direções. Sem os negativos, apertar de novo a
+// regra passaria; sem os positivos, afrouxá-la também.
+if (process.argv.includes("--autoteste")) {
+  const casos = [
+    // Copy de verdade, em JSX: TEM de acusar.
+    [".tsx", "      <p>Nenhuma questao respondida ainda</p>", true],
+    // ⚠️ LACUNA CONHECIDA, e ela é ANTERIOR a esta mudança: texto JSX que
+    // COMEÇA por interpolação não é varrido. A regex exige que o primeiro
+    // carácter depois de `>` não seja `{` (`[^<>{}]`), então `<span>{n} sessao
+    // aberta</span>` passa livre.
+    //
+    // Fica aqui como caso NEGATIVO de propósito, e não corrigida: alargar a
+    // regex agora mudaria o alcance do guard sem eu ter medido quantos falsos
+    // positivos novos isso traz — e foi um falso positivo que deixou a `main`
+    // vermelha hoje. Quem alargar vai ver esta prova virar vermelha, que é
+    // exatamente o aviso que ela existe para dar.
+    [".tsx", '      <span>{n} sessao aberta</span>', false],
+    // Literal de string: acusado em QUALQUER extensão — não é o extrator de JSX
+    // que o apanha, e por isso a mudança não pode tê-lo afetado.
+    [".ts", '  const rotulo = "Sua proxima acao";', true],
+    // Aritmética em ficheiro sem JSX: `>` e `<` são comparação. Era ISTO que
+    // derrubava o lint do repositório inteiro.
+    [".ts", "    if (desde <= 0 || desde >= nivel.length || posicao - base < desde) break;", false],
+    [".mjs", "  if (a >= media.length && b < limite) return;", false],
+    // E o mesmo texto DENTRO de `.tsx` continua a ser apanhado: a restrição é
+    // por extensão, não uma desativação.
+    [".tsx", "      <b>o nivel do assunto</b>", true],
+  ];
+  let falhas = 0;
+  for (const [ext, linha, deveAcusar] of casos) {
+    const jsx = podeTerJsx(`ficheiro${ext}`);
+    const acusou = candidatesFromLine(linha, { jsx })
+      .filter((c) => !shouldSkipCandidate(c))
+      .some((c) => findTerms(c).length > 0);
+    if (acusou !== deveAcusar) {
+      console.error(
+        `  ✖ ${ext}: esperado ${deveAcusar ? "ACUSAR" : "NAO acusar"}, obteve ${acusou}\n     ${linha.trim()}`,
+      );
+      falhas += 1;
+    }
+  }
+  if (falhas > 0) {
+    console.error(`Autoteste do copy pt-BR: ${falhas} caso(s) errado(s) — o guard nao ve o que diz ver.`);
+    process.exit(1);
+  }
+  const positivos = casos.filter(([, , d]) => d).length;
+  console.log(
+    `Autoteste do copy pt-BR: ${casos.length} casos, ${positivos} acusados e ` +
+      `${casos.length - positivos} liberados como esperado.`,
+  );
+  process.exit(0);
+}
+
 const failures = [];
 for (const file of roots.flatMap(walk)) {
   const relative = path.relative(cwd, file).replaceAll(path.sep, "/");
@@ -240,6 +324,7 @@ for (const file of roots.flatMap(walk)) {
   // bloco inteiro importa: ignorar so a linha de abertura deixaria a prosa das
   // linhas seguintes disparando.
   const isPython = relative.endsWith(".py");
+  const jsx = podeTerJsx(relative);
   let openDelimiter = null;
   lines.forEach((line, index) => {
     if (isPython) {
@@ -256,7 +341,7 @@ for (const file of roots.flatMap(walk)) {
     }
     checkQuestionContract(line, relative, index);
     if (skipLinePatterns.some((pattern) => pattern.test(line))) return;
-    for (const candidate of candidatesFromLine(line)) {
+    for (const candidate of candidatesFromLine(line, { jsx })) {
       if (shouldSkipCandidate(candidate)) continue;
       const hits = findTerms(candidate);
       if (!hits.length) continue;

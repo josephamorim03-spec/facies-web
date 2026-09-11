@@ -648,7 +648,10 @@ test("o Treino dirigido envia session_kind kros e o preset escolhido", async ({ 
 
   await page.goto("/banco-de-questoes");
 
-  await page.getByRole("button", { name: /Treino dirigido/ }).click();
+  // ⚠️ `radio`, e nao `button`: o seletor de modo e um `radiogroup` desde que
+  // existe, e as duas linhas seguintes deste mesmo teste ja o tratavam assim.
+  // Um `getByRole("button")` sobre `role="radio"` nao casa.
+  await page.getByRole("radio", { name: /Treino dirigido/ }).click();
 
   const focoBanca = page.getByRole("radio", { name: /Foco na banca/ });
   // A prévia respondeu com a banca coberta: o cartão nomeia a USP-SP em vez de
@@ -663,6 +666,21 @@ test("o Treino dirigido envia session_kind kros e o preset escolhido", async ({ 
   expect(createPayloads[0]).toMatchObject({
     session_kind: "kros",
     kros_mode: "prioridade_erros",
+    /**
+     * ⚠️ O `limit` ENTROU NA ASSERÇÃO, e é ele que prende "o Treino dirigido
+     * não inicia".
+     *
+     * O Banco abria em `limit: 10`, e `is_valid_kros_size` recusa com 422 tudo
+     * o que esteja fora de 20–120 em múltiplos de 5. O caminho padrão do modo
+     * — escolher e premir começar, que é exatamente o que este teste faz —
+     * mandava 10 e recebia erro.
+     *
+     * O teste passava na mesma: ele só olhava `session_kind` e `kros_mode`, e
+     * o mock de `POST /sessions` responde 201 a qualquer payload. Afirmar
+     * sobre o que a rede LEVA sem afirmar sobre o que o servidor ACEITA deixa
+     * passar o defeito inteiro.
+     */
+    limit: 20,
   });
 });
 
@@ -886,7 +904,27 @@ test("o montador de sessao passa no gate automatico de WCAG", async ({ page }) =
    * dentro de um `radiogroup`, com um deles capaz de ficar `disabled` — três
    * coisas que o axe tem opinião sobre e que nada estava checando.
    */
-  await page.getByRole("button", { name: /Treino dirigido/ }).click();
+  // A superfície recolhida é NOVA para o axe: auditá-la antes de abrir é de
+  // graça e cobre um estado que nunca existiu.
+  await auditar("passos recolhidos");
+
+  // ⚠️ DUAS LOCALIZAÇÕES ESTAVAM DESATUALIZADAS AQUI, e as duas falhavam por
+  // ausência — o pior modo de falhar, porque a mensagem fala de timeout e não
+  // do que mudou:
+  //
+  // 1. `getByText("3. Modo e carga")`. Esse passo chama-se "3. Carga e
+  //    correção" (ou "2. A prova e a correção", na prova institucional) desde
+  //    que o modo saiu de dentro dele.
+  // 2. `getByRole("button", …)` sobre o seletor de modo, que é um `radiogroup`
+  //    — e o próprio teste ao lado já o trata como `radio`.
+  //
+  // E a premissa por trás delas também caiu: `EscolhaDoModo` deixou de viver
+  // dentro do passo recolhido. Ele é a PRIMEIRA decisão da tela e está sempre
+  // visível, então não há passo a abrir antes de escolher o modo.
+  await page.getByRole("radio", { name: /Treino dirigido/ }).click();
+  // A ênfase, essa sim, mora dentro do passo de carga — e ele nasce recolhido a
+  // 390px, que é o que faz "Começar" caber acima da dobra.
+  await page.getByText("3. Carga e correção", { exact: true }).click();
   await expect(page.getByRole("radio", { name: /Foco na banca/ })).toContainText(/USP-SP/);
   await auditar("treino dirigido aberto");
 });

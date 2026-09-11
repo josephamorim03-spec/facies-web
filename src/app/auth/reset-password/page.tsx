@@ -85,7 +85,7 @@ function ResetPasswordInner() {
     return (
       <div className="w-full max-w-md">
         <span className="paper-eyebrow">Link inválido</span>
-        <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
+        <h1 className="mt-3 font-serif font-semibold leading-snug text-ink">
           Falta o código deste link.
         </h1>
         <p className="mt-3 text-sm leading-6 text-muted">
@@ -106,7 +106,7 @@ function ResetPasswordInner() {
     return (
       <div className="w-full max-w-md">
         <span className="paper-eyebrow">Senha alterada</span>
-        <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
+        <h1 className="mt-3 font-serif font-semibold leading-snug text-ink">
           Pronto. Sua senha foi trocada.
         </h1>
         <p className="mt-3 text-sm leading-6 text-muted">
@@ -127,7 +127,7 @@ function ResetPasswordInner() {
   return (
     <div className="w-full max-w-md">
       <span className="paper-eyebrow">Nova senha</span>
-      <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug text-ink">
+      <h1 className="mt-3 font-serif font-semibold leading-snug text-ink">
         Escolha uma senha nova.
       </h1>
 

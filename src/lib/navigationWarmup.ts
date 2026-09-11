@@ -90,12 +90,30 @@ export function warmRouteData(href: string, token: string | null | undefined): v
   requests.push(getStudentExperience(token, "week"));
   const intent = getStudentWarmupIntent(pathname);
 
-  // As cinco abas absorveram os intents antigos: `planning` virou filho de
-  // INICIO (Hoje + Cronograma) e `evolution` virou filho de PERFIL (Evolucao +
-  // Preferencias). Os conjuntos de dados dos dois pais foram fundidos — quem
-  // toca a aba pode ir para qualquer um dos dois filhos, entao aquecer so metade
-  // deixaria o segundo destino frio exatamente na navegacao mais provavel.
-  if (intent === "today") {
+  // ⚠️ OS FLASHCARDS DEIXARAM DE SAIR POR PATHNAME (2026-09-10).
+  //
+  // Este bloco tinha um ramo `pathname.startsWith("/cards")` ANTES do teste de
+  // intent, com o motivo escrito ao lado: `/cards` era secao da Pratica, entao
+  // `getStudentWarmupIntent` devolvia "pratica" para ele e aquecia as consultas
+  // do banco de questoes, que nao servem a tela de cards. Era um remendo
+  // correto sobre uma taxonomia errada.
+  //
+  // Cards e' aba agora, com intent proprio. O ramo especial saiu, e a excecao
+  // por caminho deixou de existir junto com a causa dela.
+  if (intent === "cards") {
+    requests.push(
+      getOperationalTurboOverview(token, { previewLimit: 4 }),
+      getOperationalStreak(token),
+      getTurboAreaStats(token),
+    );
+  } else if (intent === "inicio") {
+    // O Inicio e' o RESUMO, entao ele toca as mesmas fontes que os blocos
+    // resumidos: o dia (agenda + revisoes), a sequencia, e o diagnostico
+    // longitudinal de onde estao os assuntos quentes.
+    //
+    // ⚠️ `getQuestionBankLongitudinalDiagnosis` entra aqui pela primeira vez
+    // como aquecimento de tela que o RENDERIZA. Ele ja' era pre-aquecido para a
+    // Evolucao -- e nenhuma tela o desenhava. Agora tem consumidor.
     const today = todayISO();
     requests.push(
       getStudentToday(token),
@@ -104,33 +122,54 @@ export function warmRouteData(href: string, token: string | null | undefined): v
       listDirectedStudies(token),
       listEvents(token),
       getOperationalTurboOverview(token, { previewLimit: 4 }),
+      getOperationalStreak(token),
       getStudyPerformanceSummary(token),
-      // vindos do antigo intent `planning` (Cronograma)
-      getReviewAgenda(token),
-      listScheduleSuggestions(token),
+      getQuestionBankLongitudinalDiagnosis(token),
     );
-  } else if (intent === "bank") {
+  } else if (intent === "banco") {
     requests.push(
       browseQuestionBankTopics(token, { limit: 40, include_empty: false }),
       previewQuestionBankAvailability(token),
       getQuestionBankPerformance(token),
     );
-  } else if (intent === "cards") {
-    requests.push(
-      getOperationalTurboOverview(token, { previewLimit: 4 }),
-      getOperationalStreak(token),
-      getTurboAreaStats(token),
-    );
-  } else if (intent === "profile") {
-    // vindos do antigo intent `evolution`
-    requests.push(
-      listDirectedStudies(token),
-      listReviewTasks(token, { status: "pending" }),
-      listReviewTasks(token, { status: "done" }),
-      getStudyPerformanceSummary(token),
-      getQuestionBankLongitudinalDiagnosis(token),
-      getTurboAreaStats(token),
-    );
+  } else if (intent === "mais") {
+    // 🚨 AQUI O INTENT NAO CHEGA, e e' preciso o caminho.
+    //
+    // Os outros quatro intents sao UMA tela cada (ou variacoes dela). O "Mais"
+    // e' um MENU de nove telas com dados que nao se parecem: o calendario, a
+    // evolucao, a conta. Aquecer pelo intent daria a todas o mesmo conjunto --
+    // ou o mais gordo, desperdicando oito nonos, ou o mais magro, deixando
+    // todas frias.
+    //
+    // ⚠️ E' a mesma forma que acabei de REMOVER do `/cards` acima, e a
+    // diferenca importa: la' o ramo por caminho remendava uma taxonomia que
+    // punha duas telas diferentes na mesma aba, e o conserto foi separar as
+    // abas. Aqui a aba e' um menu POR DESENHO -- ela nao vai deixar de conter
+    // nove telas. Excecao por caminho e' o remedio certo quando a causa e'
+    // definitiva, e o remendo errado quando a causa e' um erro de taxonomia.
+    //
+    // ⚠️ Sem este mapa, o Cronograma REGREDIA: ele aquecia
+    // `listScheduleSuggestions` pela antiga aba Plano, e o import ficou orfao
+    // quando a aba deixou de existir. Foi o import morto que denunciou.
+    if (pathname.startsWith("/cronograma")) {
+      requests.push(getReviewAgenda(token), listScheduleSuggestions(token), listEvents(token));
+    } else if (pathname.startsWith("/evolucao") || pathname.startsWith("/estatisticas")) {
+      requests.push(
+        listDirectedStudies(token),
+        listReviewTasks(token, { status: "pending" }),
+        listReviewTasks(token, { status: "done" }),
+        getStudyPerformanceSummary(token),
+        getQuestionBankLongitudinalDiagnosis(token),
+        getTurboAreaStats(token),
+      );
+    } else if (pathname.startsWith("/plano")) {
+      requests.push(getStudyPerformanceSummary(token), getReviewAgenda(token));
+    } else {
+      // A propria tela do menu: ela resume a sequencia e o proximo
+      // compromisso, e mais nada. Aquecer os nove destinos ao tocar num menu
+      // seriam nove requisicoes para uma navegacao que vai acabar em UMA.
+      requests.push(getOperationalStreak(token), getReviewAgenda(token));
+    }
   }
 
   void Promise.allSettled(requests);

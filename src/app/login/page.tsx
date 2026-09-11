@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { clearAuthToken } from "@/lib/auth";
 import { destinoInternoSeguro } from "@/lib/destinoInterno";
@@ -10,8 +9,8 @@ import { loginLocalAccount } from "@/lib/api";
 import { useGoogleSignIn } from "./_hooks/useGoogleSignIn";
 import { obterModosDeAuth } from "@/lib/api/domains/auth";
 import { useInstallPrompt } from "./_hooks/useInstallPrompt";
-import { LoginForm } from "./_components/LoginForm";
 import { GoogleSection } from "./_components/GoogleSection";
+import { EmailLoginSection } from "./_components/EmailLoginSection";
 import { InstallBanner } from "./_components/InstallBanner";
 import { FaciesWordmark } from "@/components/FaciesWordmark";
 import styles from "./LoginPremium.module.css";
@@ -143,35 +142,79 @@ function LoginPageContent() {
                 </div>
               )}
 
-              {isDevMode ? (
-                <LoginForm
-                  loginEmail={loginEmail}
-                  setLoginEmail={setLoginEmail}
-                  loginPassword={loginPassword}
-                  setLoginPassword={setLoginPassword}
-                  rememberDevice={rememberDevice}
-                  setRememberDevice={setRememberDevice}
-                  loginBusy={loginBusy}
-                  loginError={loginError}
-                  googleClientId={googleClientId}
-                  googleButtonRef={googleButtonRef}
-                  googleError={googleError}
-                  installState={installState}
-                  onLogin={handleLocalLogin}
-                  onSwitchView={() => undefined}
-                />
-              ) : (
-                <div className="space-y-3">
+              {/* UM caminho só, e não um por regime.
+                  ⚠️ Aqui havia um garfo em `isDevMode` (que é apenas "não há
+                  `NEXT_PUBLIC_GOOGLE_CLIENT_ID`"): sem Google renderizava
+                  `LoginForm`, com Google renderizava outro conjunto. Duas telas
+                  de login, e a decisão de mostrar a via de e-mail duplicada nas
+                  duas — foi assim que ela ficou presa do lado errado, visível só
+                  onde o Google NÃO está configurado, ou seja, em lugar nenhum
+                  que importa.
+                  O efeito colateral era pior que o bug: `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
+                  é VAZIO no `.env.local`, então o desenvolvimento e o e2e local
+                  exercitavam sempre o ramo que produção nunca executa. Testar
+                  uma tela e publicar outra não é cobertura.
+                  `GoogleSection` já trata a ausência de `client_id` sozinha —
+                  desenha um botão que explica a configuração que falta — então o
+                  garfo nunca foi necessário para isso. */}
+              <div className="space-y-3">
+                  {/* E-MAIL PRIMEIRO, Google depois — ordem pedida pelo
+                      operador em 2026-09-10. O divisor "ou" mora DENTRO do
+                      condicional junto com o formulário: sem a via de e-mail
+                      não há duas coisas a separar, e um "ou" sozinho sobre o
+                      botão do Google prometeria uma alternativa que a
+                      instalação não tem.
+
+                      `AUTH_MODE` vive no backend; a tela pergunta em vez de
+                      duplicar o flag aqui — dois lugares para o mesmo fato
+                      divergem no primeiro deploy em que um é atualizado e o
+                      outro não.
+
+                      ⚠️ Aqui havia só "Prefere e-mail e senha? Criar conta" —
+                      um convite a CRIAR conta, sem forma de ENTRAR com ela.
+                      Quem se cadastrava por e-mail chegava nesta tela e não
+                      tinha campo nenhum: o formulário existia (`LoginForm`) mas
+                      era renderizado apenas no ramo `isDevMode`, isto é, só
+                      quando o Google NÃO está configurado. Em produção, onde
+                      está, a via de e-mail era de mão única. */}
+                  {cadastroLocalDisponivel ? (
+                    <>
+                      <EmailLoginSection
+                        email={loginEmail}
+                        setEmail={setLoginEmail}
+                        senha={loginPassword}
+                        setSenha={setLoginPassword}
+                        ocupado={loginBusy}
+                        erro={loginError}
+                        onEntrar={handleLocalLogin}
+                      />
+                      <div className="flex items-center gap-3 pt-1">
+                        <span className="h-px flex-1 bg-rule" />
+                        <span className="paper-eyebrow">ou</span>
+                        <span className="h-px flex-1 bg-rule" />
+                      </div>
+                    </>
+                  ) : null}
+                  {/* FORA do condicional, e é obrigatório que fique: o
+                      `googleButtonRef` é onde o GSI desenha, e o efeito de
+                      `useGoogleSignIn` NÃO roda de novo quando a resposta de
+                      `/auth/modes` chega. Se o contêiner nascesse dentro do
+                      ramo, o botão ficaria sem onde montar no regime
+                      google-only — que é o único caminho em produção quando a
+                      auth local está desligada. Há spec para isto. */}
                   <GoogleSection
                     googleClientId={googleClientId}
                     googleButtonRef={googleButtonRef}
                     googleError={googleError}
                     onGoogleError={setGoogleError}
                   />
-                  {/* Depois do botao do Google, centralizado: e' uma opcao
-                      sobre o login que acabou de acontecer, nao um passo antes
-                      dele. `items-center` alinha a caixa com a linha do texto. */}
-                  <label className="flex cursor-pointer items-center justify-center gap-2 text-sm text-muted">
+
+                  {/* Depois das DUAS vias, e não entre elas: a caixa governa o
+                      login local e o do Google (`useGoogleSignIn` recebe
+                      `rememberDevice`, e `loginLocalAccount` manda
+                      `remember_device`). Acima do divisor "ou" ela parecia uma
+                      opção do Google, o que é falso nos dois sentidos. */}
+                  <label className="flex cursor-pointer items-center justify-center gap-2 pt-1 text-sm text-muted">
                     <input
                       type="checkbox"
                       className="h-4 w-4 shrink-0 rounded border-edge text-ink"
@@ -180,32 +223,18 @@ function LoginPageContent() {
                     />
                     <span>Lembrar neste dispositivo</span>
                   </label>
-                  {/* A via de e-mail, e SÓ quando ela existe de verdade.
-                      `AUTH_MODE` vive no backend; a tela pergunta em vez de
-                      duplicar o flag aqui — dois lugares para o mesmo fato
-                      divergem no primeiro deploy em que um é atualizado e o
-                      outro não. */}
-                  {cadastroLocalDisponivel ? (
-                    <p className="pt-1 text-center text-sm text-muted">
-                      Prefere e-mail e senha?{" "}
-                      <Link href="/cadastro" className="font-semibold text-ink underline underline-offset-2">
-                        Criar conta
-                      </Link>
-                    </p>
-                  ) : null}
-
                 </div>
-              )}
             </div>
 
-            {/* O prompt `C:\KROS>` com cursor piscando saiu daqui junto com
-                a identidade KROS/DOS: era decoracao de terminal, e decoracao
-                de terminal e' exatamente o que fazia a tela parecer feita
-                por dev e nao por medico. No lugar, a unica linha que quem
-                chega aqui precisa ler antes de entrar. */}
-            <p className="mt-6 border-t border-rule pt-3 text-sm text-muted">
-              A Fácies não promete aprovação e não vende conteúdo teórico.
-            </p>
+            {/* A ressalva "não promete aprovação e não vende conteúdo teórico"
+                SAIU daqui, por decisão do operador: ela pertence aos Termos, que
+                é onde vincula. Numa tela de entrada era ruído no momento em que
+                a pessoa só quer entrar — e estava sem `text-center`, então era
+                também o único bloco desalinhado da composição.
+
+                ⚠️ Ela continua OBRIGATÓRIA nas superfícies de oferta: a landing
+                a mantém, porque lá há alegação comercial e o CONAR exige que ela
+                seja comprovável. Tirar de `/login` não é tirar do produto. */}
           </div>
         </section>
       </div>

@@ -21,7 +21,10 @@ type PostExamTabsProps = {
  */
 export function PostExamTabs({ tabs, activeTab, onSelect }: PostExamTabsProps) {
   return (
-    <TabsScrollArea className="w-full">
+    /* Centrado abaixo de `md` pela mesma regra da subnavegação: o trilho
+        é `inline-flex` e encostava à esquerda. A nota longa, com a causa e
+        a ressalva do trilho rolável, está em `IntentSubNav.tsx`. */
+    <TabsScrollArea className="w-full justify-center md:justify-start">
       {({ ref, onScroll }) => (
         <div
           ref={ref}

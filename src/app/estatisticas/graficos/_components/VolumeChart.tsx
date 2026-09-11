@@ -11,12 +11,14 @@ import {
   LabelList,
   Tooltip,
 } from "recharts";
-import { AREA_COLORS } from "@/app/desempenho/_lib/perfilAnalytics";
-import type { Area as AreaKey } from "@/app/desempenho/_lib/perfilShared";
+import { AREA_COLORS } from "@/lib/perfil/perfilAnalytics";
+import type { Area as AreaKey } from "@/lib/perfil/perfilShared";
 import {
   CHART_INK,
   CHART_EDGE,
+  CHART_FONT_MONO,
   CHART_MUTED,
+  CHART_TICK,
   WEEKLY_CHART_MARGIN,
   CHART_X_AXIS_PADDING,
   CHART_Y_AXIS_WIDTH,
@@ -31,6 +33,7 @@ import {
   studyChartTooltipContentStyle,
   studyChartTooltipLabelStyle,
 } from "@/components/charts/studyChartTooltip";
+import { CabecalhoDoGrafico } from "./CabecalhoDoGrafico";
 
 type Props = {
   state: GraficosState;
@@ -43,7 +46,7 @@ function VolumeLegend({ areas }: { areas: AreaKey[] }) {
   return (
     <ul className="flex flex-wrap gap-x-3 gap-y-1" aria-label="Áreas">
       {areas.map((area) => (
-        <li key={area} className="flex items-center gap-1 text-micro leading-none text-muted">
+        <li key={area} className="flex items-center gap-1 font-mono text-micro leading-none text-muted">
           <span className="inline-block h-2 w-2 shrink-0 " style={{ backgroundColor: AREA_COLORS[area] }} />
           {area}
         </li>
@@ -71,20 +74,23 @@ export function VolumeChart({ state, refs, actions }: Props) {
     <section
       ref={volumeSectionRef}
       data-testid="chart-weekly-volume"
-      className="space-y-2"
+      className="space-y-3"
     >
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-medium">Volume de Estudo</h2>
-        <SegmentedToggle
-          value={mode}
-          onChange={setMode}
-          ariaLabel="Visão do volume"
-          options={[
-            { value: "abs", label: "Volume" },
-            { value: "pct", label: "Composição" },
-          ]}
-        />
-      </div>
+      <CabecalhoDoGrafico
+        titulo="Volume por semana"
+        medida="questões respondidas"
+        acao={
+          <SegmentedToggle
+            value={mode}
+            onChange={setMode}
+            ariaLabel="Visão do volume"
+            options={[
+              { value: "abs", label: "Volume" },
+              { value: "pct", label: "Composição" },
+            ]}
+          />
+        }
+      />
 
       {mode === "abs" ? (
         <>
@@ -111,7 +117,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
                   }
                 />
                 <YAxis
-                  tick={hasActiveSegments ? false : { fontSize: 10, fill: CHART_MUTED }}
+                  tick={hasActiveSegments ? false : CHART_TICK}
                   allowDecimals={false}
                   width={CHART_Y_AXIS_WIDTH}
                 />
@@ -128,7 +134,20 @@ export function VolumeChart({ state, refs, actions }: Props) {
                       return (
                         <g>
                           <line x1={bx} x2={bx + bw} y1={by} y2={by} stroke={CHART_INK} strokeWidth={1} strokeOpacity={0.7} />
-                          <text x={bx + bw / 2} y={by - 5} textAnchor="middle" dominantBaseline="auto" fontSize={11} fontWeight={700} fill={CHART_INK}>
+                          {/* A contagem da semana em foco: mono 400 sobre a
+                              linha que a marca. Era 11/700 em sans — a mono do
+                              desenho nunca pesa, e o que destaca aqui já é a
+                              régua desenhada por cima da barra. */}
+                          <text
+                            x={bx + bw / 2}
+                            y={by - 5}
+                            textAnchor="middle"
+                            dominantBaseline="auto"
+                            fontFamily={CHART_FONT_MONO}
+                            fontSize={11}
+                            fontWeight={400}
+                            fill={CHART_INK}
+                          >
                             {bv}
                           </text>
                         </g>
@@ -154,11 +173,11 @@ export function VolumeChart({ state, refs, actions }: Props) {
                 {volumeSegmentLabelPositions.map(({ area, midY, count }) => (
                   <div
                     key={area}
-                    className="absolute flex items-center gap-1 text-micro leading-none"
+                    className="absolute flex items-center gap-1 font-mono text-micro leading-none"
                     style={{ top: clamp(midY - 5, 0, 190), left: 2, color: AREA_COLORS[area] }}
                   >
                     <span className="opacity-80">{area}</span>
-                    <span className="tabular-nums font-semibold">{count}</span>
+                    <span className="tabular-nums">{count}</span>
                   </div>
                 ))}
               </div>
@@ -185,7 +204,7 @@ export function VolumeChart({ state, refs, actions }: Props) {
                 padding={CHART_X_AXIS_PADDING}
                 tick={(props: WeekTickProps) => renderWeekTickLabel(props, weekIndexByLabel, { defaultFill: CHART_MUTED })}
               />
-              <YAxis domain={[0, 1]} tickFormatter={(v: number) => `${Math.round(v * 100)}%`} tick={{ fontSize: 10, fill: CHART_MUTED }} width={CHART_Y_AXIS_WIDTH} />
+              <YAxis domain={[0, 1]} tickFormatter={(v: number) => `${Math.round(v * 100)}%`} tick={CHART_TICK} width={CHART_Y_AXIS_WIDTH} />
               <Tooltip
                 cursor={{ fill: CHART_EDGE, fillOpacity: 0.25 }}
                 contentStyle={studyChartTooltipContentStyle}

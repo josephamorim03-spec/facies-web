@@ -13,6 +13,7 @@ import {
 import { me as buscarMe } from "@/lib/api/domains/starter";
 import { getProfile, type UserProfile } from "@/lib/api/domains/study-import";
 import { LoadBar } from "@/components/ui/LoadBar";
+import { ContaSection } from "@/app/preferencias/_components/ContaSection";
 import { SecaoAcesso } from "./_components/SecaoAcesso";
 import { SecaoSenha } from "./_components/SecaoSenha";
 
@@ -127,7 +128,7 @@ export default function ContaPage() {
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6">
       <span className="paper-eyebrow">Sua conta</span>
-      <h1 className="mt-3 font-serif text-2xl font-semibold text-ink">Conta e privacidade</h1>
+      <h1 className="mt-3 font-serif font-semibold text-ink">Conta e privacidade</h1>
       <p className="mt-2 text-sm text-muted">{email ?? "—"}</p>
 
       {erro ? <p className="mt-4 text-sm text-danger">{erro}</p> : null}
@@ -140,7 +141,7 @@ export default function ContaPage() {
 
       {/* ── Segurança ──────────────────────────────────────────────────── */}
       <section className="mt-8 rounded-surface border border-edge bg-surface p-5 sm:p-6">
-        <h2 className="font-serif text-lg font-semibold text-ink">Sessões ativas</h2>
+        <h2 className="font-serif font-semibold text-ink">Sessões ativas</h2>
         <p className="mt-1 max-w-[62ch] text-sm text-muted">
           Cada sessão é um navegador onde você entrou e continua conectado. Não mostramos
           dispositivo nem localização porque não guardamos esses dados — só as datas.
@@ -178,7 +179,7 @@ export default function ContaPage() {
 
       {/* ── Seus dados ─────────────────────────────────────────────────── */}
       <section className="mt-6 rounded-surface border border-edge bg-surface p-5 sm:p-6">
-        <h2 className="font-serif text-lg font-semibold text-ink">Seus dados</h2>
+        <h2 className="font-serif font-semibold text-ink">Seus dados</h2>
         <p className="mt-1 max-w-[62ch] text-sm text-muted">
           Baixe tudo o que guardamos sobre você em um arquivo JSON: perfil, respostas,
           revisões, anotações e histórico. Senhas e tokens nunca entram na exportação.
@@ -272,6 +273,17 @@ export default function ContaPage() {
           </button>
         )}
       </details>
+
+      {/* Tema e sair da conta.
+          ⚠️ ELES MORAVAM EM `/preferencias`, e o motivo era bom: a `SidebarNav`
+          renderiza `null` sem desktop, então no celular estas duas coisas só
+          existiam dentro dela — o aluno ficava preso na conta. O motivo caducou
+          quando `/conta` virou aba da barra, alcançável com o polegar. E aqui
+          é o lugar certo dos dois de qualquer forma: `/preferencias` passou a
+          ser só a rotina, e tema e logout não são rotina. */}
+      <div className="mt-8">
+        <ContaSection />
+      </div>
     </main>
   );
 }

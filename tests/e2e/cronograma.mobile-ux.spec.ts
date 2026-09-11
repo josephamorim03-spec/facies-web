@@ -119,14 +119,16 @@ test.describe("Cronograma mobile portrait UX", () => {
     await expect(page.getByLabel(/M.s anterior/i).first()).toBeVisible();
     await expect(page.getByLabel(/Pr.ximo m.s/i).first()).toBeVisible();
     // O botão "Ir para Hoje" saiu do header do mês — a string não existe mais em
-    // `src/` inteiro. O caminho de volta ao presente passou a ser o
-    // `ViewModeSwitch`, que no mês oferece "Hoje" e leva para `/hoje`.
+    // `src/` inteiro. O caminho de volta ao presente é a SEÇÃO "Hoje" na linha
+    // do Plano (`IntentSubNav`), desenhada no topo do conteúdo.
     //
-    // ⚠️ Não é a mesma coisa, e vale registrar: o antigo trazia ESTE calendário
-    // de volta ao mês corrente; o novo troca de tela. Quem navegou três meses
-    // para a frente ainda não tem como voltar sem sair da grade. Substituí a
-    // asserção pelo que de fato existe em vez de apagá-la — apagar esconderia a
-    // diferença.
+    // ⚠️ A afirmação anterior daqui creditava o link ao `ViewModeSwitch`, que
+    // não era renderizado em lugar nenhum (componente órfão, entretanto
+    // apagado). O teste passava — só que por outra razão que não a escrita.
+    //
+    // ⚠️ E continua a não ser a mesma coisa: o antigo trazia ESTE calendário de
+    // volta ao mês corrente; a seção troca de tela. Quem navegou três meses
+    // para a frente ainda não tem como voltar sem sair da grade.
     await expect(page.getByRole("link", { name: "Hoje" }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: /^\d{1,2}$/ })).toHaveCount(0);
 

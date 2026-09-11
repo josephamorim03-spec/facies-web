@@ -67,7 +67,23 @@ test("os specs que o smoke conhecia continuam todos classificados", () => {
   const classificados = new Set([...SPECS_DE_GATE, ...Object.keys(SPECS_ADIADOS)]);
   const orfaos = historicos.filter((s) => !classificados.has(s));
   assert.deepEqual(orfaos, [], "spec do smoke saiu das duas listas sem decisao");
-  assert.equal(classificados.size, historicos.length, "apareceu spec fora dos oito historicos");
+
+  // ⚠️ AQUI ESTAVA `classificados.size === historicos.length`, e a igualdade
+  // proibia o que ela nao queria proibir: acrescentar spec NOVA ao gate. O que
+  // esta regra guarda e que nenhuma HISTORICA suma -- e disso trata o `orfaos`
+  // acima. Medido em 2026-09-06: pôr `mapa.navegavel.spec.ts` no gate reprovou
+  // a suite, e a correcao obvia teria sido tirar o spec do gate.
+  //
+  // O que substitui a igualdade e' a regra que ela nunca disse: um spec nao pode
+  // estar nas DUAS listas -- ser gate e adiado ao mesmo tempo e a contradicao
+  // que faria o conjunto crescer sem ninguem reparar.
+  const nasDuas = SPECS_DE_GATE.filter((spec) => spec in SPECS_ADIADOS);
+  assert.deepEqual(nasDuas, [], "spec no gate E adiado ao mesmo tempo");
+  assert.equal(
+    classificados.size,
+    SPECS_DE_GATE.length + Object.keys(SPECS_ADIADOS).length,
+    "as duas listas tem entrada repetida",
+  );
 });
 
 test("o diretorio de e2e existe e tem specs -- a asserção acima nao mede o vazio", () => {

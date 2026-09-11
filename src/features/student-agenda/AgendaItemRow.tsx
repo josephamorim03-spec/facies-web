@@ -37,7 +37,7 @@ const STATUS_LABEL: Record<StudentAgendaItem["status"], string> = {
 
 export function AgendaItemRow({ item }: { item: StudentAgendaItem }) {
   const area = item.area ? resolveDisplayArea(item.area, item.title, item.rationale) : null;
-  const manageHref = `/cronograma?view=month&anchor=${item.date}&day=${item.date}`;
+  const manageHref = `/cronograma/mes?anchor=${item.date}&day=${item.date}`;
   const KindIcon = KIND_ICON[item.kind] ?? Clock3;
 
   return (

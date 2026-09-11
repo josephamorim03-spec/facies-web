@@ -44,8 +44,19 @@ function decodificarBase64Url(valor: string): string {
 /**
  * `exp` de um token `kros.v1.`/`local.v1.`.
  *
- * O payload é o texto `v1|uid=<id>|exp=<timestamp>` — ver `issue_app_access_token`
- * em `app/auth/local_auth.py`. Nada é verificado aqui: a assinatura é do backend.
+ * Dois formatos de payload convivem, e os dois precisam ser lidos:
+ *
+ *   v1|uid=<id>|exp=<ts>
+ *   v2|cls=<kros|local>|uid=<id>|iat=<ts>|exp=<ts>
+ *
+ * O `v2` assina a CLASSE do token e carrega o instante de emissão — ver
+ * `_montar_payload` em `app/auth/local_auth.py`. O PREFIXO continua `.v1.` nos
+ * dois: ele virou rótulo de transporte quando a classe passou a ser assinada.
+ *
+ * ⚠️ Ler só o `v1` aqui não daria erro: devolveria `null`, o pré-check de
+ * expiração pararia de disparar e nada apareceria. É exatamente o defeito que
+ * este arquivo foi criado para consertar, e ele voltaria pela porta do formato
+ * novo. Nada é verificado aqui: a assinatura é do backend.
  */
 function expiracaoDoTokenFacies(token: string): number | null {
   const prefixo = PREFIXOS_FACIES.find((candidato) => token.startsWith(candidato));
@@ -57,8 +68,16 @@ function expiracaoDoTokenFacies(token: string): number | null {
 
   try {
     const partes = decodificarBase64Url(payloadB64).split("|");
-    if (partes.length !== 3 || partes[0] !== "v1") return null;
-    const exp = partes[2];
+    // `v1|uid=…|exp=…` (3 campos) e `v2|cls=…|uid=…|iat=…|exp=…` (5). O `exp` é
+    // sempre o ÚLTIMO, então a leitura não depende da posição fixa — o que
+    // importa aqui, porque este parser é o que falha ABERTO: um `null` desliga o
+    // pré-check em silêncio, e foi assim que a versão anterior dele passou meses
+    // sem nunca disparar.
+    const versao = partes[0];
+    if (versao !== "v1" && versao !== "v2") return null;
+    if (versao === "v1" && partes.length !== 3) return null;
+    if (versao === "v2" && partes.length !== 5) return null;
+    const exp = partes[partes.length - 1];
     if (!exp?.startsWith("exp=")) return null;
     const timestamp = Number.parseInt(exp.slice("exp=".length), 10);
     return Number.isFinite(timestamp) ? timestamp : null;

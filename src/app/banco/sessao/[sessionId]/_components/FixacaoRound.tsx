@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { QuestionBankOption, QuestionBankSessionItem } from "@/lib/api";
+import { Button } from "@/components/ui/Button";
 
 const OPTIONS: QuestionBankOption[] = ["A", "B", "C", "D", "E"];
 
@@ -80,7 +81,7 @@ export default function FixacaoRound({ items, onExit }: FixacaoRoundProps) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="paper-eyebrow text-primary">Rodada de fixação</p>
-              <h1 className="mt-0.5 font-serif text-xl font-semibold leading-tight text-ink">Recupere antes de finalizar</h1>
+              <h1 className="mt-0.5 font-serif font-semibold leading-tight text-ink">Recupere antes de finalizar</h1>
               <p className="mt-1 text-xs text-muted">Sem nota.</p>
             </div>
             <div className="flex items-center gap-2">
@@ -182,29 +183,29 @@ export default function FixacaoRound({ items, onExit }: FixacaoRoundProps) {
       </main>
 
       <footer className="sticky bottom-0 border-t border-edge bg-surface px-4 py-3">
-        <div className="mx-auto flex max-w-4xl items-center justify-end gap-2">
+        {/* ⚠️ CENTRADO ABAIXO DE `sm`, e de largura total. Era `justify-end`:
+            os três (só um aparece de cada vez) ficavam encostados à direita,
+            com alvo abaixo dos 44px e três receitas de classe diferentes entre
+            si — `px-5 py-2` no primário, `px-4 py-2` no Pular.
+
+            É a mesma regra do rodapé da sessão e das outras ações primárias:
+            no telemóvel a ação ocupa a largura e centra; do `sm` em diante
+            volta ao canto direito, que é onde o rato a espera. */}
+        <div className="mx-auto flex max-w-4xl items-center justify-center gap-2 sm:justify-end">
           {!revealed && picked !== null && (
-            <button
-              type="button"
-              onClick={reveal}
-              className="border border-primary bg-primary px-5 py-2 text-sm font-medium text-primaryInk "
-            >
+            <Button type="button" variant="primary" size="md" bloco onClick={reveal}>
               Ver resposta
-            </button>
+            </Button>
           )}
           {!revealed && picked === null && (
-            <button type="button" onClick={next} className="border border-edge px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-primary hover:text-ink">
+            <Button type="button" variant="secondary" size="md" bloco onClick={next}>
               Pular
-            </button>
+            </Button>
           )}
           {revealed && (
-            <button
-              type="button"
-              onClick={next}
-              className="border border-primary bg-primary px-5 py-2 text-sm font-medium text-primaryInk "
-            >
+            <Button type="button" variant="primary" size="md" bloco onClick={next}>
               {isLast ? "Concluir fixação" : "Próxima"}
-            </button>
+            </Button>
           )}
         </div>
       </footer>

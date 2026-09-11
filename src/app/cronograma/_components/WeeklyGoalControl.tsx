@@ -108,7 +108,7 @@ export function WeeklyGoalControl({
             className="w-full rounded-surface border border-edge bg-paper p-4 md:max-w-sm "
             onClick={(event) => event.stopPropagation()}
           >
-            <h3 className="text-base font-semibold text-ink">Meta semanal</h3>
+            <h3 className="font-semibold text-ink">Meta semanal</h3>
             <p className="mt-1 text-xs text-muted">Atual: {weeklyGoal} questões por semana</p>
             <label className="mt-4 block">
               <span className="text-sm font-medium text-ink">Questões por semana</span>

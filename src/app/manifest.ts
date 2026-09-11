@@ -28,9 +28,13 @@ export default function manifest(): MetadataRoute.Manifest {
     // `RedirectIfAuthenticated` e só então chegava ao app: uma piscada de página
     // errada em TODA abertura.
     //
-    // Sem sessão, `/hoje` cai no login — que é o destino certo para quem abre um
-    // app instalado sem estar logado.
-    start_url: "/hoje",
+    // Sem sessão, `/inicio` cai no login — que é o destino certo para quem abre
+    // um app instalado sem estar logado.
+    //
+    // ⚠️ Mudou de `/hoje` para `/inicio` em 2026-09-10. O ícone na tela inicial
+    // do telemóvel é a porta mais usada de um app instalado; deixá-la na agenda
+    // do dia faria a home nova ser a tela que menos gente vê.
+    start_url: "/inicio",
     // O escopo continua em "/": o app instalado precisa alcançar `/login`,
     // `/ativar` e as páginas públicas sem sair para o navegador.
     scope: "/",

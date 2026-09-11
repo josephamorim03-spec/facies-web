@@ -10,7 +10,7 @@ import type {
 
 export async function browseQuestionBankTopics(
   token: string,
-  params: { area?: string; search?: string; institution?: string; institutions?: string[]; node_type?: string; node_types?: string[]; board_codes?: string[]; exam_codes?: string[]; state_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_empty?: boolean; limit?: number } = {},
+  params: { area?: string; search?: string; institution?: string; institutions?: string[]; node_type?: string; node_types?: string[]; board_codes?: string[]; exam_codes?: string[]; state_codes?: string[]; year_from?: number; year_to?: number; years?: number[]; include_empty?: boolean; limit?: number; population?: "servable" | "exam" } = {},
   init?: Pick<RequestInit, "signal">,
 ): Promise<QuestionBankTopic[]> {
   const q = new URLSearchParams();
@@ -23,6 +23,9 @@ export async function browseQuestionBankTopics(
   if (params.year_to) q.set("year_to", String(params.year_to));
   if (typeof params.include_empty === "boolean") q.set("include_empty", String(params.include_empty));
   if (params.limit) q.set("limit", String(params.limit));
+  // Qual população a árvore conta. Omitir = `servable`, que é o Banco; `exam` é
+  // o mapa, que mede a prova. Ver `servable_question_count` em `types.ts`.
+  if (params.population) q.set("population", params.population);
   appendArrayParams(q, "node_types", params.node_types);
   appendArrayParams(q, "board_codes", params.board_codes);
   appendArrayParams(q, "exam_codes", params.exam_codes);

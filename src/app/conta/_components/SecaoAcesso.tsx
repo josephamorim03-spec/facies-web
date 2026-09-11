@@ -44,7 +44,7 @@ export function SecaoAcesso({
 
   return (
     <section className="mt-8 rounded-surface border border-edge bg-surface p-5 sm:p-6">
-      <h2 className="font-serif text-lg font-semibold text-ink">Seu acesso</h2>
+      <h2 className="font-serif font-semibold text-ink">Seu acesso</h2>
 
       {ativo ? (
         <p className="mt-2 max-w-[62ch] text-sm leading-6 text-ink">
