@@ -50,13 +50,39 @@ const RAIZ = fileURLToPath(new URL("..", import.meta.url));
  * verificadores de CONTEÚDO (mojibake, tokens, vocabulário, import de valor em
  * client). Nenhum deles olha TAMANHO.
  */
+// ⚠️ ESTA TABELA E' A SEGUNDA COPIA. A primeira e'
+// `_LINE_CEILINGS` em `krosmed/scripts/check_architecture_invariants.py`, no
+// repositorio do backend, e as duas medem os MESMOS arquivos de `src/`.
+//
+// Enquanto o frontend viver nos dois lugares elas vao divergir -- foi o que
+// aconteceu entre 08/09 e 11/09, com esta congelada e a outra a andar. Quando a
+// Vercel apontar para ca' e o `krosmed/web` sair do faciesapp, a outra deixa de
+// medir `web/src` e esta fica a unica. Ate' la', quem mexer num destes arquivos
+// atualiza as DUAS.
 const TETOS = {
   "src/app/admin/question-bank/_components/QuestionsManager.tsx": 1401,
-  "src/app/banco/page.tsx": 1217,
-  "src/app/banco/sessao/[sessionId]/_components/FocusedQuestion.tsx": 1526,
-  "src/app/banco/sessao/[sessionId]/page.tsx": 1328,
+  // 2026-09-11: 1217 -> 1053. DESCE 164 -- a diferenca entre o que este repo
+  // congelou em 08/09 e o que o arquivo e' hoje. A `BottomActionBar` e a saida
+  // de UI que nunca foi renderizada sairam nesse intervalo.
+  "src/app/banco/page.tsx": 1053,
+  // 2026-09-11: 1526 -> 1516. DESCE, e o teto tem de acompanhar: espaco
+  // reconquistado que fica sem teto e' espaco que volta a ser ocupado. Saiu com
+  // a troca dos botoes a mao pelo primitivo `Button` (faciesapp #90-#93).
+  "src/app/banco/sessao/[sessionId]/_components/FocusedQuestion.tsx": 1516,
+  // Entra na catraca em 2026-09-11, vindo de fora dela: as 40 linhas da barra
+  // de acao no primitivo `Button` (alvo de 44px, onde o botao a mao dava ~38)
+  // atravessaram o limite padrao de 1000. Registado em vez de dividido, pela
+  // mesma razao que no backend: dividir um componente de mil linhas por causa
+  // de quarenta seria divisao pelo NUMERO, nao por responsabilidade.
+  "src/app/banco/sessao/[sessionId]/_components/PostExamReview.tsx": 1040,
+  // 2026-09-11: 1328 -> 1343. As 15 linhas sao a derivacao do item que o
+  // modal de card passa a IA e a condicao que esconde o toggle de correcao
+  // guiada quando ela nao existe (faciesapp #76).
+  "src/app/banco/sessao/[sessionId]/page.tsx": 1343,
   "src/lib/api/domains/question-bank-admin.ts": 1885,
-  "src/lib/api/domains/question-bank/types.ts": 1147,
+  // 2026-09-11: 1147 -> 1159. Campos novos do contrato da sessao, vindos da
+  // leva do seletor de prova (faciesapp #82, #83, #87).
+  "src/lib/api/domains/question-bank/types.ts": 1159,
 };
 
 const TETO_DE_ARQUIVO_NOVO = 1000;
